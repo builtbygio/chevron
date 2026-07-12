@@ -105,7 +105,8 @@ module.exports = function start(resourcePath, devResourcePath, startTime) {
   app.on('open-url', addUrlToOpen);
   app.on('will-finish-launching', () =>
     startCrashReporter({
-      uploadToServer: config.get('core.telemetryConsent') === 'limited',
+      // AtomNova: never upload crash reports to third parties
+      uploadToServer: false,
       releaseChannel
     })
   );

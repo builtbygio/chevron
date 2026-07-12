@@ -56,8 +56,9 @@ export default class WelcomePackage {
       )
     );
 
-    if (atom.config.get('core.telemetryConsent') === 'undecided') {
-      await atom.workspace.open(CONSENT_URI);
+    // Telemetry consent UI removed — AtomNova does not collect telemetry.
+    if (atom.config.get('core.telemetryConsent') !== 'no') {
+      atom.config.set('core.telemetryConsent', 'no');
     }
 
     if (atom.config.get('welcome.showOnStartup')) {

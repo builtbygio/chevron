@@ -3,15 +3,15 @@ module.exports = function(params) {
   const os = require('os');
   const platformRelease = os.release();
   const arch = os.arch();
-  const { uploadToServer, releaseChannel } = params;
+  const { releaseChannel } = params;
 
-  const parsedUploadToServer = uploadToServer !== null ? uploadToServer : false;
-
+  // Local crash reporting only — never submit to atom.io or other endpoints.
+  // submitURL is required by Electron but unused when uploadToServer is false.
   crashReporter.start({
-    productName: 'Atom',
-    companyName: 'GitHub',
-    submitURL: 'https://atom.io/crash_reports',
-    parsedUploadToServer,
+    productName: 'AtomNova',
+    companyName: 'AtomNova',
+    submitURL: 'https://127.0.0.1/atomnova-crash-reports-disabled',
+    uploadToServer: false,
     extra: { platformRelease, arch, releaseChannel }
   });
 };

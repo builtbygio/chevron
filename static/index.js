@@ -166,15 +166,12 @@
       return documentRegisterElement(type, options);
     };
 
-    const { userSettings, appVersion } = getWindowLoadSettings();
-    const uploadToServer =
-      userSettings &&
-      userSettings.core &&
-      userSettings.core.telemetryConsent === 'limited';
+    const { appVersion } = getWindowLoadSettings();
     const releaseChannel = getReleaseChannel(appVersion);
 
+    // AtomNova: never upload crash reports to third parties
     startCrashReporter({
-      uploadToServer,
+      uploadToServer: false,
       releaseChannel
     });
 

@@ -41,7 +41,7 @@ This document tracks **Phase 1**: Bring the codebase up to date, secure, and bui
   - Sandbox: `true` where possible
   - Disable `nodeIntegration` in renderers
   - Use `preload` scripts properly
-- [ ] Remove or disable any GitHub telemetry / tracking
+- [x] Remove or disable any GitHub telemetry / tracking
 - [ ] Implement or improve auto-updates (using electron-updater or similar)
 - [ ] Review and harden package manager (apm equivalent)
 - [ ] Optimize startup time and memory usage (profile with Electron tools)

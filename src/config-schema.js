@@ -341,24 +341,14 @@ const configSchema = {
       },
       telemetryConsent: {
         description:
-          'Allow usage statistics and exception reports to be sent to the Atom team to help improve the product.',
-        title: 'Send Telemetry to the Atom Team',
+          'Telemetry is disabled in AtomNova. No usage statistics or exception reports are sent.',
+        title: 'Telemetry (disabled)',
         type: 'string',
-        default: 'undecided',
+        default: 'no',
         enum: [
-          {
-            value: 'limited',
-            description:
-              'Allow limited anonymous usage stats, exception and crash reporting'
-          },
           {
             value: 'no',
             description: 'Do not send any telemetry data'
-          },
-          {
-            value: 'undecided',
-            description:
-              'Undecided (Atom will ask again next time it is launched)'
           }
         ]
       },
