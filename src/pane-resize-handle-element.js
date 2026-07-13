@@ -111,8 +111,13 @@ window.customElements.define(
   PaneResizeHandleElement
 );
 
+const createCustomElement = require('./create-custom-element');
+
 function createPaneResizeHandleElement() {
-  return document.createElement('atom-pane-resize-handle');
+  return createCustomElement(
+    'atom-pane-resize-handle',
+    PaneResizeHandleElement
+  );
 }
 
 module.exports = {

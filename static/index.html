@@ -2,7 +2,10 @@
 <html>
 <head>
   <meta http-equiv="Content-Security-Policy" content="default-src * atom://*; img-src blob: data: * atom://*; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src blob: data: mediastream: * atom://*;">
-  <script src="index.js"></script>
+  <!--
+    App bootstrap runs from static/preload.js (Node-capable isolated world).
+    Do not load index.js as a page script — with contextIsolation the page has no require().
+  -->
 </head>
 <body tabindex="-1">
 </body>

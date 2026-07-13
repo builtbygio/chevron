@@ -477,8 +477,10 @@ function isTab(element) {
 
 window.customElements.define('atom-workspace', WorkspaceElement);
 
+const createCustomElement = require('./create-custom-element');
+
 function createWorkspaceElement() {
-  return document.createElement('atom-workspace');
+  return createCustomElement('atom-workspace', WorkspaceElement);
 }
 
 module.exports = {

@@ -114,8 +114,10 @@ class PanelContainerElement extends HTMLElement {
 
 window.customElements.define('atom-panel-container', PanelContainerElement);
 
+const createCustomElement = require('./create-custom-element');
+
 function createPanelContainerElement() {
-  return document.createElement('atom-panel-container');
+  return createCustomElement('atom-panel-container', PanelContainerElement);
 }
 
 module.exports = {

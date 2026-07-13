@@ -6,7 +6,11 @@
   const electron = require('electron');
   // Full IPC-based remote compatibility — no @electron/remote.
   // Core and packages (including github) use this surface.
-  electron.remote = require('../src/remote-compat');
+  // When booted from preload under contextIsolation, this runs in the preload
+  // world (Node-capable). Do not rely on page-world Node.
+  if (!electron.remote) {
+    electron.remote = require('../src/remote-compat');
+  }
   const path = require('path');
   const Module = require('module');
   const rendererIpc = require('../src/renderer-ipc');

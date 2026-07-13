@@ -117,8 +117,10 @@ class PaneAxisElement extends HTMLElement {
 
 window.customElements.define('atom-pane-axis', PaneAxisElement);
 
+const createCustomElement = require('./create-custom-element');
+
 function createPaneAxisElement() {
-  return document.createElement('atom-pane-axis');
+  return createCustomElement('atom-pane-axis', PaneAxisElement);
 }
 
 module.exports = {

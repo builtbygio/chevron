@@ -40,6 +40,10 @@ module.exports = class AtomWindow extends EventEmitter {
       this.resolveClosedPromise = resolve;
     });
 
+    // Preload boots Atom in the isolated Node world (see static/preload.js).
+    // Resolve against resourcePath so packaged (asar) and --resource-path work.
+    const preloadPath = path.join(this.resourcePath, 'static', 'preload.js');
+
     const options = {
       show: false,
       title: getAppName(),
@@ -54,13 +58,15 @@ module.exports = class AtomWindow extends EventEmitter {
         // response to a middle-click.
         // (Ref: https://github.com/atom/atom/pull/12696#issuecomment-290496960)
         disableBlinkFeatures: 'Auxclick',
-        nodeIntegration: true,
-        // Electron 12+ defaults contextIsolation to true, which hides Node from
-        // page scripts. Core no longer uses electron.remote (IPC instead), but
-        // packages still expect renderer Node until isolation Phase N.
-        contextIsolation: false,
+        // Security: page world has no Node. Preload (static/preload.js) has Node
+        // and runs the full Atom bootstrap; it shares the DOM with the page.
+        preload: preloadPath,
+        contextIsolation: true,
+        nodeIntegration: false,
+        // sandbox must stay false so preload can load native modules (superstring, etc.)
+        sandbox: false,
         webviewTag: true,
-        // node support in threads
+        // node support in threads (used by some packages / workers)
         nodeIntegrationInWorker: true
       },
       simpleFullscreen: this.getSimpleFullscreen()

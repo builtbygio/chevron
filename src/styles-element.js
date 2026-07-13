@@ -142,8 +142,10 @@ class StylesElement extends HTMLElement {
 
 window.customElements.define('atom-styles', StylesElement);
 
+const createCustomElement = require('./create-custom-element');
+
 function createStylesElement() {
-  return document.createElement('atom-styles');
+  return createCustomElement('atom-styles', StylesElement);
 }
 
 module.exports = {

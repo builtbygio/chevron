@@ -45,8 +45,10 @@ class PaneContainerElement extends HTMLElement {
 
 window.customElements.define('atom-pane-container', PaneContainerElement);
 
+const createCustomElement = require('./create-custom-element');
+
 function createPaneContainerElement() {
-  return document.createElement('atom-pane-container');
+  return createCustomElement('atom-pane-container', PaneContainerElement);
 }
 
 module.exports = {

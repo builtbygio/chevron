@@ -215,11 +215,13 @@ class PaneElement extends HTMLElement {
   }
 }
 
-function createPaneElement() {
-  return document.createElement('atom-pane');
-}
-
 window.customElements.define('atom-pane', PaneElement);
+
+const createCustomElement = require('./create-custom-element');
+
+function createPaneElement() {
+  return createCustomElement('atom-pane', PaneElement);
+}
 
 module.exports = {
   createPaneElement

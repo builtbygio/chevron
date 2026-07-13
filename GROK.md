@@ -85,7 +85,7 @@ Uncommitted rebrand WIP was **discarded** with `git restore` (owner postponed fu
 | Package name | `atomnova-editor` |
 | productName | `AtomNova` |
 | Built app name | Still **Atom Dev** via `script/config.js` channel logic |
-| Security model | `nodeIntegration: true`, `contextIsolation: false`; **no** `@electron/remote` (IPC remote-compat) |
+| Security model | **`contextIsolation: true`**, `nodeIntegration: false` (page); Atom boots in **preload** (Node); no `@electron/remote` |
 | Telemetry | **Removed** — no metrics/exception-reporting packages; crash upload forced off; consent default `no` |
 | apm | Bundled Node **12.14.1**; registry/update still Atom-era |
 
@@ -110,8 +110,9 @@ Suggested order:
 
 3. **Security architecture**  
    - **Inventory:** `docs/remote-ipc-inventory.md`  
-   - **P0–P4 done:** no `@electron/remote`; `electron.remote` is IPC `remote-compat` (incl. github Menu + worker BrowserWindows)  
-   - Next: Electron 18; then true isolation (`contextIsolation` / no nodeIntegration) via preload
+   - **P0–P4 done:** no `@electron/remote`; IPC `remote-compat`  
+   - **Preload + contextIsolation done:** page has no Node; `static/preload.js` boots Atom; custom elements use `create-custom-element.js`  
+   - Next: Electron 18; then Phase N (narrow package Node surface / sandbox where possible)
 4. **Native modules + CI**  
    - Rebuild against each Electron ABI  
    - GitHub Actions for bootstrap/build/test on modern OS  

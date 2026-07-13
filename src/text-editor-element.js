@@ -359,7 +359,8 @@ class TextEditorElement extends HTMLElement {
   }
 
   static createTextEditorElement() {
-    return document.createElement('atom-text-editor');
+    const createCustomElement = require('./create-custom-element');
+    return createCustomElement('atom-text-editor', TextEditorElement);
   }
 }
 

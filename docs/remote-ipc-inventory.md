@@ -311,11 +311,22 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 - Main: `register-renderer-ipc.js` (worker windows, popup menus, dialogs, clipboard, …)
 - Bootstrap: `patch-packages-remote-ipc.js` + `patch-github-remote.js`
 
+### Preload + contextIsolation (done 2026-07-13)
+
+| Setting | Value |
+|---------|--------|
+| `contextIsolation` | `true` |
+| `nodeIntegration` (page) | `false` |
+| `sandbox` | `false` (preload needs natives) |
+| Boot | `static/preload.js` → `static/index.js` in preload world |
+| Page | `index.html` has no Node scripts |
+| Custom elements | `src/create-custom-element.js` (`new Class()` under isolation) |
+| GitHub workers | Still `contextIsolation: false` + `nodeIntegration: true` (trusted hidden windows) |
+
 ### Recommended next actions
 
 1. **Electron 18** ladder rung.  
-2. Phase I: real `preload` + `contextIsolation: true` (still allows package migration).  
-3. Phase N: `nodeIntegration: false` policy for packages.
+2. Phase N: reduce package reliance on Node in preload; evaluate sandbox for guest content.
 
 ---
 

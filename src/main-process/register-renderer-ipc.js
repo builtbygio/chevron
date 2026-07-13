@@ -359,15 +359,17 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   ipcMain.on('atom-create-browser-window-sync', (event, options = {}) => {
     try {
+      // GitHub git workers are trusted hidden windows: they need Node require()
+      // in the page (worker.js) and do not use the main Atom preload.
       const webPreferences = Object.assign(
         {
           nodeIntegration: true,
           contextIsolation: false,
+          sandbox: false,
           enableRemoteModule: false
         },
         options.webPreferences || {}
       );
-      // Remote is gone — workers use IPC only
       delete webPreferences.enableRemoteModule;
 
       const win = new BrowserWindow(
