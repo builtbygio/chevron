@@ -66,4 +66,11 @@ const app = {
   );
 });
 
+// github worker entry (no remote)
+try {
+  require('./patch-github-remote.js');
+} catch (error) {
+  console.error('patch-github-remote failed:', error.message);
+}
+
 console.log('package remote→IPC patches finished');

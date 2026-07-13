@@ -54,7 +54,9 @@ function createWindowProxy() {
       return ipcRenderer.sendSync('atom-window-startup-markers-sync');
     },
     get webContents() {
+      const wcId = ipcRenderer.sendSync('atom-get-web-contents-id-sync');
       return {
+        id: wcId,
         copy: () => webContentsCall('copy'),
         paste: () => webContentsCall('paste'),
         cut: () => webContentsCall('cut'),
@@ -62,7 +64,9 @@ function createWindowProxy() {
         redo: () => webContentsCall('redo'),
         selectAll: () => webContentsCall('selectAll'),
         executeJavaScript: (code, userGesture) =>
-          webContentsCall('executeJavaScript', code, userGesture)
+          webContentsCall('executeJavaScript', code, userGesture),
+        send: (channel, ...args) =>
+          ipcRenderer.send('atom-wc-send', wcId, channel, ...args)
       };
     },
     // showSaveDialog was patched onto BrowserWindow by AtomWindow; use IPC

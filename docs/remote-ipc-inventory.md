@@ -299,23 +299,23 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 
 | Phase | Status | Notes |
 |-------|--------|--------|
-| **P0** Boot load-settings / markers / error UI | **Done** | `renderer-ipc` + `register-renderer-ipc`; core no longer needs remote to boot |
+| **P0** Boot load-settings / markers / error UI | **Done** | `renderer-ipc` + `register-renderer-ipc` |
 | **P1** ApplicationDelegate | **Done** | Window proxy + dialog/screen/shell IPC |
 | **P2** Context menu, jump list, clipboard | **Done** | Core paths on IPC |
-| **P3** Bundled packages | **Partial** | settings-view + atom-pathspec patched; tabs/tree-view use `remote-compat` BrowserWindow.fromId shim; **github** still needs `@electron/remote` for `Menu` + worker `webContents` |
-| **P4** Remove `@electron/remote` | **Blocked** | github `Menu.popup` + multi-window worker remote APIs |
+| **P3** Bundled packages | **Done** | settings-view, atom-pathspec patches; github via full `remote-compat` (Menu, BrowserWindow workers) + `patch-github-remote.js` |
+| **P4** Remove `@electron/remote` | **Done** | Dependency removed; `electron.remote` = `src/remote-compat.js` only |
 
-### Architecture after P0–P2
+### Architecture after P4
 
-- Core: `src/renderer-ipc.js` ↔ `src/main-process/register-renderer-ipc.js`
-- Compat: `src/remote-compat.js` + Proxy over `@electron/remote` in `static/index.js` so packages get IPC for `getCurrentWindow`/`app` while Menu still hits real remote
-- Full removal of `@electron/remote` requires a **github package epic** (rewrite menus + workers)
+- Core + packages: `src/remote-compat.js` (Menu, BrowserWindow, dialog, app, webContents) over `src/renderer-ipc.js`
+- Main: `register-renderer-ipc.js` (worker windows, popup menus, dialogs, clipboard, …)
+- Bootstrap: `patch-packages-remote-ipc.js` + `patch-github-remote.js`
 
 ### Recommended next actions
 
-1. **Electron 18** ladder rung (core is remote-free for boot).  
-2. **github epic**: IPC menus (template + command dispatch) and worker transport without remote.  
-3. Then **P4**: drop `@electron/remote` dependency and polyfill Proxy.
+1. **Electron 18** ladder rung.  
+2. Phase I: real `preload` + `contextIsolation: true` (still allows package migration).  
+3. Phase N: `nodeIntegration: false` policy for packages.
 
 ---
 

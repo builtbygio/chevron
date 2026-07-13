@@ -85,7 +85,7 @@ Uncommitted rebrand WIP was **discarded** with `git restore` (owner postponed fu
 | Package name | `atomnova-editor` |
 | productName | `AtomNova` |
 | Built app name | Still **Atom Dev** via `script/config.js` channel logic |
-| Security model | `nodeIntegration: true`, `enableRemoteModule: true` (`src/main-process/atom-window.js`) |
+| Security model | `nodeIntegration: true`, `contextIsolation: false`; **no** `@electron/remote` (IPC remote-compat) |
 | Telemetry | **Removed** — no metrics/exception-reporting packages; crash upload forced off; consent default `no` |
 | apm | Bundled Node **12.14.1**; registry/update still Atom-era |
 
@@ -110,10 +110,8 @@ Suggested order:
 
 3. **Security architecture**  
    - **Inventory:** `docs/remote-ipc-inventory.md`  
-   - **P0–P2 done:** core boot + ApplicationDelegate + clipboard/context-menu via IPC (`src/renderer-ipc.js`)  
-   - **P3 partial / P4 blocked:** github still needs `@electron/remote` for Menu + workers; `remote-compat` covers getCurrentWindow/app for other packages  
-   - Next: Electron 18 **or** github remote epic; then isolation (`contextIsolation` / no nodeIntegration)
-
+   - **P0–P4 done:** no `@electron/remote`; `electron.remote` is IPC `remote-compat` (incl. github Menu + worker BrowserWindows)  
+   - Next: Electron 18; then true isolation (`contextIsolation` / no nodeIntegration) via preload
 4. **Native modules + CI**  
    - Rebuild against each Electron ABI  
    - GitHub Actions for bootstrap/build/test on modern OS  
@@ -147,7 +145,7 @@ Suggested order:
 | Snapshot without less prebuild | Full `script/build` only |
 | `superstring@2.4.4` vs Electron 14+ | Vendored `packages/superstring` with `GetBackingStore` patch (`2.4.4-atomnova.1`) |
 | Non-context-aware natives on Electron 12+ | `node script/lib/patch-natives-context-aware.js` then rebuild natives |
-| `electron.remote` on Electron 14+ | `@electron/remote` dependency + main/renderer wiring |
+| `electron.remote` on Electron 14+ | **Resolved:** `src/remote-compat.js` + `register-renderer-ipc.js` (no `@electron/remote`) |
 | `name === 'atom'` in main/module-cache | Dev repo detect may be wrong for `atomnova-editor` |
 | Packaged vs dev | Packaged uses snapshot; `--dev --resource-path=$PWD` skips it |
 | Nested superstring without `.node` | After rebuild, copy `packages/superstring` **including** `build/` into nested installs (force-patched script excludes `build/` on purpose) |

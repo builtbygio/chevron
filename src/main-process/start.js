@@ -13,13 +13,7 @@ const StartupTime = require('../startup-time');
 
 StartupTime.setStartTime();
 
-// Electron 14+: initialize @electron/remote before any BrowserWindow is created.
-// Must run once in the main process; each window also needs .enable(webContents).
-try {
-  require('@electron/remote/main').initialize();
-} catch (error) {
-  console.error('Failed to initialize @electron/remote:', error);
-}
+// @electron/remote removed — renderer uses IPC remote-compat (see remote-compat.js).
 
 module.exports = function start(resourcePath, devResourcePath, startTime) {
   global.shellStartTime = startTime;

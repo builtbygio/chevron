@@ -7,19 +7,32 @@
 
 const {
   BrowserWindow,
+  Menu,
   clipboard,
   dialog,
   ipcMain,
   screen,
   shell,
   app,
-  systemPreferences
+  systemPreferences,
+  webContents
 } = require('electron');
 
 let registered = false;
 
+// Hidden windows created for packages (e.g. github git workers)
+const createdWindows = new Map(); // windowId -> BrowserWindow
+
 function browserWindowFromEvent(event) {
   return BrowserWindow.fromWebContents(event.sender);
+}
+
+function resolveWindow(windowId) {
+  return (
+    createdWindows.get(windowId) ||
+    BrowserWindow.fromId(windowId) ||
+    null
+  );
 }
 
 module.exports = function registerRendererIpc(atomApplication) {
@@ -315,4 +328,176 @@ module.exports = function registerRendererIpc(atomApplication) {
       }
     }
   );
+
+  // --- WebContents id / send (github workers, sendTo) ------------------------
+
+  ipcMain.on('atom-get-web-contents-id-sync', event => {
+    event.returnValue = event.sender.id;
+  });
+
+  ipcMain.on('atom-wc-send', (event, webContentsId, channel, ...args) => {
+    try {
+      const wc = webContents.fromId(webContentsId);
+      if (wc && !wc.isDestroyed()) {
+        wc.send(channel, ...args);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  ipcMain.on('atom-wc-is-destroyed-sync', (event, webContentsId) => {
+    try {
+      const wc = webContents.fromId(webContentsId);
+      event.returnValue = !wc || wc.isDestroyed();
+    } catch (error) {
+      event.returnValue = true;
+    }
+  });
+
+  // --- Create BrowserWindow from renderer (github WorkerManager) ------------
+
+  ipcMain.on('atom-create-browser-window-sync', (event, options = {}) => {
+    try {
+      const webPreferences = Object.assign(
+        {
+          nodeIntegration: true,
+          contextIsolation: false,
+          enableRemoteModule: false
+        },
+        options.webPreferences || {}
+      );
+      // Remote is gone — workers use IPC only
+      delete webPreferences.enableRemoteModule;
+
+      const win = new BrowserWindow(
+        Object.assign({}, options, { webPreferences })
+      );
+      createdWindows.set(win.id, win);
+
+      const managerWc = event.sender;
+      const destroyWorker = () => {
+        if (!win.isDestroyed()) win.destroy();
+      };
+      // If the manager renderer dies, tear down its worker windows
+      managerWc.once('destroyed', destroyWorker);
+      managerWc.once('render-process-gone', destroyWorker);
+      managerWc.once('crashed', destroyWorker);
+
+      win.on('closed', () => {
+        createdWindows.delete(win.id);
+        try {
+          managerWc.removeListener('destroyed', destroyWorker);
+          managerWc.removeListener('render-process-gone', destroyWorker);
+          managerWc.removeListener('crashed', destroyWorker);
+        } catch (e) {
+          /* ignore */
+        }
+      });
+
+      // Forward worker crash to manager renderer
+      const forward = name => {
+        if (!managerWc.isDestroyed()) {
+          managerWc.send('atom-worker-window-event', {
+            windowId: win.id,
+            webContentsId: win.webContents.id,
+            event: name
+          });
+        }
+      };
+      win.webContents.on('crashed', () => forward('crashed'));
+      win.webContents.on('render-process-gone', () => forward('crashed'));
+      win.webContents.on('destroyed', () => forward('destroyed'));
+
+      event.returnValue = {
+        id: win.id,
+        webContentsId: win.webContents.id
+      };
+    } catch (error) {
+      console.error('atom-create-browser-window-sync', error);
+      event.returnValue = null;
+    }
+  });
+
+  ipcMain.on('atom-bw-id-call-sync', (event, windowId, method, ...args) => {
+    const win = resolveWindow(windowId);
+    if (!win || win.isDestroyed()) {
+      event.returnValue =
+        method === 'isDestroyed' ? true : method === 'destroy' ? true : null;
+      return;
+    }
+    try {
+      if (method === 'isDestroyed') {
+        event.returnValue = win.isDestroyed();
+        return;
+      }
+      if (method === 'destroy') {
+        win.destroy();
+        event.returnValue = true;
+        return;
+      }
+      if (method === 'loadURL') {
+        win.loadURL(args[0]);
+        event.returnValue = true;
+        return;
+      }
+      if (typeof win[method] === 'function') {
+        const result = win[method](...args);
+        event.returnValue = result === win ? true : result;
+        return;
+      }
+      event.returnValue = null;
+    } catch (error) {
+      console.error(`atom-bw-id-call-sync ${method}:`, error);
+      event.returnValue = null;
+    }
+  });
+
+  ipcMain.on('atom-destroy-own-window-sync', event => {
+    const win = browserWindowFromEvent(event);
+    if (win && !win.isDestroyed()) {
+      win.destroy();
+    }
+    event.returnValue = true;
+  });
+
+  // --- Popup menu with click callbacks (github) -----------------------------
+
+  ipcMain.on('atom-popup-menu', (event, sessionId, template) => {
+    const win = browserWindowFromEvent(event);
+    try {
+      const menu = Menu.buildFromTemplate(
+        (template || []).map(item => {
+          if (item.type === 'separator') {
+            return { type: 'separator' };
+          }
+          return {
+            label: item.label,
+            type: item.type,
+            enabled: item.enabled !== false,
+            checked: item.checked,
+            click: () => {
+              if (!event.sender.isDestroyed()) {
+                event.sender.send(
+                  'atom-popup-menu-click',
+                  sessionId,
+                  item.id
+                );
+              }
+            }
+          };
+        })
+      );
+      menu.popup({ window: win || undefined });
+    } catch (error) {
+      console.error('atom-popup-menu', error);
+    }
+  });
+
+  // --- Open dialog (github DirectorySelect) ---------------------------------
+
+  ipcMain.handle('atom-show-open-dialog', async (event, options) => {
+    const win = browserWindowFromEvent(event);
+    return dialog.showOpenDialog(win || undefined, options || {});
+  });
 };

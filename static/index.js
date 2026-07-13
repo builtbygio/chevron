@@ -4,25 +4,9 @@
   const startWindowTime = Date.now();
 
   const electron = require('electron');
-  // Prefer IPC-based remote-compat for getCurrentWindow/app; fall back to
-  // @electron/remote for Menu / advanced APIs still used by github package.
-  const remoteCompat = require('../src/remote-compat');
-  let electronRemote = null;
-  try {
-    electronRemote = require('@electron/remote');
-  } catch (e) {
-    console.warn('[@electron/remote] unavailable:', e.message);
-  }
-  if (electronRemote) {
-    electron.remote = new Proxy(electronRemote, {
-      get(target, prop) {
-        if (prop in remoteCompat) return remoteCompat[prop];
-        return target[prop];
-      }
-    });
-  } else {
-    electron.remote = remoteCompat;
-  }
+  // Full IPC-based remote compatibility — no @electron/remote.
+  // Core and packages (including github) use this surface.
+  electron.remote = require('../src/remote-compat');
   const path = require('path');
   const Module = require('module');
   const rendererIpc = require('../src/renderer-ipc');
