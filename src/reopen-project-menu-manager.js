@@ -67,13 +67,9 @@ module.exports = class ReopenProjectMenuManager {
   // each time we remove them from history entirely.
   async applyWindowsJumpListRemovals() {
     if (process.platform !== 'win32') return;
-    if (this.app === undefined) {
-      this.app = require('electron').remote.app;
-    }
-
-    const removed = this.app
-      .getJumpListSettings()
-      .removedItems.map(i => i.description);
+    const rendererIpc = require('./renderer-ipc');
+    const settings = rendererIpc.getJumpListSettings() || { removedItems: [] };
+    const removed = (settings.removedItems || []).map(i => i.description);
     if (removed.length === 0) return;
     for (let project of this.historyManager.getProjects()) {
       if (
@@ -88,11 +84,9 @@ module.exports = class ReopenProjectMenuManager {
 
   updateWindowsJumpList() {
     if (process.platform !== 'win32') return;
-    if (this.app === undefined) {
-      this.app = require('electron').remote.app;
-    }
+    const rendererIpc = require('./renderer-ipc');
 
-    this.app.setJumpList([
+    rendererIpc.setJumpList([
       {
         type: 'custom',
         name: 'Recent Projects',

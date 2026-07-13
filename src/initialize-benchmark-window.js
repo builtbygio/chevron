@@ -1,7 +1,7 @@
-const { remote } = require('electron');
 const path = require('path');
 const ipcHelpers = require('./ipc-helpers');
 const util = require('util');
+const rendererIpc = require('./renderer-ipc');
 
 module.exports = async function() {
   const getWindowLoadSettings = require('./get-window-load-settings');
@@ -86,11 +86,6 @@ module.exports = async function() {
     global.atom.menu.sendToBrowserProcess = function() {};
 
     if (headless) {
-      Object.defineProperties(process, {
-        stdout: { value: remote.process.stdout },
-        stderr: { value: remote.process.stderr }
-      });
-
       console.log = function(...args) {
         const formatted = util.format(...args);
         process.stdout.write(formatted + '\n');
@@ -104,7 +99,7 @@ module.exports = async function() {
         process.stderr.write(formatted + '\n');
       };
     } else {
-      remote.getCurrentWindow().show();
+      rendererIpc.getWindowProxy().show();
     }
 
     const benchmarkRunner = require('../benchmarks/benchmark-runner');
@@ -124,6 +119,5 @@ module.exports = async function() {
 };
 
 function exitWithStatusCode(statusCode) {
-  remote.app.emit('will-quit');
-  remote.process.exit(statusCode);
+  process.exit(statusCode);
 }

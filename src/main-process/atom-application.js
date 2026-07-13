@@ -243,6 +243,8 @@ module.exports = class AtomApplication extends EventEmitter {
 
     this.disposable = new CompositeDisposable();
     this.handleEvents();
+    // IPC for renderers that no longer use electron.remote (P0–P2 security ladder)
+    require('./register-renderer-ipc')(this);
 
     StartupTime.addMarker('main-process:atom-application:constructor:end');
   }

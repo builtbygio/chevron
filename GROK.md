@@ -109,10 +109,10 @@ Suggested order:
    - Inventory `remote` usage (core + packages) and native modules  
 
 3. **Security architecture**  
-   - **Inventory done:** `docs/remote-ipc-inventory.md` (kill-list P0–P4, existing IPC map)  
-   - Replace `electron.remote` with IPC + **preload** (start at P0 load-settings inject)  
-   - `contextIsolation: true`, `nodeIntegration: false`  
-   - Temporary `@electron/remote` until P4; then remove
+   - **Inventory:** `docs/remote-ipc-inventory.md`  
+   - **P0–P2 done:** core boot + ApplicationDelegate + clipboard/context-menu via IPC (`src/renderer-ipc.js`)  
+   - **P3 partial / P4 blocked:** github still needs `@electron/remote` for Menu + workers; `remote-compat` covers getCurrentWindow/app for other packages  
+   - Next: Electron 18 **or** github remote epic; then isolation (`contextIsolation` / no nodeIntegration)
 
 4. **Native modules + CI**  
    - Rebuild against each Electron ABI  

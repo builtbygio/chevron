@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { clipboard } = require('electron');
+const rendererIpc = require('./renderer-ipc');
 
 // Extended: Represents the clipboard used for copying and pasting in Atom.
 //
@@ -46,26 +46,26 @@ module.exports = class Clipboard {
 
     this.signatureForMetadata = this.md5(text);
     this.metadata = metadata;
-    clipboard.writeText(text);
+    rendererIpc.clipboardWriteText(text);
   }
 
   // Public: Read the text from the clipboard.
   //
   // Returns a {String}.
   read() {
-    return clipboard.readText();
+    return rendererIpc.clipboardReadText();
   }
 
   // Public: Write the given text to the macOS find pasteboard
   writeFindText(text) {
-    clipboard.writeFindText(text);
+    rendererIpc.clipboardWriteFindText(text);
   }
 
   // Public: Read the text from the macOS find pasteboard.
   //
   // Returns a {String}.
   readFindText() {
-    return clipboard.readFindText();
+    return rendererIpc.clipboardReadFindText();
   }
 
   // Public: Read the text from the clipboard and return both the text and the

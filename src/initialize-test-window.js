@@ -10,17 +10,22 @@ function cloneObject(object) {
 }
 
 module.exports = async function({ blobStore }) {
-  const { remote } = require('electron');
+  const { ipcRenderer } = require('electron');
+  const rendererIpc = require('./renderer-ipc');
   const getWindowLoadSettings = require('./get-window-load-settings');
 
   const exitWithStatusCode = function(status) {
-    remote.app.emit('will-quit');
-    remote.process.exit(status);
+    // Best-effort: notify main then exit renderer process group via IPC
+    try {
+      ipcRenderer.send('command', 'application:quit');
+    } catch (e) {
+      /* ignore */
+    }
+    process.exit(status);
   };
 
   try {
     const path = require('path');
-    const { ipcRenderer } = require('electron');
     const CompileCache = require('./compile-cache');
     const AtomEnvironment = require('../src/atom-environment');
     const ApplicationDelegate = require('../src/application-delegate');
@@ -44,11 +49,6 @@ module.exports = async function({ blobStore }) {
       // Install console functions that output to stdout and stderr.
       const util = require('util');
 
-      Object.defineProperties(process, {
-        stdout: { value: remote.process.stdout },
-        stderr: { value: remote.process.stderr }
-      });
-
       console.log = (...args) =>
         process.stdout.write(`${util.format(...args)}\n`);
       console.error = (...args) =>
@@ -56,7 +56,7 @@ module.exports = async function({ blobStore }) {
     } else {
       // Show window synchronously so a focusout doesn't fire on input elements
       // that are focused in the very first spec run.
-      remote.getCurrentWindow().show();
+      rendererIpc.getWindowProxy().show();
     }
 
     const handleKeydown = function(event) {

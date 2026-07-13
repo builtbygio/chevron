@@ -1,12 +1,13 @@
-// remote is polyfilled onto electron in static/index.js for Electron 14+.
-// Keep this free of @electron/remote so it can live in the startup snapshot.
-const { remote } = require('electron');
+// Load settings without electron.remote (IPC to main).
+// Safe for the startup snapshot: only uses ipcRenderer at call time.
+const rendererIpc = require('./renderer-ipc');
 
 let windowLoadSettings = null;
 
 module.exports = () => {
   if (!windowLoadSettings) {
-    windowLoadSettings = JSON.parse(remote.getCurrentWindow().loadSettingsJSON);
+    const json = rendererIpc.getLoadSettingsJSON();
+    windowLoadSettings = JSON.parse(json || '{}');
   }
   return windowLoadSettings;
 };

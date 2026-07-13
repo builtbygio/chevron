@@ -1,7 +1,7 @@
-// remote is polyfilled onto electron in static/index.js for Electron 14+.
-// Do not require('@electron/remote') here — this file is in the startup snapshot.
-const { ipcRenderer, remote, shell } = require('electron');
+// ApplicationDelegate talks to main via IPC (no electron.remote for core paths).
+const { ipcRenderer } = require('electron');
 const ipcHelpers = require('./ipc-helpers');
+const rendererIpc = require('./renderer-ipc');
 const { Emitter, Disposable } = require('event-kit');
 const getWindowLoadSettings = require('./get-window-load-settings');
 
@@ -39,7 +39,7 @@ module.exports = class ApplicationDelegate {
   }
 
   getCurrentWindow() {
-    return remote.getCurrentWindow();
+    return rendererIpc.getWindowProxy();
   }
 
   closeWindow() {
@@ -56,7 +56,8 @@ module.exports = class ApplicationDelegate {
   }
 
   getWindowSize() {
-    const [width, height] = Array.from(remote.getCurrentWindow().getSize());
+    const size = rendererIpc.getWindowProxy().getSize();
+    const [width, height] = Array.from(size || [0, 0]);
     return { width, height };
   }
 
@@ -65,7 +66,8 @@ module.exports = class ApplicationDelegate {
   }
 
   getWindowPosition() {
-    const [x, y] = Array.from(remote.getCurrentWindow().getPosition());
+    const pos = rendererIpc.getWindowProxy().getPosition();
+    const [x, y] = Array.from(pos || [0, 0]);
     return { x, y };
   }
 
@@ -102,7 +104,7 @@ module.exports = class ApplicationDelegate {
   }
 
   isWindowMaximized() {
-    return remote.getCurrentWindow().isMaximized();
+    return rendererIpc.getWindowProxy().isMaximized();
   }
 
   maximizeWindow() {
@@ -114,7 +116,7 @@ module.exports = class ApplicationDelegate {
   }
 
   isWindowFullScreen() {
-    return remote.getCurrentWindow().isFullScreen();
+    return rendererIpc.getWindowProxy().isFullScreen();
   }
 
   setWindowFullScreen(fullScreen = false) {
@@ -130,25 +132,16 @@ module.exports = class ApplicationDelegate {
   }
 
   async openWindowDevTools() {
-    // Defer DevTools interaction to the next tick, because using them during
-    // event handling causes some wrong input events to be triggered on
-    // `TextEditorComponent` (Ref.: https://github.com/atom/atom/issues/9697).
     await new Promise(process.nextTick);
     return ipcHelpers.call('window-method', 'openDevTools');
   }
 
   async closeWindowDevTools() {
-    // Defer DevTools interaction to the next tick, because using them during
-    // event handling causes some wrong input events to be triggered on
-    // `TextEditorComponent` (Ref.: https://github.com/atom/atom/issues/9697).
     await new Promise(process.nextTick);
     return ipcHelpers.call('window-method', 'closeDevTools');
   }
 
   async toggleWindowDevTools() {
-    // Defer DevTools interaction to the next tick, because using them during
-    // event handling causes some wrong input events to be triggered on
-    // `TextEditorComponent` (Ref.: https://github.com/atom/atom/issues/9697).
     await new Promise(process.nextTick);
     return ipcHelpers.call('window-method', 'toggleDevTools');
   }
@@ -186,15 +179,15 @@ module.exports = class ApplicationDelegate {
   }
 
   setWindowMenuBarVisibility(visible) {
-    return remote.getCurrentWindow().setMenuBarVisibility(visible);
+    return rendererIpc.getWindowProxy().setMenuBarVisibility(visible);
   }
 
   getPrimaryDisplayWorkAreaSize() {
-    return remote.screen.getPrimaryDisplay().workAreaSize;
+    return rendererIpc.getPrimaryDisplayWorkAreaSize();
   }
 
   getUserDefault(key, type) {
-    return remote.systemPreferences.getUserDefault(key, type);
+    return rendererIpc.getUserDefault(key, type);
   }
 
   async setUserSettings(config, configFilePath) {
@@ -225,19 +218,14 @@ module.exports = class ApplicationDelegate {
 
   confirm(options, callback) {
     if (typeof callback === 'function') {
-      // Async version: pass options directly to Electron but set sane defaults
       options = Object.assign(
         { type: 'info', normalizeAccessKeys: true },
         options
       );
-      remote.dialog
-        .showMessageBox(remote.getCurrentWindow(), options)
-        .then(result => {
-          callback(result.response, result.checkboxChecked);
-        });
+      rendererIpc.showMessageBox(options).then(result => {
+        callback(result.response, result.checkboxChecked);
+      });
     } else {
-      // Legacy sync version: options can only have `message`,
-      // `detailedMessage` (optional), and buttons array or object (optional)
       let { message, detailedMessage, buttons } = options;
 
       let buttonLabels;
@@ -248,22 +236,19 @@ module.exports = class ApplicationDelegate {
         buttonLabels = Object.keys(buttons);
       }
 
-      const chosen = remote.dialog.showMessageBoxSync(
-        remote.getCurrentWindow(),
-        {
-          type: 'info',
-          message,
-          detail: detailedMessage,
-          buttons: buttonLabels,
-          normalizeAccessKeys: true
-        }
-      );
+      const chosen = rendererIpc.showMessageBoxSync({
+        type: 'info',
+        message,
+        detail: detailedMessage,
+        buttons: buttonLabels,
+        normalizeAccessKeys: true
+      });
 
       if (Array.isArray(buttons)) {
         return chosen;
       } else {
-        const callback = buttons[buttonLabels[chosen]];
-        if (typeof callback === 'function') return callback();
+        const buttonCallback = buttons[buttonLabels[chosen]];
+        if (typeof buttonCallback === 'function') return buttonCallback();
       }
     }
   }
@@ -272,10 +257,8 @@ module.exports = class ApplicationDelegate {
 
   showSaveDialog(options, callback) {
     if (typeof callback === 'function') {
-      // Async
       this.getCurrentWindow().showSaveDialog(options, callback);
     } else {
-      // Sync
       if (typeof options === 'string') {
         options = { defaultPath: options };
       }
@@ -284,7 +267,7 @@ module.exports = class ApplicationDelegate {
   }
 
   playBeepSound() {
-    return shell.beep();
+    return rendererIpc.beep();
   }
 
   onDidOpenLocations(callback) {
@@ -292,9 +275,6 @@ module.exports = class ApplicationDelegate {
   }
 
   onUpdateAvailable(callback) {
-    // TODO: Yes, this is strange that `onUpdateAvailable` is listening for
-    // `did-begin-downloading-update`. We currently have no mechanism to know
-    // if there is an update, so begin of downloading is a good proxy.
     return this.ipcMessageEmitter().on(
       'did-begin-downloading-update',
       callback
@@ -374,7 +354,7 @@ module.exports = class ApplicationDelegate {
   }
 
   openExternal(url) {
-    return shell.openExternal(url);
+    return rendererIpc.openExternal(url);
   }
 
   checkForUpdate() {

@@ -4,13 +4,28 @@
   const startWindowTime = Date.now();
 
   const electron = require('electron');
-  // Electron 14 removed the built-in remote module. Expose @electron/remote as
-  // electron.remote so core and community packages keep working unchanged.
-  if (!electron.remote) {
-    electron.remote = require('@electron/remote');
+  // Prefer IPC-based remote-compat for getCurrentWindow/app; fall back to
+  // @electron/remote for Menu / advanced APIs still used by github package.
+  const remoteCompat = require('../src/remote-compat');
+  let electronRemote = null;
+  try {
+    electronRemote = require('@electron/remote');
+  } catch (e) {
+    console.warn('[@electron/remote] unavailable:', e.message);
+  }
+  if (electronRemote) {
+    electron.remote = new Proxy(electronRemote, {
+      get(target, prop) {
+        if (prop in remoteCompat) return remoteCompat[prop];
+        return target[prop];
+      }
+    });
+  } else {
+    electron.remote = remoteCompat;
   }
   const path = require('path');
   const Module = require('module');
+  const rendererIpc = require('../src/renderer-ipc');
   const getWindowLoadSettings = require('../src/get-window-load-settings');
   const getReleaseChannel = require('../src/get-release-channel');
   const StartupTime = require('../src/startup-time');
@@ -18,7 +33,7 @@
   let blobStore = null;
   let useSnapshot = false;
 
-  const startupMarkers = electron.remote.getCurrentWindow().startupMarkers;
+  const startupMarkers = rendererIpc.getStartupMarkers();
 
   if (startupMarkers) {
     StartupTime.importData(startupMarkers);
@@ -128,7 +143,7 @@
   }
 
   function handleSetupError(error) {
-    const currentWindow = electron.remote.getCurrentWindow();
+    const currentWindow = rendererIpc.getWindowProxy();
     currentWindow.setSize(800, 600);
     currentWindow.center();
     currentWindow.show();
@@ -214,15 +229,10 @@
       });
     }
 
-    const webContents = electron.remote.getCurrentWindow().webContents;
-    if (webContents.devToolsWebContents) {
-      profile();
-    } else {
-      webContents.once('devtools-opened', () => {
-        setTimeout(profile, 1000);
-      });
-      webContents.openDevTools();
-    }
+    // Profile startup via IPC window proxy (no remote)
+    const currentWindow = rendererIpc.getWindowProxy();
+    currentWindow.openDevTools();
+    setTimeout(profile, 1500);
   }
 
   function setupAtomHome() {

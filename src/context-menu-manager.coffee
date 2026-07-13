@@ -3,7 +3,7 @@ CSON = require 'season'
 fs = require 'fs-plus'
 {calculateSpecificity, validateSelector} = require 'clear-cut'
 {Disposable} = require 'event-kit'
-{remote} = require 'electron'
+rendererIpc = require './renderer-ipc'
 MenuHelpers = require './menu-helpers'
 {sortMenuItems} = require './menu-sort-helpers'
 _ = require 'underscore-plus'
@@ -210,7 +210,7 @@ class ContextMenuManager
     menuTemplate = @templateForEvent(event)
 
     return unless menuTemplate?.length > 0
-    remote.getCurrentWindow().emit('context-menu', menuTemplate)
+    rendererIpc.sendContextMenu(menuTemplate)
     return
 
   clear: ->

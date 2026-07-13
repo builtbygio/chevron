@@ -295,13 +295,27 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 
 ---
 
-## 9. Recommended next actions
+## 9. Implementation status (2026-07-13)
 
-1. Implement **P0**: inject `loadSettingsJSON` (and markers) without remote; prove packaged boot.  
-2. Implement **P1** getters + dialogs behind `ApplicationDelegate`.  
-3. Start **Electron 18** rung when P0 is green (or in parallel if staffing allows).  
-4. Patch **settings-view** / **tabs** / **tree-view** next; schedule **github** as its own epic.  
-5. Keep this file updated as items move to Done.
+| Phase | Status | Notes |
+|-------|--------|--------|
+| **P0** Boot load-settings / markers / error UI | **Done** | `renderer-ipc` + `register-renderer-ipc`; core no longer needs remote to boot |
+| **P1** ApplicationDelegate | **Done** | Window proxy + dialog/screen/shell IPC |
+| **P2** Context menu, jump list, clipboard | **Done** | Core paths on IPC |
+| **P3** Bundled packages | **Partial** | settings-view + atom-pathspec patched; tabs/tree-view use `remote-compat` BrowserWindow.fromId shim; **github** still needs `@electron/remote` for `Menu` + worker `webContents` |
+| **P4** Remove `@electron/remote` | **Blocked** | github `Menu.popup` + multi-window worker remote APIs |
+
+### Architecture after P0–P2
+
+- Core: `src/renderer-ipc.js` ↔ `src/main-process/register-renderer-ipc.js`
+- Compat: `src/remote-compat.js` + Proxy over `@electron/remote` in `static/index.js` so packages get IPC for `getCurrentWindow`/`app` while Menu still hits real remote
+- Full removal of `@electron/remote` requires a **github package epic** (rewrite menus + workers)
+
+### Recommended next actions
+
+1. **Electron 18** ladder rung (core is remote-free for boot).  
+2. **github epic**: IPC menus (template + command dispatch) and worker transport without remote.  
+3. Then **P4**: drop `@electron/remote` dependency and polyfill Proxy.
 
 ---
 
