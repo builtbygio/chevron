@@ -29,27 +29,19 @@ function getPathsToTranspile() {
     })
   );
   for (let packageName of Object.keys(CONFIG.appMetadata.packageDependencies)) {
+    const packageRoot = path.join(
+      CONFIG.intermediateAppPath,
+      'node_modules',
+      packageName
+    );
     paths = paths.concat(
-      glob.sync(
-        path.join(
-          CONFIG.intermediateAppPath,
-          'node_modules',
-          packageName,
-          '**',
-          '*.coffee'
-        ),
-        {
-          ignore: path.join(
-            CONFIG.intermediateAppPath,
-            'node_modules',
-            packageName,
-            'spec',
-            '**',
-            '*.coffee'
-          ),
-          nodir: true
-        }
-      )
+      glob.sync(path.join(packageRoot, '**', '*.coffee'), {
+        ignore: [
+          path.join(packageRoot, 'spec', '**', '*.coffee'),
+          path.join(packageRoot, 'node_modules', '**', '*.coffee')
+        ],
+        nodir: true
+      })
     );
   }
   return paths;

@@ -5,6 +5,7 @@ const glob = require('glob');
 const path = require('path');
 
 const CONFIG = require('../config');
+
 module.exports = function() {
   if (process.platform === 'win32') {
     console.log(
@@ -21,16 +22,43 @@ module.exports = function() {
   }
 };
 
+function isForeignPlatformBinary(binaryPath) {
+  // prebuild-install layout: .../prebuilds/<platform>-<arch>/*.node
+  const match = binaryPath.match(
+    /[/\\]prebuilds[/\\]([^/\\]+)[/\\][^/\\]+\.node$/i
+  );
+  if (!match) {
+    return false;
+  }
+  const tag = match[1].toLowerCase(); // e.g. darwin-x64, win32-ia32, linux-arm64
+  const platform = process.platform.toLowerCase();
+  // Accept tags that start with the current platform (darwin, linux, win32)
+  return tag.indexOf(platform) !== 0;
+}
+
 function dumpSymbol(binaryPath) {
   const minidump = require('minidump');
 
   return new Promise(function(resolve, reject) {
+    // AtomNova: nested deps (e.g. leveldown under github) ship multi-platform
+    // prebuilds; minidump only understands the host Mach-O/ELF format.
+    if (isForeignPlatformBinary(binaryPath)) {
+      return resolve();
+    }
+
     minidump.dumpSymbol(binaryPath, function(error, content) {
       if (error) {
         // fswin.node is only used on windows, ignore the error on other platforms
         if (process.platform !== 'win32' && binaryPath.match(/fswin.node/))
           return resolve();
-        throw new Error(error);
+        // Soft-fail other unloadable binaries (wrong arch, corrupted, etc.)
+        console.warn(
+          `Skipping symbols for ${path.relative(
+            CONFIG.intermediateAppPath,
+            binaryPath
+          )}: ${error}`
+        );
+        return resolve();
       } else {
         const moduleLine = /MODULE [^ ]+ [^ ]+ ([0-9A-F]+) (.*)\n/.exec(
           content

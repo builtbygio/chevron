@@ -77,7 +77,7 @@ Uncommitted rebrand WIP was **discarded** with `git restore` (owner postponed fu
 
 | Item | Value |
 |------|--------|
-| Electron | **11.5.0** (EOL) |
+| Electron | **14.2.9** (upgrade in progress from 11.5; bootstrap may need native patches) |
 | Package name | `atomnova-editor` |
 | productName | `AtomNova` |
 | Built app name | Still **Atom Dev** via `script/config.js` channel logic |
@@ -140,6 +140,7 @@ Suggested order:
 | Python ≥ 3.12 | Use 3.11 + `python` shim |
 | `atom.io/download/electron` dead | `ATOM_ELECTRON_URL=https://www.electronjs.org/headers` |
 | Snapshot without less prebuild | Full `script/build` only |
+| `superstring@2.4.4` vs Electron 14+ | Vendored `packages/superstring` with `GetBackingStore` patch (`2.4.4-atomnova.1`) |
 | `name === 'atom'` in main/module-cache | Dev repo detect may be wrong for `atomnova-editor` |
 | Packaged vs dev | Packaged uses snapshot; `--dev --resource-path=$PWD` skips it |
 

@@ -127,15 +127,7 @@ module.exports = function() {
 
       // Cache styles for all bundled non-theme packages
       for (let nonThemePackage of nonThemePackages) {
-        for (let lessFilePath of glob.sync(
-          path.join(
-            CONFIG.intermediateAppPath,
-            'node_modules',
-            nonThemePackage,
-            '**',
-            '*.less'
-          )
-        )) {
+        for (let lessFilePath of packageLessFiles(nonThemePackage)) {
           cacheCompiledCSS(lessCache, lessFilePath, true);
         }
       }
@@ -148,15 +140,7 @@ module.exports = function() {
         'index.less'
       );
       cacheCompiledCSS(lessCache, uiThemeMainPath, true);
-      for (let lessFilePath of glob.sync(
-        path.join(
-          CONFIG.intermediateAppPath,
-          'node_modules',
-          uiTheme,
-          '**',
-          '*.less'
-        )
-      )) {
+      for (let lessFilePath of packageLessFiles(uiTheme)) {
         if (lessFilePath !== uiThemeMainPath) {
           saveIntoSnapshotAuxiliaryData(
             lessFilePath,
@@ -173,15 +157,7 @@ module.exports = function() {
         'index.less'
       );
       cacheCompiledCSS(lessCache, syntaxThemeMainPath, true);
-      for (let lessFilePath of glob.sync(
-        path.join(
-          CONFIG.intermediateAppPath,
-          'node_modules',
-          syntaxTheme,
-          '**',
-          '*.less'
-        )
-      )) {
+      for (let lessFilePath of packageLessFiles(syntaxTheme)) {
         if (lessFilePath !== syntaxThemeMainPath) {
           saveIntoSnapshotAuxiliaryData(
             lessFilePath,
@@ -192,15 +168,7 @@ module.exports = function() {
     }
   }
 
-  for (let lessFilePath of glob.sync(
-    path.join(
-      CONFIG.intermediateAppPath,
-      'node_modules',
-      'atom-ui',
-      '**',
-      '*.less'
-    )
-  )) {
+  for (let lessFilePath of packageLessFiles('atom-ui')) {
     saveIntoSnapshotAuxiliaryData(
       lessFilePath,
       fs.readFileSync(lessFilePath, 'utf8')
@@ -216,3 +184,17 @@ module.exports = function() {
     saveIntoSnapshotAuxiliaryData(lessFilePath, lessSource);
   }
 };
+
+// AtomNova: package styles only — never compile nested dependency Less
+// (e.g. github/node_modules/react-select uses mixins Atom's less-cache lacks).
+function packageLessFiles(packageName) {
+  const packageRoot = path.join(
+    CONFIG.intermediateAppPath,
+    'node_modules',
+    packageName
+  );
+  return glob.sync(path.join(packageRoot, '**', '*.less'), {
+    ignore: path.join(packageRoot, 'node_modules', '**', '*.less'),
+    nodir: true
+  });
+}

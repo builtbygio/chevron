@@ -8,6 +8,7 @@ const path = require('path');
 const CONFIG = require('../config');
 const backupNodeModules = require('./backup-node-modules');
 const runApmInstall = require('./run-apm-install');
+const linkPackageNativesToRoot = require('./link-package-natives-to-root');
 
 require('colors');
 
@@ -41,7 +42,12 @@ module.exports = function() {
 
       // Run `apm install` in the *root* package's path, so we get devDeps w/o apm's weird caching
       // Then copy this folder into the intermediate package's path so we can run the transpilation in-line.
-      runApmInstall(rootPackagePath);
+      // AtomNova: skip native install scripts — package-local apm install would rebuild
+      // unpatched superstring/keytar (Electron 14-incompatible) from the registry.
+      // We only need JS deps for atomTranspilers (Babel); natives are already built at repo root.
+      runApmInstall(rootPackagePath, false, 'inherit', { ignoreScripts: true });
+      linkPackageNativesToRoot(CONFIG.repositoryRootPath, rootPackagePath);
+
       if (fs.existsSync(intermediatePackageBackup.nodeModulesPath)) {
         fs.removeSync(intermediatePackageBackup.nodeModulesPath);
       }

@@ -341,22 +341,44 @@ module.exports = function(packagedAppPath) {
       startupBlobDestinationPath = packagedAppPath;
     }
 
-    const snapshotBinaries = ['v8_context_snapshot.bin', 'snapshot_blob.bin'];
+    // Electron 11 mksnapshot wrote v8_context_snapshot.bin; Electron 14+ writes
+    // an arch-suffixed name on macOS (v8_context_snapshot.x86_64.bin / .arm64.bin).
+    const snapshotBinaries = [
+      {
+        candidates: [
+          process.arch === 'arm64'
+            ? 'v8_context_snapshot.arm64.bin'
+            : 'v8_context_snapshot.x86_64.bin',
+          'v8_context_snapshot.bin'
+        ],
+        destination:
+          process.platform === 'darwin'
+            ? process.arch === 'arm64'
+              ? 'v8_context_snapshot.arm64.bin'
+              : 'v8_context_snapshot.x86_64.bin'
+            : 'v8_context_snapshot.bin'
+      },
+      {
+        candidates: ['snapshot_blob.bin'],
+        destination: 'snapshot_blob.bin'
+      }
+    ];
+
     for (let snapshotBinary of snapshotBinaries) {
-      let destinationPath = path.join(
-        startupBlobDestinationPath,
-        snapshotBinary
-      );
-      if (
-        process.platform === 'darwin' &&
-        snapshotBinary === 'v8_context_snapshot.bin'
-      ) {
-        // TODO: check if we're building for arm64 and use the arm64 version of the binary
-        destinationPath = path.join(
-          startupBlobDestinationPath,
-          'v8_context_snapshot.x86_64.bin'
+      const sourcePath = snapshotBinary.candidates
+        .map(name => path.join(CONFIG.buildOutputPath, name))
+        .find(candidate => fs.existsSync(candidate));
+      if (!sourcePath) {
+        throw new Error(
+          `mksnapshot did not produce any of: ${snapshotBinary.candidates.join(
+            ', '
+          )}`
         );
       }
+      const destinationPath = path.join(
+        startupBlobDestinationPath,
+        snapshotBinary.destination
+      );
       console.log(`Moving generated startup blob into "${destinationPath}"`);
       try {
         fs.unlinkSync(destinationPath);
@@ -366,10 +388,7 @@ module.exports = function(packagedAppPath) {
           throw err;
         }
       }
-      fs.renameSync(
-        path.join(CONFIG.buildOutputPath, snapshotBinary),
-        destinationPath
-      );
+      fs.renameSync(sourcePath, destinationPath);
     }
   });
 };

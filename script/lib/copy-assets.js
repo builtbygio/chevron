@@ -53,6 +53,13 @@ module.exports = function() {
       fs.copySync(modulePath, destPath, { filter: includePathInPackagedApp });
     });
 
+  // AtomNova: force-patched natives may leave nested absolute symlinks
+  // (e.g. text-buffer/node_modules/superstring → repo root). asar cannot
+  // pack links that escape the app directory — materialize them as copies.
+  materializeExternalSymlinks(
+    path.join(CONFIG.intermediateAppPath, 'node_modules')
+  );
+
   fs.copySync(
     path.join(
       CONFIG.repositoryRootPath,
@@ -65,6 +72,67 @@ module.exports = function() {
     path.join(CONFIG.intermediateAppPath, 'resources', 'atom.png')
   );
 };
+
+function materializeExternalSymlinks(rootDir) {
+  if (!fs.existsSync(rootDir)) {
+    return;
+  }
+
+  const rootResolved = path.resolve(rootDir);
+  const stack = [rootDir];
+
+  while (stack.length) {
+    const dir = stack.pop();
+    let entries;
+    try {
+      entries = fs.readdirSync(dir);
+    } catch (e) {
+      continue;
+    }
+
+    for (const entry of entries) {
+      const full = path.join(dir, entry);
+      let stat;
+      try {
+        stat = fs.lstatSync(full);
+      } catch (e) {
+        continue;
+      }
+
+      if (stat.isSymbolicLink()) {
+        let target;
+        try {
+          target = fs.realpathSync(full);
+        } catch (e) {
+          // Broken link — drop it so packaging does not fail later
+          fs.removeSync(full);
+          continue;
+        }
+        const targetResolved = path.resolve(target);
+        // If the link target is outside the intermediate node_modules tree,
+        // replace the symlink with a real copy (required for asar).
+        if (
+          targetResolved !== full &&
+          !targetResolved.startsWith(rootResolved + path.sep) &&
+          targetResolved !== rootResolved
+        ) {
+          console.log(
+            `  materializing external symlink ${path.relative(
+              CONFIG.intermediateAppPath,
+              full
+            )}`
+          );
+          fs.removeSync(full);
+          fs.copySync(targetResolved, full, { dereference: true });
+        } else if (fs.statSync(full).isDirectory()) {
+          stack.push(full);
+        }
+      } else if (stat.isDirectory()) {
+        stack.push(full);
+      }
+    }
+  }
+}
 
 function computeDestinationPath(srcPath) {
   const relativePath = path.relative(CONFIG.repositoryRootPath, srcPath);

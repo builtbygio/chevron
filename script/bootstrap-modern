@@ -112,9 +112,11 @@ export ATOM_RESOURCE_PATH="$REPO_ROOT"
 # Clear Node-12 targeting so apm uses Electron runtime from package.json
 unset npm_config_target npm_config_runtime npm_config_disturl npm_config_build_from_source || true
 
-echo "Installing application dependencies (apm install)…"
-# Ensure electron URL is set for apm
+echo "Installing application dependencies (apm install, scripts deferred)…"
+# Skip install scripts so nested registry superstring cannot fail the build
+# before we replace it with packages/superstring (Electron 14+ V8 patch).
 export ATOM_ELECTRON_URL="${ATOM_ELECTRON_URL:-https://www.electronjs.org/headers}"
+export npm_config_ignore_scripts=true
 node <<'NODE'
 'use strict';
 const CONFIG = require('./script/config');
@@ -126,6 +128,40 @@ process.on('unhandledRejection', e => {
 });
 runApmInstall(CONFIG.repositoryRootPath, ci);
 NODE
+unset npm_config_ignore_scripts
+
+# shellcheck disable=SC1091
+. "$SCRIPT_DIR/lib/force-patched-superstring.sh"
+atomnova_force_patched_superstring "$REPO_ROOT"
+
+echo "Rebuilding native modules for Electron ${ELECTRON_VERSION:-}…"
+# Rebuild against Electron (not host Node). apm sets target from package.json.
+export ATOM_RESOURCE_PATH="$REPO_ROOT"
+export ATOM_ELECTRON_URL="${ATOM_ELECTRON_URL:-https://www.electronjs.org/headers}"
+# apm rebuild compiles all packages that have binding.gyp for current Electron
+if "$REPO_ROOT/apm/node_modules/atom-package-manager/bin/apm" rebuild 2>/dev/null; then
+  echo "apm rebuild finished."
+else
+  # Fallback: electron-targeted npm rebuild of top-level natives
+  ELECTRON_VERSION="$(node -p "require('./package.json').electronVersion")"
+  export npm_config_target="$ELECTRON_VERSION"
+  export npm_config_disturl="${ATOM_ELECTRON_URL}"
+  export npm_config_runtime=electron
+  export npm_config_build_from_source=true
+  export npm_config_arch="${npm_config_arch:-$(node -p "process.arch")}"
+  echo "apm rebuild unavailable; npm rebuild with target=$ELECTRON_VERSION"
+  # Rebuild from repo root using apm's node-gyp via npm in PATH from script
+  (cd "$REPO_ROOT" && npm rebuild 2>&1) || {
+    echo "npm rebuild failed; trying per-package superstring rebuild…"
+    APM_NODE="$REPO_ROOT/apm/node_modules/atom-package-manager/bin/node"
+    APM_GYP="$REPO_ROOT/apm/node_modules/atom-package-manager/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js"
+    (cd "$REPO_ROOT/node_modules/superstring" && \
+      "$APM_NODE" "$APM_GYP" rebuild \
+        --target="$ELECTRON_VERSION" \
+        --dist-url="$ATOM_ELECTRON_URL" \
+        --arch="$(node -p "process.arch")")
+  }
+fi
 
 # --- Step 5: fingerprint -----------------------------------------------------
 node <<'NODE'

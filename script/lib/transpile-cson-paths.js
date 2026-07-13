@@ -17,27 +17,19 @@ module.exports = function() {
 function getPathsToTranspile() {
   let paths = [];
   for (let packageName of Object.keys(CONFIG.appMetadata.packageDependencies)) {
+    const packageRoot = path.join(
+      CONFIG.intermediateAppPath,
+      'node_modules',
+      packageName
+    );
     paths = paths.concat(
-      glob.sync(
-        path.join(
-          CONFIG.intermediateAppPath,
-          'node_modules',
-          packageName,
-          '**',
-          '*.cson'
-        ),
-        {
-          ignore: path.join(
-            CONFIG.intermediateAppPath,
-            'node_modules',
-            packageName,
-            'spec',
-            '**',
-            '*.cson'
-          ),
-          nodir: true
-        }
-      )
+      glob.sync(path.join(packageRoot, '**', '*.cson'), {
+        ignore: [
+          path.join(packageRoot, 'spec', '**', '*.cson'),
+          path.join(packageRoot, 'node_modules', '**', '*.cson')
+        ],
+        nodir: true
+      })
     );
   }
   return paths;

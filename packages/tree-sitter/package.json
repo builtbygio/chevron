@@ -1,0 +1,83 @@
+{
+  "_args": [
+    [
+      "git+https://github.com/DeeDeeG/node-tree-sitter.git#bb298eaae66e0c4f11908cb6209f3e141884e88e",
+      "/Users/giovanni/Workspace/atom-nova"
+    ]
+  ],
+  "_from": "git+https://github.com/DeeDeeG/node-tree-sitter.git#bb298eaae66e0c4f11908cb6209f3e141884e88e",
+  "_id": "tree-sitter@git+https://github.com/DeeDeeG/node-tree-sitter.git#bb298eaae66e0c4f11908cb6209f3e141884e88e",
+  "_inBundle": false,
+  "_integrity": "",
+  "_location": "/tree-sitter",
+  "_phantomChildren": {
+    "detect-libc": "1.0.3",
+    "expand-template": "2.0.3",
+    "github-from-package": "0.0.0",
+    "minimist": "1.2.8",
+    "mkdirp-classic": "0.5.3",
+    "napi-build-utils": "1.0.2",
+    "node-abi": "2.30.1",
+    "noop-logger": "0.1.1",
+    "npmlog": "4.1.2",
+    "pump": "3.0.4",
+    "rc": "1.2.8",
+    "simple-get": "3.1.1",
+    "tar-fs": "2.1.5",
+    "tunnel-agent": "0.6.0",
+    "which-pm-runs": "1.1.0"
+  },
+  "_requested": {
+    "type": "git",
+    "raw": "git+https://github.com/DeeDeeG/node-tree-sitter.git#bb298eaae66e0c4f11908cb6209f3e141884e88e",
+    "rawSpec": "git+https://github.com/DeeDeeG/node-tree-sitter.git#bb298eaae66e0c4f11908cb6209f3e141884e88e",
+    "saveSpec": "git+https://github.com/DeeDeeG/node-tree-sitter.git#bb298eaae66e0c4f11908cb6209f3e141884e88e",
+    "fetchSpec": "https://github.com/DeeDeeG/node-tree-sitter.git",
+    "gitCommittish": "bb298eaae66e0c4f11908cb6209f3e141884e88e"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "git+https://github.com/DeeDeeG/node-tree-sitter.git#bb298eaae66e0c4f11908cb6209f3e141884e88e",
+  "_spec": "git+https://github.com/DeeDeeG/node-tree-sitter.git#bb298eaae66e0c4f11908cb6209f3e141884e88e",
+  "_where": "/Users/giovanni/Workspace/atom-nova",
+  "author": {
+    "name": "Max Brunsfeld"
+  },
+  "bugs": {
+    "url": "https://github.com/tree-sitter/node-tree-sitter/issues"
+  },
+  "dependencies": {
+    "nan": "^2.28.0",
+    "prebuild-install": "^5.0.0"
+  },
+  "description": "Incremental parsers for node",
+  "devDependencies": {
+    "chai": "3.5.x",
+    "mocha": "^5.2.0",
+    "prebuild": "^7.6.0",
+    "superstring": "^2.4.2",
+    "tree-sitter-javascript": "git://github.com/tree-sitter/tree-sitter-javascript.git#master"
+  },
+  "homepage": "https://github.com/tree-sitter/node-tree-sitter#readme",
+  "keywords": [
+    "parser",
+    "lexer"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "tree-sitter",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/tree-sitter/node-tree-sitter.git"
+  },
+  "scripts": {
+    "build": "node-gyp build",
+    "install": "prebuild-install || node-gyp rebuild",
+    "prebuild": "prebuild -r electron -t 3.0.0 -t 4.0.0 -t 4.0.4 -t 5.0.0 --strip && prebuild -t 10.12.0 -t 12.13.0 --strip",
+    "prebuild:upload": "prebuild --upload-all",
+    "test": "mocha"
+  },
+  "types": "tree-sitter.d.ts",
+  "version": "0.17.1"
+}
