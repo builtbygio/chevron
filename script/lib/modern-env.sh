@@ -82,6 +82,12 @@ export npm_config_cxxflags="${npm_config_cxxflags:--std=c++14}"
 export ATOM_ELECTRON_URL="${ATOM_ELECTRON_URL:-https://www.electronjs.org/headers}"
 export ATOM_RESOURCE_PATH="${ATOM_RESOURCE_PATH:-$_atomnova_repo_root}"
 
+# --- git:// is dead on GitHub (2022); rewrite to https for spawned gits ------
+# Env-based config (git ≥ 2.31) so we don't touch the user's global config.
+export GIT_CONFIG_COUNT=1
+export GIT_CONFIG_KEY_0="url.https://github.com/.insteadOf"
+export GIT_CONFIG_VALUE_0="git://github.com/"
+
 # --- Patch old node-gyp: open(..., 'rU') removed in Python 3.11 --------------
 atomnova_patch_node_gyp() {
   local root="${1:-$_atomnova_repo_root}"

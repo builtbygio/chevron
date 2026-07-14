@@ -12,7 +12,7 @@
     "url": "https://github.com/gdick-crypto/atom-nova/issues"
   },
   "license": "MIT",
-  "electronVersion": "14.2.9",
+  "electronVersion": "18.3.15",
   "dependencies": {
     "@atom/fuzzy-native": "^1.2.1",
     "@atom/nsfw": "^1.0.28",

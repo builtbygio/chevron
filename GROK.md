@@ -4,8 +4,8 @@ Context for the next Grok (or human) session working on this repo.
 
 **Repo:** `/Users/giovanni/Workspace/atom-nova`  
 **Remote:** `gdick-crypto/atom-nova`  
-**Base:** Atom 1.65.0-dev (Electron **14.2.9**), not Pulsar  
-**Date of this handoff:** 2026-07-13  
+**Base:** Atom 1.65.0-dev (Electron **18.3.15**), not Pulsar  
+**Date of this handoff:** 2026-07-14  
 
 ---
 
@@ -83,7 +83,7 @@ Uncommitted rebrand WIP was **discarded** with `git restore` (owner postponed fu
 
 | Item | Value |
 |------|--------|
-| Electron | **14.2.9** (next ladder: 18 → 22 → 28 → current) |
+| Electron | **18.3.15** (next ladder: 22 → 28 → current) |
 | Package name | `atomnova-editor` |
 | productName | `AtomNova` |
 | Built app name | Still **Atom Dev** via `script/config.js` channel logic |
@@ -106,9 +106,18 @@ Suggested order:
    - ~~Stub auto-update (no default atom.io feed)~~ **done** — set `ATOM_UPDATE_URL_PREFIX` when a real feed exists  
 
 2. **Electron upgrade plan**  
-   - **Now on 14.2.9**  
-   - Next ladder: **18** → 22 → 28 → current stable  
+   - **Now on 18.3.15** (done 2026-07-14)  
+   - Next ladder: **22** → 28 → current stable  
    - Re-inventory natives + ABI rebuilds each rung  
+   - 14→18 lessons: `allowRendererProcessReuse` escape hatch is gone (E17), so
+     **every** renderer native must be truly context-aware — the patcher now
+     finds `binding.cc` anywhere in a tree-sitter package (css uses
+     `bindings/node/`, typescript has `typescript/src` + `tsx/src`);
+     `package-lock.json` needed git-dep `integrity` stripped and `git://` →
+     `git+https://` (GitHub killed git:// and old tarball hashes drifted);
+     apm's npm 6 needs `patch-apm-npm.js` (npm/npm#19877 crash);
+     window proxy in `renderer-ipc.js` now bridges BrowserWindow
+     `blur`/`focus`/`removeListener` to DOM events (background-tips).  
 
 3. **Security architecture**  
    - **Inventory:** `docs/remote-ipc-inventory.md`  
@@ -150,6 +159,7 @@ Suggested order:
 | Non-context-aware natives on Electron 12+ | `node script/lib/patch-natives-context-aware.js` then rebuild natives |
 | `electron.remote` on Electron 14+ | **Resolved:** `src/remote-compat.js` + `register-renderer-ipc.js` (no `@electron/remote`) |
 | Packaged vs dev | Packaged uses snapshot; `--dev --resource-path=$PWD` skips it |
+| Probing the app from outside | `window.atom` lives in the **preload isolated world**, not the page: with `--remote-debugging-port` + CDP, enumerate `Runtime.executionContextCreated` and evaluate in the "Electron Isolated Context" (main-world evals silently see no Atom) |
 | Nested superstring without `.node` | After rebuild, copy `packages/superstring` **including** `build/` into nested installs (force-patched script excludes `build/` on purpose) |
 | `keytar` native missing / fails to build | github needs `keytar.node`; keytar 4.x needs `nan` ≥ 2.22 for Electron 14, then electron-rebuild |
 | GitHub worker windows | Still `contextIsolation: false` + Node (trusted hidden windows via remote-compat) |
@@ -182,7 +192,7 @@ Read first:
 
 ## Success criteria for the “Electron catch-up” phase
 
-- [ ] Runs on a **current** Electron stable release (currently **14.2.9**; next target 18+)  
+- [ ] Runs on a **current** Electron stable release (currently **18.3.15**; next target 22+)  
 - [x] No production reliance on `@electron/remote` (compat IPC layer remains)  
 - [x] `contextIsolation: true` (page); Node only in preload  
 - [x] No metrics/crash upload; auto-update not pointed at atom.io by default  

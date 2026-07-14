@@ -93,9 +93,51 @@ function createWindowProxy() {
         `windowProxy.emit('${channel}') is not supported without remote`
       );
       return false;
+    },
+    // BrowserWindow focus/blur events (used by e.g. background-tips): the
+    // DOM window fires the same-named events when this window's focus
+    // changes, so bridge to it instead of main-process event plumbing.
+    on(eventName, callback) {
+      addWindowProxyListener(eventName, callback, false);
+      return proxy;
+    },
+    once(eventName, callback) {
+      addWindowProxyListener(eventName, callback, true);
+      return proxy;
+    },
+    removeListener(eventName, callback) {
+      const wrapped =
+        windowProxyListeners.get(eventName) &&
+        windowProxyListeners.get(eventName).get(callback);
+      if (wrapped) {
+        window.removeEventListener(eventName, wrapped);
+        windowProxyListeners.get(eventName).delete(callback);
+      }
+      return proxy;
     }
   };
   return proxy;
+}
+
+const WINDOW_PROXY_DOM_EVENTS = new Set(['blur', 'focus']);
+const windowProxyListeners = new Map(); // eventName -> Map(callback -> wrapped)
+
+function addWindowProxyListener(eventName, callback, once) {
+  if (!WINDOW_PROXY_DOM_EVENTS.has(eventName)) {
+    console.warn(
+      `windowProxy.on('${eventName}') is not supported without remote`
+    );
+    return;
+  }
+  if (!windowProxyListeners.has(eventName)) {
+    windowProxyListeners.set(eventName, new Map());
+  }
+  const wrapped = () => {
+    if (once) windowProxyListeners.get(eventName).delete(callback);
+    callback();
+  };
+  windowProxyListeners.get(eventName).set(callback, wrapped);
+  window.addEventListener(eventName, wrapped, { once });
 }
 
 let windowProxy = null;

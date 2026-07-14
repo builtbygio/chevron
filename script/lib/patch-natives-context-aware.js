@@ -163,18 +163,44 @@ function patchKeyboardLayout() {
   const abs = path.join(repoRoot, rel);
   if (!fs.existsSync(abs)) return;
   let text = fs.readFileSync(abs, 'utf8');
-  if (text.includes('NAN_MODULE_WORKER_ENABLED(keyboard_layout_manager')) {
-    // Prefer the Nan context-aware helper; strip broken #if branches if present.
-    if (!text.includes('NODE_MODULE(keyboard_layout_manager')) {
-      console.log(`ok (already): ${rel}`);
-      return;
-    }
+  const MACRO = 'NAN_MODULE_WORKER_ENABLED(keyboard_layout_manager, init)';
+
+  // Repair output of an earlier buggy patch that consumed the newline before
+  // #endif ("unterminated conditional directive" at compile time).
+  const glued = new RegExp(
+    `#if NODE_MAJOR_VERSION >= 10\\s*\\n\\s*${MACRO.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      '\\$&'
+    )}\\s*\\n#else\\s*\\n\\s*${MACRO.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      '\\$&'
+    )}#endif`
+  );
+  if (glued.test(text)) {
+    fs.writeFileSync(abs, text.replace(glued, MACRO));
+    console.log(`repaired: ${rel}`);
+    return;
   }
-  // Replace legacy NODE_MODULE with NAN_MODULE_WORKER_ENABLED when init is NAN_MODULE_INIT.
+
+  // Collapse upstream's version conditional: Node >= 10 is always true on
+  // Electron 14+, and replacing only the #else branch corrupts the block.
+  const conditional = /#if NODE_MAJOR_VERSION >= 10\s*\n\s*NAN_MODULE_WORKER_ENABLED\(keyboard_layout_manager,\s*init\)\s*\n#else\s*\n\s*NODE_MODULE\(\s*keyboard_layout_manager\s*,\s*init\s*\)\s*;?[^\S\n]*\n#endif/;
+  if (conditional.test(text)) {
+    fs.writeFileSync(abs, text.replace(conditional, MACRO));
+    console.log(`patched (collapsed conditional): ${rel}`);
+    return;
+  }
+
+  if (text.includes(MACRO)) {
+    console.log(`ok (already): ${rel}`);
+    return;
+  }
+
+  // Bare legacy NODE_MODULE with a Nan init: swap macro, keep the newline.
   if (text.includes('NAN_MODULE_INIT(init)')) {
     const next = text.replace(
-      /NODE_MODULE\(\s*keyboard_layout_manager\s*,\s*init\s*\)\s*;?/,
-      'NAN_MODULE_WORKER_ENABLED(keyboard_layout_manager, init)'
+      /NODE_MODULE\(\s*keyboard_layout_manager\s*,\s*init\s*\)[^\S\n]*;?[^\S\n]*/,
+      MACRO
     );
     if (next !== text) {
       fs.writeFileSync(abs, next);
@@ -183,33 +209,50 @@ function patchKeyboardLayout() {
   }
 }
 
+// Binding sources are not always at src/binding.cc: tree-sitter-css uses
+// bindings/node/binding.cc, tree-sitter-typescript has typescript/src and
+// tsx/src. Find every binding.cc in the package (skipping nested deps).
+function findBindingSources(dir, depth = 0, results = []) {
+  if (depth > 3) return results;
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (ent.isDirectory()) {
+      if (ent.name === 'node_modules' || ent.name === 'build') continue;
+      findBindingSources(path.join(dir, ent.name), depth + 1, results);
+    } else if (ent.name === 'binding.cc') {
+      results.push(path.join(dir, ent.name));
+    }
+  }
+  return results;
+}
+
 function patchTreeSitterLanguages() {
   const nm = path.join(repoRoot, 'node_modules');
   if (!fs.existsSync(nm)) return;
   for (const ent of fs.readdirSync(nm)) {
     if (!ent.startsWith('tree-sitter-')) continue;
-    const binding = path.join(nm, ent, 'src', 'binding.cc');
-    if (!fs.existsSync(binding)) continue;
-    let text = fs.readFileSync(binding, 'utf8');
-    if (text.includes('NODE_MODULE_CONTEXT_AWARE')) {
-      console.log(`ok (already): node_modules/${ent}/src/binding.cc`);
-      continue;
+    for (const binding of findBindingSources(path.join(nm, ent))) {
+      const rel = path.relative(repoRoot, binding);
+      let text = fs.readFileSync(binding, 'utf8');
+      if (text.includes('NODE_MODULE_CONTEXT_AWARE')) {
+        console.log(`ok (already): ${rel}`);
+        continue;
+      }
+      const m = text.match(
+        /NODE_MODULE\(\s*([A-Za-z0-9_]+)\s*,\s*([A-Za-z0-9_:]+)\s*\)\s*;?/
+      );
+      if (!m) continue;
+      const name = m[1];
+      const fn = m[2];
+      const arity = /void\s+Init\s*\(\s*Local<\s*Object\s*>\s*\w+\s*,\s*Local<\s*Object\s*>/.test(
+        text
+      )
+        ? 2
+        : 1;
+      const rep = makeReplacement(name, fn, arity);
+      text = text.replace(m[0], rep);
+      fs.writeFileSync(binding, text);
+      console.log(`patched: ${rel}`);
     }
-    const m = text.match(
-      /NODE_MODULE\(\s*([A-Za-z0-9_]+)\s*,\s*([A-Za-z0-9_:]+)\s*\)\s*;?/
-    );
-    if (!m) continue;
-    const name = m[1];
-    const fn = m[2];
-    const arity = /void\s+Init\s*\(\s*Local<\s*Object\s*>\s*\w+\s*,\s*Local<\s*Object\s*>/.test(
-      text
-    )
-      ? 2
-      : 1;
-    const rep = makeReplacement(name, fn, arity);
-    text = text.replace(m[0], rep);
-    fs.writeFileSync(binding, text);
-    console.log(`patched: node_modules/${ent}/src/binding.cc`);
   }
 }
 

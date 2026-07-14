@@ -67,10 +67,7 @@ module.exports = class AtomWindow extends EventEmitter {
         sandbox: false,
         webviewTag: true,
         // node support in threads (used by some packages / workers)
-        nodeIntegrationInWorker: true,
-        // Electron 15+ default; set explicitly to silence deprecation on 14
-        // and match upcoming behavior (window.open → BrowserWindow).
-        nativeWindowOpen: true
+        nodeIntegrationInWorker: true
       },
       simpleFullscreen: this.getSimpleFullscreen()
     };

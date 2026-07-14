@@ -39,10 +39,6 @@ module.exports = function start(resourcePath, devResourcePath, startTime) {
     }
   });
 
-  // Electron 14 always reuses renderer processes; keep the assignment for older
-  // Electron builds during the upgrade ladder (no-op / deprecated on 14+).
-  app.allowRendererProcessReuse = false;
-
   app.commandLine.appendSwitch('enable-experimental-web-platform-features');
 
   const args = parseCommandLine(process.argv.slice(1));

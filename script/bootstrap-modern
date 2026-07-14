@@ -94,6 +94,10 @@ NODE
 echo "Patching node-gyp (apm) for Python 3.11…"
 atomnova_patch_node_gyp "$REPO_ROOT/apm"
 
+# npm 6 devDependencies-without-dependencies crash (npm/npm#19877)
+echo "Patching apm's bundled npm (update-package-json)…"
+node "$SCRIPT_DIR/lib/patch-apm-npm.js" "$REPO_ROOT"
+
 # If apm postinstall left natives half-built, rebuild oniguruma with apm's node
 APM_NODE="$REPO_ROOT/apm/node_modules/atom-package-manager/bin/node"
 APM_GYP="$REPO_ROOT/apm/node_modules/atom-package-manager/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js"
