@@ -71,14 +71,28 @@ export PYTHON="$_python311"
 export npm_config_python="$_python311"
 export NODE_GYP_FORCE_PYTHON="$_python311"
 
-# --- C++ standard for Node/Electron headers on modern clang ------------------
-# Electron 20+ headers (common.gypi) build with gnu++17; forcing c++14 via
-# CXXFLAGS would override gyp's own -std and break V8 10.x headers.
+# --- C++ standard / toolchain for Node/Electron headers ----------------------
+# Electron 20+ headers build with gnu++17, Electron 29+ with gnu++20; forcing
+# an older -std via CXXFLAGS overrides gyp's own and breaks V8 headers.
+_electron_version="$(node -p "require('$_atomnova_repo_root/package.json').electronVersion" 2>/dev/null || echo 0)"
+_electron_major="${_electron_version%%.*}"
+
+_atomnova_cxx_std="-std=c++17"
+if [ "${_electron_major:-0}" -ge 29 ] 2>/dev/null; then
+  _atomnova_cxx_std="-std=gnu++20"
+fi
 case " ${CXXFLAGS:-} " in
-  *" -std=c++"* | *"-std=c++"* ) ;;
-  * ) export CXXFLAGS="-std=c++17${CXXFLAGS:+ $CXXFLAGS}" ;;
+  *" -std="* | "-std="* ) ;;
+  * ) export CXXFLAGS="${_atomnova_cxx_std}${CXXFLAGS:+ $CXXFLAGS}" ;;
 esac
-export npm_config_cxxflags="${npm_config_cxxflags:--std=c++17}"
+export npm_config_cxxflags="${npm_config_cxxflags:-$_atomnova_cxx_std}"
+
+# Electron 40+ V8 headers need <source_location> (libc++ from Xcode 15).
+# The CLT on this host is clang 14; select Xcode.app per-process instead.
+if [ "${_electron_major:-0}" -ge 40 ] 2>/dev/null && [ -z "${DEVELOPER_DIR:-}" ] \
+   && [ -d /Applications/Xcode.app/Contents/Developer ]; then
+  export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+fi
 
 # --- Electron headers (atom.io download endpoint is dead) --------------------
 export ATOM_ELECTRON_URL="${ATOM_ELECTRON_URL:-https://www.electronjs.org/headers}"

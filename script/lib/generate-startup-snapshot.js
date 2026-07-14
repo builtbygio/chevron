@@ -336,18 +336,25 @@ module.exports = function(packagedAppPath) {
     );
 
     console.log('Generating startup blob with mksnapshot');
-    childProcess.spawnSync(process.execPath, [
-      path.join(
-        CONFIG.repositoryRootPath,
-        'script',
-        'node_modules',
-        'electron-mksnapshot',
-        'mksnapshot.js'
-      ),
-      snapshotScriptPath,
-      '--output_dir',
-      CONFIG.buildOutputPath
-    ]);
+    const mksnapshotResult = childProcess.spawnSync(
+      process.execPath,
+      [
+        path.join(
+          CONFIG.repositoryRootPath,
+          'script',
+          'node_modules',
+          'electron-mksnapshot',
+          'mksnapshot.js'
+        ),
+        snapshotScriptPath,
+        '--output_dir',
+        CONFIG.buildOutputPath
+      ],
+      { stdio: 'inherit' }
+    );
+    if (mksnapshotResult.status !== 0) {
+      throw new Error(`mksnapshot exited with ${mksnapshotResult.status}`);
+    }
 
     let startupBlobDestinationPath;
     if (process.platform === 'darwin') {
@@ -379,17 +386,32 @@ module.exports = function(packagedAppPath) {
       }
     ];
 
-    for (let snapshotBinary of snapshotBinaries) {
-      const sourcePath = snapshotBinary.candidates
+    const resolvedBinaries = snapshotBinaries.map(snapshotBinary => ({
+      ...snapshotBinary,
+      sourcePath: snapshotBinary.candidates
         .map(name => path.join(CONFIG.buildOutputPath, name))
-        .find(candidate => fs.existsSync(candidate));
-      if (!sourcePath) {
-        throw new Error(
-          `mksnapshot did not produce any of: ${snapshotBinary.candidates.join(
-            ', '
-          )}`
-        );
-      }
+        .find(candidate => fs.existsSync(candidate))
+    }));
+
+    // Electron 43 / V8 15: v8_context_snapshot_generator SIGTRAPs on Atom's
+    // custom startup blob (mksnapshot itself succeeds). Never install a
+    // partial pair — a custom snapshot_blob with a stock context snapshot is
+    // inconsistent. Fall back to the stock snapshots: the app boots via the
+    // plain require path (same as --dev), just without the startup
+    // optimization.
+    const missing = resolvedBinaries.filter(binary => !binary.sourcePath);
+    if (missing.length > 0) {
+      console.warn(
+        '\nWARNING: startup snapshot generation failed — the packaged app ' +
+          'will use Electron\'s stock V8 snapshots (slower startup, no ' +
+          'snapshotResult). Missing: ' +
+          missing.map(binary => binary.candidates.join('|')).join(', ') +
+          '\n'
+      );
+      return;
+    }
+
+    for (let snapshotBinary of resolvedBinaries) {
       const destinationPath = path.join(
         startupBlobDestinationPath,
         snapshotBinary.destination
@@ -403,7 +425,7 @@ module.exports = function(packagedAppPath) {
           throw err;
         }
       }
-      fs.renameSync(sourcePath, destinationPath);
+      fs.renameSync(snapshotBinary.sourcePath, destinationPath);
     }
   });
 };

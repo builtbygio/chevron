@@ -596,15 +596,21 @@ class PathWatcherManager {
   // Private: Access the currently active manager instance, creating one if necessary.
   static active() {
     if (!this.activeManager) {
+      // The main process (ConfigFile.watch) has no `atom` global; fall back
+      // to the default native backend there instead of throwing.
+      const atomConfig =
+        typeof atom !== 'undefined' && atom.config ? atom.config : null;
       this.activeManager = new PathWatcherManager(
-        atom.config.get('core.fileSystemWatcher')
+        atomConfig ? atomConfig.get('core.fileSystemWatcher') : undefined
       );
-      this.sub = atom.config.onDidChange(
-        'core.fileSystemWatcher',
-        ({ newValue }) => {
-          this.transitionTo(newValue);
-        }
-      );
+      if (atomConfig) {
+        this.sub = atomConfig.onDidChange(
+          'core.fileSystemWatcher',
+          ({ newValue }) => {
+            this.transitionTo(newValue);
+          }
+        );
+      }
     }
     return this.activeManager;
   }

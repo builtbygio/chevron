@@ -61,7 +61,8 @@ EncodingConversion::EncodingConversion(int mode, void *data) :
   data{data}, mode{mode} {}
 
 EncodingConversion::~EncodingConversion() {
-  if (data) iconv_close(data);
+  // Newer macOS SDKs type iconv_t as a struct pointer instead of void *.
+  if (data) iconv_close(static_cast<iconv_t>(data));
 }
 
 int EncodingConversion::convert(
@@ -114,7 +115,9 @@ int EncodingConversion::convert(
     }
 
     default: {
-      auto converter = static_cast<iconv_t *>(data);
+      // The stored handle *is* the iconv_t (historically void *); the old
+      // pointer-level cast only compiled because iconv_t itself was void *.
+      auto converter = static_cast<iconv_t>(data);
       size_t input_length = input_end - *input;
       size_t output_length = output_end - *output;
       auto conversion_result = iconv(

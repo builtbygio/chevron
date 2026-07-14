@@ -1,4 +1,5 @@
 #include "./parser.h"
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <climits>
@@ -69,18 +70,22 @@ class CallbackInput {
       if (!Nan::To<String>(result_value).ToLocal(&result)) return nullptr;
     }
 
-    int utf16_units_read = result->Write(
-
-      // Nan doesn't wrap this functionality
-      #if NODE_MAJOR_VERSION >= 12
+    // V8 15 (Electron 43): Write(isolate, offset, length, buffer) returns
+    // void and no longer clamps to the string length — clamp ourselves.
+    uint32_t string_length = result->Length();
+    uint32_t utf16_units_read =
+      static_cast<uint32_t>(start) < string_length
+        ? std::min<uint32_t>(reader->buffer.size(), string_length - start)
+        : 0;
+    if (utf16_units_read > 0) {
+      result->Write(
         Isolate::GetCurrent(),
-      #endif
-
-      reader->buffer.data(),
-      start,
-      reader->buffer.size(),
-      String::NO_NULL_TERMINATION
-    );
+        start,
+        utf16_units_read,
+        reader->buffer.data(),
+        String::WriteFlags::kNone
+      );
+    }
     int end = start + utf16_units_read;
     *bytes_read = 2 * utf16_units_read;
 

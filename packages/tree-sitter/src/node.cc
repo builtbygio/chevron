@@ -493,14 +493,12 @@ bool symbol_set_from_js(SymbolSet *symbols, const Local<Value> &value, const TSL
         );
 
         std::string node_type(length, '\0');
+        // V8 15 (Electron 43): WriteUtf8 requires an explicit capacity and
+        // no longer null-terminates by default (buffer is exactly `length`).
         js_node_type->WriteUtf8(
-
-          // Nan doesn't wrap this functionality
-          #if NODE_MAJOR_VERSION >= 12
-            Isolate::GetCurrent(),
-          #endif
-
-          &node_type[0]
+          Isolate::GetCurrent(),
+          &node_type[0],
+          node_type.size()
         );
 
         if (node_type == "ERROR") {

@@ -1,7 +1,7 @@
 # Remote / IPC inventory (Electron security ladder)
 
 **Date:** 2026-07-13  
-**Baseline (current):** Electron **28.3.3**, `contextIsolation: true`, page `nodeIntegration: false`, preload boots Atom (`static/preload.js`), **no** `@electron/remote` — `src/remote-compat.js` over IPC.  
+**Baseline (current):** Electron **43.1.0**, `contextIsolation: true`, page `nodeIntegration: false`, preload boots Atom (`static/preload.js`), **no** `@electron/remote` — `src/remote-compat.js` over IPC.  
 **Historical goal (met for remote):** Replace `electron.remote` with **main-process IPC + preload**, enable isolation, remove `@electron/remote`.
 
 This doc began as an inventory/kill-list. Sections 1–8 describe the pre-migration surface; **§9 is the source of truth for current status**.

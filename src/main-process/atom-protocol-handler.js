@@ -1,6 +1,7 @@
-const { protocol } = require('electron');
+const { net, protocol } = require('electron');
 const fs = require('fs-plus');
 const path = require('path');
+const { pathToFileURL } = require('url');
 
 // Handles requests with 'atom' protocol.
 //
@@ -30,25 +31,39 @@ module.exports = class AtomProtocolHandler {
 
   // Creates the 'atom' custom protocol handler.
   registerAtomProtocol() {
-    protocol.registerFileProtocol('atom', (request, callback) => {
-      const relativePath = path.normalize(request.url.substr(7));
+    if (typeof protocol.registerFileProtocol === 'function') {
+      protocol.registerFileProtocol('atom', (request, callback) => {
+        callback(this.resolveAtomUrl(request.url));
+      });
+    } else {
+      // Electron 25+ replacement; registerFileProtocol was removed after
+      // a long deprecation. Serve the resolved file via net.fetch.
+      protocol.handle('atom', request => {
+        const filePath = this.resolveAtomUrl(request.url);
+        if (!filePath) return new Response('', { status: 404 });
+        return net.fetch(pathToFileURL(filePath).toString());
+      });
+    }
+  }
 
-      let filePath;
-      if (relativePath.indexOf('assets/') === 0) {
-        const assetsPath = path.join(process.env.ATOM_HOME, relativePath);
-        const stat = fs.statSyncNoException(assetsPath);
-        if (stat && stat.isFile()) filePath = assetsPath;
+  resolveAtomUrl(url) {
+    const relativePath = path.normalize(url.substr(7));
+
+    let filePath;
+    if (relativePath.indexOf('assets/') === 0) {
+      const assetsPath = path.join(process.env.ATOM_HOME, relativePath);
+      const stat = fs.statSyncNoException(assetsPath);
+      if (stat && stat.isFile()) filePath = assetsPath;
+    }
+
+    if (!filePath) {
+      for (let loadPath of this.loadPaths) {
+        filePath = path.join(loadPath, relativePath);
+        const stat = fs.statSyncNoException(filePath);
+        if (stat && stat.isFile()) break;
       }
+    }
 
-      if (!filePath) {
-        for (let loadPath of this.loadPaths) {
-          filePath = path.join(loadPath, relativePath);
-          const stat = fs.statSyncNoException(filePath);
-          if (stat && stat.isFile()) break;
-        }
-      }
-
-      callback(filePath);
-    });
+    return filePath;
   }
 };

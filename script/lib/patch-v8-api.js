@@ -49,4 +49,66 @@ for (const root of ROOTS) {
     patched++;
   }
 }
+
+// V8 15 (Electron 43) removals in registry deps, as exact string swaps.
+// - Context::GetIsolate() / Object::GetIsolate() are gone → GetCurrent()
+// - WriteUtf8 requires an explicit capacity argument
+const REPLACEMENTS = [
+  {
+    file: 'node_modules/oniguruma/src/onig-scanner.cc',
+    from: 'v8::Isolate* isolate = context->GetIsolate();',
+    to: 'v8::Isolate* isolate = v8::Isolate::GetCurrent();'
+  },
+  {
+    file: 'node_modules/spellchecker/src/main.cc',
+    from: 'Isolate* isolate = exports->GetIsolate();',
+    to: 'Isolate* isolate = Isolate::GetCurrent();'
+  },
+  {
+    file: 'node_modules/@atom/fuzzy-native/src/binding.cpp',
+    from: 'v8str->WriteUtf8(isolate, &str[0]);',
+    to: 'v8str->WriteUtf8(isolate, &str[0], str.size());'
+  }
+];
+for (const { file, from, to } of REPLACEMENTS) {
+  const abs = path.join(repoRoot, file);
+  if (!fs.existsSync(abs)) continue;
+  const text = fs.readFileSync(abs, 'utf8');
+  if (!text.includes(from)) continue;
+  fs.writeFileSync(abs, text.split(from).join(to));
+  console.log(`patch-v8-api: patched ${file}`);
+  patched++;
+}
+
+// V8 15 (Electron 43) promoted the WriteV2 signatures: String::Write is now
+// Write(isolate, offset, length, buffer, flags). spellchecker (registry dep)
+// still uses the removed (isolate, buffer) form; its buffers are Length()+1
+// and zero-initialized, so writing Length() units keeps the NUL terminator.
+const spellchecker = path.join(
+  repoRoot,
+  'node_modules/spellchecker/src/main.cc'
+);
+if (fs.existsSync(spellchecker)) {
+  let text = fs.readFileSync(spellchecker, 'utf8');
+  const before = text;
+  for (const buf of ['text', 'corpus']) {
+    text = text
+      .split(
+        `    string->Write(
+#if V8_MAJOR_VERSION > 6
+        info.GetIsolate(),
+#endif
+        reinterpret_cast<uint16_t *>(${buf}.data()));`
+      )
+      .join(
+        `    string->Write(info.GetIsolate(), 0, string->Length(),
+        reinterpret_cast<uint16_t *>(${buf}.data()), v8::String::WriteFlags::kNone);`
+      );
+  }
+  if (text !== before) {
+    fs.writeFileSync(spellchecker, text);
+    console.log('patch-v8-api: patched node_modules/spellchecker/src/main.cc');
+    patched++;
+  }
+}
 console.log(`patch-v8-api: done (${patched} files)`);

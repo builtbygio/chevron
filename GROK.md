@@ -4,7 +4,7 @@ Context for the next Grok (or human) session working on this repo.
 
 **Repo:** `/Users/giovanni/Workspace/atom-nova`  
 **Remote:** `gdick-crypto/atom-nova`  
-**Base:** Atom 1.65.0-dev (Electron **28.3.3**), not Pulsar  
+**Base:** Atom 1.65.0-dev (Electron **43.1.0**, current stable), not Pulsar  
 **Date of this handoff:** 2026-07-14  
 
 ---
@@ -83,7 +83,7 @@ Uncommitted rebrand WIP was **discarded** with `git restore` (owner postponed fu
 
 | Item | Value |
 |------|--------|
-| Electron | **28.3.3** (next ladder: current stable) |
+| Electron | **43.1.0** — **current stable; ladder complete** |
 | Package name | `atomnova-editor` |
 | productName | `AtomNova` |
 | Built app name | Still **Atom Dev** via `script/config.js` channel logic |
@@ -106,8 +106,7 @@ Suggested order:
    - ~~Stub auto-update (no default atom.io feed)~~ **done** — set `ATOM_UPDATE_URL_PREFIX` when a real feed exists  
 
 2. **Electron upgrade plan**  
-   - **Now on 28.3.3** (done 2026-07-14)  
-   - Next ladder: **current stable**  
+   - **Now on 43.1.0, current stable — ladder complete** (done 2026-07-14)  
    - Re-inventory natives + ABI rebuilds each rung  
    - 14→18 lessons: `allowRendererProcessReuse` escape hatch is gone (E17), so
      **every** renderer native must be truly context-aware — the patcher now
@@ -137,6 +136,22 @@ Suggested order:
      `Local<Data>`; nested nan 2.17 copies (lockfile-pinned) fail to
      compile → `patch-nested-nan.js` replaces them with root nan 2.28
      (careful: `@atom/watcher/src/nan` is *source*, not the package).  
+   - 28→43 lessons: V8 15 needs **C++20** and `<source_location>` — CLT
+     clang 14 can't; `modern-env.sh` selects `/Applications/Xcode.app`
+     via `DEVELOPER_DIR` for Electron ≥ 40 and gnu++20 for ≥ 29.
+     `patch-v8-api.js` grew: `Context/Object::GetIsolate()` removed,
+     `String::Write*` promoted to the V2 signatures
+     (`Write(isolate, offset, length, buffer, flags)`, explicit
+     capacity, no clamping/NUL) — vendored superstring/tree-sitter
+     fixed in-tree, oniguruma/spellchecker/fuzzy-native via patch.
+     Newer macOS SDKs type `iconv_t` as a struct ptr (superstring cast
+     fixed). **Custom V8 startup snapshot is DISABLED on 43**:
+     `v8_context_snapshot_generator` SIGTRAPs on Atom's custom blob
+     (tiny/synthetic blobs fine — content-specific); build falls back
+     to stock snapshots with a warning (slower startup, `snapshotResult`
+     undefined, plain-require path like `--dev`). Follow-up: bisect
+     electron-link output vs the generator. `path-watcher.js` no longer
+     assumes the `atom` global (main-process ConfigFile.watch).  
 
 3. **Security architecture**  
    - **Inventory:** `docs/remote-ipc-inventory.md`  
@@ -211,7 +226,7 @@ Read first:
 
 ## Success criteria for the “Electron catch-up” phase
 
-- [ ] Runs on a **current** Electron stable release (currently **28.3.3**; next: current stable)  
+- [x] Runs on a **current** Electron stable release (**43.1.0**)  
 - [x] No production reliance on `@electron/remote` (compat IPC layer remains)  
 - [x] `contextIsolation: true` (page); Node only in preload  
 - [x] No metrics/crash upload; auto-update not pointed at atom.io by default  

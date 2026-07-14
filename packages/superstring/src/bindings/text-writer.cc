@@ -38,17 +38,14 @@ void TextWriter::write(const Nan::FunctionCallbackInfo<Value> &info) {
   if (Nan::To<String>(info[0]).ToLocal(&js_chunk)) {
     size_t size = writer->content.size();
     writer->content.resize(size + js_chunk->Length());
+    // V8 15 (Electron 43): Write(isolate, offset, length, buffer); the
+    // buffer was resized to hold exactly Length() more units above.
     js_chunk->Write(
-
-// Nan doesn't wrap this functionality
-#if NODE_MAJOR_VERSION >= 12
       Isolate::GetCurrent(),
-#endif
-
-      reinterpret_cast<uint16_t *>(&writer->content[0]) + size,
       0,
-      -1,
-      String::WriteOptions::NO_NULL_TERMINATION
+      js_chunk->Length(),
+      reinterpret_cast<uint16_t *>(&writer->content[0]) + size,
+      String::WriteFlags::kNone
     );
   } else if (info[0]->IsUint8Array()) {
     auto *data = node::Buffer::Data(info[0]);
