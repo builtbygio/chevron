@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-smoke:
+    name: Bootstrap, build & launch smoke test (macOS)
+    # x86_64 (matches the proven local toolchain) with Xcode 16 — macos-13
+    # was retired from GitHub-hosted runners in December 2025; macos-15-intel
+    # is GitHub's designated x86_64 replacement until Fall 2027.
+    runs-on: macos-15-intel
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node 16 (bootstrap host)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+
+      - name: Use Python 3.11 (last with distutils, for old node-gyp)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # The lockfile pins bundled packages as git+ssh://git@github.com/…;
+      # runners have no SSH keys, so rewrite every github form to https.
+      - name: Rewrite git ssh URLs to https
+        run: |
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
+          git config --global --add url."https://github.com/".insteadOf "git://github.com/"
+
+      - name: Cache Electron headers, binaries and package caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/node-gyp
+            ~/Library/Caches/electron
+            ~/.npm
+            ~/.atom/.apm
+          key: ${{ runner.os }}-electron-${{ hashFiles('package.json', 'package-lock.json', 'script/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-
+
+      - name: Bootstrap
+        run: ./script/bootstrap-modern --ci
+
+      - name: Build
+        run: ./script/with-modern-env ./script/build --no-bootstrap
+
+      - name: Launch smoke test
+        run: node script/ci/smoke-test.js
+
+      - name: Upload build output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-state
+          path: |
+            out/startup.js
+            ${{ github.workspace }}/npm-debug.log
+          if-no-files-found: ignore

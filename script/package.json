@@ -53,6 +53,7 @@
     "tello": "1.2.0",
     "terser": "^3.8.1",
     "webdriverio": "^5.9.2",
+    "ws": "^8.0.0",
     "yargs": "4.8.1"
   },
   "scripts": {

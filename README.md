@@ -6,6 +6,8 @@
 
 This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md).
 
+[![CI](https://github.com/giobuilds/atom-nova/actions/workflows/ci.yml/badge.svg)](https://github.com/giobuilds/atom-nova/actions/workflows/ci.yml)
+
 ## Status
 
 | Area | Status |

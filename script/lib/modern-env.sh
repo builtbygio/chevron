@@ -15,7 +15,9 @@ if [ "$_atomnova_modern_env_loaded" = "1" ]; then
   return 0 2>/dev/null || true
 fi
 
-_atomnova_repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# BASH_SOURCE is bash-only; zsh exposes the sourced path as $0.
+_atomnova_source="${BASH_SOURCE[0]:-$0}"
+_atomnova_repo_root="$(cd "$(dirname "$_atomnova_source")/../.." && pwd)"
 
 # --- nvm / Node 16 -----------------------------------------------------------
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
@@ -92,6 +94,17 @@ export npm_config_cxxflags="${npm_config_cxxflags:-$_atomnova_cxx_std}"
 if [ "${_electron_major:-0}" -ge 40 ] 2>/dev/null && [ -z "${DEVELOPER_DIR:-}" ] \
    && [ -d /Applications/Xcode.app/Contents/Developer ]; then
   export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+fi
+
+# git-utils' vendored (ancient) zlib defines `fdopen(fd,mode) NULL` on Mac;
+# with Xcode 16+ header ordering that poisons the SDK's own fdopen prototype
+# in <stdio.h> ("expected identifier or '('"). Pre-defining fdopen as itself
+# makes zlib's `#ifndef fdopen` guard skip the broken macro.
+if [ "$(uname)" = "Darwin" ]; then
+  case " ${CFLAGS:-} " in
+    *" -Dfdopen="* ) ;;
+    * ) export CFLAGS="-Dfdopen=fdopen${CFLAGS:+ $CFLAGS}" ;;
+  esac
 fi
 
 # --- Electron headers (atom.io download endpoint is dead) --------------------
