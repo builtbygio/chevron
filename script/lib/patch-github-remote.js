@@ -18,8 +18,27 @@ if (!fs.existsSync(workerPath)) {
 
 const MARKER = 'atom-get-web-contents-id-sync';
 let text = fs.readFileSync(workerPath, 'utf8');
-if (text.includes(MARKER)) {
-  console.log('ok (already): node_modules/github/lib/worker.js');
+const alreadyRemotePatched = text.includes(MARKER);
+
+// Electron 28 removed ipcRenderer.sendTo; route worker→manager messages
+// through main's atom-wc-send relay (same signature after the channel arg).
+// Applied even when the remote patch already ran (idempotent).
+function patchSendTo(source) {
+  return source
+    .split('event.sender.sendTo(')
+    .join(`ipc.send('atom-wc-send', `)
+    .split('ipc.sendTo(')
+    .join(`ipc.send('atom-wc-send', `);
+}
+
+if (alreadyRemotePatched) {
+  const next = patchSendTo(text);
+  if (next !== text) {
+    fs.writeFileSync(workerPath, next);
+    console.log('patched (sendTo→atom-wc-send): node_modules/github/lib/worker.js');
+  } else {
+    console.log('ok (already): node_modules/github/lib/worker.js');
+  }
   process.exit(0);
 }
 
@@ -33,6 +52,7 @@ if (!text.includes(oldHeader)) {
 }
 
 text = text.replace(oldHeader, newHeader);
+text = patchSendTo(text);
 
 text = text.replace(
   `const sourceWebContentsId = remote.getCurrentWindow().webContents.id;`,

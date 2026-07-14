@@ -4,7 +4,7 @@ Context for the next Grok (or human) session working on this repo.
 
 **Repo:** `/Users/giovanni/Workspace/atom-nova`  
 **Remote:** `gdick-crypto/atom-nova`  
-**Base:** Atom 1.65.0-dev (Electron **22.3.27**), not Pulsar  
+**Base:** Atom 1.65.0-dev (Electron **28.3.3**), not Pulsar  
 **Date of this handoff:** 2026-07-14  
 
 ---
@@ -83,7 +83,7 @@ Uncommitted rebrand WIP was **discarded** with `git restore` (owner postponed fu
 
 | Item | Value |
 |------|--------|
-| Electron | **22.3.27** (next ladder: 28 → current) |
+| Electron | **28.3.3** (next ladder: current stable) |
 | Package name | `atomnova-editor` |
 | productName | `AtomNova` |
 | Built app name | Still **Atom Dev** via `script/config.js` channel logic |
@@ -106,8 +106,8 @@ Suggested order:
    - ~~Stub auto-update (no default atom.io feed)~~ **done** — set `ATOM_UPDATE_URL_PREFIX` when a real feed exists  
 
 2. **Electron upgrade plan**  
-   - **Now on 22.3.27** (done 2026-07-14)  
-   - Next ladder: **28** → current stable  
+   - **Now on 28.3.3** (done 2026-07-14)  
+   - Next ladder: **current stable**  
    - Re-inventory natives + ABI rebuilds each rung  
    - 14→18 lessons: `allowRendererProcessReuse` escape hatch is gone (E17), so
      **every** renderer native must be truly context-aware — the patcher now
@@ -128,6 +128,15 @@ Suggested order:
      aborts the renderer — vendored `packages/tree-sitter`
      (`conversions.cc`, `node.cc`) now lets V8 allocate transfer buffers
      and points the native pointer at `GetBackingStore()->Data()`.  
+   - 22→28 lessons: `ipcRenderer.sendTo` removed → github worker.js
+     rewritten to main's `atom-wc-send` relay (`patch-github-remote.js`).
+     npm 6 **rewrites package-lock on every install**, reintroducing specs
+     it can't parse next time → `fix-package-lock.js` normalizes before
+     each apm install (name-prefixed git requires, git:// urls, git
+     integrity). V8 12 (E28) changed `GetInternalField` to return
+     `Local<Data>`; nested nan 2.17 copies (lockfile-pinned) fail to
+     compile → `patch-nested-nan.js` replaces them with root nan 2.28
+     (careful: `@atom/watcher/src/nan` is *source*, not the package).  
 
 3. **Security architecture**  
    - **Inventory:** `docs/remote-ipc-inventory.md`  
@@ -202,7 +211,7 @@ Read first:
 
 ## Success criteria for the “Electron catch-up” phase
 
-- [ ] Runs on a **current** Electron stable release (currently **22.3.27**; next target 28+)  
+- [ ] Runs on a **current** Electron stable release (currently **28.3.3**; next: current stable)  
 - [x] No production reliance on `@electron/remote` (compat IPC layer remains)  
 - [x] `contextIsolation: true` (page); Node only in preload  
 - [x] No metrics/crash upload; auto-update not pointed at atom.io by default  

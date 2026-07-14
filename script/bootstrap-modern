@@ -116,6 +116,11 @@ export ATOM_RESOURCE_PATH="$REPO_ROOT"
 # Clear Node-12 targeting so apm uses Electron runtime from package.json
 unset npm_config_target npm_config_runtime npm_config_disturl npm_config_build_from_source || true
 
+# npm 6 rewrites package-lock on install, reintroducing specs it cannot
+# itself parse next time (name-prefixed git requires, git:// urls).
+echo "Normalizing package-lock.json for npm 6…"
+node "$SCRIPT_DIR/lib/fix-package-lock.js" "$REPO_ROOT"
+
 echo "Installing application dependencies (apm install, scripts deferred)…"
 # Skip install scripts so nested registry superstring cannot fail the build
 # before we replace it with packages/superstring (Electron 14+ V8 patch).
@@ -145,6 +150,10 @@ node "$SCRIPT_DIR/lib/patch-natives-context-aware.js" "$REPO_ROOT"
 # keytar@4.x nan is too old for Electron 14 (GetContents → GetBackingStore)
 echo "Patching keytar nested nan for Electron 14+…"
 node "$SCRIPT_DIR/lib/patch-keytar-nan.js" "$REPO_ROOT"
+
+# Lockfile pins other nested nan copies at 2.17, too old for V8 12 (E28)
+echo "Replacing outdated nested nan copies with root nan…"
+node "$SCRIPT_DIR/lib/patch-nested-nan.js" "$REPO_ROOT"
 
 # Bundled packages that still use remote for app paths / protocol client
 echo "Patching bundled packages for remote→IPC…"
