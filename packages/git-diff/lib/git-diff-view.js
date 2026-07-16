@@ -17,6 +17,7 @@ export default class GitDiffView {
     this.editorElement = editorElement;
     this.repository = null;
     this.markers = new Map();
+    this.destroyed = false;
 
     // Assign `null` to all possible child vars here so the JS engine doesn't
     // have to re-evaluate the microcode when we do eventually need them.
@@ -42,9 +43,12 @@ export default class GitDiffView {
    *   object components that are guarunteed to exist at all times.
    */
   destroy() {
+    if (this.destroyed) return;
+    this.destroyed = true;
     this.subscriptions.dispose();
     this.destroyChildren();
     this.markers.clear();
+    this.releaseChildren();
   }
 
   /**
@@ -56,10 +60,17 @@ export default class GitDiffView {
    *   Example: this.diffs only exists when we have a repository.
    */
   destroyChildren() {
-    if (this._animationId) cancelAnimationFrame(this._animationId);
+    if (this._animationId) {
+      cancelAnimationFrame(this._animationId);
+      this._animationId = null;
+    }
 
-    if (this.diffs)
-      for (const diff of this.diffs) this.markers.get(diff).destroy();
+    if (this.diffs) {
+      for (const diff of this.diffs) {
+        const marker = this.markers.get(diff);
+        if (marker && !marker.isDestroyed()) marker.destroy();
+      }
+    }
   }
 
   /**
@@ -75,19 +86,33 @@ export default class GitDiffView {
     this.buffer = null;
   }
 
+  isEditorAlive() {
+    return (
+      !this.destroyed &&
+      this.editor != null &&
+      !this.editor.isDestroyed()
+    );
+  }
+
   /**
    * @describe handles all subscriptions based on the repository in focus
    */
   async subscribeToRepository() {
+    if (this.destroyed) return;
+
     if (this._repoSubs !== null) {
       this._repoSubs.dispose();
       this.subscriptions.remove(this._repoSubs);
+      this._repoSubs = null;
     }
 
     // Don't cache the path unless we know we need it.
     let editorPath = this.editor.getPath();
 
     this.repository = await repositoryForPath(editorPath);
+    // Editor may have been closed while we awaited the repo lookup.
+    if (!this.isEditorAlive()) return;
+
     if (this.repository !== null) {
       this.editorPath = editorPath;
       this.buffer = this.editor.getBuffer();
@@ -138,6 +163,8 @@ export default class GitDiffView {
   }
 
   moveToNextDiff() {
+    if (!this.diffs || !this.isEditorAlive()) return;
+
     const cursorLineNumber = this.editor.getCursorBufferPosition().row + 1;
     let nextDiffLineNumber = null;
     let firstDiffLineNumber = null;
@@ -166,6 +193,8 @@ export default class GitDiffView {
   }
 
   moveToPreviousDiff() {
+    if (!this.diffs || !this.isEditorAlive()) return;
+
     const cursorLineNumber = this.editor.getCursorBufferPosition().row + 1;
     let previousDiffLineNumber = null;
     let lastDiffLineNumber = null;
@@ -188,6 +217,7 @@ export default class GitDiffView {
   }
 
   updateIconDecoration() {
+    if (!this.isEditorAlive()) return;
     const gutter = this.editorElement.querySelector('.gutter');
     if (gutter) {
       if (
@@ -202,7 +232,7 @@ export default class GitDiffView {
   }
 
   moveToLineNumber(lineNumber) {
-    if (lineNumber !== null) {
+    if (lineNumber !== null && this.isEditorAlive()) {
       this.editor.setCursorBufferPosition([lineNumber, 0]);
       this.editor.moveToFirstCharacterOfLine();
     }
@@ -211,6 +241,7 @@ export default class GitDiffView {
   scheduleUpdate() {
     // Use Chromium native requestAnimationFrame because it yields
     // to the browser, is standard and doesn't involve extra JS overhead.
+    if (!this.isEditorAlive()) return;
     if (this._animationId) cancelAnimationFrame(this._animationId);
 
     this._animationId = requestAnimationFrame(this.updateDiffs);
@@ -222,18 +253,37 @@ export default class GitDiffView {
    *   just redraws the markers each call.
    */
   updateDiffs() {
+    this._animationId = null;
+
+    // Closing panes / Welcome Guide / other items can destroy editors while a
+    // rAF from scheduleUpdate is still pending. Never touch a dead editor.
+    if (!this.isEditorAlive()) return;
+    if (!this.repository || !this.buffer) return;
+    if (typeof this.buffer.isDestroyed === 'function' && this.buffer.isDestroyed()) {
+      return;
+    }
+
     if (this.buffer.getLength() < MAX_BUFFER_LENGTH_TO_DIFF) {
       // Before we redraw the diffs, tear down the old markers.
-      if (this.diffs)
-        for (const diff of this.diffs) this.markers.get(diff).destroy();
+      if (this.diffs) {
+        for (const diff of this.diffs) {
+          const existing = this.markers.get(diff);
+          if (existing && !existing.isDestroyed()) existing.destroy();
+        }
+      }
 
       this.markers.clear();
+
+      // Re-check after destroy loop — editor can die mid-frame.
+      if (!this.isEditorAlive()) return;
 
       const text = this.buffer.getText();
       this.diffs = this.repository.getLineDiffs(this.editorPath, text);
       this.diffs = this.diffs || []; // Sanitize type to array.
 
       for (const diff of this.diffs) {
+        if (!this.isEditorAlive()) return;
+
         const { newStart, oldLines, newLines } = diff;
         const startRow = newStart - 1;
         const endRow = newStart + newLines - 1;
@@ -252,16 +302,42 @@ export default class GitDiffView {
           mark = this.markRange(startRow, endRow, 'git-line-modified');
         }
 
-        this.markers.set(diff, mark);
+        if (mark) this.markers.set(diff, mark);
       }
     }
   }
 
   markRange(startRow, endRow, klass) {
-    const marker = this.editor.markBufferRange([[startRow, 0], [endRow, 0]], {
-      invalidate: 'never'
-    });
-    this.editor.decorateMarker(marker, { type: 'line-number', class: klass });
+    if (!this.isEditorAlive()) return null;
+
+    let marker;
+    try {
+      marker = this.editor.markBufferRange([[startRow, 0], [endRow, 0]], {
+        invalidate: 'never'
+      });
+    } catch (error) {
+      // Buffer/display layer may already be torn down.
+      return null;
+    }
+
+    if (!marker || marker.isDestroyed()) return null;
+
+    try {
+      this.editor.decorateMarker(marker, { type: 'line-number', class: klass });
+    } catch (error) {
+      // "Cannot decorate a destroyed marker" — swallow; next update will retry
+      // if the editor is still alive. Avoid uncaught exceptions that leave the
+      // workspace unable to open files after closing Welcome Guide etc.
+      if (error && /destroyed marker/i.test(error.message || '')) {
+        try {
+          if (!marker.isDestroyed()) marker.destroy();
+        } catch (_) {
+          /* ignore */
+        }
+        return null;
+      }
+      throw error;
+    }
     return marker;
   }
 }
