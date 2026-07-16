@@ -332,11 +332,11 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 
 ### Recommended next actions
 
-1. ~~**Electron ladder to current stable**~~ **done** (43.1.0).  
-2. ~~**IPC trust boundary**~~ **done** (scheme filter, drop webContents eval IPC, lock worker prefs).  
-3. **Phase N2** (package shell IPC) — see open PR / `docs/security-phase-n2.md` when merged.  
-4. ~~**Phase N3 guest + preload map**~~ **done 2026-07-16** — `will-attach-webview` lockdown, deny `window.open`, docs — `docs/security-phase-n3.md`.  
-5. **Next:** package Node surface shrink (fuzzy-finder Task ownership, bulk fs); Phase S sandbox.
+1. ~~**Electron ladder to current stable**~~ **done** (43.1.0 as of 2026-07-14).  
+2. ~~**IPC trust boundary hardening**~~ **done** (scheme filter, drop webContents `executeJavaScript` IPC, lock worker prefs).  
+3. ~~**Packaged github worker assets**~~ **done** — asar unpack includes `github/lib/**` for `file://` workers.  
+4. **Phase N** (active): narrow package Node surface / policy — see **`docs/security-phase-n.md`**.  
+5. Phase S later: sandbox guest content; core editor sandbox blocked on in-process natives.
 
 ---
 

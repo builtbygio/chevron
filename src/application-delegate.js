@@ -357,6 +357,14 @@ module.exports = class ApplicationDelegate {
     return rendererIpc.openExternal(url);
   }
 
+  showItemInFolder(fullPath) {
+    return rendererIpc.showItemInFolder(fullPath);
+  }
+
+  moveItemToTrash(fullPath) {
+    return rendererIpc.moveItemToTrash(fullPath);
+  }
+
   checkForUpdate() {
     return ipcRenderer.send('command', 'application:check-for-update');
   }
