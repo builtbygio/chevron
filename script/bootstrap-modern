@@ -159,6 +159,10 @@ node "$SCRIPT_DIR/lib/patch-nested-nan.js" "$REPO_ROOT"
 echo "Patching bundled packages for remote→IPC…"
 node "$SCRIPT_DIR/lib/patch-packages-remote-ipc.js" "$REPO_ROOT"
 
+# tree-view: modern fs.Stats own-keys are *Ms only; unguarded .getTime() throws
+echo "Patching tree-view Stats flattening for modern Node…"
+node "$SCRIPT_DIR/lib/patch-tree-view-stats.js" "$REPO_ROOT"
+
 # V8 10.x (Electron 21+) removed CreationContext(); patch old natives.
 echo "Patching natives for removed V8 APIs…"
 node "$SCRIPT_DIR/lib/patch-v8-api.js" "$REPO_ROOT"
