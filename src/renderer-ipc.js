@@ -180,6 +180,14 @@ module.exports = {
     return ipcRenderer.invoke('atom-shell-open-external', url);
   },
 
+  showItemInFolder(fullPath) {
+    return ipcRenderer.invoke('atom-shell-show-item-in-folder', fullPath);
+  },
+
+  moveItemToTrash(fullPath) {
+    return ipcRenderer.invoke('atom-shell-move-item-to-trash', fullPath);
+  },
+
   beep() {
     return ipcRenderer.sendSync('atom-shell-beep-sync');
   },

@@ -5,6 +5,7 @@
  * Registered once from AtomApplication so handlers can resolve AtomWindow.
  */
 
+const path = require('path');
 const {
   BrowserWindow,
   Menu,
@@ -48,6 +49,14 @@ function isAllowedExternalUrl(url) {
   } catch (error) {
     return false;
   }
+}
+
+// Absolute filesystem paths only for shell FS helpers. Rejects relative paths
+// and null bytes so a compromised renderer cannot coerce odd shell targets.
+function isSafeAbsolutePath(fullPath) {
+  if (typeof fullPath !== 'string' || fullPath.length === 0) return false;
+  if (fullPath.includes('\0')) return false;
+  return path.isAbsolute(fullPath);
 }
 
 module.exports = function registerRendererIpc(atomApplication) {
@@ -215,6 +224,41 @@ module.exports = function registerRendererIpc(atomApplication) {
       return false;
     }
     return shell.openExternal(url);
+  });
+
+  // Reveal a path in the OS file manager (tree-view "Show in Finder", etc.).
+  ipcMain.handle('atom-shell-show-item-in-folder', async (_event, fullPath) => {
+    if (!isSafeAbsolutePath(fullPath)) {
+      console.warn(
+        `atom-shell-show-item-in-folder: blocked path ${String(fullPath)}`
+      );
+      return false;
+    }
+    try {
+      shell.showItemInFolder(fullPath);
+      return true;
+    } catch (error) {
+      console.error('atom-shell-show-item-in-folder', error);
+      return false;
+    }
+  });
+
+  // Move a path to the trash. Electron removed sync moveItemToTrash; use
+  // async trashItem. Returns boolean success for package call sites.
+  ipcMain.handle('atom-shell-move-item-to-trash', async (_event, fullPath) => {
+    if (!isSafeAbsolutePath(fullPath)) {
+      console.warn(
+        `atom-shell-move-item-to-trash: blocked path ${String(fullPath)}`
+      );
+      return false;
+    }
+    try {
+      await shell.trashItem(fullPath);
+      return true;
+    } catch (error) {
+      console.error('atom-shell-move-item-to-trash', error);
+      return false;
+    }
   });
 
   ipcMain.on('atom-shell-beep-sync', event => {
