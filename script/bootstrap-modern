@@ -74,9 +74,7 @@ atomnova_patch_node_gyp "$REPO_ROOT/script"
 # install scripts. Skip scripts during npm install, then run apm's postinstall
 # pieces under its *bundled* Node 12 (download-node + npm rebuild).
 echo "Installing apm (scripts deferred; Node-12 postinstall after)…"
-(
-  export npm_config_ignore_scripts=true
-  node <<'NODE'
+node <<'NODE'
 'use strict';
 const installApm = require('./script/lib/install-apm');
 const ci = process.argv.includes('--ci') || process.env.CI === 'true';
@@ -84,10 +82,10 @@ process.on('unhandledRejection', e => {
   console.error(e.stack || e);
   process.exit(1);
 });
-installApm(ci);
+// Must ignore scripts: host Node 20+ / Python 3.12 cannot run apm's nested
+// node-gyp 5 (process.config freeze + open(..., 'rU') removed).
+installApm(ci, { ignoreScripts: true });
 NODE
-)
-unset npm_config_ignore_scripts || true
 
 APM_PKG="$REPO_ROOT/apm/node_modules/atom-package-manager"
 APM_NODE="$APM_PKG/bin/node"
