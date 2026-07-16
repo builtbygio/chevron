@@ -73,9 +73,12 @@ export default class WelcomePackage {
   }
 
   showWelcome() {
+    // Open as adjacent tabs in the active pane. Split left/right used to leave
+    // an empty center after closing Welcome Guide and confused focus when
+    // opening files from the tree view.
     return Promise.all([
-      atom.workspace.open(WELCOME_URI, { split: 'left' }),
-      atom.workspace.open(GUIDE_URI, { split: 'right' })
+      atom.workspace.open(WELCOME_URI, { searchAllPanes: true }),
+      atom.workspace.open(GUIDE_URI, { searchAllPanes: true })
     ]);
   }
 

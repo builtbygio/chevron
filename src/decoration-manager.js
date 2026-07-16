@@ -204,24 +204,20 @@ module.exports = class DecorationManager {
   }
 
   decorateMarker(marker, decorationParams) {
-    if (marker.isDestroyed()) {
-      const error = new Error('Cannot decorate a destroyed marker');
-      error.metadata = { markerLayerIsDestroyed: marker.layer.isDestroyed() };
-      if (marker.destroyStackTrace != null) {
-        error.metadata.destroyStackTrace = marker.destroyStackTrace;
-      }
-      if (
-        marker.bufferMarker != null &&
-        marker.bufferMarker.destroyStackTrace != null
-      ) {
-        error.metadata.destroyStackTrace =
-          marker.bufferMarker.destroyStackTrace;
-      }
-      throw error;
+    // Soft-fail: packages (git-diff, etc.) race rAF/updates against editor
+    // teardown. Throwing here is uncaught (opens DevTools) and can leave the
+    // workspace unable to open/focus editors after closing Welcome Guide.
+    if (marker == null || marker.isDestroyed()) {
+      return null;
     }
-    marker = this.displayLayer
-      .getMarkerLayer(marker.layer.id)
-      .getMarker(marker.id);
+    const markerLayer = this.displayLayer.getMarkerLayer(marker.layer.id);
+    if (markerLayer == null || markerLayer.isDestroyed()) {
+      return null;
+    }
+    marker = markerLayer.getMarker(marker.id);
+    if (marker == null || marker.isDestroyed()) {
+      return null;
+    }
     const decoration = new Decoration(marker, this, decorationParams);
     let decorationsForMarker = this.decorationsByMarker.get(marker);
     if (!decorationsForMarker) {
@@ -238,10 +234,13 @@ module.exports = class DecorationManager {
   }
 
   decorateMarkerLayer(markerLayer, decorationParams) {
-    if (markerLayer.isDestroyed()) {
-      throw new Error('Cannot decorate a destroyed marker layer');
+    if (markerLayer == null || markerLayer.isDestroyed()) {
+      return null;
     }
     markerLayer = this.displayLayer.getMarkerLayer(markerLayer.id);
+    if (markerLayer == null || markerLayer.isDestroyed()) {
+      return null;
+    }
     const decoration = new LayerDecoration(markerLayer, this, decorationParams);
     let layerDecorations = this.layerDecorationsByMarkerLayer.get(markerLayer);
     if (layerDecorations == null) {
