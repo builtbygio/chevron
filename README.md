@@ -1,98 +1,56 @@
-# AtomNova
+# Chevron
 
-**AtomNova** is a community-driven revival of the [Atom](https://github.com/atom/atom) text editor. We are modernizing the codebase while preserving its legendary hackability.
+A modernized fork of [Atom](https://github.com/atom/atom), the hackable text editor — resurrected and rebuilt on a current version of Electron.
 
-> **Heritage:** This project is based on Atom 1.65 (Electron 11). GitHub [archived Atom](https://github.blog/2022-06-08-sunsetting-atom/) in December 2022. AtomNova is an independent fork — not affiliated with GitHub.
+> Named after the Stargate dialing mechanism: each chevron locks in a step toward a working connection. Fitting for a project that's rebuilding Atom's internals one architectural piece at a time.
 
-This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md).
+## Why
 
-[![CI](https://github.com/giobuilds/atom-nova/actions/workflows/ci.yml/badge.svg)](https://github.com/giobuilds/atom-nova/actions/workflows/ci.yml)
+Atom was officially [sunset by GitHub in December 2022](https://github.blog/2022-06-08-sunsetting-atom/) and hasn't received updates since. It shipped on Electron 11, which is years out of date, unsupported, and increasingly incompatible with modern Node.js, V8, and OS-level APIs.
+
+Rather than a from-scratch rewrite, Chevron takes the harder — and more educational — path: bring Atom's existing codebase forward through modern Electron versions, one breaking change at a time.
 
 ## Status
 
-| Area | Status |
-|------|--------|
-| Build on modern macOS | Working (see below) |
-| Packaged app launch | Working |
-| Rebrand / Electron upgrade | In progress |
+🚧 **Active development, pre-alpha.** Not yet usable as a daily-driver editor.
 
-Planning docs:
+Currently tackling: **`contextIsolation` migration.**
 
-- [Migration checklist](MIGRATION-CHECKLIST.md)
-- [Rebranding checklist](docs/REBRANDING.md)
-- [Bootstrap / build notes](docs/bootstrap-report.md)
+Electron enabled `contextIsolation` by default starting in Electron 12, and deprecated direct `remote` module access shortly after. Atom's original architecture (Electron 11) relies heavily on synchronous IPC and shared context between the main and renderer processes — patterns that modern Electron actively forbids for security reasons. Getting Chevron onto a supported Electron version means rearchitecting this IPC layer rather than just bumping a version number in `package.json`.
 
-## Building from source
+## Goals
 
-Stock Atom bootstrap does **not** work on current toolchains (Node 18+, Python 3.12+, dead `atom.io` Electron headers). Use the modern wrappers.
+- [ ] Migrate off deprecated `remote` module usage
+- [ ] Rearchitect IPC to work under `contextIsolation: true`
+- [ ] Get a clean build running on a current Electron LTS
+- [ ] Re-audit and update Atom's package/plugin API surface for compatibility
+- [ ] Strip or replace any other Electron-11-era APIs flagged as removed/deprecated
+- [ ] (Longer term) Evaluate what a modern packaging/build pipeline should look like
 
-### Prerequisites
+## Non-goals (for now)
 
-| Tool | Version / notes |
-|------|-----------------|
-| **Node.js** | **16.x** (see [`.nvmrc`](.nvmrc)) — use [nvm](https://github.com/nvm-sh/nvm) |
-| **Python** | **3.11** (not 3.12+; old node-gyp needs `distutils`) |
-| **Git** | Any recent version |
-| **C++ toolchain** | macOS: Xcode Command Line Tools; Linux: build-essential + native deps |
+- A ground-up rewrite — this is a modernization effort, not a new editor
+- Feature parity with VS Code or other modern editors
+- Cross-platform polish before the core architecture is stable
 
-**macOS example:**
+## Background
 
-```sh
-# Node 16
-nvm install
-nvm use          # reads .nvmrc
+Chevron is a solo learning project, developed in the open as part of a broader path toward systems programming and eventually building a custom OS and AI-integrated development platform. The Electron/IPC rearchitecture work here is deliberately treated as a real systems problem — understanding process boundaries, security models, and inter-process communication — rather than just a dependency bump.
 
-# Python 3.11 + unversioned `python` for old native builds
-brew install python@3.11
-mkdir -p ~/.local/bin
-ln -sfn "$(brew --prefix python@3.11)/bin/python3.11" ~/.local/bin/python
-export PATH="$HOME/.local/bin:$PATH"
+## Development
+
+Built using a branch → PR → merge workflow, even solo. Each PR is scoped to a phase of the migration (e.g. "Remove remote module from menu package," "Rearchitect settings-view IPC") so the PR history doubles as a changelog of the migration's progress.
+
+```bash
+git clone https://github.com/builtbygio/chevron.git
+cd chevron
+# build instructions TBD as the Electron migration stabilizes
 ```
-
-### Bootstrap and build
-
-```sh
-# Install dependencies (script tools, apm, app node_modules)
-./script/bootstrap-modern
-
-# Package the app (skips re-bootstrap)
-./script/with-modern-env ./script/build --no-bootstrap
-```
-
-On macOS, the app is written to:
-
-```text
-out/Atom Dev.app
-```
-
-Launch:
-
-```sh
-open "out/Atom Dev.app"
-```
-
-### Important rules
-
-1. Prefer **`./script/bootstrap-modern`** and **`./script/with-modern-env`** over plain `./script/bootstrap` / `./script/build` on modern hosts.
-2. Always generate the startup snapshot via a **full** `script/build` run. Do not regenerate the snapshot alone without `prebuild-less-cache` in the same process (that caused a blank window). Details: [docs/bootstrap-report.md](docs/bootstrap-report.md).
-3. Electron headers are fetched from `https://www.electronjs.org/headers` (set via `ATOM_ELECTRON_URL`), not the retired atom.io endpoint.
-
-### Dev mode (source tree)
-
-After a successful package build, you can load the repo as resource path:
-
-```sh
-"out/Atom Dev.app/Contents/MacOS/Atom Dev" \
-  --dev --resource-path="$PWD"
-```
-
-## Documentation
-
-- Legacy user guide: [Atom Flight Manual](https://flight-manual.atom.io) (upstream, archived context)
-- Bootstrap failures and workarounds: [docs/bootstrap-report.md](docs/bootstrap-report.md)
 
 ## License
 
-[MIT](LICENSE.md) — same as original Atom.
+Atom was released under the MIT License. This fork retains that license — see [LICENSE](LICENSE).
 
-When using the Atom or GitHub logos, follow the [GitHub logo guidelines](https://github.com/logos). AtomNova will introduce its own branding separately.
+## Acknowledgments
+
+Built on the work of the original [Atom](https://github.com/atom/atom) team and community. [Pulsar](https://pulsar-edit.dev/) is the active community-maintained Atom fork focused on immediate usability — worth a look if you want a maintained daily driver today rather than a from-source modernization project.

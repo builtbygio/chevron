@@ -1,15 +1,15 @@
 {
-  "name": "atomnova-editor",
-  "productName": "AtomNova",
-  "version": "1.65.0-dev",
-  "description": "Hackable. Fast. Yours. AtomNova is a community-driven revival of the Atom text editor. We are modernizing the codebase while preserving its legendary hackability.",
+  "name": "chevron",
+  "productName": "Chevron",
+  "version": "0.1.0",
+  "description": "Hackable. Fast. Yours. Chevron is a modernised fork of Atom, the hackable text editor.",
   "main": "./src/main-process/main.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gdick-crypto/atom-nova"
+    "url": "https://github.com/builtbygio/chevron.git"
   },
   "bugs": {
-    "url": "https://github.com/gdick-crypto/atom-nova/issues"
+    "url": "https://github.com/builtbygio/chevron/issues"
   },
   "license": "MIT",
   "electronVersion": "43.1.0",

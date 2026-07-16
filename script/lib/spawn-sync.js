@@ -7,15 +7,22 @@
 const childProcess = require('child_process');
 
 module.exports = function() {
+  // Capture argv before spawn so error messages work even when
+  // result.args is missing (some Node/Electron spawnSync edge cases).
+  const argv = Array.prototype.slice.call(arguments);
+  const command =
+    typeof argv[0] === 'string'
+      ? [argv[0]].concat(Array.isArray(argv[1]) ? argv[1] : []).join(' ')
+      : String(argv[0]);
   const result = childProcess.spawnSync.apply(childProcess, arguments);
   if (result.error) {
     throw result.error;
   } else if (result.status !== 0) {
     if (result.stdout) console.error(result.stdout.toString());
     if (result.stderr) console.error(result.stderr.toString());
-    throw new Error(
-      `Command ${result.args.join(' ')} exited with code "${result.status}"`
-    );
+    const cmd =
+      result.args && result.args.length ? result.args.join(' ') : command;
+    throw new Error(`Command ${cmd} exited with code "${result.status}"`);
   } else {
     return result;
   }

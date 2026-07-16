@@ -167,15 +167,31 @@ function setAtomHelperVersion(packagedAppPath) {
     'Info.plist'
   );
   console.log(`Setting Atom Helper Version for ${helperPListPath}`);
-  spawnSync('/usr/libexec/PlistBuddy', [
+  // Use Set-or-Add: Electron's Helper Info.plist already defines these keys.
+  // Plain Add fails with "Entry Already Exists" and aborts packaging (CI).
+  setPlistString(
+    helperPListPath,
+    'CFBundleVersion',
+    CONFIG.appMetadata.version
+  );
+  setPlistString(
+    helperPListPath,
+    'CFBundleShortVersionString',
+    CONFIG.appMetadata.version
+  );
+}
+
+function setPlistString(plistPath, key, value) {
+  const setResult = childProcess.spawnSync('/usr/libexec/PlistBuddy', [
     '-c',
-    `Add CFBundleVersion string ${CONFIG.appMetadata.version}`,
-    helperPListPath
+    `Set :${key} ${value}`,
+    plistPath
   ]);
+  if (setResult.status === 0) return;
   spawnSync('/usr/libexec/PlistBuddy', [
     '-c',
-    `Add CFBundleShortVersionString string ${CONFIG.appMetadata.version}`,
-    helperPListPath
+    `Add :${key} string ${value}`,
+    plistPath
   ]);
 }
 
