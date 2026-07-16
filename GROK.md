@@ -157,7 +157,9 @@ Suggested order:
    - **Inventory:** `docs/remote-ipc-inventory.md`  
    - **P0–P4 done:** no `@electron/remote`; IPC `remote-compat`  
    - **Preload + contextIsolation done:** page has no Node; `static/preload.js` boots Atom; custom elements use `create-custom-element.js`  
-   - Next: Electron 18; then Phase N (narrow package Node surface / sandbox where possible)
+   - **IPC trust boundary (PR #5):** `openExternal` scheme allowlist; no `executeJavaScript` over webContents IPC; worker `webPreferences` fixed  
+   - **Packaged github workers:** unpack `node_modules/github/lib/**` so `file://` worker HTML resolves under `app.asar.unpacked`  
+   - **Phase N (in progress):** narrow package Node surface — see `docs/security-phase-n.md`
 4. **Native modules + CI**  
    - Rebuild against each Electron ABI  
    - GitHub Actions for bootstrap/build/test on modern OS  
@@ -197,8 +199,9 @@ Suggested order:
 | Nested superstring without `.node` | After rebuild, copy `packages/superstring` **including** `build/` into nested installs (force-patched script excludes `build/` on purpose) |
 | `keytar` native missing / fails to build | github needs `keytar.node`; keytar 4.x needs `nan` ≥ 2.22 for Electron 14, then electron-rebuild |
 | GitHub worker windows | Still `contextIsolation: false` + Node (trusted hidden windows via remote-compat) |
+| Packaged github `renderer.html` not found | Unpack `github/lib/**` in `script/lib/package-application.js` (workers load via `file://` under `.asar.unpacked`) |
 | `keytar` native missing / fails to build | github package needs `keytar.node`; rebuild for Electron ABI (nan ≥ 2.22 under keytar 4.x, or upgrade keytar) |
-| GitHub worker windows | Still `contextIsolation: false` + Node (trusted hidden windows via remote-compat) |
+| Helper Info.plist re-packaging | `setAtomHelperVersion` uses Set-or-Add (plain Add fails if keys already exist) |
 
 ---
 

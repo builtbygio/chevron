@@ -332,8 +332,11 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 
 ### Recommended next actions
 
-1. ~~**Electron 18** ladder rung~~ **done 2026-07-14** (18.3.15); next rung 22.  
-2. Phase N: reduce package reliance on Node in preload; evaluate sandbox for guest content.
+1. ~~**Electron ladder to current stable**~~ **done** (43.1.0 as of 2026-07-14).  
+2. ~~**IPC trust boundary hardening**~~ **done** (scheme filter, drop webContents `executeJavaScript` IPC, lock worker prefs).  
+3. ~~**Packaged github worker assets**~~ **done** — asar unpack includes `github/lib/**` for `file://` workers.  
+4. **Phase N** (active): narrow package Node surface / policy — see **`docs/security-phase-n.md`**.  
+5. Phase S later: sandbox guest content; core editor sandbox blocked on in-process natives.
 
 ---
 

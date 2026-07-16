@@ -203,6 +203,13 @@ function chmodNodeFiles(packagedAppPath) {
 }
 
 function buildAsarUnpackGlobExpression() {
+  // Files that must live on the real filesystem (not only inside app.asar):
+  //
+  // - Native .node addons and helper binaries (ctags, ripgrep, dugite git).
+  // - github worker assets: WorkerManager loads renderer.html + worker.js via
+  //   file:// under app.asar.unpacked (see getPackageRoot() in the github
+  //   package). Previously only github/bin was unpacked, which produced
+  //   ERR_FILE_NOT_FOUND for lib/renderer.html in packaged builds.
   const unpack = [
     '*.node',
     'ctags-config',
@@ -212,6 +219,7 @@ function buildAsarUnpackGlobExpression() {
     path.join('**', 'node_modules', 'spellchecker', '**'),
     path.join('**', 'node_modules', 'dugite', 'git', '**'),
     path.join('**', 'node_modules', 'github', 'bin', '**'),
+    path.join('**', 'node_modules', 'github', 'lib', '**'),
     path.join('**', 'node_modules', 'vscode-ripgrep', 'bin', '**'),
     path.join('**', 'resources', 'atom.png')
   ];
