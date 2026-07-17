@@ -1,48 +1,24 @@
 #!/usr/bin/env node
 
-'use strict'
+'use strict';
 
-const CONFIG = require('./config')
-const childProcess = require('child_process')
-const cleanDependencies = require('./lib/clean-dependencies')
-const deleteMsbuildFromPath = require('./lib/delete-msbuild-from-path')
-const dependenciesFingerprint = require('./lib/dependencies-fingerprint')
-const installApm = require('./lib/install-apm')
-const runApmInstall = require('./lib/run-apm-install')
-const installScriptDependencies = require('./lib/install-script-dependencies')
-const verifyMachineRequirements = require('./lib/verify-machine-requirements')
+// Stock Atom bootstrap assumes Node ~12–16 and Python with stdlib distutils.
+// On modern macOS (Node 20+/24, Python 3.12+) it fails with:
+//   ValueError: invalid mode: 'rU'          (old node-gyp + Python 3.11+)
+//   Cannot assign to read only property 'cflags'  (node-gyp 5 + Node 18+)
+//
+// Use the modern wrapper instead (patches gyp, defers apm natives to Node 12):
+//   ./script/bootstrap-modern
+//   ./script/with-modern-env ./script/build --no-bootstrap
 
-process.on('unhandledRejection', function (e) {
-  console.error(e.stack || e)
-  process.exit(1)
-})
-
-// We can't use yargs until installScriptDependencies() is executed, so...
-let ci = process.argv.indexOf('--ci') !== -1
-
-if (!ci && process.env.CI === 'true' && process.argv.indexOf('--no-ci') === -1) {
-  console.log('Automatically enabling --ci because CI is set in the environment')
-  ci = true
-}
-
-verifyMachineRequirements(ci)
-
-if (dependenciesFingerprint.isOutdated()) {
-  cleanDependencies()
-}
-
-if (process.platform === 'win32') deleteMsbuildFromPath()
-
-installScriptDependencies(ci)
-installApm(ci)
-const apmVersionEnv = Object.assign({}, process.env);
-// Set resource path so that apm can load Atom's version.
-apmVersionEnv.ATOM_RESOURCE_PATH = CONFIG.repositoryRootPath;
-childProcess.execFileSync(
-  CONFIG.getApmBinPath(),
-  ['--version'],
-  {stdio: 'inherit', env: apmVersionEnv}
-)
-runApmInstall(CONFIG.repositoryRootPath, ci)
-
-dependenciesFingerprint.write()
+console.error('');
+console.error('error: ./script/bootstrap is not supported on modern host toolchains.');
+console.error('');
+console.error('  Use:');
+console.error('    nvm use          # .nvmrc → Node 24');
+console.error('    ./script/bootstrap-modern');
+console.error('    ./script/with-modern-env ./script/build --no-bootstrap');
+console.error('');
+console.error('  See docs/bootstrap-report.md and docs/toolchain-node-python-upgrade-plan.md');
+console.error('');
+process.exit(1);
