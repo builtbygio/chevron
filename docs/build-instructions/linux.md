@@ -112,6 +112,20 @@ xvfb-run -a node script/ci/smoke-test.js
 
 See `docs/toolchain-node-python-upgrade-plan.md` and `docs/bootstrap-report.md`.
 
+### arm64 and mksnapshot
+
+`electron-mksnapshot` **does not run on Linux arm64** (Electron only ships an
+x64 host tool that can *cross-generate* arm64 snapshots). On native arm64
+builders we:
+
+1. Install script deps without the mksnapshot lifecycle script
+2. Skip custom Atom startup-blob generation
+3. Ship Electron’s **stock** V8 snapshots (app boots normally; slightly slower cold start)
+
+To produce custom arm64 startup blobs you must run mksnapshot on an **x64**
+Linux host with the `linux-arm64-x64` mksnapshot artifact — out of scope for
+native arm64 CI.
+
 ---
 
 ## Packaging flags

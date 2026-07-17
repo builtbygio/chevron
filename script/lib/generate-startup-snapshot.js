@@ -4,8 +4,34 @@ const path = require('path');
 const electronLink = require('electron-link');
 const terser = require('terser');
 const CONFIG = require('../config');
+const { hostCanRunMksnapshot } = require('./mksnapshot-host-support');
 
 module.exports = function(packagedAppPath) {
+  // linux-arm* / win-arm*: electron-mksnapshot is x64-only (cross tools run on
+  // x64 hosts). Skip custom Atom startup blob; keep Electron stock snapshots.
+  if (!hostCanRunMksnapshot()) {
+    console.warn(
+      `\nWARNING: skipping custom startup snapshot on ${process.platform}-${process.arch} — ` +
+        'electron-mksnapshot does not run on this host. The packaged app will use ' +
+        "Electron's stock V8 snapshots (normal boot, no snapshotResult optimisation).\n"
+    );
+    return Promise.resolve();
+  }
+
+  const mksnapshotSkippedMarker = path.join(
+    CONFIG.scriptRootPath,
+    'node_modules',
+    'electron-mksnapshot',
+    '.skipped-unsupported-host'
+  );
+  if (fs.existsSync(mksnapshotSkippedMarker)) {
+    console.warn(
+      '\nWARNING: electron-mksnapshot was skipped at install time; ' +
+        'using stock Electron V8 snapshots.\n'
+    );
+    return Promise.resolve();
+  }
+
   const snapshotScriptPath = path.join(CONFIG.buildOutputPath, 'startup.js');
   const coreModules = new Set([
     'electron',

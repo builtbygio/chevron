@@ -2,6 +2,7 @@
 #define REGEX_H_
 
 #include "optional.h"
+#include <cstdint>
 #include <string>
 
 struct pcre2_real_code_16;
