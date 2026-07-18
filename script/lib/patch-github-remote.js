@@ -3,6 +3,8 @@
 /**
  * Patch the bundled github package worker entry to not use electron.remote.
  * Idempotent. Wired from bootstrap-modern / patch-packages-remote-ipc.
+ *
+ * Windows npm/git may leave CRLF in node_modules; always normalize before match.
  */
 
 const fs = require('fs');
@@ -17,7 +19,7 @@ if (!fs.existsSync(workerPath)) {
 }
 
 const MARKER = 'atom-get-web-contents-id-sync';
-let text = fs.readFileSync(workerPath, 'utf8');
+let text = fs.readFileSync(workerPath, 'utf8').replace(/\r\n/g, '\n');
 const alreadyRemotePatched = text.includes(MARKER);
 
 // Electron 28 removed ipcRenderer.sendTo; route worker→manager messages
@@ -59,27 +61,9 @@ text = text.replace(
   `const sourceWebContentsId = ipc.sendSync('atom-get-web-contents-id-sync');`
 );
 
-// Replace destroyRenderer / managerWebContents block
-const destroyBlock = `const destroyRenderer = () => {
-  if (!managerWebContents.isDestroyed()) {
-    managerWebContents.removeListener('crashed', destroyRenderer);
-    managerWebContents.removeListener('destroyed', destroyRenderer);
-  }
-  const win = remote.BrowserWindow.fromWebContents(remote.getCurrentWebContents());
-  if (win && !win.isDestroyed()) {
-    win.destroy();
-  }
-};
-const managerWebContentsId = parseInt(query.managerWebContentsId, 10);
-const managerWebContents = remote.webContents.fromId(managerWebContentsId);
-if (managerWebContents && !managerWebContents.isDestroyed()) {
-  managerWebContents.on('crashed', destroyRenderer);
-  managerWebContents.on('destroyed', destroyRenderer);
-  window.onbeforeunload = () => {
-    managerWebContents.removeListener('crashed', destroyRenderer);
-    managerWebContents.removeListener('destroyed', destroyRenderer);
-  };
-}`;
+// Replace the whole destroyRenderer + managerWebContents lifecycle block.
+// Regex (not exact string) so minor whitespace/EOL drift still matches.
+const destroyBlockRe = /const destroyRenderer = \(\) => \{[\s\S]*?const managerWebContentsId = parseInt\(query\.managerWebContentsId, 10\);[\s\S]*?window\.onbeforeunload = \(\) => \{[\s\S]*?\};\n\}/;
 
 const destroyBlockNew = `// Manager lifecycle is handled in main (register-renderer-ipc): if the
 // manager renderer dies, worker windows are destroyed automatically.
@@ -95,30 +79,28 @@ window.onbeforeunload = () => {
   // no-op: main owns parent/child lifecycle
 };`;
 
-if (!text.includes('remote.webContents.fromId')) {
-  console.log('github worker.js: managerWebContents block missing, skip destroy rewrite');
-} else {
-  text = text.replace(destroyBlock, destroyBlockNew);
-  if (text.includes('remote.')) {
-    // Fallback line-by-line cleanup if exact block mismatch
-    text = text
-      .replace(
-        /const win = remote\.BrowserWindow\.fromWebContents\(remote\.getCurrentWebContents\(\)\);\s*if \(win && !win\.isDestroyed\(\)\) \{\s*win\.destroy\(\);\s*\}/s,
-        `try { ipc.sendSync('atom-destroy-own-window-sync'); } catch (e) {}`
-      )
-      .replace(
-        /const managerWebContents = remote\.webContents\.fromId\(managerWebContentsId\);[\s\S]*?window\.onbeforeunload = \(\) => \{[\s\S]*?\};/,
-        `window.onbeforeunload = () => {};`
-      );
-  }
+if (!destroyBlockRe.test(text)) {
+  console.error('github worker.js: destroyRenderer/managerWebContents block not found');
+  process.exit(1);
 }
+
+text = text.replace(destroyBlockRe, destroyBlockNew);
 
 if (text.includes('remote.')) {
   console.error('github worker.js still references remote after patch');
-  // show remaining
   text.split('\n').forEach((line, i) => {
     if (line.includes('remote.')) console.error(`${i + 1}: ${line}`);
   });
+  process.exit(1);
+}
+
+// Quick syntax sanity: balanced braces in the patched bootstrap region.
+const open = (text.match(/\{/g) || []).length;
+const close = (text.match(/\}/g) || []).length;
+if (open !== close) {
+  console.error(
+    `github worker.js: brace imbalance after patch (open=${open} close=${close})`
+  );
   process.exit(1);
 }
 

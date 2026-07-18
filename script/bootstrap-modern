@@ -257,16 +257,27 @@ MODERN_GYP="$REPO_ROOT/script/node_modules/.bin/node-gyp"
 rebuild_package_modern() {
   local pkg="$1"
   local arch
+  local attempt
   arch="$(node -p "process.arch")"
   # Always target Electron runtime so natives link against Electron's V8,
   # not host Node (Windows fails with unresolved GetBackingStore otherwise).
   if [ "${OS:-}" = "Windows_NT" ] || [[ "$(uname -s 2>/dev/null)" == MINGW* ]] || [[ "$(uname -s 2>/dev/null)" == MSYS* ]]; then
     # node-gyp@11 understands VS 2022/2025/2026 year codes.
-    (cd "$pkg" && npx --yes node-gyp@11 rebuild \
-      --target="$ELECTRON_VERSION" \
-      --dist-url="$ATOM_ELECTRON_URL" \
-      --runtime=electron \
-      --arch="$arch")
+    # Windows: `node-gyp rebuild` cleans first and can hit EBUSY if MSBuild
+    # still holds handles from the preceding npm rebuild — retry + force-rm.
+    for attempt in 1 2 3; do
+      if (cd "$pkg" && npx --yes node-gyp@11 rebuild \
+        --target="$ELECTRON_VERSION" \
+        --dist-url="$ATOM_ELECTRON_URL" \
+        --runtime=electron \
+        --arch="$arch"); then
+        return 0
+      fi
+      echo "WARNING: rebuild attempt $attempt failed for $pkg; clearing build/ and retrying..."
+      rm -rf "$pkg/build" 2>/dev/null || true
+      sleep 2
+    done
+    return 1
   else
     (cd "$pkg" && "$MODERN_GYP" rebuild \
       --target="$ELECTRON_VERSION" \
