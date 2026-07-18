@@ -194,15 +194,15 @@ const PROBE_EXPR = `(function() {
   });
 })()`;
 
-function isPageTarget(target) {
+function isAppWindowTarget(target) {
   if (!target || target.type !== 'page') return false;
   const url = target.url || '';
-  // file://…/static/index.html, app://, or atom://-style loads
-  return (
-    /index\.html/i.test(url) ||
-    /static/i.test(url) ||
-    /^file:\/\//i.test(url)
-  );
+  if (/^devtools:/i.test(url)) return false;
+  // github package opens secondary BrowserWindows (renderer.html?js=…worker.js)
+  if (/github[/\\]lib[/\\]renderer\.html/i.test(url)) return false;
+  if (/[?&]js=.*worker\.js/i.test(url)) return false;
+  // Main editor window only
+  return /static[/\\]index\.html/i.test(url) || /\/index\.html(?:\?|#|$)/i.test(url);
 }
 
 // Accumulated renderer console / exception noise for timeout diagnostics.
@@ -210,13 +210,8 @@ const rendererLogs = [];
 
 async function probeWindow() {
   const targets = await jsonList();
-  // Prefer the app window; skip DevTools UI pages that open on setup errors.
-  const page =
-    targets.find(
-      target =>
-        isPageTarget(target) && !/^devtools:/i.test(target.url || '')
-    ) ||
-    targets.find(target => target.type === 'page' && !/^devtools:/i.test(target.url || ''));
+  // Prefer the main editor window only (never github worker / DevTools).
+  const page = targets.find(isAppWindowTarget);
   if (!page) {
     return {
       status: 'pending',
