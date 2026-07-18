@@ -12,11 +12,23 @@ module.exports = function(packagedAppPath) {
   compress(packagedAppPath, appArchivePath);
 
   if (process.platform === 'darwin') {
-    const symbolsArchivePath = path.join(
-      CONFIG.buildOutputPath,
-      'atom-mac-symbols.zip'
-    );
-    compress(CONFIG.symbolsPath, symbolsArchivePath);
+    // dump_syms is only shipped for some host pairs (e.g. darwin-x64). On
+    // Apple Silicon CI the symbols dir is never created — skip rather than
+    // failing zip with "Nothing to do!".
+    if (
+      fs.existsSync(CONFIG.symbolsPath) &&
+      fs.readdirSync(CONFIG.symbolsPath).length > 0
+    ) {
+      const symbolsArchivePath = path.join(
+        CONFIG.buildOutputPath,
+        'atom-mac-symbols.zip'
+      );
+      compress(CONFIG.symbolsPath, symbolsArchivePath);
+    } else {
+      console.log(
+        `Skipping macOS symbols archive (no symbols at ${CONFIG.symbolsPath})`
+      );
+    }
   }
 };
 

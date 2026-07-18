@@ -378,8 +378,14 @@ module.exports = function(packagedAppPath) {
       ],
       { stdio: 'inherit' }
     );
+    // Electron 43: v8_context_snapshot_generator often SIGTRAPs / exits non-zero
+    // on Atom's custom blob (seen on Windows and Apple Silicon). Fall through
+    // to the missing-binary soft-fail below so packaging still succeeds.
     if (mksnapshotResult.status !== 0) {
-      throw new Error(`mksnapshot exited with ${mksnapshotResult.status}`);
+      console.warn(
+        `\nWARNING: mksnapshot exited with ${mksnapshotResult.status}; ` +
+          'checking for partial snapshot binaries…\n'
+      );
     }
 
     let startupBlobDestinationPath;
