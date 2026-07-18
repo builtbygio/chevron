@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# AtomNova bootstrap for modern host toolchains (macOS 13+ / Linux / Windows via Git Bash).
+# Chevron bootstrap for modern host toolchains (macOS 13+ / Linux / Windows via Git Bash).
 #
 # Stock ./script/bootstrap assumes Node ~12–16 era + Python with distutils +
 # atom.io Electron headers. This wrapper applies the environment and patches
@@ -27,7 +27,7 @@ if [ "${1:-}" = "--ci" ] || [ "${CI:-}" = "true" ]; then
 fi
 
 echo ""
-echo "==> AtomNova modern bootstrap"
+echo "==> Chevron modern bootstrap"
 echo "    repo: $REPO_ROOT"
 echo ""
 
@@ -66,7 +66,7 @@ NODE
 
 # Patch gyp that just landed under script/node_modules
 echo "Patching node-gyp (script) for Python 3.11+ (rU->r)..."
-atomnova_patch_node_gyp "$REPO_ROOT/script"
+chevron_patch_node_gyp "$REPO_ROOT/script"
 
 # --- Step 2: install apm under host Node; run Node-12-native postinstall -----
 # Host Node 20+ freezes process.config; apm's nested node-gyp 5 crashes with
@@ -97,7 +97,7 @@ MODERN_GYP="$REPO_ROOT/script/node_modules/.bin/node-gyp"
 
 # Nested gyp under apm (used by postinstall rebuild with bundled Node)
 echo "Patching node-gyp (apm) for Python 3.11+ (rU->r)..."
-atomnova_patch_node_gyp "$REPO_ROOT/apm"
+chevron_patch_node_gyp "$REPO_ROOT/apm"
 
 # npm 6 devDependencies-without-dependencies crash (npm/npm#19877)
 echo "Patching apm's bundled npm (update-package-json)…"
@@ -213,7 +213,7 @@ unset npm_config_ignore_scripts
 
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/lib/force-patched-superstring.sh"
-atomnova_force_patched_superstring "$REPO_ROOT"
+chevron_force_patched_superstring "$REPO_ROOT"
 
 # Electron 12+ forbids non-context-aware NODE_MODULE natives in the renderer.
 echo "Patching natives for NODE_MODULE_CONTEXT_AWARE…"
@@ -381,7 +381,7 @@ fi
 # were made *before* Electron rebuild and lack build/Release/*.node. Without
 # this resync, packaged Linux boots die with "Cannot find module superstring.node".
 echo "Re-syncing nested natives from rebuilt root packages…"
-atomnova_resync_nested_built_natives "$REPO_ROOT"
+chevron_resync_nested_built_natives "$REPO_ROOT"
 
 if [ ! -f "$REPO_ROOT/node_modules/superstring/build/Release/superstring.node" ]; then
   echo "error: superstring.node missing after rebuild" >&2

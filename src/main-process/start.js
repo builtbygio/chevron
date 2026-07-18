@@ -104,7 +104,7 @@ module.exports = function start(resourcePath, devResourcePath, startTime) {
   app.on('open-url', addUrlToOpen);
   app.on('will-finish-launching', () =>
     startCrashReporter({
-      // AtomNova: never upload crash reports to third parties
+      // Chevron: never upload crash reports to third parties
       uploadToServer: false,
       releaseChannel
     })

@@ -3,17 +3,17 @@
 #
 # Usage (from repo root):
 #   . script/lib/force-patched-superstring.sh
-#   atomnova_force_patched_natives
+#   chevron_force_patched_natives
 
 # Ensure core utilities are always available (some env setups shrink PATH).
 export PATH="/bin:/usr/bin:/usr/local/bin:/opt/homebrew/bin:${PATH:-}"
 
-_atomnova_ensure_nan_cache() {
+_chevron_ensure_nan_cache() {
   # Electron 43 / V8 13+ needs nan >= 2.22 (ScriptOrigin / External::Value APIs).
   # Keep this in sync with root package-lock nan.
   local nan_ver="2.28.0"
   # Prefer OS temp (Windows Git Bash: $TMPDIR or /tmp may differ).
-  local cache="${TMPDIR:-/tmp}/atomnova-nan-${nan_ver}"
+  local cache="${TMPDIR:-/tmp}/chevron-nan-${nan_ver}"
   if [ ! -d "$cache/package" ]; then
     # Status on stderr so $(...) only captures the path.
     echo "Fetching nan@${nan_ver}..." >&2
@@ -26,7 +26,7 @@ _atomnova_ensure_nan_cache() {
 # After Electron rebuild of root natives, re-copy built trees into nested
 # package dirs (text-buffer/node_modules/superstring, etc.). Nested copies
 # made before rebuild lack build/Release/*.node and break packaged boots.
-atomnova_resync_nested_built_natives() {
+chevron_resync_nested_built_natives() {
   local repo_root="${1:-$(pwd)}"
   local npm_name base_name root_dest nested
 
@@ -72,7 +72,7 @@ atomnova_resync_nested_built_natives() {
   echo "Nested built natives re-synced from root."
 }
 
-atomnova_force_one_native() {
+chevron_force_one_native() {
   local repo_root="$1"
   local package_name="$2"
   local fork_rel="$3"
@@ -104,7 +104,7 @@ atomnova_force_one_native() {
 
   if grep -q '"nan"' "$root_dest/package.json" 2>/dev/null; then
     local nan_src
-    nan_src="$(_atomnova_ensure_nan_cache)"
+    nan_src="$(_chevron_ensure_nan_cache)"
     mkdir -p "$root_dest/node_modules"
     rm -rf "$root_dest/node_modules/nan"
     cp -R "$nan_src" "$root_dest/node_modules/nan"
@@ -148,10 +148,10 @@ atomnova_force_one_native() {
   done
 }
 
-atomnova_upgrade_nan_for_electron14() {
+chevron_upgrade_nan_for_electron14() {
   local repo_root="${1:-$(pwd)}"
   local nan_src
-  nan_src="$(_atomnova_ensure_nan_cache)"
+  nan_src="$(_chevron_ensure_nan_cache)"
   local upgraded=0
   local nan_dir ver needs_upgrade
 
@@ -189,15 +189,15 @@ atomnova_upgrade_nan_for_electron14() {
   echo "nan upgrades applied: $upgraded"
 }
 
-atomnova_force_patched_superstring() {
-  atomnova_force_patched_natives "$@"
+chevron_force_patched_superstring() {
+  chevron_force_patched_natives "$@"
 }
 
-atomnova_force_patched_natives() {
+chevron_force_patched_natives() {
   local repo_root="${1:-$(pwd)}"
-  atomnova_force_one_native "$repo_root" "superstring" "packages/superstring" "superstring" || return 1
-  atomnova_force_one_native "$repo_root" "@atom/watcher" "packages/watcher" "@atom/watcher" || return 1
-  atomnova_force_one_native "$repo_root" "tree-sitter" "packages/tree-sitter" "tree-sitter" || return 1
+  chevron_force_one_native "$repo_root" "superstring" "packages/superstring" "superstring" || return 1
+  chevron_force_one_native "$repo_root" "@atom/watcher" "packages/watcher" "@atom/watcher" || return 1
+  chevron_force_one_native "$repo_root" "tree-sitter" "packages/tree-sitter" "tree-sitter" || return 1
 
   # tree-sitter only needs nan + vendor/; drop accidental nested packages
   # (e.g. tree-sitter-javascript from a polluted npm install)
@@ -206,7 +206,7 @@ atomnova_force_patched_natives() {
       ! -name nan -exec rm -rf {} + 2>/dev/null || true
   fi
 
-  atomnova_upgrade_nan_for_electron14 "$repo_root"
+  chevron_upgrade_nan_for_electron14 "$repo_root"
 
   if grep -R "GetContents()" "$repo_root/node_modules/superstring/src" --include='*.cc' 2>/dev/null | grep -v '//'; then
     echo "error: superstring still has GetContents() calls" >&2
@@ -220,3 +220,8 @@ atomnova_force_patched_natives() {
   fi
   echo "Patched native packages are in place."
 }
+
+# Back-compat aliases (AtomNova-era names).
+atomnova_force_patched_superstring() { chevron_force_patched_superstring "$@"; }
+atomnova_force_patched_natives() { chevron_force_patched_natives "$@"; }
+atomnova_resync_nested_built_natives() { chevron_resync_nested_built_natives "$@"; }

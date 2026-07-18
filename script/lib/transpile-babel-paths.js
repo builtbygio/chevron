@@ -24,7 +24,7 @@ function getPathsToTranspile() {
     );
     paths = paths.concat(
       glob.sync(path.join(packageRoot, '**', '*.js'), {
-        // AtomNova: never Babel-transpile nested package dependencies
+        // Chevron: never Babel-transpile nested package dependencies
         // (e.g. github/node_modules/@babel/core uses modern syntax Babel 5 can't parse).
         ignore: [
           path.join(packageRoot, 'spec', '**', '*.js'),

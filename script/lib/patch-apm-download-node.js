@@ -25,9 +25,10 @@ if (!fs.existsSync(downloadNodePath)) {
   process.exit(0);
 }
 
-const MARKER = 'atomnova-darwin-arm64-x64';
+const MARKER = 'chevron-darwin-arm64-x64';
+const LEGACY_MARKER = 'atomnova-darwin-arm64-x64';
 let text = fs.readFileSync(downloadNodePath, 'utf8');
-if (text.includes(MARKER)) {
+if (text.includes(MARKER) || text.includes(LEGACY_MARKER)) {
   console.log('patch-apm-download-node: already applied');
   process.exit(0);
 }

@@ -117,7 +117,7 @@ Windows jobs upload packages as workflow artifacts (`chevron-windows-*`).
 | `invalid mode: 'rU'` | Use `bootstrap-modern`, not stock bootstrap |
 | `spawnSync npm.cmd EINVAL` | Use current tree (npm/apm spawns use `shell:true` on Windows) |
 | `MSBuild` / `node-gyp` failures | Install VS 2022 C++ workload; set `npm_config_msvs_version=2022` |
-| Python not found in bash | `actions/setup-python` or add Python to PATH; `export ATOMNOVA_PYTHON=/c/Python312/python.exe` |
+| Python not found in bash | `actions/setup-python` or add Python to PATH; `export CHEVRON_PYTHON=/c/Python312/python.exe` |
 | Smoke cannot find `.exe` | Ensure build finished; look under `out/Chevron*` for `chevron.exe` |
 | apm MODULE_VERSION mismatch | Re-run full `bootstrap-modern` |
 

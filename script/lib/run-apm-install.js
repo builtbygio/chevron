@@ -18,7 +18,7 @@ const IGNORE_SCRIPTS_MARKER = '# atom-nova-temp-ignore-scripts';
  * @param {{ignoreScripts?: boolean}} [options]
  *   ignoreScripts: skip package install scripts (needed so nested unpatched
  *   native addons like superstring are not rebuilt against Electron headers
- *   without AtomNova patches). Prefer package-local .npmrc over env alone —
+ *   without Chevron patches). Prefer package-local .npmrc over env alone —
  *   apm's bundled npm does not always honor npm_config_ignore_scripts.
  */
 module.exports = function(packagePath, ci, stdioOptions, options) {

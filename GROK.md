@@ -1,4 +1,6 @@
-# GROK.md — AtomNova session handoff
+> **Note (0.2.0):** Product identity is **Chevron**. Much of this file still describes older AtomNova-era work; prefer README, CHANGELOG, and docs/REBRANDING.md for current truth.
+
+# GROK.md — Chevron session notes (partially historical)
 
 Context for the next Grok (or human) session working on this repo.
 

@@ -53,7 +53,7 @@ module.exports = function() {
       fs.copySync(modulePath, destPath, { filter: includePathInPackagedApp });
     });
 
-  // AtomNova: force-patched natives may leave nested absolute symlinks
+  // Chevron: force-patched natives may leave nested absolute symlinks
   // (e.g. text-buffer/node_modules/superstring → repo root). asar cannot
   // pack links that escape the app directory — materialize them as copies.
   materializeExternalSymlinks(

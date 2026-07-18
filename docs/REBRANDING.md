@@ -20,8 +20,8 @@ This document supersedes the historical AtomNova rebrand checklist.
 | P1 | Crash / telemetry / copyright / protocol prompt strings | Done |
 | P2 | Bundle ID, installers, Linux install-from-source, atom.sh | Done |
 | P3 | Dual config home, `chevron://` alias, CLI `chevron`+`atom`+`apm` | Done |
-| P4 | Welcome / about / docs product copy | In progress |
-| P5 | Rename `atomnova_*` helpers → `chevron_*` | Pending |
+| P4 | Welcome / about / docs product copy | Done |
+| P5 | Rename `atomnova_*` helpers → `chevron_*` | Done (0.2.0) |
 
 ## Leave forever
 

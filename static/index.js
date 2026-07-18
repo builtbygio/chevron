@@ -190,7 +190,7 @@
     const { appVersion } = getWindowLoadSettings();
     const releaseChannel = getReleaseChannel(appVersion);
 
-    // AtomNova: never upload crash reports to third parties
+    // Chevron: never upload crash reports to third parties
     startCrashReporter({
       uploadToServer: false,
       releaseChannel

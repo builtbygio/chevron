@@ -89,14 +89,14 @@ function wrapperCall(fn, arity) {
 function makeReplacement(name, fn, arity) {
   const safe = name.replace(/[^A-Za-z0-9_]/g, '_');
   return [
-    `static void ${safe}_atomnova_register(`,
+    `static void ${safe}_chevron_register(`,
     `    v8::Local<v8::Object> exports,`,
     `    v8::Local<v8::Value> module,`,
     `    v8::Local<v8::Context> context,`,
     `    void* priv) {`,
     `  ${wrapperCall(fn, arity)}`,
     `}`,
-    `NODE_MODULE_CONTEXT_AWARE(${name}, ${safe}_atomnova_register)`
+    `NODE_MODULE_CONTEXT_AWARE(${name}, ${safe}_chevron_register)`
   ].join('\n');
 }
 

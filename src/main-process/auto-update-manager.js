@@ -28,7 +28,7 @@ module.exports = class AutoUpdateManager extends EventEmitter {
       'resources',
       'atom.png'
     );
-    // AtomNova: no default update feed (atom.io is dead / not ours).
+    // Chevron: no default update feed (atom.io is dead / not ours).
     // Opt in with ATOM_UPDATE_URL_PREFIX when a real feed exists.
     this.updateUrlPrefix = process.env.ATOM_UPDATE_URL_PREFIX || '';
   }

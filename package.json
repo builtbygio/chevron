@@ -1,7 +1,7 @@
 {
   "name": "chevron",
   "productName": "Chevron",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Hackable. Fast. Yours. Chevron is a modernised fork of Atom, the hackable text editor.",
   "main": "./src/main-process/main.js",
   "repository": {

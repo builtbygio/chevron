@@ -4,7 +4,7 @@
 /**
  * Launch smoke test for the packaged app.
  *
- * Boots the packaged AtomNova with a throwaway ATOM_HOME, attaches over the
+ * Boots the packaged Chevron with a throwaway ATOM_HOME, attaches over the
  * Chrome DevTools Protocol, and asserts inside the *isolated world* (with
  * contextIsolation, `atom` lives in the preload context — main-world evals
  * silently see nothing):
@@ -440,11 +440,11 @@ async function main() {
   const binary = findAppBinary(process.argv[2]);
   console.log(`smoke-test: launching ${binary}`);
 
-  const atomHome = fs.mkdtempSync(path.join(os.tmpdir(), 'atomnova-smoke-'));
+  const atomHome = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-smoke-'));
   // Pre-create electronUserData so Chromium state is isolated too
   fs.mkdirSync(path.join(atomHome, 'electronUserData'), { recursive: true });
 
-  const probeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'atomnova-probes-'));
+  const probeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-probes-'));
   const probes = {
     txt: path.join(probeDir, 'probe.txt'),
     ts: path.join(probeDir, 'probe.ts'),

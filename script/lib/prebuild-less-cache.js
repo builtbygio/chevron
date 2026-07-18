@@ -185,7 +185,7 @@ module.exports = function() {
   }
 };
 
-// AtomNova: package styles only — never compile nested dependency Less
+// Chevron: package styles only — never compile nested dependency Less
 // (e.g. github/node_modules/react-select uses mixins Atom's less-cache lacks).
 function packageLessFiles(packageName) {
   const packageRoot = path.join(

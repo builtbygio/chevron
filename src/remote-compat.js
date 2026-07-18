@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Full electron.remote compatibility for AtomNova packages (esp. github)
+ * Full electron.remote compatibility for Chevron packages (esp. github)
  * without @electron/remote. Built on renderer-ipc + main-process helpers.
  */
 

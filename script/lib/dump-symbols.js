@@ -67,7 +67,7 @@ function dumpSymbol(binaryPath) {
   const minidump = require('minidump');
 
   return new Promise(function(resolve, reject) {
-    // AtomNova: nested deps (e.g. leveldown under github) ship multi-platform
+    // Chevron: nested deps (e.g. leveldown under github) ship multi-platform
     // prebuilds; minidump only understands the host Mach-O/ELF format.
     if (isForeignPlatformBinary(binaryPath)) {
       return resolve();
