@@ -9,18 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added (toward 0.3.0)
+## [0.3.0] — 2026-07-18
+
+Polish release: brand mark, icons, and first-run product language.
+
+### Added
 
 - New **Chevron app icon** (double-chevron mark, indigo→cyan) for stable/beta/nightly/dev
   - `resources/app-icons/<channel>/chevron.icns`, `.ico`, and `png/*`
   - Legacy `atom.icns` / `atom.ico` kept as copies for residual paths
 - In-app **Chevron wordmark** (About + Welcome) replacing the Atom orbital logo
-- Welcome guide first-run copy updated for Chevron (product-facing strings)
+- README hero with the new mark; status table for 0.3.0 capabilities
 
-### Planned (still 0.3.0)
+### Changed
 
-- Further first-run UX (onboarding steps, optional config migrate prompt)
-- README / docs hero assets using the new mark
+- Welcome guide product-facing copy → Chevron
+- Packaging prefers the `chevron` icon basename (macOS/Windows/Linux)
 
 ## [0.2.0] — 2026-07-18
 
@@ -68,5 +72,6 @@ Initial Chevron tree: Electron modernization, modern host bootstrap (`bootstrap-
 
 ---
 
-[Unreleased]: https://github.com/builtbygio/chevron/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/builtbygio/chevron/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/builtbygio/chevron/releases/tag/v0.3.0
 [0.2.0]: https://github.com/builtbygio/chevron/releases/tag/v0.2.0

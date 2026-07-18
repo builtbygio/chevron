@@ -1,5 +1,11 @@
 # Chevron
 
+<p align="center">
+  <img src="resources/app-icons/stable/png/256.png" alt="Chevron icon" width="128" height="128" />
+</p>
+
+<p align="center"><strong>Hackable. Fast. Yours.</strong></p>
+
 A modernized fork of [Atom](https://github.com/atom/atom), the hackable text editor — resurrected and rebuilt on a current version of Electron.
 
 > Named after the Stargate dialing mechanism: each chevron locks in a step toward a working connection. Fitting for a project that's rebuilding Atom's internals one architectural piece at a time.
@@ -12,26 +18,33 @@ Rather than a from-scratch rewrite, Chevron takes the harder — and more educat
 
 ## Status
 
-🚧 **Active development, pre-alpha.** Not yet usable as a daily-driver editor.
+**0.3.0** — multi-platform CI and packaging (Linux x64/arm64 deb+rpm, macOS Intel + Apple Silicon, Windows), Chevron product identity, and new app icon/logo.
 
-Currently tackling: **`contextIsolation` migration.**
+Still early: great for building from source and dogfooding; not a polished daily-driver release yet.
 
-Electron enabled `contextIsolation` by default starting in Electron 12, and deprecated direct `remote` module access shortly after. Atom's original architecture (Electron 11) relies heavily on synchronous IPC and shared context between the main and renderer processes — patterns that modern Electron actively forbids for security reasons. Getting Chevron onto a supported Electron version means rearchitecting this IPC layer rather than just bumping a version number in `package.json`.
+| Track | Notes |
+|-------|--------|
+| Electron | **43.1.0** |
+| Bundle ID | `dev.builtbygio.chevron` |
+| Package API | Dual-support forever (`atom://`, `global.atom`, `engines.atom`, `apm`) |
+| Config home | `~/.atom` by default; `CHEVRON_HOME` / `~/.chevron` supported |
+
+See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
 
 ## Goals
 
-- [ ] Migrate off deprecated `remote` module usage
-- [ ] Rearchitect IPC to work under `contextIsolation: true`
-- [ ] Get a clean build running on a current Electron LTS
-- [ ] Re-audit and update Atom's package/plugin API surface for compatibility
-- [ ] Strip or replace any other Electron-11-era APIs flagged as removed/deprecated
-- [ ] (Longer term) Evaluate what a modern packaging/build pipeline should look like
+- [x] Migrate off deprecated `remote` module usage (IPC path)
+- [x] Rearchitect IPC to work under `contextIsolation: true`
+- [x] Clean multi-platform builds on current Electron
+- [x] Chevron branding (icons, shell, package identity)
+- [ ] Further first-run / onboarding polish
+- [ ] Longer term: modern package manager path (apm successor)
 
 ## Non-goals (for now)
 
 - A ground-up rewrite — this is a modernization effort, not a new editor
 - Feature parity with VS Code or other modern editors
-- Cross-platform polish before the core architecture is stable
+- Dropping Atom package compatibility
 
 ## Background
 
@@ -39,7 +52,7 @@ Chevron is a solo learning project, developed in the open as part of a broader p
 
 ## Development
 
-Built using a branch → PR → merge workflow, even solo. Each PR is scoped to a phase of the migration (e.g. "Remove remote module from menu package," "Rearchitect settings-view IPC") so the PR history doubles as a changelog of the migration's progress.
+Built using a branch → PR → merge workflow, even solo.
 
 **Host toolchain:** Node **24** + Python **3.12** (+ `setuptools`). Always use `./script/bootstrap-modern` (not stock `./script/bootstrap`).
 
