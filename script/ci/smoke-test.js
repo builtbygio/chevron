@@ -250,7 +250,25 @@ async function probeWindow() {
     await call('Runtime.enable');
     await delay(400);
 
+    // Evaluate every execution context. Main world has no `atom` under
+    // contextIsolation — only the preload isolated world does. Must not
+    // return early on the first `no-atom` from the main world.
     const contextIds = contexts.length > 0 ? contexts : [undefined];
+    let best = null;
+    const rank = status => {
+      switch (status) {
+        case 'ready':
+          return 4;
+        case 'waiting-editors':
+          return 3;
+        case 'no-workspace':
+          return 2;
+        case 'no-atom':
+          return 1;
+        default:
+          return 0;
+      }
+    };
     for (const contextId of contextIds) {
       const params = {
         expression: PROBE_EXPR,
@@ -266,18 +284,21 @@ async function probeWindow() {
       } catch (error) {
         continue;
       }
-      if (parsed.status === 'ready') return parsed;
-      // Surface progressive status so the outer loop can log it
       parsed.pageUrl = page.url;
       parsed.contextCount = contexts.length;
-      return parsed;
+      if (!best || rank(parsed.status) > rank(best.status)) {
+        best = parsed;
+      }
+      if (parsed.status === 'ready') return parsed;
     }
-    return {
-      status: 'pending',
-      reason: 'no-atom-in-contexts',
-      pageUrl: page.url,
-      contextCount: contexts.length
-    };
+    return (
+      best || {
+        status: 'pending',
+        reason: 'no-atom-in-contexts',
+        pageUrl: page.url,
+        contextCount: contexts.length
+      }
+    );
   } finally {
     ws.close();
   }
