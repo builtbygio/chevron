@@ -48,7 +48,13 @@ module.exports = function() {
       'atom'
     ),
     name: appName,
-    executableName: CONFIG.executableName,
+    // electron-packager appends .exe on Windows; CONFIG.executableName already
+    // includes it for installers/signing — strip so we get chevron.exe not
+    // chevron.exe.exe.
+    executableName:
+      process.platform === 'win32'
+        ? CONFIG.executableName.replace(/\.exe$/i, '')
+        : CONFIG.executableName,
     out: CONFIG.buildOutputPath,
     overwrite: true,
     platform: process.platform,

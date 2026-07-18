@@ -223,6 +223,10 @@ node "$SCRIPT_DIR/lib/patch-natives-context-aware.js" "$REPO_ROOT"
 echo "Patching keytar nested nan for Electron 14+…"
 node "$SCRIPT_DIR/lib/patch-keytar-nan.js" "$REPO_ROOT"
 
+# spellchecker: MSVC rejects non-const ref to temporary wstring (VS 2019+)
+echo "Patching spellchecker for modern MSVC…"
+node "$SCRIPT_DIR/lib/patch-spellchecker-win.js" "$REPO_ROOT"
+
 # Lockfile pins other nested nan copies at 2.17, too old for V8 12 (E28)
 echo "Replacing outdated nested nan copies with root nan…"
 node "$SCRIPT_DIR/lib/patch-nested-nan.js" "$REPO_ROOT"
@@ -305,7 +309,7 @@ fi
 # npm rebuild alone can leave superstring linked against host Node on Windows
 # (unresolved GetBackingStore) or skip packages that failed mid-run.
 echo "Force-rebuilding critical natives for Electron $ELECTRON_VERSION..."
-for _pkg in superstring tree-sitter '@atom/watcher' keytar; do
+for _pkg in superstring tree-sitter '@atom/watcher' keytar spellchecker; do
   _dir="$REPO_ROOT/node_modules/$_pkg"
   if [ -d "$_dir" ]; then
     echo "  rebuild $_pkg..."
@@ -313,6 +317,17 @@ for _pkg in superstring tree-sitter '@atom/watcher' keytar; do
       echo "WARNING: rebuild failed for $_pkg"
   fi
 done
+
+# Tree-sitter language bindings (language-js/css/ts/… grammars). Missing
+# .node files surface as fatal "Failed to load a language-* package grammar".
+echo "Force-rebuilding tree-sitter language bindings..."
+while IFS= read -r _gyp; do
+  [ -z "$_gyp" ] && continue
+  _dir="$(cd "$(dirname "$_gyp")" && pwd)"
+  echo "  rebuild $_dir..."
+  rebuild_package_modern "$_dir" || \
+    echo "WARNING: rebuild failed for $_dir"
+done < <(find "$REPO_ROOT/node_modules" -path '*/tree-sitter-*/binding.gyp' 2>/dev/null | sort -u)
 
 # Ensure keytar.node exists (github package). Full npm rebuild may skip if
 # prebuild metadata is present without a usable binary.
