@@ -105,7 +105,11 @@ jobs:
       - name: Install system build dependencies
         run: |
           set -euo pipefail
-          sudo apt-get update
+          # Drop flaky third-party apt mirrors (e.g. Google Chrome) that break
+          # index updates when mid-sync (unexpected Packages.gz size).
+          sudo rm -f /etc/apt/sources.list.d/google-chrome*.list \
+            /etc/apt/sources.list.d/google*.list 2>/dev/null || true
+          sudo apt-get update -o Acquire::Retries=3
           # Ubuntu 24.04+ uses t64 transitional ALSA package names
           if apt-cache show libasound2t64 >/dev/null 2>&1; then
             ALSA_PKG=libasound2t64
@@ -217,7 +221,10 @@ jobs:
       - name: Install system build dependencies
         run: |
           set -euo pipefail
-          sudo apt-get update
+          # Same as x64: ignore flaky third-party apt mirrors on the image.
+          sudo rm -f /etc/apt/sources.list.d/google-chrome*.list \
+            /etc/apt/sources.list.d/google*.list 2>/dev/null || true
+          sudo apt-get update -o Acquire::Retries=3
           if apt-cache show libasound2t64 >/dev/null 2>&1; then
             ALSA_PKG=libasound2t64
           else
