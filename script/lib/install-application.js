@@ -4,7 +4,6 @@ const fs = require('fs-extra');
 const handleTilde = require('./handle-tilde');
 const path = require('path');
 const template = require('lodash.template');
-const startCase = require('lodash.startcase');
 const execSync = require('child_process').execSync;
 
 const CONFIG = require('../config');
@@ -76,14 +75,11 @@ module.exports = function(packagedAppPath, installDir) {
       });
     }
   } else {
-    const atomExecutableName =
-      CONFIG.channel === 'stable' ? 'atom' : 'atom-' + CONFIG.channel;
+    // Linux install-from-source: use Chevron channel ids (chevron / chevron-beta).
+    const atomExecutableName = CONFIG.channelName;
     const apmExecutableName =
       CONFIG.channel === 'stable' ? 'apm' : 'apm-' + CONFIG.channel;
-    const appName =
-      CONFIG.channel === 'stable'
-        ? 'Atom'
-        : startCase('Atom ' + CONFIG.channel);
+    const appName = CONFIG.appName;
     const appDescription = CONFIG.appMetadata.description;
     const prefixDirPath =
       installDir !== '' ? handleTilde(installDir) : path.join('/usr', 'local');

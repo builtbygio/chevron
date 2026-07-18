@@ -108,29 +108,47 @@ if [ $OS == 'Mac' ]; then
     # If ATOM_APP_NAME is known, use it as the executable name
     ATOM_EXECUTABLE_NAME="${ATOM_APP_NAME%.*}"
   else
-    # Else choose it from the inferred channel name
+    # Prefer Chevron.app; keep Atom.app names as legacy fallbacks.
     if [ "$CHANNEL" == 'beta' ]; then
-      ATOM_EXECUTABLE_NAME="Atom Beta"
+      ATOM_APP_NAME="Chevron Beta.app"
+      ATOM_EXECUTABLE_NAME="Chevron Beta"
     elif [ "$CHANNEL" == 'nightly' ]; then
-      ATOM_EXECUTABLE_NAME="Atom Nightly"
+      ATOM_APP_NAME="Chevron Nightly.app"
+      ATOM_EXECUTABLE_NAME="Chevron Nightly"
     elif [ "$CHANNEL" == 'dev' ]; then
-      ATOM_EXECUTABLE_NAME="Atom Dev"
+      ATOM_APP_NAME="Chevron Dev.app"
+      ATOM_EXECUTABLE_NAME="Chevron Dev"
     else
-      ATOM_EXECUTABLE_NAME="Atom"
+      ATOM_APP_NAME="Chevron.app"
+      ATOM_EXECUTABLE_NAME="Chevron"
     fi
   fi
 
   if [ -z "${ATOM_PATH}" ]; then
-    # If ATOM_PATH isn't set, check /Applications and then ~/Applications for Atom.app
+    # Prefer Chevron.app under /Applications, then legacy Atom.app.
     if [ -x "/Applications/$ATOM_APP_NAME" ]; then
       ATOM_PATH="/Applications"
     elif [ -x "$HOME/Applications/$ATOM_APP_NAME" ]; then
       ATOM_PATH="$HOME/Applications"
+    elif [ -x "/Applications/Atom.app" ] && [ "$CHANNEL" == 'stable' ]; then
+      ATOM_PATH="/Applications"
+      ATOM_APP_NAME="Atom.app"
+      ATOM_EXECUTABLE_NAME="Atom"
+    elif [ -x "$HOME/Applications/Atom.app" ] && [ "$CHANNEL" == 'stable' ]; then
+      ATOM_PATH="$HOME/Applications"
+      ATOM_APP_NAME="Atom.app"
+      ATOM_EXECUTABLE_NAME="Atom"
     else
-      # We haven't found an Atom.app, use spotlight to search for Atom
-      ATOM_PATH="$(mdfind "kMDItemCFBundleIdentifier == 'com.github.atom'" | grep -v ShipIt | head -1 | xargs -0 dirname)"
+      # Prefer Chevron bundle id; fall back to legacy Atom id.
+      ATOM_PATH="$(mdfind "kMDItemCFBundleIdentifier == 'dev.builtbygio.chevron'" | grep -v ShipIt | head -1 | xargs -0 dirname)"
+      if [ ! -x "$ATOM_PATH/$ATOM_APP_NAME" ]; then
+        ATOM_PATH="$(mdfind "kMDItemCFBundleIdentifier == 'com.github.atom'" | grep -v ShipIt | head -1 | xargs -0 dirname)"
+        if [ -n "$ATOM_PATH" ] && [ "$CHANNEL" == 'stable' ]; then
+          ATOM_APP_NAME="Atom.app"
+          ATOM_EXECUTABLE_NAME="Atom"
+        fi
+      fi
 
-      # Exit if Atom can't be found
       if [ ! -x "$ATOM_PATH/$ATOM_APP_NAME" ]; then
         echo "Cannot locate ${ATOM_APP_NAME}, it is usually located in /Applications. Set the ATOM_PATH environment variable to the directory containing ${ATOM_APP_NAME}."
         exit 1

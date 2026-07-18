@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleExecutable</key>
-	<string>Atom</string>
+	<string>Chevron</string>
 	<key>CFBundleIconFile</key>
 	<string>atom.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.github.atom</string>
+	<string>dev.builtbygio.chevron</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Atom</string>
+	<string>Chevron</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleDevelopmentRegion</key>
@@ -32,6 +32,7 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>AtomApplication</string>
+	<!-- NSPrincipalClass stays AtomApplication (Electron/Chromium class name). -->
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
 	<key>NSRequiresAquaSystemAppearance</key>
@@ -46,7 +47,7 @@
 				<string>atom</string>
 			</array>
 			<key>CFBundleURLName</key>
-			<string>Atom Shared Session Protocol</string>
+			<string>Chevron atom:// package protocol (Atom compatibility)</string>
 		</dict>
 	</array>
 	<key>CFBundleDocumentTypes</key>

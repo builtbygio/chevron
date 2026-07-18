@@ -16,8 +16,8 @@ module.exports = packagedAppPath => {
     title: CONFIG.appName,
     exe: CONFIG.executableName,
     appDirectory: packagedAppPath,
-    authors: 'GitHub Inc.',
-    iconUrl: `https://raw.githubusercontent.com/atom/atom/master/resources/app-icons/${
+    authors: 'Chevron contributors',
+    iconUrl: `https://raw.githubusercontent.com/builtbygio/chevron/master/resources/app-icons/${
       CONFIG.channel
     }/atom.ico`,
     loadingGif: path.join(
@@ -31,7 +31,7 @@ module.exports = packagedAppPath => {
     remoteReleases: `${updateUrlPrefix}/api/updates${archSuffix}?version=${
       CONFIG.computedAppVersion
     }`,
-    setupExe: `AtomSetup${process.arch === 'x64' ? '-x64' : ''}.exe`,
+    setupExe: `ChevronSetup${process.arch === 'x64' ? '-x64' : ''}.exe`,
     setupIcon: path.join(
       CONFIG.repositoryRootPath,
       'resources',
@@ -47,10 +47,10 @@ module.exports = packagedAppPath => {
       fs.renameSync(releasesPath, `${releasesPath}-x64`);
     }
 
-    let appName =
-      CONFIG.channel === 'stable' ? 'atom' : `atom-${CONFIG.channel}`;
+    // Squirrel nupkg prefix follows installer "name" (channelName → chevron).
+    const nupkgPrefix = CONFIG.channelName;
     for (let nupkgPath of glob.sync(
-      `${CONFIG.buildOutputPath}/${appName}-*.nupkg`
+      `${CONFIG.buildOutputPath}/${nupkgPrefix}-*.nupkg`
     )) {
       if (!nupkgPath.includes(CONFIG.computedAppVersion)) {
         console.log(
@@ -59,10 +59,9 @@ module.exports = packagedAppPath => {
         fs.unlinkSync(nupkgPath);
       } else {
         if (process.arch === 'x64') {
-          // Use the original .nupkg filename to generate the `atom-x64` name by inserting `-x64` after `atom`
           const newNupkgPath = nupkgPath.replace(
-            `${appName}-`,
-            `${appName}-x64-`
+            `${nupkgPrefix}-`,
+            `${nupkgPrefix}-x64-`
           );
           fs.renameSync(nupkgPath, newNupkgPath);
         }

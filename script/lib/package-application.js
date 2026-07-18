@@ -22,7 +22,8 @@ module.exports = function() {
     } with app name "${appName}"`
   );
   return runPackager({
-    appBundleId: 'com.github.atom',
+    // Public install identity (new reverse-DNS; no Atom upgrade path).
+    appBundleId: 'dev.builtbygio.chevron',
     appCopyright: `Copyright © 2014-${new Date().getFullYear()} Chevron contributors and original Atom authors. All rights reserved.`,
     appVersion: CONFIG.appMetadata.version,
     // Native arch on each host (Intel x64 or Apple Silicon arm64 on macOS).
@@ -39,7 +40,7 @@ module.exports = function() {
       'mac',
       'atom-Info.plist'
     ),
-    helperBundleId: 'com.github.atom.helper',
+    helperBundleId: 'dev.builtbygio.chevron.helper',
     icon: path.join(
       CONFIG.repositoryRootPath,
       'resources',
@@ -171,13 +172,30 @@ function copyNonASARResources(packagedAppPath, bundledResourcesPath) {
 
 function setAtomHelperVersion(packagedAppPath) {
   const frameworksPath = path.join(packagedAppPath, 'Contents', 'Frameworks');
-  const helperPListPath = path.join(
-    frameworksPath,
-    'Atom Helper.app',
-    'Contents',
-    'Info.plist'
-  );
-  console.log(`Setting Atom Helper Version for ${helperPListPath}`);
+  // electron-packager names helpers from the app name (e.g. "Chevron Helper.app").
+  // Fall back to legacy Atom Helper if present.
+  const appName = getAppName();
+  const helperCandidates = [
+    `${appName} Helper.app`,
+    'Chevron Helper.app',
+    'Atom Helper.app'
+  ];
+  let helperAppDir = null;
+  for (const name of helperCandidates) {
+    const candidate = path.join(frameworksPath, name);
+    if (fs.existsSync(candidate)) {
+      helperAppDir = candidate;
+      break;
+    }
+  }
+  if (!helperAppDir) {
+    console.log(
+      `WARNING: no Helper.app under ${frameworksPath}; skip helper version stamp`
+    );
+    return;
+  }
+  const helperPListPath = path.join(helperAppDir, 'Contents', 'Info.plist');
+  console.log(`Setting Helper Version for ${helperPListPath}`);
   // Use Set-or-Add: Electron's Helper Info.plist already defines these keys.
   // Plain Add fails with "Entry Already Exists" and aborts packaging (CI).
   setPlistString(
