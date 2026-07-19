@@ -37,7 +37,7 @@ See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
 - [x] Rearchitect IPC to work under `contextIsolation: true`
 - [x] Clean multi-platform builds on current Electron
 - [x] Chevron branding (icons, shell, package identity)
-- [ ] Further first-run / onboarding polish — see [docs/onboarding-polish.md](docs/onboarding-polish.md)
+- [x] Further first-run / onboarding polish — see [docs/onboarding-polish.md](docs/onboarding-polish.md)
 - [ ] Longer term: modern package manager path (apm successor) — see [docs/cpm-design.md](docs/cpm-design.md)
 
 ## Non-goals (for now)

@@ -10,44 +10,53 @@ describe('Welcome', () => {
 
   beforeEach(() => {
     welcomePackage = new WelcomePackage();
-    atom.config.set('welcome.showOnStartup', true);
   });
 
   afterEach(() => {
     atom.reset();
   });
 
-  describe("when `core.telemetryConsent` is 'undecided'", () => {
-    beforeEach(async () => {
+  describe('telemetry', () => {
+    it('forces core.telemetryConsent to no on activate', async () => {
       atom.config.set('core.telemetryConsent', 'undecided');
+      atom.config.set('welcome.showOnStartup', false);
       await welcomePackage.activate();
+      assert.equal(atom.config.get('core.telemetryConsent'), 'no');
     });
 
-    it('opens the telemetry consent pane and the welcome panes', () => {
-      const panes = atom.workspace.getCenter().getPanes();
-      assert.equal(panes.length, 2);
-      assert.equal(panes[0].getItems()[0].getTitle(), 'Telemetry Consent');
-      assert.equal(panes[0].getItems()[1].getTitle(), 'Welcome');
-      assert.equal(panes[1].getItems()[0].getTitle(), 'Welcome Guide');
+    it('does not open consent or sunsetting panes', async () => {
+      atom.config.set('core.telemetryConsent', 'undecided');
+      atom.config.set('welcome.showOnStartup', true);
+      await welcomePackage.activate();
+
+      const titles = atom.workspace
+        .getCenter()
+        .getPanes()
+        .reduce((acc, pane) => acc.concat(pane.getItems().map(i => i.getTitle())), []);
+
+      assert(!titles.includes('Telemetry Consent'));
+      assert(!titles.includes('Sunsetting Atom'));
+      assert(titles.includes('Welcome'));
+      assert(titles.includes('Welcome Guide'));
     });
   });
 
-  describe('when `core.telemetryConsent` is not `undecided`', () => {
+  describe('when showOnStartup is true', () => {
     beforeEach(async () => {
       atom.config.set('core.telemetryConsent', 'no');
+      atom.config.set('welcome.showOnStartup', true);
       await welcomePackage.activate();
     });
 
-    describe('when activated for the first time', () =>
-      it('shows the welcome panes', () => {
-        const panes = atom.workspace.getCenter().getPanes();
-        assert.equal(panes.length, 2);
-        assert.equal(panes[0].getItems()[0].getTitle(), 'Welcome');
-        assert.equal(panes[1].getItems()[0].getTitle(), 'Welcome Guide');
-      }));
+    it('shows Welcome and Welcome Guide panes', () => {
+      const panes = atom.workspace.getCenter().getPanes();
+      assert.equal(panes.length, 2);
+      assert.equal(panes[0].getItems()[0].getTitle(), 'Welcome');
+      assert.equal(panes[1].getItems()[0].getTitle(), 'Welcome Guide');
+    });
 
     describe('the welcome:show command', () => {
-      it('shows the welcome buffer', async () => {
+      it('shows the welcome panes', async () => {
         atom.workspace
           .getCenter()
           .getPanes()
@@ -62,6 +71,7 @@ describe('Welcome', () => {
         const panes = atom.workspace.getCenter().getPanes();
         assert.equal(panes.length, 2);
         assert.equal(panes[0].getItems()[0].getTitle(), 'Welcome');
+        assert.equal(panes[1].getItems()[0].getTitle(), 'Welcome Guide');
       });
     });
 
@@ -97,6 +107,11 @@ describe('Welcome', () => {
             newGuideView.element
               .querySelector('details[data-section="init-script"]')
               .hasAttribute('open')
+          );
+          assert(
+            !newGuideView.element.querySelector(
+              'details[data-section="teletype"]'
+            )
           );
         });
       });
@@ -135,7 +150,7 @@ describe('Welcome', () => {
 
         it('captures button events', () => {
           for (const detailElement of Array.from(
-            guideView.element.querySelector('details')
+            guideView.element.querySelectorAll('details')
           )) {
             reportedEvents.length = 0;
 
@@ -144,7 +159,12 @@ describe('Welcome', () => {
             const primaryButton = detailElement.querySelector('.btn-primary');
             if (primaryButton) {
               primaryButton.click();
-              assert.deepEqual(reportedEvents, [[eventName]]);
+              // First primary button in git section fires git-cta only.
+              if (sectionName === 'git') {
+                assert.deepEqual(reportedEvents, [['clicked-git-cta']]);
+              } else {
+                assert.deepEqual(reportedEvents, [[eventName]]);
+              }
             }
           }
         });
@@ -180,5 +200,19 @@ describe('Welcome', () => {
         welcomePackage.consumeReporter(reporter2);
         assert.deepEqual(reporter2.reportedEvents, []);
       }));
+  });
+
+  describe('when showOnStartup is false', () => {
+    it('does not open welcome panes on activate', async () => {
+      atom.config.set('core.telemetryConsent', 'no');
+      atom.config.set('welcome.showOnStartup', false);
+      await welcomePackage.activate();
+
+      const itemCount = atom.workspace
+        .getCenter()
+        .getPanes()
+        .reduce((n, pane) => n + pane.getItems().length, 0);
+      assert.equal(itemCount, 0);
+    });
   });
 });

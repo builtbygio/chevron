@@ -7,6 +7,7 @@ Chevron is currently a solo project, but contributions, issues, and ideas are ge
 Chevron is in **active, early-stage architectural work** — specifically the `contextIsolation` / IPC migration described in the README. This isn't a "add a feature" phase yet; it's a "get the foundation onto a supported Electron version" phase. Before opening a PR for something non-trivial, please open an issue first to discuss the approach. It'll save you from doing work that gets blocked by an in-progress architectural change elsewhere in the codebase.
 
 Good first contributions while the migration is ongoing:
+
 - Flagging additional `remote`-module or other deprecated-API usages you find in the codebase
 - Documentation fixes and clarifications
 - Build/tooling issues on your platform
@@ -36,6 +37,7 @@ Chevron uses a **branch → PR → merge** workflow, no direct commits to `main`
 ## Reporting issues
 
 When filing an issue, please include:
+
 - Your OS and Electron version (if the build has one running)
 - Steps to reproduce, for bugs
 - Whether it relates to the `contextIsolation` migration specifically — that context helps a lot given the current focus

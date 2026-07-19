@@ -9,7 +9,6 @@ export default class GuideView {
     this.didClickProjectButton = this.didClickProjectButton.bind(this);
     this.didClickGitButton = this.didClickGitButton.bind(this);
     this.didClickGitHubButton = this.didClickGitHubButton.bind(this);
-    this.didClickTeletypeButton = this.didClickTeletypeButton.bind(this);
     this.didClickPackagesButton = this.didClickPackagesButton.bind(this);
     this.didClickThemesButton = this.didClickThemesButton.bind(this);
     this.didClickStylingButton = this.didClickStylingButton.bind(this);
@@ -29,6 +28,10 @@ export default class GuideView {
         <div className="welcome-container">
           <section className="welcome-panel">
             <h1 className="welcome-title">Get to know Chevron!</h1>
+            <p className="welcome-note">
+              Pair this tab with <strong>Welcome</strong> for status and links.
+              Expand a section below to try a feature.
+            </p>
 
             <details
               className="welcome-card"
@@ -46,8 +49,8 @@ export default class GuideView {
                 </p>
                 <p>
                   In Chevron you can open individual files or a whole folder as a
-                  project. Opening a folder will add a tree view to the editor
-                  where you can browse all the files.
+                  project. Opening a folder adds a tree view so you can browse
+                  files.
                 </p>
                 <p>
                   <button
@@ -59,9 +62,9 @@ export default class GuideView {
                   </button>
                 </p>
                 <p className="welcome-note">
-                  <strong>Next time:</strong> You can also open projects from
-                  the menu, keyboard shortcut or by dragging a folder onto the
-                  Chevron dock icon.
+                  <strong>Next time:</strong> open projects from the menu,
+                  keyboard shortcut, or by dragging a folder onto the Chevron
+                  dock icon (macOS).
                 </p>
               </div>
             </details>
@@ -69,7 +72,7 @@ export default class GuideView {
             <details className="welcome-card" {...this.getSectionProps('git')}>
               <summary className="welcome-summary icon icon-mark-github">
                 Version control with{' '}
-                <span class="welcome-highlight">Git and GitHub</span>
+                <span className="welcome-highlight">Git and GitHub</span>
               </summary>
               <div className="welcome-detail">
                 <p>
@@ -79,9 +82,9 @@ export default class GuideView {
                   />
                 </p>
                 <p>
-                  Track changes to your code as you work. Branch, commit, push,
-                  and pull without leaving the comfort of your editor.
-                  Collaborate with other developers on GitHub.
+                  Track changes as you work. Branch, commit, push, and pull
+                  without leaving the editor. The GitHub panel talks to
+                  GitHub.com when you sign in.
                 </p>
                 <p>
                   <button
@@ -98,39 +101,8 @@ export default class GuideView {
                   </button>
                 </p>
                 <p className="welcome-note">
-                  <strong>Next time:</strong> You can toggle the Git tab by
-                  clicking on the
-                  <span className="icon icon-diff" /> button in your status bar.
-                </p>
-              </div>
-            </details>
-
-            <details
-              className="welcome-card"
-              {...this.getSectionProps('teletype')}
-            >
-              <summary className="welcome-summary icon icon-radio-tower">
-                Collaborate in real time with{' '}
-                <span class="welcome-highlight">Teletype</span>
-              </summary>
-              <div className="welcome-detail">
-                <p>
-                  <img
-                    className="welcome-img"
-                    src="atom://welcome/assets/code.svg"
-                  />
-                </p>
-                <p>
-                  Share your workspace with team members and collaborate on code
-                  in real time.
-                </p>
-                <p>
-                  <button
-                    onclick={this.didClickTeletypeButton}
-                    className="btn btn-primary inline-block"
-                  >
-                    Install Teletype for Chevron
-                  </button>
+                  <strong>Next time:</strong> toggle the Git tab from the{' '}
+                  <span className="icon icon-diff" /> control in the status bar.
                 </p>
               </div>
             </details>
@@ -150,9 +122,20 @@ export default class GuideView {
                   />
                 </p>
                 <p>
-                  One of the best things about Chevron is the package ecosystem.
-                  Installing packages adds new features and functionality you
-                  can use to make the editor suit your needs. Let's install one.
+                  Packages extend Chevron using the Atom package API (
+                  <code>global.atom</code>, <code>engines.atom</code>,{' '}
+                  <code>apm</code>).
+                </p>
+                <p className="welcome-note">
+                  <strong>Honest status:</strong> the Settings installer still
+                  uses the legacy apm path. Public registry search may be
+                  limited or broken until the cpm package manager lands. Prefer
+                  installing from a local path or git URL when the catalog
+                  fails. See the{' '}
+                  <a href="https://github.com/builtbygio/chevron">
+                    Chevron repository
+                  </a>{' '}
+                  for current guidance.
                 </p>
                 <p>
                   <button
@@ -164,8 +147,7 @@ export default class GuideView {
                   </button>
                 </p>
                 <p className="welcome-note">
-                  <strong>Next time:</strong> You can install new packages from
-                  the settings.
+                  <strong>Next time:</strong> install packages from Settings.
                 </p>
               </div>
             </details>
@@ -175,7 +157,7 @@ export default class GuideView {
               {...this.getSectionProps('themes')}
             >
               <summary className="welcome-summary icon icon-paintcan">
-                Choose a <span class="welcome-highlight">Theme</span>
+                Choose a <span className="welcome-highlight">Theme</span>
               </summary>
               <div className="welcome-detail">
                 <p>
@@ -184,7 +166,7 @@ export default class GuideView {
                     src="atom://welcome/assets/theme.svg"
                   />
                 </p>
-                <p>Chevron comes with preinstalled themes. Let's try a few.</p>
+                <p>Chevron ships with preinstalled themes. Try a few.</p>
                 <p>
                   <button
                     ref="themesButton"
@@ -195,13 +177,12 @@ export default class GuideView {
                   </button>
                 </p>
                 <p>
-                  You can also install themes created by the community. To
-                  install new themes, click on "+ Install" and switch the toggle
-                  to "themes".
+                  Community themes install the same way as packages (with the
+                  same registry caveats as above). In Installer, switch the
+                  toggle to “themes”.
                 </p>
                 <p className="welcome-note">
-                  <strong>Next time:</strong> You can switch themes from the
-                  settings.
+                  <strong>Next time:</strong> switch themes from Settings.
                 </p>
               </div>
             </details>
@@ -211,7 +192,7 @@ export default class GuideView {
               {...this.getSectionProps('styling')}
             >
               <summary className="welcome-summary icon icon-paintcan">
-                Customize the <span class="welcome-highlight">Styling</span>
+                Customize the <span className="welcome-highlight">Styling</span>
               </summary>
               <div className="welcome-detail">
                 <p>
@@ -221,7 +202,10 @@ export default class GuideView {
                   />
                 </p>
                 <p>
-                  You can customize almost anything by adding your own CSS/LESS.
+                  Customize almost anything by adding your own CSS/LESS in your
+                  user stylesheet (under your config home —{' '}
+                  <code>~/.atom</code> by default, or{' '}
+                  <code>CHEVRON_HOME</code> / <code>~/.chevron</code> when set).
                 </p>
                 <p>
                   <button
@@ -232,10 +216,10 @@ export default class GuideView {
                     Open your Stylesheet
                   </button>
                 </p>
-                <p>Now uncomment some of the examples or try your own</p>
+                <p>Uncomment examples or try your own rules.</p>
                 <p className="welcome-note">
-                  <strong>Next time:</strong> You can open your stylesheet from
-                  Menu {this.getApplicationMenuName()}.
+                  <strong>Next time:</strong> open your stylesheet from Menu →{' '}
+                  {this.getApplicationMenuName()}.
                 </p>
               </div>
             </details>
@@ -245,7 +229,7 @@ export default class GuideView {
               {...this.getSectionProps('init-script')}
             >
               <summary className="welcome-summary icon icon-code">
-                Hack on the <span class="welcome-highlight">Init Script</span>
+                Hack on the <span className="welcome-highlight">Init Script</span>
               </summary>
               <div className="welcome-detail">
                 <p>
@@ -255,9 +239,10 @@ export default class GuideView {
                   />
                 </p>
                 <p>
-                  The init script is a bit of JavaScript or CoffeeScript run at
-                  startup. You can use it to quickly change the behaviour of
-                  Chevron.
+                  The init script is JavaScript or CoffeeScript run at startup.
+                  Use it to quickly change Chevron’s behaviour. It lives in the
+                  same config home as your stylesheet (
+                  <code>~/.atom</code> by default).
                 </p>
                 <p>
                   <button
@@ -268,10 +253,10 @@ export default class GuideView {
                     Open your Init Script
                   </button>
                 </p>
-                <p>Uncomment some of the examples or try out your own.</p>
+                <p>Uncomment examples or try your own.</p>
                 <p className="welcome-note">
-                  <strong>Next time:</strong> You can open your init script from
-                  Menu > {this.getApplicationMenuName()}.
+                  <strong>Next time:</strong> open your init script from Menu →{' '}
+                  {this.getApplicationMenuName()}.
                 </p>
               </div>
             </details>
@@ -281,7 +266,7 @@ export default class GuideView {
               {...this.getSectionProps('snippets')}
             >
               <summary className="welcome-summary icon icon-code">
-                Add a <span class="welcome-highlight">Snippet</span>
+                Add a <span className="welcome-highlight">Snippet</span>
               </summary>
               <div className="welcome-detail">
                 <p>
@@ -291,9 +276,8 @@ export default class GuideView {
                   />
                 </p>
                 <p>
-                  Snippets allow you to enter a simple prefix in the editor
-                  and hit tab to expand the prefix into a larger code block with
-                  templated values.
+                  Snippets expand a short prefix into a larger code block with
+                  templated values (stored under your config home).
                 </p>
                 <p>
                   <button
@@ -306,12 +290,11 @@ export default class GuideView {
                 </p>
                 <p>
                   In your snippets file, type <code>snip</code> then hit{' '}
-                  <code>tab</code>. The <code>snip</code> snippet will expand to
-                  create a snippet!
+                  <code>tab</code> to expand a template for a new snippet.
                 </p>
                 <p className="welcome-note">
-                  <strong>Next time:</strong> You can open your snippets in Menu
-                  > {this.getApplicationMenuName()}.
+                  <strong>Next time:</strong> open snippets from Menu →{' '}
+                  {this.getApplicationMenuName()}.
                 </p>
               </div>
             </details>
@@ -321,7 +304,7 @@ export default class GuideView {
               {...this.getSectionProps('shortcuts')}
             >
               <summary className="welcome-summary icon icon-keyboard">
-                Learn <span class="welcome-highlight">Keyboard Shortcuts</span>
+                Learn <span className="welcome-highlight">Keyboard Shortcuts</span>
               </summary>
               <div className="welcome-detail">
                 <p>
@@ -331,21 +314,16 @@ export default class GuideView {
                   />
                 </p>
                 <p>
-                  If you only remember one keyboard shortcut make it{' '}
+                  If you only remember one shortcut, make it{' '}
                   <kbd className="welcome-key">
                     {this.getCommandPaletteKeyBinding()}
                   </kbd>
-                  . This keystroke toggles the command palette, which lists
-                  every Chevron command. It's a good way to learn more shortcuts.
-                  Yes, you can try it now!
+                  . That toggles the command palette, which lists every Chevron
+                  command.
                 </p>
                 <p>
-                  If you want to use these guides again use the command palette{' '}
-                  <kbd className="welcome-key">
-                    {this.getCommandPaletteKeyBinding()}
-                  </kbd>{' '}
-                  and search for <span className="text-highlight">Welcome</span>
-                  .
+                  To reopen these guides, open the command palette and search for{' '}
+                  <span className="text-highlight">Welcome</span>.
                 </p>
               </div>
             </details>
@@ -460,11 +438,6 @@ export default class GuideView {
   didClickSnippetsButton() {
     this.props.reporterProxy.sendEvent('clicked-snippets-cta');
     atom.workspace.open('atom://.atom/snippets', { split: 'left' });
-  }
-
-  didClickTeletypeButton() {
-    this.props.reporterProxy.sendEvent('clicked-teletype-cta');
-    atom.workspace.open('atom://config/packages/teletype', { split: 'left' });
   }
 
   didExpandOrCollapseSection(event) {

@@ -3,12 +3,10 @@
 import { CompositeDisposable } from 'atom';
 import ReporterProxy from './reporter-proxy';
 
-let WelcomeView, GuideView, ConsentView, SunsettingView;
+let WelcomeView, GuideView;
 
-const SUNSETTING_URI = 'atom://welcome/sunsetting';
 const WELCOME_URI = 'atom://welcome/welcome';
 const GUIDE_URI = 'atom://welcome/guide';
-const CONSENT_URI = 'atom://welcome/consent';
 
 export default class WelcomePackage {
   constructor() {
@@ -17,14 +15,6 @@ export default class WelcomePackage {
 
   async activate() {
     this.subscriptions = new CompositeDisposable();
-
-    this.subscriptions.add(
-      atom.workspace.addOpener(filePath => {
-        if (filePath === SUNSETTING_URI) {
-          return this.createSunsettingView({ uri: SUNSETTING_URI });
-        }
-      })
-    );
 
     this.subscriptions.add(
       atom.workspace.addOpener(filePath => {
@@ -43,20 +33,13 @@ export default class WelcomePackage {
     );
 
     this.subscriptions.add(
-      atom.workspace.addOpener(filePath => {
-        if (filePath === CONSENT_URI) {
-          return this.createConsentView({ uri: CONSENT_URI });
-        }
-      })
-    );
-
-    this.subscriptions.add(
       atom.commands.add('atom-workspace', 'welcome:show', () =>
         this.showWelcome()
       )
     );
 
-    // Telemetry consent UI removed — Chevron does not collect telemetry.
+    // Chevron does not collect telemetry. Force consent off if leftover config
+    // from Atom still says undecided/limited.
     if (atom.config.get('core.telemetryConsent') !== 'no') {
       atom.config.set('core.telemetryConsent', 'no');
     }
@@ -65,9 +48,6 @@ export default class WelcomePackage {
       await this.showWelcome();
       this.reporterProxy.sendEvent('show-on-initial-load');
     }
-
-    // Upstream Atom sunsetting notice is historical; do not show on Chevron.
-    // Keep the view registered for anyone who opens atom://welcome/sunsetting.
   }
 
   showWelcome() {
@@ -80,21 +60,12 @@ export default class WelcomePackage {
     ]);
   }
 
-  showSunsetting() {
-    return atom.workspace.open(SUNSETTING_URI, { split: 'left' });
-  }
-
   consumeReporter(reporter) {
     return this.reporterProxy.setReporter(reporter);
   }
 
   deactivate() {
     this.subscriptions.dispose();
-  }
-
-  createSunsettingView(state) {
-    if (SunsettingView == null) SunsettingView = require('./sunsetting-view');
-    return new SunsettingView({ reporterProxy: this.reporterProxy, ...state });
   }
 
   createWelcomeView(state) {
@@ -105,10 +76,5 @@ export default class WelcomePackage {
   createGuideView(state) {
     if (GuideView == null) GuideView = require('./guide-view');
     return new GuideView({ reporterProxy: this.reporterProxy, ...state });
-  }
-
-  createConsentView(state) {
-    if (ConsentView == null) ConsentView = require('./consent-view');
-    return new ConsentView({ reporterProxy: this.reporterProxy, ...state });
   }
 }
