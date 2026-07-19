@@ -37,8 +37,8 @@ See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
 - [x] Rearchitect IPC to work under `contextIsolation: true`
 - [x] Clean multi-platform builds on current Electron
 - [x] Chevron branding (icons, shell, package identity)
-- [ ] Further first-run / onboarding polish
-- [ ] Longer term: modern package manager path (apm successor)
+- [x] Further first-run / onboarding polish — see [docs/onboarding-polish.md](docs/onboarding-polish.md)
+- [ ] Longer term: modern package manager path (apm successor) — see [docs/cpm-design.md](docs/cpm-design.md)
 
 ## Non-goals (for now)
 
@@ -46,9 +46,16 @@ See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
 - Feature parity with VS Code or other modern editors
 - Dropping Atom package compatibility
 
-## Background
+## Approach
 
-Chevron is a solo learning project, developed in the open as part of a broader path toward systems programming and eventually building a custom OS and AI-integrated development platform. The Electron/IPC rearchitecture work here is deliberately treated as a real systems problem — understanding process boundaries, security models, and inter-process communication — rather than just a dependency bump.
+Chevron is a modernized fork of Atom, maintained in the open. The goal is not a
+from-scratch editor, but a careful forward-port: current Electron, multi-platform
+builds, dual-support for the Atom package ecosystem, and a security-minded IPC
+model (`contextIsolation`, no `remote`).
+
+That path is deliberate. Treating process boundaries, packaging, and native
+modules as first-class problems keeps the codebase honest about what still works
+and what is still early — without pretending a dependency bump is the whole job.
 
 ## Development
 

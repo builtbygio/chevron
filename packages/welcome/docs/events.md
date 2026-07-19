@@ -1,42 +1,30 @@
-# Events specification
+# Welcome package events
 
-This document specifies all the data (along with the format) which gets sent from the Welcome package to the GitHub analytics pipeline. This document follows the same format and nomenclature as the [Atom Core Events spec](https://github.com/atom/metrics/blob/master/docs/events.md).
+Chevron does **not** ship a metrics / analytics pipeline. The welcome package
+still has a small `ReporterProxy` so UI code can call `sendEvent` without
+crashing.
 
-## Counters
+## Behaviour today
 
-Currently the Welcome package does not log any counter events.
+- Events are **queued in memory** until a `metrics-reporter` service is
+  consumed.
+- Chevron does not provide that service by default, so events are **discarded**
+  when the package deactivates or the process exits.
+- `core.telemetryConsent` is forced to `no` on activate; there is no consent UI.
 
-## Timing events
+## Event shape (if a reporter is ever attached)
 
-Currently the Welcome package does not log any timing events.
+- **eventType / category:** `welcome-v1`
+- **fields:** `ea` (action), optional `el` (label), optional `ev` (value)
 
-## Standard events
+Examples of actions that may be emitted:
 
-#### Welcome package shown
+| `ea` | When |
+|------|------|
+| `show-on-initial-load` | Welcome panes opened because `welcome.showOnStartup` is true |
+| `expand-*-section` / `collapse-*-section` | Guide accordion toggled |
+| `clicked-*-cta` | Guide primary buttons |
+| `clicked-welcome-*-link` | Welcome footer / help links |
 
-- **eventType**: `welcome-v1`
-- **metadata**
-
-  | field | value                  |
-  | ----- | ---------------------- |
-  | `ea`  | `show-on-initial-load` |
-
-#### Sunsetting announcement shown
-
-- **eventType**: `sunsetting-v1`
-- **metadata**
-
-  | field | value                             |
-  | ----- | --------------------------------- |
-  | `ea`  | `show-sunsetting-on-initial-load` |
-
-#### Click on links
-
-- **eventType**: `welcome-v1`
-- **metadata**
-
-  | field | value                 |
-  | ----- | --------------------- |
-  | `ea`  | link that was clicked |
-
-(There are many potential values for the `ea` param, e.g: `clicked-welcome-atom-docs-link`,`clicked-welcome-atom-org-link`, `clicked-project-cta`, `clicked-init-script-cta`, ...).
+This document is for developers only. It is **not** a commitment to collect
+product analytics.

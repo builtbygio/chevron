@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **First-run / onboarding polish** (`packages/welcome`):
+  - Removed Atom sunsetting and telemetry consent views (no user path to either)
+  - Welcome: works/WIP panel, project + shell-command CTAs, clearer two-tab sequencing
+  - Guide: removed Teletype card; honest package-install note (apm/registry limits until cpm)
+  - Config-home migrate prompt deferred (WONTFIX; silent dual-support remains)
+
 ## [0.3.0] — 2026-07-18
 
 Polish release: brand mark, icons, and first-run product language.

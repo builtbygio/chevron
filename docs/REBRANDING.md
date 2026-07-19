@@ -44,7 +44,7 @@ This document supersedes the historical AtomNova rebrand checklist.
 - [x] About + Welcome wordmark
 - [x] Welcome guide product copy
 - [x] README hero / screenshot refresh
-- [ ] Optional first-run config migrate prompt
+- [x] Optional first-run config migrate prompt — **WONTFIX** for now (silent dual-home in `atom-paths.js`; see [onboarding-polish.md](./onboarding-polish.md) W3)
 
 ## Verification
 
