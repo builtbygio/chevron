@@ -28,20 +28,27 @@ const spawnSetx = (args, callback) => Spawner.spawn(setxPath, args, callback);
 const spawnUpdate = (args, callback) =>
   Spawner.spawn(updateDotExe, args, callback);
 
-// Add the app launcher and apm to the PATH
+// Add the app launcher, cpm, and apm to the PATH
 //
 // This is done by adding .cmd shims to the root bin folder in the install
 // directory that point to the newly installed versions inside the versioned
 // app directories. apm is always named apm / apm-beta / apm-nightly — never
 // derived by string-replacing "atom" in the exe name (breaks chevron.exe).
+// cpm follows the same channel naming (cpm / cpm-beta / …).
 const addCommandsToPath = callback => {
   const atomCmdName = execName.replace(/\.exe$/i, '.cmd');
   const atomShName = execName.replace(/\.exe$/i, '');
-  // Channel suffix from chevron-beta.exe / atom-beta.exe → apm-beta
+  // Channel suffix from chevron-beta.exe / atom-beta.exe → apm-beta / cpm-beta
   const channelMatch = atomShName.match(/-(beta|nightly|dev)$/i);
-  const apmBase = channelMatch ? `apm-${channelMatch[1].toLowerCase()}` : 'apm';
+  const channelSuffix = channelMatch
+    ? `-${channelMatch[1].toLowerCase()}`
+    : '';
+  const apmBase = `apm${channelSuffix}`;
+  const cpmBase = `cpm${channelSuffix}`;
   const apmCmdName = `${apmBase}.cmd`;
   const apmShName = apmBase;
+  const cpmCmdName = `${cpmBase}.cmd`;
+  const cpmShName = cpmBase;
 
   const installCommands = callback => {
     const atomCommandPath = path.join(binFolder, atomCmdName);
@@ -61,11 +68,24 @@ const addCommandsToPath = callback => {
       '/'
     )}" "$@"\r\necho`;
 
-    const apmCommandPath = path.join(binFolder, apmCmdName);
-    const relativeApmPath = path.relative(
-      binFolder,
-      path.join(process.resourcesPath, 'app', 'apm', 'bin', 'apm.cmd')
+    // Prefer cpm's apm.cmd when packaged; else classic apm.
+    const cpmApmCmd = path.join(
+      process.resourcesPath,
+      'app',
+      'cpm',
+      'bin',
+      'apm.cmd'
     );
+    const classicApmCmd = path.join(
+      process.resourcesPath,
+      'app',
+      'apm',
+      'bin',
+      'apm.cmd'
+    );
+    const apmTarget = fs.existsSync(cpmApmCmd) ? cpmApmCmd : classicApmCmd;
+    const apmCommandPath = path.join(binFolder, apmCmdName);
+    const relativeApmPath = path.relative(binFolder, apmTarget);
     const apmCommand = `@echo off\r\n"%~dp0\\${relativeApmPath}" %*`;
 
     const apmShCommandPath = path.join(binFolder, apmShName);
@@ -78,13 +98,66 @@ const addCommandsToPath = callback => {
       '/'
     )}" "$@"`;
 
-    fs.writeFile(atomCommandPath, atomCommand, () =>
-      fs.writeFile(atomShCommandPath, atomShCommand, () =>
-        fs.writeFile(apmCommandPath, apmCommand, () =>
-          fs.writeFile(apmShCommandPath, apmShCommand, () => callback())
-        )
-      )
+    const cpmCmdTarget = path.join(
+      process.resourcesPath,
+      'app',
+      'cpm',
+      'bin',
+      'cpm.cmd'
     );
+    const cpmCliCmd = path.join(
+      appFolder,
+      'resources',
+      'cli',
+      'cpm.cmd'
+    );
+    const cpmTarget = fs.existsSync(cpmCmdTarget)
+      ? cpmCmdTarget
+      : cpmCliCmd;
+    const cpmCommandPath = path.join(binFolder, cpmCmdName);
+    const relativeCpmPath = path.relative(binFolder, cpmTarget);
+    const cpmCommand = `@echo off\r\n"%~dp0\\${relativeCpmPath}" %*`;
+
+    const cpmShCommandPath = path.join(binFolder, cpmShName);
+    const relativeCpmShPath = path.relative(
+      binFolder,
+      path.join(appFolder, 'resources', 'cli', 'cpm.sh')
+    );
+    const cpmShCommand = `#!/bin/sh\r\n"$(dirname "$0")/${relativeCpmShPath.replace(
+      /\\/g,
+      '/'
+    )}" "$@"`;
+
+    const writeChain = (files, i, cb) => {
+      if (i >= files.length) return cb();
+      const [filePath, contents] = files[i];
+      fs.writeFile(filePath, contents, err => {
+        if (err) return cb(err);
+        writeChain(files, i + 1, cb);
+      });
+    };
+
+    const files = [
+      [atomCommandPath, atomCommand],
+      [atomShCommandPath, atomShCommand],
+      [apmCommandPath, apmCommand],
+      [apmShCommandPath, apmShCommand]
+    ];
+    if (fs.existsSync(cpmTarget) || fs.existsSync(cpmCliCmd)) {
+      files.push([cpmCommandPath, cpmCommand]);
+      // cpm.sh may not exist on all channels; still write a shim to cpm.cmd via sh if needed
+      if (fs.existsSync(path.join(appFolder, 'resources', 'cli', 'cpm.sh'))) {
+        files.push([cpmShCommandPath, cpmShCommand]);
+      } else {
+        const fallbackSh = `#!/bin/sh\r\n"$(dirname "$0")/${relativeCpmPath.replace(
+          /\\/g,
+          '/'
+        )}" "$@"`;
+        files.push([cpmShCommandPath, fallbackSh]);
+      }
+    }
+
+    writeChain(files, 0, callback);
   };
 
   const addBinToPath = (pathSegments, callback) => {

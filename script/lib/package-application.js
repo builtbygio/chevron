@@ -103,6 +103,16 @@ function copyNonASARResources(packagedAppPath, bundledResourcesPath) {
     path.join(bundledResourcesPath, 'app', 'apm'),
     { filter: includePathInPackagedApp }
   );
+
+  // Phase 1: ship cpm alongside apm (getApmPath prefers cpm).
+  const cpmSrc = path.join(CONFIG.repositoryRootPath, 'cpm');
+  if (fs.existsSync(cpmSrc)) {
+    console.log('Copying cpm into packaged app resources…');
+    fs.copySync(cpmSrc, path.join(bundledResourcesPath, 'app', 'cpm'), {
+      filter: includePathInPackagedApp
+    });
+  }
+
   if (process.platform !== 'win32') {
     // Existing symlinks on user systems point to an outdated path, so just symlink it to the real location of the apm binary.
     // TODO: Change command installer to point to appropriate path and remove this fallback after a few releases.
@@ -149,14 +159,16 @@ function copyNonASARResources(packagedAppPath, bundledResourcesPath) {
       'atom.js',
       'apm.cmd',
       'apm.sh',
+      'cpm.cmd',
+      'cpm.sh',
       'file.ico',
       'folder.ico'
-    ].forEach(file =>
-      fs.copySync(
-        path.join(CONFIG.repositoryRootPath, 'resources', 'win', file),
-        path.join(bundledResourcesPath, 'cli', file)
-      )
-    );
+    ].forEach(file => {
+      const src = path.join(CONFIG.repositoryRootPath, 'resources', 'win', file);
+      if (fs.existsSync(src)) {
+        fs.copySync(src, path.join(bundledResourcesPath, 'cli', file));
+      }
+    });
 
     // Customize atom.cmd for the channel-specific atom.exe name (e.g. atom-beta.exe)
     generateAtomCmdForChannel(bundledResourcesPath);

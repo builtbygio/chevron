@@ -92,6 +92,17 @@ process.on('unhandledRejection', e => {
 installAppDependencies(ci, { ignoreScripts: true, legacyPeerDeps: true });
 NODE
 
+# Phase 1: cpm CLI dependencies (pacote, arborist, @electron/rebuild)
+if [ -d "$REPO_ROOT/cpm" ] && [ -f "$REPO_ROOT/cpm/package.json" ]; then
+  echo "Installing cpm dependencies (host npm)…"
+  if [ -f "$REPO_ROOT/cpm/package-lock.json" ]; then
+    (cd "$REPO_ROOT/cpm" && npm ci --ignore-scripts --no-audit --no-fund) || \
+      (cd "$REPO_ROOT/cpm" && npm install --ignore-scripts --no-audit --no-fund)
+  else
+    (cd "$REPO_ROOT/cpm" && npm install --ignore-scripts --no-audit --no-fund)
+  fi
+fi
+
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/lib/force-patched-superstring.sh"
 chevron_force_patched_superstring "$REPO_ROOT"

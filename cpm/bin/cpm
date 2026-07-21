@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# cpm launcher: always prefer ELECTRON_RUN_AS_NODE + product binary (design §5.2).
+set -euo pipefail
+
+CPM_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+CLI_JS="$CPM_ROOT/lib/cli.js"
+
+# Already inside Electron-as-Node (e.g. nested spawn)
+if [ -n "${ELECTRON_RUN_AS_NODE:-}" ] && [ -n "${ELECTRON_VERSION:-}${npm_config_runtime:-}" ]; then
+  exec "$CLI_JS" "$@"
+fi
+
+# If process is already Electron (process.versions.electron set via electron binary)
+if [ -n "${ELECTRON_RUN_AS_NODE:-}" ]; then
+  exec "$(command -v node || true)" "$CLI_JS" "$@" 2>/dev/null || exec "$CLI_JS" "$@"
+fi
+
+resolve_product() {
+  if [ -n "${CHEVRON_EXECUTABLE:-}" ] && [ -x "$CHEVRON_EXECUTABLE" ]; then
+    echo "$CHEVRON_EXECUTABLE"
+    return
+  fi
+  if [ -n "${ELECTRON_PATH:-}" ] && [ -x "$ELECTRON_PATH" ]; then
+    echo "$ELECTRON_PATH"
+    return
+  fi
+
+  REPO_ROOT="$(cd "$CPM_ROOT/.." && pwd)"
+  case "$(uname -s)" in
+    Darwin)
+      for c in \
+        "$REPO_ROOT/out/Chevron.app/Contents/MacOS/Chevron" \
+        "$REPO_ROOT/out/Atom.app/Contents/MacOS/Atom"
+      do
+        if [ -x "$c" ]; then echo "$c"; return; fi
+      done
+      # Packaged: bin/ next to ../Chevron.app or ../../../MacOS/Chevron
+      for c in \
+        "$CPM_ROOT/../../../MacOS/Chevron" \
+        "$CPM_ROOT/../../Chevron.app/Contents/MacOS/Chevron"
+      do
+        if [ -x "$c" ]; then echo "$c"; return; fi
+      done
+      ;;
+    Linux)
+      for c in \
+        "$REPO_ROOT/out/Chevron-linux-x64/chevron" \
+        "$REPO_ROOT/out/chevron" \
+        "$CPM_ROOT/../../../chevron"
+      do
+        if [ -x "$c" ]; then echo "$c"; return; fi
+      done
+      ;;
+    MINGW*|MSYS*|CYGWIN*)
+      for c in \
+        "$REPO_ROOT/out/Chevron-win32-x64/Chevron.exe" \
+        "$REPO_ROOT/out/Chevron.exe"
+      do
+        if [ -f "$c" ]; then echo "$c"; return; fi
+      done
+      ;;
+  esac
+
+  # electron from monorepo node_modules
+  if [ -f "$REPO_ROOT/node_modules/electron/cli.js" ]; then
+    node -e "process.stdout.write(require('electron'))" 2>/dev/null && return
+  fi
+  return 1
+}
+
+PRODUCT="$(resolve_product || true)"
+if [ -n "${PRODUCT:-}" ] && [ -e "$PRODUCT" ]; then
+  export ELECTRON_RUN_AS_NODE=1
+  exec "$PRODUCT" "$CLI_JS" "$@"
+fi
+
+# Last resort: host node (doctor will warn)
+echo "cpm: warning: product Electron binary not found; using host node (wrong ABI for natives)" >&2
+exec node "$CLI_JS" "$@"

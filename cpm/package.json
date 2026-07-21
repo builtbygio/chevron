@@ -1,0 +1,30 @@
+{
+  "name": "@chevron/cpm",
+  "version": "0.1.0",
+  "description": "Chevron Package Manager — Electron-as-Node installer for Atom-compatible packages",
+  "main": "lib/cli.js",
+  "bin": {
+    "cpm": "bin/cpm",
+    "apm": "bin/apm"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/chevron.git",
+    "directory": "cpm"
+  },
+  "dependencies": {
+    "@electron/rebuild": "^3.7.1",
+    "@npmcli/arborist": "^7.5.4",
+    "commander": "^12.1.0",
+    "fs-extra": "^11.2.0",
+    "pacote": "^18.0.6",
+    "semver": "^7.6.3"
+  }
+}

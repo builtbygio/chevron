@@ -307,11 +307,11 @@ Shelling out to modern **`npm install --prefix`** with `ELECTRON_RUN_AS_NODE=1` 
 | Topic | Requirement |
 |-------|-------------|
 | Engine parity | Install/rebuild that transpile package sources must see the **same V8/Node** as the editor → further argument for **ELECTRON_RUN_AS_NODE** (locked in §5.2), not host Node 24 vs Electron’s Node mismatch. |
-| `compile-cache.install` | If apm historically loaded the app’s compile-cache into the installer process, cpm must either **(a)** continue that integration so install-time transpile matches runtime, or **(b)** explicitly **not** transpile at install and rely on runtime compile-cache only — pick one and test CoffeeScript packages either way. |
+| `compile-cache.install` | **RESOLVED (b):** cpm does **not** load app compile-cache at install. Runtime compile-cache handles CoffeeScript/JS/TS on activation. Revisit (a) only if a known package set needs install-time precompile for cold-start. |
 | Cache directory | Continues under package home (`compile-cache` under ATOM_HOME / CHEVRON_HOME); cpm must not invent a third cache root without migration. |
-| Design default | **(b) preferred for v1 simplicity** if runtime compile-cache already covers activation; document if (a) is required for a known package set. Revisit if install-time precompile is needed for cold-start. |
+| Design default | **(b) locked for Phase 1** |
 
-Phase 1 acceptance: at least one CoffeeScript community package installs and activates without host-Node-only syntax/runtime skew.
+Phase 1 acceptance: at least one CoffeeScript community package installs and activates without host-Node-only syntax/runtime skew (runtime compile-cache).
 
 ### 5.8 Windows and shell shims (Phase 1 scope)
 
@@ -456,7 +456,7 @@ Respect licenses and Pulsar terms if proxying their API; document attribution.
 | Search | broken (atom.io) | yes if backend configured | |
 | Publish | broken / legacy | later | |
 | settings-view | via `core.apmPath` | point to cpm | `--json` where needed |
-| compile-cache at install | apm Node loads app compile-cache | §5.7 | Prefer runtime cache unless (a) proven needed |
+| compile-cache at install | apm Node loads app compile-cache | **(b) runtime only** | §5.7 locked for Phase 1 |
 | Windows `apm.cmd` / PATH | yes | yes | §5.8 |
 | Full package sandbox | no | no | Documented limitation |
 
@@ -585,7 +585,7 @@ Security tests: assert scripts do not run by default; assert branch-only git URL
 3. **Registry default:** Pulsar API vs Chevron static index first.  
 4. **~~Root app `node_modules` install~~ — RESOLVED (Phase 0):** pure **host npm** (`npm ci` / `npm install --ignore-scripts --legacy-peer-deps`) + modern Electron rebuild in `bootstrap-modern`. Not cpm. Optional `--with-apm` only for packaging/dev until Phase 1.  
 5. **~~Bundled `packageDependencies` at build time~~ — RESOLVED Option A (2026-07-21):** all 91 entries are also root `dependencies` (`file:` + git pins). Host npm install of the app tree is sufficient; `packageDependencies` remains a metadata map for runtime/build. Spike: [cpm-phase-0-spike.md](./cpm-phase-0-spike.md).  
-6. **compile-cache at install (§5.7):** policy **(a)** load app compile-cache into cpm process vs **(b)** runtime-only transpile (design default lean **b**).  
+6. **~~compile-cache at install (§5.7)~~ — RESOLVED:** policy **(b)** runtime-only transpile (cpm does not load app compile-cache at install).  
 7. **Strict mode default** for end-user builds vs developer builds.  
 8. **`npm install --prefix` under ELECTRON_RUN_AS_NODE (§5.6):** day-one spike only. Outcomes: **strike fallback** (preferred if flaky) or **emergency-only, documented**. Default install path remains **arborist in-process** either way.
 
@@ -619,6 +619,7 @@ Document further resolutions in §15 when closed.
 | 2026-07-19 | §5.6: arborist in-process is primary; demote `npm install --prefix` to spike-gated / strike-if-flaky (§13.8) |
 | 2026-07-19 | Add `cpm-design-eli5.md`; drop superseded proposal as a required companion |
 | 2026-07-21 | Phase 0: resolve §13.4/§13.5 (host npm + Option A); bootstrap-modern off apm for app deps |
+| 2026-07-21 | Phase 1: lock compile-cache (b); Squirrel/Windows cpm PATH; engines checks |
 
 ---
 

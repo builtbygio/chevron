@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **cpm Phase 1 (initial):** `@chevron/cpm` under `cpm/` — Electron-as-Node CLI (`list`, `doctor`, `install`, `uninstall`, `link`, `rebuild --no-color`)
+  - Launchers `cpm` / `apm` shims; product packaging copies `app/cpm`; `getApmPath()` prefers cpm
+  - Shell installer installs `cpm` + `apm` shim; Windows `resources/win/cpm.cmd` + Squirrel PATH
+  - `engines.atom` / `engines.chevron` checks on install (`--strict` to fail); compile-cache policy (b) runtime-only
+
 ### Changed
 
 - **Phase 0 bootstrap:** root app `node_modules` via **host npm** (not apm/Node 12)

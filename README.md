@@ -38,7 +38,7 @@ See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
 - [x] Clean multi-platform builds on current Electron
 - [x] Chevron branding (icons, shell, package identity)
 - [x] Further first-run / onboarding polish — see [docs/onboarding-polish.md](docs/onboarding-polish.md)
-- [ ] Longer term: modern package manager path (apm successor) — see [docs/cpm-design.md](docs/cpm-design.md)
+- [ ] Longer term: modern package manager path (apm successor) — see [docs/cpm-design.md](docs/cpm-design.md) (Phase 0 done; Phase 1 cpm CLI in progress)
 
 ## Non-goals (for now)
 

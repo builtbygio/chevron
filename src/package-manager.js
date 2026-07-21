@@ -194,7 +194,21 @@ module.exports = class PackageManager {
       return configPath || this.apmPath;
     }
 
+    // Phase 1: prefer cpm (with apm-named shim for rebuild contract).
     const commandName = process.platform === 'win32' ? 'apm.cmd' : 'apm';
+    const cpmCommand = process.platform === 'win32' ? 'cpm.cmd' : 'cpm';
+    const cpmRoot = path.join(process.resourcesPath, 'app', 'cpm');
+    const cpmApmShim = path.join(cpmRoot, 'bin', commandName);
+    const cpmBin = path.join(cpmRoot, 'bin', cpmCommand);
+    if (fs.isFileSync(cpmApmShim)) {
+      this.apmPath = cpmApmShim;
+      return this.apmPath;
+    }
+    if (fs.isFileSync(cpmBin)) {
+      this.apmPath = cpmBin;
+      return this.apmPath;
+    }
+
     const apmRoot = path.join(process.resourcesPath, 'app', 'apm');
     this.apmPath = path.join(apmRoot, 'bin', commandName);
     if (!fs.isFileSync(this.apmPath)) {
