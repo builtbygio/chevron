@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Launchers `cpm` / `apm` shims; product packaging copies `app/cpm`; `getApmPath()` prefers cpm
   - Shell installer installs `cpm` + `apm` shim; Windows `resources/win/cpm.cmd` + Squirrel PATH
   - `engines.atom` / `engines.chevron` checks on install (`--strict` to fail); compile-cache policy (b) runtime-only
+  - Install smoke: local path + git + registry extract; Atom-compat engines (1.65.0)
 
 ### Changed
 

@@ -24,6 +24,19 @@ cd cpm && npm install
 
 `bootstrap-modern` installs these automatically.
 
+## Install packages (smoke-tested)
+
+```bash
+export ATOM_HOME=/tmp/cpm-test   # optional dual home
+./cpm/bin/cpm install ./cpm/test/fixtures/pure-js-package
+./cpm/bin/cpm install git+https://github.com/atom/language-toml.git#master
+./cpm/bin/cpm list
+./cpm/bin/cpm uninstall cpm-smoke-pure-js
+```
+
+Lifecycle scripts are **off** by default (`--allow-scripts` to enable).  
+`engines.atom` is checked against Atom-compat **1.65.0** (dual-support); use `--strict` to fail on mismatch.
+
 ## Design
 
 See [docs/cpm-design.md](../docs/cpm-design.md) (Phase 1).

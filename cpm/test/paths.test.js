@@ -45,6 +45,16 @@ describe('cpm paths', () => {
 });
 
 describe('cpm engines', () => {
+  it('accepts typical engines.atom ranges via Atom-compat version', () => {
+    const r = checkEngines(
+      { engines: { atom: '>=1.0.0 <2.0.0' } },
+      '0.3.0',
+      { strict: false }
+    );
+    assert.strictEqual(r.ok, true);
+    assert.strictEqual(r.warnings.length, 0);
+  });
+
   it('warns but allows engines.atom mismatch unless strict', () => {
     const r = checkEngines(
       { engines: { atom: '>=99.0.0' } },

@@ -3,7 +3,7 @@
 /**
  * Install community packages into dual-home packages dir.
  * Default: ignore lifecycle scripts (security).
- * Uses pacote + arborist when available; fails clearly if not installed.
+ * Uses pacote + arborist when available; local paths are copied (pacote DirFetcher needs packing).
  */
 
 const fs = require('fs-extra');
@@ -17,11 +17,29 @@ const { rebuildPackages } = require('./rebuild');
 const { checkEngines, getProductVersion } = require('../engines');
 
 function packageDirName(name) {
-  // Unscoped: "foo". Scoped: "@scope/foo" → keep nested dir under packages/
   if (name.startsWith('@') && name.includes('/')) {
-    return name; // path.join will create packages/@scope/foo
+    return name;
   }
   return name;
+}
+
+function resolveLocalPath(spec) {
+  if (!spec || typeof spec !== 'string') return null;
+  // file: URL or bare path
+  let p = spec;
+  if (p.startsWith('file:')) {
+    p = p.slice('file:'.length);
+    if (p.startsWith('//')) p = p.slice(2);
+  }
+  p = path.resolve(p);
+  try {
+    if (fs.existsSync(p) && fs.statSync(p).isDirectory()) {
+      return p;
+    }
+  } catch (_) {
+    /* ignore */
+  }
+  return null;
 }
 
 async function installPackage(spec, options = {}) {
@@ -31,6 +49,7 @@ async function installPackage(spec, options = {}) {
 
   const allowScripts = Boolean(options.allowScripts);
   const strictEngines = Boolean(options.strict);
+
   let pacote;
   let Arborist;
   try {
@@ -43,20 +62,35 @@ async function installPackage(spec, options = {}) {
     return 1;
   }
 
-  // Resolve name for directory
+  const localPath = resolveLocalPath(spec);
   let manifest;
-  try {
-    manifest = await pacote.manifest(spec, {
-      fullMetadata: true
-    });
-  } catch (err) {
-    process.stderr.write(`cpm install: failed to resolve ${spec}: ${err.message}\n`);
-    return 1;
+  let extractSpec = spec;
+
+  if (localPath) {
+    try {
+      manifest = await fs.readJson(path.join(localPath, 'package.json'));
+    } catch (err) {
+      process.stderr.write(
+        `cpm install: invalid local package at ${localPath}: ${err.message}\n`
+      );
+      return 1;
+    }
+  } else {
+    try {
+      manifest = await pacote.manifest(spec, { fullMetadata: true });
+    } catch (err) {
+      process.stderr.write(
+        `cpm install: failed to resolve ${spec}: ${err.message}\n`
+      );
+      return 1;
+    }
   }
 
   const name = manifest.name;
   if (!name) {
-    process.stderr.write(`cpm install: could not determine package name for ${spec}\n`);
+    process.stderr.write(
+      `cpm install: could not determine package name for ${spec}\n`
+    );
     return 1;
   }
 
@@ -75,17 +109,40 @@ async function installPackage(spec, options = {}) {
   }
 
   const dest = path.join(packagesDir, packageDirName(name));
-  process.stdout.write(`Installing ${name}@${manifest.version} → ${dest}\n`);
+  process.stdout.write(
+    `Installing ${name}@${manifest.version || '?'} → ${dest}\n`
+  );
 
   if (await fs.pathExists(dest)) {
     await fs.remove(dest);
   }
-  await fs.ensureDir(dest);
 
   try {
-    await pacote.extract(spec, dest, {});
+    if (localPath) {
+      // Copy tree; do not follow dest into itself. Skip node_modules if present
+      // (reinstall deps via arborist for a clean tree).
+      await fs.copy(localPath, dest, {
+        filter: (src) => {
+          const rel = path.relative(localPath, src);
+          if (!rel || rel === '.') return true;
+          const parts = rel.split(path.sep);
+          if (parts.includes('node_modules')) return false;
+          if (parts.includes('.git')) return false;
+          return true;
+        }
+      });
+    } else {
+      await fs.ensureDir(dest);
+      // pacote git/dir fetchers need the Arborist constructor when packing
+      await pacote.extract(extractSpec, dest, { Arborist });
+    }
   } catch (err) {
     process.stderr.write(`cpm install: extract failed: ${err.message}\n`);
+    try {
+      await fs.remove(dest);
+    } catch (_) {
+      /* ignore */
+    }
     return 1;
   }
 
@@ -117,9 +174,9 @@ async function installPackage(spec, options = {}) {
     }
   }
 
-  process.stdout.write(`Installed ${name}@${manifest.version}\n`);
+  process.stdout.write(`Installed ${name}@${manifest.version || '?'}\n`);
   process.stdout.write(`Package home: ${getPackageHome()}\n`);
   return 0;
 }
 
-module.exports = { installPackage };
+module.exports = { installPackage, resolveLocalPath, packageDirName };
