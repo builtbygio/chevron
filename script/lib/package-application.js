@@ -118,7 +118,9 @@ function copyNonASARResources(packagedAppPath, bundledResourcesPath) {
     filter: includePathInPackagedApp
   });
 
-  // Legacy app/apm/... paths → cpm apm shim (scripts/installers that still expect apm layout)
+  // Legacy app/apm/... paths → real launcher scripts (not symlinks: broken
+  // relative links break fs.copySync when creating deb/rpm).
+  // From app/apm/bin → ../../cpm/bin/apm; from app/apm/node_modules/.bin → ../../../cpm/bin/apm
   const legacyApmBin = path.join(
     bundledResourcesPath,
     'app',
@@ -129,31 +131,39 @@ function copyNonASARResources(packagedAppPath, bundledResourcesPath) {
   fs.mkdirSync(legacyApmBin, { recursive: true });
   const legacyApmTop = path.join(bundledResourcesPath, 'app', 'apm', 'bin');
   fs.mkdirSync(legacyApmTop, { recursive: true });
+
+  const writeUnixShim = (filePath, relToCpmApm) => {
+    fs.writeFileSync(
+      filePath,
+      `#!/bin/bash\nexec "$(dirname "$0")/${relToCpmApm}" "$@"\n`,
+      { mode: 0o755 }
+    );
+  };
+  const writeWinShim = (filePath, relToCpmApmCmd) => {
+    fs.writeFileSync(
+      filePath,
+      `@echo off\r\n"%~dp0${relToCpmApmCmd}" %*\r\n`
+    );
+  };
+
   if (process.platform === 'win32') {
-    fs.writeFileSync(
-      path.join(legacyApmBin, 'apm.cmd'),
-      '@echo off\r\n"%~dp0\\..\\..\\..\\cpm\\bin\\apm.cmd" %*\r\n'
-    );
-    fs.writeFileSync(
-      path.join(legacyApmTop, 'apm.cmd'),
-      '@echo off\r\n"%~dp0\\..\\cpm\\bin\\apm.cmd" %*\r\n'
-    );
+    writeWinShim(path.join(legacyApmBin, 'apm.cmd'), '..\\..\\..\\cpm\\bin\\apm.cmd');
+    writeWinShim(path.join(legacyApmTop, 'apm.cmd'), '..\\..\\cpm\\bin\\apm.cmd');
   } else {
-    try {
-      fs.symlinkSync(
-        path.join('..', '..', '..', 'cpm', 'bin', 'apm'),
-        path.join(legacyApmBin, 'apm')
-      );
-    } catch (e) {
-      if (e.code !== 'EEXIST') console.warn(e.message);
-    }
-    try {
-      fs.symlinkSync(
-        path.join('..', 'cpm', 'bin', 'apm'),
-        path.join(legacyApmTop, 'apm')
-      );
-    } catch (e) {
-      if (e.code !== 'EEXIST') console.warn(e.message);
+    writeUnixShim(path.join(legacyApmBin, 'apm'), '../../../cpm/bin/apm');
+    writeUnixShim(path.join(legacyApmTop, 'apm'), '../../cpm/bin/apm');
+  }
+
+  // Ensure cpm launchers are executable after filter copy
+  const cpmBinDir = path.join(bundledResourcesPath, 'app', 'cpm', 'bin');
+  for (const name of ['cpm', 'apm']) {
+    const p = path.join(cpmBinDir, name);
+    if (fs.existsSync(p)) {
+      try {
+        fs.chmodSync(p, 0o755);
+      } catch (_) {
+        /* ignore */
+      }
     }
   }
 
