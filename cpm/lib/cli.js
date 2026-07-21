@@ -7,6 +7,8 @@ const { rebuildPackages } = require('./commands/rebuild');
 const { installPackage } = require('./commands/install');
 const { uninstallPackage } = require('./commands/uninstall');
 const { linkPackage, unlinkPackage } = require('./commands/link');
+const { searchCommand } = require('./commands/search');
+const { viewCommand } = require('./commands/view');
 
 async function main(argv = process.argv) {
   const program = new Command();
@@ -79,6 +81,23 @@ async function main(argv = process.argv) {
   program.command('unlink [name]').action(async name => {
     process.exitCode = await unlinkPackage(name);
   });
+
+  program
+    .command('search <query>')
+    .description('Search the package registry (default: Pulsar API)')
+    .option('--json', 'JSON output')
+    .option('--page <n>', 'Page number', v => parseInt(v, 10), 1)
+    .action(async (query, opts) => {
+      process.exitCode = await searchCommand(query, opts);
+    });
+
+  program
+    .command('view <name>')
+    .description('Show package metadata from the registry')
+    .option('--json', 'JSON output')
+    .action(async (name, opts) => {
+      process.exitCode = await viewCommand(name, opts);
+    });
 
   // Editor contract: argv often `… rebuild --no-color` with no package name.
   // Commander 12 handles this via rebuild [names...].

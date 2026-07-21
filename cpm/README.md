@@ -30,12 +30,25 @@ cd cpm && npm install
 export ATOM_HOME=/tmp/cpm-test   # optional dual home
 ./cpm/bin/cpm install ./cpm/test/fixtures/pure-js-package
 ./cpm/bin/cpm install git+https://github.com/atom/language-toml.git#master
+./cpm/bin/cpm search linter
+./cpm/bin/cpm view linter
+./cpm/bin/cpm install linter          # registry → tarball (Phase 2)
 ./cpm/bin/cpm list
 ./cpm/bin/cpm uninstall cpm-smoke-pure-js
 ```
 
 Lifecycle scripts are **off** by default (`--allow-scripts` to enable).  
 `engines.atom` is checked against Atom-compat **1.65.0** (dual-support); use `--strict` to fail on mismatch.
+
+### Registry (Phase 2)
+
+Default: **Pulsar** package API (`https://api.pulsar-edit.dev`).
+
+```bash
+export CPM_REGISTRY_URL=https://api.pulsar-edit.dev   # optional override
+./cpm/bin/cpm search language
+./cpm/bin/cpm view language-toml --json
+```
 
 ## Design
 

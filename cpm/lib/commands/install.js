@@ -15,6 +15,11 @@ const {
 } = require('../paths');
 const { rebuildPackages } = require('./rebuild');
 const { checkEngines, getProductVersion } = require('../engines');
+const {
+  isBarePackageName,
+  parseNameVersion,
+  resolveInstallSpec
+} = require('../registry');
 
 function packageDirName(name) {
   if (name.startsWith('@') && name.includes('/')) {
@@ -65,6 +70,7 @@ async function installPackage(spec, options = {}) {
   const localPath = resolveLocalPath(spec);
   let manifest;
   let extractSpec = spec;
+  let registryNote = null;
 
   if (localPath) {
     try {
@@ -75,9 +81,38 @@ async function installPackage(spec, options = {}) {
       );
       return 1;
     }
+  } else if (isBarePackageName(spec)) {
+    // Phase 2: resolve Atom/Pulsar packages by name via registry, else npm.
+    const { name: bareName, version: bareVer } = parseNameVersion(spec);
+    try {
+      const resolved = await resolveInstallSpec(bareName, bareVer);
+      extractSpec = resolved.spec;
+      registryNote = `${resolved.source} ${resolved.version} via registry`;
+      process.stdout.write(
+        `Resolved ${bareName}@${resolved.version} (${resolved.source})\n`
+      );
+      manifest = await pacote.manifest(extractSpec, {
+        fullMetadata: true,
+        Arborist
+      });
+    } catch (regErr) {
+      try {
+        manifest = await pacote.manifest(spec, { fullMetadata: true });
+        extractSpec = spec;
+        registryNote = 'npm registry fallback';
+      } catch (err) {
+        process.stderr.write(
+          `cpm install: failed to resolve ${spec}: ${regErr.message}\n`
+        );
+        return 1;
+      }
+    }
   } else {
     try {
-      manifest = await pacote.manifest(spec, { fullMetadata: true });
+      manifest = await pacote.manifest(spec, {
+        fullMetadata: true,
+        Arborist
+      });
     } catch (err) {
       process.stderr.write(
         `cpm install: failed to resolve ${spec}: ${err.message}\n`
@@ -110,7 +145,9 @@ async function installPackage(spec, options = {}) {
 
   const dest = path.join(packagesDir, packageDirName(name));
   process.stdout.write(
-    `Installing ${name}@${manifest.version || '?'} → ${dest}\n`
+    `Installing ${name}@${manifest.version || '?'} → ${dest}${
+      registryNote ? ` (${registryNote})` : ''
+    }\n`
   );
 
   if (await fs.pathExists(dest)) {

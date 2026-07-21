@@ -494,10 +494,11 @@ Respect licenses and Pulsar terms if proxying their API; document attribution.
 - In-app **Rebuild** from incompatible-packages (or equivalent spawn of `getApmPath() rebuild --no-color`) returns success/failure correctly on all three desktop OSes.
 - §5.6 fallback either **removed** after a failed spike or **documented emergency-only** after a green spike — no silent “or npm --prefix” in production code without that write-up.
 
-### Phase 2 — Registry client
+### Phase 2 — Registry client — **in progress / DONE when PR merges**
 
-- Configurable API base URL (Pulsar backend and/or static index).
-- `search` / `view` / install-by-name restored for users.
+- Configurable API base URL via `CPM_REGISTRY_URL` (default `https://api.pulsar-edit.dev`).
+- `cpm search` / `cpm view` against Pulsar package-backend.
+- `cpm install <name>` resolves via registry tarball (fallback: npm / git).
 
 ### Phase 3 — Prebuilds
 
@@ -582,7 +583,7 @@ Security tests: assert scripts do not run by default; assert branch-only git URL
 
 1. **Default package write home:** always `~/.atom/packages` vs prefer `~/.chevron/packages` when Chevron home exists.  
 2. **~~cpm process: host Node vs ELECTRON_RUN_AS_NODE~~ — RESOLVED:** always **`ELECTRON_RUN_AS_NODE=1` + product binary**. Host Node only for unit tests of pure logic. See §5.2, §5.7.  
-3. **Registry default:** Pulsar API vs Chevron static index first.  
+3. **~~Registry default~~ — RESOLVED:** Pulsar API (`https://api.pulsar-edit.dev`) first; override with `CPM_REGISTRY_URL`. Static index later if needed.  
 4. **~~Root app `node_modules` install~~ — RESOLVED (Phase 0):** pure **host npm** (`npm ci` / `npm install --ignore-scripts --legacy-peer-deps`) + modern Electron rebuild in `bootstrap-modern`. Not cpm. Optional `--with-apm` only for packaging/dev until Phase 1.  
 5. **~~Bundled `packageDependencies` at build time~~ — RESOLVED Option A (2026-07-21):** all 91 entries are also root `dependencies` (`file:` + git pins). Host npm install of the app tree is sufficient; `packageDependencies` remains a metadata map for runtime/build. Spike: [cpm-phase-0-spike.md](./cpm-phase-0-spike.md).  
 6. **~~compile-cache at install (§5.7)~~ — RESOLVED:** policy **(b)** runtime-only transpile (cpm does not load app compile-cache at install).  
@@ -620,6 +621,7 @@ Document further resolutions in §15 when closed.
 | 2026-07-19 | Add `cpm-design-eli5.md`; drop superseded proposal as a required companion |
 | 2026-07-21 | Phase 0: resolve §13.4/§13.5 (host npm + Option A); bootstrap-modern off apm for app deps |
 | 2026-07-21 | Phase 1: lock compile-cache (b); Squirrel/Windows cpm PATH; engines checks |
+| 2026-07-21 | Phase 2: Pulsar registry — search, view, install-by-name (`CPM_REGISTRY_URL`) |
 
 ---
 
