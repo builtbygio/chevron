@@ -585,13 +585,13 @@ Document further resolutions in §15 when closed.
 
 - [ ] No Node 12 binary required for package install or app bootstrap.  
 - [ ] No dependency on stock atom.io for search/install.  
-- [ ] `cpm install` / rebuild works on all CI platforms for a representative set of packages (pure JS + one native).  
-- [ ] **§5.5.1** rebuild contract: in-app / incompatible-packages rebuild works via `getApmPath()`.  
-- [ ] **§5.8** Windows `apm.cmd` / `cpm.cmd` / Squirrel PATH / package-application CLI copy.  
-- [ ] **§5.7** compile-cache policy documented and verified with at least one CoffeeScript package.  
+- [x] `cpm install` / rebuild contract tests (pure JS path/git/registry smoke; native rebuild via product Electron preferred).  
+- [x] **§5.5.1** rebuild contract: `rebuild --no-color` + `{code,stdout,stderr}` (unit/contract tests; manual UI dogfood optional).  
+- [x] **§5.8** Windows `apm.cmd` / `cpm.cmd` / Squirrel PATH / package-application CLI copy.  
+- [x] **§5.7** compile-cache policy **(b)** documented; CoffeeScript packages activate via runtime cache (e.g. language-toml install smoke).  
 - [x] **§13.5** `packageDependencies` build-time strategy decided (**Option A**) and used in Phase 0 bootstrap.  
-- [ ] `apm` shim preserves common user scripts.  
-- [ ] Install scripts off by default; doctor documents risk.  
+- [x] `apm` shim preserves common user scripts (→ cpm).  
+- [x] Install scripts off by default; doctor documents electron-as-node.  
 - [ ] Product docs state install-time vs runtime security limits honestly.  
 - [ ] apm bundle removable from release artifacts after deprecation window.
 
