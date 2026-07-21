@@ -275,28 +275,11 @@ Regression tests (Phase 1): spawn cpm as the editor does (`BufferedProcess`-equi
 | Electron natives | `@electron/rebuild` | **Primary** |
 | Semver / engines | `semver` | **Primary** |
 | CLI | `yargs` or `commander` | **Primary** |
-| Dependency tree fallback | Spawning **`npm install --prefix …`** under ELECTRON_RUN_AS_NODE | **Not committed** — see spike below |
+| Dependency tree fallback | ~~`npm install --prefix` under ELECTRON_RUN_AS_NODE~~ | **STRUCK (Phase 1)** — never implemented; arborist path is sole install core |
 
-**Primary path (locked lean):** cpm loads `pacote` + **arborist in-process** inside the product Electron binary. Install/rebuild stay in one process model; no reliance on npm’s CLI self-identification or child-spawn graph.
+**Primary path (locked):** cpm loads `pacote` + **arborist in-process**. No `npm install --prefix` escape hatch in production code.
 
-**Unproven fallback — do not design around it:**
-
-Shelling out to modern **`npm install --prefix`** with `ELECTRON_RUN_AS_NODE=1` is the least-proven line in this design. Few projects run the **npm CLI itself** on Electron-as-Node. Known footguns:
-
-| Risk | Why it matters |
-|------|----------------|
-| `process.release` / `process.execPath` | npm uses these for self-identification and for deciding how to spawn **node-gyp**, lifecycle helpers, and some tooling. Electron-as-Node is not a stock Node binary; behaviour is under-tested. |
-| Child processes | Env inheritance *should* keep `ELECTRON_RUN_AS_NODE=1` for descendants, but “should” is doing real work — a child that re-execs `node` via PATH can silently drop Electron and hit host Node / wrong ABI. |
-| Lifecycle / git hooks | Even with `--ignore-scripts`, npm’s spawn graph is larger than arborist’s library API surface. |
-
-**Day-one spike (before treating the fallback as real):**
-
-1. Under the **product** binary + `ELECTRON_RUN_AS_NODE=1`, run `npm install --prefix <tmp>` for **one pure-JS** package and **one package with natives** (or a tiny `binding.gyp` fixture).  
-2. Assert: correct `node_modules` layout; no host-Node child without the env; rebuild path still matches product ABI (or fails clearly).  
-3. **If flaky or wrong-ABI children appear:** **strike the fallback from this section** rather than carry an untested escape hatch. Prefer fixing arborist integration.  
-4. **If solid on all three OSes:** document exact flags (`--ignore-scripts`, no ambient `npm_config_runtime`, etc.) and promote to an optional emergency path only — still not the default.
-
-**Avoid:** vendoring full npm 6; setting ambient Electron `npm_config_runtime` / `disturl` / `target` on host npm invocations; assuming “npm under ELECTRON_RUN_AS_NODE works” without the spike. Pass Electron options **only** into rebuild tooling (`@electron/rebuild`), not into ambient npm config.
+**Avoid:** vendoring full npm 6; ambient Electron `npm_config_*` on host npm; spawning the npm CLI under Electron-as-Node. Pass Electron options **only** into `@electron/rebuild`.
 
 ### 5.7 compile-cache coupling
 
@@ -475,24 +458,29 @@ Respect licenses and Pulsar terms if proxying their API; document attribution.
 
 **Success:** CI multi-platform green without apm for app `node_modules`.
 
-### Phase 1 — cpm v1 CLI (user packages)
+### Phase 1 — cpm v1 CLI (user packages) — **DONE** (2026-07-21)
 
-- In-repo package (e.g. `cpm/` or `packages/cpm`).
-- Entry: **ELECTRON_RUN_AS_NODE** launchers (`cpm`, `cpm.cmd`, `apm` / `apm.cmd` shims) — §5.2, §5.8.
-- **Install core:** **arborist + pacote in-process** (§5.6 primary). Do **not** block on or default to `npm install --prefix`.
-- **Day-one spike (§5.6):** optionally exercise `npm install --prefix` under the product binary (pure-JS + native fixture). If flaky, **delete** that fallback from §5.6 and never ship it; if solid, document as emergency-only.
-- Commands: install / uninstall / list / link / **rebuild** / doctor (+ search if backend ready).
-- **Rebuild:** honour §5.5.1 (`rebuild --no-color`, exit code, stderr for incompatible-packages).
-- Dual package home; ignore-scripts default; Electron rebuild via `@electron/rebuild`.
-- Wire `core.apmPath` / `getApmPath()` / shell + Squirrel install to cpm — §5.8.
-- compile-cache policy locked per §5.7 (document a vs b).
-- **Windows packaging:** update `resources/win/*`, `package-application.js` CLI copy list, Squirrel PATH writers — not “tests only.”
+| Item | Status |
+|------|--------|
+| In-repo `cpm/` package | Done (#25) |
+| ELECTRON_RUN_AS_NODE launchers + `apm` shims | Done |
+| Install: pacote + arborist in-process; scripts off by default | Done; path/git/registry smoke (#26) |
+| Commands: install / uninstall / list / link / rebuild / doctor | Done (`search` deferred to Phase 2) |
+| Rebuild §5.5.1 (`rebuild --no-color`, `{code,stdout,stderr}`) | Done — contract tests in `cpm/test/rebuild-contract.test.js` |
+| Dual package home | Done |
+| `getApmPath` / shell / Squirrel / `resources/win` | Done |
+| compile-cache §5.7 **(b)** runtime-only | Done |
+| §5.6 `npm --prefix` fallback | **Struck** — not shipped |
+| Packaging copies `app/cpm` (+ install deps if missing) | Done |
 
-**Success:**
+**Success (Phase 1):**
 
-- `cpm install <known-package>` activates on macOS/Linux/Windows CI smoke (via **arborist path**, not npm CLI fallback).
-- In-app **Rebuild** from incompatible-packages (or equivalent spawn of `getApmPath() rebuild --no-color`) returns success/failure correctly on all three desktop OSes.
-- §5.6 fallback either **removed** after a failed spike or **documented emergency-only** after a green spike — no silent “or npm --prefix” in production code without that write-up.
+- [x] `cpm install` pure-JS path + git + registry (host-node smoke; product Electron preferred for natives)
+- [x] Rebuild contract shape for editor spawn (`rebuild --no-color`)
+- [x] No silent npm-CLI fallback under Electron-as-Node
+- [ ] Optional dogfood: open incompatible-packages UI in a built app (manual)
+
+**Not in Phase 1 (later):** registry search/view (Phase 2), prebuilds (Phase 3), remove apm tree (Phase 4).
 
 ### Phase 2 — Registry client
 
@@ -587,7 +575,7 @@ Security tests: assert scripts do not run by default; assert branch-only git URL
 5. **~~Bundled `packageDependencies` at build time~~ — RESOLVED Option A (2026-07-21):** all 91 entries are also root `dependencies` (`file:` + git pins). Host npm install of the app tree is sufficient; `packageDependencies` remains a metadata map for runtime/build. Spike: [cpm-phase-0-spike.md](./cpm-phase-0-spike.md).  
 6. **~~compile-cache at install (§5.7)~~ — RESOLVED:** policy **(b)** runtime-only transpile (cpm does not load app compile-cache at install).  
 7. **Strict mode default** for end-user builds vs developer builds.  
-8. **`npm install --prefix` under ELECTRON_RUN_AS_NODE (§5.6):** day-one spike only. Outcomes: **strike fallback** (preferred if flaky) or **emergency-only, documented**. Default install path remains **arborist in-process** either way.
+8. **~~`npm install --prefix` under ELECTRON_RUN_AS_NODE (§5.6)~~ — STRUCK:** never implemented; arborist-only install core.
 
 Document further resolutions in §15 when closed.
 
@@ -620,6 +608,7 @@ Document further resolutions in §15 when closed.
 | 2026-07-19 | Add `cpm-design-eli5.md`; drop superseded proposal as a required companion |
 | 2026-07-21 | Phase 0: resolve §13.4/§13.5 (host npm + Option A); bootstrap-modern off apm for app deps |
 | 2026-07-21 | Phase 1: lock compile-cache (b); Squirrel/Windows cpm PATH; engines checks |
+| 2026-07-21 | Phase 1 complete: strike §5.6 npm-prefix fallback; rebuild contract tests; packaging ensures cpm deps |
 
 ---
 

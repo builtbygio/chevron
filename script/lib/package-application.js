@@ -107,6 +107,19 @@ function copyNonASARResources(packagedAppPath, bundledResourcesPath) {
   // Phase 1: ship cpm alongside apm (getApmPath prefers cpm).
   const cpmSrc = path.join(CONFIG.repositoryRootPath, 'cpm');
   if (fs.existsSync(cpmSrc)) {
+    const cpmNm = path.join(cpmSrc, 'node_modules');
+    if (!fs.existsSync(cpmNm)) {
+      console.log('Installing cpm dependencies before packaging…');
+      const { execFileSync } = require('child_process');
+      const npmArgs = fs.existsSync(path.join(cpmSrc, 'package-lock.json'))
+        ? ['ci', '--ignore-scripts', '--no-audit', '--no-fund']
+        : ['install', '--ignore-scripts', '--no-audit', '--no-fund'];
+      execFileSync('npm', npmArgs, {
+        cwd: cpmSrc,
+        stdio: 'inherit',
+        env: process.env
+      });
+    }
     console.log('Copying cpm into packaged app resources…');
     fs.copySync(cpmSrc, path.join(bundledResourcesPath, 'app', 'cpm'), {
       filter: includePathInPackagedApp
