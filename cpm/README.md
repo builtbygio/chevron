@@ -50,6 +50,17 @@ export CPM_REGISTRY_URL=https://api.pulsar-edit.dev   # optional override
 ./cpm/bin/cpm view language-toml --json
 ```
 
+### Prebuilds (Phase 3)
+
+Native packages: cpm tries prebuilds before compiling.
+
+```bash
+./cpm/bin/cpm rebuild              # prebuild → source
+./cpm/bin/cpm rebuild --force-source
+```
+
+Author guide: [docs/cpm-prebuilds.md](../docs/cpm-prebuilds.md).
+
 ## Design
 
-See [docs/cpm-design.md](../docs/cpm-design.md) (Phase 1).
+See [docs/cpm-design.md](../docs/cpm-design.md).

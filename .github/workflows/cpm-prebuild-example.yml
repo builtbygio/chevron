@@ -1,0 +1,70 @@
+# Example workflow for package authors publishing Electron prebuilds for cpm.
+# Copy into your package repo and adjust package path / Electron version.
+#
+# Not run for the Chevron monorepo by default (workflow_dispatch only).
+
+name: cpm prebuild example
+
+on:
+  workflow_dispatch:
+  # release:
+  #   types: [published]
+
+jobs:
+  prebuild:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            platform: darwin
+            arch: arm64
+          - os: macos-13
+            platform: darwin
+            arch: x64
+          - os: ubuntu-22.04
+            platform: linux
+            arch: x64
+          - os: windows-2022
+            platform: win32
+            arch: x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Adjust ELECTRON_VERSION to match Chevron's package.json electronVersion
+      - name: Build native module for Electron
+        shell: bash
+        env:
+          ELECTRON_VERSION: '43.1.0'
+        run: |
+          npx node-gyp rebuild \
+            --target="$ELECTRON_VERSION" \
+            --dist-url=https://electronjs.org/headers \
+            --runtime=electron \
+            --arch=${{ matrix.arch }}
+
+      - name: Stage artifact
+        shell: bash
+        env:
+          ELECTRON_VERSION: '43.1.0'
+        run: |
+          PKG=$(node -p "require('./package.json').name")
+          VER=$(node -p "require('./package.json').version")
+          NODE=$(find build -name '*.node' | head -1)
+          test -n "$NODE"
+          OUT="${PKG}-${{ matrix.platform }}-${{ matrix.arch }}-electron${ELECTRON_VERSION}.node"
+          cp "$NODE" "$OUT"
+          echo "ARTIFACT=$OUT" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prebuild-${{ matrix.platform }}-${{ matrix.arch }}
+          path: ${{ env.ARTIFACT }}

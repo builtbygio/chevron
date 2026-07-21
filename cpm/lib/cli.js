@@ -38,9 +38,14 @@ async function main(argv = process.argv) {
     .command('rebuild [names...]')
     .allowUnknownOption(true) // --no-color from Package.runRebuildProcess
     .option('--no-color', 'Accepted for Package.runRebuildProcess compatibility')
+    .option(
+      '--force-source',
+      'Skip prebuilds; always compile natives with @electron/rebuild'
+    )
     .action(async (names, opts) => {
       process.exitCode = await rebuildPackages(names || [], {
-        noColor: true
+        noColor: true,
+        forceSource: Boolean(opts.forceSource)
       });
     });
 

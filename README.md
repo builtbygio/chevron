@@ -38,7 +38,7 @@ See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
 - [x] Clean multi-platform builds on current Electron
 - [x] Chevron branding (icons, shell, package identity)
 - [x] Further first-run / onboarding polish — see [docs/onboarding-polish.md](docs/onboarding-polish.md)
-- [x] Modern package manager path — Phase 0–2 (`cpm` + Pulsar registry; see [docs/cpm-design.md](docs/cpm-design.md)); Phase 3–4 prebuilds / retire apm remaining
+- [x] Modern package manager path — Phase 0–3 (`cpm` + registry + prebuilds; see [docs/cpm-design.md](docs/cpm-design.md)); Phase 4 retire apm remaining
 
 ## Non-goals (for now)
 

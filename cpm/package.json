@@ -25,6 +25,7 @@
     "commander": "^12.1.0",
     "fs-extra": "^11.2.0",
     "pacote": "^18.0.6",
+    "prebuild-install": "^7.1.3",
     "semver": "^7.6.3"
   }
 }

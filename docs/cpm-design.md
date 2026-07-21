@@ -434,11 +434,12 @@ Respect licenses and Pulsar terms if proxying their API; document attribution.
 - Rebuild with `@electron/rebuild` targeting product `electronVersion` and headers URL (`https://www.electronjs.org/headers` or product config).
 - Prefer no install scripts; rebuild is cpm’s job.
 
-### Later (VS Code lesson)
+### Phase 3 (VS Code lesson, shipping)
 
-- `cpm publish` CI workflow produces platform artifacts (darwin-x64/arm64, linux-x64/arm64, win32-x64).
-- `cpm install` prefers matching prebuild; falls back to source rebuild.
-- Common packages become pure downloads; hackable source path remains for developers.
+- Example CI workflow produces platform `.node` artifacts (darwin/linux/win matrix).
+- `cpm install` / `cpm rebuild` prefer matching prebuild; fall back to source rebuild.
+- Package authors may set `chevron.prebuilds` URL templates or use standard `prebuild-install`.
+- Hackable source path remains (`--force-source`).
 
 ---
 
@@ -500,9 +501,12 @@ Respect licenses and Pulsar terms if proxying their API; document attribution.
 - `cpm search` / `cpm view` against Pulsar package-backend.
 - `cpm install <name>` resolves via registry tarball (fallback: npm / git).
 
-### Phase 3 — Prebuilds
+### Phase 3 — Prebuilds — **in progress / DONE when PR merges**
 
-- Publish workflow + install preference for platform binaries.
+- Install/rebuild **prefer prebuilds** before `@electron/rebuild` source compile.
+- Strategies: already-present `.node` → `chevron.prebuilds` URL template → `prebuild-install` → source.
+- `cpm rebuild --force-source` skips prebuilds.
+- Author docs: [cpm-prebuilds.md](./cpm-prebuilds.md); example workflow `.github/workflows/cpm-prebuild-example.yml`.
 
 ### Phase 4 — Retire apm tree
 
@@ -622,6 +626,7 @@ Document further resolutions in §15 when closed.
 | 2026-07-21 | Phase 0: resolve §13.4/§13.5 (host npm + Option A); bootstrap-modern off apm for app deps |
 | 2026-07-21 | Phase 1: lock compile-cache (b); Squirrel/Windows cpm PATH; engines checks |
 | 2026-07-21 | Phase 2: Pulsar registry — search, view, install-by-name (`CPM_REGISTRY_URL`) |
+| 2026-07-21 | Phase 3: prebuild preference + author workflow docs |
 
 ---
 
