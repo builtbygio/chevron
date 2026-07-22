@@ -328,7 +328,7 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 | Boot | `static/preload.js` → `static/index.js` in preload world |
 | Page | `index.html` has no Node scripts |
 | Custom elements | `src/create-custom-element.js` (`new Class()` under isolation) |
-| GitHub workers | Still `contextIsolation: false` + `nodeIntegration: true` (trusted hidden windows) |
+| GitHub workers | Still Node + `sandbox: false` (hackable dugite); N5.1 hardens prefs/nav/perms + `chevron-package-worker` partition |
 
 ### Recommended next actions
 
@@ -336,10 +336,10 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 2. ~~**IPC trust boundary hardening**~~ **done** (scheme filter, drop webContents `executeJavaScript` IPC, lock worker prefs).  
 3. ~~**Packaged github worker assets**~~ **done** — asar unpack includes `github/lib/**` for `file://` workers.  
 4. **Phase N** (active): narrow package Node surface — see **`docs/security-phase-n.md`**.  
-   - N2–**N4.1** done (through guest WebContents nav/permissions).  
+   - N2–**N5.1** done (guests sandboxed; package secondary windows hardened).  
    - Tier-1 packages pinned to `builtbygio` forks.  
-   - Next: N5 / Phase S editor sandbox; product fixes in owned package forks.  
-5. Phase S later: sandbox guest content; core editor sandbox blocked on in-process natives.
+   - Next: fold bootstrap patches into forks; Phase S prep (natives).  
+5. Phase S later: core editor sandbox still blocked on in-process natives.
 
 ---
 

@@ -29,6 +29,77 @@ const createdWindows = new Map(); // windowId -> BrowserWindow
 const SETTINGS_VIEW_CACHE_MAX_BYTES = 5 * 1024 * 1024;
 const SAFE_CACHE_BASENAME = /^[A-Za-z0-9._-]+$/;
 
+/**
+ * Phase N5: package secondary BrowserWindows (github git workers).
+ * They still need Node (dugite / worker.js) — that is intentional and
+ * hackable — but prefs are fixed, navigation is file:-only, and they
+ * cannot open child windows or grant Chromium permissions.
+ */
+const WORKER_SESSION_PARTITION = 'chevron-package-worker';
+
+function isAllowedWorkerNavigationUrl(navigationUrl) {
+  if (typeof navigationUrl !== 'string' || navigationUrl.length === 0) {
+    return false;
+  }
+  // Reject path-traversal sequences in the raw URL (URL() may normalize them away).
+  if (navigationUrl.includes('..')) return false;
+  try {
+    const parsed = new URL(navigationUrl);
+    // Workers load renderer.html + worker assets via file:// only.
+    // about:blank is used briefly by Electron before loadURL.
+    if (parsed.protocol === 'about:') {
+      return parsed.pathname === 'blank' || parsed.href === 'about:blank';
+    }
+    if (parsed.protocol !== 'file:') return false;
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function configurePackageWorkerWindow(win) {
+  if (!win || win.isDestroyed()) return;
+  const wc = win.webContents;
+
+  wc.setWindowOpenHandler(({ url }) => {
+    console.warn(
+      `AtomApplication: blocked window.open from package worker (${String(url)})`
+    );
+    return { action: 'deny' };
+  });
+
+  wc.on('will-navigate', (event, navigationUrl) => {
+    if (!isAllowedWorkerNavigationUrl(navigationUrl)) {
+      console.warn(
+        `AtomApplication: blocked package worker navigation to ${String(
+          navigationUrl
+        )}`
+      );
+      event.preventDefault();
+    }
+  });
+
+  wc.on('will-redirect', (event, navigationUrl) => {
+    if (!isAllowedWorkerNavigationUrl(navigationUrl)) {
+      console.warn(
+        `AtomApplication: blocked package worker redirect to ${String(
+          navigationUrl
+        )}`
+      );
+      event.preventDefault();
+    }
+  });
+
+  const session = wc.session;
+  session.setPermissionRequestHandler((_wc, permission, callback) => {
+    console.warn(
+      `AtomApplication: denied package worker permission "${permission}"`
+    );
+    callback(false);
+  });
+  session.setPermissionCheckHandler(() => false);
+}
+
 function browserWindowFromEvent(event) {
   return BrowserWindow.fromWebContents(event.sender);
 }
@@ -524,22 +595,30 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   ipcMain.on('atom-create-browser-window-sync', (event, options = {}) => {
     try {
-      // GitHub git workers are trusted hidden windows: they need Node require()
-      // in the page (worker.js) and do not use the main Atom preload.
+      // Phase N5: package secondary windows (github git workers).
       //
-      // webPreferences is a FIXED set — caller-supplied webPreferences are
-      // ignored so a compromised renderer cannot inject a `preload`,
-      // `additionalArguments`, or other privileged options into a new
-      // Node-enabled window. The only real caller (github WorkerManager)
-      // passes nodeIntegration (already the default here) + enableRemoteModule
-      // (unsupported), both of which this set already covers.
+      // Hackable by design: Node stays on so worker.js can require dugite and
+      // package code. Chromium sandbox stays false for the same reason.
+      //
+      // Hardened: FIXED webPreferences only — caller cannot inject preload,
+      // additionalArguments, or flip isolation. Navigation limited to file://
+      // worker assets; no window.open; all permission prompts denied; isolated
+      // session partition. See docs/security-phase-n5.md.
       const webPreferences = {
         nodeIntegration: true,
+        nodeIntegrationInWorker: false,
+        nodeIntegrationInSubFrames: false,
         contextIsolation: false,
-        sandbox: false
+        sandbox: false,
+        webSecurity: true,
+        allowRunningInsecureContent: false,
+        experimentalFeatures: false,
+        // Isolate cookies/storage from the editor session.
+        partition: WORKER_SESSION_PARTITION
       };
 
-      // Drop any caller webPreferences; keep other top-level window options.
+      // Drop any caller webPreferences; keep other top-level window options
+      // (show, width, height, …) that WorkerManager may pass.
       const windowOptions = Object.assign({}, options);
       delete windowOptions.webPreferences;
 
@@ -551,6 +630,8 @@ module.exports = function registerRendererIpc(atomApplication) {
       const winId = win.id;
       const wcId = win.webContents.id;
       createdWindows.set(winId, win);
+
+      configurePackageWorkerWindow(win);
 
       const managerWc = event.sender;
       const destroyWorker = () => {
@@ -614,7 +695,21 @@ module.exports = function registerRendererIpc(atomApplication) {
         return;
       }
       if (method === 'loadURL') {
-        win.loadURL(args[0]);
+        const targetUrl = args[0];
+        // Phase N5: package workers may only load local file:// worker assets.
+        if (
+          createdWindows.has(windowId) &&
+          !isAllowedWorkerNavigationUrl(targetUrl)
+        ) {
+          console.warn(
+            `AtomApplication: blocked package worker loadURL to ${String(
+              targetUrl
+            )}`
+          );
+          event.returnValue = false;
+          return;
+        }
+        win.loadURL(targetUrl);
         event.returnValue = true;
         return;
       }

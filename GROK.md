@@ -82,21 +82,22 @@ Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
 | **N4.1 guest WebContents nav + permissions** | **Done** |
 | **Tier-1 package forks** | **Pinned** to `builtbygio/{settings-view,tree-view,fuzzy-finder,github}` |
 | **settings-view pack.version / cpm view** | **Done** (fork `b47814b` + cpm `--compatible`) |
-| N5 / Phase S editor sandbox | **Next** (blocked on natives) |
+| **N5.1 secondary package window hardening** | **Done** (workers: Node kept, prefs/nav/perms locked) |
+| Phase S editor sandbox | **Later** (blocked on natives — `src/preload-natives.js`) |
 
 ---
 
 ## What needs to be done next
 
-### Immediate epic: Security Phase N
+### Security Phase N → S
 
-Authoritative plan: **`docs/security-phase-n.md`**. N2 notes: **`docs/security-phase-n2.md`**.
+Authoritative plan: **`docs/security-phase-n.md`**. N5: **`docs/security-phase-n5.md`**.
 
-Suggested order after settings-view/cpm contract:
+Suggested order after N5.1:
 
-1. ~~N2–N4.1 + settings-view pack.version / cpm view~~ **done**  
+1. ~~N0–N5.1~~ **done** (guests sandboxed; package workers hardened; editor stays hackable)  
 2. **Fold bootstrap patches** into `builtbygio/*` forks over time (tree-view fs shim, github residual, …)  
-3. **N5 / Phase S** — core editor `sandbox: true` still blocked on natives (`src/preload-natives.js`)  
+3. **Phase S prep** — move natives / package host redesign before editor `sandbox: true`  
 4. Optional: default-on require restrict; Task crawl → utility process; shrink `remote-compat`  
 
 **Dev policy env:**  

@@ -44,6 +44,7 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [security-phase-n2.md](./security-phase-n2.md) | N2 package shell / fs IPC |
 | [security-phase-n3.md](./security-phase-n3.md) | N3 preload privilege + guests |
 | [security-phase-n4.md](./security-phase-n4.md) | N4 guest WebContents polish |
+| [security-phase-n5.md](./security-phase-n5.md) | N5 secondary windows; Phase S path (hackable-compatible) |
 | [package-node-policy.md](./package-node-policy.md) | Package author Node policy |
 | [remote-ipc-inventory.md](./remote-ipc-inventory.md) | Historical remote/IPC map |
 

@@ -175,20 +175,22 @@ module.exports = class AtomWindow extends EventEmitter {
         // response to a middle-click.
         // (Ref: https://github.com/atom/atom/pull/12696#issuecomment-290496960)
         disableBlinkFeatures: 'Auxclick',
-        // Security (Phase I / N3):
+        // Security (Phase I / N3 / N5) — hackable editor host:
         // - Page world: no Node (nodeIntegration false + contextIsolation).
         // - Preload world: full Node, boots Atom (static/preload.js) + packages.
-        // - sandbox must stay false so preload can load natives (superstring,
-        //   pathwatcher, tree-sitter, oniguruma, …). See docs/security-phase-n3.md.
-        // - webviewTag remains available for community packages, but guest
-        //   prefs are forced safe in will-attach-webview (handleEvents).
+        // - sandbox stays false so preload can load natives (superstring,
+        //   pathwatcher, tree-sitter, oniguruma, …). Full editor sandbox is
+        //   Phase S, blocked on natives — see docs/security-phase-n5.md.
+        // - webviewTag remains for community packages; guests are sandboxed
+        //   in will-attach-webview (N3/N4). Secondary package windows are
+        //   hardened in register-renderer-ipc (N5), not the editor itself.
         preload: preloadPath,
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: false,
         webviewTag: true,
         // Web Workers in the preload/package world may use require(); leave on
-        // until packages are audited off Node workers (Phase N later).
+        // for hackable packages until audited off (Phase S later).
         nodeIntegrationInWorker: true
       },
       simpleFullscreen: this.getSimpleFullscreen()
