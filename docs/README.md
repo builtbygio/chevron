@@ -36,8 +36,18 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [atom-architecture-eli5.md](./atom-architecture-eli5.md) | ELI5 architecture |
 | [CHANGELOG.md](../CHANGELOG.md) | Release notes |
 
+## Security
+
+| Doc | Purpose |
+|-----|---------|
+| [security-phase-n.md](./security-phase-n.md) | Phase N plan (package Node surface) |
+| [security-phase-n2.md](./security-phase-n2.md) | N2 package shell / fs IPC |
+| [security-phase-n3.md](./security-phase-n3.md) | N3 preload privilege + guests |
+| [package-node-policy.md](./package-node-policy.md) | Package author Node policy |
+| [remote-ipc-inventory.md](./remote-ipc-inventory.md) | Historical remote/IPC map |
+
 ## Other
 
 - [contributing.md](./contributing.md), [contributing-to-packages.md](./contributing-to-packages.md)
 - [native-profiling.md](./native-profiling.md)
-- Security phase notes, RFCs under `rfcs/`, toolchain upgrade plan
+- RFCs under `rfcs/`, toolchain upgrade plan

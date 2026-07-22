@@ -16,17 +16,28 @@
  * - **GitHub worker BrowserWindows:** separate Node windows via remote-compat
  *   IPC (still a trusted exception; Phase N later).
  *
- * Natives that keep sandbox:false on the editor window: superstring,
- * pathwatcher, tree-sitter (+ grammars), oniguruma, keytar (packages), etc.
- * See docs/security-phase-n3.md.
+ * Natives that keep sandbox:false on the editor window: see
+ * `src/preload-natives.js` and docs/security-phase-n3.md.
+ *
+ * Optional: CHEVRON_AUDIT_PACKAGE_REQUIRES=1 logs privileged package requires.
+ * Package policy: docs/package-node-policy.md.
  *
  * The page (index.html) intentionally loads no Node scripts.
+ * Do not expose this preload (or Node) via contextBridge to the page world.
  */
 
 // Ensure electron.remote is the IPC compat layer before any package loads.
 const electron = require('electron');
 if (!electron.remote) {
   electron.remote = require('../src/remote-compat');
+}
+
+// Phase N3: optional inventory of privileged requires from package code.
+try {
+  require('../src/package-require-audit').installPackageRequireAudit();
+} catch (error) {
+  // Never block boot if audit helper is missing/broken.
+  console.warn('package-require-audit install failed', error);
 }
 
 // Boot the historical renderer entry (sets window.onload → Atom).

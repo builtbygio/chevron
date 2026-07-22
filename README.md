@@ -42,7 +42,7 @@ See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
 - [x] Chevron branding (icons, shell, package identity)
 - [x] Further first-run / onboarding polish — see [docs/onboarding-polish.md](docs/onboarding-polish.md)
 - [x] Modern package manager path — Phase 0–4 complete (`cpm`; see [docs/cpm-design.md](docs/cpm-design.md), [docs/cpm-cutover.md](docs/cpm-cutover.md)); `apm` remains as a cpm shim
-- [ ] Security Phase N — narrow package Node surface ([docs/security-phase-n.md](docs/security-phase-n.md)); N2.1 avatar cache IPC shipped in 0.4.0
+- [x] Security Phase N (in progress) — N2 package IPC + **N3.1** preload inventory/policy/session permissions ([docs/security-phase-n.md](docs/security-phase-n.md), [package-node-policy.md](docs/package-node-policy.md))
 
 ## Non-goals (for now)
 

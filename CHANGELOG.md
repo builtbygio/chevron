@@ -11,9 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- **Phase N2.2:** fuzzy-finder UI-process path probes via main IPC; path crawl + ripgrep remain in `atom.Task`
-- **Phase N2.3:** tree-view bulk filesystem ops via `fs-via-main` shim + `register-fs-ipc` (absolute paths only)
-- **Phase N2.4:** github residual remote cleanup (userData path, webContents id, context menus); workers already on IPC
+- **Phase N2.2–N2.4:** fuzzy-finder path probes, tree-view bulk fs via main IPC, github residual remote cleanup
+- **Phase N3.1:** preload natives inventory (`src/preload-natives.js`); package Node policy ([docs/package-node-policy.md](docs/package-node-policy.md)); editor session permission deny-list; optional `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` require audit
 
 ## [0.4.0] — 2026-07-22
 

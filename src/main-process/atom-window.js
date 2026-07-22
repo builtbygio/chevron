@@ -308,6 +308,53 @@ module.exports = class AtomWindow extends EventEmitter {
       return { action: 'deny' };
     });
 
+    // Phase N3: deny sensitive Chromium permission prompts for the editor
+    // session. Packages should not rely on media/geo/notifications from the
+    // editor BrowserWindow. Clipboard stay available for paste workflows.
+    const session = this.browserWindow.webContents.session;
+    const deniedPermissions = new Set([
+      'media',
+      'mediaKeySystem',
+      'geolocation',
+      'notifications',
+      'midi',
+      'midiSysex',
+      'pointerLock',
+      'fullscreen',
+      'openExternal',
+      'serial',
+      'hid',
+      'usb',
+      'display-capture',
+      'idle-detection',
+      'window-management',
+      'clipboard-sanitized-write'
+    ]);
+    // Allow nothing from the deny set; unknown permissions default deny.
+    session.setPermissionRequestHandler((_wc, permission, callback) => {
+      if (deniedPermissions.has(permission)) {
+        console.warn(
+          `AtomWindow: denied permission request "${permission}"`
+        );
+        callback(false);
+        return;
+      }
+      // clipboard-read is useful for paste; still gated by user gesture in Chromium.
+      if (permission === 'clipboard-read') {
+        callback(true);
+        return;
+      }
+      console.warn(
+        `AtomWindow: denied unknown permission request "${permission}"`
+      );
+      callback(false);
+    });
+    session.setPermissionCheckHandler((_wc, permission) => {
+      if (permission === 'clipboard-read') return true;
+      if (deniedPermissions.has(permission)) return false;
+      return false;
+    });
+
     this.setupContextMenu();
 
     // Spec window's web view should always have focus
