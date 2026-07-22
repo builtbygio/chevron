@@ -77,6 +77,8 @@ if (!argv.existingBinaries) {
   transpilePackagesWithCustomTranspilerPaths()
   transpileBabelPaths()
   transpileCoffeeScriptPaths()
+  // Re-apply after coffee→js: settings-view must not keep dead atom.io registry.
+  require('./lib/patch-settings-view-registry')(CONFIG.intermediateAppPath)
   transpileCsonPaths()
   transpilePegJsPaths()
   generateModuleCache()
