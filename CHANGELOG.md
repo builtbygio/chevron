@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **App icons:** regenerate channel PNGs/ICOs with true transparent corners (no white JPEG fringe); ship multi-size icons for Linux taskbar; improve `BrowserWindow` icon loading + `app.setDesktopName` for shell association
+- **settings-view + cpm:** `cpm view --json` returns apm-shaped metadata with top-level `version`; supports `--compatible`; owned settings-view null-safe on failed/missing pack (no `pack.version` throw)
 
 ### Security
 

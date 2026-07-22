@@ -119,6 +119,7 @@ Suggested order: **settings-view paths** → **fuzzy-finder spawn** → **tree-v
 | N3.1 inventory + session perms + require audit | **Done** |
 | N3.2 opt-in community require restrict | **Done** — `CHEVRON_RESTRICT_PACKAGE_REQUIRES=1` |
 | N4.1 guest WebContents nav + permissions | **Done** — see [security-phase-n4.md](./security-phase-n4.md) |
+| settings-view pack.version / cpm view contract | **Done** — cpm `--compatible` + apm-shaped JSON; settings-view `b47814b` null-safe |
 | N3 default-on allowlist | Later (must not break T2 overnight) |
 
 ### N3 — Shrink preload default privilege

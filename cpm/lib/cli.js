@@ -101,6 +101,10 @@ async function main(argv = process.argv) {
     .command('view <name>')
     .description('Show package metadata from the registry')
     .option('--json', 'JSON output')
+    .option(
+      '--compatible <version>',
+      'Pick newest version whose engines.atom satisfies this product version (settings-view)'
+    )
     .action(async (name, opts) => {
       process.exitCode = await viewCommand(name, opts);
     });

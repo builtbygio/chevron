@@ -81,6 +81,7 @@ Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
 | **N3.2 opt-in community require restrict** | **Done** (`CHEVRON_RESTRICT_PACKAGE_REQUIRES=1`) |
 | **N4.1 guest WebContents nav + permissions** | **Done** |
 | **Tier-1 package forks** | **Pinned** to `builtbygio/{settings-view,tree-view,fuzzy-finder,github}` |
+| **settings-view pack.version / cpm view** | **Done** (fork `b47814b` + cpm `--compatible`) |
 | N5 / Phase S editor sandbox | **Next** (blocked on natives) |
 
 ---
@@ -91,10 +92,10 @@ Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
 
 Authoritative plan: **`docs/security-phase-n.md`**. N2 notes: **`docs/security-phase-n2.md`**.
 
-Suggested order after N4.1:
+Suggested order after settings-view/cpm contract:
 
-1. ~~N2–N4.1~~ **done**  
-2. **Own Tier-1 packages** on `builtbygio/*` — land settings-view cpm/`pack.version` fix in the fork; fold bootstrap patches into forks over time  
+1. ~~N2–N4.1 + settings-view pack.version / cpm view~~ **done**  
+2. **Fold bootstrap patches** into `builtbygio/*` forks over time (tree-view fs shim, github residual, …)  
 3. **N5 / Phase S** — core editor `sandbox: true` still blocked on natives (`src/preload-natives.js`)  
 4. Optional: default-on require restrict; Task crawl → utility process; shrink `remote-compat`  
 
