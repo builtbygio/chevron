@@ -63,7 +63,7 @@ jobs:
             ${{ runner.os }}-node24-py312-electron-
 
       - name: Bootstrap
-        run: ./script/bootstrap-modern --ci --with-apm
+        run: ./script/bootstrap-modern --ci
 
       - name: Build
         run: ./script/with-modern-env ./script/build --no-bootstrap --compress-artifacts
@@ -169,7 +169,7 @@ jobs:
             ${{ runner.os }}-node24-py312-electron-
 
       - name: Bootstrap
-        run: ./script/bootstrap-modern --ci --with-apm
+        run: ./script/bootstrap-modern --ci
 
       - name: Build + package (deb, tar, rpm)
         run: |
@@ -282,7 +282,7 @@ jobs:
             ${{ runner.os }}-${{ runner.arch }}-node24-py312-electron-
 
       - name: Bootstrap
-        run: ./script/bootstrap-modern --ci --with-apm
+        run: ./script/bootstrap-modern --ci
 
       - name: Build + package (deb, tar, rpm)
         run: |
@@ -378,7 +378,7 @@ jobs:
           # Windows-style path: apm.cmd spawns git via cmd.exe, not Git Bash.
           export GIT_EXEC_PATH="C:/Program Files/Git/mingw64/libexec/git-core"
           export PATH="/c/Program Files/Git/mingw64/libexec/git-core:/c/Program Files/Git/cmd:$PATH"
-          ./script/bootstrap-modern --ci --with-apm
+          ./script/bootstrap-modern --ci
         env:
           PYTHONIOENCODING: utf-8
           PYTHONUTF8: "1"

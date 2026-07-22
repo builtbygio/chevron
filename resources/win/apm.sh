@@ -1,7 +1,3 @@
 #!/bin/sh
-# Prefer cpm apm shim (Phase 1); fall back to classic apm.
-DIR="$(dirname "$0")"
-if [ -x "$DIR/../app/cpm/bin/apm" ]; then
-  exec "$DIR/../app/cpm/bin/apm" "$@"
-fi
-exec "$DIR/../app/apm/bin/apm" "$@"
+# Phase 4: apm is always the cpm compatibility shim.
+exec "$(dirname "$0")/../app/cpm/bin/apm" "$@"

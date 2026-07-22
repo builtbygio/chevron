@@ -27,7 +27,8 @@ Recommends: /usr/bin/lsb_release
 mkdir -p "%{buildroot}/<%= installDir %>/share/<%= appFileName %>/"
 cp -r "<%= appName %>"/* "%{buildroot}/<%= installDir %>/share/<%= appFileName %>/"
 mkdir -p "%{buildroot}/<%= installDir %>/bin/"
-ln -sf "../share/<%= appFileName %>/resources/app/apm/node_modules/.bin/apm" "%{buildroot}/<%= installDir %>/bin/<%= apmFileName %>"
+ln -sf "../share/<%= appFileName %>/resources/app/cpm/bin/apm" "%{buildroot}/<%= installDir %>/bin/<%= apmFileName %>"
+ln -sf "../share/<%= appFileName %>/resources/app/cpm/bin/cpm" "%{buildroot}/<%= installDir %>/bin/<%= cpmFileName %>"
 cp atom.sh "%{buildroot}/<%= installDir %>/bin/<%= appFileName %>"
 chmod 755 "%{buildroot}/<%= installDir %>/bin/<%= appFileName %>"
 mkdir -p "%{buildroot}/<%= installDir %>/share/applications/"
@@ -57,6 +58,7 @@ cp "icons/16.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/16x16/apps
 %files
 <%= installDir %>/bin/<%= appFileName %>
 <%= installDir %>/bin/<%= apmFileName %>
+<%= installDir %>/bin/<%= cpmFileName %>
 <%= installDir %>/share/<%= appFileName %>/
 <%= installDir %>/share/applications/<%= appFileName %>.desktop
 <%= installDir %>/share/polkit-1/actions/<%= policyFileName %>

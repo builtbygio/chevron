@@ -101,6 +101,7 @@ module.exports = function(packagedAppPath) {
     path.join(CONFIG.repositoryRootPath, 'atom.sh'),
     path.join(debianPackageBinDirPath, atomExecutableName)
   );
+  // Phase 4: apm name → cpm apm shim (classic apm tree retired)
   fs.symlinkSync(
     path.join(
       '..',
@@ -108,12 +109,26 @@ module.exports = function(packagedAppPath) {
       atomExecutableName,
       'resources',
       'app',
-      'apm',
-      'node_modules',
-      '.bin',
+      'cpm',
+      'bin',
       'apm'
     ),
     path.join(debianPackageBinDirPath, apmExecutableName)
+  );
+  const cpmExecutableName =
+    CONFIG.channel === 'stable' ? 'cpm' : `cpm-${CONFIG.channel}`;
+  fs.symlinkSync(
+    path.join(
+      '..',
+      'share',
+      atomExecutableName,
+      'resources',
+      'app',
+      'cpm',
+      'bin',
+      'cpm'
+    ),
+    path.join(debianPackageBinDirPath, cpmExecutableName)
   );
 
   fs.chmodSync(path.join(debianPackageAtomDirPath, 'chrome-sandbox'), '4755');

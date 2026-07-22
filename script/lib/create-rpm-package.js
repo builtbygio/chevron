@@ -13,6 +13,8 @@ module.exports = function(packagedAppPath) {
   const atomExecutableName = CONFIG.channelName; // chevron / chevron-beta
   const apmExecutableName =
     CONFIG.channel === 'stable' ? 'apm' : `apm-${CONFIG.channel}`;
+  const cpmExecutableName =
+    CONFIG.channel === 'stable' ? 'cpm' : `cpm-${CONFIG.channel}`;
   const appName = CONFIG.appName;
   const appDescription = CONFIG.appMetadata.description;
   // RPM versions can't have dashes or tildes in them.
@@ -78,6 +80,7 @@ module.exports = function(packagedAppPath) {
     appName: appName,
     appFileName: atomExecutableName,
     apmFileName: apmExecutableName,
+    cpmFileName: cpmExecutableName,
     description: appDescription,
     installDir: '/usr',
     version: appVersion,

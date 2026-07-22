@@ -205,7 +205,7 @@ module.exports = function(packagedAppPath, installDir) {
         );
         fs.removeSync(apmBinDestinationPath);
       } catch (e) {}
-      console.log(`Symlinking apm to "${apmBinDestinationPath}"`);
+      console.log(`Symlinking apm → cpm shim at "${apmBinDestinationPath}"`);
       fs.symlinkSync(
         path.join(
           '..',
@@ -213,12 +213,34 @@ module.exports = function(packagedAppPath, installDir) {
           atomExecutableName,
           'resources',
           'app',
-          'apm',
-          'node_modules',
-          '.bin',
+          'cpm',
+          'bin',
           'apm'
         ),
         apmBinDestinationPath
+      );
+
+      // Also install cpm on PATH
+      const cpmExecutableName =
+        CONFIG.channel === 'stable' ? 'cpm' : 'cpm-' + CONFIG.channel;
+      const cpmBinDestinationPath = path.join(binDirPath, cpmExecutableName);
+      try {
+        fs.lstatSync(cpmBinDestinationPath);
+        fs.removeSync(cpmBinDestinationPath);
+      } catch (e) {}
+      console.log(`Symlinking cpm to "${cpmBinDestinationPath}"`);
+      fs.symlinkSync(
+        path.join(
+          '..',
+          'share',
+          atomExecutableName,
+          'resources',
+          'app',
+          'cpm',
+          'bin',
+          'cpm'
+        ),
+        cpmBinDestinationPath
       );
     }
 

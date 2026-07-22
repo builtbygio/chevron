@@ -104,7 +104,7 @@ module.exports = class CommandInstaller {
   }
 
   installApmCommand(askForPrivilege, callback) {
-    // Prefer cpm's apm shim when present (Phase 1); else classic apm.
+    // Phase 4: apm is always the cpm compatibility shim.
     const cpmApm = path.join(
       this.getResourcesDirectory(),
       'app',
@@ -112,17 +112,13 @@ module.exports = class CommandInstaller {
       'bin',
       'apm'
     );
-    const classicApm = path.join(
-      this.getResourcesDirectory(),
-      'app',
-      'apm',
-      'node_modules',
-      '.bin',
-      'apm'
-    );
-    const commandPath = fs.isFileSync(cpmApm) ? cpmApm : classicApm;
+    if (!fs.isFileSync(cpmApm)) {
+      return callback(
+        new Error('cpm apm shim missing from app resources (Phase 4)')
+      );
+    }
     this.installCommand(
-      commandPath,
+      cpmApm,
       this.getCommandNameForChannel('apm'),
       askForPrivilege,
       callback

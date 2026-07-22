@@ -2,13 +2,12 @@
 # Chevron bootstrap for modern host toolchains (macOS 13+ / Linux / Windows via Git Bash).
 #
 # Phase 0: root app dependencies use **host npm** (not apm/Node 12).
+# Phase 4: product ships cpm only; --with-apm is deprecated (debug only).
 # Electron natives are still patched and rebuilt with modern node-gyp.
-# Product/user-package apm remains available via optional --with-apm until cpm.
 #
 # Usage:
 #   ./script/bootstrap-modern
 #   ./script/bootstrap-modern --ci
-#   ./script/bootstrap-modern --with-apm   # optional: also install apm for packaging/dev
 #
 # Then build with:
 #   ./script/with-modern-env ./script/build --no-bootstrap
@@ -33,7 +32,7 @@ if [ "${CI:-}" = "true" ]; then
   echo "CI mode enabled"
 fi
 if [ "$WITH_APM" = true ]; then
-  echo "Will install apm after app deps (--with-apm)"
+  echo "NOTE: --with-apm is deprecated (Phase 4 debug only)"
 fi
 
 echo ""
@@ -247,46 +246,24 @@ if [ ! -f "$REPO_ROOT/node_modules/text-buffer/node_modules/superstring/build/Re
   exit 1
 fi
 
-# --- Step 4 (optional): apm for product packaging / local package CLI --------
+# --- Step 4: classic apm tree (Phase 4 retired from product) -----------------
+# Product packages ship cpm only. --with-apm remains for rare local debugging
+# of historical atom-package-manager, not for packaging.
 if [ "$WITH_APM" = true ]; then
-  echo "Installing apm (--with-apm; scripts deferred)…"
+  echo "WARNING: --with-apm is deprecated (Phase 4). Product no longer bundles classic apm."
+  echo "Installing apm for local debugging only…"
   node <<'NODE'
 'use strict';
 const installApm = require('./script/lib/install-apm');
-const ci = process.argv.includes('--ci') || process.env.CI === 'true';
+const ci = process.env.CI === 'true';
 process.on('unhandledRejection', e => {
   console.error(e.stack || e);
   process.exit(1);
 });
 installApm(ci, { ignoreScripts: true });
 NODE
-
-  APM_PKG="$REPO_ROOT/apm/node_modules/atom-package-manager"
-  APM_NODE="$APM_PKG/bin/node"
-  APM_NPM="$APM_PKG/bin/npm"
-  MODERN_GYP="$REPO_ROOT/script/node_modules/.bin/node-gyp"
-  ONIG="$APM_PKG/node_modules/oniguruma"
-
-  chevron_patch_node_gyp "$REPO_ROOT/apm"
-  node "$SCRIPT_DIR/lib/patch-apm-npm.js" "$REPO_ROOT"
-  node "$SCRIPT_DIR/lib/patch-apm-download-node.js" "$REPO_ROOT"
-  if [ -d "$APM_PKG" ] && [ ! -x "$APM_NODE" ]; then
-    echo "Downloading apm bundled Node 12…"
-    (cd "$APM_PKG" && node script/download-node.js) || true
-  fi
-  if [ -x "$APM_NODE" ] && [ -x "$APM_NPM" ]; then
-    (
-      unset npm_config_target npm_config_runtime npm_config_disturl \
-            npm_config_build_from_source npm_config_arch npm_config_node_gyp || true
-      export npm_config_python="${PYTHON:-}"
-      cd "$APM_PKG" && ./bin/npm rebuild
-    ) || echo "apm npm rebuild failed (continuing)"
-  fi
-  if [ -x "$APM_PKG/bin/apm" ]; then
-    "$APM_PKG/bin/apm" --version || echo "WARNING: apm --version failed"
-  fi
 else
-  echo "Skipping apm install (default). Use --with-apm for packaging/dev CLI until cpm Phase 1."
+  echo "Classic apm not installed (Phase 4: product uses cpm; apm name is a cpm shim)."
 fi
 
 # --- Step 5: fingerprint -----------------------------------------------------

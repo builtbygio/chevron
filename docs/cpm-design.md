@@ -496,9 +496,12 @@ Respect licenses and Pulsar terms if proxying their API; document attribution.
 - `cpm rebuild --force-source` skips prebuilds.
 - Author docs: [cpm-prebuilds.md](./cpm-prebuilds.md); example workflow `.github/workflows/cpm-prebuild-example.yml`.
 
-### Phase 4 — Retire apm tree
+### Phase 4 — Retire apm tree — **DONE when PR merges**
 
-- Remove `apm/` bundle from product; keep `apm` shim → cpm for a deprecation window; then optional removal.
+- Product packaging ships **cpm only** (no atom-package-manager Node 12 tree).
+- **`apm` name** remains a **shim → cpm** (shell, Squirrel, deb/rpm, `getApmPath`).
+- CI no longer runs `--with-apm`.
+- Monorepo `apm/` kept as historical/debug only (`--with-apm` deprecated).
 
 ### Suggested version framing
 
@@ -615,6 +618,7 @@ Document further resolutions in §15 when closed.
 | 2026-07-21 | Phase 1: lock compile-cache (b); Squirrel/Windows cpm PATH; engines checks |
 | 2026-07-21 | Phase 2: Pulsar registry — search, view, install-by-name (`CPM_REGISTRY_URL`) |
 | 2026-07-21 | Phase 3: prebuild preference + author workflow docs |
+| 2026-07-21 | Phase 4: retire classic apm from product; apm → cpm shim only |
 
 ---
 

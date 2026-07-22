@@ -194,7 +194,7 @@ module.exports = class PackageManager {
       return configPath || this.apmPath;
     }
 
-    // Phase 1: prefer cpm (with apm-named shim for rebuild contract).
+    // Phase 4: package manager is cpm; apm name is a long-lived shim.
     const commandName = process.platform === 'win32' ? 'apm.cmd' : 'apm';
     const cpmCommand = process.platform === 'win32' ? 'cpm.cmd' : 'cpm';
     const cpmRoot = path.join(process.resourcesPath, 'app', 'cpm');
@@ -209,14 +209,14 @@ module.exports = class PackageManager {
       return this.apmPath;
     }
 
+    // Legacy layout only (pre–Phase 4 installs / dev trees).
     const apmRoot = path.join(process.resourcesPath, 'app', 'apm');
     this.apmPath = path.join(apmRoot, 'bin', commandName);
     if (!fs.isFileSync(this.apmPath)) {
       this.apmPath = path.join(
         apmRoot,
         'node_modules',
-        'atom-package-manager',
-        'bin',
+        '.bin',
         commandName
       );
     }
