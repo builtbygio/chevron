@@ -365,9 +365,13 @@ module.exports = class ApplicationDelegate {
     return rendererIpc.moveItemToTrash(fullPath);
   }
 
-  // Phase N2.2: confined path probes (main-process lstat / realpath).
+  // Phase N2.2–N2.3: confined filesystem via main-process IPC.
   pathKind(fullPath) {
     return rendererIpc.pathKind(fullPath);
+  }
+
+  existsSync(fullPath) {
+    return rendererIpc.existsSync(fullPath);
   }
 
   isDirectorySync(fullPath) {
@@ -384,6 +388,54 @@ module.exports = class ApplicationDelegate {
 
   realpathSync(fullPath) {
     return rendererIpc.realpathSync(fullPath);
+  }
+
+  statSync(fullPath) {
+    return rendererIpc.statSync(fullPath);
+  }
+
+  lstatSyncNoException(fullPath) {
+    return rendererIpc.lstatSyncNoException(fullPath);
+  }
+
+  statSyncNoException(fullPath) {
+    return rendererIpc.statSyncNoException(fullPath);
+  }
+
+  readdirSync(fullPath) {
+    return rendererIpc.readdirSync(fullPath);
+  }
+
+  listSync(fullPath) {
+    return rendererIpc.listSync(fullPath);
+  }
+
+  makeTreeSync(fullPath) {
+    return rendererIpc.makeTreeSync(fullPath);
+  }
+
+  writeFileSync(fullPath, data, encoding) {
+    return rendererIpc.writeFileSync(fullPath, data, encoding);
+  }
+
+  readFileSync(fullPath, encoding) {
+    return rendererIpc.readFileSync(fullPath, encoding);
+  }
+
+  copySync(src, dest) {
+    return rendererIpc.copySync(src, dest);
+  }
+
+  moveSync(src, dest) {
+    return rendererIpc.moveSync(src, dest);
+  }
+
+  renameSync(src, dest) {
+    return rendererIpc.renameSync(src, dest);
+  }
+
+  rmdirSync(fullPath) {
+    return rendererIpc.rmdirSync(fullPath);
   }
 
   checkForUpdate() {

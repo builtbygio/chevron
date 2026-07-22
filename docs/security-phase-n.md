@@ -1,6 +1,6 @@
 # Security Phase N — narrow package Node surface
 
-**Status:** active epic (N0–N2 partial; N2.1 avatar cache in 0.4.0)  
+**Status:** active epic — N0–N2.4 done; **N3 next**
 **Depends on:** Phase R (remote removal) and Phase I (contextIsolation + preload boot) — both done.  
 **Follows:** `docs/remote-ipc-inventory.md` §4 / §9.  
 **Handoff:** `GROK.md`
@@ -113,9 +113,10 @@ Suggested order: **settings-view paths** → **fuzzy-finder spawn** → **tree-v
 | settings-view shell.openExternal | Done (N2) |
 | settings-view avatar cache FS | **Done N2.1 (0.4.0)** — main IPC `atom-settings-view-cache-*` |
 | tree-view shell / trash / DND | Done (N2) |
-| fuzzy-finder UI path probes | **Done N2.2** — `atom-fs-path-kind-sync` / `realpath`; Task crawl/rg stays in Task |
-| tree-view bulk fs-plus | **Next** |
-| github residual electron/net | Later N2 |
+| fuzzy-finder UI path probes | **Done N2.2** — path kind / realpath |
+| tree-view bulk fs-plus | **Done N2.3** — `fs-via-main` + `register-fs-ipc` |
+| github residual electron/remote | **Done N2.4** — app path, webContents id, menus; workers already IPC |
+| N3 require allowlist | **Next** |
 
 ### N3 — Shrink preload default privilege
 

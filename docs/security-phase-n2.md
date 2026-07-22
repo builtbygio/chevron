@@ -65,11 +65,35 @@ Patches (`patch-packages-remote-ipc.js`):
 
 **Still in Task process (by design, not UI):** `load-paths-handler.js` — recursive crawl + `child_process.spawn` of ripgrep. That is Atom `Task` isolation, not the editor preload package world.
 
+## N2.3 — tree-view bulk fs (done)
+
+All tree-view disk I/O is routed through **`node_modules/tree-view/lib/fs-via-main.js`** (written by `script/lib/write-tree-view-fs-shim.js` on bootstrap):
+
+| Layer | Role |
+|-------|------|
+| Main `register-fs-ipc.js` | exists / kind / realpath / stat / readdir / list / mkdirp / read/write / copy / move / rename / rmdir |
+| `src/fs-ipc-client.js` + `applicationDelegate` | renderer facade |
+| tree-view `fs-via-main` | drop-in for `fs-plus` disk ops; pure string helpers still use `fs-plus` |
+
+Covers add/copy/move dialogs, directory listing, file realpath, trash already on shell IPC (N2).
+
+## N2.4 — github residual remote (done)
+
+| Site | Change |
+|------|--------|
+| `root-controller` userData path | `atom-app-get-path-sync` |
+| `worker-manager` webContents id | `atom-get-web-contents-id-sync` |
+| context menus | `menu.popup()` without BrowserWindow; `Menu` from `electron.remote` (compat) |
+| headless isVisible | `require('electron').remote.getCurrentWindow()` (compat proxy) |
+| shell.openExternal | already applicationDelegate (N2) |
+
+Worker `sendTo` / lifecycle still via `patch-github-remote.js`.
+
 ## Deferred (later N2 / N3)
 
-- tree-view bulk `fs-plus` for file ops UI (add/copy/move dialogs, directory listing)
 - Full package require allowlist (N3)
 - Moving Task crawl / rg spawn to main/utility process (large; optional later)
+- Shrinking remote-compat surface further as packages stop importing `remote`
 
 ## Verify
 

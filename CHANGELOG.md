@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- **Phase N2.2:** fuzzy-finder UI-process path probes (`isDirectory` / `isFile` / `isSymbolicLink` / `realpath`) go through main-process IPC (`atom-fs-path-kind-sync`, `atom-fs-realpath-sync`); path crawl + ripgrep remain in `atom.Task`
+- **Phase N2.2:** fuzzy-finder UI-process path probes via main IPC; path crawl + ripgrep remain in `atom.Task`
+- **Phase N2.3:** tree-view bulk filesystem ops via `fs-via-main` shim + `register-fs-ipc` (absolute paths only)
+- **Phase N2.4:** github residual remote cleanup (userData path, webContents id, context menus); workers already on IPC
 
 ## [0.4.0] — 2026-07-22
 

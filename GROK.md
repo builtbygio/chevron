@@ -75,8 +75,9 @@ Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
 | N2 shell IPC (openExternal / Finder / trash) | **Done** |
 | **N2.1 settings-view avatar cache → main IPC** | **Done in 0.4.0** |
 | **N2.2 fuzzy-finder UI path probes → main IPC** | **Done** (Task crawl/rg stays in Task) |
-| N2 deferred: tree-view bulk fs | **Next** |
-| N3–N5 preload allowlist / guests / sandbox | Later |
+| **N2.3 tree-view bulk fs → main IPC** | **Done** (`fs-via-main` + `register-fs-ipc`) |
+| **N2.4 github residual remote** | **Done** (path/webContents/menus; workers IPC) |
+| N3–N5 preload allowlist / guests / sandbox | **Next** |
 
 ---
 
@@ -86,13 +87,12 @@ Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
 
 Authoritative plan: **`docs/security-phase-n.md`**. N2 notes: **`docs/security-phase-n2.md`**.
 
-Suggested order for remaining N2:
+Suggested order after N2.x:
 
-1. ~~**fuzzy-finder** UI probes~~ **done (N2.2)** — Task crawl + rg intentionally remain in Task  
-2. **tree-view** — bulk `fs-plus` for file ops (add/copy/move/delete UI); shell paths already on IPC  
-3. **github residual** — any remaining direct `electron` / net outside main workers  
-4. **N3** — document preload natives list; stop expanding package Node as a feature  
-5. **N4–N5** — guest CSP / sandbox guests first; core editor sandbox blocked on natives  
+1. ~~N2.1–N2.4~~ **done** (settings avatar, fuzzy-finder probes, tree-view fs, github residual)  
+2. **N3** — document preload natives list; stop expanding package Node as a feature; research require allowlist  
+3. **N4–N5** — guest CSP / sandbox guests first; core editor sandbox blocked on natives  
+4. Optional: move Task crawl / rg to utility process; shrink `remote-compat` further  
 
 ### Optional hygiene
 

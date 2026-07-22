@@ -15,6 +15,9 @@
  * Phase N2.2: fuzzy-finder UI path probes → main IPC
  * (atom-fs-path-kind-sync / atom-fs-realpath-sync via applicationDelegate).
  *
+ * Phase N2.3: tree-view bulk fs via fs-via-main shim + register-fs-ipc.
+ * Phase N2.4: github residual remote.app / webContents / menu.popup cleanup.
+ *
  * Usage: node script/lib/patch-packages-remote-ipc.js [repoRoot]
  */
 
@@ -466,6 +469,9 @@ patchFile('node_modules/tree-view/lib/root-drag-and-drop.coffee', t => {
   return out;
 });
 
+// --- Phase N2.3: tree-view bulk fs-plus → main IPC (fs-via-main shim) -----
+require('./write-tree-view-fs-shim')(repoRoot);
+
 // --- Phase N2.2: fuzzy-finder UI-process fs probes → main IPC -------------
 // Path crawl + ripgrep stay in atom.Task (load-paths-handler.js) — isolated.
 // UI process only needed kind/realpath probes; route those through main.
@@ -524,6 +530,144 @@ patchFile('node_modules/fuzzy-finder/lib/path-loader.js', t => {
   'node_modules/github/lib/controllers/issueish-list-controller.js',
   'node_modules/github/lib/controllers/issueish-searches-controller.js'
 ].forEach(rel => patchFile(rel, routeOpenExternal));
+
+// --- Phase N2.4: github residual electron.remote → IPC / remote-compat-safe API
+// Prefer explicit IPC where easy; menu.popup no longer needs BrowserWindow arg
+// under remote-compat Menu (main owns the window).
+
+function stripGithubRemoteImport(source) {
+  let out = source;
+  // After removing remote usages, drop dead imports.
+  if (!/\bremote\./.test(out) && !/\bremote\b/.test(out.replace(/import[^;]+from ['"]electron['"]/, ''))) {
+    out = out.replace(
+      /import\s*\{\s*([^}]*),\s*remote\s*,\s*([^}]*)\}\s*from\s*['"]electron['"]\s*;?/,
+      (m, a, b) => {
+        const parts = [a, b]
+          .join(',')
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+        if (parts.length === 0) return '';
+        return `import {${parts.join(', ')}} from 'electron';`;
+      }
+    );
+    out = out.replace(
+      /import\s*\{\s*remote\s*,\s*([^}]+)\}\s*from\s*['"]electron['"]\s*;?/,
+      "import {$1} from 'electron';"
+    );
+    out = out.replace(
+      /import\s*\{\s*([^}]+),\s*remote\s*\}\s*from\s*['"]electron['"]\s*;?/,
+      "import {$1} from 'electron';"
+    );
+    out = out.replace(
+      /import\s*\{\s*remote\s*\}\s*from\s*['"]electron['"]\s*;?\s*\n/,
+      ''
+    );
+  }
+  return out;
+}
+
+patchFile('node_modules/github/lib/controllers/root-controller.js', t => {
+  if (t.includes('atom-app-get-path-sync') || t.includes("applicationDelegate.appGetPath")) {
+    return t;
+  }
+  let out = t;
+  // remote.app.getPath('userData') → IPC
+  if (out.includes("remote.app.getPath('userData')")) {
+    out = out.replace(
+      /const extensionFolder = path\.resolve\(remote\.app\.getPath\('userData'\), `extensions\/\$\{id\}`\);/,
+      `const {ipcRenderer} = require('electron');\n    const extensionFolder = path.resolve(ipcRenderer.sendSync('atom-app-get-path-sync', 'userData'), \`extensions/\${id}\`);`
+    );
+  }
+  // drop remote from import if unused
+  if (!/\bremote\./.test(out)) {
+    out = out.replace(
+      /import \{remote\} from 'electron';\s*\n/,
+      ''
+    );
+  }
+  return out;
+});
+
+patchFile('node_modules/github/lib/worker-manager.js', t => {
+  if (t.includes('atom-get-web-contents-id-sync')) return t;
+  let out = t;
+  out = out.replace(
+    /return remote\.getCurrentWebContents\(\)\.id;/,
+    "return require('electron').ipcRenderer.sendSync('atom-get-web-contents-id-sync');"
+  );
+  if (!/\bremote\./.test(out)) {
+    out = out.replace(
+      /import \{remote, ipcRenderer as ipc\} from 'electron';/,
+      "import {ipcRenderer as ipc} from 'electron';"
+    );
+    out = out.replace(
+      /import \{remote, ipcRenderer as ipc\} from "electron";/,
+      'import {ipcRenderer as ipc} from "electron";'
+    );
+  }
+  return out;
+});
+
+// menu.popup(remote.getCurrentWindow()) → menu.popup() (remote-compat Menu ignores win)
+// Ensure Menu comes from electron.remote (compat), not a bare `remote` binding.
+[
+  'node_modules/github/lib/views/actionable-review-view.js',
+  'node_modules/github/lib/views/staging-view.js',
+  'node_modules/github/lib/controllers/conflict-controller.js',
+  'node_modules/github/lib/controllers/issueish-list-controller.js'
+].forEach(rel => {
+  patchFile(rel, t => {
+    let out = t;
+    if (out.includes('menu.popup(remote.getCurrentWindow())')) {
+      out = out.replace(/menu\.popup\(remote\.getCurrentWindow\(\)\)/g, 'menu.popup()');
+    }
+    // Prefer require('electron').remote for Menu (works with remote-compat).
+    if (
+      out.includes('const {Menu, MenuItem} = remote') &&
+      !out.includes("require('electron').remote")
+    ) {
+      out = out.replace(
+        /const \{Menu, MenuItem\} = remote;/,
+        "const {Menu, MenuItem} = require('electron').remote;"
+      );
+    }
+    // Drop unused `import {remote}` / shell+remote if remote identifier unused.
+    if (!/\bremote\b/.test(out.replace(/require\('electron'\)\.remote/g, ''))) {
+      out = out.replace(/import \{remote\} from 'electron';\s*\n/, '');
+      out = out.replace(
+        /import \{shell, remote\} from 'electron';/,
+        "import {shell} from 'electron';"
+      );
+      out = out.replace(
+        /import \{remote, shell\} from 'electron';/,
+        "import {shell} from 'electron';"
+      );
+    }
+    return out;
+  });
+});
+
+// headless visibility probe — use remote-compat window proxy without importing remote by name
+[
+  'node_modules/github/lib/models/event-logger.js',
+  'node_modules/github/lib/git-shell-out-strategy.js'
+].forEach(rel => {
+  patchFile(rel, t => {
+    if (t.includes('atom-get-current-window-id-sync') || t.includes("require('electron').remote")) {
+      // still ok if using electron.remote property (remote-compat)
+    }
+    if (!t.includes('remote.getCurrentWindow().isVisible()')) return t;
+    let out = t.replace(
+      /headless = !remote\.getCurrentWindow\(\)\.isVisible\(\);/g,
+      "headless = !(require('electron').remote.getCurrentWindow().isVisible());"
+    );
+    if (!/\bremote\./.test(out.replace(/require\('electron'\)\.remote/g, ''))) {
+      out = out.replace(/import \{remote\} from 'electron';\s*\n/, '');
+    }
+    return out;
+  });
+});
 
 // github worker entry (no remote)
 try {
