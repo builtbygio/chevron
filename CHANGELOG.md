@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - **Phase N5.1:** package secondary BrowserWindows (github workers) — fixed hardened prefs, `chevron-package-worker` partition, file:-only navigation, deny window.open/permissions; editor remains `sandbox: false` (hackable)
+- **Fold N2 bootstrap patches into owned forks:** pin `settings-view`, `tree-view`, `fuzzy-finder`, `github` to commits that include Pulsar registry, avatar-cache IPC, fs-via-main, path probes, residual-remote cleanup; bootstrap patch scripts remain idempotent guards
 
 - **Phase N2.2–N2.4:** fuzzy-finder path probes, tree-view bulk fs via main IPC, github residual remote cleanup
 - **Phase N3.1:** preload natives inventory; package Node policy; editor session permission deny-list; optional require audit

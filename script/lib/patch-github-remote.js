@@ -2,7 +2,8 @@
 
 /**
  * Patch the bundled github package worker entry to not use electron.remote.
- * Idempotent. Wired from bootstrap-modern / patch-packages-remote-ipc.
+ * Idempotent. Folded into builtbygio/github; kept as a no-op safety net.
+ * Wired from bootstrap-modern / patch-packages-remote-ipc.
  *
  * Windows npm/git may leave CRLF in node_modules; always normalize before match.
  */

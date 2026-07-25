@@ -6,7 +6,8 @@
  * Disk ops go through atom.applicationDelegate (main IPC). Pure path helpers
  * stay on fs-plus (isReadmePath, isCaseInsensitive, extension checks).
  *
- * Idempotent. Called from patch-packages-remote-ipc.js.
+ * Idempotent. Folded into builtbygio/tree-view; kept as a no-op safety net.
+ * Called from patch-packages-remote-ipc.js.
  */
 
 const fs = require('fs');

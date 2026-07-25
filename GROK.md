@@ -81,7 +81,8 @@ Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
 | **N3.2 opt-in community require restrict** | **Done** (`CHEVRON_RESTRICT_PACKAGE_REQUIRES=1`) |
 | **N4.1 guest WebContents nav + permissions** | **Done** |
 | **Tier-1 package forks** | **Pinned** to `builtbygio/{settings-view,tree-view,fuzzy-finder,github,autocomplete-plus,command-palette,find-and-replace,markdown-preview,notifications,snippets,spell-check,status-bar,tabs}` |
-| **settings-view pack.version / cpm view** | **Done** (fork `b47814b` + cpm `--compatible`) |
+| **settings-view pack.version / cpm view** | **Done** (fork + cpm `--compatible`) |
+| **N2 bootstrap patches folded into forks** | **Done** — settings-view `9d45250`, tree-view `92ec1f9`, fuzzy-finder `bb8c3b2`, github `41da885` (bootstrap scripts kept as no-op guards) |
 | **N5.1 secondary package window hardening** | **Done** (workers: Node kept, prefs/nav/perms locked) |
 | Phase S editor sandbox | **Later** (blocked on natives — `src/preload-natives.js`) |
 
@@ -96,9 +97,9 @@ Authoritative plan: **`docs/security-phase-n.md`**. N5: **`docs/security-phase-n
 Suggested order after N5.1:
 
 1. ~~N0–N5.1~~ **done** (guests sandboxed; package workers hardened; editor stays hackable)  
-2. **Fold bootstrap patches** into `builtbygio/*` forks over time (tree-view fs shim, github residual, …)  
+2. ~~**Fold bootstrap patches** into hot forks~~ **done** (settings-view, tree-view, fuzzy-finder, github)  
 3. **Phase S prep** — move natives / package host redesign before editor `sandbox: true`  
-4. Optional: default-on require restrict; Task crawl → utility process; shrink `remote-compat`  
+4. Optional: default-on require restrict; Task crawl → utility process; shrink `remote-compat`; light audits of other owned packages (tabs remote, shell/fs)  
 
 **Dev policy env:**  
 - `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log  
