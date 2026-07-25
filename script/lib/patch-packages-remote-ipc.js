@@ -2,21 +2,17 @@
 
 /**
  * Apply small IPC-based replacements for remote / privileged Electron shell
- * APIs in bundled packages that we do not fully vendor. Idempotent. Run from
- * bootstrap-modern after apm install.
+ * APIs in bundled packages. Idempotent. Run from bootstrap-modern after install.
  *
- * Phase N2: route shell.openExternal / showItemInFolder / trash through
- * atom.applicationDelegate (main-process IPC trust boundary), and drop
- * residual electron.remote usage in tree-view cross-window DND.
+ * **Folded into builtbygio forks (2026-07):** settings-view, tree-view,
+ * fuzzy-finder, github now ship these changes at the pinned SHAs. This script
+ * remains as a no-op safety net for stale installs / partial checkouts.
  *
- * Phase N2.1: settings-view avatar cache FS → main IPC
- * (atom-settings-view-cache-*).
- *
- * Phase N2.2: fuzzy-finder UI path probes → main IPC
- * (atom-fs-path-kind-sync / atom-fs-realpath-sync via applicationDelegate).
- *
- * Phase N2.3: tree-view bulk fs via fs-via-main shim + register-fs-ipc.
- * Phase N2.4: github residual remote.app / webContents / menu.popup cleanup.
+ * Phase N2: shell.openExternal / trash / tree-view DND via applicationDelegate.
+ * Phase N2.1: settings-view avatar cache FS → main IPC.
+ * Phase N2.2: fuzzy-finder UI path probes → applicationDelegate.
+ * Phase N2.3: tree-view bulk fs via fs-via-main shim.
+ * Phase N2.4: github residual remote + worker sendTo → atom-wc-send.
  *
  * Usage: node script/lib/patch-packages-remote-ipc.js [repoRoot]
  */

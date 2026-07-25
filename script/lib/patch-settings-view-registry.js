@@ -3,6 +3,10 @@
 /**
  * Force settings-view package registry URLs off dead atom.io → Pulsar.
  *
+ * Folded into builtbygio/settings-view sources; still re-run after coffee
+ * transpile on the intermediate app (script/build) in case rebuild rewrites
+ * paths. Idempotent.
+ *
  * Run:
  *  - bootstrap (via patch-packages-remote-ipc)
  *  - after coffee transpile on intermediate app (script/build)

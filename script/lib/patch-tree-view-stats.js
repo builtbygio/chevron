@@ -9,7 +9,8 @@
  *   stats.mtime = stats.mtime.getTime()  // throws: undefined.getTime
  *
  * directory.js already guarded with `&&` but still lost times after pick.
- * Idempotent. Run from bootstrap-modern after host npm install.
+ * Idempotent. Folded into builtbygio/tree-view (pin includes this); kept as
+ * a no-op safety net. Run from bootstrap-modern after host npm install.
  *
  * Usage: node script/lib/patch-tree-view-stats.js [repoRoot]
  */
