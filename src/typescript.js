@@ -1,17 +1,32 @@
 'use strict';
 
-const _ = require('underscore-plus');
 const crypto = require('crypto');
 const path = require('path');
 
-const defaultOptions = {
-  target: 1,
-  module: 'commonjs',
-  sourceMap: true
+// Package .ts/.tsx transpile for compile-cache. Uses modern TypeScript
+// transpileModule so owned packages can use contemporary syntax (e.g. ?.).
+// Not a full typecheck — emit only, like the historical typescript-simple path.
+
+const defaultCompilerOptions = {
+  target: 6, // ES2018 (typescript.ScriptTarget.ES2018)
+  module: 1, // CommonJS
+  sourceMap: true,
+  esModuleInterop: true,
+  skipLibCheck: true,
+  // Loose for mechanical package migrations; packages are not typechecked here.
+  noImplicitAny: false,
+  strict: false
 };
 
-let TypeScriptSimple = null;
+let ts = null;
 let typescriptVersionDir = null;
+
+function loadTypeScript() {
+  if (!ts) {
+    ts = require('typescript');
+  }
+  return ts;
+}
 
 exports.shouldCompile = function() {
   return true;
@@ -19,10 +34,10 @@ exports.shouldCompile = function() {
 
 exports.getCachePath = function(sourceCode) {
   if (typescriptVersionDir == null) {
-    const version = require('typescript-simple/package.json').version;
+    const version = require('typescript/package.json').version;
     typescriptVersionDir = path.join(
       'ts',
-      createVersionAndOptionsDigest(version, defaultOptions)
+      createVersionAndOptionsDigest(version, defaultCompilerOptions)
     );
   }
 
@@ -36,16 +51,43 @@ exports.getCachePath = function(sourceCode) {
 };
 
 exports.compile = function(sourceCode, filePath) {
-  if (!TypeScriptSimple) {
-    TypeScriptSimple = require('typescript-simple').TypeScriptSimple;
+  const typescript = loadTypeScript();
+
+  // Prefer enum values when available (keeps options accurate across TS majors).
+  const compilerOptions = Object.assign({}, defaultCompilerOptions, {
+    target: typescript.ScriptTarget.ES2018,
+    module: typescript.ModuleKind.CommonJS
+  });
+
+  const result = typescript.transpileModule(sourceCode, {
+    compilerOptions,
+    fileName: filePath,
+    reportDiagnostics: true
+  });
+
+  const diagnostics = result.diagnostics || [];
+  if (diagnostics.length > 0) {
+    const formatted = typescript.formatDiagnostics(diagnostics, {
+      getCanonicalFileName: f => f,
+      getCurrentDirectory: () => process.cwd(),
+      getNewLine: () => '\n'
+    });
+    throw new Error(formatted.trim() || 'TypeScript transpile failed');
   }
 
-  if (process.platform === 'win32') {
-    filePath = 'file:///' + path.resolve(filePath).replace(/\\/g, '/');
+  // compile-cache expects a JS string; source maps are optional for package load.
+  // When sourceMap is true, transpileModule may attach sourceMapText separately.
+  if (result.sourceMapText) {
+    // Inline source map so stack traces stay useful without a separate file.
+    const b64 = Buffer.from(result.sourceMapText, 'utf8').toString('base64');
+    return (
+      result.outputText.replace(/\n\/\/# sourceMappingURL=.*$/m, '') +
+      '\n//# sourceMappingURL=data:application/json;base64,' +
+      b64 +
+      '\n'
+    );
   }
-
-  const options = _.defaults({ filename: filePath }, defaultOptions);
-  return new TypeScriptSimple(options, false).compile(sourceCode, filePath);
+  return result.outputText;
 };
 
 function createVersionAndOptionsDigest(version, options) {

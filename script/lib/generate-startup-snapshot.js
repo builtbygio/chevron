@@ -116,7 +116,7 @@ module.exports = function(packagedAppPath) {
           )
         ) ||
         requiredModuleRelativePath.startsWith(
-          path.join('..', 'node_modules', 'typescript-simple')
+          path.join('..', 'node_modules', 'typescript')
         ) ||
         // Modern deps use private fields / node: protocol that electron-link's
         // acorn cannot parse. Load them at runtime instead of snapshotting.
