@@ -54,6 +54,7 @@ const prebuildLessCache = require('./lib/prebuild-less-cache')
 const testSignOnMac = require('./lib/test-sign-on-mac')
 const transpileBabelPaths = require('./lib/transpile-babel-paths')
 const transpileCoffeeScriptPaths = require('./lib/transpile-coffee-script-paths')
+const transpileTypeScriptPaths = require('./lib/transpile-typescript-paths')
 const transpileCsonPaths = require('./lib/transpile-cson-paths')
 const transpilePegJsPaths = require('./lib/transpile-peg-js-paths')
 const transpilePackagesWithCustomTranspilerPaths = require('./lib/transpile-packages-with-custom-transpiler-paths.js')
@@ -77,6 +78,8 @@ if (!argv.existingBinaries) {
   transpilePackagesWithCustomTranspilerPaths()
   transpileBabelPaths()
   transpileCoffeeScriptPaths()
+  // Package libs may ship .ts (owned forks); emit .js before metadata resolve.
+  transpileTypeScriptPaths()
   // Re-apply after coffee→js: settings-view must not keep dead atom.io registry.
   require('./lib/patch-settings-view-registry')(CONFIG.intermediateAppPath)
   transpileCsonPaths()
