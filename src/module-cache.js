@@ -115,7 +115,7 @@ function loadFolderCompatibility(
 
   const onDirectory = childPath => path.basename(childPath) !== 'node_modules';
 
-  const extensions = ['.js', '.coffee', '.json', '.node'];
+  const extensions = ['.js', '.ts', '.tsx', '.coffee', '.json', '.node'];
   let paths = {};
   function onFile(childPath) {
     const needle = path.extname(childPath);
@@ -148,7 +148,7 @@ function loadFolderCompatibility(
 
 function loadExtensions(modulePath, rootPath, rootMetadata, moduleCache) {
   const fs = require('fs-plus');
-  const extensions = ['.js', '.coffee', '.json', '.node'];
+  const extensions = ['.js', '.ts', '.tsx', '.coffee', '.json', '.node'];
   const nodeModulesPath = path.join(rootPath, 'node_modules');
 
   function onFile(filePath) {

@@ -430,7 +430,7 @@ describe('TextMateLanguageMode', () => {
       beforeEach(async () => {
         atom.packages.activatePackage('language-coffee-script');
 
-        buffer = atom.project.bufferForPathSync('sample-with-tabs.coffee');
+        buffer = atom.project.bufferForPathSync('sample-with-tabs.txt');
         languageMode = new TextMateLanguageMode({
           buffer,
           config,
@@ -475,7 +475,7 @@ describe('TextMateLanguageMode', () => {
       it('re-emits the `tokenized` event', async () => {
         let tokenizationCount = 0;
 
-        const editor = await atom.workspace.open('coffee.coffee');
+        const editor = await atom.workspace.open('coffee.js');
         editor.onDidTokenize(() => {
           tokenizationCount++;
         });
@@ -1362,7 +1362,7 @@ describe('TextMateLanguageMode', () => {
     });
 
     it('works for coffee-script', async () => {
-      const editor = await atom.workspace.open('coffee.coffee');
+      const editor = await atom.workspace.open('coffee.js');
       await atom.packages.activatePackage('language-coffee-script');
       buffer = editor.buffer;
       languageMode = editor.languageMode;

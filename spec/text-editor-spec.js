@@ -2475,7 +2475,7 @@ describe('TextEditor', () => {
 
         it('takes atomic tokens into account', async () => {
           editor = await atom.workspace.open(
-            'sample-with-tabs-and-leading-comment.coffee',
+            'sample-with-tabs-and-leading-comment.txt',
             { autoIndent: false }
           );
           editor.setSelectedBufferRange([[2, 1], [2, 3]]);
@@ -2615,7 +2615,7 @@ describe('TextEditor', () => {
 
         it('takes atomic tokens into account', async () => {
           editor = await atom.workspace.open(
-            'sample-with-tabs-and-leading-comment.coffee',
+            'sample-with-tabs-and-leading-comment.txt',
             { autoIndent: false }
           );
           editor.setSelectedBufferRange([[3, 1], [3, 2]]);
@@ -8631,7 +8631,7 @@ describe('TextEditor', () => {
     describe('coffeescript', () => {
       beforeEach(async () => {
         await atom.packages.activatePackage('language-coffee-script');
-        editor = await atom.workspace.open('coffee.coffee');
+        editor = await atom.workspace.open('coffee.js');
       });
 
       it('comments/uncomments lines in the given range', () => {
