@@ -84,8 +84,28 @@ Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
 | **settings-view pack.version / cpm view** | **Done** (fork + cpm `--compatible`) |
 | **N2 bootstrap patches folded into forks** | **Done** — settings-view `9d45250`, tree-view `92ec1f9`, fuzzy-finder `bb8c3b2`, github `41da885` (bootstrap scripts kept as no-op guards) |
 | **Nine owned packages audit** | **Done** — tabs remote DnD folded; openExternal on autocomplete-plus/notifications; find-and-replace symlink IPC; all nine: `repository` → builtbygio + `engines.chevron` |
+| **Owned-package CI model (Option B)** | **Done** — package forks: metadata-only CI (no Atom); **Chevron monorepo CI** is the integration gate |
 | **N5.1 secondary package window hardening** | **Done** (workers: Node kept, prefs/nav/perms locked) |
 | Phase S editor sandbox | **Later** (blocked on natives — `src/preload-natives.js`) |
+
+---
+
+## Owned package CI (Option B — monorepo gate)
+
+Tier-1 `builtbygio/*` package repos are **pin sources**, not standalone Atom products.
+
+| Where | What runs |
+|-------|-----------|
+| **Package fork** | Optional lightweight CI (`package.json` / `repository` / `engines.chevron`). **No** `UziTech/action-setup-atom`, **no** `atom --test`. |
+| **Chevron monorepo** | Real gate: `bootstrap-modern` → build → smoke (packages load under Electron 43). Optional later: `script/test --package <name>`. |
+
+Workflow when changing a package:
+
+1. Land commit on `builtbygio/<pkg>`  
+2. Bump SHA in Chevron `package.json` + lockfile  
+3. Open Chevron PR — CI there is the signal  
+
+`tabs` / `notifications` use metadata-only workflows after Atom installer CI died.
 
 ---
 

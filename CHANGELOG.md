@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Phase N5.1:** package secondary BrowserWindows (github workers) — fixed hardened prefs, `chevron-package-worker` partition, file:-only navigation, deny window.open/permissions; editor remains `sandbox: false` (hackable)
 - **Fold N2 bootstrap patches into owned forks:** pin `settings-view`, `tree-view`, `fuzzy-finder`, `github` to commits that include Pulsar registry, avatar-cache IPC, fs-via-main, path probes, residual-remote cleanup; bootstrap patch scripts remain idempotent guards
 - **Nine owned packages audit:** `tabs` cross-window DnD without `electron.remote`; `autocomplete-plus` / `notifications` `openExternal` via applicationDelegate; `find-and-replace` symlink icon probe via main IPC; all nine set `repository` to builtbygio + `engines.chevron`
+- **Owned-package CI (Option B):** package forks drop dead Atom installer CI; metadata-only checks on `tabs`/`notifications`; integration gate is Chevron monorepo bootstrap/build/smoke
 
 - **Phase N2.2–N2.4:** fuzzy-finder path probes, tree-view bulk fs via main IPC, github residual remote cleanup
 - **Phase N3.1:** preload natives inventory; package Node policy; editor session permission deny-list; optional require audit

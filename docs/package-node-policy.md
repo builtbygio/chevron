@@ -64,6 +64,15 @@ Privileged module set: see `src/preload-natives.js` (`fs`, `child_process`, `ele
 
 Use **cpm** (or the `apm` shim → cpm). Prefer prebuilds for natives. See [cpm-cutover.md](./cpm-cutover.md) and [cpm-prebuilds.md](./cpm-prebuilds.md).
 
+## Owned package CI (Option B)
+
+Bundled Tier-1 packages live in `builtbygio/*` forks and are **git-pinned** from the Chevron monorepo.
+
+- **Package-repo CI** may only check metadata (`package.json`, `repository`, `engines.chevron`). Do not install Atom or run `atom --test` there (Atom download channels are dead; patches target Chevron IPC).
+- **Integration gate** is Chevron CI: bootstrap, build, and smoke with the pinned SHAs. Bump the pin in Chevron to validate package changes.
+
+See `GROK.md` § Owned package CI.
+
 ## End state (aspirational)
 
 - Packages use Atom services and main IPC only
