@@ -1530,9 +1530,13 @@ or use Pane::saveItemAs for programmatic saving.`);
   getUserInitScriptPath() {
     const initScriptPath = fs.resolve(this.getConfigDirPath(), 'init', [
       'js',
+      'ts',
       'coffee'
     ]);
-    return initScriptPath || path.join(this.getConfigDirPath(), 'init.coffee');
+    // Prefer init.js (first-party default); coffee retained for dual-support user trees.
+    return (
+      initScriptPath || path.join(this.getConfigDirPath(), 'init.js')
+    );
   }
 
   requireUserInitScript() {

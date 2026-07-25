@@ -88,7 +88,7 @@ Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
 | **Nine package libs → TypeScript** | **Done** — mechanical lib/ Coffee+JS → `.ts`; CJS exports fixed |
 | **TypeScript package transpile** | **6.0.3** (`transpileModule`; TS 7 deferred — no stable API until 7.1) |
 | **Zero CoffeeScript (nine packages)** | **Done** — specs/fixtures converted; zero `.coffee` in nine forks |
-| **Zero CoffeeScript (Chevron src/specs)** | **In progress** |
+| **Zero CoffeeScript (Chevron first-party)** | **Done** — `src/`, in-repo packages, specs, `dot-atom/init` converted; community coffee compile-cache kept (Policy B) |
 | **N5.1 secondary package window hardening** | **Done** (workers: Node kept, prefs/nav/perms locked) |
 | Phase S editor sandbox | **Later** (blocked on natives — `src/preload-natives.js`) |
 
