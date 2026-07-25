@@ -79,14 +79,14 @@ describe('CompileCache', function() {
       spyOn(CSON, 'setCacheDir').andCallThrough();
       spyOn(CSON, 'readFileSync').andCallThrough();
 
-      CompileCache.addPathToCache(path.join(fixtures, 'cson.cson'), atomHome);
-      expect(CSON.readFileSync).toHaveBeenCalledWith(path.join(fixtures, 'cson.cson'));
+      CompileCache.addPathToCache(path.join(fixtures, 'cson.json'), atomHome);
+      expect(CSON.readFileSync).toHaveBeenCalledWith(path.join(fixtures, 'cson.json'));
       expect(CSON.setCacheDir).toHaveBeenCalledWith(path.join(atomHome, '/compile-cache'));
 
       CSON.readFileSync.reset();
       CSON.setCacheDir.reset();
-      CompileCache.addPathToCache(path.join(fixtures, 'cson.cson'), atomHome);
-      expect(CSON.readFileSync).toHaveBeenCalledWith(path.join(fixtures, 'cson.cson'));
+      CompileCache.addPathToCache(path.join(fixtures, 'cson.json'), atomHome);
+      expect(CSON.readFileSync).toHaveBeenCalledWith(path.join(fixtures, 'cson.json'));
       return expect(CSON.setCacheDir).not.toHaveBeenCalled();
     }));
   });

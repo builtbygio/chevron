@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Owned-package CI (Option B):** package forks drop dead Atom installer CI; metadata-only checks on `tabs`/`notifications`; integration gate is Chevron monorepo bootstrap/build/smoke
 - **Nine package libs → TypeScript:** mechanical conversion of `lib/` (CoffeeScript via decaffeinate + JS rename) for autocomplete-plus, command-palette, find-and-replace, markdown-preview, notifications, snippets, spell-check, status-bar, tabs; specs unchanged; package TS transpile upgraded from `typescript-simple` to TypeScript 5.7 `transpileModule`
 - **TypeScript 6:** package/runtime transpile uses `typescript@6.0.3` (`transpileModule`)
+- **Owned forks + CSON→JSON:** convert settings-view/tree-view off CoffeeScript; Tier-1 package keymaps/menus/snippets to JSON; monorepo keymaps/menus/grammars to JSON (user `config.cson`/`keymap.cson` still dual-supported)
 - **Zero first-party CoffeeScript:** convert Chevron `src/*.coffee` → TypeScript; monorepo specs/fixtures and in-repo packages (autoflow, deprecation-cop) off CoffeeScript; nine package specs/fixtures cleared; keep optional coffee compile-cache for community packages
 
 - **Phase N2.2–N2.4:** fuzzy-finder path probes, tree-view bulk fs via main IPC, github residual remote cleanup

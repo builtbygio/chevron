@@ -223,12 +223,11 @@ function buildBundledPackagesMetadata() {
 }
 
 function buildPlatformMenuMetadata() {
-  const menuPath = path.join(
-    CONFIG.repositoryRootPath,
-    'menus',
-    `${process.platform}.cson`
-  );
-  if (fs.existsSync(menuPath)) {
+  const base = path.join(CONFIG.repositoryRootPath, 'menus', process.platform);
+  const menuPath = ['.json', '.cson']
+    .map(ext => base + ext)
+    .find(p => fs.existsSync(p));
+  if (menuPath) {
     return CSON.readFileSync(menuPath);
   } else {
     return null;

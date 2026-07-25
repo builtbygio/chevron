@@ -44,7 +44,8 @@ KeymapManager.prototype.getUserKeymapPath = function() {
   if ((userKeymapPath = CSON.resolve(path.join(this.configDirPath, 'keymap')))) {
     return userKeymapPath;
   } else {
-    return path.join(this.configDirPath, 'keymap.cson');
+    // Prefer JSON for new user keymaps; season still reads legacy keymap.cson.
+    return path.join(this.configDirPath, 'keymap.json');
   }
 };
 
