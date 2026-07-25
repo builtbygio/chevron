@@ -80,7 +80,7 @@ Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
 | **N3.1 preload inventory + session perms + require audit** | **Done** |
 | **N3.2 opt-in community require restrict** | **Done** (`CHEVRON_RESTRICT_PACKAGE_REQUIRES=1`) |
 | **N4.1 guest WebContents nav + permissions** | **Done** |
-| **Tier-1 package forks** | **Pinned** to `builtbygio/{settings-view,tree-view,fuzzy-finder,github}` |
+| **Tier-1 package forks** | **Pinned** to `builtbygio/{settings-view,tree-view,fuzzy-finder,github,autocomplete-plus,command-palette,find-and-replace,markdown-preview,notifications,snippets,spell-check,status-bar,tabs}` |
 | **settings-view pack.version / cpm view** | **Done** (fork `b47814b` + cpm `--compatible`) |
 | **N5.1 secondary package window hardening** | **Done** (workers: Node kept, prefs/nav/perms locked) |
 | Phase S editor sandbox | **Later** (blocked on natives — `src/preload-natives.js`) |
