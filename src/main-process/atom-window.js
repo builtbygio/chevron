@@ -319,7 +319,7 @@ module.exports = class AtomWindow extends EventEmitter {
 
     this.browserWindow.showSaveDialog = this.showSaveDialog.bind(this);
 
-    if (this.isSpec) this.browserWindow.focusOnWebView();
+    if (this.isSpec) this.focusOnWebView();
 
     const hasPathToOpen = !(
       locationsToOpen.length === 1 && locationsToOpen[0].pathToOpen == null
@@ -514,7 +514,7 @@ module.exports = class AtomWindow extends EventEmitter {
 
     // Spec window's web view should always have focus
     if (this.isSpec)
-      this.browserWindow.on('blur', () => this.browserWindow.focusOnWebView());
+      this.browserWindow.on('blur', () => this.focusOnWebView());
   }
 
   /**
@@ -745,8 +745,28 @@ module.exports = class AtomWindow extends EventEmitter {
     return this.browserWindow.isMinimized();
   }
 
+  // Electron removed BrowserWindow.isWebViewFocused(); webContents focus is
+  // the correct modern equivalent for "page has keyboard focus".
   isWebViewFocused() {
-    return this.browserWindow.isWebViewFocused();
+    const { webContents } = this.browserWindow;
+    return !!(
+      webContents &&
+      !webContents.isDestroyed() &&
+      typeof webContents.isFocused === 'function' &&
+      webContents.isFocused()
+    );
+  }
+
+  // Electron also removed BrowserWindow.focusOnWebView(); focus the page.
+  focusOnWebView() {
+    const { webContents } = this.browserWindow;
+    if (
+      webContents &&
+      !webContents.isDestroyed() &&
+      typeof webContents.focus === 'function'
+    ) {
+      webContents.focus();
+    }
   }
 
   isSpecWindow() {

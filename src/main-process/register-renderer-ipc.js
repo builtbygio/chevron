@@ -218,6 +218,15 @@ module.exports = function registerRendererIpc(atomApplication) {
     'setTitle'
   ]);
 
+  // Methods that historically lived on BrowserWindow but moved to webContents
+  // (or were removed) in modern Electron. Keep the IPC surface stable for the
+  // renderer proxy in renderer-ipc.js.
+  const WEB_CONTENTS_FALLBACK_METHODS = new Set([
+    'openDevTools',
+    'closeDevTools',
+    'toggleDevTools'
+  ]);
+
   ipcMain.on('atom-browser-window-call-sync', (event, method, ...args) => {
     const win = browserWindowFromEvent(event);
     if (!win || !ALLOWED_WINDOW_METHODS.has(method)) {
@@ -225,7 +234,28 @@ module.exports = function registerRendererIpc(atomApplication) {
       return;
     }
     try {
-      const result = win[method](...args);
+      let result;
+      if (method === 'isWebViewFocused') {
+        // BrowserWindow.isWebViewFocused() was removed; page focus is webContents.
+        const wc = win.webContents;
+        result = !!(
+          wc &&
+          !wc.isDestroyed() &&
+          typeof wc.isFocused === 'function' &&
+          wc.isFocused()
+        );
+      } else if (typeof win[method] === 'function') {
+        result = win[method](...args);
+      } else if (
+        WEB_CONTENTS_FALLBACK_METHODS.has(method) &&
+        win.webContents &&
+        typeof win.webContents[method] === 'function'
+      ) {
+        result = win.webContents[method](...args);
+      } else {
+        event.returnValue = null;
+        return;
+      }
       // Avoid returning non-cloneable objects over IPC
       event.returnValue = result === win ? true : result;
     } catch (error) {

@@ -50,6 +50,27 @@ for (const root of ROOTS) {
   }
 }
 
+// GCC 15+ / libstdc++ no longer injects uint32_t via transitive headers.
+// @atom/fuzzy-native needs an explicit <cstdint> include.
+const fuzzyNativeHeader = path.join(
+  repoRoot,
+  'node_modules/@atom/fuzzy-native/src/MatcherBase.h'
+);
+if (fs.existsSync(fuzzyNativeHeader)) {
+  let text = fs.readFileSync(fuzzyNativeHeader, 'utf8');
+  if (!text.includes('<cstdint>')) {
+    text = text.replace(
+      '#include <memory>\n',
+      '#include <cstdint>\n#include <memory>\n'
+    );
+    fs.writeFileSync(fuzzyNativeHeader, text);
+    console.log(
+      'patch-v8-api: patched node_modules/@atom/fuzzy-native/src/MatcherBase.h'
+    );
+    patched++;
+  }
+}
+
 // V8 15 (Electron 43) removals in registry deps, as exact string swaps.
 // - Context::GetIsolate() / Object::GetIsolate() are gone → GetCurrent()
 // - WriteUtf8 requires an explicit capacity argument
@@ -68,7 +89,7 @@ const REPLACEMENTS = [
     file: 'node_modules/@atom/fuzzy-native/src/binding.cpp',
     from: 'v8str->WriteUtf8(isolate, &str[0]);',
     to: 'v8str->WriteUtf8(isolate, &str[0], str.size());'
-  }
+  },
 ];
 for (const { file, from, to } of REPLACEMENTS) {
   const abs = path.join(repoRoot, file);
@@ -78,6 +99,40 @@ for (const { file, from, to } of REPLACEMENTS) {
   fs.writeFileSync(abs, text.split(from).join(to));
   console.log(`patch-v8-api: patched ${file}`);
   patched++;
+}
+
+// fuzzy-native: Object::Set is warn_unused_result — use Check() (idempotent).
+const fuzzyBinding = path.join(
+  repoRoot,
+  'node_modules/@atom/fuzzy-native/src/binding.cpp'
+);
+if (fs.existsSync(fuzzyBinding)) {
+  let text = fs.readFileSync(fuzzyBinding, 'utf8');
+  const before = text;
+  text = text
+    .replace(
+      /\(void\)array->Set\(context, i, New\(match\.matchIndexes->at\(i\)\)\)(?:\.Check\(\))?;/g,
+      'array->Set(context, i, New(match.matchIndexes->at(i))).Check();'
+    )
+    .replace(
+      /(?<![\w.>)])array->Set\(context, i, New\(match\.matchIndexes->at\(i\)\)\);/g,
+      'array->Set(context, i, New(match.matchIndexes->at(i))).Check();'
+    )
+    .replace(
+      /\(void\)result->Set\(context, result_count\+\+, obj\)(?:\.Check\(\))?;/g,
+      'result->Set(context, result_count++, obj).Check();'
+    )
+    .replace(
+      /(?<![\w.>)])result->Set\(context, result_count\+\+, obj\);/g,
+      'result->Set(context, result_count++, obj).Check();'
+    );
+  if (text !== before) {
+    fs.writeFileSync(fuzzyBinding, text);
+    console.log(
+      'patch-v8-api: patched node_modules/@atom/fuzzy-native/src/binding.cpp (Set Check)'
+    );
+    patched++;
+  }
 }
 
 // V8 15 (Electron 43) promoted the WriteV2 signatures: String::Write is now
