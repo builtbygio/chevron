@@ -39,7 +39,10 @@ module.exports = function start(resourcePath, devResourcePath, startTime) {
     }
   });
 
-  app.commandLine.appendSwitch('enable-experimental-web-platform-features');
+  // Electron BP P1.3: do not enable experimental web platform features by
+  // default (security checklist). Opt in with CHEVRON_EXPERIMENTAL_WEB_FEATURES=1
+  // or core.enableExperimentalWebFeatures when needed for dogfood.
+  // (Flag applied after config load below.)
 
   // Linux: set WM_CLASS / Wayland app_id so shells can match chevron.desktop
   // (generic binary icon otherwise when launched without a desktop entry).
@@ -65,6 +68,9 @@ module.exports = function start(resourcePath, devResourcePath, startTime) {
   if (colorProfile && colorProfile !== 'default') {
     app.commandLine.appendSwitch('force-color-profile', colorProfile);
   }
+
+  // Electron BP P1.2 / P1.3 — policy env for renderer/preload children.
+  applySecurityPolicyEnv(config);
 
   if (handleStartupEventWithSquirrel()) {
     return;
@@ -193,5 +199,42 @@ function normalizeDriveLetterName(filePath) {
     );
   } else {
     return filePath;
+  }
+}
+
+/**
+ * Electron BP P1.2 / P1.3: push security policy into env for preload children.
+ * Explicit env wins over config. Defaults favor hardening.
+ */
+function applySecurityPolicyEnv(config) {
+  // Community privileged-require restrict (default ON).
+  const restrictEnv = process.env.CHEVRON_RESTRICT_PACKAGE_REQUIRES;
+  if (
+    restrictEnv === undefined ||
+    restrictEnv === '' ||
+    restrictEnv === 'default'
+  ) {
+    const restrictConfig = config.get('core.restrictCommunityPackageRequires');
+    process.env.CHEVRON_RESTRICT_PACKAGE_REQUIRES =
+      restrictConfig === false ? '0' : '1';
+  }
+
+  // Experimental web features (default OFF).
+  const expEnv = process.env.CHEVRON_EXPERIMENTAL_WEB_FEATURES;
+  const expConfig = config.get('core.enableExperimentalWebFeatures');
+  const enableExperimental =
+    expEnv === '1' ||
+    expEnv === 'true' ||
+    expEnv === 'yes' ||
+    expConfig === true;
+  if (enableExperimental) {
+    app.commandLine.appendSwitch('enable-experimental-web-platform-features');
+  }
+
+  // FS IPC strict (default ON) — register-fs-ipc reads this.
+  const fsEnv = process.env.CHEVRON_FS_IPC_STRICT;
+  if (fsEnv === undefined || fsEnv === '' || fsEnv === 'default') {
+    const fsStrict = config.get('core.fsIpcStrict');
+    process.env.CHEVRON_FS_IPC_STRICT = fsStrict === false ? '0' : '1';
   }
 }

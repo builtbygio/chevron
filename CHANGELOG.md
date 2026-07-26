@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Electron best practices P0–P3 (partial):** path-confined `atom://`/`chevron://`; package-worker-only `atom-bw-id-call-sync` + scoped `atom-wc-send`; tighter CSP; **default-on** community privileged-require restrict (`core.restrictCommunityPackageRequires`); experimental web features **off** by default; strict FS IPC roots (`core.fsIpcStrict`); guest `file:` root confinement; `nodeIntegrationInWorker: false`; `certificate-error` denied; production Electron fuses on package; threat model doc. Deferred: full `sendSync`→`invoke`, github `utilityProcess`, editor `sandbox: true` (Phase S). See [docs/electron-best-practices-plan.md](docs/electron-best-practices-plan.md).
+
 ## [0.5.0] — 2026-07-26
 
 Language modernization, owned-package ownership, and Security Phase N close-out for the pre–Electron best-practices hardening track. Electron remains **43.1.0**.

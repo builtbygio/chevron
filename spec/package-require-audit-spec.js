@@ -64,15 +64,21 @@ describe('package-require-audit / N3.2 classifyCallerPath', function() {
     expect(baseModuleId('./relative')).toBe(null);
   });
 
-  it('env flags default off', function() {
+  it('audit defaults off; restrict defaults on (P1.2)', function() {
     const prevA = process.env.CHEVRON_AUDIT_PACKAGE_REQUIRES;
     const prevR = process.env.CHEVRON_RESTRICT_PACKAGE_REQUIRES;
     delete process.env.CHEVRON_AUDIT_PACKAGE_REQUIRES;
     delete process.env.CHEVRON_RESTRICT_PACKAGE_REQUIRES;
     expect(isAuditEnabled()).toBe(false);
+    expect(isRestrictEnabled()).toBe(true);
+    process.env.CHEVRON_RESTRICT_PACKAGE_REQUIRES = '0';
     expect(isRestrictEnabled()).toBe(false);
+    process.env.CHEVRON_RESTRICT_PACKAGE_REQUIRES = '1';
+    expect(isRestrictEnabled()).toBe(true);
     if (prevA !== undefined) process.env.CHEVRON_AUDIT_PACKAGE_REQUIRES = prevA;
+    else delete process.env.CHEVRON_AUDIT_PACKAGE_REQUIRES;
     if (prevR !== undefined)
       process.env.CHEVRON_RESTRICT_PACKAGE_REQUIRES = prevR;
+    else delete process.env.CHEVRON_RESTRICT_PACKAGE_REQUIRES;
   });
 });

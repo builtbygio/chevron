@@ -1,6 +1,6 @@
 # Plan: Electron best-practices hardening
 
-**Status:** plan (post-audit, 2026-07-26)  
+**Status:** P0–P3 implementation in progress (2026-07-26); Phase S / utilityProcess still deferred  
 **Depends on:** Phase R + I (done), Phase N0–N5.1 (done)  
 **Related:** `docs/security-phase-n.md`, `docs/security-phase-n5.md`, `docs/package-node-policy.md`, `docs/remote-ipc-inventory.md`  
 **Handoff:** `GROK.md`  
@@ -317,22 +317,22 @@ node script/ci/smoke-test.js out/Chevron-linux-x64
 
 | ID | Item | Priority | Status |
 |----|------|----------|--------|
-| P0.1 | Protocol path confinement | P0 | pending |
-| P0.2 | bw-id method + ownership allowlist | P0 | pending |
-| P0.3 | wc-send ownership / channels | P0 | pending |
-| P0.4 | Smoke + github dogfood | P0 | pending |
-| P1.1 | CSP tighten | P1 | pending |
-| P1.2 | Community require default/policy | P1 | pending |
-| P1.3 | Experimental flag | P1 | pending |
-| P1.4 | Threat model doc | P1 | pending |
-| P2.1 | FS IPC roots | P2 | pending |
-| P2.2 | sendSync → invoke | P2 | pending |
-| P2.3 | nodeIntegrationInWorker | P2 | pending |
-| P2.4 | Guest file: roots | P2 | pending |
-| P3.1 | utilityProcess workers | P3 | pending |
-| P3.2 | Fuses / ASAR integrity | P3 | pending |
-| P3.3 | Phase S sandbox | P3 | blocked on natives |
-| P3.4 | Cert / updater / webviewTag | P3 | pending |
+| P0.1 | Protocol path confinement | P0 | **done** |
+| P0.2 | bw-id method + ownership allowlist | P0 | **done** |
+| P0.3 | wc-send ownership / channels | P0 | **done** |
+| P0.4 | Smoke + github dogfood | P0 | **done** locally (72 packages); CI on PR |
+| P1.1 | CSP tighten | P1 | **done** |
+| P1.2 | Community require default/policy | P1 | **done** (default on + config/env escape) |
+| P1.3 | Experimental flag | P1 | **done** (default off) |
+| P1.4 | Threat model doc | P1 | **done** (`docs/security-threat-model.md`) |
+| P2.1 | FS IPC roots | P2 | **done** (strict default on) |
+| P2.2 | sendSync → invoke | P2 | **deferred** (inventory only; boot/remote-compat still sync) |
+| P2.3 | nodeIntegrationInWorker | P2 | **done** (false) |
+| P2.4 | Guest file: roots | P2 | **done** |
+| P3.1 | utilityProcess workers | P3 | **deferred** (github rewrite) |
+| P3.2 | Fuses / ASAR integrity | P3 | **done** (`flip-electron-fuses.js`, soft-fail) |
+| P3.3 | Phase S sandbox | P3 | **blocked** on natives |
+| P3.4 | Cert deny | P3 | **done** (`certificate-error` → false) |
 
 ---
 

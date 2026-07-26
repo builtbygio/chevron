@@ -6,11 +6,14 @@ const {
   nativeImage
 } = require('electron');
 const fs = require('fs');
+const os = require('os');
 const getAppName = require('../get-app-name');
 const path = require('path');
 const url = require('url');
+const { fileURLToPath } = require('url');
 const { EventEmitter } = require('events');
 const StartupTime = require('../startup-time');
+const { pathContained } = require('./atom-protocol-path');
 
 // Linux window/taskbar icon. Prefer real filesystem paths (asar.unpacked or
 // packaged app-root copies) because nativeImage.createFromPath does not read
@@ -107,8 +110,8 @@ function loadLinuxAppIcon(resourcePath) {
 }
 
 // Guest <webview> may load package previews (markdown, images). Keep schemes
-// tight: no javascript:, no atom: (editor protocol), no file escalation via
-// unexpected schemes. file: stays for local markdown assets.
+// tight: no javascript:, no atom: (editor protocol). file: is confined to
+// project/config/temp roots (Electron BP P2.4).
 const GUEST_NAVIGATION_SCHEMES = new Set([
   'http:',
   'https:',
@@ -118,13 +121,23 @@ const GUEST_NAVIGATION_SCHEMES = new Set([
   'file:'
 ]);
 
-function isAllowedGuestNavigationUrl(navigationUrl) {
+function isAllowedGuestNavigationUrl(navigationUrl, allowedFileRoots) {
   if (typeof navigationUrl !== 'string' || navigationUrl.length === 0) {
     return false;
   }
   try {
     const parsed = new URL(navigationUrl);
-    return GUEST_NAVIGATION_SCHEMES.has(parsed.protocol);
+    if (!GUEST_NAVIGATION_SCHEMES.has(parsed.protocol)) return false;
+    if (parsed.protocol !== 'file:') return true;
+    // P2.4: file: only under allowed roots when provided; if no roots, deny file:.
+    if (!allowedFileRoots || allowedFileRoots.length === 0) return false;
+    let filePath;
+    try {
+      filePath = fileURLToPath(navigationUrl);
+    } catch (error) {
+      return false;
+    }
+    return allowedFileRoots.some(root => pathContained(root, filePath));
   } catch (error) {
     return false;
   }
@@ -189,9 +202,9 @@ module.exports = class AtomWindow extends EventEmitter {
         nodeIntegration: false,
         sandbox: false,
         webviewTag: true,
-        // Web Workers in the preload/package world may use require(); leave on
-        // for hackable packages until audited off (Phase S later).
-        nodeIntegrationInWorker: true
+        // Electron BP P2.3: no Node in Web Workers (audit found no first-party
+        // Worker+require need; package workers use BrowserWindows, not Workers).
+        nodeIntegrationInWorker: false
       },
       simpleFullscreen: this.getSimpleFullscreen()
     };
@@ -518,11 +531,42 @@ module.exports = class AtomWindow extends EventEmitter {
   }
 
   /**
+   * Roots guests may read via file: (project folders, config home, temp, app resources).
+   */
+  getGuestFileRoots() {
+    const roots = [];
+    if (process.env.ATOM_HOME) roots.push(process.env.ATOM_HOME);
+    if (this.resourcePath) roots.push(this.resourcePath);
+    try {
+      roots.push(os.tmpdir());
+    } catch (error) {
+      /* ignore */
+    }
+    if (this.atomApplication && Array.isArray(this.atomApplication.windows)) {
+      for (const win of this.atomApplication.windows) {
+        if (win && Array.isArray(win.projectRoots)) {
+          for (const r of win.projectRoots) {
+            if (r) roots.push(r);
+          }
+        }
+      }
+    }
+    if (Array.isArray(this.projectRoots)) {
+      for (const r of this.projectRoots) {
+        if (r) roots.push(r);
+      }
+    }
+    return roots;
+  }
+
+  /**
    * Phase N4: harden a guest <webview> WebContents after attach.
    * Guests may load package previews (markdown, etc.) over http(s)/file/data.
    */
   configureGuestWebContents(guestWebContents) {
     if (!guestWebContents || guestWebContents.isDestroyed()) return;
+
+    const fileRoots = this.getGuestFileRoots();
 
     guestWebContents.setWindowOpenHandler(({ url: guestUrl }) => {
       console.warn(
@@ -534,7 +578,7 @@ module.exports = class AtomWindow extends EventEmitter {
     });
 
     guestWebContents.on('will-navigate', (event, navigationUrl) => {
-      if (!isAllowedGuestNavigationUrl(navigationUrl)) {
+      if (!isAllowedGuestNavigationUrl(navigationUrl, fileRoots)) {
         console.warn(
           `AtomWindow: blocked guest navigation to ${String(navigationUrl)}`
         );
@@ -543,7 +587,7 @@ module.exports = class AtomWindow extends EventEmitter {
     });
 
     guestWebContents.on('will-redirect', (event, navigationUrl) => {
-      if (!isAllowedGuestNavigationUrl(navigationUrl)) {
+      if (!isAllowedGuestNavigationUrl(navigationUrl, fileRoots)) {
         console.warn(
           `AtomWindow: blocked guest redirect to ${String(navigationUrl)}`
         );
@@ -825,6 +869,12 @@ module.exports = class AtomWindow extends EventEmitter {
     this.projectRoots = projectRootPaths;
     this.projectRoots.sort();
     this.loadSettings.initialProjectRoots = this.projectRoots;
+    // P2.1: keep FS IPC roots in sync with open projects.
+    try {
+      require('./register-fs-ipc').refreshFsIpcRoots();
+    } catch (error) {
+      /* ignore if IPC not registered yet */
+    }
     return this.atomApplication.saveCurrentWindowOptions();
   }
 
