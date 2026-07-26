@@ -63,20 +63,28 @@ async function flipFusesOnApp(packagedAppPath) {
 
   console.log(`Flipping Electron fuses on ${electronPath}`);
   try {
+    // EnableEmbeddedAsarIntegrityValidation requires packager-embedded
+    // integrity resources. electron-packager does this on macOS; on Windows
+    // the fuse makes the app FATAL at startup (archive_win.cc FindResource).
+    // OnlyLoadAppFromAsar breaks app.asar.unpacked natives + out-of-asar cpm.
+    // Leave both off until packaging embeds integrity for all platforms.
+    const asarIntegrityOk = process.platform === 'darwin';
     await flipFuses(electronPath, {
       version: FuseVersion.V1,
       // Keep RunAsNode for ELECTRON_RUN_AS_NODE tooling (cpm, smoke helpers).
-      // Tighten the rest for production.
       [FuseV1Options.RunAsNode]: true,
       [FuseV1Options.EnableCookieEncryption]: true,
       [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
       [FuseV1Options.EnableNodeCliInspectArguments]: false,
-      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
-      [FuseV1Options.OnlyLoadAppFromAsar]: true
+      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: asarIntegrityOk,
+      [FuseV1Options.OnlyLoadAppFromAsar]: false
     });
-    console.log('Electron fuses flipped successfully');
+    console.log(
+      'Electron fuses flipped successfully' +
+        (asarIntegrityOk ? ' (asar integrity on)' : ' (asar integrity skipped)')
+    );
   } catch (error) {
-    // Integrity fuse can fail on some packager layouts — do not fail the build.
+    // Do not fail the build — fuses are hardening, not required to ship.
     console.warn(
       'NOTE: flip-electron-fuses failed (continuing package):',
       error && error.message ? error.message : error
