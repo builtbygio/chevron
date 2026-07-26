@@ -567,6 +567,20 @@ module.exports = class AtomApplication extends EventEmitter {
       };
     };
 
+    // Electron BP P3.4: never accept invalid TLS certificates.
+    app.on(
+      'certificate-error',
+      (event, _webContents, url, error, _certificate, callback) => {
+        event.preventDefault();
+        console.warn(
+          `AtomApplication: denied certificate-error for ${String(url)}: ${String(
+            error
+          )}`
+        );
+        callback(false);
+      }
+    );
+
     this.on('application:quit', () => app.quit());
     this.on('application:new-window', () =>
       this.openPath(createOpenSettings({}))

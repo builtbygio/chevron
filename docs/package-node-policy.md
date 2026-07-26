@@ -55,10 +55,13 @@ CHEVRON_RESTRICT_PACKAGE_REQUIRES=1 ./out/Chevron-linux-x64/chevron --no-sandbox
 |-----|--------|
 | `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` | Log **one warning per caller path + module** for privileged requires |
 | `CHEVRON_RESTRICT_PACKAGE_REQUIRES=1` | **Throw** on privileged require from **community** packages (`~/.atom/packages`, `~/.chevron/packages`). Core + bundled (app.asar) still allowed |
+| `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` | **Disable** restrict (escape hatch) |
 
 Privileged module set: see `src/preload-natives.js` (`fs`, `child_process`, `electron`, `net`, …).
 
-**Default is off** — community packages keep working until authors migrate. Restrict is for dogfooding and CI experiments, not the default product path.
+**Default is on** (Electron BP P1.2). Main process sets the env from `core.restrictCommunityPackageRequires` (default `true`) unless the env is already set. Community packages that need raw Node must migrate to `atom.*` APIs or users must opt out explicitly.
+
+Threat model: [security-threat-model.md](./security-threat-model.md).
 
 ## Install / rebuild
 

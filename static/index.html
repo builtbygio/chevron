@@ -1,7 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Security-Policy" content="default-src * atom://*; img-src blob: data: * atom://*; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src blob: data: mediastream: * atom://*;">
+  <!--
+    CSP (Electron BP P1.1): page world has no Node; preload boots Atom.
+    script-src keeps 'unsafe-eval' for legacy compile-cache / package eval paths
+    still used by some grammars and community packages in the preload world
+    (page scripts themselves are empty — see preload.js).
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' atom: chevron: data: blob:; img-src 'self' atom: chevron: data: blob: https:; script-src 'self' 'unsafe-eval' atom: chevron:; style-src 'self' 'unsafe-inline' atom: chevron:; font-src 'self' atom: chevron: data:; connect-src 'self' atom: chevron: https: http: ws: wss:; media-src 'self' atom: chevron: data: blob: mediastream:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'self' atom: chevron: data: blob: https: http:;">
   <!--
     App bootstrap runs from static/preload.js (Node-capable isolated world).
     Do not load index.js as a page script — with contextIsolation the page has no require().

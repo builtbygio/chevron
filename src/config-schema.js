@@ -35,6 +35,27 @@ const configSchema = {
         description:
           'Follow symbolic links when searching files and when opening files with the fuzzy finder.'
       },
+      restrictCommunityPackageRequires: {
+        type: 'boolean',
+        default: true,
+        title: 'Restrict privileged requires in community packages',
+        description:
+          'When enabled (default), community packages under `~/.atom/packages` / `~/.chevron/packages` cannot `require` privileged Node modules (`fs`, `child_process`, `electron`, …). Core and bundled packages are exempt. Override with env `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0`. See [package-node-policy](docs/package-node-policy.md).'
+      },
+      fsIpcStrict: {
+        type: 'boolean',
+        default: true,
+        title: 'Strict filesystem IPC roots',
+        description:
+          'When enabled (default), package filesystem IPC only allows paths under project roots, config home, the app resource path, and the system temp directory. Disable if a trusted package needs broader absolute paths.'
+      },
+      enableExperimentalWebFeatures: {
+        type: 'boolean',
+        default: false,
+        title: 'Enable experimental web platform features',
+        description:
+          'Passes Chromium `--enable-experimental-web-platform-features`. Off by default (Electron security checklist). Requires relaunch. Env `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` also enables.'
+      },
       disabledPackages: {
         type: 'array',
         default: [],

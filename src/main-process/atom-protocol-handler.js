@@ -2,6 +2,10 @@ const { net, protocol } = require('electron');
 const fs = require('fs-plus');
 const path = require('path');
 const { pathToFileURL } = require('url');
+const {
+  pathContained,
+  relativePathFromAtomUrl
+} = require('./atom-protocol-path');
 
 // Handles requests with the 'atom' and 'chevron' protocols.
 //
@@ -14,6 +18,9 @@ const { pathToFileURL } = require('url');
 //   * $ATOM_HOME/packages
 //   * RESOURCE_PATH/node_modules
 //
+// Security (Electron BP P0.1): resolved files must stay under the chosen root.
+// Traversal via atom://../../… must not escape package/asset trees.
+
 module.exports = class AtomProtocolHandler {
   constructor(resourcePath, safeMode) {
     this.loadPaths = [];
@@ -53,30 +60,39 @@ module.exports = class AtomProtocolHandler {
   }
 
   resolveAtomUrl(url) {
-    let relativePath;
-    if (url.startsWith('atom://')) {
-      relativePath = path.normalize(url.slice('atom://'.length));
-    } else if (url.startsWith('chevron://')) {
-      relativePath = path.normalize(url.slice('chevron://'.length));
-    } else {
-      relativePath = path.normalize(url);
-    }
+    const relativePath = relativePathFromAtomUrl(url);
+    if (!relativePath) return undefined;
 
-    let filePath;
-    if (relativePath.indexOf('assets/') === 0) {
-      const assetsPath = path.join(process.env.ATOM_HOME, relativePath);
-      const stat = fs.statSyncNoException(assetsPath);
-      if (stat && stat.isFile()) filePath = assetsPath;
-    }
+    const atomHome = process.env.ATOM_HOME;
+    if (!atomHome) return undefined;
 
-    if (!filePath) {
-      for (let loadPath of this.loadPaths) {
-        filePath = path.join(loadPath, relativePath);
-        const stat = fs.statSyncNoException(filePath);
-        if (stat && stat.isFile()) break;
+    // assets/* only under $ATOM_HOME/assets
+    if (
+      relativePath === 'assets' ||
+      relativePath.startsWith('assets' + path.sep)
+    ) {
+      const assetsRoot = path.resolve(atomHome, 'assets');
+      const assetsPath = path.resolve(atomHome, relativePath);
+      if (pathContained(assetsRoot, assetsPath)) {
+        const stat = fs.statSyncNoException(assetsPath);
+        if (stat && stat.isFile()) return assetsPath;
       }
+      return undefined;
     }
 
-    return filePath;
+    for (const loadPath of this.loadPaths) {
+      if (!loadPath) continue;
+      const root = path.resolve(loadPath);
+      const candidate = path.resolve(root, relativePath);
+      if (!pathContained(root, candidate)) continue;
+      const stat = fs.statSyncNoException(candidate);
+      if (stat && stat.isFile()) return candidate;
+    }
+
+    return undefined;
   }
 };
+
+// Re-export helpers for tests / tooling.
+module.exports.pathContained = pathContained;
+module.exports.relativePathFromAtomUrl = relativePathFromAtomUrl;

@@ -82,12 +82,21 @@ module.exports = function() {
       bundledResourcesPath = path.join(packagedAppPath, 'resources');
     }
 
-    return copyNonASARResources(packagedAppPath, bundledResourcesPath).then(
-      () => {
+    return copyNonASARResources(packagedAppPath, bundledResourcesPath)
+      .then(async () => {
         console.log(`Application bundle created at ${packagedAppPath}`);
+        // Electron BP P3.2: production fuses (soft-fail inside helper).
+        try {
+          const flipFusesOnApp = require('./flip-electron-fuses');
+          await flipFusesOnApp(packagedAppPath);
+        } catch (error) {
+          console.warn(
+            'NOTE: fuse flip skipped:',
+            error && error.message ? error.message : error
+          );
+        }
         return packagedAppPath;
-      }
-    );
+      });
   });
 };
 

@@ -121,8 +121,9 @@ Workflow when changing a package:
 
 Authoritative plan: **`docs/security-phase-n.md`**. N5: **`docs/security-phase-n5.md`**.
 
-**Electron best-practices plan (post-audit):** **`docs/electron-best-practices-plan.md`**  
-P0 first: protocol path confinement, `atom-bw-id-call-sync` allowlist, `atom-wc-send` ownership; then CSP / community require policy; Phase S remains blocked on natives.
+**Electron best-practices plan:** **`docs/electron-best-practices-plan.md`**  
+**Threat model:** **`docs/security-threat-model.md`**  
+P0–P3 hardening track (protocol/IPC, CSP, default community require restrict, FS IPC roots, fuses); Phase S editor sandbox remains blocked on natives.
 
 Suggested order after N5.1:
 

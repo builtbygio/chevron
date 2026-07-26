@@ -32,7 +32,12 @@ function isAuditEnabled() {
 }
 
 function isRestrictEnabled() {
-  return envFlag('CHEVRON_RESTRICT_PACKAGE_REQUIRES');
+  // Electron BP P1.2: default ON. Explicit 0/false/no disables.
+  const v = process.env.CHEVRON_RESTRICT_PACKAGE_REQUIRES;
+  if (v === '0' || v === 'false' || v === 'no' || v === 'off') return false;
+  if (v === '1' || v === 'true' || v === 'yes' || v === 'on') return true;
+  // Unset → restrict (hardening default). Main process sets env from config.
+  return true;
 }
 
 function normalizePath(p) {

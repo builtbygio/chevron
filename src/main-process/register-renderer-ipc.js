@@ -22,8 +22,11 @@ const {
 
 let registered = false;
 
-// Hidden windows created for packages (e.g. github git workers)
-const createdWindows = new Map(); // windowId -> BrowserWindow
+// Hidden windows created for packages (e.g. github git workers).
+// Electron BP P0.2–P0.3: track ownership so IPC cannot drive arbitrary windows
+// or relay messages to arbitrary webContents.
+// windowId -> { win, managerWcId, workerWcId }
+const packageWorkers = new Map();
 
 // Phase N2.1: settings-view avatar cache lives only under userData/Cache/settings-view.
 const SETTINGS_VIEW_CACHE_MAX_BYTES = 5 * 1024 * 1024;
@@ -104,13 +107,26 @@ function browserWindowFromEvent(event) {
   return BrowserWindow.fromWebContents(event.sender);
 }
 
-function resolveWindow(windowId) {
-  return (
-    createdWindows.get(windowId) ||
-    BrowserWindow.fromId(windowId) ||
-    null
-  );
+function resolvePackageWorker(windowId) {
+  const meta = packageWorkers.get(windowId);
+  if (!meta) return null;
+  if (!meta.win || meta.win.isDestroyed()) return null;
+  return meta;
 }
+
+function packageWorkerByWorkerWcId(webContentsId) {
+  for (const meta of packageWorkers.values()) {
+    if (meta.workerWcId === webContentsId) return meta;
+  }
+  return null;
+}
+
+// Methods remote-compat may invoke on package worker BrowserWindows only.
+const PACKAGE_WORKER_WINDOW_METHODS = new Set([
+  'loadURL',
+  'destroy',
+  'isDestroyed'
+]);
 
 // Schemes the renderer is allowed to hand to shell.openExternal. The main
 // process is the real trust boundary here: the renderer-side link handler
@@ -155,8 +171,8 @@ module.exports = function registerRendererIpc(atomApplication) {
   if (registered) return;
   registered = true;
 
-  // Phase N2.2–N2.3 filesystem bridge (absolute paths only).
-  require('./register-fs-ipc')();
+  // Phase N2.2–N2.3 + P2.1 filesystem bridge (absolute paths + optional strict roots).
+  require('./register-fs-ipc')(atomApplication);
 
   // --- Boot / load settings (P0) ---------------------------------------------
 
@@ -602,7 +618,34 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.on('atom-wc-send', (event, webContentsId, channel, ...args) => {
+    // P0.3: not an open relay — only:
+    //  - send to self (same webContents),
+    //  - manager → its package worker,
+    //  - package worker → its manager.
     try {
+      const senderId = event.sender.id;
+      const targetId = webContentsId;
+      let allowed = senderId === targetId;
+
+      if (!allowed) {
+        const asWorkerTarget = packageWorkerByWorkerWcId(targetId);
+        if (asWorkerTarget && asWorkerTarget.managerWcId === senderId) {
+          allowed = true; // Manager → its worker
+        } else {
+          const asWorkerSender = packageWorkerByWorkerWcId(senderId);
+          if (asWorkerSender && asWorkerSender.managerWcId === targetId) {
+            allowed = true; // Worker → its manager
+          }
+        }
+      }
+
+      if (!allowed) {
+        console.warn(
+          `atom-wc-send: blocked channel=${String(channel)} from=${senderId} to=${targetId}`
+        );
+        return;
+      }
+
       const wc = webContents.fromId(webContentsId);
       if (wc && !wc.isDestroyed()) {
         wc.send(channel, ...args);
@@ -614,6 +657,23 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   ipcMain.on('atom-wc-is-destroyed-sync', (event, webContentsId) => {
     try {
+      // Own webContents always allowed; package workers by either peer.
+      const senderId = event.sender.id;
+      if (webContentsId !== senderId) {
+        const meta =
+          packageWorkerByWorkerWcId(webContentsId) ||
+          packageWorkerByWorkerWcId(senderId);
+        const related =
+          meta &&
+          (meta.workerWcId === webContentsId ||
+            meta.managerWcId === webContentsId ||
+            meta.workerWcId === senderId ||
+            meta.managerWcId === senderId);
+        if (!related) {
+          event.returnValue = true;
+          return;
+        }
+      }
       const wc = webContents.fromId(webContentsId);
       event.returnValue = !wc || wc.isDestroyed();
     } catch (error) {
@@ -659,11 +719,15 @@ module.exports = function registerRendererIpc(atomApplication) {
       // destroyed, and the closed/destroyed handlers below run exactly then.
       const winId = win.id;
       const wcId = win.webContents.id;
-      createdWindows.set(winId, win);
+      const managerWc = event.sender;
+      packageWorkers.set(winId, {
+        win,
+        managerWcId: managerWc.id,
+        workerWcId: wcId
+      });
 
       configurePackageWorkerWindow(win);
 
-      const managerWc = event.sender;
       const destroyWorker = () => {
         if (!win.isDestroyed()) win.destroy();
       };
@@ -673,7 +737,7 @@ module.exports = function registerRendererIpc(atomApplication) {
       managerWc.once('crashed', destroyWorker);
 
       win.on('closed', () => {
-        createdWindows.delete(winId);
+        packageWorkers.delete(winId);
         try {
           managerWc.removeListener('destroyed', destroyWorker);
           managerWc.removeListener('render-process-gone', destroyWorker);
@@ -708,12 +772,33 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.on('atom-bw-id-call-sync', (event, windowId, method, ...args) => {
-    const win = resolveWindow(windowId);
-    if (!win || win.isDestroyed()) {
+    // P0.2: package-worker windows only + method allowlist (no BrowserWindow.fromId).
+    if (!PACKAGE_WORKER_WINDOW_METHODS.has(method)) {
+      console.warn(
+        `atom-bw-id-call-sync: blocked method ${String(method)} on window ${windowId}`
+      );
+      event.returnValue = null;
+      return;
+    }
+
+    const meta = resolvePackageWorker(windowId);
+    if (!meta) {
       event.returnValue =
         method === 'isDestroyed' ? true : method === 'destroy' ? true : null;
       return;
     }
+
+    // Only the creating manager renderer may control the worker window.
+    if (meta.managerWcId !== event.sender.id) {
+      console.warn(
+        `atom-bw-id-call-sync: blocked ${String(method)} — not worker owner`
+      );
+      event.returnValue =
+        method === 'isDestroyed' ? true : method === 'destroy' ? true : null;
+      return;
+    }
+
+    const win = meta.win;
     try {
       if (method === 'isDestroyed') {
         event.returnValue = win.isDestroyed();
@@ -727,10 +812,7 @@ module.exports = function registerRendererIpc(atomApplication) {
       if (method === 'loadURL') {
         const targetUrl = args[0];
         // Phase N5: package workers may only load local file:// worker assets.
-        if (
-          createdWindows.has(windowId) &&
-          !isAllowedWorkerNavigationUrl(targetUrl)
-        ) {
+        if (!isAllowedWorkerNavigationUrl(targetUrl)) {
           console.warn(
             `AtomApplication: blocked package worker loadURL to ${String(
               targetUrl
@@ -741,11 +823,6 @@ module.exports = function registerRendererIpc(atomApplication) {
         }
         win.loadURL(targetUrl);
         event.returnValue = true;
-        return;
-      }
-      if (typeof win[method] === 'function') {
-        const result = win[method](...args);
-        event.returnValue = result === win ? true : result;
         return;
       }
       event.returnValue = null;
