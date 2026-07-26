@@ -9,10 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-07-26
+
+Language modernization, owned-package ownership, and Security Phase N close-out for the pre–Electron best-practices hardening track. Electron remains **43.1.0**.
+
 ### Fixed
 
 - **App icons:** regenerate channel PNGs/ICOs with true transparent corners (no white JPEG fringe); ship multi-size icons for Linux taskbar; improve `BrowserWindow` icon loading + `app.setDesktopName` for shell association
 - **settings-view + cpm:** `cpm view --json` returns apm-shaped metadata with top-level `version`; supports `--compatible`; owned settings-view null-safe on failed/missing pack (no `pack.version` throw)
+- **Electron 43 `isWebViewFocused` / `focusOnWebView`:** removed BrowserWindow APIs replaced with `webContents.isFocused()` / `webContents.focus()`; IPC window proxy falls back for DevTools methods
+- **Build / bootstrap noise:** `@atom/fuzzy-native` GCC 15+ `<cstdint>` + `Object::Set().Check()`; skip tree-sitter-typescript placeholder `binding.gyp`; fix nested `isbinaryfile` package `main`; skip custom V8 startup snapshot on Electron ≥43 (stock snapshots; `CHEVRON_FORCE_MKSNAPSHOT=1` to retry); force-rebuild natives with modern node-gyp only
 
 ### Security
 
@@ -24,13 +30,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **TypeScript 6:** package/runtime transpile uses `typescript@6.0.3` (`transpileModule`)
 - **Owned forks + CSON→JSON:** convert settings-view/tree-view off CoffeeScript; Tier-1 package keymaps/menus/snippets to JSON; monorepo keymaps/menus/grammars to JSON (user `config.cson`/`keymap.cson` still dual-supported)
 - **Zero first-party CoffeeScript:** convert Chevron `src/*.coffee` → TypeScript; monorepo specs/fixtures and in-repo packages (autoflow, deprecation-cop) off CoffeeScript; nine package specs/fixtures cleared; keep optional coffee compile-cache for community packages
-
 - **Phase N2.2–N2.4:** fuzzy-finder path probes, tree-view bulk fs via main IPC, github residual remote cleanup
 - **Phase N3.1:** preload natives inventory; package Node policy; editor session permission deny-list; optional require audit
 - **Phase N3.2:** opt-in `CHEVRON_RESTRICT_PACKAGE_REQUIRES=1` blocks privileged `require`s from community packages only (core/bundled exempt)
 - **Phase N4.1:** guest `<webview>` WebContents — deny window.open, restrict navigation schemes, deny permissions, default `chevron-guest` partition
 - **Bundled package ownership (Option B):** pin Tier-1 packages to `builtbygio` forks: `settings-view`, `tree-view`, `fuzzy-finder`, `github`, `autocomplete-plus`, `command-palette`, `find-and-replace`, `markdown-preview`, `notifications`, `snippets`, `spell-check`, `status-bar`, `tabs`
 - **bootstrap:** GCC 14+ oniguruma build fix (`patch-oniguruma-gyp.js`)
+
+### Added
+
+- **Electron best-practices plan:** [`docs/electron-best-practices-plan.md`](docs/electron-best-practices-plan.md) — P0 protocol/IPC allowlists through Phase S (next track after 0.5.0)
 
 ## [0.4.0] — 2026-07-22
 
@@ -124,6 +133,8 @@ Initial Chevron tree: Electron modernization, modern host bootstrap (`bootstrap-
 
 ---
 
-[Unreleased]: https://github.com/builtbygio/chevron/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/builtbygio/chevron/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/builtbygio/chevron/releases/tag/v0.5.0
+[0.4.0]: https://github.com/builtbygio/chevron/releases/tag/v0.4.0
 [0.3.0]: https://github.com/builtbygio/chevron/releases/tag/v0.3.0
 [0.2.0]: https://github.com/builtbygio/chevron/releases/tag/v0.2.0

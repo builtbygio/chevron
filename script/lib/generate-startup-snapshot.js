@@ -10,8 +10,8 @@ module.exports = function(packagedAppPath) {
   // linux-arm* / win-arm*: electron-mksnapshot is x64-only (cross tools run on
   // x64 hosts). Skip custom Atom startup blob; keep Electron stock snapshots.
   if (!hostCanRunMksnapshot()) {
-    console.warn(
-      `\nWARNING: skipping custom startup snapshot on ${process.platform}-${process.arch} — ` +
+    console.log(
+      `\nNOTE: skipping custom startup snapshot on ${process.platform}-${process.arch} — ` +
         'electron-mksnapshot does not run on this host. The packaged app will use ' +
         "Electron's stock V8 snapshots (normal boot, no snapshotResult optimisation).\n"
     );
@@ -25,9 +25,28 @@ module.exports = function(packagedAppPath) {
     '.skipped-unsupported-host'
   );
   if (fs.existsSync(mksnapshotSkippedMarker)) {
-    console.warn(
-      '\nWARNING: electron-mksnapshot was skipped at install time; ' +
+    console.log(
+      '\nNOTE: electron-mksnapshot was skipped at install time; ' +
         'using stock Electron V8 snapshots.\n'
+    );
+    return Promise.resolve();
+  }
+
+  // Electron 43 / V8 15: v8_context_snapshot_generator SIGTRAPs on Chevron's
+  // large custom startup blob (seen on linux-x64, Windows, Apple Silicon).
+  // Attempting mksnapshot only prints a hard Error + WARNING and still falls
+  // back to stock snapshots. Skip by default for a clean build log; set
+  // CHEVRON_FORCE_MKSNAPSHOT=1 to re-attempt generation.
+  const electronMajor = parseInt(
+    String(CONFIG.appMetadata.electronVersion || '').split('.')[0],
+    10
+  );
+  const forceMksnapshot = process.env.CHEVRON_FORCE_MKSNAPSHOT === '1';
+  if (Number.isFinite(electronMajor) && electronMajor >= 43 && !forceMksnapshot) {
+    console.log(
+      `\nNOTE: custom startup snapshot skipped on Electron ${CONFIG.appMetadata.electronVersion} ` +
+        '(V8 context snapshot generator is incompatible with this app blob). ' +
+        "Using Electron's stock V8 snapshots. Set CHEVRON_FORCE_MKSNAPSHOT=1 to retry.\n"
     );
     return Promise.resolve();
   }
@@ -382,8 +401,8 @@ module.exports = function(packagedAppPath) {
     // on Atom's custom blob (seen on Windows and Apple Silicon). Fall through
     // to the missing-binary soft-fail below so packaging still succeeds.
     if (mksnapshotResult.status !== 0) {
-      console.warn(
-        `\nWARNING: mksnapshot exited with ${mksnapshotResult.status}; ` +
+      console.log(
+        `\nNOTE: mksnapshot exited with ${mksnapshotResult.status}; ` +
           'checking for partial snapshot binaries…\n'
       );
     }
@@ -433,8 +452,8 @@ module.exports = function(packagedAppPath) {
     // optimization.
     const missing = resolvedBinaries.filter(binary => !binary.sourcePath);
     if (missing.length > 0) {
-      console.warn(
-        '\nWARNING: startup snapshot generation failed — the packaged app ' +
+      console.log(
+        '\nNOTE: startup snapshot generation failed — the packaged app ' +
           'will use Electron\'s stock V8 snapshots (slower startup, no ' +
           'snapshotResult). Missing: ' +
           missing.map(binary => binary.candidates.join('|')).join(', ') +

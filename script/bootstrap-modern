@@ -130,6 +130,9 @@ node "$SCRIPT_DIR/lib/patch-v8-api.js" "$REPO_ROOT"
 echo "Patching oniguruma gyp for GCC 14+…"
 node "$SCRIPT_DIR/lib/patch-oniguruma-gyp.js" "$REPO_ROOT"
 
+echo "Patching nested package.json metadata (isbinaryfile, etc.)…"
+node "$SCRIPT_DIR/lib/patch-dep-package-json.js" "$REPO_ROOT"
+
 # --- Step 3: rebuild natives for Electron ------------------------------------
 echo "Rebuilding native modules for Electron…"
 export ATOM_RESOURCE_PATH="$REPO_ROOT"
@@ -171,11 +174,10 @@ rebuild_package_modern() {
   fi
 }
 
-echo "Electron $ELECTRON_VERSION: host npm rebuild + modern gyp force list"
-# Do not pass --ignore-scripts here: install used ignore-scripts, so nothing
-# has .node yet. npm_config_runtime=electron is set above.
-(cd "$REPO_ROOT" && npm rebuild 2>&1) || \
-  echo "npm rebuild failed; will force per-package Electron rebuilds..."
+echo "Electron $ELECTRON_VERSION: modern node-gyp force rebuild of critical natives"
+# Skip blanket `npm rebuild`: host/app nested node-gyp is too old for Node 24
+# (read-only cflags crash) and prints hard errors even when the modern force
+# list below succeeds. Install used --ignore-scripts, so nothing has .node yet.
 
 echo "Force-rebuilding critical natives for Electron $ELECTRON_VERSION..."
 # keyboard-layout is required at runtime (smoke fails without keyboard-layout-manager.node).
@@ -195,8 +197,16 @@ do
 done
 
 echo "Force-rebuilding tree-sitter language bindings..."
+# tree-sitter-typescript ships comment-only placeholder binding.gyp files under
+# tsx/ and typescript/; only rebuild dirs whose binding.gyp is real JSON (starts
+# with '{'). The package root binding builds both language targets.
 while IFS= read -r _gyp; do
   [ -z "$_gyp" ] && continue
+  # Skip non-JSON placeholders (gyp would SyntaxError on '# comment' lines).
+  if ! head -c 1 "$_gyp" 2>/dev/null | grep -q '{'; then
+    echo "  skip placeholder binding.gyp: $_gyp"
+    continue
+  fi
   _dir="$(cd "$(dirname "$_gyp")" && pwd)"
   echo "  rebuild $_dir..."
   rebuild_package_modern "$_dir" || \

@@ -121,12 +121,17 @@ Workflow when changing a package:
 
 Authoritative plan: **`docs/security-phase-n.md`**. N5: **`docs/security-phase-n5.md`**.
 
+**Electron best-practices plan (post-audit):** **`docs/electron-best-practices-plan.md`**  
+P0 first: protocol path confinement, `atom-bw-id-call-sync` allowlist, `atom-wc-send` ownership; then CSP / community require policy; Phase S remains blocked on natives.
+
 Suggested order after N5.1:
 
 1. ~~N0–N5.1~~ **done** (guests sandboxed; package workers hardened; editor stays hackable)  
 2. ~~**Fold bootstrap patches** into hot forks~~ **done** (settings-view, tree-view, fuzzy-finder, github)  
-3. **Phase S prep** — move natives / package host redesign before editor `sandbox: true`  
-4. Optional: default-on require restrict; Task crawl → utility process; shrink `remote-compat`  
+3. **P0 Electron BP** — protocol + window/webContents IPC allowlists (`docs/electron-best-practices-plan.md`)  
+4. **P1** — CSP, experimental flag, community require default/policy  
+5. **Phase S prep** — move natives / package host redesign before editor `sandbox: true`  
+6. Optional: Task crawl → utility process; shrink `remote-compat`; fuses / ASAR integrity  
 
 **Dev policy env:**  
 - `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log  
