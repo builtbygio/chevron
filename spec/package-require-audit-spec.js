@@ -5,10 +5,13 @@ const {
   classifyCallerPath,
   baseModuleId,
   isAuditEnabled,
-  isRestrictEnabled
+  isRestrictEnabled,
+  isNativeBindingId,
+  classifyRequireId,
+  nativeAddonModuleIds
 } = require('../src/package-require-audit');
 
-describe('package-require-audit / N3.2 classifyCallerPath', function() {
+describe('package-require-audit / N3.2 + S1.0 classifyCallerPath', function() {
   it('classifies asar paths as bundled', function() {
     expect(
       classifyCallerPath(
@@ -62,6 +65,29 @@ describe('package-require-audit / N3.2 classifyCallerPath', function() {
     expect(baseModuleId('fs/promises')).toBe('fs');
     expect(baseModuleId('@atom/watcher')).toBe('@atom/watcher');
     expect(baseModuleId('./relative')).toBe(null);
+  });
+
+  it('detects native binding require ids', function() {
+    expect(isNativeBindingId('./build/Release/tree_sitter.node')).toBe(true);
+    expect(isNativeBindingId('/tmp/foo.node')).toBe(true);
+    expect(isNativeBindingId('keytar')).toBe(false);
+    expect(isNativeBindingId('./index.js')).toBe(false);
+  });
+
+  it('classifies require ids for policy', function() {
+    expect(classifyRequireId('fs')).toBe('privileged');
+    expect(classifyRequireId('child_process')).toBe('privileged');
+    expect(classifyRequireId('keytar')).toBe('native-addon');
+    expect(classifyRequireId('superstring')).toBe('native-addon');
+    expect(classifyRequireId('@atom/fuzzy-native')).toBe('native-addon');
+    expect(classifyRequireId('./x.node')).toBe('native-binding');
+    expect(classifyRequireId('lodash')).toBe(null);
+  });
+
+  it('exports native addon module ids from inventory', function() {
+    expect(nativeAddonModuleIds).toContain('superstring');
+    expect(nativeAddonModuleIds).toContain('keytar');
+    expect(nativeAddonModuleIds).toContain('@atom/watcher');
   });
 
   it('audit defaults off; restrict defaults on (P1.2)', function() {

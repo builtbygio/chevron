@@ -124,18 +124,31 @@ Workflow when changing a package:
 
 ### Phase S prep (primary next track)
 
-Authoritative background: **`docs/security-phase-n.md`**, **`docs/security-phase-n5.md`**, closed BP plan **`docs/electron-best-practices-plan.md`**.
+Authoritative plan: **`docs/security-phase-s.md`**.  
+Background: **`docs/security-phase-n.md`**, **`docs/security-phase-n5.md`**, closed BP **`docs/electron-best-practices-plan.md`**.  
+Inventory: **`src/preload-natives.js`**.
+
+| Stream | Status |
+|--------|--------|
+| S0 Inventory + plan | **Done** (this handoff) |
+| S1.0 Community native addon / `.node` block | **Done** (default with require restrict) |
+| S1.2 Package host design note | **Next** |
+| S2 Easy native relocation (main-only tags) | Pending |
+| S3 github → utilityProcess | Pending (large) |
+| S5 Option A spike vs Option C (sandbox may stay false) | Pending |
+| S6 Flip editor `sandbox: true` | **Blocked** on S1 dogfood + S5 decision |
+
+Recommended spine: **Option B** package-host isolation first; full Chromium sandbox is optional (Option C may be permanent for editor hot-path natives).
 
 1. ~~N0–N5.1~~ **done**  
 2. ~~Electron BP P0–P3 shippable~~ **done** (0.6.0)  
-3. **Phase S prep** — move/replace in-process natives (`src/preload-natives.js`); redesign package host so community code cannot load arbitrary `.node` in editor preload  
-4. Optional: migrate non-boot `sendSync` → `invoke` (inventory §11); shrink `remote-compat`  
-5. Optional: github workers → `utilityProcess`  
-6. Only then: editor `sandbox: true`
+3. ~~S0 + S1.0~~ **done**  
+4. **S1.2** package host design note → pick **S2** easy move or **S3** utilityProcess spike  
+5. **S5** decide sandbox strategy; only then S6  
 
 **Dev policy env:**  
-- `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log  
-- `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` — opt **out** of community privileged-require restrict (default is on)  
+- `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log privileged + native requires  
+- `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` — opt **out** of community privileged/native restrict (default is on)  
 - `CHEVRON_FS_IPC_STRICT=0` — opt out of strict FS IPC roots  
 - `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` — re-enable experimental Chromium features  
 
@@ -175,9 +188,9 @@ git status
 **Read first:**
 
 1. This file  
-2. `docs/electron-best-practices-plan.md` (closed; residual Phase S)  
-3. `docs/security-threat-model.md`  
-4. `docs/security-phase-n.md` (+ n5) for sandbox sequencing  
+2. `docs/security-phase-s.md` (active) + `src/preload-natives.js`  
+3. `docs/electron-best-practices-plan.md` (closed)  
+4. `docs/security-threat-model.md`  
 5. `src/main-process/register-renderer-ipc.js` (trust boundary)  
 
 ---

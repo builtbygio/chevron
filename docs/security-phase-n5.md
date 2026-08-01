@@ -55,9 +55,11 @@ After create:
 
 ## Phase S path (later)
 
+Authoritative plan: **[security-phase-s.md](./security-phase-s.md)** (prep active).
+
 1. Move or replace in-process natives listed in `src/preload-natives.js`.  
-2. Split package host so community code cannot load arbitrary `.node` in the editor preload.  
-3. Re-evaluate editor `sandbox: true` only after (1)–(2).  
+2. Split package host so community code cannot load arbitrary `.node` in the editor preload (S1.0 blocks community natives by default).  
+3. Re-evaluate editor `sandbox: true` only after S1 dogfood + Option A/C decision (S5).  
 
 ## Verify
 
