@@ -19,10 +19,10 @@
  * Natives that keep sandbox:false on the editor window: see
  * `src/preload-natives.js` and docs/security-phase-n3.md.
  *
- * Optional require policy (docs/package-node-policy.md):
- *   CHEVRON_AUDIT_PACKAGE_REQUIRES=1     — log privileged requires
- *   CHEVRON_RESTRICT_PACKAGE_REQUIRES=1  — block privileged requires from
- *       community packages only (~/.atom/packages); core/bundled still free
+ * Optional require policy (docs/package-node-policy.md, security-phase-s.md):
+ *   CHEVRON_AUDIT_PACKAGE_REQUIRES=1     — log privileged/native requires
+ *   CHEVRON_RESTRICT_PACKAGE_REQUIRES    — default ON: block community
+ *       privileged modules, native addons, and .node bindings; core/bundled free
  *
  * The page (index.html) intentionally loads no Node scripts.
  * Do not expose this preload (or Node) via contextBridge to the page world.

@@ -1,26 +1,36 @@
 'use strict';
 
 /**
- * Phase N3: optional audit / restrict of privileged requires from package code.
+ * Phase N3 + Phase S1: audit / restrict privileged and native requires
+ * from package code.
  *
- * Env (any of 1|true|yes):
- *   CHEVRON_AUDIT_PACKAGE_REQUIRES=1     — log privileged requires (once each)
- *   CHEVRON_RESTRICT_PACKAGE_REQUIRES=1  — throw for community packages only
+ * Env:
+ *   CHEVRON_AUDIT_PACKAGE_REQUIRES=1     — log privileged/native requires (once each)
+ *   CHEVRON_RESTRICT_PACKAGE_REQUIRES    — default ON (P1.2). 0/false/no disables.
+ *       When on, throw for **community** packages only.
  *
  * Restrict never blocks:
  *   - core (src/, static/)
  *   - bundled packages inside the app (app.asar / resources/app)
  *   - monorepo packages/ when running with resource-path to the repo
  *
- * Restrict only blocks T2 community installs under ~/.atom/packages (etc.).
- * Default is off so community packages keep working.
+ * Restrict blocks community (T2) from:
+ *   - privileged Node modules (fs, child_process, electron, …)
+ *   - known native addon packages (superstring, keytar, …) — Phase S1.0
+ *   - direct .node binding requires — Phase S1.0
+ *
+ * See docs/package-node-policy.md, docs/security-phase-s.md.
  */
 
 const Module = require('module');
 const path = require('path');
-const {privilegedModuleIds} = require('./preload-natives');
+const {
+  privilegedModuleIds,
+  nativeAddonModuleIds
+} = require('./preload-natives');
 
 const PRIVILEGED = new Set(privilegedModuleIds);
+const NATIVE_ADDONS = new Set(nativeAddonModuleIds);
 
 function envFlag(name) {
   const v = process.env[name];
@@ -137,6 +147,41 @@ function baseModuleId(id) {
   return id.split('/')[0];
 }
 
+/** Direct native binding require (path ends with .node). */
+function isNativeBindingId(id) {
+  if (typeof id !== 'string') return false;
+  const normalized = normalizePath(id).split('?')[0];
+  return normalized.endsWith('.node');
+}
+
+/**
+ * Classify a require id for policy.
+ * @returns {'privileged'|'native-addon'|'native-binding'|null}
+ */
+function classifyRequireId(id) {
+  if (isNativeBindingId(id)) return 'native-binding';
+  const base = baseModuleId(id);
+  if (!base) return null;
+  if (PRIVILEGED.has(base)) return 'privileged';
+  if (NATIVE_ADDONS.has(base)) return 'native-addon';
+  return null;
+}
+
+function blockError(id, caller, kind, reason) {
+  const msg =
+    `[chevron-require-restrict] blocked require(${JSON.stringify(id)}) ` +
+    `from community package (${caller || 'unknown'}) [${reason}]. ` +
+    `Use atom.* APIs / cpm dual-support surfaces; see docs/package-node-policy.md ` +
+    `and docs/security-phase-s.md. ` +
+    `Set CHEVRON_RESTRICT_PACKAGE_REQUIRES=0 to disable.`;
+  console.error(msg);
+  const err = new Error(msg);
+  err.code = 'CHEVRON_PRIVILEGED_REQUIRE_BLOCKED';
+  err.chevronReason = reason;
+  err.chevronCallerKind = kind;
+  return err;
+}
+
 function installPackageRequireAudit() {
   const audit = isAuditEnabled();
   const restrict = isRestrictEnabled();
@@ -148,18 +193,18 @@ function installPackageRequireAudit() {
   const seenLog = new Set();
 
   Module.prototype.require = function auditedRequire(id) {
-    const base = baseModuleId(id);
-    if (base && PRIVILEGED.has(base)) {
+    const reason = classifyRequireId(id);
+    if (reason) {
       const probe = new Error();
       const caller = packageishCaller(probe.stack);
       const kind = classifyCallerPath(caller);
 
       if (audit && caller) {
-        const key = `${caller}::${base}`;
+        const key = `${caller}::${id}::${reason}`;
         if (!seenLog.has(key)) {
           seenLog.add(key);
           console.warn(
-            `[chevron-require-audit] privileged require(${JSON.stringify(
+            `[chevron-require-audit] ${reason} require(${JSON.stringify(
               id
             )}) from ${caller} (${kind})`
           );
@@ -167,17 +212,7 @@ function installPackageRequireAudit() {
       }
 
       if (restrict && kind === 'community') {
-        const msg =
-          `[chevron-require-restrict] blocked require(${JSON.stringify(
-            id
-          )}) from community package ` +
-          `(${caller || 'unknown'}). ` +
-          `Use atom.* APIs / cpm dual-support surfaces; see docs/package-node-policy.md. ` +
-          `Unset CHEVRON_RESTRICT_PACKAGE_REQUIRES to disable.`;
-        console.error(msg);
-        const err = new Error(msg);
-        err.code = 'CHEVRON_PRIVILEGED_REQUIRE_BLOCKED';
-        throw err;
+        throw blockError(id, caller, kind, reason);
       }
     }
     return original.apply(this, arguments);
@@ -187,11 +222,9 @@ function installPackageRequireAudit() {
   if (audit) modes.push('audit');
   if (restrict) modes.push('restrict-community');
   console.log(
-    `[chevron-require-policy] enabled (${modes.join('+')}); privileged modules: ${[
-      ...PRIVILEGED
-    ]
-      .slice(0, 8)
-      .join(', ')}…`
+    `[chevron-require-policy] enabled (${modes.join(
+      '+'
+    )}); privileged + native-addon block for community packages`
   );
   return true;
 }
@@ -203,5 +236,8 @@ module.exports = {
   isRestrictEnabled,
   classifyCallerPath,
   baseModuleId,
-  privilegedModuleIds: [...privilegedModuleIds]
+  isNativeBindingId,
+  classifyRequireId,
+  privilegedModuleIds: [...privilegedModuleIds],
+  nativeAddonModuleIds: [...nativeAddonModuleIds]
 };

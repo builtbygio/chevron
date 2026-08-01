@@ -1,6 +1,6 @@
 # Security Phase N — narrow package Node surface
 
-**Status:** active epic — N0–N4.1 done; **N5.1 done** (secondary window hardening, hackable-compatible); Phase S (editor sandbox) still blocked on natives
+**Status:** **complete** for N0–N5.1; next track is **Phase S prep** — [security-phase-s.md](./security-phase-s.md) (editor sandbox still blocked on natives)
 **Depends on:** Phase R (remote removal) and Phase I (contextIsolation + preload boot) — both done.  
 **Follows:** `docs/remote-ipc-inventory.md` §4 / §9.  
 **Handoff:** `GROK.md`
@@ -142,8 +142,8 @@ Suggested order: **settings-view paths** → **fuzzy-finder spawn** → **tree-v
 
 1. ~~Sandbox guest windows first~~ **done N3/N4** (`sandbox: true` on `<webview>`)  
 2. ~~Harden package secondary BrowserWindows~~ **done N5.1** — Node kept (hackable); fixed prefs, file: nav, deny open/perms — [security-phase-n5.md](./security-phase-n5.md)  
-3. Core editor stays `sandbox: false` until natives move (`src/preload-natives.js` Phase S prerequisites)  
-4. Re-evaluate editor sandbox only as **Phase S** (not a one-shot flip)
+3. Core editor stays `sandbox: false` until Phase S prerequisites  
+4. **Phase S prep** — inventory, package-host isolation, utilityProcess path: **[security-phase-s.md](./security-phase-s.md)**
 
 ## Verification checklist
 

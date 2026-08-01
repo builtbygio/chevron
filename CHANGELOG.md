@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Phase S prep (S0 + S1.0):** [docs/security-phase-s.md](docs/security-phase-s.md) — natives inventory with migration classes; community packages blocked from requiring known native addons and direct `.node` bindings (same default-on restrict as privileged modules). Editor `sandbox: true` still blocked pending package-host work and Option A/C decision.
+
 ## [0.6.0] — 2026-08-01
 
 Electron best-practices hardening track complete for its terminal goals. Electron remains **43.1.0**. Phase S (editor sandbox, utilityProcess workers, wholesale `sendSync`→`invoke`) stays follow-on.

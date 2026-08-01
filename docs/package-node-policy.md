@@ -1,8 +1,8 @@
 # Package Node policy (Chevron)
 
-**Status:** Phase N3 product policy  
+**Status:** Phase N3 + Phase S1 product policy  
 **Audience:** package authors and Chevron maintainers  
-**Related:** [security-phase-n.md](./security-phase-n.md), [security-phase-n3.md](./security-phase-n3.md)
+**Related:** [security-phase-n.md](./security-phase-n.md), [security-phase-n3.md](./security-phase-n3.md), [security-phase-s.md](./security-phase-s.md)
 
 ## Dual-support forever (API names)
 
@@ -23,7 +23,7 @@ That is **not** a promise that packages get unrestricted Node forever.
 | **T1 Bundled** | Ship-in packages (github, tree-view, …) | Prefer `atom.*` / applicationDelegate IPC; no new `electron.remote` |
 | **T2 Community** | User-installed packages | **No guaranteed Node** long-term; use published `atom.*` APIs only |
 
-Today (0.4.x): T1/T2 still share the **preload Node world** for compatibility. Phase N is shrinking raw `fs` / `child_process` / `electron` use in bundled packages and documenting the end state.
+Today (0.6.x): T1/T2 still share the **preload Node world** for compatibility. Community (T2) privileged requires and **native addon** loads are **blocked by default**. Phase S prep redesigns the package host toward long-term isolation ([security-phase-s.md](./security-phase-s.md)).
 
 ## Do / don’t
 
@@ -53,13 +53,17 @@ CHEVRON_RESTRICT_PACKAGE_REQUIRES=1 ./out/Chevron-linux-x64/chevron --no-sandbox
 
 | Env | Effect |
 |-----|--------|
-| `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` | Log **one warning per caller path + module** for privileged requires |
-| `CHEVRON_RESTRICT_PACKAGE_REQUIRES=1` | **Throw** on privileged require from **community** packages (`~/.atom/packages`, `~/.chevron/packages`). Core + bundled (app.asar) still allowed |
+| `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` | Log **one warning per caller path + module** for privileged / native requires |
+| `CHEVRON_RESTRICT_PACKAGE_REQUIRES=1` | **Throw** on blocked requires from **community** packages (`~/.atom/packages`, `~/.chevron/packages`). Core + bundled (app.asar) still allowed |
 | `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` | **Disable** restrict (escape hatch) |
 
-Privileged module set: see `src/preload-natives.js` (`fs`, `child_process`, `electron`, `net`, …).
+**Blocked for community (default on):**
 
-**Default is on** (Electron BP P1.2). Main process sets the env from `core.restrictCommunityPackageRequires` (default `true`) unless the env is already set. Community packages that need raw Node must migrate to `atom.*` APIs or users must opt out explicitly.
+1. **Privileged modules** — `fs`, `child_process`, `electron`, `net`, … (`privilegedModuleIds` in `src/preload-natives.js`)
+2. **Native addon packages** — inventory names such as `superstring`, `keytar`, `@atom/fuzzy-native`, … (`nativeAddonModuleIds`)
+3. **Direct `.node` bindings** — e.g. `require('./binding.node')`
+
+**Default is on** (Electron BP P1.2 + Phase S1.0). Main process sets the env from `core.restrictCommunityPackageRequires` (default `true`) unless the env is already set. Community packages that need raw Node or natives must migrate to `atom.*` APIs or users must opt out explicitly.
 
 Threat model: [security-threat-model.md](./security-threat-model.md).
 
@@ -80,4 +84,5 @@ See `GROK.md` § Owned package CI.
 
 - Packages use Atom services and main IPC only
 - Guest content never has Node
-- Editor may enable `sandbox: true` only after natives move out of unsandboxed preload (Phase S)
+- Community cannot load natives or privileged Node (S1 — in progress)
+- Editor may enable `sandbox: true` only after Phase S prerequisites (`docs/security-phase-s.md`); full sandbox is optional if Option C (host isolation without Chromium sandbox) is chosen
