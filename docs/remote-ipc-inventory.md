@@ -335,18 +335,16 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 1. ~~**Electron ladder to current stable**~~ **done** (43.1.0 as of 2026-07-14).  
 2. ~~**IPC trust boundary hardening**~~ **done** (scheme filter, drop webContents `executeJavaScript` IPC, lock worker prefs).  
 3. ~~**Packaged github worker assets**~~ **done** — asar unpack includes `github/lib/**` for `file://` workers.  
-4. **Phase N** (active): narrow package Node surface — see **`docs/security-phase-n.md`**.  
-   - N2–**N5.1** done (guests sandboxed; package secondary windows hardened).  
-   - Tier-1 packages pinned to `builtbygio` forks.  
-   - Next: fold bootstrap patches into forks; Phase S prep (natives).  
-5. Phase S later: core editor sandbox still blocked on in-process natives.
+4. ~~**Phase N + Electron BP P0–P3**~~ **done** (0.5.0–0.6.0) — see `docs/electron-best-practices-plan.md`, `docs/security-threat-model.md`.  
+5. **Phase S prep** (next): migrate in-process natives; optional non-boot `sendSync`→`invoke` (§11); utilityProcess for github workers.  
+6. Phase S later: core editor `sandbox: true` still blocked on natives (`src/preload-natives.js`).
 
 ---
 
 ## 10. File index (remote)
 
 **Core:**  
-`static/index.js`, `src/get-window-load-settings.js`, `src/application-delegate.js`, `src/context-menu-manager.coffee`, `src/reopen-project-menu-manager.js`, `src/electron-shims.js`, `src/initialize-test-window.js`, `src/initialize-benchmark-window.js`, `exports/remote.js`, `src/main-process/start.js`, `src/main-process/atom-window.js`
+`static/index.js`, `src/get-window-load-settings.js`, `src/application-delegate.js`, `src/context-menu-manager.js`, `src/reopen-project-menu-manager.js`, `src/electron-shims.js`, `src/initialize-test-window.js`, `src/initialize-benchmark-window.js`, `exports/remote.js`, `src/main-process/start.js`, `src/main-process/atom-window.js`
 
 **Bundled:**  
 `github` (multiple), `settings-view`, `tabs`, `tree-view`, `atom-pathspec`, `devtron`, `atom-mocha-test-runner`
@@ -356,4 +354,23 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 
 ---
 
-*Sections 1–8 are historical inventory. §9 reflects implemented architecture as of 2026-07-13.*
+## 11. Remaining `sendSync` channels (Electron BP P2.2 — follow-on)
+
+**Status:** inventory only for the BP plan; wholesale migration is **Phase S prep**, not a release gate.
+
+Most boot and `remote-compat` paths still use `ipcMain.on` + `event.returnValue` (sync). Prefer `ipcMain.handle` / `invoke` only where the call site can become async without breaking Atom package API.
+
+| Area | Representative channels | Why still sync |
+|------|-------------------------|----------------|
+| Boot | `atom-window-load-settings-sync`, `atom-window-startup-markers-sync` | Must complete before first paint |
+| Window / webContents proxy | `atom-browser-window-call-sync`, `atom-web-contents-call-sync`, `atom-bw-id-call-sync`, `atom-wc-is-destroyed-sync`, `atom-get-current-window-id-sync`, `atom-get-web-contents-id-sync` | `remote-compat` live proxy |
+| Dialogs / display | `atom-show-message-box-sync`, `atom-get-primary-display-work-area-size-sync`, `atom-get-user-default-sync` | Sync Atom APIs |
+| App / clipboard / shell | `atom-app-get-*-sync`, `atom-clipboard-*-sync`, `atom-shell-beep-sync` | remote-compat |
+| Workers | `atom-create-browser-window-sync`, `atom-destroy-own-window-sync` | github package host |
+| FS IPC | `atom-fs-*-sync` family in `register-fs-ipc.js` | tree-view / fuzzy-finder path probes (strict roots since P2.1) |
+
+**Migration hints:** async dialogs first; non-boot clipboard/app getters next; never break `get-window-load-settings` without an inject-at-preload alternative.
+
+---
+
+*Sections 1–8 are historical inventory. §9 reflects architecture as of 2026-07-13; §11 added for 0.6.0 BP close-out.*

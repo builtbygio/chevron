@@ -9,9 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-08-01
+
+Electron best-practices hardening track complete for its terminal goals. Electron remains **43.1.0**. Phase S (editor sandbox, utilityProcess workers, wholesale `sendSync`→`invoke`) stays follow-on.
+
 ### Security
 
-- **Electron best practices P0–P3 (partial):** path-confined `atom://`/`chevron://`; package-worker-only `atom-bw-id-call-sync` + scoped `atom-wc-send`; tighter CSP; **default-on** community privileged-require restrict (`core.restrictCommunityPackageRequires`); experimental web features **off** by default; strict FS IPC roots (`core.fsIpcStrict`); guest `file:` root confinement; `nodeIntegrationInWorker: false`; `certificate-error` denied; production Electron fuses on package; threat model doc. Deferred: full `sendSync`→`invoke`, github `utilityProcess`, editor `sandbox: true` (Phase S). See [docs/electron-best-practices-plan.md](docs/electron-best-practices-plan.md).
+- **Electron best practices P0–P3 (shipped scope):** path-confined `atom://`/`chevron://`; package-worker-only `atom-bw-id-call-sync` + scoped `atom-wc-send`; tighter CSP; **default-on** community privileged-require restrict (`core.restrictCommunityPackageRequires`); experimental web features **off** by default; strict FS IPC roots (`core.fsIpcStrict`); guest `file:` root confinement; `nodeIntegrationInWorker: false`; `certificate-error` denied; production Electron fuses on package (ASAR integrity macOS-only); threat model doc. See [docs/electron-best-practices-plan.md](docs/electron-best-practices-plan.md) (plan **closed**).
+- **Follow-on (not this release):** full `sendSync`→`invoke` ([inventory §11](docs/remote-ipc-inventory.md)), github `utilityProcess` workers, editor `sandbox: true` (Phase S — blocked on natives).
+
+### Changed
+
+- Session handoff (`GROK.md`) and README status updated for **0.6.0** / Phase S prep as next track.
+- Electron best-practices plan marked complete; residual items sequenced under Phase S.
 
 ## [0.5.0] — 2026-07-26
 
@@ -137,7 +147,8 @@ Initial Chevron tree: Electron modernization, modern host bootstrap (`bootstrap-
 
 ---
 
-[Unreleased]: https://github.com/builtbygio/chevron/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/builtbygio/chevron/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/builtbygio/chevron/releases/tag/v0.6.0
 [0.5.0]: https://github.com/builtbygio/chevron/releases/tag/v0.5.0
 [0.4.0]: https://github.com/builtbygio/chevron/releases/tag/v0.4.0
 [0.3.0]: https://github.com/builtbygio/chevron/releases/tag/v0.3.0

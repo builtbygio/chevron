@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-07-22 (0.4.0)
+**Date of this handoff:** 2026-08-01 (0.6.0)
 
 ---
 
@@ -12,7 +12,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 | Horizon | Goal |
 |---------|------|
-| **Near term** | **Security Phase N** — shrink package Node surface; keep Atom package API |
+| **Near term** | **Phase S prep** — natives / package host redesign toward editor sandbox |
 | **Medium term** | Product depth: Git polish, optional AI, packages first-class |
 | **Long term** | Possible Avalonia rehost; keep hackable package spirit |
 
@@ -21,16 +21,18 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 ---
 
-## Current baseline (0.4.0)
+## Current baseline (0.6.0)
 
 | Item | Value |
 |------|--------|
-| Version | **0.4.0** |
+| Version | **0.6.0** |
 | Electron | **43.1.0** (ladder complete) |
 | Package / productName | `chevron` / **Chevron** |
 | Bundle ID | `dev.builtbygio.chevron` |
 | Security (page) | `contextIsolation: true`, `nodeIntegration: false` |
-| Security (preload) | Node + natives (superstring, pathwatcher, tree-sitter, …); `sandbox: false` |
+| Security (preload) | Node + natives; `sandbox: false` (hackable until Phase S) |
+| Community packages | Privileged `require` **restricted by default** |
+| FS IPC | Strict roots **on** by default (`core.fsIpcStrict`) |
 | Telemetry | Off — no metrics/exception-reporting; crash upload forced off |
 | Package manager | **cpm** (Electron-as-Node); **apm → cpm shim** |
 | Registry | **Pulsar** (`https://api.pulsar-edit.dev`); `CPM_REGISTRY_URL` override |
@@ -40,6 +42,29 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 ---
 
 ## What's done (recent epics)
+
+### Electron best-practices (P0–P3 shippable) — **complete in 0.6.0**
+
+Authoritative plan (closed): **`docs/electron-best-practices-plan.md`**.  
+Threat model: **`docs/security-threat-model.md`**.
+
+| Stream | Status |
+|--------|--------|
+| P0.1 Protocol path confinement | **Done** |
+| P0.2 bw-id method + ownership allowlist | **Done** |
+| P0.3 wc-send ownership | **Done** |
+| P1.1 CSP tighten | **Done** |
+| P1.2 Community require restrict default-on | **Done** |
+| P1.3 Experimental web features default off | **Done** |
+| P1.4 Threat model doc | **Done** |
+| P2.1 FS IPC strict roots | **Done** |
+| P2.2 sendSync → invoke | **Closed** (inventory only — `docs/remote-ipc-inventory.md` §11) |
+| P2.3 `nodeIntegrationInWorker: false` | **Done** |
+| P2.4 Guest `file:` roots | **Done** |
+| P3.2 Production Electron fuses | **Done** (ASAR integrity macOS-only) |
+| P3.4 `certificate-error` deny | **Done** |
+| P3.1 utilityProcess workers | **Follow-on** (github rewrite) |
+| P3.3 Editor `sandbox: true` | **Follow-on** (blocked on natives) |
 
 ### Electron + remote removal
 
@@ -66,32 +91,14 @@ Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
 - Chevron identity, icons, dual config home, multi-platform packages (0.2–0.3)
 - Settings UI + build patches force Pulsar (not dead atom.io)
 
-### Security Phase N (partial)
+### Security Phase N — **complete** (pre-BP)
 
 | Stream | Status |
 |--------|--------|
-| N0 hygiene / R+I / IPC harden | **Done** |
-| N1 github worker unpack | **Done** (live dogfood still useful) |
-| N2 shell IPC (openExternal / Finder / trash) | **Done** |
-| **N2.1 settings-view avatar cache → main IPC** | **Done in 0.4.0** |
-| **N2.2 fuzzy-finder UI path probes → main IPC** | **Done** (Task crawl/rg stays in Task) |
-| **N2.3 tree-view bulk fs → main IPC** | **Done** (`fs-via-main` + `register-fs-ipc`) |
-| **N2.4 github residual remote** | **Done** (path/webContents/menus; workers IPC) |
-| **N3.1 preload inventory + session perms + require audit** | **Done** |
-| **N3.2 opt-in community require restrict** | **Done** (`CHEVRON_RESTRICT_PACKAGE_REQUIRES=1`) |
-| **N4.1 guest WebContents nav + permissions** | **Done** |
-| **Tier-1 package forks** | **Pinned** to `builtbygio/{settings-view,tree-view,fuzzy-finder,github,autocomplete-plus,command-palette,find-and-replace,markdown-preview,notifications,snippets,spell-check,status-bar,tabs}` |
-| **settings-view pack.version / cpm view** | **Done** (fork + cpm `--compatible`) |
-| **N2 bootstrap patches folded into forks** | **Done** — settings-view `9d45250`, tree-view `92ec1f9`, fuzzy-finder `bb8c3b2`, github `41da885` (bootstrap scripts kept as no-op guards) |
-| **Nine owned packages audit** | **Done** — tabs remote DnD folded; openExternal on autocomplete-plus/notifications; find-and-replace symlink IPC; all nine: `repository` → builtbygio + `engines.chevron` |
-| **Owned-package CI model (Option B)** | **Done** — package forks: metadata-only CI (no Atom); **Chevron monorepo CI** is the integration gate |
-| **Nine package libs → TypeScript** | **Done** — mechanical lib/ Coffee+JS → `.ts`; CJS exports fixed |
-| **TypeScript package transpile** | **6.0.3** (`transpileModule`; TS 7 deferred — no stable API until 7.1) |
-| **Zero CoffeeScript (nine packages)** | **Done** — specs/fixtures converted; zero `.coffee` in nine forks |
-| **Zero CoffeeScript (Chevron first-party)** | **Done** |
-| **Owned forks coffee/CSON** | **Done** — settings-view + tree-view TS/JS; all Tier-1 CSON → JSON |
-| **First-party CSON → JSON** | **Done** — keymaps/menus/grammars/settings as JSON; user config still dual-supports `.cson` |
-| **N5.1 secondary package window hardening** | **Done** (workers: Node kept, prefs/nav/perms locked) |
+| N0–N5.1 | **Done** (guests sandboxed; package workers hardened; editor stays hackable) |
+| Tier-1 package forks | **Pinned** to `builtbygio/*` |
+| N2 patches folded into forks | **Done** |
+| Nine package libs → TypeScript + zero CoffeeScript first-party | **Done** |
 | Phase S editor sandbox | **Later** (blocked on natives — `src/preload-natives.js`) |
 
 ---
@@ -111,32 +118,26 @@ Workflow when changing a package:
 2. Bump SHA in Chevron `package.json` + lockfile  
 3. Open Chevron PR — CI there is the signal  
 
-`tabs` / `notifications` use metadata-only workflows after Atom installer CI died.
-
 ---
 
 ## What needs to be done next
 
-### Security Phase N → S
+### Phase S prep (primary next track)
 
-Authoritative plan: **`docs/security-phase-n.md`**. N5: **`docs/security-phase-n5.md`**.
+Authoritative background: **`docs/security-phase-n.md`**, **`docs/security-phase-n5.md`**, closed BP plan **`docs/electron-best-practices-plan.md`**.
 
-**Electron best-practices plan:** **`docs/electron-best-practices-plan.md`**  
-**Threat model:** **`docs/security-threat-model.md`**  
-P0–P3 hardening track (protocol/IPC, CSP, default community require restrict, FS IPC roots, fuses); Phase S editor sandbox remains blocked on natives.
-
-Suggested order after N5.1:
-
-1. ~~N0–N5.1~~ **done** (guests sandboxed; package workers hardened; editor stays hackable)  
-2. ~~**Fold bootstrap patches** into hot forks~~ **done** (settings-view, tree-view, fuzzy-finder, github)  
-3. **P0 Electron BP** — protocol + window/webContents IPC allowlists (`docs/electron-best-practices-plan.md`)  
-4. **P1** — CSP, experimental flag, community require default/policy  
-5. **Phase S prep** — move natives / package host redesign before editor `sandbox: true`  
-6. Optional: Task crawl → utility process; shrink `remote-compat`; fuses / ASAR integrity  
+1. ~~N0–N5.1~~ **done**  
+2. ~~Electron BP P0–P3 shippable~~ **done** (0.6.0)  
+3. **Phase S prep** — move/replace in-process natives (`src/preload-natives.js`); redesign package host so community code cannot load arbitrary `.node` in editor preload  
+4. Optional: migrate non-boot `sendSync` → `invoke` (inventory §11); shrink `remote-compat`  
+5. Optional: github workers → `utilityProcess`  
+6. Only then: editor `sandbox: true`
 
 **Dev policy env:**  
 - `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log  
-- `CHEVRON_RESTRICT_PACKAGE_REQUIRES=1` — block community privileged requires
+- `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` — opt **out** of community privileged-require restrict (default is on)  
+- `CHEVRON_FS_IPC_STRICT=0` — opt out of strict FS IPC roots  
+- `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` — re-enable experimental Chromium features  
 
 ### Optional hygiene
 
@@ -174,10 +175,10 @@ git status
 **Read first:**
 
 1. This file  
-2. `docs/security-phase-n.md` (+ n2 / n3)  
-3. `docs/cpm-cutover.md`  
-4. `src/main-process/register-renderer-ipc.js` (trust boundary)  
-5. `script/lib/patch-packages-remote-ipc.js` (bundled package patches)  
+2. `docs/electron-best-practices-plan.md` (closed; residual Phase S)  
+3. `docs/security-threat-model.md`  
+4. `docs/security-phase-n.md` (+ n5) for sandbox sequencing  
+5. `src/main-process/register-renderer-ipc.js` (trust boundary)  
 
 ---
 
@@ -195,6 +196,7 @@ git status
 | GitHub workers | Still Node + `contextIsolation: false` (trusted hidden windows) |
 | Packaged github `renderer.html` | Unpack `github/lib/**` in `package-application.js` |
 | Custom mksnapshot on E43 | Soft-fail; stock V8 snapshots |
+| Windows ASAR integrity fuse | Leave off — FATAL without packager-embedded resources |
 
 ---
 
@@ -206,7 +208,8 @@ git status
 - [x] No metrics / atom.io auto-update by default  
 - [x] Multi-platform CI (macOS, Linux, Windows)  
 - [x] cpm Phases 0–4 + Pulsar settings  
-- [ ] Phase N: privileged package paths on IPC / Atom services (in progress)  
+- [x] Phase N + Electron BP shippable defaults (protocol/IPC/CSP/require/FS/fuses)  
+- [ ] Phase S: editor sandbox after natives migration  
 - [ ] Package migration notes for community authors (Node not guaranteed long-term)  
 
 ---
