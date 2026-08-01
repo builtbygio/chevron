@@ -1,7 +1,7 @@
 # Chevron security threat model
 
-**Status:** living doc (Electron BP P1.4)  
-**Related:** [electron-best-practices-plan.md](./electron-best-practices-plan.md), [package-node-policy.md](./package-node-policy.md), [security-phase-n.md](./security-phase-n.md)
+**Status:** living doc (Electron BP complete as of 0.6.0)  
+**Related:** [electron-best-practices-plan.md](./electron-best-practices-plan.md) (closed), [package-node-policy.md](./package-node-policy.md), [security-phase-n.md](./security-phase-n.md)
 
 ## Goals
 
