@@ -20,7 +20,7 @@
 
 ### Option 2 — Drop Coffee — **shipped**
 
-- Bootstrap decaffeinates `autocomplete-atom-api`, `autocomplete-css`, `bookmarks`, `wrap-guide` (`script/patches/decaffeinated-bundled-packages/`).
+- Bootstrap decaffeinates `autocomplete-chevron-api`, `autocomplete-css`, `bookmarks`, `wrap-guide` (`script/patches/decaffeinated-bundled-packages/`).
 - `src/coffee-script.js` always errors on compile.
 - cpm warns on install if runtime `.coffee` is present.
 

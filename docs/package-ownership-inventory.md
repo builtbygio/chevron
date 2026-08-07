@@ -2,94 +2,69 @@
 
 **Status:** living inventory  
 **Source of truth for pins:** root [`package.json`](../package.json) `dependencies`  
-**Modernization process:** [owned-package-modernization-checklist.md](./owned-package-modernization-checklist.md)
+**Modernization process:** [owned-package-modernization-checklist.md](./owned-package-modernization-checklist.md)  
+**Pin guard:** `script/ci/package-pin-policy.test.js` (fails CI if owned packages regress to `atom/*`)
 
 ## Summary (current)
 
 | Class | Count | Policy |
 |-------|------:|--------|
-| **Owned** (`builtbygio/*` git pins) | 13 | Primary maintenance + security patches |
-| **Upstream Atom** (`atom/*` git pins) | 52 | Unmaintained; SHA pins only — bit-rot / supply-chain risk |
+| **Owned** (`builtbygio/*` git pins) | **32** | Primary maintenance + security patches |
+| **Upstream Atom** (`atom/*` git pins) | **33** | Almost all `language-*` — SHA pins only |
 | **In-repo** (`file:packages/*`) | 29 | Monorepo packages (themes, about, welcome, natives, …) |
 | **npm registry** (semver / file natives) | rest | Host npm / Electron rebuild |
 
-## Owned forks (`builtbygio/*`) — keep current
+## Owned forks (`builtbygio/*`)
 
-| Package | Role | Notes |
-|---------|------|--------|
-| autocomplete-plus | Editor | TS lib; openExternal via applicationDelegate |
-| command-palette | Core UI | Owned |
-| find-and-replace | Editor | Symlink probes via IPC |
-| fuzzy-finder | Core | Path probes via main |
-| github | Git / GitHub | Residual remote cleanup; workers still Node BWs (Phase S) |
-| markdown-preview | Preview | HTML/markdown — SCA priority (`dompurify`/`marked`) |
-| notifications | Core UI | Owned |
-| settings-view | Settings / install | Pulsar registry; avatar cache IPC |
-| snippets | Editor | Owned |
-| spell-check | Editor | Owned |
-| status-bar | Core UI | Owned |
-| tabs | Core UI | Cross-window DnD without remote |
-| tree-view | FS UI | Bulk fs via main IPC |
+| Package | Notes |
+|---------|--------|
+| archive-view | Next-tier (#80) |
+| **autocomplete-chevron-api** | Renamed from `autocomplete-atom-api`; pin `af35f1f` |
+| autocomplete-css | Next-tier; bootstrap decaffeinate residual coffee if present |
+| autocomplete-html | Next-tier |
+| autocomplete-plus | Babel-prefix drop pin |
+| autocomplete-snippets | Next-tier |
+| autosave | Next-tier |
+| background-tips | Next-tier |
+| bookmarks | Decaffeinate patch for main |
+| bracket-matcher | Next-tier |
+| command-palette | Babel drop pin |
+| encoding-selector | Next-tier |
+| find-and-replace | Babel drop pin |
+| fuzzy-finder | Path probes via main |
+| github | Git workers utilityProcess (Phase S) |
+| image-view | Next-tier |
+| keybinding-resolver | Debabel patch |
+| markdown-preview | SCA priority (`dompurify`/`marked`) |
+| notifications | Owned |
+| open-on-github | Next-tier |
+| package-generator | Next-tier |
+| settings-view | Babel drop pin; Pulsar registry |
+| snippets | Owned |
+| spell-check | Owned |
+| status-bar | Owned |
+| styleguide | Debabel patch |
+| symbols-view | Debabel patch |
+| tabs | Owned |
+| timecop | Debabel patch |
+| tree-view | Babel drop pin |
+| whitespace | Next-tier |
+| wrap-guide | Decaffeinate patch |
 
-## Risk classes for remaining `atom/*` pins
+## Remaining `atom/*` pins
 
-| Risk | Meaning | Default action |
-|------|---------|----------------|
-| **high-touch** | Node, network, HTML preview, or security-sensitive UI | Fork next when touching |
-| **medium-ui** | Core editor UI, low native surface | Fork when fixing Electron breakages |
-| **low-grammar** | TextMate/tree language packages | Leave on SHA; re-pin only if broken |
+### low-grammar (defer — #79)
 
-### high-touch / medium (fork queue)
+All `language-*` packages pinned to `atom/*` (except in-repo `language-rust-bundled`). Action: **leave** on SHA; re-pin or fork only for syntax regressions.
 
-Prefer forking when any of: Electron breakage, SCA hit, or security patch needed.
+## Process
 
-| Package | SHA (short) | Risk | Suggested action |
-|---------|-------------|------|------------------|
-| archive-view | `762c5b6` | medium-html | Fork if archive CVE / ls-archive issues |
-| image-view | `4b5eb10` | medium-html | Fork if guest/file handling issues |
-| styleguide | `aa4f682` | medium-html | Low priority product surface |
-| open-on-github | `c12ffbe` | medium-node | Network + shell; fork when next touch |
-| package-generator | `5c45f80` | medium-node | Generates packages; fork if used in docs |
-| symbols-view | `36c4dd4` | medium-node | ctags / process; fork if rebuild pain |
-| timecop | `f7d9543` | medium-node | Devtools-ish; can lag |
-| autocomplete-atom-api | `f772a3f` | medium-editor | Bootstrap decaffeinate (#62); fork when next touch |
-| autocomplete-css | `5307928` | medium-editor | Bootstrap decaffeinate (#62); fork when next touch |
-| autocomplete-html | `cee2467` | medium-editor | Leave until break |
-| autocomplete-snippets | `2da0e23` | medium-editor | Leave until break |
-| autosave | `129cbb9` | medium-ui | Leave until break |
-| background-tips | `e54189c` | medium-ui | Leave until break |
-| bookmarks | `35363fb` | medium-ui | Bootstrap decaffeinate (#62); fork when next touch |
-| bracket-matcher | `d07c17c` | medium-ui | Leave until break |
-| encoding-selector | `e445c69` | medium-ui | Leave until break |
-| keybinding-resolver | `c65b0fb` | medium-ui | Leave until break |
-| whitespace | `53d5ba9` | medium-ui | Leave until break |
-| wrap-guide | `6a4f577` | medium-ui | Bootstrap decaffeinate (#62); fork when next touch |
-
-### low-grammar (defer)
-
-All `language-*` packages pinned to `atom/*` (except in-repo `language-rust-bundled`). Action: **leave** on SHA; re-pin only for syntax regressions. Full list is the `language-*` entries in root `package.json` dependencies (34 packages).
-
-## Workflow when forking
-
-1. Create `builtbygio/<package>` from the pinned commit  
-2. Apply Chevron patches (no `remote`, IPC, Pulsar as needed)  
-3. Set `repository` + `engines.chevron`  
-4. Bump SHA in Chevron `package.json` + lockfile  
-5. Land via monorepo CI (bootstrap → build → smoke)  
-
-Package-repo CI stays metadata-only (see [package-node-policy.md](./package-node-policy.md)).
-
-## Next ownership tranche (recommended)
-
-Order for proactive forks (not blocking 0.6.x):
-
-1. **archive-view** / **image-view** — content handlers  
-2. **open-on-github** / **symbols-view** — process + network  
-3. **bracket-matcher** / **whitespace** — high daily use if Electron breaks  
-
-Language packs remain last unless a grammar blocks smoke.
+1. **Never** change an owned package’s git host from `builtbygio` → `atom` when only bumping a SHA.  
+2. Renames (e.g. `autocomplete-atom-api` → `autocomplete-chevron-api`) must update: dep key, `packageDependencies`, `require()`, fork `package.json` `name`, bootstrap patches, lockfile, and this inventory in the **same** PR.  
+3. Pin-policy CI enforces the owned list in `script/ci/package-pin-policy.test.js`.
 
 ## Related
 
 - [sca-runtime-inventory.md](./sca-runtime-inventory.md)  
 - [package-node-policy.md](./package-node-policy.md)  
+- [owned-package-modernization-checklist.md](./owned-package-modernization-checklist.md)  

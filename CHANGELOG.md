@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README / CONTRIBUTING license links point at `LICENSE.md`; CONTRIBUTING workflow documents default branch `master` (not `main`).
 - Win32 auto-updater `update-downloaded` release URL uses the configured feed / GitHub releases instead of `https://atom.io`.
 
+### Fixed
+
+- **Restore builtbygio package pins** after #81 accidentally rewrote several ownership URLs back to `atom/*`. Land **`autocomplete-chevron-api`** rename end-to-end (dep key, packageDependencies, require, fork `name`, decaffeinate patch). Pin-policy CI test prevents regressions.
+
 ### Changed
 
 - **#62 Options 2–3 — drop CoffeeScript and Babel 5 runtime transpile:** remove `coffee-script` and `babel-core@5` from app dependencies. Bootstrap decaffeinates remaining Coffee `lib/` packages and applies precompiled plain JS for atom/* babel-prefix packages; owned builtbygio forks (settings-view, find-and-replace, autocomplete-plus, command-palette, tree-view) and monorepo `packages/*` are precompiled at source. Compile-cache refuses `.coffee` / babel opt-in prefixes with migration errors; cpm warns on install. TypeScript path unchanged. See [docs/babel-coffee-isolation-plan.md](docs/babel-coffee-isolation-plan.md).

@@ -12,7 +12,7 @@ require('./module-cache');
 if (global.isGeneratingSnapshot) {
   require('about');
   require('archive-view');
-  require('autocomplete-atom-api');
+  require('autocomplete-chevron-api');
   require('autocomplete-css');
   require('autocomplete-html');
   require('autocomplete-plus');

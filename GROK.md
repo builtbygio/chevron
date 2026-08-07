@@ -133,7 +133,8 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 1. **#58** — fork next-tier `atom/*` packages  
 2. **#57** — full Jasmine suite on CI (nightly / opt-in)  
 3. **#62** — Coffee + Babel 5 **runtime dropped** (Options 2–3); TypeScript remains  
-4. Optional: package host **v2**, S4 sendSync→invoke  
+4. **Atom→Chevron rename program** — pins restored; `autocomplete-chevron-api` landed; next: `global.chevron` / `require('chevron')` aliases (see session plan)  
+5. Optional: package host **v2**, S4 sendSync→invoke  
 
 **Dev policy env:**  
 - `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log privileged + native requires  
