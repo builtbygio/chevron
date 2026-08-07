@@ -40,12 +40,17 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 
 | Doc | Purpose |
 |-----|---------|
+| [security-threat-model.md](./security-threat-model.md) | Trust tiers + residual risk |
+| [security-phase-s.md](./security-phase-s.md) | Phase S (editor sandbox / package host) — active |
+| [electron-best-practices-plan.md](./electron-best-practices-plan.md) | BP P0–P3 (closed at 0.6.0) |
 | [security-phase-n.md](./security-phase-n.md) | Phase N plan (package Node surface) |
 | [security-phase-n2.md](./security-phase-n2.md) | N2 package shell / fs IPC |
 | [security-phase-n3.md](./security-phase-n3.md) | N3 preload privilege + guests |
 | [security-phase-n4.md](./security-phase-n4.md) | N4 guest WebContents polish |
 | [security-phase-n5.md](./security-phase-n5.md) | N5 secondary windows; Phase S path (hackable-compatible) |
 | [package-node-policy.md](./package-node-policy.md) | Package author Node policy |
+| [package-ownership-inventory.md](./package-ownership-inventory.md) | Owned vs `atom/*` pins + fork queue |
+| [sca-runtime-inventory.md](./sca-runtime-inventory.md) | npm audit prioritisation (runtime vs test) |
 | [remote-ipc-inventory.md](./remote-ipc-inventory.md) | Historical remote/IPC map |
 
 ## Other

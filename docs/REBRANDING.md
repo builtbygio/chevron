@@ -1,6 +1,6 @@
 # Chevron rebranding
 
-This document supersedes the historical AtomNova rebrand checklist.
+This document is the rebrand record. The old root `MIGRATION-CHECKLIST.md` (AtomNova intermediate) was removed; use this file + [CHANGELOG.md](../CHANGELOG.md) instead.
 
 ## Decisions (locked)
 

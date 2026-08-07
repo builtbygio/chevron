@@ -13,15 +13,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Phase S prep (S0 + S1.0):** [docs/security-phase-s.md](docs/security-phase-s.md) — natives inventory with migration classes; community packages blocked from requiring known native addons and direct `.node` bindings (same default-on restrict as privileged modules). Editor `sandbox: true` still blocked pending package-host work and Option A/C decision.
 - **Repo audit P0 hygiene:** real [SECURITY.md](SECURITY.md) (supported 0.6.x, private disclosure, residual-risk scope); Help menu no longer opens dead atom.io / `atom/atom` URLs.
+- **Repo audit P1:** package ownership inventory, SCA runtime prioritisation, package-require-audit golden tests in CI, `async@3.2.6` (prototype-pollution range), auto-update payload no longer hardcodes atom.io.
 
 ### Fixed
 
 - README / CONTRIBUTING license links point at `LICENSE.md`; CONTRIBUTING workflow documents default branch `master` (not `main`).
+- Win32 auto-updater `update-downloaded` release URL uses the configured feed / GitHub releases instead of `https://atom.io`.
 
 ### Changed
 
 - **Dockerfile** replaced: Ubuntu 24.04 + Node 24 + Python 3.12 (no Python 2 / Atom-era bootstrap). See comments in `Dockerfile` for usage.
 - Help menus: removed obsolete “Terms of Use” (atom.io product ToS); “View License” remains for in-app license text.
+- Removed stale root `MIGRATION-CHECKLIST.md` (AtomNova); see [docs/REBRANDING.md](docs/REBRANDING.md).
+- CI: fast `unit-and-cpm` job (`cpm` tests + `script/ci/package-require-audit.test.js`). Full Jasmine still optional / local (see CI workflow comments).
+- Docs: [package-ownership-inventory.md](docs/package-ownership-inventory.md), [sca-runtime-inventory.md](docs/sca-runtime-inventory.md); package-node-policy classification edge cases.
 
 ## [0.6.0] — 2026-08-01
 
