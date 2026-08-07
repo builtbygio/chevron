@@ -4,16 +4,32 @@
  * Integration: fork git-utility-host as a real child (IPC path) and run dugite.
  * Simulates utilityProcess messaging without Electron.
  *
+ * Requires dugite in node_modules (full bootstrap, or CI step that installs it).
  * Run: node --test script/ci/git-utility-host-integration.test.js
  */
 
-const { describe, it } = require('node:test');
+const { describe, it, before } = require('node:test');
 const assert = require('assert');
 const path = require('path');
 const { fork } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const HOST = path.join(ROOT, 'src/main-process/workers/git-utility-host.js');
+
+function resolveDugite() {
+  try {
+    return require.resolve('dugite', {
+      paths: [
+        path.join(ROOT, 'node_modules'),
+        path.join(ROOT, 'node_modules', 'github', 'node_modules')
+      ]
+    });
+  } catch (error) {
+    return null;
+  }
+}
+
+const DUGITE_PATH = resolveDugite();
 
 function forkHost() {
   return fork(HOST, [], {
@@ -26,11 +42,30 @@ function forkHost() {
 
 function onceMessage(child, predicate, timeoutMs = 15000) {
   return new Promise((resolve, reject) => {
+    const stderr = [];
+    if (child.stderr) {
+      child.stderr.on('data', chunk => stderr.push(String(chunk)));
+    }
     const timer = setTimeout(() => {
       cleanup();
-      reject(new Error('timeout waiting for host message'));
+      reject(
+        new Error(
+          `timeout waiting for host message\nstderr: ${stderr.join('')}`
+        )
+      );
     }, timeoutMs);
     function onMessage(msg) {
+      if (msg && msg.type === 'host-error') {
+        cleanup();
+        reject(
+          new Error(
+            `host-error: ${msg.data && msg.data.message}\n${(msg.data &&
+              msg.data.stack) ||
+              ''}\nstderr: ${stderr.join('')}`
+          )
+        );
+        return;
+      }
       if (predicate(msg)) {
         cleanup();
         resolve(msg);
@@ -38,7 +73,11 @@ function onceMessage(child, predicate, timeoutMs = 15000) {
     }
     function onExit(code) {
       cleanup();
-      reject(new Error(`host exited early with code ${code}`));
+      reject(
+        new Error(
+          `host exited early with code ${code}\nstderr: ${stderr.join('')}`
+        )
+      );
     }
     function cleanup() {
       clearTimeout(timer);
@@ -50,13 +89,13 @@ function onceMessage(child, predicate, timeoutMs = 15000) {
   });
 }
 
-describe('git-utility-host integration (dugite)', () => {
+describe('git-utility-host integration (dugite)', { skip: !DUGITE_PATH }, () => {
+  before(() => {
+    assert.ok(DUGITE_PATH, 'dugite must be resolvable for integration tests');
+  });
+
   it('init → renderer-ready → git status via dugite', async () => {
     const child = forkHost();
-    const stderr = [];
-    if (child.stderr) {
-      child.stderr.on('data', chunk => stderr.push(chunk.toString()));
-    }
 
     try {
       await onceMessage(child, m => m && m.type === 'host-booted');
@@ -97,7 +136,7 @@ describe('git-utility-host integration (dugite)', () => {
       assert.strictEqual(
         result.data.results.exitCode,
         0,
-        `git status failed: ${result.data.results.stderr || ''} ${stderr.join('')}`
+        `git status failed: ${result.data.results.stderr || ''}`
       );
       assert.ok(result.data.results.timing);
     } finally {

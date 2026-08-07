@@ -45,6 +45,11 @@ jobs:
           # Live Pulsar hits are useful; allow skip if registry is down.
           CPM_SKIP_LIVE_REGISTRY: '0'
 
+      # Root node_modules is not bootstrapped on this job; install only what the
+      # git-utility-host integration test needs (dugite pulls a platform git binary).
+      - name: Install dugite for git-utility-host integration
+        run: npm install --no-save --no-package-lock dugite@1.92.0 tree-kill@1.2.2
+
       - name: package-require-audit + legacy-transpile + utility-worker unit tests
         run: |
           node --test script/ci/package-require-audit.test.js

@@ -88,7 +88,18 @@ function handleInit(msg) {
   };
   operationCountLimit = parseInt(msg.operationCountLimit, 10) || 10;
   averageTracker = new AverageTracker({ limit: operationCountLimit });
-  ensureDeps();
+  try {
+    ensureDeps();
+  } catch (error) {
+    post({
+      type: 'host-error',
+      data: {
+        message: `Failed to load dugite: ${error && error.message}`,
+        stack: error && error.stack
+      }
+    });
+    return;
+  }
   post({
     type: 'renderer-ready',
     sourceWebContentsId: initConfig.syntheticWebContentsId,
