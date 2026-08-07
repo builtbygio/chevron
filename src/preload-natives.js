@@ -182,22 +182,33 @@ module.exports = {
       notes: 'will-attach-webview + N4 nav/permissions (chevron-guest partition)'
     },
     {
-      surface: 'package secondary BrowserWindow (github workers)',
-      sandbox: false,
+      surface: 'package git workers (github)',
+      sandbox: 'n/a (utilityProcess)',
       node: true,
       notes:
-        'Node kept for dugite; fixed prefs, file: nav only, deny window.open/perms (N5.1); Phase S3 → utilityProcess'
+        'Phase S3 complete: dugite in utilityProcess by default; Node BrowserWindow only via emergency env'
     }
   ],
 
-  /** Ordered steps before considering editor sandbox:true (Phase S). */
+  /**
+   * Phase S product decision (S5/S6): Option C — editor stays sandbox:false.
+   * See docs/security-phase-s-decision.md.
+   */
+  phaseSDecision: {
+    option: 'C',
+    editorSandbox: false,
+    rationale:
+      'Hot-path natives (superstring, tree-sitter, oniguruma, pathwatcher) remain in editor preload; Chromium sandbox would require multi-year buffer IPC rewrite (Option A). Security rests on T2 require restrict, guest lockdown, IPC allowlists, utilityProcess git workers, and fuses.'
+  },
+
+  /** Ordered steps — prep complete under Option C. */
   phaseSPrerequisites: [
-    'S0: Inventory + plan (docs/security-phase-s.md)',
-    'S1: Package host isolation — community cannot load arbitrary .node / native addons',
-    'S2: Relocate main-only natives; tag renderer-hot vs movable',
-    'S3: Replace github hidden BrowserWindow workers with utility process / main git IPC',
-    'S5: Option A spike (superstring-in-main) OR accept Option C (sandbox stays false; host isolation is the model)',
-    'S6: Explicit product decision + release notes before flipping webPreferences.sandbox'
+    'S0: Inventory + plan — done',
+    'S1: Package host isolation v1 (community privileged + native block) — done',
+    'S2: Main-only natives tagged (nslog, fs-admin); hot-path stay in editor — done under Option C',
+    'S3: github git workers → utilityProcess — done (BW emergency-only)',
+    'S5: Option C accepted (no Option A spike this release)',
+    'S6: Editor sandbox:false is the product decision — see security-phase-s-decision.md'
   ],
 
   migrationClasses: {

@@ -1,11 +1,12 @@
 'use strict';
 
 /**
- * Main-process manager for package utility workers (Phase S3 / #61).
+ * Main-process manager for package utility workers (Phase S3 complete / #61).
  *
- * Dual-path for github git workers: utilityProcess instead of Node BrowserWindow.
- * Default ON (Phase S3). Opt out: CHEVRON_GITHUB_UTILITY_WORKERS=0 or
- * core.githubUtilityWorkers=false.
+ * GitHub package git workers always run in Electron utilityProcess (no Node
+ * BrowserWindow fallback). Emergency only:
+ *   CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1
+ * restores the old path for debugging — not a supported product mode.
  *
  * See docs/security-phase-s-utilityprocess.md.
  */
@@ -20,12 +21,28 @@ let nextSyntheticId = -1;
 // workerId (synthetic window id) -> meta
 const workers = new Map();
 
-function envEnabled() {
-  // Default ON (Phase S3). Explicit 0/false/no/off disables; 1/true enables.
-  const v = process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
-  if (v === undefined || v === '' || v === 'default') return true;
-  if (v === '0' || v === 'false' || v === 'no' || v === 'off') return false;
+function emergencyBrowserWindowWorkers() {
+  const v = process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW;
   return v === '1' || v === 'true' || v === 'yes' || v === 'on';
+}
+
+/**
+ * Utility workers are always on for Phase S3 completion.
+ * Only an explicit emergency env restores Node BrowserWindow workers.
+ */
+function envEnabled() {
+  if (emergencyBrowserWindowWorkers()) return false;
+  // Legacy opt-out names still disable utility path (maps to emergency BW).
+  const v = process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
+  if (v === '0' || v === 'false' || v === 'no' || v === 'off') {
+    console.warn(
+      '[chevron] CHEVRON_GITHUB_UTILITY_WORKERS=0 is deprecated; ' +
+        'prefer CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1 for emergency only. ' +
+        'Node BrowserWindow git workers are not the Phase S product path.'
+    );
+    return false;
+  }
+  return true;
 }
 
 function isEnabled() {

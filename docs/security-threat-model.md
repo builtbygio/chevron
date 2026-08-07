@@ -1,7 +1,7 @@
 # Chevron security threat model
 
-**Status:** living doc (Electron BP complete as of 0.6.0)  
-**Related:** [electron-best-practices-plan.md](./electron-best-practices-plan.md) (closed), [package-node-policy.md](./package-node-policy.md), [security-phase-n.md](./security-phase-n.md)
+**Status:** living doc (Electron BP complete as of 0.6.0; **Phase S Option C** as of close-out)  
+**Related:** [electron-best-practices-plan.md](./electron-best-practices-plan.md) (closed), [security-phase-s-decision.md](./security-phase-s-decision.md), [package-node-policy.md](./package-node-policy.md), [security-phase-n.md](./security-phase-n.md)
 
 ## Goals
 
@@ -32,10 +32,10 @@
 | Invalid TLS accepted | `certificate-error` → deny (P3.4) |
 | Tampered asar / NODE_OPTIONS | Electron fuses on package (P3.2) |
 
-## Explicit non-goals (until Phase S)
+## Explicit non-goals (Phase S Option C)
 
-- Editor Chromium `sandbox: true` (blocked on natives — `src/preload-natives.js`)
-- Zero Node for **bundled** packages (github workers still Node BrowserWindows until utilityProcess migration — P3.1 deferred)
+- Editor Chromium `sandbox: true` — **declined** under Option C (hot-path natives in preload; see [security-phase-s-decision.md](./security-phase-s-decision.md))
+- Zero Node for **bundled** packages (github **git workers** use utilityProcess; other T1 may still use preload Node)
 - Full Atom package API compatibility for packages that require unrestricted Node
 
 ## Escape hatches (expert)
@@ -47,6 +47,7 @@
 | `CHEVRON_FS_IPC_STRICT=0` / `core.fsIpcStrict: false` | Allow FS IPC outside project/home/temp roots |
 | `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` / `core.enableExperimentalWebFeatures` | Re-enable experimental Chromium features |
 | `CHEVRON_FORCE_MKSNAPSHOT=1` | Retry custom V8 startup snapshot on Electron ≥43 |
+| `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1` | Emergency Node BrowserWindow git workers (not product path) |
 
 ## Residual risk
 

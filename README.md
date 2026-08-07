@@ -18,7 +18,7 @@ Rather than a from-scratch rewrite, Chevron takes the harder — and more educat
 
 ## Status
 
-**0.6.0** — Electron best-practices hardening complete for its terminal goals (protocol/IPC allowlists, CSP, default-on community require restrict, strict FS IPC, fuses). **cpm** + Pulsar registry, multi-platform CI, Security Phase N done. Next track: Phase S prep (natives / editor sandbox).
+**0.6.0** — Electron best-practices + **Phase S complete (Option C)**: community require/native restrict, utilityProcess git workers, guests/IPC hardened; editor stays deliberately unsandboxed for hot-path natives and hackability. **cpm** + Pulsar registry, multi-platform CI.
 
 Still early: great for building from source and dogfooding; not a polished daily-driver release yet.
 
@@ -30,7 +30,7 @@ Still early: great for building from source and dogfooding; not a polished daily
 | Package manager | **cpm** (Electron-as-Node); `apm` is a long-lived **shim → cpm** |
 | Registry | Pulsar by default (`CPM_REGISTRY_URL` override) |
 | Config home | `~/.atom` by default; `CHEVRON_HOME` / `~/.chevron` supported |
-| Security | BP plan closed — see [docs/electron-best-practices-plan.md](docs/electron-best-practices-plan.md), [docs/security-threat-model.md](docs/security-threat-model.md) |
+| Security | Phase S Option C — [docs/security-phase-s-decision.md](docs/security-phase-s-decision.md), [docs/security-threat-model.md](docs/security-threat-model.md) |
 
 See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
 
@@ -43,7 +43,7 @@ See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
 - [x] Further first-run / onboarding polish — see [docs/onboarding-polish.md](docs/onboarding-polish.md)
 - [x] Modern package manager path — Phase 0–4 complete (`cpm`; see [docs/cpm-design.md](docs/cpm-design.md), [docs/cpm-cutover.md](docs/cpm-cutover.md)); `apm` remains as a cpm shim
 - [x] Security Phase N + Electron best-practices shippable scope ([docs/security-phase-n.md](docs/security-phase-n.md), [docs/electron-best-practices-plan.md](docs/electron-best-practices-plan.md))
-- [ ] Phase S: editor sandbox after natives migration
+- [x] Phase S complete under **Option C** (editor `sandbox: false` intentional; utilityProcess git workers; T2 restrict) — [docs/security-phase-s-decision.md](docs/security-phase-s-decision.md)
 
 ## Non-goals (for now)
 

@@ -216,8 +216,9 @@ function BrowserWindow(options) {
   if (!(this instanceof BrowserWindow)) {
     return new BrowserWindow(options);
   }
-  // Phase S3 / #61: optional utilityProcess path for github WorkerManager.
-  // Same BrowserWindow surface so owned github package needs no pin bump yet.
+  // Phase S3 complete: github WorkerManager always gets a utilityProcess proxy
+  // (same BrowserWindow surface — no package pin bump). Node BrowserWindow
+  // workers only if CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1 (emergency).
   if (utilityWorkersEnabled()) {
     const utilWin = createUtilityWorkerWindow();
     this.id = utilWin.id;
@@ -228,6 +229,10 @@ function BrowserWindow(options) {
     this.__chevronUtilityWorker = true;
     return;
   }
+  console.warn(
+    '[chevron] Creating package worker via Node BrowserWindow (emergency path). ' +
+      'Phase S product path is utilityProcess.'
+  );
   const created = ipcRenderer.sendSync(
     'atom-create-browser-window-sync',
     options || {}

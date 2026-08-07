@@ -11,11 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- **Phase S prep (S0 + S1.0):** [docs/security-phase-s.md](docs/security-phase-s.md) — natives inventory with migration classes; community packages blocked from requiring known native addons and direct `.node` bindings (same default-on restrict as privileged modules). Editor `sandbox: true` still blocked pending package-host work and Option A/C decision.
-- **Repo audit P0 hygiene:** real [SECURITY.md](SECURITY.md) (supported 0.6.x, private disclosure, residual-risk scope); Help menu no longer opens dead atom.io / `atom/atom` URLs.
-- **Repo audit P1:** package ownership inventory, SCA runtime prioritisation, package-require-audit golden tests in CI, `async@3.2.6` (prototype-pollution range), auto-update payload no longer hardcodes atom.io.
-- **Repo audit P2 / Phase S:** [package host design S1.2](docs/security-phase-s-package-host.md); [utilityProcess workers plan S3](docs/security-phase-s-utilityprocess.md); [Babel/Coffee isolation](docs/babel-coffee-isolation-plan.md) with `CHEVRON_DISABLE_LEGACY_TRANSPILE` + deprecation logs; [nested package modules policy](docs/nested-package-modules.md).
-- **Phase S3 (github utility workers):** `utilityProcess` git workers for the github package (`git-utility-host.js` + `package-utility-worker.js`). **Default on** via `core.githubUtilityWorkers` / env; opt out with `CHEVRON_GITHUB_UTILITY_WORKERS=0` to use legacy Node BrowserWindow workers. Transparent via `remote-compat` BrowserWindow proxy (no github pin bump). Integration tests exercise real dugite over the host IPC protocol.
+- **Phase S complete (Option C):** editor Chromium `sandbox` stays **false** by product decision ([docs/security-phase-s-decision.md](docs/security-phase-s-decision.md)). GitHub package git workers use **utilityProcess only** (Node BrowserWindow path is emergency-only via `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1`). Community native/privileged require restrict and package-host design remain as shipped. S4 sendSync→invoke and package-host v2 are post–Phase S.
+- **Repo audit P0–P2 hygiene** (SECURITY.md, Help URLs, inventories, unit CI, arm64 soft-gate, legacy transpile isolate, nested-modules policy) — see prior unreleased bullets in git history / closed issues #51–#67.
 
 ### Fixed
 

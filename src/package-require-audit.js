@@ -203,8 +203,13 @@ function installPackageRequireAudit() {
         const key = `${caller}::${id}::${reason}`;
         if (!seenLog.has(key)) {
           seenLog.add(key);
+          // S1.1: reason is privileged | native-addon | native-binding
+          const surface =
+            reason === 'native-addon' || reason === 'native-binding'
+              ? 'native'
+              : 'privileged';
           console.warn(
-            `[chevron-require-audit] ${reason} require(${JSON.stringify(
+            `[chevron-require-audit] ${surface}/${reason} require(${JSON.stringify(
               id
             )}) from ${caller} (${kind})`
           );

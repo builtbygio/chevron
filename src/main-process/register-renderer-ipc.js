@@ -759,22 +759,22 @@ module.exports = function registerRendererIpc(atomApplication) {
     event.returnValue = !packageUtilityWorker.isUtilityWorker(workerId);
   });
 
-  // --- Create BrowserWindow from renderer (github WorkerManager) ------------
-  // Phase S3: when CHEVRON_GITHUB_UTILITY_WORKERS is on, remote-compat uses
-  // utilityProcess instead (docs/security-phase-s-utilityprocess.md). This
-  // BrowserWindow path remains as the default fallback.
+  // --- Create BrowserWindow from renderer (emergency package workers only) --
+  // Phase S3 complete: product path is utilityProcess (remote-compat).
+  // This handler remains for CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1.
 
   ipcMain.on('atom-create-browser-window-sync', (event, options = {}) => {
     try {
-      // Phase N5: package secondary windows (github git workers).
-      //
-      // Hackable by design: Node stays on so worker.js can require dugite and
-      // package code. Chromium sandbox stays false for the same reason.
-      //
-      // Hardened: FIXED webPreferences only — caller cannot inject preload,
-      // additionalArguments, or flip isolation. Navigation limited to file://
-      // worker assets; no window.open; all permission prompts denied; isolated
-      // session partition. See docs/security-phase-n5.md.
+      if (packageUtilityWorker.isEnabled()) {
+        console.warn(
+          'atom-create-browser-window-sync: refused — package workers use utilityProcess (Phase S3). ' +
+            'Set CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1 only for emergency debugging.'
+        );
+        event.returnValue = null;
+        return;
+      }
+      // Emergency: package secondary windows (github git workers) as Node BW.
+      // Hardened prefs only — see docs/security-phase-n5.md / S3 utility docs.
       const webPreferences = {
         nodeIntegration: true,
         nodeIntegrationInWorker: false,
