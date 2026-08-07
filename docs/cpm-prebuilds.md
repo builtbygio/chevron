@@ -1,13 +1,14 @@
 # cpm prebuilds (Phase 3)
 
-Prefer downloading platform binaries for native packages before compiling with `@electron/rebuild`.
+Prefer **bundled** platform binaries for native packages before compiling with `@electron/rebuild`.
 
 ## Install / rebuild order
 
 1. **Already present** `.node` under the package tree  
 2. **`chevron.prebuilds` URL** template(s) in the package’s `package.json`  
-3. **`prebuild-install`** when the package declares `binary` / `prebuild-install` / `prebuilds/`  
-4. **Source rebuild** via `@electron/rebuild`  
+3. **`prebuildify` + `node-gyp-build`** when the package ships a `prebuilds/` directory and/or depends on `node-gyp-build`  
+4. **Legacy `prebuild-install`** only if the *package itself* still declares it (third-party compatibility; **cpm no longer depends on prebuild-install**)  
+5. **Source rebuild** via `@electron/rebuild`  
 
 Force source compile:
 
@@ -17,7 +18,18 @@ cpm rebuild --force-source
 cpm rebuild my-native-pkg --force-source
 ```
 
-## Package author: `chevron.prebuilds`
+## Why not prebuild / prebuild-install
+
+Upstream recommends **prebuildify + node-gyp-build** instead of **prebuild + prebuild-install**:
+
+| Model | How binaries arrive | Install |
+|-------|---------------------|---------|
+| **prebuildify** | Shipped **inside** the npm package under `prebuilds/` | `node-gyp-build` picks the right one (or rebuilds) |
+| **prebuild-install** (legacy) | Extra download from GitHub Releases at install | Separate network step; deprecated client |
+
+Chevron follows that advice for first-party packages and cpm.
+
+## Package author: `chevron.prebuilds` (optional CDN)
 
 ```json
 {
@@ -34,20 +46,35 @@ Supported tokens: `{name}` `{version}` `{platform}` `{arch}` `{electron}` `{abi}
 - Single **`.node`** file → written to `build/Release/`.  
 - **`.tar.gz`** → extracted into the package root (layout should place `.node` under `build/Release/` or similar).
 
-## Package author: standard prebuild-install
+## Package author: prebuildify + node-gyp-build (preferred)
 
-If your package already uses [prebuild](https://github.com/prebuild/prebuild) / prebuildify and publishes GitHub Release assets that `prebuild-install` understands, cpm will invoke it with:
-
-```text
---runtime electron --target <product electronVersion>
+```json
+{
+  "scripts": {
+    "install": "node-gyp-build",
+    "prebuild": "prebuildify --napi --strip",
+    "prebuild:electron": "prebuildify --napi --strip --target electron@43.1.0"
+  },
+  "dependencies": {
+    "node-gyp-build": "^4.8.4"
+  },
+  "devDependencies": {
+    "prebuildify": "^6.0.1"
+  }
+}
 ```
+
+Publish the package **with** the generated `prebuilds/` folder (do not npmignore it).
+
+At install time cpm sets Electron env (`npm_config_runtime=electron`, `npm_config_target=<version>`) and runs `node-gyp-build`.
 
 ## Example GitHub Actions workflow
 
-See [`.github/workflows/cpm-prebuild-example.yml`](../.github/workflows/cpm-prebuild-example.yml) for a template that builds `.node` artifacts for Electron on a matrix of OS/arch and uploads them as release assets.
+See [`.github/workflows/cpm-prebuild-example.yml`](../.github/workflows/cpm-prebuild-example.yml). Prefer generating **prebuildify** artifacts into `prebuilds/` and publishing them in the npm tarball; optional release assets can still feed `chevron.prebuilds` URLs.
 
 ## Notes
 
-- Installs still use **`--ignore-scripts`** by default; prebuilds are applied by **cpm**, not by untrusted install scripts.  
+- Installs still use **`--ignore-scripts`** by default in product bootstrap; prebuilds are applied by **cpm**, not by untrusted install scripts.  
 - Headers URL remains `https://electronjs.org/headers` (or product config) for source rebuilds.  
-- Prefer prebuilds for cold-start UX; keep source rebuild so packages remain hackable.
+- Prefer bundled prebuilds for cold-start UX; keep source rebuild so packages remain hackable.  
+- Transitive third-party packages may still pull deprecated `prebuild-install` until those packages migrate — that is upstream debt, not a cpm dependency.

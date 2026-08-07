@@ -1,12 +1,16 @@
 'use strict';
 
 /**
- * Phase 3: prefer prebuilt native binaries before source rebuild.
+ * Prefer prebuilt native binaries before source rebuild.
  *
  * Strategies (in order):
  * 1. package.json `chevron.prebuilds` URL template (Chevron-specific)
- * 2. `prebuild-install` when the package declares binary/prebuilds support
- * 3. Caller falls back to @electron/rebuild (source)
+ * 2. Bundled `prebuilds/` + `node-gyp-build` (prebuildify model — preferred)
+ * 3. Legacy `prebuild-install` only if the *package* ships it (third-party;
+ *    cpm itself no longer depends on prebuild-install)
+ * 4. Caller falls back to @electron/rebuild (source)
+ *
+ * See docs/cpm-prebuilds.md.
  */
 
 const fs = require('fs');
@@ -54,6 +58,15 @@ function readPackageJson(packagePath) {
   }
 }
 
+function depDeclares(meta, name) {
+  if (!meta) return false;
+  return !!(
+    (meta.dependencies && meta.dependencies[name]) ||
+    (meta.optionalDependencies && meta.optionalDependencies[name]) ||
+    (meta.devDependencies && meta.devDependencies[name])
+  );
+}
+
 /**
  * Expand templates:
  * {name} {version} {platform} {arch} {electron} {abi}
@@ -71,6 +84,16 @@ function expandPrebuildTemplate(template, ctx) {
 
 function getAbiHint() {
   return process.versions.modules || '';
+}
+
+function electronEnv(electronVersion) {
+  return {
+    ...process.env,
+    npm_config_runtime: 'electron',
+    npm_config_target: electronVersion,
+    npm_config_disturl: 'https://electronjs.org/headers',
+    npm_config_build_from_source: 'false'
+  };
 }
 
 /**
@@ -107,9 +130,7 @@ async function tryChevronPrebuildUrl(packagePath, electronVersion) {
         redirect: 'follow'
       });
       if (!res.ok) {
-        process.stderr.write(
-          `cpm prebuild: HTTP ${res.status} for ${url}\n`
-        );
+        process.stderr.write(`cpm prebuild: HTTP ${res.status} for ${url}\n`);
         continue;
       }
       const buf = Buffer.from(await res.arrayBuffer());
@@ -117,11 +138,9 @@ async function tryChevronPrebuildUrl(packagePath, electronVersion) {
       if (buf[0] === 0x1f && buf[1] === 0x8b) {
         const tarPath = path.join(packagePath, '.cpm-prebuild.tgz');
         await fse.writeFile(tarPath, buf);
-        const r = spawnSync(
-          'tar',
-          ['-xzf', tarPath, '-C', packagePath],
-          { encoding: 'utf8' }
-        );
+        const r = spawnSync('tar', ['-xzf', tarPath, '-C', packagePath], {
+          encoding: 'utf8'
+        });
         await fse.remove(tarPath).catch(() => {});
         if (r.status !== 0) {
           process.stderr.write(
@@ -146,48 +165,36 @@ async function tryChevronPrebuildUrl(packagePath, electronVersion) {
 }
 
 /**
- * Run prebuild-install in the package directory when supported.
+ * Preferred path: prebuildify ships `prebuilds/` in the npm tarball;
+ * node-gyp-build selects the right binary (or rebuilds if missing).
+ *
+ * Works with Electron when npm_config_runtime/target are set.
  */
-function tryPrebuildInstallCli(packagePath, electronVersion) {
+function tryNodeGypBuild(packagePath, electronVersion) {
   const meta = readPackageJson(packagePath);
   if (!meta) return { ok: false, reason: 'no package.json' };
 
-  const supports =
-    meta.binary ||
-    (meta.dependencies && meta.dependencies['prebuild-install']) ||
-    (meta.optionalDependencies &&
-      meta.optionalDependencies['prebuild-install']) ||
-    (meta.devDependencies && meta.devDependencies['prebuild-install']) ||
-    fs.existsSync(path.join(packagePath, 'prebuilds'));
+  const hasPrebuildsDir = fs.existsSync(path.join(packagePath, 'prebuilds'));
+  const declaresNgb = depDeclares(meta, 'node-gyp-build');
+  const installUsesNgb =
+    meta.scripts &&
+    typeof meta.scripts.install === 'string' &&
+    meta.scripts.install.includes('node-gyp-build');
 
-  if (!supports) {
-    return { ok: false, reason: 'package does not declare prebuild support' };
+  if (!hasPrebuildsDir && !declaresNgb && !installUsesNgb) {
+    return { ok: false, reason: 'no prebuildify / node-gyp-build support' };
   }
 
-  // Prefer local bin, then npx from cpm's node_modules
   const candidates = [
-    path.join(packagePath, 'node_modules', '.bin', 'prebuild-install'),
-    path.join(__dirname, '..', 'node_modules', '.bin', 'prebuild-install')
+    path.join(packagePath, 'node_modules', '.bin', 'node-gyp-build'),
+    path.join(__dirname, '..', 'node_modules', '.bin', 'node-gyp-build')
   ];
   let bin = candidates.find(p => fs.existsSync(p));
-  const args = [
-    '--runtime',
-    'electron',
-    '--target',
-    electronVersion,
-    '--verbose'
-  ];
-
-  const env = {
-    ...process.env,
-    npm_config_runtime: 'electron',
-    npm_config_target: electronVersion,
-    npm_config_disturl: 'https://electronjs.org/headers'
-  };
+  const env = electronEnv(electronVersion);
 
   let result;
   if (bin) {
-    result = spawnSync(bin, args, {
+    result = spawnSync(bin, [], {
       cwd: packagePath,
       encoding: 'utf8',
       env
@@ -195,15 +202,16 @@ function tryPrebuildInstallCli(packagePath, electronVersion) {
   } else {
     let entry;
     try {
-      entry = require.resolve('prebuild-install/bin.js');
+      entry = require.resolve('node-gyp-build/bin.js');
     } catch (_) {
       try {
-        entry = require.resolve('prebuild-install');
+        // package exports bin as main in some versions
+        entry = require.resolve('node-gyp-build');
       } catch (e2) {
-        return { ok: false, reason: 'prebuild-install not installed in cpm' };
+        return { ok: false, reason: 'node-gyp-build not installed in cpm' };
       }
     }
-    result = spawnSync(process.execPath, [entry, ...args], {
+    result = spawnSync(process.execPath, [entry], {
       cwd: packagePath,
       encoding: 'utf8',
       env
@@ -211,15 +219,101 @@ function tryPrebuildInstallCli(packagePath, electronVersion) {
   }
 
   if (result.status === 0 && hasNativeBinary(packagePath)) {
-    return { ok: true, strategy: 'prebuild-install' };
+    return { ok: true, strategy: 'node-gyp-build' };
+  }
+
+  // Bundled prebuilds alone (no compile) — node-gyp-build may exit 0 without
+  // writing build/Release if runtime load path differs; still count prebuilds.
+  if (hasPrebuildsDir && hasNativeBinary(packagePath)) {
+    return { ok: true, strategy: 'prebuilds-dir' };
+  }
+
+  return {
+    ok: false,
+    reason: (
+      result.stderr ||
+      result.stdout ||
+      'node-gyp-build failed'
+    ).slice(0, 500)
+  };
+}
+
+/**
+ * Legacy: run prebuild-install only when the *package* itself depends on it.
+ * cpm no longer ships prebuild-install; this is third-party compatibility only.
+ */
+function tryLegacyPrebuildInstall(packagePath, electronVersion) {
+  const meta = readPackageJson(packagePath);
+  if (!meta) return { ok: false, reason: 'no package.json' };
+
+  const packageHasPbi =
+    depDeclares(meta, 'prebuild-install') ||
+    Boolean(meta.binary) ||
+    fs.existsSync(
+      path.join(packagePath, 'node_modules', '.bin', 'prebuild-install')
+    );
+
+  if (!packageHasPbi) {
+    return { ok: false, reason: 'no legacy prebuild-install in package' };
+  }
+
+  const candidates = [
+    path.join(packagePath, 'node_modules', '.bin', 'prebuild-install')
+  ];
+  // Optional: resolve from ambient install (not a cpm dependency).
+  try {
+    candidates.push(
+      path.join(
+        path.dirname(require.resolve('prebuild-install/package.json')),
+        'bin.js'
+      )
+    );
+  } catch (_) {
+    /* cpm intentionally does not depend on prebuild-install */
+  }
+
+  const bin = candidates.find(p => fs.existsSync(p));
+  if (!bin) {
+    return {
+      ok: false,
+      reason: 'legacy prebuild-install not available for package'
+    };
+  }
+
+  const args = [
+    '--runtime',
+    'electron',
+    '--target',
+    electronVersion,
+    '--verbose'
+  ];
+  const env = electronEnv(electronVersion);
+
+  const result =
+    bin.endsWith('bin.js') || bin.endsWith('.js')
+      ? spawnSync(process.execPath, [bin, ...args], {
+          cwd: packagePath,
+          encoding: 'utf8',
+          env
+        })
+      : spawnSync(bin, args, { cwd: packagePath, encoding: 'utf8', env });
+
+  if (result.status === 0 && hasNativeBinary(packagePath)) {
+    return { ok: true, strategy: 'prebuild-install-legacy' };
   }
   return {
     ok: false,
-    reason: (result.stderr || result.stdout || 'prebuild-install failed').slice(
-      0,
-      500
-    )
+    reason: (
+      result.stderr ||
+      result.stdout ||
+      'prebuild-install-legacy failed'
+    ).slice(0, 500)
   };
+}
+
+/** @deprecated use tryLegacyPrebuildInstall — kept for tests / call sites */
+function tryPrebuildInstallCli(packagePath, electronVersion) {
+  return tryLegacyPrebuildInstall(packagePath, electronVersion);
 }
 
 /**
@@ -233,8 +327,7 @@ async function tryPrebuilds(packagePath, options = {}) {
     return { ok: false, reason: 'forceSource' };
   }
 
-  const electronVersion =
-    options.electronVersion || getElectronVersion();
+  const electronVersion = options.electronVersion || getElectronVersion();
   if (!electronVersion) {
     return { ok: false, reason: 'no electron version' };
   }
@@ -246,12 +339,17 @@ async function tryPrebuilds(packagePath, options = {}) {
   const chevron = await tryChevronPrebuildUrl(packagePath, electronVersion);
   if (chevron.ok) return chevron;
 
-  const pbi = tryPrebuildInstallCli(packagePath, electronVersion);
-  if (pbi.ok) return pbi;
+  const ngb = tryNodeGypBuild(packagePath, electronVersion);
+  if (ngb.ok) return ngb;
+
+  const legacy = tryLegacyPrebuildInstall(packagePath, electronVersion);
+  if (legacy.ok) return legacy;
 
   return {
     ok: false,
-    reason: [chevron.reason, pbi.reason].filter(Boolean).join('; ')
+    reason: [chevron.reason, ngb.reason, legacy.reason]
+      .filter(Boolean)
+      .join('; ')
   };
 }
 
@@ -262,5 +360,7 @@ module.exports = {
   expandPrebuildTemplate,
   tryPrebuilds,
   tryChevronPrebuildUrl,
+  tryNodeGypBuild,
+  tryLegacyPrebuildInstall,
   tryPrebuildInstallCli
 };

@@ -72,4 +72,25 @@ describe('cpm prebuild helpers', () => {
     fs.writeFileSync(path.join(rel, 'x.node'), Buffer.from([0]));
     assert.strictEqual(hasNativeBinary(tmp), true);
   });
+
+  it('detects node-gyp-build support via package.json / prebuilds dir', () => {
+    const {
+      tryNodeGypBuild
+    } = require('../lib/prebuild');
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cpm-ngb-'));
+    fs.writeFileSync(path.join(tmp, 'binding.gyp'), '{"targets":[]}');
+    fs.writeFileSync(
+      path.join(tmp, 'package.json'),
+      JSON.stringify({
+        name: 'ngb-pkg',
+        version: '1.0.0',
+        dependencies: { 'node-gyp-build': '^4.8.4' },
+        scripts: { install: 'node-gyp-build' }
+      })
+    );
+    // Without a real binding, node-gyp-build may fail compile — we only assert
+    // it is attempted (not "no prebuildify support").
+    const r = tryNodeGypBuild(tmp, '43.1.0');
+    assert.notStrictEqual(r.reason, 'no prebuildify / node-gyp-build support');
+  });
 });
