@@ -1,7 +1,7 @@
 # Owned package modernization checklist
 
 **Audience:** maintainers modernizing a `builtbygio/*` bundled package  
-**Goal:** ownership → security hygiene → gradual modernization, without breaking Chevron dual-support  
+**Goal:** ownership → security hygiene → gradual modernization under **Chevron-only** product policy  
 
 Pins live in the monorepo root [`package.json`](../package.json). Integration gate is **Chevron CI** (bootstrap → build → smoke), not standalone Atom CI.
 
@@ -29,7 +29,7 @@ git checkout -b modern/chevron-baseline <pin-sha>
 
 - [ ] Default branch is clear (`master` or `main`); document if renamed.
 - [ ] `package.json` → `"repository": "https://github.com/builtbygio/<pkg>"` (or full git URL object).
-- [ ] `"engines": { "atom": "…", "chevron": ">=0.6.0" }` (keep `atom` for dual-support).
+- [ ] `"engines": { "chevron": ">=0.6.0" }` (optional `atom` only if still useful for Pulsar; not required).
 - [ ] Remove dead Atom installer CI (`UziTech/action-setup-atom`, `atom --test` against dead channels).
 - [ ] Optional lightweight CI: `package.json` / `engines` / lint only — **no** full Atom product install.
 - [ ] README: one line that this is maintained for **Chevron** (and still Atom-compatible where practical).
@@ -67,11 +67,11 @@ git checkout -b modern/chevron-baseline <pin-sha>
 # PR against master
 ```
 
-### E. Dual-support forever (do not break)
+### E. Chevron-only package surface
 
-- [ ] `global.atom` / `engines.atom` / `atom://` still work.
-- [ ] No hard dependency on `engines.chevron` only (optional field).
-- [ ] Config/home: still work under `~/.atom` and `~/.chevron`.
+- [ ] Prefer `require('chevron')` and `global.chevron` (not `atom`).
+- [ ] Prefer `engines.chevron` and `chevron://` package URIs.
+- [ ] Config/home: assume `~/.chevron` / `CHEVRON_HOME`.
 
 ---
 

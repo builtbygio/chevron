@@ -17,7 +17,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | **Long term** | Possible Avalonia rehost; keep hackable package spirit |
 
 **Do not** rebase onto Pulsar unless the owner revisits that decision.  
-**Dual-support forever:** `global.atom`, `atom://`, `engines.atom`, `apm` name (shim → cpm).
+**Chevron only:** product API is `global.chevron` / `require('chevron')` / `engines.chevron` / `~/.chevron`. Atom surfaces are unsupported legacy shims (may be removed). See [docs/REBRANDING.md](docs/REBRANDING.md).
 
 ---
 
@@ -162,7 +162,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Explicitly out of scope unless asked
 
 - Pulsar rebase  
-- Dropping dual-support / `apm` shim  
+- Hard-delete of remaining Atom shims before a dedicated removal PR  
 
 ---
 

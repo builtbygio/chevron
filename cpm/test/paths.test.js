@@ -45,14 +45,28 @@ describe('cpm paths', () => {
 });
 
 describe('cpm engines', () => {
-  it('accepts typical engines.atom ranges via Atom-compat version', () => {
+  it('accepts typical engines.atom ranges via Atom-compat version (legacy)', () => {
     const r = checkEngines(
       { engines: { atom: '>=1.0.0 <2.0.0' } },
       '0.3.0',
       { strict: false }
     );
     assert.strictEqual(r.ok, true);
-    assert.strictEqual(r.warnings.length, 0);
+    // engines.atom alone → Chevron-only policy warning
+    assert.ok(r.warnings.some(w => /engines\.chevron/i.test(w)));
+  });
+
+  it('is quiet when engines.chevron is present', () => {
+    const r = checkEngines(
+      { engines: { chevron: '>=0.6.0', atom: '>=1.0.0 <2.0.0' } },
+      '0.6.0',
+      { strict: false }
+    );
+    assert.strictEqual(r.ok, true);
+    assert.strictEqual(
+      r.warnings.filter(w => /engines\.atom only/i.test(w)).length,
+      0
+    );
   });
 
   it('warns but allows engines.atom mismatch unless strict', () => {

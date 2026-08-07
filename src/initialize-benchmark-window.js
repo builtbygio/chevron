@@ -76,16 +76,16 @@ module.exports = async function() {
       window,
       document,
       clipboard,
-      configDirPath: process.env.ATOM_HOME,
+      configDirPath: process.env.CHEVRON_HOME || process.env.ATOM_HOME,
       enablePersistence: false
     };
     const atomEnvironment = new AtomEnvironment(environmentParams);
     global.chevron = atomEnvironment;
-    global.atom = atomEnvironment;
-    global.atom.initialize(environmentParams);
+    global.atom = atomEnvironment; // unsupported legacy alias
+    global.chevron.initialize(environmentParams);
 
     // Prevent benchmarks from modifying application menus
-    global.atom.menu.sendToBrowserProcess = function() {};
+    global.chevron.menu.sendToBrowserProcess = function() {};
 
     if (headless) {
       console.log = function(...args) {

@@ -203,12 +203,8 @@ module.exports = function parseCommandLine(processArgs) {
       continue;
     }
     if (path.startsWith('atom://') || path.startsWith('chevron://')) {
-      // Normalize chevron:// → atom:// so package URI handlers keep working.
-      urlsToOpen.push(
-        path.startsWith('chevron://')
-          ? 'atom://' + path.slice('chevron://'.length)
-          : path
-      );
+      // Keep scheme as opened; packages may register either. Product scheme is chevron://.
+      urlsToOpen.push(path);
     } else {
       pathsToOpen.push(path);
     }

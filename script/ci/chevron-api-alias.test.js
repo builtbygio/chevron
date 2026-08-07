@@ -15,7 +15,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const exportsPath = path.join(ROOT, 'exports');
 
 describe('chevron / atom package API exports', () => {
-  it('exports/atom.js re-exports exports/chevron.js', () => {
+  it('exports/atom.js re-exports exports/chevron.js with deprecation', () => {
     const atomSrc = fs.readFileSync(path.join(exportsPath, 'atom.js'), 'utf8');
     const chevronSrc = fs.readFileSync(
       path.join(exportsPath, 'chevron.js'),
@@ -24,6 +24,10 @@ describe('chevron / atom package API exports', () => {
     assert.ok(
       /require\(\s*['"]\.\/chevron['"]\s*\)/.test(atomSrc),
       'atom.js must re-export ./chevron'
+    );
+    assert.ok(
+      /legacy alias|require\(["']chevron["']\)/.test(atomSrc),
+      'atom.js should document/require chevron migration'
     );
     assert.ok(
       /module\.exports\s*=\s*chevronExport/.test(chevronSrc) ||
