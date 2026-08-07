@@ -1,14 +1,10 @@
-/** @babel */
-
-const fs = require('fs');
-const path = require('path');
-
+const fs = require("fs");
+const path = require("path");
 module.exports = {
   async enumerate() {
     if (atom.inDevMode()) {
       return [];
     }
-
     const duplicatePackages = [];
     const names = atom.packages.getAvailablePackageNames();
     for (let name of names) {
@@ -21,16 +17,12 @@ module.exports = {
         }
       }
     }
-
     return duplicatePackages;
   },
-
   async isInstalledAsCommunityPackage(name) {
     const availablePackagePaths = atom.packages.getPackageDirPaths();
-
     for (let packagePath of availablePackagePaths) {
       const candidate = path.join(packagePath, name);
-
       if (fs.existsSync(candidate)) {
         const realPath = await this.realpath(candidate);
         if (realPath === candidate) {
@@ -38,13 +30,11 @@ module.exports = {
         }
       }
     }
-
     return false;
   },
-
-  realpath(path) {
+  realpath(path2) {
     return new Promise((resolve, reject) => {
-      fs.realpath(path, function(error, realpath) {
+      fs.realpath(path2, function(error, realpath) {
         if (error) {
           reject(error);
         } else {

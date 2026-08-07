@@ -48,7 +48,7 @@ describe('legacy transpile isolation', () => {
     );
   });
 
-  it('allows babel prefix when legacy transpile enabled', () => {
+  it('detects babel prefixes when legacy transpile env is off', () => {
     delete process.env.CHEVRON_DISABLE_LEGACY_TRANSPILE;
     delete require.cache[require.resolve(path.join(ROOT, 'src/babel.js'))];
     delete require.cache[require.resolve(path.join(ROOT, 'src/coffee-script.js'))];
@@ -72,6 +72,21 @@ describe('legacy transpile isolation', () => {
     assert.throws(
       () => coffee.compile('x = 1', '/tmp/x.coffee'),
       /issue #62|CoffeeScript runtime transpile was removed/
+    );
+  });
+
+  it('refuses babel compile after babel-core dependency removal (Option 3)', () => {
+    delete process.env.CHEVRON_DISABLE_LEGACY_TRANSPILE;
+    delete require.cache[require.resolve(path.join(ROOT, 'src/babel.js'))];
+    const babel = require(path.join(ROOT, 'src/babel.js'));
+
+    assert.strictEqual(
+      babel.shouldCompile('/** @babel */\nconst x = 1;'),
+      true
+    );
+    assert.throws(
+      () => babel.compile('/** @babel */\nconst x = 1;', '/tmp/x.js'),
+      /issue #62|Babel runtime transpile was removed/
     );
   });
 });

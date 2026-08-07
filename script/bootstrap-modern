@@ -150,6 +150,9 @@ node "$SCRIPT_DIR/lib/patch-dep-package-json.js" "$REPO_ROOT"
 echo "Decaffeinating bundled packages that still ship lib/*.coffee (#62)…"
 node "$SCRIPT_DIR/lib/patch-decaffeinate-bundled-packages.js" "$REPO_ROOT"
 
+echo "Applying precompiled babel-prefix packages (#62 Option 3)…"
+node "$SCRIPT_DIR/lib/patch-debabel-bundled-packages.js" "$REPO_ROOT"
+
 # --- Step 3: rebuild natives for Electron ------------------------------------
 echo "Rebuilding native modules for Electron…"
 export ATOM_RESOURCE_PATH="$REPO_ROOT"

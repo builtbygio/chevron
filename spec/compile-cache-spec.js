@@ -7,7 +7,7 @@
 const path = require('path');
 const fs = require('fs');
 const temp = require('temp').track();
-const Babel = require('babel-core');
+const BabelCompiler = require('../src/babel');
 const CoffeeScriptCompiler = require('../src/coffee-script');
 const TypeScriptTranspiler = require('../src/typescript');
 const CSON = require('season');
@@ -23,7 +23,7 @@ describe('CompileCache', function() {
     CSON.setCacheDir(null);
     CompileCache.resetCacheStats();
 
-    spyOn(Babel, 'transform').andReturn({code: 'the-babel-code'});
+    spyOn(BabelCompiler, 'compile').andCallThrough();
     spyOn(CoffeeScriptCompiler, 'compile').andCallThrough();
     return spyOn(TypeScriptTranspiler, 'compile').andReturn('the-typescript-code');
   });
@@ -42,14 +42,10 @@ describe('CompileCache', function() {
       return expect(CompileCache.getCacheStats()['.js']).toEqual({hits: 0, misses: 0});
   }));
 
-    describe('when the given file uses babel', () => it('compiles the file with babel and caches it', function() {
-      CompileCache.addPathToCache(path.join(fixtures, 'babel', 'babel-comment.js'), atomHome);
-      expect(CompileCache.getCacheStats()['.js']).toEqual({hits: 0, misses: 1});
-      expect(Babel.transform.callCount).toBe(1);
-
-      CompileCache.addPathToCache(path.join(fixtures, 'babel', 'babel-comment.js'), atomHome);
-      expect(CompileCache.getCacheStats()['.js']).toEqual({hits: 1, misses: 1});
-      return expect(Babel.transform.callCount).toBe(1);
+    describe('when the given file uses babel', () => it('refuses after babel runtime removal', function() {
+      const babelPath = path.join(fixtures, 'babel', 'babel-comment.js');
+      expect(() => CompileCache.addPathToCache(babelPath, atomHome)).toThrow();
+      expect(BabelCompiler.compile.callCount).toBe(1);
     }));
 
     // Option 2 (#62): coffee-script runtime removed; .coffee must fail clearly.
