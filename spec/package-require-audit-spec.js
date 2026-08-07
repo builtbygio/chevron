@@ -107,4 +107,35 @@ describe('package-require-audit / N3.2 + S1.0 classifyCallerPath', function() {
       process.env.CHEVRON_RESTRICT_PACKAGE_REQUIRES = prevR;
     else delete process.env.CHEVRON_RESTRICT_PACKAGE_REQUIRES;
   });
+
+  it('treats legacy …/atom/packages/ paths as community', function() {
+    expect(
+      classifyCallerPath('/Users/dev/atom/packages/minimap/lib/main.js')
+    ).toBe('community');
+  });
+
+  it('prefers community when path is under ~/.atom/packages even with node_modules', function() {
+    expect(
+      classifyCallerPath(
+        '/home/user/.atom/packages/evil/node_modules/left-pad/index.js'
+      )
+    ).toBe('community');
+  });
+
+  it('returns unknown for empty paths', function() {
+    expect(classifyCallerPath(null)).toBe('unknown');
+    expect(classifyCallerPath('')).toBe('unknown');
+    expect(classifyCallerPath('/tmp/not-a-package-path.js')).toBe('unknown');
+  });
+
+  it('classifies static/ as core', function() {
+    expect(
+      classifyCallerPath('/home/user/Workspace/chevron/static/preload.js')
+    ).toBe('core');
+  });
+
+  it('classifies fs/promises as privileged', function() {
+    expect(classifyRequireId('fs/promises')).toBe('privileged');
+    expect(classifyRequireId('electron')).toBe('privileged');
+  });
 });

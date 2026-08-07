@@ -47,14 +47,17 @@ Today (0.6.x): T1/T2 still share the **preload Node world** for compatibility. C
 # Log only (inventory)
 CHEVRON_AUDIT_PACKAGE_REQUIRES=1 ./out/Chevron-linux-x64/chevron --no-sandbox
 
-# Opt-in enforcement for community packages only (N3.2)
+# Restrict is ON by default (P1.2). Explicit enable still works:
 CHEVRON_RESTRICT_PACKAGE_REQUIRES=1 ./out/Chevron-linux-x64/chevron --no-sandbox
+
+# Escape hatch (allow community privileged/native requires)
+CHEVRON_RESTRICT_PACKAGE_REQUIRES=0 ./out/Chevron-linux-x64/chevron --no-sandbox
 ```
 
 | Env | Effect |
 |-----|--------|
 | `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` | Log **one warning per caller path + module** for privileged / native requires |
-| `CHEVRON_RESTRICT_PACKAGE_REQUIRES=1` | **Throw** on blocked requires from **community** packages (`~/.atom/packages`, `~/.chevron/packages`). Core + bundled (app.asar) still allowed |
+| `CHEVRON_RESTRICT_PACKAGE_REQUIRES` unset / `1` | **Throw** on blocked requires from **community** packages (`~/.atom/packages`, `~/.chevron/packages`). Core + bundled (app.asar) still allowed |
 | `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` | **Disable** restrict (escape hatch) |
 
 **Blocked for community (default on):**
@@ -66,6 +69,23 @@ CHEVRON_RESTRICT_PACKAGE_REQUIRES=1 ./out/Chevron-linux-x64/chevron --no-sandbox
 **Default is on** (Electron BP P1.2 + Phase S1.0). Main process sets the env from `core.restrictCommunityPackageRequires` (default `true`) unless the env is already set. Community packages that need raw Node or natives must migrate to `atom.*` APIs or users must opt out explicitly.
 
 Threat model: [security-threat-model.md](./security-threat-model.md).
+
+## Classification edge cases (known failure modes)
+
+`classifyCallerPath` in `src/package-require-audit.js` uses **path heuristics**. Golden coverage lives in `spec/package-require-audit-spec.js` and `script/ci/package-require-audit.test.js`.
+
+| Situation | Classification today | Notes |
+|-----------|----------------------|--------|
+| Path under `app.asar/` or `resources/app/` | `bundled` | Correct for packaged app |
+| Path under monorepo `…/packages/<name>/` (not user home) | `bundled` | Dev resource-path |
+| Path under `~/.atom/packages/` or `~/.chevron/packages/` | `community` | Enforced restrict |
+| Path `…/atom/packages/…` (legacy absolute) | `community` | Matches older install layouts |
+| Path under `node_modules/` outside asar | `bundled` | Treats dep as core/bundled helper |
+| Symlinked community package into monorepo `packages/` | may be `bundled` | **Known gap** — prefer real paths under user package homes |
+| `unknown` caller (no stack path) | not restricted | Restrict only when `kind === 'community'` |
+| Windows paths | supported via stack parser | Drive-letter + backslash frames |
+
+Do not rely on restrict alone for untrusted code execution models; it is a package-policy layer, not a Chromium sandbox.
 
 ## Install / rebuild
 

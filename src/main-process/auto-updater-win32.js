@@ -83,7 +83,8 @@ class AutoUpdater extends EventEmitter {
           update.releaseNotes,
           update.version,
           new Date(),
-          'https://atom.io',
+          // Release notes URL when a real update feed is configured (no atom.io).
+          this.updateUrl || 'https://github.com/builtbygio/chevron/releases',
           () => this.quitAndInstall()
         );
       });

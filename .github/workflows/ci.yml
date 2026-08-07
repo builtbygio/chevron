@@ -5,12 +5,49 @@ on:
     branches: [master]
   pull_request:
   workflow_dispatch:
+    inputs:
+      run_full_core_tests:
+        description: 'After bootstrap+build, also run script/test (expensive; experimental)'
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # Fast unit path — cpm + package-require-audit (no Electron package)
+  # Full Jasmine (script/test) remains local or workflow_dispatch+input; needs
+  # a packaged app and is not a default PR gate yet (audit #57).
+  # ---------------------------------------------------------------------------
+  unit-and-cpm:
+    name: cpm + package-require-audit unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Use Node 24
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Install cpm dependencies
+        working-directory: cpm
+        run: npm ci
+
+      - name: Run cpm tests
+        working-directory: cpm
+        run: npm test
+        env:
+          # Live Pulsar hits are useful; allow skip if registry is down.
+          CPM_SKIP_LIVE_REGISTRY: '0'
+
+      - name: package-require-audit golden tests (node:test)
+        run: node --test script/ci/package-require-audit.test.js
+
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64
   # ---------------------------------------------------------------------------
