@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **LSP plan:** [docs/lsp-design.md](docs/lsp-design.md) promoted to authoritative implementation plan (utilityProcess host, workspace trust, phased 0–5). Phase 0 framing codec + tests under `src/lsp/`.
+- **LSP plan + Phase 0–1:** [docs/lsp-design.md](docs/lsp-design.md) is the authoritative plan. Phase 0 framing codec; Phase 1 MVP — utilityProcess LSP host, workspace trust (`chevron-lsp:trust-project`), TypeScript server when trusted + on PATH, document sync, `lsp-ui` status tile. See `src/lsp/` and `packages/lsp-ui`.
 
 ### Changed
 
