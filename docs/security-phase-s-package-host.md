@@ -15,14 +15,15 @@
 | Host model v2 (target) | **Restricted package host** process or utility for T2 activation (VS Code “extension host” intuition) |
 | T1 bundled packages | Stay in editor preload until individually migrated; owned forks only |
 
-This note is the **S1.2 deliverable**. Implementation of host v2 is multi-PR after S2/S3 landings.
+This note is the **S1.2 deliverable**. Host v2 implementation is **deferred** until base Chevron is ready ([package-ecosystem-strategy.md](./package-ecosystem-strategy.md)); product uses **owned catalog only** until then.
 
 ## Goals
 
-1. Malicious or compromised **community** packages cannot get raw Node, `electron`, or arbitrary `.node` loads when defaults are on.  
-2. Packages that only use **`atom.*` APIs** keep working without code changes.  
+1. Malicious or compromised **community** packages cannot get raw Node, `electron`, or arbitrary `.node` loads when defaults are on (and when community install returns).  
+2. Packages that only use the **supported Chevron package API** (`global.chevron` / `require('chevron')`) keep working without privileged Node.  
 3. **Hackable** remains true for core + owned bundled packages (T0/T1).  
-4. Clear upgrade path toward a separate host without a big-bang rewrite.
+4. Clear upgrade path toward a separate host without a big-bang rewrite.  
+5. Until host v2: product **owned catalog only** (no open community install promise).
 
 ## Non-goals (this design)
 
