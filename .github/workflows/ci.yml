@@ -26,9 +26,76 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
+  # Docs-only detector. Gates the five-platform build matrix so a markdown-only
+  # change does not burn ~10 runner-hours proving that prose still compiles.
+  #
+  # Deliberately a job-level `if:` rather than workflow-level `paths-ignore`:
+  #   - unit tests still run on docs changes (cheap, and catches doc-adjacent
+  #     script edits),
+  #   - a *skipped* job reports a conclusion to branch protection, whereas a
+  #     workflow that never runs leaves required checks pending forever.
+  #
+  # Fails safe: anything it cannot determine (force-push, new branch, shallow
+  # history, workflow_dispatch) is treated as "code changed" → full build.
+  # ---------------------------------------------------------------------------
+  changes:
+    name: Detect docs-only changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - id: filter
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=true   # fail safe: never skip a build we are unsure about
+
+          case "${{ github.event_name }}" in
+            pull_request)
+              base='${{ github.event.pull_request.base.sha }}'
+              head='${{ github.event.pull_request.head.sha }}'
+              ;;
+            push)
+              base='${{ github.event.before }}'
+              head='${{ github.sha }}'
+              ;;
+            *)
+              base=''; head=''   # workflow_dispatch → always build
+              ;;
+          esac
+
+          if [ -n "$base" ] && [ -n "$head" ] \
+             && [ "$base" != "0000000000000000000000000000000000000000" ] \
+             && git cat-file -e "${base}^{commit}" 2>/dev/null; then
+            files="$(git diff --name-only "$base" "$head")"
+            echo "Changed files:"
+            echo "$files"
+            # Docs-only when no changed path falls outside docs/ or *.md.
+            if [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE '(^docs/|\.md$)'; then
+              code=false
+            fi
+          else
+            echo "No usable diff range; assuming code changed."
+          fi
+
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" = "true" ]; then
+            echo "→ running full build matrix"
+          else
+            echo "→ docs-only change: skipping five-platform build matrix"
+          fi
+
+  # ---------------------------------------------------------------------------
   # Fast unit path — cpm + package-require-audit (no Electron package)
   # Full Jasmine (script/test) remains local or workflow_dispatch+input; needs
   # a packaged app and is not a default PR gate yet (audit #57).
+  # Always runs, including on docs-only changes.
   # ---------------------------------------------------------------------------
   unit-and-cpm:
     name: cpm + package-require-audit unit tests
@@ -84,6 +151,8 @@ jobs:
   # ---------------------------------------------------------------------------
   build-and-smoke-macos:
     name: macOS ${{ matrix.arch }} bootstrap, build & smoke
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 120
     strategy:
@@ -179,6 +248,8 @@ jobs:
   # ---------------------------------------------------------------------------
   build-and-smoke-linux:
     name: Linux x64 bootstrap, build, smoke & packages
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
@@ -311,6 +382,8 @@ jobs:
   # ---------------------------------------------------------------------------
   build-and-smoke-linux-arm64:
     name: Linux arm64 bootstrap, build, smoke & packages
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 150
 
@@ -447,6 +520,8 @@ jobs:
   # ---------------------------------------------------------------------------
   build-and-smoke-windows:
     name: Windows x64 bootstrap, build, smoke & packages
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     # windows-2022 ships VS 2022 that node-gyp detects reliably.
     # windows-latest currently has VS 18/2026 which older node-gyp mis-parses.
     runs-on: windows-2022
