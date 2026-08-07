@@ -3,7 +3,7 @@
 **Status:** design (proposed — not yet authoritative)
 **Date:** 2026-08-07
 **Product version context:** post-0.6.0; LSP is a multi-release milestone (e.g. 0.7.x / 0.8.x)
-**Related:** [cpm-design.md](./cpm-design.md), [security-phase-s-utilityprocess.md](./security-phase-s-utilityprocess.md)
+**Related:** [cpm-design.md](./cpm-design.md), [security-phase-s-package-host.md](./security-phase-s-package-host.md), [package-ecosystem-strategy.md](./package-ecosystem-strategy.md)
 **Precedent reused:** Phase S utilityProcess workers (`src/main-process/package-utility-worker.js`)
 
 ---
@@ -43,7 +43,7 @@ semantics on top), and rewriting the package API.
 | G3 | Plug into existing service APIs where they exist (`autocomplete.provider`) rather than forking packages |
 | G4 | **Workspace trust** gate: never auto-execute a project-specified server binary in an untrusted directory |
 | G5 | Servers are **supervised**: lazy start, crash restart with backoff, idle shutdown, memory visible to the user |
-| G6 | Packages can **register their own servers** via a service — keep the ecosystem hackable |
+| G6 | Owned-catalog packages can **register servers** and **replace the UI** via services — a seam that stays valid when package host v2 opens it to sandboxed community packages |
 | G7 | Correct position mapping (UTF-16 ↔ UTF-8) — no off-by-one on non-ASCII files |
 | G8 | Work on all five CI platforms (macOS x64/arm64, Linux x64/arm64, Windows) |
 
@@ -60,7 +60,15 @@ semantics on top), and rewriting the package API.
 
 ### Locked constraints (inherited)
 
-- **Dual-support forever:** `global.atom`, `engines.atom`, `atom://` unaffected.
+- **Chevron-only API policy** ([REBRANDING.md](./REBRANDING.md), #83): new surfaces use
+  `global.chevron`, `require('chevron')`, and prefer `engines.chevron`.
+  `global.atom` / `require('atom')` are unsupported legacy aliases — LSP code
+  must not introduce new `atom`-named APIs. Default config home is **`~/.chevron`**.
+- **Closed owned catalog** ([package-ecosystem-strategy.md](./package-ecosystem-strategy.md), #83):
+  today's extension surface is owned packages (`builtbygio/*` + monorepo), **not**
+  open community install. Sandboxed community packages arrive later with
+  **package host v2**. LSP services are therefore designed as *forward-compatible
+  seams*, consumed by owned packages now (§5.8).
 - **Phase S invariant:** package/worker code does not get a Node `BrowserWindow`.
 - **cpm is the installer** — any server distribution story routes through cpm, not a new mechanism.
 
@@ -113,8 +121,8 @@ binaries is a trust decision, not a config decision**. Chevron should copy both.
 | VS Code | Dedicated host process, `vscode-jsonrpc`, workspace trust, platform binaries | Full extension-host API surface |
 
 **Chosen strategy:** *one supervised LSP host in a utilityProcess*, exposing
-**services** that bundled and community packages consume — the Phase S pattern
-applied to a second workload.
+**services** that owned-catalog packages consume today (and sandboxed community
+packages consume after host v2) — the Phase S pattern applied to a second workload.
 
 ---
 
@@ -129,6 +137,8 @@ applied to a second workload.
 | 16 tree-sitter grammars, TextMate grammars elsewhere | Language identity for `languageId` must map from Atom scope names, not file extension alone |
 | Electron 43 / Node 24 in-app | Modern `child_process`, `AbortSignal`, streams available in the host |
 | Five-platform CI | Server discovery must handle Windows `.cmd`/`.exe` shims and PATH differences |
+| Closed owned catalog (#83) | Server registration/UI-replacement seams have **owned** consumers today; they are built for host v2, not for an open ecosystem now |
+| Unowned `atom/*` language packs are temporary SHA pins (#79) | Scope → `languageId` table must not hard-depend on those packages surviving |
 
 ---
 
@@ -175,6 +185,13 @@ Rationale:
    already implement synthetic-id routing, typed inbound/outbound messages,
    emergency env escape hatch, and CI integration tests. LSP is the second
    consumer — which is what proves that abstraction.
+4. **Rehearsal for package host v2.** [security-phase-s-package-host.md](./security-phase-s-package-host.md)
+   targets a **restricted host process for T2 package activation**, deferred
+   until base Chevron is ready. LSP exercises the same shape — a supervised
+   host owning untrusted-ish long-lived children, with a typed message
+   boundary and lifecycle policy — on a workload where a crash is recoverable
+   and the blast radius is one language. Lessons here (supervision, backoff,
+   orphan reaping, resource accounting) transfer directly to host v2.
 
 **One host, many servers** (not one host per server): a single supervisor keeps
 restart policy, resource accounting, and shutdown ordering in one place.
@@ -236,7 +253,7 @@ astral-plane characters (emoji), combining marks, and CRLF line endings.
 
 Three sources, in precedence order:
 
-1. **Package-registered** (via `chevron.lsp` service, §5.7) — the hackable path.
+1. **Package-registered** (via `chevron.lsp` service, §5.8) — owned catalog packages today.
 2. **User config** — `~/.chevron/config.cson` → `lsp.servers`, keyed by Atom
    language scope:
    ```coffee
@@ -277,23 +294,83 @@ frequent cross-platform failure.
 **Workspace edits** (rename, code actions) need a transactional multi-file
 apply with undo grouping — a genuine correctness risk, hence Phase 4.
 
-### 5.7 Service APIs (keep it hackable)
+### 5.7 Completion integration (`autocomplete-plus`)
 
-Provided by the LSP core package, consumable by any community package:
+**LSP does not replace `autocomplete-plus`.** That package is the completion
+*framework* — it provides `autocomplete.watchEditor`, decides when to trigger,
+queries providers, merges/filters/renders the popup, and inserts the result
+(expanding snippets via the `snippets` service). The *sources* are separate
+packages (`autocomplete-css`, `-html`, `-snippets`, `-chevron-api`). **LSP
+registers as one more source**, which is why completion needs zero forking.
+
+```text
+autocomplete-plus                ← framework (unchanged)
+  ├── autocomplete-css/-html         ← static lists (fallback)
+  ├── autocomplete-snippets          ← user snippets (LSP cannot know these)
+  ├── autocomplete-chevron-api       ← editor API completions
+  └── lsp completion provider        ← NEW: semantic, server-driven
+```
+
+#### 5.7.1 The ranking problem
+
+`lib/provider-manager.js` merges providers by `inclusionPriority`,
+`excludeLowerPriority`, and `suggestionPriority`; `lib/suggestion-list-element.js`
+renders a fixed field set: `text`, `snippet`, `displayText`, `replacementPrefix`,
+`type`, `leftLabel`, `rightLabel`, `characterMatchIndices`.
+
+**There is no `sortText` field.** An LSP server's `sortText` ordering *is* the
+semantic signal — "this is the most likely completion in this context" — and it
+is most of what makes modern completion feel intelligent. If autocomplete-plus
+re-sorts by its own fuzzy score, or interleaves word-based suggestions, that
+ranking is destroyed and the result is barely better than today.
+
+#### 5.7.2 Adapter requirements
+
+| # | Requirement | Why |
+|---|-------------|-----|
+| 1 | Register with high `inclusionPriority` + **`excludeLowerPriority: true`** when a server is active for the scope | Suppresses static providers and preserves server order |
+| 2 | Return suggestions **in server order**; do not locally re-sort | `sortText` is semantic, not alphabetical |
+| 3 | Honour **`isIncomplete: true`** by re-querying on each keystroke instead of filtering locally | Local fuzzy filtering over an incomplete list hides valid results |
+| 4 | Map `completionItem/resolve` → **`getSuggestionDetailsOnSelect`** | Lazy docs/detail; avoids resolving every item |
+| 5 | Cancel in-flight requests on new input (`$/cancelRequest`) | Typing outruns the server; stale responses must not render |
+| 6 | Carve out **snippets**: keep `autocomplete-snippets` visible even when excluding lower priority | User snippets are invisible to the server (LSP `InsertTextFormat.Snippet` ≠ your `snippets.cson`) |
+| 7 | Translate `textEdit` ranges → `replacementPrefix` faithfully | Servers replace ranges that may extend behind the cursor |
+
+#### 5.7.3 Open risk
+
+Requirements 1–2 are a **priority trick**, not a real ranking contract: they
+suppress competitors rather than teach the framework about server ordering. If
+that proves lossy in practice — e.g. snippets must interleave *and* server
+order must hold — the honest fix is a small patch to `autocomplete-plus`
+(now an owned package under `builtbygio` pins) adding `sortText` passthrough.
+
+**Do not assume this up front.** Phase 2 spikes the adapter with priorities
+only, measures against a realistic TypeScript file, and patches upstream only
+on evidence. Recorded as open decision §12.9.
+
+### 5.8 Service APIs (seams for owned packages, and later host v2)
+
+Provided by the LSP core package. Under the closed-catalog policy the consumers
+today are **owned catalog packages**; the same surface becomes the community
+extension point when **package host v2** lands:
 
 | Service | Version | Purpose |
 |---------|---------|---------|
 | `chevron.lsp` | 1.0.0 | Register a server: `{ scopes, command, args, initializationOptions }` |
-| `lsp.diagnostics` | 1.0.0 | Subscribe to normalized diagnostics (also lets a community `linter` UI replace ours) |
+| `lsp.diagnostics` | 1.0.0 | Subscribe to normalized diagnostics (lets an alternative UI replace ours) |
 | `lsp.definitions` | 1.0.0 | Query definitions programmatically |
-| `lsp.hover` | 1.0.0 | Hover content (Atom-era name: `datatip`-shaped) |
+| `lsp.hover` | 1.0.0 | Hover content (Atom-era shape: `datatip`) |
 
 Consumed: `autocomplete.provider` (v4.0), `status-bar`.
 
-This is the Atom thesis applied correctly: **we ship the plumbing and a
-reference UI; packages can replace the UI or add servers without forking core.**
+**Why build seams for an ecosystem that is currently closed:** the services cost
+little now (owned packages use them to stay decoupled from core), they keep the
+reference UI genuinely replaceable rather than nominally so, and they are the
+exact surface host v2 will need to expose across a process boundary. Designing
+them now — while the only consumers are ours and mistakes are cheap to
+change — is strictly easier than retrofitting them later.
 
-### 5.8 Lifecycle and supervision
+### 5.9 Lifecycle and supervision
 
 | Policy | v1 behaviour |
 |--------|--------------|
@@ -305,7 +382,7 @@ reference UI; packages can replace the UI or add servers without forking core.**
 | Orphans | Host tracks child PIDs; manager kills the tree if the host dies (reuse the git host's `tree-kill` approach) |
 | Visibility | A `chevron-lsp: status` command listing servers, state, PID, uptime, restarts, RSS |
 
-### 5.9 Libraries
+### 5.10 Libraries
 
 | Concern | Choice |
 |---------|--------|
@@ -348,16 +425,18 @@ that repo."** This is precisely why VS Code shipped Workspace Trust.
 |------|---------|
 | Server reads secrets outside project | Servers get project roots as `workspaceFolders`; document that LSP does not sandbox filesystem access |
 | Malicious server output | Treat all server strings as **untrusted data**: no HTML injection in hover (render markdown safely, no raw HTML), clamp diagnostic counts/sizes |
-| Resource exhaustion | Idle shutdown, restart caps, RSS surfaced (§5.8); a `lsp.maxServers` cap |
+| Resource exhaustion | Idle shutdown, restart caps, RSS surfaced (§5.9); a `lsp.maxServers` cap |
 | Command injection | Never build a shell string; `spawn(command, args, { shell: false })` always |
 | Log leakage | Server stderr goes to a bounded in-memory ring + opt-in file log; never auto-upload |
 
 ### 6.4 Honest limitation
 
 LSP support **does not** sandbox language servers. Trust is binary and
-per-project. Full isolation (seatbelt/AppContainer/namespaces per server) is a
-later platform milestone, and should be stated as such in user docs — the same
-honesty standard as cpm-design §6.1.
+per-project. Per-server OS isolation (seatbelt/AppContainer/namespaces) is a
+later platform milestone — adjacent to, but distinct from,
+[package host v2](./security-phase-s-package-host.md), which isolates *package*
+code rather than the external binaries a server spawns. Both should be stated
+plainly in user docs — the same honesty standard as cpm-design §6.1.
 
 ---
 
@@ -365,7 +444,7 @@ honesty standard as cpm-design §6.1.
 
 | Concern | Approach |
 |---------|----------|
-| Startup cost | Lazy start (§5.8) — no server runs until a matching file opens; zero impact on editor cold start |
+| Startup cost | Lazy start (§5.9) — no server runs until a matching file opens; zero impact on editor cold start |
 | Memory | `rust-analyzer` on a large workspace can exceed 1 GB — surface RSS, allow per-scope disable, idle shutdown |
 | Request storms | Debounce `didChange` (default 150 ms), coalesce hover/completion, cancel in-flight requests on new keystrokes (`$/cancelRequest`) |
 | Main-process load | Manager only routes; all parsing/IO in the host utilityProcess |
@@ -400,7 +479,7 @@ honesty standard as cpm-design §6.1.
 ### Phase 1 — Host + diagnostics (the architecture proof)
 
 - `workers/lsp-host.js` + `lsp-worker-manager.js`, modelled on the git worker pair.
-- `vscode-jsonrpc` connection, lifecycle/supervision (§5.8), workspace-trust gate (§6.2).
+- `vscode-jsonrpc` connection, lifecycle/supervision (§5.9), workspace-trust gate (§6.2).
 - Document sync + position mapping with tests.
 - **Diagnostics UI**: gutter markers, status-bar count, list panel.
 - One language (TypeScript), one platform-agnostic server.
@@ -417,7 +496,7 @@ honesty standard as cpm-design §6.1.
 - `chevron.lsp` registration service; user-config servers; built-in table.
 - Second and third languages (Rust via `rust-analyzer`, Python via `pyright`) as validation of the registry, including a **utf-8 positionEncoding** server.
 - Signature help, references.
-- **Success:** a community package can register a server without touching core.
+- **Success:** an owned-catalog package registers a server without touching core; the same call shape is what host v2 will expose to sandboxed packages.
 
 ### Phase 4 — Advanced edits
 
@@ -470,8 +549,8 @@ docs/lsp-design.md                    # this file
 ```
 
 **Why this split:** core plumbing in `src/` (it is editor infrastructure, and
-must not be uninstallable), reference UI in `packages/lsp-ui` (so the community
-can replace it — the hackable promise). Mirrors the cpm reasoning: ship the
+must not be uninstallable), reference UI in `packages/lsp-ui` (so it is
+genuinely replaceable, not nominally so). Mirrors the cpm reasoning: ship the
 mechanism in core, the policy/UI where it can be swapped.
 
 ---
@@ -498,12 +577,13 @@ perennial cross-platform bug (drive letters, UNC paths, spaces, non-ASCII).
 
 1. **Framing library:** ship `vscode-jsonrpc` (recommended) vs maintain the Phase 0 hand-rolled codec. Decide after the spike, on evidence.
 2. **Trust UX:** modal on first open vs passive status-bar affordance with features off until clicked. (Lean: passive — modals on folder-open are hostile.)
-3. **Diagnostics UI home:** `packages/lsp-ui` (recommended, replaceable) vs core `src/`. Also: adopt the community **`linter` service shape** for drop-in compatibility with existing linter UIs?
+3. **Diagnostics UI home:** `packages/lsp-ui` (recommended, replaceable) vs core `src/`. Also: adopt the Atom-era **`linter` service shape**? Under the closed catalog there is no third-party linter UI to be drop-in compatible *with*, so the argument is now familiarity for future authors and host-v2 readiness — weaker than it looked pre-#83. Consider a Chevron-native shape instead.
 4. **Go-to-definition surface:** patch/fork `symbols-view` to consume a service (it currently provides none) vs a new standalone results view. (Lean: new view in `lsp-ui` for v1; upstream a service into `symbols-view` later.)
 5. **Default `positionEncoding`:** always negotiate, or hard-prefer utf-16 and only support utf-8 servers in Phase 3?
 6. **Host topology:** one host for all servers (recommended) vs one host per server, if a bad server proves able to wedge the host.
 7. **Built-in server table:** ship one at all in v1, or require explicit registration/config? (Lean: ship a table but **only** use entries already on PATH.)
 8. **Server distribution:** stay user-installed forever vs cpm prebuilds in Phase 5.
+9. **Completion ranking (§5.7.3):** priority-trick only (`excludeLowerPriority`) vs a small `sortText` passthrough patch to the now-owned `autocomplete-plus`. Decide on Phase 2 measurement, not up front.
 
 Record resolutions in §14 as they close.
 
@@ -516,8 +596,8 @@ Record resolutions in §14 as they close.
 - [ ] Untrusted project: **no** server process starts; editor remains fully usable.
 - [ ] Server crash recovers automatically; restart storm is capped and surfaced.
 - [ ] Position mapping correct for emoji/combining-mark/CRLF fixtures, utf-16 **and** utf-8 servers.
-- [ ] A community package can register a server via `chevron.lsp` with no core changes.
-- [ ] Diagnostics UI replaceable by a community package via `lsp.diagnostics`.
+- [ ] An owned-catalog package registers a server via `chevron.lsp` with no core changes.
+- [ ] Diagnostics UI replaceable via `lsp.diagnostics` (proven by swapping in a second UI, even a stub).
 - [ ] Editor cold-start time unchanged (lazy start verified by measurement).
 - [ ] Docs state plainly that servers are unsandboxed and trust is per-project.
 
@@ -528,6 +608,7 @@ Record resolutions in §14 as they close.
 | Date | Change |
 |------|--------|
 | 2026-08-07 | Initial design: process model (utilityProcess host), transport, trust gate, capability mapping, phases |
+| 2026-08-07 | Rebased on #83 (Chevron-only API policy + closed owned catalog): constraints, service framing, success criteria. Added §5.7 completion integration (`autocomplete-plus` has no `sortText`) and §12.9. Noted LSP host as a rehearsal for package host v2 (§5.2.4). |
 
 ---
 
@@ -546,6 +627,6 @@ vector.
 
 Atom proved the service seams were right and the renderer-spawn model was
 wrong. VS Code proved a dedicated host plus workspace trust is the answer.
-Chevron takes both, ships a reference UI it invites the community to replace,
+Chevron takes both, ships a reference UI behind replaceable seams,
 and — per the project's own standard — says plainly what it does **not**
 protect against.
