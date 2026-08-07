@@ -4,7 +4,8 @@
 
 | Phase | Status | Contents |
 |-------|--------|----------|
-| **0** | **In progress / landed** | `framing.js` — Content-Length codec (learning + tests). Spike: `script/lsp-phase0-spike.js` |
-| 1+ | Not started | Host utilityProcess, trust, document sync, UI, providers |
+| **0** | **Done** | `framing.js` + tests; spike `script/lsp-phase0-spike.js` |
+| **1** | **In progress** | Host `workers/lsp-host.js`, `lsp-worker-manager.js`, trust, document sync, `packages/lsp-ui` diagnostics status |
+| 2+ | Not started | Hover, definition, completion adapter, multi-server |
 
-Production Phase 1 may switch the connection layer to `vscode-jsonrpc` per the plan; framing tests stay valuable either way.
+Host still uses the Phase 0 framing codec; may adopt `vscode-jsonrpc` later without changing the process model.

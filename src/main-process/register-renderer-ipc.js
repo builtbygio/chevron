@@ -987,4 +987,49 @@ module.exports = function registerRendererIpc(atomApplication) {
     const win = browserWindowFromEvent(event);
     return dialog.showOpenDialog(win || undefined, options || {});
   });
+
+  // --- LSP host (Phase 1) ---------------------------------------------------
+  const lspManager = require('./lsp-worker-manager');
+
+  ipcMain.handle('lsp:subscribe', event => {
+    lspManager.subscribe(event.sender);
+    return { ok: true };
+  });
+
+  ipcMain.handle('lsp:unsubscribe', event => {
+    lspManager.unsubscribe(event.sender);
+    return { ok: true };
+  });
+
+  ipcMain.handle('lsp:is-trusted', async (_event, { projectRoot } = {}) => {
+    return lspManager.isTrusted(projectRoot);
+  });
+
+  ipcMain.handle('lsp:set-trust', async (_event, { projectRoot, trusted } = {}) => {
+    return lspManager.setTrusted(projectRoot, Boolean(trusted));
+  });
+
+  ipcMain.handle('lsp:list-trusted', async () => {
+    return lspManager.listTrusted();
+  });
+
+  ipcMain.handle('lsp:start-server', async (_event, opts = {}) => {
+    return lspManager.startServer(opts);
+  });
+
+  ipcMain.handle('lsp:request', async (_event, { serverId, method, params, timeoutMs } = {}) => {
+    return lspManager.request(serverId, method, params, timeoutMs);
+  });
+
+  ipcMain.handle('lsp:notify', async (_event, { serverId, method, params } = {}) => {
+    return lspManager.notify(serverId, method, params);
+  });
+
+  ipcMain.handle('lsp:stop-server', async (_event, { serverId } = {}) => {
+    return lspManager.stopServer(serverId);
+  });
+
+  ipcMain.handle('lsp:list-servers', async () => {
+    return lspManager.listServers();
+  });
 };

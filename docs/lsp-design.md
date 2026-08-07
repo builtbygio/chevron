@@ -625,6 +625,7 @@ Do **not** start Phase 1 until Phase 0 exit criteria pass.
 | 2026-08-07 | Rebased on #83 (Chevron-only API policy + closed owned catalog): constraints, service framing, success criteria. Added §5.7 completion integration (`autocomplete-plus` has no `sortText`) and §12.9. Noted LSP host as a rehearsal for package host v2 (§5.2.4). |
 | 2026-08-07 | **Promoted to plan.** §12 decisions locked; implementation order fixed. |
 | 2026-08-07 | **Phase 0 landed:** `src/lsp/framing.js` + `script/ci/lsp-framing.test.js`; optional spike `script/lsp-phase0-spike.js` (typescript-language-server hover). Ready for Phase 1. |
+| 2026-08-07 | **Phase 1 landed (MVP):** utilityProcess `lsp-host` + manager, workspace trust, document sync, TypeScript built-in when trusted, `packages/lsp-ui` status + trust nudge, CI tests. |
 
 ---
 

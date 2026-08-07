@@ -61,6 +61,7 @@ if (global.isGeneratingSnapshot) {
   require('welcome');
   require('whitespace');
   require('wrap-guide');
+  require('lsp-ui');
 }
 
 const clipboard = new Clipboard();
@@ -115,5 +116,14 @@ module.exports = function({ blobStore }) {
     window.addEventListener('focus', windowFocused);
 
     ipcRenderer.on('environment', (event, env) => updateProcessEnv(env));
+
+    // LSP Phase 1 client (diagnostics + TypeScript when project trusted)
+    try {
+      const lsp = require('./lsp');
+      global.__chevronLsp = lsp;
+      lsp.activate();
+    } catch (err) {
+      console.error('[chevron-lsp] activate failed', err);
+    }
   });
 };
