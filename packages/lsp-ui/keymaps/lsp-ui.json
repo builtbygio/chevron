@@ -1,0 +1,6 @@
+{
+  "atom-workspace atom-text-editor:not([mini])": {
+    "f12": "chevron-lsp:go-to-definition",
+    "alt-f1": "chevron-lsp:show-hover"
+  }
+}

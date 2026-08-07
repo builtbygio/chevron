@@ -1,17 +1,20 @@
 'use strict';
 
 /**
- * Renderer-side LSP client activation (Phase 1).
- * Diagnostics, document sync, TypeScript built-in server when project trusted.
+ * Renderer-side LSP client (Phase 1 + Phase 2).
+ * Diagnostics, document sync, hover, definition, completion for TypeScript
+ * when the project is trusted.
  */
 
 const { CompositeDisposable, Emitter } = require('event-kit');
 const { ipcRenderer } = require('electron');
 const { DocumentSync } = require('./document-sync');
-const { isTypescriptScope, languageIdForScope } = require('./language-id');
+const { isTypescriptScope } = require('./language-id');
 const { pathToUri } = require('./path-uri');
 const { resolveBuiltinServer } = require('./builtin-servers');
-const { lspToPoint } = require('./position');
+const { hoverAt } = require('./providers/hover');
+const { definitionAt } = require('./providers/definitions');
+const { createAutocompleteProvider } = require('./providers/autocomplete');
 
 let activated = false;
 let disposables = null;
@@ -21,6 +24,15 @@ let documentSync = null;
 const diagnosticsByUri = new Map();
 /** projectRoot -> serverId started */
 const startedRoots = new Map();
+/** completion latency samples (ms) for Phase 2 measurement */
+const completionLatencySamples = [];
+const MAX_LATENCY_SAMPLES = 200;
+
+const clientApi = {
+  request,
+  getServerIdForEditor,
+  recordCompletionLatency
+};
 
 function getResourcePath() {
   try {
@@ -41,9 +53,44 @@ function projectRootForEditor(editor) {
     const dirPath = dir.getPath && dir.getPath();
     if (dirPath && filePath.startsWith(dirPath)) return dirPath;
   }
-  // single file: use dirname
   const path = require('path');
   return path.dirname(filePath);
+}
+
+function getServerIdForEditor(editor) {
+  const root = projectRootForEditor(editor);
+  return root ? startedRoots.get(root) || null : null;
+}
+
+async function request(serverId, method, params, timeoutMs) {
+  return ipcRenderer.invoke('lsp:request', {
+    serverId,
+    method,
+    params,
+    timeoutMs
+  });
+}
+
+function recordCompletionLatency(ms, count) {
+  completionLatencySamples.push({ ms, count, t: Date.now() });
+  if (completionLatencySamples.length > MAX_LATENCY_SAMPLES) {
+    completionLatencySamples.shift();
+  }
+  if (emitter) {
+    emitter.emit('did-completion-latency', { ms, count });
+  }
+}
+
+function getCompletionLatencyStats() {
+  if (completionLatencySamples.length === 0) {
+    return { n: 0, p50: null, p95: null, mean: null };
+  }
+  const sorted = completionLatencySamples.map(s => s.ms).sort((a, b) => a - b);
+  const n = sorted.length;
+  const mean = sorted.reduce((a, b) => a + b, 0) / n;
+  const p50 = sorted[Math.floor(n * 0.5)];
+  const p95 = sorted[Math.min(n - 1, Math.floor(n * 0.95))];
+  return { n, p50, p95, mean: Math.round(mean) };
 }
 
 async function ensureServerForEditor(editor) {
@@ -121,6 +168,18 @@ function handleLspEvent(_event, msg) {
   }
 }
 
+async function hoverAtCursor(editor, point) {
+  return hoverAt(clientApi, editor, point);
+}
+
+async function definitionAtCursor(editor, point) {
+  return definitionAt(clientApi, editor, point);
+}
+
+function getAutocompleteProvider() {
+  return createAutocompleteProvider(clientApi);
+}
+
 function activate() {
   if (activated) return exports;
   activated = true;
@@ -134,10 +193,7 @@ function activate() {
     notify: (serverId, method, params) => {
       ipcRenderer.invoke('lsp:notify', { serverId, method, params }).catch(() => {});
     },
-    getServerIdForEditor: editor => {
-      const root = projectRootForEditor(editor);
-      return root ? startedRoots.get(root) : null;
-    }
+    getServerIdForEditor
   });
 
   const env = global.chevron || global.atom;
@@ -169,7 +225,6 @@ function activate() {
           });
           env.notifications &&
             env.notifications.addSuccess(`Trusted project for language servers:\n${root}`);
-          // Re-scan open editors
           for (const editor of env.workspace.getTextEditors()) {
             const serverId = await ensureServerForEditor(editor);
             if (serverId) documentSync.observeEditor(editor);
@@ -191,16 +246,38 @@ function activate() {
         'chevron-lsp:status': async () => {
           const servers = await ipcRenderer.invoke('lsp:list-servers');
           const trusted = await ipcRenderer.invoke('lsp:list-trusted');
+          const lat = getCompletionLatencyStats();
+          const latLine =
+            lat.n > 0
+              ? `Completion latency (n=${lat.n}): p50=${lat.p50}ms p95=${lat.p95}ms mean=${lat.mean}ms`
+              : 'Completion latency: no samples yet';
           const lines = [
             `Trusted roots: ${trusted.length}`,
             ...trusted.map(r => `  • ${r}`),
             `Servers: ${servers.length}`,
             ...servers.map(
               s => `  • ${s.serverId} state=${s.state} pid=${s.pid || '?'}`
-            )
+            ),
+            latLine
           ];
           env.notifications &&
             env.notifications.addInfo(lines.join('\n'), { dismissable: true });
+        },
+        'chevron-lsp:go-to-definition': async () => {
+          const editor = env.workspace.getActiveTextEditor();
+          if (!editor) return;
+          await ensureServerForEditor(editor);
+          if (documentSync) documentSync.observeEditor(editor);
+          const locations = await definitionAtCursor(editor);
+          emitter.emit('did-request-definition', { editor, locations });
+        },
+        'chevron-lsp:show-hover': async () => {
+          const editor = env.workspace.getActiveTextEditor();
+          if (!editor) return;
+          await ensureServerForEditor(editor);
+          if (documentSync) documentSync.observeEditor(editor);
+          const hover = await hoverAtCursor(editor);
+          emitter.emit('did-request-hover', { editor, hover });
         }
       })
     );
@@ -218,6 +295,7 @@ function deactivate() {
   disposables = null;
   diagnosticsByUri.clear();
   startedRoots.clear();
+  completionLatencySamples.length = 0;
 }
 
 function getDiagnostics(uri) {
@@ -236,6 +314,14 @@ function onDidFailStart(cb) {
   return emitter.on('did-fail-start', cb);
 }
 
+function onDidRequestHover(cb) {
+  return emitter.on('did-request-hover', cb);
+}
+
+function onDidRequestDefinition(cb) {
+  return emitter.on('did-request-definition', cb);
+}
+
 module.exports = {
   activate,
   deactivate,
@@ -243,10 +329,20 @@ module.exports = {
   onDidPublishDiagnostics,
   onDidChangeTrustNeeded,
   onDidFailStart,
+  onDidRequestHover,
+  onDidRequestDefinition,
+  hoverAtCursor,
+  definitionAtCursor,
+  getAutocompleteProvider,
+  getCompletionLatencyStats,
+  request,
+  getServerIdForEditor,
   // test hooks
   _internals: {
     projectRootForEditor,
     diagnosticsByUri,
-    startedRoots
+    startedRoots,
+    completionLatencySamples,
+    clientApi
   }
 };
