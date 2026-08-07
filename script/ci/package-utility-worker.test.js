@@ -94,6 +94,7 @@ describe('package-utility-worker', () => {
   after(() => {
     if (util) util._resetForTests();
     delete process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
+    delete process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW;
   });
 
   it('parseWorkerLoadUrl extracts github worker query', () => {
@@ -115,12 +116,14 @@ describe('package-utility-worker', () => {
     );
   });
 
-  it('isEnabled defaults on; respects CHEVRON_GITHUB_UTILITY_WORKERS', () => {
+  it('isEnabled on by default; emergency BW path disables utility', () => {
     delete process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
+    delete process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW;
     assert.strictEqual(util.isEnabled(), true);
-    process.env.CHEVRON_GITHUB_UTILITY_WORKERS = '0';
+    process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW = '1';
     assert.strictEqual(util.isEnabled(), false);
-    process.env.CHEVRON_GITHUB_UTILITY_WORKERS = 'false';
+    delete process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW;
+    process.env.CHEVRON_GITHUB_UTILITY_WORKERS = '0';
     assert.strictEqual(util.isEnabled(), false);
     process.env.CHEVRON_GITHUB_UTILITY_WORKERS = '1';
     assert.strictEqual(util.isEnabled(), true);

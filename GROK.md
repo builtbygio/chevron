@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-08-01 (0.6.0)
+**Date of this handoff:** 2026-08 (Phase S complete / Option C)
 
 ---
 
@@ -12,8 +12,8 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 | Horizon | Goal |
 |---------|------|
-| **Near term** | **Phase S prep** — natives / package host redesign toward editor sandbox |
-| **Medium term** | Product depth: Git polish, optional AI, packages first-class |
+| **Near term** | Package ownership forks (#58), full Jasmine CI (#57), product polish |
+| **Medium term** | Package host v2, Git polish, optional AI |
 | **Long term** | Possible Avalonia rehost; keep hackable package spirit |
 
 **Do not** rebase onto Pulsar unless the owner revisits that decision.  
@@ -30,7 +30,8 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | Package / productName | `chevron` / **Chevron** |
 | Bundle ID | `dev.builtbygio.chevron` |
 | Security (page) | `contextIsolation: true`, `nodeIntegration: false` |
-| Security (preload) | Node + natives; `sandbox: false` (hackable until Phase S) |
+| Security (preload) | Node + natives; `sandbox: false` (**Phase S Option C** — intentional) |
+| Git workers | **utilityProcess** (BW emergency-only) |
 | Community packages | Privileged `require` **restricted by default** |
 | FS IPC | Strict roots **on** by default (`core.fsIpcStrict`) |
 | Telemetry | Off — no metrics/exception-reporting; crash upload forced off |
@@ -122,37 +123,26 @@ Workflow when changing a package:
 
 ## What needs to be done next
 
-### Phase S prep (primary next track)
+### Phase S — **complete**
 
-Authoritative plan: **`docs/security-phase-s.md`**.  
-Background: **`docs/security-phase-n.md`**, **`docs/security-phase-n5.md`**, closed BP **`docs/electron-best-practices-plan.md`**.  
-Inventory: **`src/preload-natives.js`**.
+Authoritative: **`docs/security-phase-s.md`** + **`docs/security-phase-s-decision.md`** (Option C).  
+Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require restrict.
 
-| Stream | Status |
-|--------|--------|
-| S0 Inventory + plan | **Done** |
-| S1.0 Community native addon / `.node` block | **Done** (default with require restrict) |
-| S1.2 Package host design note | **Done** — `docs/security-phase-s-package-host.md` |
-| S2 Easy native relocation (main-only tags) | Pending (`nslog`/`fs-admin` already main-only) |
-| S3 github → utilityProcess | **default-on** — `CHEVRON_GITHUB_UTILITY_WORKERS` / `core.githubUtilityWorkers` (opt out with `=0`); BW fallback remains (#61) |
-| S5 Option A spike vs Option C (sandbox may stay false) | Pending (design leans Option C for editor) |
-| S6 Flip editor `sandbox: true` | **Blocked** on S5 decision |
+### Primary next tracks (post–Phase S)
 
-Recommended spine: **Option B** package-host isolation first; full Chromium sandbox is optional (Option C may be permanent for editor hot-path natives).
-
-1. ~~N0–N5.1~~ **done**  
-2. ~~Electron BP P0–P3 shippable~~ **done** (0.6.0)  
-3. ~~S0 + S1.0 + S1.2~~ **done**  
-4. **S3** remove BrowserWindow worker path after more dogfood; optional github fork cleanup  
-5. **S5** decide sandbox strategy; only then S6  
+1. **#58** — fork next-tier `atom/*` packages  
+2. **#57** — full Jasmine suite on CI (nightly / opt-in)  
+3. **#62** — fully retire Babel 5 / Coffee (isolation knob exists)  
+4. Optional: package host **v2**, S4 sendSync→invoke  
 
 **Dev policy env:**  
 - `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log privileged + native requires  
 - `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` — opt **out** of community privileged/native restrict (default is on)  
 - `CHEVRON_FS_IPC_STRICT=0` — opt out of strict FS IPC roots  
 - `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` — re-enable experimental Chromium features  
-- `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` — refuse Coffee/Babel-5 compile-cache (see `docs/babel-coffee-isolation-plan.md`)  
-- `CHEVRON_GITHUB_UTILITY_WORKERS=0` — opt **out** of utilityProcess git workers (default is **on**)  
+- `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` — refuse Coffee/Babel-5 compile-cache  
+- `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1` — **emergency** Node BW git workers only  
+
 
 ### Optional hygiene
 
@@ -226,8 +216,9 @@ git status
 - [x] Multi-platform CI (macOS, Linux, Windows)  
 - [x] cpm Phases 0–4 + Pulsar settings  
 - [x] Phase N + Electron BP shippable defaults (protocol/IPC/CSP/require/FS/fuses)  
-- [ ] Phase S: editor sandbox after natives migration  
+- [x] Phase S complete under Option C (editor sandbox false intentional; utilityProcess git workers)  
 - [ ] Package migration notes for community authors (Node not guaranteed long-term)  
+
 
 ---
 

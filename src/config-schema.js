@@ -59,9 +59,9 @@ const configSchema = {
       githubUtilityWorkers: {
         type: 'boolean',
         default: true,
-        title: 'GitHub package: utilityProcess git workers',
+        title: 'GitHub package: utilityProcess git workers (Phase S3)',
         description:
-          'When enabled (default), the GitHub package runs git operations in an Electron utilityProcess instead of a hidden Node BrowserWindow (Phase S3). Disable to fall back to the legacy Node BrowserWindow worker. Env `CHEVRON_GITHUB_UTILITY_WORKERS=0` also disables. Requires relaunch. See docs/security-phase-s-utilityprocess.md.'
+          'Phase S3 complete: git workers use utilityProcess (always on for the product path). Disabling is an emergency fallback only (legacy Node BrowserWindow); prefer env `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1`. Requires relaunch. See docs/security-phase-s-utilityprocess.md.'
       },
       disabledPackages: {
         type: 'array',

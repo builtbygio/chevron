@@ -238,12 +238,14 @@ function applySecurityPolicyEnv(config) {
     process.env.CHEVRON_FS_IPC_STRICT = fsStrict === false ? '0' : '1';
   }
 
-  // Phase S3 / #61: github git workers via utilityProcess (default ON).
-  // Explicit env wins; otherwise config (default true). Set =0 / false to opt out.
-  const utilEnv = process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
-  if (utilEnv === undefined || utilEnv === '' || utilEnv === 'default') {
-    const utilConfig = config.get('core.githubUtilityWorkers');
-    process.env.CHEVRON_GITHUB_UTILITY_WORKERS =
-      utilConfig === false ? '0' : '1';
+  // Phase S3 complete: utilityProcess git workers are the product path.
+  // Config false / CHEVRON_GITHUB_UTILITY_WORKERS=0 maps to emergency BW path.
+  if (!process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW) {
+    const utilEnv = process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
+    if (utilEnv === undefined || utilEnv === '' || utilEnv === 'default') {
+      const utilConfig = config.get('core.githubUtilityWorkers');
+      process.env.CHEVRON_GITHUB_UTILITY_WORKERS =
+        utilConfig === false ? '0' : '1';
+    }
   }
 }
