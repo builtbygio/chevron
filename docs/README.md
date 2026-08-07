@@ -54,7 +54,8 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [security-phase-n4.md](./security-phase-n4.md) | N4 guest WebContents polish |
 | [security-phase-n5.md](./security-phase-n5.md) | N5 secondary windows; Phase S path (hackable-compatible) |
 | [package-node-policy.md](./package-node-policy.md) | Package author Node policy |
-| [package-ownership-inventory.md](./package-ownership-inventory.md) | Owned vs `atom/*` pins + fork queue |
+| [package-ownership-inventory.md](./package-ownership-inventory.md) | Owned vs `atom/*` pins (language packs deferred) |
+| [owned-package-modernization-checklist.md](./owned-package-modernization-checklist.md) | Per-package ownership → modernize PR checklist |
 | [sca-runtime-inventory.md](./sca-runtime-inventory.md) | npm audit prioritisation (runtime vs test) |
 | [remote-ipc-inventory.md](./remote-ipc-inventory.md) | Historical remote/IPC map |
 

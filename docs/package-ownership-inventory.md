@@ -1,10 +1,10 @@
 # Bundled package ownership inventory
 
-**Status:** living inventory (audit P1 — issues #58, #63)  
+**Status:** living inventory  
 **Source of truth for pins:** root [`package.json`](../package.json) `dependencies`  
-**Policy:** Tier-1 high-touch packages → `builtbygio/*` forks; remaining `atom/*` pins stay SHA-locked until forked or replaced.
+**Modernization process:** [owned-package-modernization-checklist.md](./owned-package-modernization-checklist.md)
 
-## Summary (0.6.x baseline)
+## Summary (current)
 
 | Class | Count | Policy |
 |-------|------:|--------|
@@ -93,4 +93,3 @@ Language packs remain last unless a grammar blocks smoke.
 
 - [sca-runtime-inventory.md](./sca-runtime-inventory.md)  
 - [package-node-policy.md](./package-node-policy.md)  
-- Audit issues #58, #63 under tracking #51  
