@@ -15,18 +15,18 @@ Good first contributions while the migration is ongoing:
 
 ## Workflow
 
-Chevron uses a **branch → PR → merge** workflow, no direct commits to `main`.
+Chevron uses a **branch → PR → merge** workflow, no direct commits to `master`.
 
 1. **Fork** the repo (or branch directly if you have write access)
-2. **Branch** off `main` using a descriptive prefix:
+2. **Branch** off `master` using a descriptive prefix:
    - `feature/...` for new functionality
    - `fix/...` for bug fixes
    - `refactor/...` for internal restructuring (common right now, given the migration)
    - `docs/...` for documentation-only changes
 3. **Commit** in small, focused chunks with clear messages explaining *why*, not just *what*
-4. **Push** your branch and **open a PR** against `main`
+4. **Push** your branch and **open a PR** against `master`
 5. Expect discussion/review even on solo-adjacent projects — it's how the codebase stays coherent
-6. PRs are typically merged with `--squash` to keep `main` history clean
+6. PRs are typically merged with `--squash` to keep `master` history clean
 
 ## Code style
 
@@ -48,4 +48,4 @@ If something about the project's direction, architecture, or current focus is un
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the project's [MIT License](LICENSE).
+By contributing, you agree that your contributions will be licensed under the project's [MIT License](LICENSE.md).

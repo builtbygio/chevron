@@ -599,25 +599,31 @@ module.exports = class AtomApplication extends EventEmitter {
       if (atomWindow) atomWindow.browserWindow.inspectElement(x, y);
     });
 
+    // Help menu → Chevron project surfaces (not dead atom.io / atom/atom).
     this.on('application:open-documentation', () =>
-      shell.openExternal('http://flight-manual.atom.io')
+      shell.openExternal(
+        'https://github.com/builtbygio/chevron/blob/master/docs/README.md'
+      )
     );
     this.on('application:open-discussions', () =>
-      shell.openExternal('https://github.com/atom/atom/discussions')
+      shell.openExternal('https://github.com/builtbygio/chevron/issues')
     );
     this.on('application:open-faq', () =>
-      shell.openExternal('https://atom.io/faq')
+      shell.openExternal('https://github.com/builtbygio/chevron#status')
     );
+    // Historical "Terms of Use" (atom.io product ToS). Open-source MIT license.
     this.on('application:open-terms-of-use', () =>
-      shell.openExternal('https://atom.io/terms')
+      shell.openExternal(
+        'https://github.com/builtbygio/chevron/blob/master/LICENSE.md'
+      )
     );
     this.on('application:report-issue', () =>
       shell.openExternal(
-        'https://github.com/atom/atom/blob/master/CONTRIBUTING.md#reporting-bugs'
+        'https://github.com/builtbygio/chevron/issues/new/choose'
       )
     );
     this.on('application:search-issues', () =>
-      shell.openExternal('https://github.com/search?q=+is%3Aissue+user%3Aatom')
+      shell.openExternal('https://github.com/builtbygio/chevron/issues')
     );
 
     this.on('application:install-update', () => {

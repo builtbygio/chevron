@@ -89,7 +89,7 @@ Platform guides:
 
 ## License
 
-Atom was released under the MIT License. This fork retains that license — see [LICENSE](LICENSE).
+Atom was released under the MIT License. This fork retains that license — see [LICENSE.md](LICENSE.md).
 
 ## Acknowledgments
 

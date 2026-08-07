@@ -39,30 +39,30 @@
           "type": "separator"
         },
         {
-          "label": "Preferences…",
+          "label": "Preferences\u2026",
           "command": "application:show-settings"
         },
         {
           "type": "separator"
         },
         {
-          "label": "Config…",
+          "label": "Config\u2026",
           "command": "application:open-your-config"
         },
         {
-          "label": "Init Script…",
+          "label": "Init Script\u2026",
           "command": "application:open-your-init-script"
         },
         {
-          "label": "Keymap…",
+          "label": "Keymap\u2026",
           "command": "application:open-your-keymap"
         },
         {
-          "label": "Snippets…",
+          "label": "Snippets\u2026",
           "command": "application:open-your-snippets"
         },
         {
-          "label": "Stylesheet…",
+          "label": "Stylesheet\u2026",
           "command": "application:open-your-stylesheet"
         },
         {
@@ -116,11 +116,11 @@
           "command": "application:new-file"
         },
         {
-          "label": "Open…",
+          "label": "Open\u2026",
           "command": "application:open"
         },
         {
-          "label": "Add Project Folder…",
+          "label": "Add Project Folder\u2026",
           "command": "application:add-project-folder"
         },
         {
@@ -147,7 +147,7 @@
           "command": "core:save"
         },
         {
-          "label": "Save As…",
+          "label": "Save As\u2026",
           "command": "core:save-as"
         },
         {
@@ -439,7 +439,7 @@
           "label": "Developer",
           "submenu": [
             {
-              "label": "Open In Dev Mode…",
+              "label": "Open In Dev Mode\u2026",
               "command": "application:open-dev"
             },
             {
@@ -589,10 +589,6 @@
       "role": "help",
       "submenu": [
         {
-          "label": "Terms of Use",
-          "command": "application:open-terms-of-use"
-        },
-        {
           "label": "Documentation",
           "command": "application:open-documentation"
         },
@@ -604,7 +600,7 @@
           "type": "separator"
         },
         {
-          "label": "Community Discussions",
+          "label": "Community Issues",
           "command": "application:open-discussions"
         },
         {
