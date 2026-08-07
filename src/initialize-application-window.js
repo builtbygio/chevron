@@ -67,7 +67,7 @@ const clipboard = new Clipboard();
 TextEditor.setClipboard(clipboard);
 TextEditor.viewForItem = item => atom.views.getView(item);
 
-// Chevron-primary global; atom remains an alias for dual-support packages.
+// Chevron-only product global. global.atom is an unsupported legacy alias.
 const atomEnvironment = new AtomEnvironment({
   clipboard,
   applicationDelegate: new ApplicationDelegate(),
@@ -76,8 +76,8 @@ const atomEnvironment = new AtomEnvironment({
 global.chevron = atomEnvironment;
 global.atom = atomEnvironment;
 
-TextEditor.setScheduler(global.atom.views);
-global.atom.preloadPackages();
+TextEditor.setScheduler(global.chevron.views);
+global.chevron.preloadPackages();
 // Like sands through the hourglass, so are the days of our lives.
 module.exports = function({ blobStore }) {
   const { updateProcessEnv } = require('./update-process-env');
@@ -98,15 +98,15 @@ module.exports = function({ blobStore }) {
     process.env.NODE_ENV = 'production';
   }
 
-  global.atom.initialize({
+  global.chevron.initialize({
     window,
     document,
     blobStore,
-    configDirPath: process.env.ATOM_HOME,
+    configDirPath: process.env.CHEVRON_HOME || process.env.ATOM_HOME,
     env: process.env
   });
 
-  return global.atom.startEditorWindow().then(function() {
+  return global.chevron.startEditorWindow().then(function() {
     // Workaround for focus getting cleared upon window creation
     const windowFocused = function() {
       window.removeEventListener('focus', windowFocused);

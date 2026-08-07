@@ -17,7 +17,8 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | **Long term** | Possible Avalonia rehost; keep hackable package spirit |
 
 **Do not** rebase onto Pulsar unless the owner revisits that decision.  
-**Dual-support forever:** `global.atom`, `atom://`, `engines.atom`, `apm` name (shim → cpm).
+**Chevron only:** product API is `global.chevron` / `require('chevron')` / `engines.chevron` / `~/.chevron`. Atom surfaces are unsupported legacy shims (may be removed). See [docs/REBRANDING.md](docs/REBRANDING.md).  
+**Packages:** **owned catalog only** for now; sandboxed community packages later (host v2). See [docs/package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md).
 
 ---
 
@@ -130,11 +131,11 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 
 ### Primary next tracks (post–Phase S)
 
-1. **#58** — fork next-tier `atom/*` packages  
+1. Expand / modernize **owned catalog** (builtbygio pins) — [package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md)  
 2. **#57** — full Jasmine suite on CI (nightly / opt-in)  
-3. **#62** — Coffee + Babel 5 **runtime dropped** (Options 2–3); TypeScript remains  
-4. **Atom→Chevron rename** — Phases 0–5 in progress on branch (chevron globals/require, theme renames); follow-on: atom-keymap / @atom/*  
-5. Optional: package host **v2**, S4 sendSync→invoke  
+3. Residual renames: atom-keymap / atom-select-list / `@atom/*`  
+4. **Later (after base is happy):** sandboxed community packages (package host v2)  
+5. Optional: S4 sendSync→invoke  
 
 **Dev policy env:**  
 - `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log privileged + native requires  
@@ -162,7 +163,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Explicitly out of scope unless asked
 
 - Pulsar rebase  
-- Dropping dual-support / `apm` shim  
+- Hard-delete of remaining Atom shims before a dedicated removal PR  
 
 ---
 

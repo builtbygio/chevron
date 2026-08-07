@@ -74,9 +74,9 @@ Authoritative list: **`src/preload-natives.js`** (`phaseSDecision: Option C`).
 
 ## Post–Phase S (not blocking)
 
-- Package host **v2** (utility process for community activation)  
+- Package host **v2** (utility process for community activation) — **deferred** until base Chevron is ready; product uses **owned catalog only** for now ([package-ecosystem-strategy.md](./package-ecosystem-strategy.md))  
 - Optional **S4** sendSync→invoke cleanup  
-- Owned-package SCA forks (#58)  
+- Owned-package SCA / catalog expansion  
 - Option A buffer-host project if ever funded  
 
 ## Verification

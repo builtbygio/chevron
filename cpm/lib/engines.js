@@ -4,10 +4,12 @@ const path = require('path');
 const semver = require('semver');
 
 /**
- * Soft/hard engine checks for engines.atom and engines.chevron.
- * Dual-support: packages still declare engines.atom for Atom 1.x.
- * When checking engines.atom, use ATOM_COMPAT_VERSION (default 1.65.0)
- * so honest Atom packages do not warn/fail on Chevron 0.x versions.
+ * Engine checks for engines.chevron (required product path) and engines.atom
+ * (legacy only — Chevron-only product policy).
+ *
+ * When checking engines.atom, use ATOM_COMPAT_VERSION (default 1.65.0) so
+ * honest Atom-era ranges can still install while we warn authors to add
+ * engines.chevron.
  */
 const DEFAULT_ATOM_COMPAT_VERSION = '1.65.0';
 
@@ -28,6 +30,10 @@ function checkEngines(manifest, productVersion, options = {}) {
       if (strict) errors.push(msg);
       else warnings.push(msg);
     }
+  } else if (!engines.chevron && engines.atom) {
+    warnings.push(
+      'package declares engines.atom only; prefer engines.chevron (Chevron-only product policy)'
+    );
   }
 
   if (engines.atom) {
@@ -46,7 +52,7 @@ function getProductVersion() {
   try {
     return require(pathJoinRootPackage()).version;
   } catch (_) {
-    return process.env.ATOM_VERSION || process.env.CHEVRON_VERSION || null;
+    return process.env.CHEVRON_VERSION || process.env.ATOM_VERSION || null;
   }
 }
 

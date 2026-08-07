@@ -26,12 +26,15 @@ const getAppDirectory = () => {
 };
 
 /**
- * Resolve the config home directory with dual-support:
+ * Resolve the config home directory (Chevron-only product policy).
+ *
  *   1. CHEVRON_HOME (explicit)
- *   2. ATOM_HOME (explicit, Atom ecosystem)
- *   3. Portable sibling .chevron / .atom next to the app (if writable)
- *   4. ~/.chevron if it already exists
- *   5. ~/.atom (default — preserve existing Atom / Chevron users)
+ *   2. ATOM_HOME (explicit legacy override only — unsupported)
+ *   3. Portable sibling `.chevron` next to the app (if writable)
+ *   4. ~/.chevron (default)
+ *
+ * Does **not** default to ~/.atom. Existing Atom homes are used only if the
+ * user sets ATOM_HOME (or migrates data into ~/.chevron themselves).
  */
 function resolveConfigHome(homePath) {
   if (process.env.CHEVRON_HOME) {
@@ -43,44 +46,34 @@ function resolveConfigHome(homePath) {
 
   const appDir = getAppDirectory();
   if (appDir) {
-    for (const dirName of ['.chevron', '.atom']) {
-      const portableHomePath = path.join(appDir, '..', dirName);
-      if (fs.existsSync(portableHomePath)) {
-        if (hasWriteAccess(portableHomePath)) {
-          return portableHomePath;
-        }
-        console.log(
-          `Insufficient permission to portable home "${portableHomePath}".`
-        );
+    const portableHomePath = path.join(appDir, '..', '.chevron');
+    if (fs.existsSync(portableHomePath)) {
+      if (hasWriteAccess(portableHomePath)) {
+        return portableHomePath;
       }
+      console.log(
+        `Insufficient permission to portable home "${portableHomePath}".`
+      );
     }
   }
 
-  const chevronHome = path.join(homePath, '.chevron');
-  if (fs.existsSync(chevronHome)) {
-    return chevronHome;
-  }
-
-  return path.join(homePath, '.atom');
+  return path.join(homePath, '.chevron');
 }
 
 module.exports = {
   setAtomHome: homePath => {
     const resolved = resolveConfigHome(homePath);
+    // CHEVRON_HOME is the product home; ATOM_HOME is a legacy mirror for
+    // internal code paths that still read process.env.ATOM_HOME.
+    process.env.CHEVRON_HOME = resolved;
     process.env.ATOM_HOME = resolved;
-    // Mirror for tooling that looks at CHEVRON_HOME after startup.
-    if (!process.env.CHEVRON_HOME) {
-      process.env.CHEVRON_HOME = resolved;
-    }
   },
 
   resolveConfigHome,
 
   setUserData: app => {
-    const electronUserDataPath = path.join(
-      process.env.ATOM_HOME,
-      'electronUserData'
-    );
+    const home = process.env.CHEVRON_HOME || process.env.ATOM_HOME;
+    const electronUserDataPath = path.join(home, 'electronUserData');
     if (fs.existsSync(electronUserDataPath)) {
       if (hasWriteAccess(electronUserDataPath)) {
         app.setPath('userData', electronUserDataPath);
@@ -95,13 +88,14 @@ module.exports = {
   getAppDirectory: getAppDirectory,
 
   /**
-   * Normalize chevron:// URIs to atom:// so package URI handlers keep working.
-   * atom:// is the public package API (dual-support forever).
+   * App package URIs: accept atom:// and chevron://.
+   * Canonical product scheme is chevron://; atom:// remains for packages that
+   * still open atom:// paths (unsupported legacy).
    */
   normalizeAppUri: uri => {
     if (typeof uri !== 'string') return uri;
-    if (uri.startsWith('chevron://')) {
-      return 'atom://' + uri.slice('chevron://'.length);
+    if (uri.startsWith('atom://')) {
+      return 'chevron://' + uri.slice('atom://'.length);
     }
     return uri;
   },

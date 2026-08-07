@@ -5,16 +5,13 @@ const os = require('os');
 const path = require('path');
 
 /**
- * Dual-support package home (aligned with src/atom-paths.js resolveConfigHome).
+ * Package home (aligned with src/atom-paths.js — Chevron-only default).
  */
 function getPackageHome() {
   if (process.env.CHEVRON_HOME) return process.env.CHEVRON_HOME;
   if (process.env.ATOM_HOME) return process.env.ATOM_HOME;
 
-  const home = os.homedir();
-  const chevronHome = path.join(home, '.chevron');
-  if (fs.existsSync(chevronHome)) return chevronHome;
-  return path.join(home, '.atom');
+  return path.join(os.homedir(), '.chevron');
 }
 
 function getPackagesDirectory(packageHome = getPackageHome()) {
@@ -31,7 +28,6 @@ function getElectronVersion() {
     return process.versions.electron;
   }
   try {
-    // Running under ELECTRON_RUN_AS_NODE inside product binary.
     const pkgPath = path.join(__dirname, '..', '..', 'package.json');
     if (fs.existsSync(pkgPath)) {
       return require(pkgPath).electronVersion;

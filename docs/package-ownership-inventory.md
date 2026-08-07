@@ -2,6 +2,7 @@
 
 **Status:** living inventory  
 **Source of truth for pins:** root [`package.json`](../package.json) `dependencies`  
+**Ecosystem strategy:** [package-ecosystem-strategy.md](./package-ecosystem-strategy.md) — **owned catalog only** until sandboxed community (host v2)  
 **Modernization process:** [owned-package-modernization-checklist.md](./owned-package-modernization-checklist.md)  
 **Pin guard:** `script/ci/package-pin-policy.test.js` (fails CI if owned packages regress to `atom/*`)
 
