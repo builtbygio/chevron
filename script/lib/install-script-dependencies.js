@@ -13,7 +13,13 @@ process.env.ELECTRON_CUSTOM_VERSION = CONFIG.appMetadata.electronVersion;
 module.exports = function(ci) {
   console.log('Installing script dependencies');
   const npmBin = CONFIG.getNpmBinPath(ci);
-  const args = ['--loglevel=error', ci ? 'ci' : 'install'];
+  const args = [
+    '--loglevel=error',
+    '--no-fund',
+    '--no-audit',
+    '--no-update-notifier',
+    ci ? 'ci' : 'install'
+  ];
   const skipMksnapshot = !hostCanRunMksnapshot();
 
   if (skipMksnapshot) {
@@ -27,8 +33,16 @@ module.exports = function(ci) {
     args.push('--ignore-scripts');
   }
 
+  const env = Object.assign({}, process.env, {
+    npm_config_loglevel: process.env.npm_config_loglevel || 'error',
+    npm_config_fund: 'false',
+    npm_config_audit: 'false',
+    npm_config_update_notifier: 'false',
+    ELECTRON_CUSTOM_VERSION: CONFIG.appMetadata.electronVersion
+  });
+
   execFileSync(npmBin, args, {
-    env: process.env,
+    env,
     cwd: CONFIG.scriptRootPath,
     stdio: 'inherit'
   });

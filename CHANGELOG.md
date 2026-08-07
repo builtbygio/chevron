@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **CI speed:** split Electron binary/header cache from npm/`node_modules` cache; bootstrap skips `npm ci` and native force-rebuild when deps + natives fingerprints match (warm cache). Override with `CHEVRON_FORCE_NATIVE_REBUILD=1`.
+- **npm noise:** root `.npmrc` sets `fund=false` / `audit=false` / `update-notifier=false`; install paths use `--loglevel=error` and matching env in CI.
 - **Dockerfile** replaced: Ubuntu 24.04 + Node 24 + Python 3.12 (no Python 2 / Atom-era bootstrap). See comments in `Dockerfile` for usage.
 - Help menus: removed obsolete “Terms of Use” (atom.io product ToS); “View License” remains for in-app license text.
 - Removed stale root `MIGRATION-CHECKLIST.md` (AtomNova); see [docs/REBRANDING.md](docs/REBRANDING.md).

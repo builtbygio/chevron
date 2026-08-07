@@ -18,7 +18,12 @@ module.exports = function installAppDependencies(ci, options) {
   const ignoreScripts = options.ignoreScripts !== false;
   const legacyPeerDeps = options.legacyPeerDeps !== false;
 
-  const args = ['--loglevel=error'];
+  const args = [
+    '--loglevel=error',
+    '--no-fund',
+    '--no-audit',
+    '--no-update-notifier'
+  ];
   if (ignoreScripts) args.push('--ignore-scripts');
   if (legacyPeerDeps) args.push('--legacy-peer-deps');
   args.push(ci ? 'ci' : 'install');
@@ -29,8 +34,15 @@ module.exports = function installAppDependencies(ci, options) {
       : 'Installing application dependencies (host npm install)…'
   );
 
+  const env = Object.assign({}, process.env, {
+    npm_config_loglevel: process.env.npm_config_loglevel || 'error',
+    npm_config_fund: 'false',
+    npm_config_audit: 'false',
+    npm_config_update_notifier: 'false'
+  });
+
   execFileSync(CONFIG.getNpmBinPath(false), args, {
-    env: process.env,
+    env,
     cwd: CONFIG.repositoryRootPath,
     stdio: 'inherit'
   });

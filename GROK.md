@@ -160,6 +160,7 @@ Recommended spine: **Option B** package-host isolation first; full Chromium sand
 - Custom V8 startup snapshot still disabled on Electron 43 (stock snapshots + warning)  
 - Keep `GROK.md` / CHANGELOG current when landing epics  
 - Nested `packages/*/node_modules`: untracked; policy in `docs/nested-package-modules.md`  
+- CI: Electron + node-gyp cache at `$GITHUB_WORKSPACE/.cache/*`; `node_modules` cache enables bootstrap **native rebuild skip** (`script/lib/natives-fingerprint.js`); force with `CHEVRON_FORCE_NATIVE_REBUILD=1`  
 
 ### Later (not next)
 

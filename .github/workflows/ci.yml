@@ -15,6 +15,17 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Quiet npm + stable Electron/node-gyp cache dirs (workspace-local for actions/cache).
+env:
+  NPM_CONFIG_LOGLEVEL: error
+  NPM_CONFIG_FUND: 'false'
+  NPM_CONFIG_AUDIT: 'false'
+  NPM_CONFIG_UPDATE_NOTIFIER: 'false'
+  ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
+  electron_config_cache: ${{ github.workspace }}/.cache/electron
+  npm_config_devdir: ${{ github.workspace }}/.cache/node-gyp
+
+
 jobs:
   # ---------------------------------------------------------------------------
   # Fast unit path — cpm + package-require-audit (no Electron package)
@@ -36,11 +47,11 @@ jobs:
 
       - name: Install cpm dependencies
         working-directory: cpm
-        run: npm ci
+        run: npm ci --no-audit --no-fund --loglevel=error --no-update-notifier
 
       - name: Run cpm tests
         working-directory: cpm
-        run: npm test
+        run: npm test --silent
         env:
           # Live Pulsar hits are useful; allow skip if registry is down.
           CPM_SKIP_LIVE_REGISTRY: '0'
@@ -50,6 +61,7 @@ jobs:
           node --test script/ci/package-require-audit.test.js
           node --test script/ci/legacy-transpile.test.js
           node --test script/ci/package-utility-worker.test.js
+          node --test script/ci/natives-fingerprint.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64
@@ -89,18 +101,32 @@ jobs:
           git config --global --add url."https://github.com/".insteadOf "git@github.com:"
           git config --global --add url."https://github.com/".insteadOf "git://github.com/"
 
-      - name: Cache Electron headers, binaries and package caches
+      - name: Resolve Electron version
+        id: meta
+        run: echo "electron=$(node -p "require('./package.json').electronVersion")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Electron binaries and headers
         uses: actions/cache@v5
         with:
           path: |
-            ~/Library/Caches/node-gyp
-            ~/Library/Caches/electron
-            ~/.npm
-            ~/.atom/.apm
-          key: ${{ runner.os }}-${{ matrix.arch }}-node24-py312-electron-${{ hashFiles('package.json', 'package-lock.json', 'script/package.json', 'script/package-lock.json') }}
+            ${{ github.workspace }}/.cache/electron
+            ${{ github.workspace }}/.cache/node-gyp
+          key: electron-${{ runner.os }}-${{ matrix.arch }}-${{ steps.meta.outputs.electron }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-node24-py312-electron-
-            ${{ runner.os }}-node24-py312-electron-
+            electron-${{ runner.os }}-${{ matrix.arch }}-
+            electron-${{ runner.os }}-
+
+      - name: Cache npm + node_modules (enables native rebuild skip)
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            script/node_modules
+            cpm/node_modules
+          key: nm-${{ runner.os }}-${{ matrix.arch }}-node24-${{ hashFiles('package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          restore-keys: |
+            nm-${{ runner.os }}-${{ matrix.arch }}-node24-
 
       - name: Bootstrap
         run: ./script/bootstrap-modern --ci
@@ -195,18 +221,32 @@ jobs:
           git config --global --add url."https://github.com/".insteadOf "git@github.com:"
           git config --global --add url."https://github.com/".insteadOf "git://github.com/"
 
-      - name: Cache Electron headers, binaries and package caches
+      - name: Resolve Electron version
+        id: meta
+        run: echo "electron=$(node -p "require('./package.json').electronVersion")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Electron binaries and headers
         uses: actions/cache@v5
         with:
           path: |
-            ~/.cache/node-gyp
-            ~/.cache/electron
-            ~/.npm
-            ~/.atom/.apm
-          key: ${{ runner.os }}-${{ runner.arch }}-node24-py312-electron-${{ hashFiles('package.json', 'package-lock.json', 'script/package.json', 'script/package-lock.json') }}
+            ${{ github.workspace }}/.cache/electron
+            ${{ github.workspace }}/.cache/node-gyp
+          key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-node24-py312-electron-
-            ${{ runner.os }}-node24-py312-electron-
+            electron-${{ runner.os }}-${{ runner.arch }}-
+            electron-${{ runner.os }}-
+
+      - name: Cache npm + node_modules (enables native rebuild skip)
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            script/node_modules
+            cpm/node_modules
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          restore-keys: |
+            nm-${{ runner.os }}-${{ runner.arch }}-node24-
 
       - name: Bootstrap
         run: ./script/bootstrap-modern --ci
@@ -310,17 +350,32 @@ jobs:
           git config --global --add url."https://github.com/".insteadOf "git@github.com:"
           git config --global --add url."https://github.com/".insteadOf "git://github.com/"
 
-      - name: Cache Electron / npm
+      - name: Resolve Electron version
+        id: meta
+        run: echo "electron=$(node -p "require('./package.json').electronVersion")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Electron binaries and headers
         uses: actions/cache@v5
         with:
           path: |
-            ~/.cache/node-gyp
-            ~/.cache/electron
-            ~/.npm
-            ~/.atom/.apm
-          key: ${{ runner.os }}-${{ runner.arch }}-node24-py312-electron-${{ hashFiles('package.json', 'package-lock.json', 'script/package.json', 'script/package-lock.json') }}
+            ${{ github.workspace }}/.cache/electron
+            ${{ github.workspace }}/.cache/node-gyp
+          key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-node24-py312-electron-
+            electron-${{ runner.os }}-${{ runner.arch }}-
+            electron-${{ runner.os }}-
+
+      - name: Cache npm + node_modules (enables native rebuild skip)
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            script/node_modules
+            cpm/node_modules
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          restore-keys: |
+            nm-${{ runner.os }}-${{ runner.arch }}-node24-
 
       - name: Bootstrap
         run: ./script/bootstrap-modern --ci
@@ -410,18 +465,33 @@ jobs:
           git config --global --add url."https://github.com/".insteadOf "git@github.com:"
           git config --global --add url."https://github.com/".insteadOf "git://github.com/"
 
-      - name: Cache Electron headers, binaries and package caches
+      - name: Resolve Electron version
+        id: meta
+        shell: bash
+        run: echo "electron=$(node -p "require('./package.json').electronVersion")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Electron binaries and headers
         uses: actions/cache@v5
         with:
           path: |
-            ~/AppData/Local/node-gyp
-            ~/AppData/Local/electron
-            ~/.npm
-            ~/.atom/.apm
-          key: ${{ runner.os }}-${{ runner.arch }}-node24-py312-electron-${{ hashFiles('package.json', 'package-lock.json', 'script/package.json', 'script/package-lock.json') }}
+            ${{ github.workspace }}/.cache/electron
+            ${{ github.workspace }}/.cache/node-gyp
+          key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-node24-py312-electron-
-            ${{ runner.os }}-node24-py312-electron-
+            electron-${{ runner.os }}-${{ runner.arch }}-
+            electron-${{ runner.os }}-
+
+      - name: Cache npm + node_modules (enables native rebuild skip)
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            script/node_modules
+            cpm/node_modules
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          restore-keys: |
+            nm-${{ runner.os }}-${{ runner.arch }}-node24-
 
       - name: Bootstrap
         run: |
