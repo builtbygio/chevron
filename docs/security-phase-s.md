@@ -182,7 +182,7 @@ Flip or not; release notes; update Electron checklist in BP plan.
 | S1.1 | Audit messaging for natives | pending (audit env already logs reason class) |
 | S1.2 | Package host design note | **done** — [security-phase-s-package-host.md](./security-phase-s-package-host.md) |
 | S2.* | Easy native relocation | pending (`nslog`/`fs-admin` already main-only) |
-| S3 | utilityProcess github workers | **PR1 scaffold done** (flag off by default) — [security-phase-s-utilityprocess.md](./security-phase-s-utilityprocess.md); dogfood → default-on remains |
+| S3 | utilityProcess github workers | **default-on** — [security-phase-s-utilityprocess.md](./security-phase-s-utilityprocess.md); BrowserWindow fallback via opt-out; remove BW path later |
 | S4 | sendSync → invoke | pending (optional) |
 | S5 | Option A spike / Option C decision | pending |
 | S6 | sandbox product decision | blocked on S1 + S5 |

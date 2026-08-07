@@ -238,11 +238,12 @@ function applySecurityPolicyEnv(config) {
     process.env.CHEVRON_FS_IPC_STRICT = fsStrict === false ? '0' : '1';
   }
 
-  // Phase S3 / #61: github git workers via utilityProcess (default OFF until dogfood).
+  // Phase S3 / #61: github git workers via utilityProcess (default ON).
+  // Explicit env wins; otherwise config (default true). Set =0 / false to opt out.
   const utilEnv = process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
   if (utilEnv === undefined || utilEnv === '' || utilEnv === 'default') {
     const utilConfig = config.get('core.githubUtilityWorkers');
     process.env.CHEVRON_GITHUB_UTILITY_WORKERS =
-      utilConfig === true ? '1' : '0';
+      utilConfig === false ? '0' : '1';
   }
 }

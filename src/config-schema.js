@@ -58,10 +58,10 @@ const configSchema = {
       },
       githubUtilityWorkers: {
         type: 'boolean',
-        default: false,
-        title: 'GitHub package: utilityProcess git workers (experimental)',
+        default: true,
+        title: 'GitHub package: utilityProcess git workers',
         description:
-          'When enabled, the GitHub package runs git operations in an Electron utilityProcess instead of a hidden Node BrowserWindow (Phase S3). Off by default until dogfooded. Env `CHEVRON_GITHUB_UTILITY_WORKERS=1` also enables. Requires relaunch. See docs/security-phase-s-utilityprocess.md.'
+          'When enabled (default), the GitHub package runs git operations in an Electron utilityProcess instead of a hidden Node BrowserWindow (Phase S3). Disable to fall back to the legacy Node BrowserWindow worker. Env `CHEVRON_GITHUB_UTILITY_WORKERS=0` also disables. Requires relaunch. See docs/security-phase-s-utilityprocess.md.'
       },
       disabledPackages: {
         type: 'array',
