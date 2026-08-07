@@ -682,6 +682,8 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   // --- Create BrowserWindow from renderer (github WorkerManager) ------------
+  // Phase S3 target: replace with utilityProcess (docs/security-phase-s-utilityprocess.md).
+  // This path remains until the owned github package dual-path lands.
 
   ipcMain.on('atom-create-browser-window-sync', (event, options = {}) => {
     try {

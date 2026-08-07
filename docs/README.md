@@ -42,6 +42,10 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 |-----|---------|
 | [security-threat-model.md](./security-threat-model.md) | Trust tiers + residual risk |
 | [security-phase-s.md](./security-phase-s.md) | Phase S (editor sandbox / package host) — active |
+| [security-phase-s-package-host.md](./security-phase-s-package-host.md) | **S1.2** package host design (Option B/C) |
+| [security-phase-s-utilityprocess.md](./security-phase-s-utilityprocess.md) | **S3** github workers → utilityProcess plan |
+| [babel-coffee-isolation-plan.md](./babel-coffee-isolation-plan.md) | Legacy transpile isolation (`CHEVRON_DISABLE_LEGACY_TRANSPILE`) |
+| [nested-package-modules.md](./nested-package-modules.md) | Nested `packages/*/node_modules` policy |
 | [electron-best-practices-plan.md](./electron-best-practices-plan.md) | BP P0–P3 (closed at 0.6.0) |
 | [security-phase-n.md](./security-phase-n.md) | Phase N plan (package Node surface) |
 | [security-phase-n2.md](./security-phase-n2.md) | N2 package shell / fs IPC |

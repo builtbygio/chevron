@@ -83,7 +83,7 @@ GitHub Actions (`.github/workflows/ci.yml`):
 |-----|--------|------|
 | `build-and-smoke-macos` | `macos-15-intel` + `macos-15` (arm64) | Bootstrap, build, zip, smoke |
 | `build-and-smoke-linux` | `ubuntu-latest` (x64) | Bootstrap, build, xvfb smoke, **deb + tar + rpm** |
-| `build-and-smoke-linux-arm64` | `ubuntu-24.04-arm` | Same (`continue-on-error` if arm runners scarce) |
+| `build-and-smoke-linux-arm64` | `ubuntu-24.04-arm` | Bootstrap/build hard-gated; **smoke soft-gated** (Xvfb flakes) |
 | `build-and-smoke-windows` | `windows-latest` (x64) | Bootstrap, build, zip, smoke |
 
 Linux jobs upload **packages only** (`.deb` / `.tar.gz` / `.rpm`) as workflow artifacts (`chevron-linux-*`). RPM is a required artifact on both arches (needs `rpm` / `rpmbuild` from apt).
