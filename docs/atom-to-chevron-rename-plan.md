@@ -50,6 +50,7 @@ Chevron is the only supported product. We do **not** promise dual-support for At
 2. Package openers: prefer `chevron://` URIs in monorepo packages  
 3. Remove `require('atom')` builtin after deprecation window  
 4. `atom-keymap` / `atom-select-list` / `@atom/*` renames  
+5. **Package ecosystem:** owned catalog only now; sandboxed community (host v2) after base is ready — [package-ecosystem-strategy.md](./package-ecosystem-strategy.md)  
 
 ## Guardrails
 

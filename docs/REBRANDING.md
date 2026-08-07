@@ -12,6 +12,7 @@ This document is the rebrand record. The old root `MIGRATION-CHECKLIST.md` (Atom
 | Package name | `chevron` (`productName`: Chevron) |
 | Bundle ID | `dev.builtbygio.chevron` / `.helper` |
 | Atom ecosystem | **Chevron only** — dual-support is **not** a product goal |
+| Package ecosystem | **Owned catalog only** now; **sandboxed community** later — [package-ecosystem-strategy.md](./package-ecosystem-strategy.md) |
 | Intermediate brand | AtomNova is retired |
 
 ## Status
@@ -20,8 +21,9 @@ This document is the rebrand record. The old root `MIGRATION-CHECKLIST.md` (Atom
 |-------|-------------|--------|
 | P0–P5 | Product name, bundle ID, CLI, copy, helper renames | Done (≤0.3.0) |
 | Rename Phases 0–5 | Owned pins, `autocomplete-chevron-api`, themes, `require('chevron')` | Done (#82) |
-| **Policy: Chevron only** | Drop dual-support commitment; default `~/.chevron` | **This change** |
-| Later | Remove legacy shims (`global.atom`, `require('atom')`, `atom://`, `apm`) when ecosystem allows | Planned |
+| **Policy: Chevron only** | Drop dual-support commitment; default `~/.chevron` | Done |
+| **Package ecosystem** | Closed owned catalog; community deferred to host v2 | **Locked** — [package-ecosystem-strategy.md](./package-ecosystem-strategy.md) |
+| Later | Remove legacy shims; sandboxed community packages when base is ready | Planned |
 
 ## Chevron-only surfaces
 

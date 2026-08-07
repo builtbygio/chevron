@@ -27,8 +27,10 @@ Still early: great for building from source and dogfooding; not a polished daily
 | Electron | **43.1.0** |
 | Bundle ID | `dev.builtbygio.chevron` |
 | Package API | **Chevron only** (`require('chevron')`, `global.chevron`, `engines.chevron`) |
+| Package catalog | **Owned core only** for now; sandboxed community later — [docs/package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md) |
 | Package manager | **cpm** (Electron-as-Node); `apm` is a **shim → cpm** (legacy name) |
-| Registry | Pulsar by default (`CPM_REGISTRY_URL` override) |
+| Registry | Not a product community store yet; cpm/registry tech reserved for future host v2 |
+
 | Config home | **`~/.chevron`** by default (`CHEVRON_HOME`; `ATOM_HOME` only if set) |
 | Security | Phase S Option C — [docs/security-phase-s-decision.md](docs/security-phase-s-decision.md), [docs/security-threat-model.md](docs/security-threat-model.md) |
 

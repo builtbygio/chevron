@@ -9,6 +9,7 @@
 | Choice | Decision |
 |--------|----------|
 | Spine | **Option B** first: isolate **community (T2)** privilege; keep editor preload Node for T0 natives |
+| Product timing | **Deferred:** closed **owned catalog only** until base Chevron is ready; then host v2 for sandboxed community — [package-ecosystem-strategy.md](./package-ecosystem-strategy.md) |
 | Editor Chromium `sandbox: true` | **Not** the near-term goal; likely **Option C** (sandbox stays false for editor hot-path natives) unless Option A spike succeeds |
 | Host model v1 (now) | **In-process policy** — `package-require-audit` (privileged + native + `.node` block, default on) |
 | Host model v2 (target) | **Restricted package host** process or utility for T2 activation (VS Code “extension host” intuition) |
