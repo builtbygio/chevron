@@ -8,7 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const temp = require('temp').track();
 const Babel = require('babel-core');
-const CoffeeScript = require('coffee-script');
+const CoffeeScriptCompiler = require('../src/coffee-script');
 const TypeScriptTranspiler = require('../src/typescript');
 const CSON = require('season');
 const CompileCache = require('../src/compile-cache');
@@ -24,7 +24,7 @@ describe('CompileCache', function() {
     CompileCache.resetCacheStats();
 
     spyOn(Babel, 'transform').andReturn({code: 'the-babel-code'});
-    spyOn(CoffeeScript, 'compile').andReturn('the-coffee-code');
+    spyOn(CoffeeScriptCompiler, 'compile').andCallThrough();
     return spyOn(TypeScriptTranspiler, 'compile').andReturn('the-typescript-code');
   });
 
@@ -52,17 +52,13 @@ describe('CompileCache', function() {
       return expect(Babel.transform.callCount).toBe(1);
     }));
 
-    // Policy B: community packages may still ship CoffeeScript; keep transpile + test via temp file.
-    describe('when the given file is coffee-script', () => it('compiles the file with coffee-script and caches it', function() {
+    // Option 2 (#62): coffee-script runtime removed; .coffee must fail clearly.
+    describe('when the given file is coffee-script', () => it('refuses to compile after coffee runtime removal', function() {
       const coffeePath = path.join(atomHome, 'sample.coffee');
       fs.writeFileSync(coffeePath, 'module.exports = -> 1\n');
-      CompileCache.addPathToCache(coffeePath, atomHome);
-      expect(CompileCache.getCacheStats()['.coffee']).toEqual({hits: 0, misses: 1});
-      expect(CoffeeScript.compile.callCount).toBe(1);
-
-      CompileCache.addPathToCache(coffeePath, atomHome);
-      expect(CompileCache.getCacheStats()['.coffee']).toEqual({hits: 1, misses: 1});
-      return expect(CoffeeScript.compile.callCount).toBe(1);
+      expect(() => CompileCache.addPathToCache(coffeePath, atomHome)).toThrow();
+      expect(CoffeeScriptCompiler.compile.callCount).toBe(1);
+      expect(CoffeeScriptCompiler.compile.calls[0].args[1]).toBe(coffeePath);
     }));
 
     describe('when the given file is typescript', () => it('compiles the file with typescript and caches it', function() {

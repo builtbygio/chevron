@@ -211,9 +211,57 @@ async function installPackage(spec, options = {}) {
     }
   }
 
+  // Chevron #62: runtime CoffeeScript transpile was removed. Warn authors.
+  try {
+    const coffeeHits = await findCoffeeRuntimeFiles(dest);
+    if (coffeeHits.length > 0) {
+      process.stderr.write(
+        'cpm install warning: package ships .coffee sources, but Chevron no longer ' +
+          'runtime-transpiles CoffeeScript (issue #62). Precompile to .js before publish. ' +
+          `Examples: ${coffeeHits.slice(0, 3).join(', ')}\n`
+      );
+    }
+  } catch (_) {
+    /* non-fatal */
+  }
+
   process.stdout.write(`Installed ${name}@${manifest.version || '?'}\n`);
   process.stdout.write(`Package home: ${getPackageHome()}\n`);
   return 0;
+}
+
+/** Runtime-ish .coffee under lib/ or src/ (ignore specs and nested deps). */
+async function findCoffeeRuntimeFiles(packageRoot, max = 8) {
+  const hits = [];
+  const skipDirs = new Set(['node_modules', 'spec', 'test', 'tests', '.git']);
+
+  async function walk(dir) {
+    if (hits.length >= max) return;
+    let entries;
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch (_) {
+      return;
+    }
+    for (const ent of entries) {
+      if (hits.length >= max) return;
+      const abs = path.join(dir, ent.name);
+      if (ent.isDirectory()) {
+        if (skipDirs.has(ent.name)) continue;
+        await walk(abs);
+      } else if (ent.isFile() && ent.name.endsWith('.coffee')) {
+        const rel = path.relative(packageRoot, abs);
+        const top = rel.split(path.sep)[0];
+        // Prefer lib/src; still warn on root-level coffee
+        if (top === 'lib' || top === 'src' || !rel.includes(path.sep)) {
+          hits.push(rel);
+        }
+      }
+    }
+  }
+
+  await walk(packageRoot);
+  return hits;
 }
 
 module.exports = { installPackage, resolveLocalPath, packageDirName };

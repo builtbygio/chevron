@@ -62,4 +62,16 @@ describe('legacy transpile isolation', () => {
     );
     assert.strictEqual(babel.shouldCompile('const x = 1;'), false);
   });
+
+  it('refuses coffee compile after coffee-script dependency removal (Option 2)', () => {
+    delete process.env.CHEVRON_DISABLE_LEGACY_TRANSPILE;
+    delete require.cache[require.resolve(path.join(ROOT, 'src/coffee-script.js'))];
+    const coffee = require(path.join(ROOT, 'src/coffee-script.js'));
+
+    assert.strictEqual(coffee.shouldCompile(), true);
+    assert.throws(
+      () => coffee.compile('x = 1', '/tmp/x.coffee'),
+      /issue #62|CoffeeScript runtime transpile was removed/
+    );
+  });
 });

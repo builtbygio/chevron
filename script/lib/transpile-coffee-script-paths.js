@@ -1,57 +1,18 @@
 'use strict';
 
-const CompileCache = require('../../src/compile-cache');
-const fs = require('fs');
-const glob = require('glob');
-const path = require('path');
+/**
+ * Historically precompiled package `lib/**/*.coffee` → `.js` for the packaged app.
+ * Option 2 (#62): CoffeeScript runtime and app dependency removed; remaining
+ * `.coffee` files are maintainer scripts or specs only. Skip transpile.
+ *
+ * Kept as a no-op so script/build call sites stay stable.
+ */
 
 const CONFIG = require('../config');
 
 module.exports = function() {
   console.log(
-    `Transpiling CoffeeScript paths in ${CONFIG.intermediateAppPath}`
+    `Skipping CoffeeScript transpile in ${CONFIG.intermediateAppPath} ` +
+      '(coffee-script runtime removed; see docs/babel-coffee-isolation-plan.md)'
   );
-  for (let path of getPathsToTranspile()) {
-    transpileCoffeeScriptPath(path);
-  }
 };
-
-function getPathsToTranspile() {
-  let paths = [];
-  paths = paths.concat(
-    glob.sync(path.join(CONFIG.intermediateAppPath, 'src', '**', '*.coffee'), {
-      nodir: true
-    })
-  );
-  paths = paths.concat(
-    glob.sync(path.join(CONFIG.intermediateAppPath, 'spec', '*.coffee'), {
-      nodir: true
-    })
-  );
-  for (let packageName of Object.keys(CONFIG.appMetadata.packageDependencies)) {
-    const packageRoot = path.join(
-      CONFIG.intermediateAppPath,
-      'node_modules',
-      packageName
-    );
-    paths = paths.concat(
-      glob.sync(path.join(packageRoot, '**', '*.coffee'), {
-        ignore: [
-          path.join(packageRoot, 'spec', '**', '*.coffee'),
-          path.join(packageRoot, 'node_modules', '**', '*.coffee')
-        ],
-        nodir: true
-      })
-    );
-  }
-  return paths;
-}
-
-function transpileCoffeeScriptPath(coffeePath) {
-  const jsPath = coffeePath.replace(/coffee$/g, 'js');
-  fs.writeFileSync(
-    jsPath,
-    CompileCache.addPathToCache(coffeePath, CONFIG.atomHomeDirPath)
-  );
-  fs.unlinkSync(coffeePath);
-}

@@ -27,7 +27,7 @@ Exact numbers drift with registry data; re-run audit after lockfile changes.
 | **async** | high | Direct dep; prototype pollution in ≤3.2.1 | **Bump to ≥3.2.6** (done in audit P1) |
 | **request** | critical | Deprecated HTTP client in old package trees | Replace when touching dependent packages; no global easy fix |
 | **form-data** | critical | Often under `request` | Follows `request` removal |
-| **babel-core@5** | high | Runtime transpile for community Coffee/JS | Isolate/retire path (audit #62); do not “upgrade to babel 7” casually without compile-cache plan |
+| **babel-core@5** | high | Runtime transpile for Babel-prefix community/bundled JS | Option 1 isolate + Option 2 coffee drop done (#62); keep until Option 3/4 |
 | **minimatch** / **brace-expansion** | high | Glob in project search / package paths | Bump when parent allows; watch DoS on untrusted globs |
 | **archive-view** / **ls-archive** | high | Opening archives | Fork **archive-view** when next security touch |
 | **autocomplete-plus** (rollup) | high | Pulls sanitizer stack | Owned fork — land dep bumps there |
@@ -41,7 +41,7 @@ Bootstrap and CI intentionally use **default npm loglevel** so deprecations stay
 | **cpm** (`@electron/rebuild`, pacote) | Was: glob/tar/rimraf/inflight spam | Bumped rebuild/pacote/arborist; **cpm uses `node-gyp-build`**, not `prebuild-install` |
 | **prebuild-install (deprecated)** | Upstream: use **prebuildify + node-gyp-build** | First-party: tree-sitter/watcher install scripts migrated; cpm prebuild order prefers node-gyp-build; residual transitive pulls from unowned packages only |
 | **Root app** | Nested old trees from git packages | Prefer prebuildify-bundled `prebuilds/`; rebuild via bootstrap when needed |
-| **babel-core@5 / coffee-script** | Deprecation + SCA | Isolation path (`CHEVRON_DISABLE_LEGACY_TRANSPILE`) + eventual drop (#62) |
+| **babel-core@5** | Deprecation + SCA | Isolation path (`CHEVRON_DISABLE_LEGACY_TRANSPILE`); coffee-script **removed** (Option 2) |
 | **request / form-data** | Critical audit | Fork/replace packages that still pull `request` (#56 ownership) |
 | **legacy-peer-deps** | Peer skew without ERESOLVE | Required for Atom-era tree; not a silence flag — remove only after peer graph is fixed |
 
@@ -68,7 +68,7 @@ Still worth cleaning when upgrading the test stack, but not a Phase S blocker.
 
 1. **Transitive CVEs with `fixAvailable: false`** until the owning package is forked and dependency tree rewritten.  
 2. **Community packages** install their own deps via cpm/Pulsar — outside this inventory; community require restrict limits privileged Node, not every transitive npm CVE.  
-3. **Babel 5 + coffee-script** remain for community package transpile until #62.
+3. **Babel 5** remains for Babel-prefix package transpile until Option 3/4; **coffee-script** removed from app deps (Option 2 / #62).
 
 ## How to re-run
 

@@ -10,9 +10,16 @@ if (process.argv.includes('--no-bootstrap')) {
   require('./bootstrap')
 }
 
-// Required to load CS files in this build script, such as those in `donna`
-require('coffee-script/register')
 require('colors')
+// donna may still load CoffeeScript from its own tree (transitive via script deps).
+// App package.json no longer depends on coffee-script (#62 Option 2).
+try {
+  require('coffee-script/register')
+} catch (err) {
+  console.warn(
+    'coffee-script/register unavailable (app no longer depends on coffee-script). API docs may skip CS paths.'.yellow
+  )
+}
 
 const path = require('path')
 const yargs = require('yargs')

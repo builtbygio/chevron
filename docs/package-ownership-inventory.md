@@ -52,18 +52,18 @@ Prefer forking when any of: Electron breakage, SCA hit, or security patch needed
 | package-generator | `5c45f80` | medium-node | Generates packages; fork if used in docs |
 | symbols-view | `36c4dd4` | medium-node | ctags / process; fork if rebuild pain |
 | timecop | `f7d9543` | medium-node | Devtools-ish; can lag |
-| autocomplete-atom-api | `f772a3f` | medium-editor | Low risk API completions |
-| autocomplete-css | `5307928` | medium-editor | Leave until break |
+| autocomplete-atom-api | `f772a3f` | medium-editor | Bootstrap decaffeinate (#62); fork when next touch |
+| autocomplete-css | `5307928` | medium-editor | Bootstrap decaffeinate (#62); fork when next touch |
 | autocomplete-html | `cee2467` | medium-editor | Leave until break |
 | autocomplete-snippets | `2da0e23` | medium-editor | Leave until break |
 | autosave | `129cbb9` | medium-ui | Leave until break |
 | background-tips | `e54189c` | medium-ui | Leave until break |
-| bookmarks | `35363fb` | medium-ui | Leave until break |
+| bookmarks | `35363fb` | medium-ui | Bootstrap decaffeinate (#62); fork when next touch |
 | bracket-matcher | `d07c17c` | medium-ui | Leave until break |
 | encoding-selector | `e445c69` | medium-ui | Leave until break |
 | keybinding-resolver | `c65b0fb` | medium-ui | Leave until break |
 | whitespace | `53d5ba9` | medium-ui | Leave until break |
-| wrap-guide | `6a4f577` | medium-ui | Leave until break |
+| wrap-guide | `6a4f577` | medium-ui | Bootstrap decaffeinate (#62); fork when next touch |
 
 ### low-grammar (defer)
 
