@@ -211,9 +211,96 @@ async function installPackage(spec, options = {}) {
     }
   }
 
+  // Chevron #62: runtime Coffee/Babel transpile removed. Warn authors.
+  try {
+    const coffeeHits = await findCoffeeRuntimeFiles(dest);
+    if (coffeeHits.length > 0) {
+      process.stderr.write(
+        'cpm install warning: package ships .coffee sources, but Chevron no longer ' +
+          'runtime-transpiles CoffeeScript (issue #62). Precompile to .js before publish. ' +
+          `Examples: ${coffeeHits.slice(0, 3).join(', ')}\n`
+      );
+    }
+    const babelHits = await findBabelPrefixFiles(dest);
+    if (babelHits.length > 0) {
+      process.stderr.write(
+        'cpm install warning: package ships Babel opt-in sources (/** @babel */ / \'use babel\' / @flow), ' +
+          'but Chevron no longer runtime-transpiles them (issue #62). Precompile to plain JS. ' +
+          `Examples: ${babelHits.slice(0, 3).join(', ')}\n`
+      );
+    }
+  } catch (_) {
+    /* non-fatal */
+  }
+
   process.stdout.write(`Installed ${name}@${manifest.version || '?'}\n`);
   process.stdout.write(`Package home: ${getPackageHome()}\n`);
   return 0;
+}
+
+const BABEL_PREFIXES = [
+  '/** @babel */',
+  '"use babel"',
+  "'use babel'",
+  '/* @flow */',
+  '// @flow'
+];
+
+/** Runtime-ish .coffee under lib/ or src/ (ignore specs and nested deps). */
+async function findCoffeeRuntimeFiles(packageRoot, max = 8) {
+  return walkPackageFiles(packageRoot, max, (rel, abs) => {
+    if (!rel.endsWith('.coffee') && !abs.endsWith('.coffee')) return false;
+    const top = rel.split(path.sep)[0];
+    return top === 'lib' || top === 'src' || !rel.includes(path.sep);
+  });
+}
+
+/** lib/src JS files that still use Atom Babel opt-in prefixes. */
+async function findBabelPrefixFiles(packageRoot, max = 8) {
+  return walkPackageFiles(packageRoot, max, (rel, abs) => {
+    if (!abs.endsWith('.js')) return false;
+    const top = rel.split(path.sep)[0];
+    if (!(top === 'lib' || top === 'src')) return false;
+    try {
+      const fd = fs.openSync(abs, 'r');
+      const buf = Buffer.alloc(120);
+      const n = fs.readSync(fd, buf, 0, 120, 0);
+      fs.closeSync(fd);
+      const head = buf.slice(0, n).toString('utf8');
+      return BABEL_PREFIXES.some(p => head.indexOf(p) === 0);
+    } catch (_) {
+      return false;
+    }
+  });
+}
+
+async function walkPackageFiles(packageRoot, max, predicate) {
+  const hits = [];
+  const skipDirs = new Set(['node_modules', 'spec', 'test', 'tests', '.git']);
+
+  async function walk(dir) {
+    if (hits.length >= max) return;
+    let entries;
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch (_) {
+      return;
+    }
+    for (const ent of entries) {
+      if (hits.length >= max) return;
+      const abs = path.join(dir, ent.name);
+      if (ent.isDirectory()) {
+        if (skipDirs.has(ent.name)) continue;
+        await walk(abs);
+      } else if (ent.isFile()) {
+        const rel = path.relative(packageRoot, abs);
+        if (predicate(rel, abs)) hits.push(rel);
+      }
+    }
+  }
+
+  await walk(packageRoot);
+  return hits;
 }
 
 module.exports = { installPackage, resolveLocalPath, packageDirName };

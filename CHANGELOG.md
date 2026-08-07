@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Package ownership:** pin next-tier bundled packages to `builtbygio/*` forks (same SHAs); `language-*` remain on `atom/*` for now. Checklist: [docs/owned-package-modernization-checklist.md](docs/owned-package-modernization-checklist.md).
+- **#62 Options 2–3 — drop CoffeeScript and Babel 5 runtime transpile:** remove `coffee-script` and `babel-core@5` from app dependencies. Bootstrap decaffeinates remaining Coffee `lib/` packages and applies precompiled plain JS for atom/* babel-prefix packages; owned builtbygio forks (settings-view, find-and-replace, autocomplete-plus, command-palette, tree-view) and monorepo `packages/*` are precompiled at source. Compile-cache refuses `.coffee` / babel opt-in prefixes with migration errors; cpm warns on install. TypeScript path unchanged. See [docs/babel-coffee-isolation-plan.md](docs/babel-coffee-isolation-plan.md).
 - **CI speed:** split Electron binary/header cache from npm/`node_modules` cache; bootstrap skips `npm ci` and native force-rebuild when deps + natives fingerprints match (warm cache). Override with `CHEVRON_FORCE_NATIVE_REBUILD=1`.
 - **npm hygiene (not silence):** keep default npm loglevel so deprecations stay visible; upgrade cpm `@electron/rebuild` / pacote / arborist; bump root `semver` / `resolve` / `postcss`.
 - **prebuildify path:** drop first-party `prebuild-install` dependency; cpm prefers **`node-gyp-build`** (prebuildify model); owned `tree-sitter` / `@atom/watcher` install scripts use `node-gyp-build`; legacy `prebuild-install` only if a third-party package still ships it.

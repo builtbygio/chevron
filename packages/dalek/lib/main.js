@@ -1,8 +1,5 @@
-/** @babel */
-
-const dalek = require('./dalek');
-const Grim = require('grim');
-
+const dalek = require("./dalek");
+const Grim = require("grim");
 module.exports = {
   activate() {
     atom.packages.onDidActivateInitialPackages(async () => {

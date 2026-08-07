@@ -132,7 +132,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 
 1. **#58** — fork next-tier `atom/*` packages  
 2. **#57** — full Jasmine suite on CI (nightly / opt-in)  
-3. **#62** — fully retire Babel 5 / Coffee (isolation knob exists)  
+3. **#62** — Coffee + Babel 5 **runtime dropped** (Options 2–3); TypeScript remains  
 4. Optional: package host **v2**, S4 sendSync→invoke  
 
 **Dev policy env:**  
@@ -140,7 +140,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 - `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` — opt **out** of community privileged/native restrict (default is on)  
 - `CHEVRON_FS_IPC_STRICT=0` — opt out of strict FS IPC roots  
 - `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` — re-enable experimental Chromium features  
-- `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` — refuse Coffee/Babel-5 compile-cache  
+- `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` — refuse legacy Coffee/Babel compile-cache (both already removed at runtime)  
 - `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1` — **emergency** Node BW git workers only  
 
 

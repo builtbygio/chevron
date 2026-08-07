@@ -1,61 +1,74 @@
 # Babel 5 / CoffeeScript compile-cache isolation plan
 
-**Status:** plan (audit P2 / issue #62)  
+**Status:** Option 1 · 2 · **3 shipped** (audit P2 / issue #62)  
 **Code:** `src/babel.js`, `src/coffee-script.js`, `src/compile-cache.js`, `src/typescript.js`  
-**Context:** First-party CoffeeScript is gone; community packages may still ship `.coffee` or `/** @babel */` JS.
+**Context:** First-party Coffee/Babel runtime transpile removed. Bundled packages precompiled; community packages must ship plain JS or TypeScript.
 
-## Problem
+## Problem (historical)
 
-| Stack | Version | Why it remains |
-|-------|---------|----------------|
-| `babel-core` | **5.8.38** | Runtime transpile for packages that opt into Babel prefixes |
-| `coffee-script` | **1.12.7** | Runtime transpile for `.coffee` in community/legacy packages |
-| TypeScript | **6.x** | Modern path for owned packages — keep |
-
-Babel 5 and CoffeeScript are unmaintained, large SCA surface, and slow. They exist only for **ecosystem compatibility**.
+| Stack | Version | Status |
+|-------|---------|--------|
+| `babel-core` | ~~5.8.38~~ | **Removed** from app dependencies (Option 3) |
+| `coffee-script` | ~~1.12.7~~ | **Removed** from app dependencies (Option 2) |
+| TypeScript | **6.x** | Modern path for owned packages — **keep** |
 
 ## Options
 
-### Option 1 — Hard isolate (recommended near term)
+### Option 1 — Hard isolate — **shipped**
 
-Keep compilers loadable but:
+`CHEVRON_DISABLE_LEGACY_TRANSPILE=1` refuses Coffee/Babel-prefix compile-cache early. Still honored as a hardened-profile no-op (both compilers already error).
 
-1. **Lazy-only** (already true).  
-2. **Opt-out env** to refuse legacy transpile (for CI / hardened profiles):  
-   - `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` → `.coffee` and Babel-prefix `.js` fail with a clear error; TypeScript unchanged.  
-3. **One-shot deprecation log** when Coffee or Babel 5 actually compiles a file (package name + path).  
-4. Document for authors: ship plain JS or TS; do not rely on editor-side Coffee.
+### Option 2 — Drop Coffee — **shipped**
 
-### Option 2 — Drop Coffee, keep Babel 5 longer
+- Bootstrap decaffeinates `autocomplete-atom-api`, `autocomplete-css`, `bookmarks`, `wrap-guide` (`script/patches/decaffeinated-bundled-packages/`).
+- `src/coffee-script.js` always errors on compile.
+- cpm warns on install if runtime `.coffee` is present.
 
-Coffee is rarer in 2026 community packages than Babel-prefix JS. Dropping Coffee first reduces one dependency; Babel 5 still painful.
+### Option 3 — Drop Babel runtime (precompile + drop) — **shipped**
 
-### Option 3 — Drop both (breaking)
+Mirror Coffee: **no runtime `babel-core`**. Sources that used Atom opt-in prefixes were precompiled offline:
 
-Only after telemetry/dogfood shows negligible use, with release notes and cpm install warning for packages containing `.coffee`.
+| Layer | How |
+|-------|-----|
+| **Monorepo `packages/*`** | esbuild precompile in tree (dalek, git-diff, welcome, …) |
+| **Owned builtbygio forks** | Commits on `chevron/drop-runtime-babel` pinned from Chevron `package.json` (settings-view, find-and-replace, autocomplete-plus, command-palette, tree-view) |
+| **Remaining atom/* pins** | Bootstrap patch `script/lib/patch-debabel-bundled-packages.js` + `script/patches/debabelled-bundled-packages/` |
 
-### Option 4 — Replace Babel 5 with a modern transpile (large)
+Prefixes no longer supported at runtime:
 
-`@babel/core` 7+ or esbuild for package JS would need compile-cache key migration and prefix compatibility testing. Defer until after Option 1.
+- `/** @babel */`
+- `'use babel'` / `"use babel"`
+- `/* @flow */` / `// @flow`
 
-## Decision for Chevron
+`src/babel.js` detects prefixes and **throws** a migration error (never loads raw ESM/JSX as plain JS).
 
-**Ship Option 1 now** (env + deprecation log + docs).  
-**Next minor consideration:** Option 2 (drop Coffee dependency if logs stay quiet).  
-**Not yet:** Option 3/4 without evidence.
+**Tooling:** `script/lib/precompile-babel-prefix-files.js` (esbuild preferred; babel-core@5 fallback if present) for re-running when pins change.
+
+### Option 4 — Modern runtime transpile — **not needed**
+
+Deferred permanently unless product policy reverses. Prefer precompile + TypeScript.
 
 ## Author guidance
 
-- Prefer `engines.atom` / `engines.chevron` packages written in **plain JS or TypeScript**.  
-- Precompile Coffee before publish.  
-- Do not expect Babel 5 forever; prefer modern syntax that runs on Electron’s Node/V8 without transform.
+- Write packages in **plain JS or TypeScript** (`engines.chevron` / `engines.atom`).
+- **Do not** ship `/** @babel */`, `'use babel'`, or Flow opt-in for runtime load.
+- Precompile Coffee and Babel-era sources **before publish**.
+- TypeScript still transpiles via compile-cache (`src/typescript.js`).
 
 ## Verification
 
 ```bash
-# Default: legacy transpile still works for community packages
-# Hardened profile:
-CHEVRON_DISABLE_LEGACY_TRANSPILE=1  # coffee/babel-prefix refused
+# App deps must not list babel-core / coffee-script
+node -e "const p=require('./package.json'); if (p.dependencies['babel-core']||p.dependencies['coffee-script']) process.exit(1)"
+
+# Compilers refuse
+node --test script/ci/legacy-transpile.test.js
+
+# Hardened env still short-circuits
+CHEVRON_DISABLE_LEGACY_TRANSPILE=1
 ```
 
-See implementation in `src/coffee-script.js` / `src/babel.js` / `src/compile-cache.js`.
+## Related
+
+- Bootstrap: `patch-decaffeinate-bundled-packages.js`, `patch-debabel-bundled-packages.js`
+- cpm install warnings for residual `.coffee` / babel-prefix under `lib/` / `src/`

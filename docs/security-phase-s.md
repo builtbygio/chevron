@@ -70,7 +70,7 @@ Authoritative list: **`src/preload-natives.js`** (`phaseSDecision: Option C`).
 | `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` | Allow community privileged/native requires |
 | `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1` | Emergency Node BrowserWindow git workers |
 | `CHEVRON_GITHUB_UTILITY_WORKERS=0` | Deprecated alias for emergency BW path |
-| `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` | Refuse Coffee/Babel-5 compile-cache |
+| `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` | Refuse legacy Coffee/Babel compile-cache (both removed at runtime) |
 
 ## Post–Phase S (not blocking)
 
