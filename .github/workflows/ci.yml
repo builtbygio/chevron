@@ -54,11 +54,27 @@ jobs:
           # Live Pulsar hits are useful; allow skip if registry is down.
           CPM_SKIP_LIVE_REGISTRY: '0'
 
+      # Root package.json must not be installed here (pulls natives like keytar).
+      # Install dugite in an isolated prefix, then copy into workspace node_modules
+      # so git-utility-host can require.resolve it via CHEVRON_APP_PATH.
+      - name: Install dugite for git-utility-host integration
+        run: |
+          set -euo pipefail
+          PREFIX="${RUNNER_TEMP}/dugite-only"
+          mkdir -p "$PREFIX"
+          cd "$PREFIX"
+          npm init -y >/dev/null
+          npm install --no-package-lock dugite@1.92.0 tree-kill@1.2.2
+          mkdir -p "${GITHUB_WORKSPACE}/node_modules"
+          cp -a node_modules/. "${GITHUB_WORKSPACE}/node_modules/"
+          node -e "console.log('dugite', require.resolve('dugite'))"
+
       - name: package-require-audit + legacy-transpile + utility-worker unit tests
         run: |
           node --test script/ci/package-require-audit.test.js
           node --test script/ci/legacy-transpile.test.js
           node --test script/ci/package-utility-worker.test.js
+          node --test script/ci/git-utility-host-integration.test.js
           node --test script/ci/natives-fingerprint.test.js
 
   # ---------------------------------------------------------------------------

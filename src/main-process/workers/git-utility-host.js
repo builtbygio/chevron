@@ -88,7 +88,18 @@ function handleInit(msg) {
   };
   operationCountLimit = parseInt(msg.operationCountLimit, 10) || 10;
   averageTracker = new AverageTracker({ limit: operationCountLimit });
-  ensureDeps();
+  try {
+    ensureDeps();
+  } catch (error) {
+    post({
+      type: 'host-error',
+      data: {
+        message: `Failed to load dugite: ${error && error.message}`,
+        stack: error && error.stack
+      }
+    });
+    return;
+  }
   post({
     type: 'renderer-ready',
     sourceWebContentsId: initConfig.syntheticWebContentsId,
@@ -97,35 +108,69 @@ function handleInit(msg) {
 }
 
 function handleGitExec(data) {
+  if (!initConfig) {
+    post({
+      type: 'host-error',
+      data: { message: 'git-exec before init' }
+    });
+    return;
+  }
   ensureDeps();
   const { args, workingDir, options = {}, id } = data || {};
+  if (!Array.isArray(args) || typeof workingDir !== 'string') {
+    post({
+      type: 'git-data',
+      sourceWebContentsId: initConfig.syntheticWebContentsId,
+      data: {
+        id,
+        average: averageTracker.getAverage(),
+        results: {
+          stdout: '',
+          stderr: 'invalid git-exec payload',
+          exitCode: -1,
+          timing: { spawnTime: 0, execTime: 0 }
+        }
+      }
+    });
+    return;
+  }
+
   const spawnStart = Date.now();
   let spawnEnd = spawnStart;
 
-  const execOptions = Object.assign({}, options);
-  execOptions.processCallback = child => {
-    if (child && child.pid != null) {
-      childPidsById.set(id, child.pid);
-    }
-    if (child && typeof child.on === 'function') {
-      child.on('error', err => {
-        post({
-          type: 'git-spawn-error',
-          sourceWebContentsId: initConfig.syntheticWebContentsId,
-          data: {
-            id,
-            err: serializeError(err)
-          }
+  // Only pass structured-clone-safe dugite options; always re-bind processCallback.
+  const execOptions = {
+    env: options.env,
+    stdin: options.stdin,
+    stdinEncoding: options.stdinEncoding,
+    stdoutEncoding: options.stdoutEncoding,
+    stderrEncoding: options.stderrEncoding,
+    maxBuffer: options.maxBuffer,
+    processCallback: child => {
+      spawnEnd = Date.now();
+      if (child && child.pid != null) {
+        childPidsById.set(id, child.pid);
+      }
+      if (child && typeof child.on === 'function') {
+        child.on('error', err => {
+          post({
+            type: 'git-spawn-error',
+            sourceWebContentsId: initConfig.syntheticWebContentsId,
+            data: {
+              id,
+              err: serializeError(err)
+            }
+          });
         });
-      });
+      }
     }
   };
 
-  spawnEnd = Date.now();
-  averageTracker.addValue(spawnEnd - spawnStart);
-
   GitProcess.exec(args, workingDir, execOptions)
     .then(({ stdout, stderr, exitCode }) => {
+      // If processCallback never ran (edge dugite path), still record a spawn sample.
+      if (spawnEnd === spawnStart) spawnEnd = Date.now();
+      averageTracker.addValue(spawnEnd - spawnStart);
       childPidsById.delete(id);
       post({
         type: 'git-data',
@@ -144,8 +189,16 @@ function handleGitExec(data) {
           }
         }
       });
+      if (averageTracker.enoughData() && averageTracker.getAverage() > 20) {
+        post({
+          type: 'slow-spawns',
+          sourceWebContentsId: initConfig.syntheticWebContentsId
+        });
+      }
     })
     .catch(err => {
+      if (spawnEnd === spawnStart) spawnEnd = Date.now();
+      averageTracker.addValue(spawnEnd - spawnStart);
       childPidsById.delete(id);
       post({
         type: 'git-data',
@@ -166,13 +219,6 @@ function handleGitExec(data) {
         }
       });
     });
-
-  if (averageTracker.enoughData() && averageTracker.getAverage() > 20) {
-    post({
-      type: 'slow-spawns',
-      sourceWebContentsId: initConfig.syntheticWebContentsId
-    });
-  }
 }
 
 function serializeError(err) {

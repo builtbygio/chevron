@@ -115,12 +115,15 @@ describe('package-utility-worker', () => {
     );
   });
 
-  it('isEnabled respects CHEVRON_GITHUB_UTILITY_WORKERS', () => {
-    process.env.CHEVRON_GITHUB_UTILITY_WORKERS = '1';
+  it('isEnabled defaults on; respects CHEVRON_GITHUB_UTILITY_WORKERS', () => {
+    delete process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
     assert.strictEqual(util.isEnabled(), true);
     process.env.CHEVRON_GITHUB_UTILITY_WORKERS = '0';
     assert.strictEqual(util.isEnabled(), false);
+    process.env.CHEVRON_GITHUB_UTILITY_WORKERS = 'false';
+    assert.strictEqual(util.isEnabled(), false);
     process.env.CHEVRON_GITHUB_UTILITY_WORKERS = '1';
+    assert.strictEqual(util.isEnabled(), true);
   });
 
   it('createWorker + loadWorkerUrl posts init to child', () => {
