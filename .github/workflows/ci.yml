@@ -50,6 +50,7 @@ jobs:
           node --test script/ci/package-require-audit.test.js
           node --test script/ci/legacy-transpile.test.js
           node --test script/ci/package-utility-worker.test.js
+          node --test script/ci/git-utility-host-integration.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64

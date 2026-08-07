@@ -1,6 +1,6 @@
 # Phase S3 — GitHub workers → utilityProcess
 
-**Status:** **PR1 scaffold landed** (feature-flagged dual-path); default still BrowserWindow  
+**Status:** **PR1+ default-on** — utilityProcess is the default git worker path; BrowserWindow remains fallback when flag is off
 **Parent:** [security-phase-s.md](./security-phase-s.md), BP P3.1 deferred  
 **Code:**  
 - `src/main-process/package-utility-worker.js`  
@@ -54,14 +54,15 @@ Main can run dugite, but long git operations and crash isolation favor a child; 
 
 1. `package-utility-worker.js` + `workers/git-utility-host.js` (dugite in utilityProcess)  
 2. IPC: create/load/send/destroy + capabilities; `atom-bw-id-call-sync` dual-path for synthetic ids  
-3. **Feature flag (default OFF):** `CHEVRON_GITHUB_UTILITY_WORKERS=1` or `core.githubUtilityWorkers`  
-4. **Transparent dual-path:** when flag is on, `remote-compat` `BrowserWindow` constructs a utility worker proxy so `github` WorkerManager works **without** a package pin bump  
+3. **Default ON:** `core.githubUtilityWorkers` default `true`; env unset → on. Opt out: `CHEVRON_GITHUB_UTILITY_WORKERS=0` or config `false`.  
+4. **Transparent dual-path:** when enabled, `remote-compat` `BrowserWindow` constructs a utility worker proxy so `github` WorkerManager works **without** a package pin bump  
+5. **Integration tests:** `script/ci/git-utility-host-integration.test.js` (real dugite via forked host)
 
-Dogfood:
+Opt out / legacy BrowserWindow workers:
 
 ```bash
-CHEVRON_GITHUB_UTILITY_WORKERS=1 ./out/Chevron-*/chevron   # or enable in Settings → Core
-# Exercise GitHub package: status, commit, push, clone
+CHEVRON_GITHUB_UTILITY_WORKERS=0 ./out/Chevron-*/chevron
+# or Settings → Core → disable "utilityProcess git workers" + relaunch
 ```
 
 ### PR2 — github package WorkerManager dual-path (owned fork) — **optional now**
@@ -112,10 +113,11 @@ Node in the utility process remains **trusted code we ship** (T1), not community
 ## Exit criteria (#61)
 
 - [x] Utility path feature-flagged (scaffold + unit tests)  
-- [ ] Dogfooded with real github package git flows  
-- [ ] Default-on on all CI platforms  
-- [ ] No github use of `atom-create-browser-window-sync` (or dead code removed)  
-- [ ] Smoke + documented manual github checklist green  
+- [x] Integration tests with real dugite (`git-utility-host-integration.test.js`)  
+- [x] Default-on (opt-out via env/config)  
+- [ ] Manual dogfood of full github package UI flows (push/clone edge cases)  
+- [ ] Remove BrowserWindow worker path when fallback no longer needed  
+- [ ] Smoke + documented manual github checklist green
 
 ## Non-goals
 

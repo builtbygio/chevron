@@ -4,7 +4,8 @@
  * Main-process manager for package utility workers (Phase S3 / #61).
  *
  * Dual-path for github git workers: utilityProcess instead of Node BrowserWindow.
- * Feature flag: CHEVRON_GITHUB_UTILITY_WORKERS=1 (or core.githubUtilityWorkers).
+ * Default ON (Phase S3). Opt out: CHEVRON_GITHUB_UTILITY_WORKERS=0 or
+ * core.githubUtilityWorkers=false.
  *
  * See docs/security-phase-s-utilityprocess.md.
  */
@@ -20,7 +21,10 @@ let nextSyntheticId = -1;
 const workers = new Map();
 
 function envEnabled() {
+  // Default ON (Phase S3). Explicit 0/false/no/off disables; 1/true enables.
   const v = process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
+  if (v === undefined || v === '' || v === 'default') return true;
+  if (v === '0' || v === 'false' || v === 'no' || v === 'off') return false;
   return v === '1' || v === 'true' || v === 'yes' || v === 'on';
 }
 
