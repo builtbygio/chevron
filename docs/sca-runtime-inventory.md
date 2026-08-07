@@ -32,6 +32,26 @@ Exact numbers drift with registry data; re-run audit after lockfile changes.
 | **archive-view** / **ls-archive** | high | Opening archives | Fork **archive-view** when next security touch |
 | **autocomplete-plus** (rollup) | high | Pulls sanitizer stack | Owned fork — land dep bumps there |
 
+## npm install warnings (not hidden)
+
+Bootstrap and CI intentionally use **default npm loglevel** so deprecations stay visible. Do not reintroduce `--loglevel=error` / `fund=false` / `audit=false` as a “fix”.
+
+| Source | What you see | Real remediation |
+|--------|----------------|------------------|
+| **cpm** (`@electron/rebuild`, pacote) | Was: glob/tar/rimraf/inflight spam | Bumped rebuild/pacote/arborist; **cpm uses `node-gyp-build`**, not `prebuild-install` |
+| **prebuild-install (deprecated)** | Upstream: use **prebuildify + node-gyp-build** | First-party: tree-sitter/watcher install scripts migrated; cpm prebuild order prefers node-gyp-build; residual transitive pulls from unowned packages only |
+| **Root app** | Nested old trees from git packages | Prefer prebuildify-bundled `prebuilds/`; rebuild via bootstrap when needed |
+| **babel-core@5 / coffee-script** | Deprecation + SCA | Isolation path (`CHEVRON_DISABLE_LEGACY_TRANSPILE`) + eventual drop (#62) |
+| **request / form-data** | Critical audit | Fork/replace packages that still pull `request` (#56 ownership) |
+| **legacy-peer-deps** | Peer skew without ERESOLVE | Required for Atom-era tree; not a silence flag — remove only after peer graph is fixed |
+
+Re-check after lockfile changes:
+
+```bash
+cd cpm && rm -rf node_modules && npm ci 2>&1 | grep deprecated || true
+npm audit --omit=dev
+```
+
 ## Deprioritise: test / lint / build-only
 
 These often show as critical/high but are not loaded in the production editor path for end users:

@@ -18,7 +18,9 @@ module.exports = function installAppDependencies(ci, options) {
   const ignoreScripts = options.ignoreScripts !== false;
   const legacyPeerDeps = options.legacyPeerDeps !== false;
 
-  const args = ['--loglevel=error'];
+  // Keep default npm loglevel so deprecations and peer warnings stay visible
+  // (fix or track them — do not hide with --loglevel=error).
+  const args = [];
   if (ignoreScripts) args.push('--ignore-scripts');
   if (legacyPeerDeps) args.push('--legacy-peer-deps');
   args.push(ci ? 'ci' : 'install');

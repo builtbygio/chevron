@@ -1,5 +1,7 @@
 # Example workflow for package authors publishing Electron prebuilds for cpm.
-# Copy into your package repo and adjust package path / Electron version.
+# Prefer prebuildify (binaries inside the npm package under prebuilds/) +
+# node-gyp-build install — not prebuild/prebuild-install.
+# Copy into your package repo and adjust Electron version.
 #
 # Not run for the Chevron monorepo by default (workflow_dispatch only).
 
@@ -11,22 +13,19 @@ on:
   #   types: [published]
 
 jobs:
-  prebuild:
+  # Preferred: build prebuildify artifacts for npm publish (all platforms).
+  prebuildify:
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: macos-14
-            platform: darwin
             arch: arm64
           - os: macos-13
-            platform: darwin
             arch: x64
           - os: ubuntu-22.04
-            platform: linux
             arch: x64
           - os: windows-2022
-            platform: win32
             arch: x64
     runs-on: ${{ matrix.os }}
     steps:
@@ -39,32 +38,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Adjust ELECTRON_VERSION to match Chevron's package.json electronVersion
-      - name: Build native module for Electron
+      # Adjust target to match Chevron package.json electronVersion
+      - name: prebuildify for Electron
         shell: bash
         env:
           ELECTRON_VERSION: '43.1.0'
         run: |
-          npx node-gyp rebuild \
-            --target="$ELECTRON_VERSION" \
-            --dist-url=https://electronjs.org/headers \
-            --runtime=electron \
-            --arch=${{ matrix.arch }}
-
-      - name: Stage artifact
-        shell: bash
-        env:
-          ELECTRON_VERSION: '43.1.0'
-        run: |
-          PKG=$(node -p "require('./package.json').name")
-          VER=$(node -p "require('./package.json').version")
-          NODE=$(find build -name '*.node' | head -1)
-          test -n "$NODE"
-          OUT="${PKG}-${{ matrix.platform }}-${{ matrix.arch }}-electron${ELECTRON_VERSION}.node"
-          cp "$NODE" "$OUT"
-          echo "ARTIFACT=$OUT" >> "$GITHUB_ENV"
+          npx prebuildify --napi --strip \
+            --target "electron@${ELECTRON_VERSION}"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: prebuild-${{ matrix.platform }}-${{ matrix.arch }}
-          path: ${{ env.ARTIFACT }}
+          name: prebuilds-${{ matrix.os }}-${{ matrix.arch }}
+          path: prebuilds/
+
+  # Optional: also emit a single .node for chevron.prebuilds URL hosting
+  single-node-artifact:
+    needs: prebuildify
+    if: false # enable if you also host chevron.prebuilds URLs
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Note
+        run: echo "Publish npm tarball with merged prebuilds/ folder; see docs/cpm-prebuilds.md"

@@ -80,7 +80,20 @@ unset npm_config_target npm_config_runtime npm_config_disturl npm_config_build_f
 export ATOM_ELECTRON_URL="${ATOM_ELECTRON_URL:-https://www.electronjs.org/headers}"
 export ATOM_RESOURCE_PATH="$REPO_ROOT"
 
-node <<'NODE'
+# Warm-cache path: if CI restored node_modules and the deps fingerprint still
+# matches, skip `npm ci` (which would delete node_modules and wipe .node builds).
+SKIP_APP_NPM=false
+if [ -d "$REPO_ROOT/node_modules" ] \
+  && [ -f "$REPO_ROOT/node_modules/.dependencies-fingerprint" ] \
+  && [ -f "$REPO_ROOT/node_modules/superstring/package.json" ]; then
+  if node -e 'const d=require("./script/lib/dependencies-fingerprint"); process.exit(d.isOutdated()?1:0)'; then
+    SKIP_APP_NPM=true
+    echo "Skipping app npm ci (node_modules present, dependencies fingerprint current)."
+  fi
+fi
+
+if [ "$SKIP_APP_NPM" = false ]; then
+  node <<'NODE'
 'use strict';
 const installAppDependencies = require('./script/lib/install-app-dependencies');
 const ci = process.argv.includes('--ci') || process.env.CI === 'true';
@@ -90,15 +103,16 @@ process.on('unhandledRejection', e => {
 });
 installAppDependencies(ci, { ignoreScripts: true, legacyPeerDeps: true });
 NODE
+fi
 
 # Phase 1: cpm CLI dependencies (pacote, arborist, @electron/rebuild)
 if [ -d "$REPO_ROOT/cpm" ] && [ -f "$REPO_ROOT/cpm/package.json" ]; then
   echo "Installing cpm dependencies (host npm)…"
   if [ -f "$REPO_ROOT/cpm/package-lock.json" ]; then
-    (cd "$REPO_ROOT/cpm" && npm ci --ignore-scripts --no-audit --no-fund) || \
-      (cd "$REPO_ROOT/cpm" && npm install --ignore-scripts --no-audit --no-fund)
+    (cd "$REPO_ROOT/cpm" && npm ci --ignore-scripts) || \
+      (cd "$REPO_ROOT/cpm" && npm install --ignore-scripts)
   else
-    (cd "$REPO_ROOT/cpm" && npm install --ignore-scripts --no-audit --no-fund)
+    (cd "$REPO_ROOT/cpm" && npm install --ignore-scripts)
   fi
 fi
 
@@ -174,49 +188,88 @@ rebuild_package_modern() {
   fi
 }
 
-echo "Electron $ELECTRON_VERSION: modern node-gyp force rebuild of critical natives"
-# Skip blanket `npm rebuild`: host/app nested node-gyp is too old for Node 24
-# (read-only cflags crash) and prints hard errors even when the modern force
-# list below succeeds. Install used --ignore-scripts, so nothing has .node yet.
-
-echo "Force-rebuilding critical natives for Electron $ELECTRON_VERSION..."
-# keyboard-layout is required at runtime (smoke fails without keyboard-layout-manager.node).
-# ctags / fs-admin / oniguruma are also app natives not covered by a partial list.
-for _pkg in \
-  superstring tree-sitter \
-  '@atom/watcher' '@atom/nsfw' '@atom/fuzzy-native' \
-  keytar spellchecker pathwatcher git-utils scrollbar-style nslog \
-  keyboard-layout ctags fs-admin oniguruma
-do
-  _dir="$REPO_ROOT/node_modules/$_pkg"
-  if [ -d "$_dir" ]; then
-    echo "  rebuild $_pkg..."
-    rebuild_package_modern "$_dir" || \
-      echo "WARNING: rebuild failed for $_pkg"
-  fi
-done
-
-echo "Force-rebuilding tree-sitter language bindings..."
-# tree-sitter-typescript ships comment-only placeholder binding.gyp files under
-# tsx/ and typescript/; only rebuild dirs whose binding.gyp is real JSON (starts
-# with '{'). The package root binding builds both language targets.
-while IFS= read -r _gyp; do
-  [ -z "$_gyp" ] && continue
-  # Skip non-JSON placeholders (gyp would SyntaxError on '# comment' lines).
-  if ! head -c 1 "$_gyp" 2>/dev/null | grep -q '{'; then
-    echo "  skip placeholder binding.gyp: $_gyp"
-    continue
-  fi
-  _dir="$(cd "$(dirname "$_gyp")" && pwd)"
-  echo "  rebuild $_dir..."
-  rebuild_package_modern "$_dir" || \
-    echo "WARNING: rebuild failed for $_dir"
-done < <(find "$REPO_ROOT/node_modules" -path '*/tree-sitter-*/binding.gyp' 2>/dev/null | sort -u)
-
-if [ ! -f "$REPO_ROOT/node_modules/keytar/build/Release/keytar.node" ]; then
-  echo "Rebuilding keytar for Electron $ELECTRON_VERSION…"
-  rebuild_package_modern "$REPO_ROOT/node_modules/keytar" || true
+# Decide whether to force-rebuild natives. With --ignore-scripts installs, a
+# cold node_modules has no .node files. When CI restores a cached node_modules
+# whose natives fingerprint still matches, skip the expensive gyp rebuilds.
+# Force with CHEVRON_FORCE_NATIVE_REBUILD=1.
+SKIP_NATIVE_REBUILD=false
+NATIVE_FP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/chevron-nfp.XXXXXX")"
+export NATIVE_FP_DIR
+node <<'NODE'
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const n = require('./script/lib/natives-fingerprint');
+const d = n.shouldSkipRebuild();
+const dir = process.env.NATIVE_FP_DIR;
+if (!dir) {
+  console.error('NATIVE_FP_DIR not set');
+  process.exit(1);
+}
+fs.writeFileSync(path.join(dir, 'fingerprint'), d.fingerprint);
+fs.writeFileSync(path.join(dir, 'reason'), d.reason);
+fs.writeFileSync(path.join(dir, 'skip'), d.skip ? 'true' : 'false');
+NODE
+NATIVE_FP="$(cat "$NATIVE_FP_DIR/fingerprint")"
+NATIVE_SKIP_REASON="$(cat "$NATIVE_FP_DIR/reason")"
+NATIVE_SKIP="$(cat "$NATIVE_FP_DIR/skip")"
+rm -rf "$NATIVE_FP_DIR"
+if [ "${NATIVE_SKIP:-false}" = true ]; then
+  SKIP_NATIVE_REBUILD=true
+  echo "Skipping native rebuild ($NATIVE_SKIP_REASON)."
+  echo "  fingerprint: $NATIVE_FP"
+else
+  echo "Native rebuild required ($NATIVE_SKIP_REASON)."
+  echo "  fingerprint: $NATIVE_FP"
 fi
+
+if [ "$SKIP_NATIVE_REBUILD" = false ]; then
+  echo "Electron $ELECTRON_VERSION: modern node-gyp force rebuild of critical natives"
+  # Skip blanket `npm rebuild`: host/app nested node-gyp is too old for Node 24
+  # (read-only cflags crash) and prints hard errors even when the modern force
+  # list below succeeds. Install used --ignore-scripts, so nothing has .node yet
+  # on a cold tree.
+
+  echo "Force-rebuilding critical natives for Electron $ELECTRON_VERSION..."
+  # keyboard-layout is required at runtime (smoke fails without keyboard-layout-manager.node).
+  # ctags / fs-admin / oniguruma are also app natives not covered by a partial list.
+  for _pkg in \
+    superstring tree-sitter \
+    '@atom/watcher' '@atom/nsfw' '@atom/fuzzy-native' \
+    keytar spellchecker pathwatcher git-utils scrollbar-style nslog \
+    keyboard-layout ctags fs-admin oniguruma
+  do
+    _dir="$REPO_ROOT/node_modules/$_pkg"
+    if [ -d "$_dir" ]; then
+      echo "  rebuild $_pkg..."
+      rebuild_package_modern "$_dir" || \
+        echo "WARNING: rebuild failed for $_pkg"
+    fi
+  done
+
+  echo "Force-rebuilding tree-sitter language bindings..."
+  # tree-sitter-typescript ships comment-only placeholder binding.gyp files under
+  # tsx/ and typescript/; only rebuild dirs whose binding.gyp is real JSON (starts
+  # with '{'). The package root binding builds both language targets.
+  while IFS= read -r _gyp; do
+    [ -z "$_gyp" ] && continue
+    # Skip non-JSON placeholders (gyp would SyntaxError on '# comment' lines).
+    if ! head -c 1 "$_gyp" 2>/dev/null | grep -q '{'; then
+      echo "  skip placeholder binding.gyp: $_gyp"
+      continue
+    fi
+    _dir="$(cd "$(dirname "$_gyp")" && pwd)"
+    echo "  rebuild $_dir..."
+    rebuild_package_modern "$_dir" || \
+      echo "WARNING: rebuild failed for $_dir"
+  done < <(find "$REPO_ROOT/node_modules" -path '*/tree-sitter-*/binding.gyp' 2>/dev/null | sort -u)
+
+  if [ ! -f "$REPO_ROOT/node_modules/keytar/build/Release/keytar.node" ]; then
+    echo "Rebuilding keytar for Electron $ELECTRON_VERSION…"
+    rebuild_package_modern "$REPO_ROOT/node_modules/keytar" || true
+  fi
+fi
+
 if [ -f "$REPO_ROOT/node_modules/keytar/build/Release/keytar.node" ]; then
   echo "keytar.node present."
 else
@@ -258,6 +311,9 @@ if [ ! -f "$REPO_ROOT/node_modules/text-buffer/node_modules/superstring/build/Re
   echo "error: nested text-buffer superstring.node missing after resync" >&2
   exit 1
 fi
+
+# Record natives fingerprint only when critical artifacts exist (skip or rebuild).
+node -e 'require("./script/lib/natives-fingerprint").write(); console.log("Natives fingerprint written.");'
 
 # --- Step 4: classic apm tree (Phase 4 retired from product) -----------------
 # Product packages ship cpm only. --with-apm remains for rare local debugging
