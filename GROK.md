@@ -65,7 +65,7 @@ Threat model: **`docs/security-threat-model.md`**.
 | P3.2 Production Electron fuses | **Done** (ASAR integrity macOS-only) |
 | P3.4 `certificate-error` deny | **Done** |
 | P3.1 utilityProcess workers | **Follow-on** (github rewrite) |
-| P3.3 Editor `sandbox: true` | **Follow-on** (blocked on natives) |
+| P3.3 Editor `sandbox: true` | **Declined (Option C)** — see security-phase-s-decision.md |
 
 ### Electron + remote removal
 
@@ -100,7 +100,7 @@ Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
 | Tier-1 package forks | **Pinned** to `builtbygio/*` |
 | N2 patches folded into forks | **Done** |
 | Nine package libs → TypeScript + zero CoffeeScript first-party | **Done** |
-| Phase S editor sandbox | **Later** (blocked on natives — `src/preload-natives.js`) |
+| Phase S | **Complete (Option C)** — `docs/security-phase-s-decision.md` |
 
 ---
 
