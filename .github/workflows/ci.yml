@@ -15,12 +15,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-# Quiet npm + stable Electron/node-gyp cache dirs (workspace-local for actions/cache).
+# Stable Electron/node-gyp cache dirs (workspace-local for actions/cache).
+# Do not silence npm loglevel — deprecations/peer warnings must stay visible.
 env:
-  NPM_CONFIG_LOGLEVEL: error
-  NPM_CONFIG_FUND: 'false'
-  NPM_CONFIG_AUDIT: 'false'
-  NPM_CONFIG_UPDATE_NOTIFIER: 'false'
   ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
   electron_config_cache: ${{ github.workspace }}/.cache/electron
   npm_config_devdir: ${{ github.workspace }}/.cache/node-gyp
@@ -47,11 +44,11 @@ jobs:
 
       - name: Install cpm dependencies
         working-directory: cpm
-        run: npm ci --no-audit --no-fund --loglevel=error --no-update-notifier
+        run: npm ci
 
       - name: Run cpm tests
         working-directory: cpm
-        run: npm test --silent
+        run: npm test
         env:
           # Live Pulsar hits are useful; allow skip if registry is down.
           CPM_SKIP_LIVE_REGISTRY: '0'

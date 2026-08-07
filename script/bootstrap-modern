@@ -109,10 +109,10 @@ fi
 if [ -d "$REPO_ROOT/cpm" ] && [ -f "$REPO_ROOT/cpm/package.json" ]; then
   echo "Installing cpm dependencies (host npm)…"
   if [ -f "$REPO_ROOT/cpm/package-lock.json" ]; then
-    (cd "$REPO_ROOT/cpm" && npm ci --ignore-scripts --no-audit --no-fund --loglevel=error --no-update-notifier) || \
-      (cd "$REPO_ROOT/cpm" && npm install --ignore-scripts --no-audit --no-fund --loglevel=error --no-update-notifier)
+    (cd "$REPO_ROOT/cpm" && npm ci --ignore-scripts) || \
+      (cd "$REPO_ROOT/cpm" && npm install --ignore-scripts)
   else
-    (cd "$REPO_ROOT/cpm" && npm install --ignore-scripts --no-audit --no-fund --loglevel=error --no-update-notifier)
+    (cd "$REPO_ROOT/cpm" && npm install --ignore-scripts)
   fi
 fi
 

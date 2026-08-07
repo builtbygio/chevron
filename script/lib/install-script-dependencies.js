@@ -13,13 +13,8 @@ process.env.ELECTRON_CUSTOM_VERSION = CONFIG.appMetadata.electronVersion;
 module.exports = function(ci) {
   console.log('Installing script dependencies');
   const npmBin = CONFIG.getNpmBinPath(ci);
-  const args = [
-    '--loglevel=error',
-    '--no-fund',
-    '--no-audit',
-    '--no-update-notifier',
-    ci ? 'ci' : 'install'
-  ];
+  // Default npm loglevel: keep deprecation/peer warnings visible.
+  const args = [ci ? 'ci' : 'install'];
   const skipMksnapshot = !hostCanRunMksnapshot();
 
   if (skipMksnapshot) {
@@ -34,10 +29,6 @@ module.exports = function(ci) {
   }
 
   const env = Object.assign({}, process.env, {
-    npm_config_loglevel: process.env.npm_config_loglevel || 'error',
-    npm_config_fund: 'false',
-    npm_config_audit: 'false',
-    npm_config_update_notifier: 'false',
     ELECTRON_CUSTOM_VERSION: CONFIG.appMetadata.electronVersion
   });
 
@@ -66,7 +57,7 @@ function finishScriptDepsWithoutMksnapshot(ci) {
       console.log(`Rebuilding ${pkg}...`);
       execFileSync(
         CONFIG.getNpmBinPath(ci),
-        ['rebuild', pkg, '--loglevel=error'],
+        ['rebuild', pkg],
         {
           env: process.env,
           cwd: CONFIG.scriptRootPath,
