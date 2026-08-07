@@ -327,6 +327,9 @@ function buildAsarUnpackGlobExpression() {
     path.join('**', 'node_modules', 'dugite', 'git', '**'),
     path.join('**', 'node_modules', 'github', 'bin', '**'),
     path.join('**', 'node_modules', 'github', 'lib', '**'),
+    // Phase S3 utilityProcess host + dugite native git binary
+    path.join('**', 'src', 'main-process', 'workers', '**'),
+    path.join('**', 'node_modules', 'dugite', '**'),
     path.join('**', 'node_modules', 'vscode-ripgrep', 'bin', '**'),
     path.join('**', 'resources', 'atom.png'),
     // Window/taskbar icons (Linux createFromPath needs real files, not asar).

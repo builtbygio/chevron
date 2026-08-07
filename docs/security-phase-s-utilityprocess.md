@@ -1,8 +1,12 @@
 # Phase S3 — GitHub workers → utilityProcess
 
-**Status:** design + migration plan (implementation not complete)  
+**Status:** **PR1 scaffold landed** (feature-flagged dual-path); default still BrowserWindow  
 **Parent:** [security-phase-s.md](./security-phase-s.md), BP P3.1 deferred  
-**Code today:** `src/main-process/register-renderer-ipc.js` (`atom-create-browser-window-sync`), owned `github` package WorkerManager  
+**Code:**  
+- `src/main-process/package-utility-worker.js`  
+- `src/main-process/workers/git-utility-host.js`  
+- IPC in `register-renderer-ipc.js`  
+- dual-path `BrowserWindow` in `src/remote-compat.js` (no github pin bump required for trial)  
 **Issue:** #61
 
 ## Problem
@@ -46,24 +50,26 @@ Main can run dugite, but long git operations and crash isolation favor a child; 
 
 ## Migration steps (implementation PRs)
 
-### PR1 — Main-side utility worker scaffold (Chevron monorepo)
+### PR1 — Main-side utility worker scaffold (Chevron monorepo) — **done**
 
-1. Add `src/main-process/package-utility-worker.js` (or similar):  
-   - `utilityProcess.fork` entry under `src/main-process/workers/git-utility-host.js`  
-   - Message protocol: `{ id, type, payload }` / `{ id, ok, result|error }`  
-2. Register IPC from renderer:  
-   - `atom-utility-worker-create`  
-   - `atom-utility-worker-send`  
-   - `atom-utility-worker-destroy`  
-3. **Do not** remove BrowserWindow path yet; feature-flag:  
-   - `CHEVRON_GITHUB_UTILITY_WORKERS=1` or config `core.githubUtilityWorkers`  
+1. `package-utility-worker.js` + `workers/git-utility-host.js` (dugite in utilityProcess)  
+2. IPC: create/load/send/destroy + capabilities; `atom-bw-id-call-sync` dual-path for synthetic ids  
+3. **Feature flag (default OFF):** `CHEVRON_GITHUB_UTILITY_WORKERS=1` or `core.githubUtilityWorkers`  
+4. **Transparent dual-path:** when flag is on, `remote-compat` `BrowserWindow` constructs a utility worker proxy so `github` WorkerManager works **without** a package pin bump  
 
-### PR2 — github package WorkerManager dual-path (owned fork)
+Dogfood:
 
-1. Detect flag via IPC capability query.  
-2. If utility path available, skip `atom-create-browser-window-sync`.  
-3. Map existing worker message shapes 1:1 where possible to limit churn.  
-4. Keep BrowserWindow fallback until dogfood passes.
+```bash
+CHEVRON_GITHUB_UTILITY_WORKERS=1 ./out/Chevron-*/chevron   # or enable in Settings → Core
+# Exercise GitHub package: status, commit, push, clone
+```
+
+### PR2 — github package WorkerManager dual-path (owned fork) — **optional now**
+
+Transparent proxy covers the common path. Optional follow-up: explicit capability check in WorkerManager + cleanup of `electron.remote` BrowserWindow construction for clarity.
+
+1. Detect flag via `atom-utility-worker-capabilities`.  
+2. Prefer utility path explicitly; keep BrowserWindow fallback.
 
 ### PR3 — Default-on + remove BrowserWindow workers
 
@@ -105,9 +111,10 @@ Node in the utility process remains **trusted code we ship** (T1), not community
 
 ## Exit criteria (#61)
 
-- [ ] Utility path feature-flagged and dogfooded  
+- [x] Utility path feature-flagged (scaffold + unit tests)  
+- [ ] Dogfooded with real github package git flows  
 - [ ] Default-on on all CI platforms  
-- [ ] No github use of `atom-create-browser-window-sync`  
+- [ ] No github use of `atom-create-browser-window-sync` (or dead code removed)  
 - [ ] Smoke + documented manual github checklist green  
 
 ## Non-goals

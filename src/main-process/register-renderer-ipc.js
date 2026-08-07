@@ -174,6 +174,9 @@ module.exports = function registerRendererIpc(atomApplication) {
   // Phase N2.2–N2.3 + P2.1 filesystem bridge (absolute paths + optional strict roots).
   require('./register-fs-ipc')(atomApplication);
 
+  // Phase S3 / #61 — github git workers via utilityProcess (feature-flagged).
+  const packageUtilityWorker = require('./package-utility-worker');
+
   // --- Boot / load settings (P0) ---------------------------------------------
 
   ipcMain.on('atom-window-load-settings-sync', event => {
@@ -617,6 +620,9 @@ module.exports = function registerRendererIpc(atomApplication) {
     event.returnValue = event.sender.id;
   });
 
+  // Allow main→renderer channel used by utility workers (same as BW workers).
+  // (No change to allowlist logic below; utility workers never call atom-wc-send.)
+
   ipcMain.on('atom-wc-send', (event, webContentsId, channel, ...args) => {
     // P0.3: not an open relay — only:
     //  - send to self (same webContents),
@@ -681,9 +687,82 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
+  // --- utilityProcess workers (Phase S3 / #61) ------------------------------
+
+  ipcMain.on('atom-utility-worker-enabled-sync', event => {
+    event.returnValue = packageUtilityWorker.isEnabled();
+  });
+
+  ipcMain.handle('atom-utility-worker-capabilities', () => {
+    return {
+      utilityProcess: true,
+      githubUtilityWorkers: packageUtilityWorker.isEnabled()
+    };
+  });
+
+  ipcMain.on('atom-utility-worker-create-sync', event => {
+    try {
+      if (!packageUtilityWorker.isEnabled()) {
+        event.returnValue = null;
+        return;
+      }
+      const created = packageUtilityWorker.createWorker(event.sender);
+      event.returnValue = created;
+    } catch (error) {
+      console.error('atom-utility-worker-create-sync', error);
+      event.returnValue = null;
+    }
+  });
+
+  ipcMain.on('atom-utility-worker-load-sync', (event, workerId, loadUrl) => {
+    try {
+      const meta = packageUtilityWorker.getWorker(workerId);
+      if (!meta || meta.managerWcId !== event.sender.id) {
+        event.returnValue = false;
+        return;
+      }
+      event.returnValue = packageUtilityWorker.loadWorkerUrl(workerId, loadUrl);
+    } catch (error) {
+      console.error('atom-utility-worker-load-sync', error);
+      event.returnValue = false;
+    }
+  });
+
+  ipcMain.on(
+    'atom-utility-worker-send',
+    (event, workerId, _channel, payload) => {
+      try {
+        const meta = packageUtilityWorker.getWorker(workerId);
+        if (!meta || meta.managerWcId !== event.sender.id) return;
+        packageUtilityWorker.sendToWorker(workerId, _channel, payload);
+      } catch (error) {
+        console.error('atom-utility-worker-send', error);
+      }
+    }
+  );
+
+  ipcMain.on('atom-utility-worker-destroy-sync', (event, workerId) => {
+    try {
+      const meta = packageUtilityWorker.getWorker(workerId);
+      if (!meta || meta.managerWcId !== event.sender.id) {
+        event.returnValue = false;
+        return;
+      }
+      event.returnValue = packageUtilityWorker.destroy(workerId);
+    } catch (error) {
+      console.error('atom-utility-worker-destroy-sync', error);
+      event.returnValue = false;
+    }
+  });
+
+  ipcMain.on('atom-utility-worker-is-destroyed-sync', (event, workerId) => {
+    event.returnValue = !packageUtilityWorker.isUtilityWorker(workerId);
+  });
+
   // --- Create BrowserWindow from renderer (github WorkerManager) ------------
-  // Phase S3 target: replace with utilityProcess (docs/security-phase-s-utilityprocess.md).
-  // This path remains until the owned github package dual-path lands.
+  // Phase S3: when CHEVRON_GITHUB_UTILITY_WORKERS is on, remote-compat uses
+  // utilityProcess instead (docs/security-phase-s-utilityprocess.md). This
+  // BrowserWindow path remains as the default fallback.
 
   ipcMain.on('atom-create-browser-window-sync', (event, options = {}) => {
     try {
@@ -779,6 +858,33 @@ module.exports = function registerRendererIpc(atomApplication) {
       console.warn(
         `atom-bw-id-call-sync: blocked method ${String(method)} on window ${windowId}`
       );
+      event.returnValue = null;
+      return;
+    }
+
+    // Phase S3: synthetic utility workers share the same call surface.
+    if (packageUtilityWorker.isUtilityWorker(windowId)) {
+      const uMeta = packageUtilityWorker.getWorker(windowId);
+      if (!uMeta || uMeta.managerWcId !== event.sender.id) {
+        event.returnValue =
+          method === 'isDestroyed' ? true : method === 'destroy' ? true : null;
+        return;
+      }
+      if (method === 'isDestroyed') {
+        event.returnValue = false;
+        return;
+      }
+      if (method === 'destroy') {
+        event.returnValue = packageUtilityWorker.destroy(windowId);
+        return;
+      }
+      if (method === 'loadURL') {
+        event.returnValue = packageUtilityWorker.loadWorkerUrl(
+          windowId,
+          args[0]
+        );
+        return;
+      }
       event.returnValue = null;
       return;
     }

@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Repo audit P0 hygiene:** real [SECURITY.md](SECURITY.md) (supported 0.6.x, private disclosure, residual-risk scope); Help menu no longer opens dead atom.io / `atom/atom` URLs.
 - **Repo audit P1:** package ownership inventory, SCA runtime prioritisation, package-require-audit golden tests in CI, `async@3.2.6` (prototype-pollution range), auto-update payload no longer hardcodes atom.io.
 - **Repo audit P2 / Phase S:** [package host design S1.2](docs/security-phase-s-package-host.md); [utilityProcess workers plan S3](docs/security-phase-s-utilityprocess.md); [Babel/Coffee isolation](docs/babel-coffee-isolation-plan.md) with `CHEVRON_DISABLE_LEGACY_TRANSPILE` + deprecation logs; [nested package modules policy](docs/nested-package-modules.md).
+- **Phase S3 PR1 (github utility workers):** feature-flagged `utilityProcess` git worker scaffold (`CHEVRON_GITHUB_UTILITY_WORKERS` / `core.githubUtilityWorkers`, **default off**). When enabled, `remote-compat` `BrowserWindow` used by github WorkerManager is a utility-process proxy (dugite in `git-utility-host.js`) instead of a Node BrowserWindow. BrowserWindow path remains the default until dogfood.
 
 ### Fixed
 

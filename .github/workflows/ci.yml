@@ -45,10 +45,11 @@ jobs:
           # Live Pulsar hits are useful; allow skip if registry is down.
           CPM_SKIP_LIVE_REGISTRY: '0'
 
-      - name: package-require-audit + legacy-transpile unit tests
+      - name: package-require-audit + legacy-transpile + utility-worker unit tests
         run: |
           node --test script/ci/package-require-audit.test.js
           node --test script/ci/legacy-transpile.test.js
+          node --test script/ci/package-utility-worker.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64
