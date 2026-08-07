@@ -1,4 +1,4 @@
-const { Disposable } = require('atom');
+const { Disposable } = require('chevron');
 const etch = require('etch');
 const { shell } = require('electron');
 const ChevronLogo = require('./chevron-logo');

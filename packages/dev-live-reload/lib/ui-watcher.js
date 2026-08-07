@@ -1,4 +1,4 @@
-const { CompositeDisposable } = require('atom');
+const { CompositeDisposable } = require('chevron');
 
 const BaseThemeWatcher = require('./base-theme-watcher');
 const PackageWatcher = require('./package-watcher');

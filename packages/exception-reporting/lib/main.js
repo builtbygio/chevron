@@ -20,7 +20,7 @@ __export(main_exports, {
   default: () => main_default
 });
 module.exports = __toCommonJS(main_exports);
-var import_atom = require("atom");
+var import_atom = require("chevron");
 let reporter;
 function getReporter() {
   if (!reporter) {

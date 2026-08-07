@@ -140,6 +140,15 @@ module.exports = class ThemeManager {
     if (!Array.isArray(themeNames)) {
       themeNames = [themeNames];
     }
+    // Map legacy atom-* theme package names to chevron-* (rename program).
+    const THEME_RENAMES = {
+      'atom-dark-syntax': 'chevron-dark-syntax',
+      'atom-dark-ui': 'chevron-dark-ui',
+      'atom-light-syntax': 'chevron-light-syntax',
+      'atom-light-ui': 'chevron-light-ui'
+    };
+    themeNames = themeNames.map(name => THEME_RENAMES[name] || name);
+
     themeNames = themeNames.filter(
       themeName =>
         typeof themeName === 'string' &&
@@ -150,10 +159,10 @@ module.exports = class ThemeManager {
     // available.
     if (themeNames.length < 2) {
       const builtInThemeNames = [
-        'atom-dark-syntax',
-        'atom-dark-ui',
-        'atom-light-syntax',
-        'atom-light-ui',
+        'chevron-dark-syntax',
+        'chevron-dark-ui',
+        'chevron-light-syntax',
+        'chevron-light-ui',
         'base16-tomorrow-dark-theme',
         'base16-tomorrow-light-theme',
         'solarized-dark-syntax',

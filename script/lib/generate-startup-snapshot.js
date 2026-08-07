@@ -204,6 +204,8 @@ module.exports = function(packagedAppPath) {
         ) ||
         requiredModuleRelativePath === path.join('..', 'exports', 'atom.js') ||
         requiredModuleRelativePath ===
+          path.join('..', 'exports', 'chevron.js') ||
+        requiredModuleRelativePath ===
           path.join('..', 'src', 'electron-shims.js') ||
         requiredModuleRelativePath ===
           path.join(

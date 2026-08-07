@@ -1,4 +1,4 @@
-const { Emitter, CompositeDisposable } = require('atom');
+const { Emitter, CompositeDisposable } = require('chevron');
 
 const Unsupported = 'unsupported';
 const Idle = 'idle';

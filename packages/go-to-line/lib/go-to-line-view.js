@@ -20,7 +20,7 @@ __export(go_to_line_view_exports, {
   default: () => go_to_line_view_default
 });
 module.exports = __toCommonJS(go_to_line_view_exports);
-var import_atom = require("atom");
+var import_atom = require("chevron");
 class GoToLineView {
   constructor() {
     this.miniEditor = new import_atom.TextEditor({ mini: true });

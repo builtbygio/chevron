@@ -9,10 +9,10 @@ See [RFC 003](https://github.com/atom/atom/blob/master/docs/rfcs/003-consolidate
 | Package | Where to find it | Migration issue |
 |---------|------------------|-----------------|
 | **about** | [`./about`](./about) | [#17832](https://github.com/atom/atom/issues/17832) |
-| **atom-dark-syntax** | [`./atom-dark-syntax`](./atom-dark-syntax) | [#17849](https://github.com/atom/atom/issues/17849) |
-| **atom-dark-ui** | [`./atom-dark-ui`](./atom-dark-ui) | [#17850](https://github.com/atom/atom/issues/17850) |
-| **atom-light-syntax** | [`./atom-light-syntax`](./atom-light-syntax) | [#17851](https://github.com/atom/atom/issues/17851) |
-| **atom-light-ui** | [`./atom-light-ui`](./atom-light-ui) | [#17852](https://github.com/atom/atom/issues/17852) |
+| **chevron-dark-syntax** | [`./chevron-dark-syntax`](./chevron-dark-syntax) | Renamed from atom-dark-syntax |
+| **chevron-dark-ui** | [`./chevron-dark-ui`](./chevron-dark-ui) | Renamed from atom-dark-ui |
+| **chevron-light-syntax** | [`./chevron-light-syntax`](./chevron-light-syntax) | Renamed from atom-light-syntax |
+| **chevron-light-ui** | [`./chevron-light-ui`](./chevron-light-ui) | Renamed from atom-light-ui |
 | **autocomplete-chevron-api** | [`builtbygio/autocomplete-chevron-api`][autocomplete-chevron-api] | Renamed from autocomplete-atom-api |
 | **autocomplete-css** | [`atom/autocomplete-css`][autocomplete-css] |  |
 | **autocomplete-html** | [`atom/autocomplete-html`][autocomplete-html] |  |

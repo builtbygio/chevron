@@ -79,7 +79,9 @@ module.exports = async function() {
       configDirPath: process.env.ATOM_HOME,
       enablePersistence: false
     };
-    global.atom = new AtomEnvironment(environmentParams);
+    const atomEnvironment = new AtomEnvironment(environmentParams);
+    global.chevron = atomEnvironment;
+    global.atom = atomEnvironment;
     global.atom.initialize(environmentParams);
 
     // Prevent benchmarks from modifying application menus

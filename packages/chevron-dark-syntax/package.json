@@ -1,0 +1,12 @@
+{
+  "name": "chevron-dark-syntax",
+  "theme": "syntax",
+  "version": "0.29.1",
+  "description": "A dark theme for syntax",
+  "repository": "https://github.com/builtbygio/chevron",
+  "license": "MIT",
+  "engines": {
+    "atom": ">0.50.0",
+    "chevron": ">=0.6.0"
+  }
+}

@@ -1,4 +1,4 @@
-const { Disposable, CompositeDisposable } = require('atom');
+const { Disposable, CompositeDisposable } = require('chevron');
 const DeprecationCopView = require('./deprecation-cop-view');
 const DeprecationCopStatusBarView = require('./deprecation-cop-status-bar-view');
 const ViewURI = 'atom://deprecation-cop';

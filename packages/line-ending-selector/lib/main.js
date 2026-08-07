@@ -34,7 +34,7 @@ __export(main_exports, {
 });
 module.exports = __toCommonJS(main_exports);
 var import_underscore_plus = __toESM(require("underscore-plus"));
-var import_atom = require("atom");
+var import_atom = require("chevron");
 var import_selector = require("./selector");
 var import_status_bar_item = __toESM(require("./status-bar-item"));
 var import_helpers = __toESM(require("./helpers"));

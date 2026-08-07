@@ -18,13 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - README / CONTRIBUTING license links point at `LICENSE.md`; CONTRIBUTING workflow documents default branch `master` (not `main`).
 - Win32 auto-updater `update-downloaded` release URL uses the configured feed / GitHub releases instead of `https://atom.io`.
-
-### Fixed
-
 - **Restore builtbygio package pins** after #81 accidentally rewrote several ownership URLs back to `atom/*`. Land **`autocomplete-chevron-api`** rename end-to-end (dep key, packageDependencies, require, fork `name`, decaffeinate patch). Pin-policy CI test prevents regressions.
 
 ### Changed
 
+- **Atom → Chevron rename program (Phases 0–5):** Chevron-primary API — `global.chevron` / `global.chevronApplication` / `require('chevron')` with `atom` aliases; bundled themes renamed `atom-*-ui/syntax` → `chevron-*-ui/syntax` with config migrate for old names; monorepo packages prefer `require('chevron')`. Policy in [docs/REBRANDING.md](docs/REBRANDING.md) + [docs/atom-to-chevron-rename-plan.md](docs/atom-to-chevron-rename-plan.md). Deferred: `atom-keymap`, `atom-select-list`, `@atom/*`.
 - **#62 Options 2–3 — drop CoffeeScript and Babel 5 runtime transpile:** remove `coffee-script` and `babel-core@5` from app dependencies. Bootstrap decaffeinates remaining Coffee `lib/` packages and applies precompiled plain JS for atom/* babel-prefix packages; owned builtbygio forks (settings-view, find-and-replace, autocomplete-plus, command-palette, tree-view) and monorepo `packages/*` are precompiled at source. Compile-cache refuses `.coffee` / babel opt-in prefixes with migration errors; cpm warns on install. TypeScript path unchanged. See [docs/babel-coffee-isolation-plan.md](docs/babel-coffee-isolation-plan.md).
 - **CI speed:** split Electron binary/header cache from npm/`node_modules` cache; bootstrap skips `npm ci` and native force-rebuild when deps + natives fingerprints match (warm cache). Override with `CHEVRON_FORCE_NATIVE_REBUILD=1`.
 - **npm hygiene (not silence):** keep default npm loglevel so deprecations stay visible; upgrade cpm `@electron/rebuild` / pacote / arborist; bump root `semver` / `resolve` / `postcss`.

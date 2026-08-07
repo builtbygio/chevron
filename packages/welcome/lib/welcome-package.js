@@ -30,7 +30,7 @@ __export(welcome_package_exports, {
   default: () => WelcomePackage
 });
 module.exports = __toCommonJS(welcome_package_exports);
-var import_atom = require("atom");
+var import_atom = require("chevron");
 var import_reporter_proxy = __toESM(require("./reporter-proxy"));
 let WelcomeView, GuideView;
 const WELCOME_URI = "atom://welcome/welcome";

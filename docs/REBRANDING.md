@@ -2,6 +2,8 @@
 
 This document is the rebrand record. The old root `MIGRATION-CHECKLIST.md` (AtomNova intermediate) was removed; use this file + [CHANGELOG.md](../CHANGELOG.md) instead.
 
+**Living rename checklist:** [atom-to-chevron-rename-plan.md](./atom-to-chevron-rename-plan.md)
+
 ## Decisions (locked)
 
 | Topic | Decision |
@@ -9,43 +11,45 @@ This document is the rebrand record. The old root `MIGRATION-CHECKLIST.md` (Atom
 | Product name | **Chevron** |
 | Package name | `chevron` (`productName`: Chevron) |
 | Bundle ID | `dev.builtbygio.chevron` / `.helper` |
-| Atom ecosystem | **Dual-support forever** (`atom://`, `global.atom`, `engines.atom`, `~/.atom` / `ATOM_HOME`, `apm`) |
+| Atom ecosystem | **Chevron-primary**; Atom surfaces kept as **aliases** during migration (community packages, old configs) |
 | Intermediate brand | AtomNova is retired (tooling renames remaining) |
 
 ## Status
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| P0 | Recognize `chevron` package name; Squirrel apm shim; metadata fix | Done on `feat/chevron-rebrand` |
-| P1 | Crash / telemetry / copyright / protocol prompt strings | Done |
-| P2 | Bundle ID, installers, Linux install-from-source, atom.sh | Done |
-| P3 | Dual config home, `chevron://` alias, CLI `chevron`+`atom`+`apm` | Done |
-| P4 | Welcome / about / docs product copy | Done |
-| P5 | Rename `atomnova_*` helpers → `chevron_*` | Done (0.2.0) |
+| P0–P5 | Product name, bundle ID, dual home, CLI, copy, helper renames | Done (≤0.3.0) |
+| Rename Phase 0 | Restore owned pins; `autocomplete-chevron-api` | Done |
+| Rename Phase 1 | Policy flip + rename plan doc | Done |
+| Rename Phase 2 | `global.chevron` / `require('chevron')` (+ atom aliases) | Done |
+| Rename Phase 3 | Theme package names `chevron-*-ui/syntax` | Done |
+| Rename Phase 4–5 | Messaging + monorepo prefer `require('chevron')` | Done |
+| Later | `atom-keymap`, `atom-select-list`, `@atom/*`, remove atom aliases post-1.0 | Not started |
 
-## Leave forever
+## Chevron-primary surfaces
 
-- `global.atom`, `require('atom')`, `engines.atom`
-- Primary package URI scheme `atom://` (plus `chevron://` alias)
-- Theme package **names** (`atom-dark-ui`, …)
-- `@atom/*` npm package names and most upstream `github.com/atom/*` pins
+| Surface | Preferred | Alias (kept) |
+|---------|-----------|--------------|
+| Global editor env | `global.chevron` | `global.atom` (same object) |
+| Main process app | `global.chevronApplication` | `global.atomApplication` |
+| Package module API | `require('chevron')` | `require('atom')` |
+| Engines | `engines.chevron` | `engines.atom` still accepted |
+| Protocol | Document `chevron://` | `atom://` still registered; packages may use either |
+| CLI | `chevron`, `cpm` | `atom`, `apm` shims |
+| Config home | `~/.chevron` when present | `~/.atom` / `ATOM_HOME` still work |
+| Themes (bundled fallbacks) | `chevron-dark-ui` / `chevron-dark-syntax` / light variants | Old `atom-*` names map at load |
 
-## Dual-support forever
+## Still deferred (high cost)
 
-| Surface | Behavior |
-|---------|----------|
-| Config home | `CHEVRON_HOME` → `ATOM_HOME` → portable → `~/.chevron` if exists → **`~/.atom`** |
-| Protocols | Register `atom` + `chevron`; normalize `chevron://` → `atom://` for packages |
-| CLI | Install `chevron` primary; keep `atom` + `apm` shims |
+- `atom-keymap` / `atom-select-list` package **names**
+- `@atom/*` scoped natives
+- Class renames (`AtomEnvironment` → `ChevronEnvironment`) — cosmetic; aliases later if ever
+- Hard removal of `global.atom` — not before **1.0**
 
-## 0.3.0 polish
+## Config home order
 
-- [x] New Chevron app icons (icns/ico/png) for all channels
-- [x] About + Welcome wordmark
-- [x] Welcome guide product copy
-- [x] README hero / screenshot refresh
-- [x] Optional first-run config migrate prompt — **WONTFIX** for now (silent dual-home in `atom-paths.js`; see [onboarding-polish.md](./onboarding-polish.md) W3)
+`CHEVRON_HOME` → `ATOM_HOME` → portable → `~/.chevron` if exists → **`~/.atom`**
 
 ## Verification
 
-Multi-platform CI after each phase. See the session plan for full acceptance checklist.
+Multi-platform CI after rename PRs. Pin-policy unit test for owned `builtbygio` pins.

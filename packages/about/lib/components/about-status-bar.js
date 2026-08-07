@@ -1,4 +1,4 @@
-const { CompositeDisposable } = require('atom');
+const { CompositeDisposable } = require('chevron');
 const etch = require('etch');
 const EtchComponent = require('../etch-component');
 

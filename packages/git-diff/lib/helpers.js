@@ -20,7 +20,7 @@ __export(helpers_exports, {
   default: () => helpers_default
 });
 module.exports = __toCommonJS(helpers_exports);
-var import_atom = require("atom");
+var import_atom = require("chevron");
 async function helpers_default(goalPath) {
   if (goalPath) {
     return atom.project.repositoryForDirectory(new import_atom.Directory(goalPath));

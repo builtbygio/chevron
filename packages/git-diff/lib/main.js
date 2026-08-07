@@ -30,7 +30,7 @@ __export(main_exports, {
   default: () => main_default
 });
 module.exports = __toCommonJS(main_exports);
-var import_atom = require("atom");
+var import_atom = require("chevron");
 var import_git_diff_view = __toESM(require("./git-diff-view"));
 var import_diff_list_view = __toESM(require("./diff-list-view"));
 let diffListView = null;

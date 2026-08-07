@@ -1,4 +1,4 @@
-const { Emitter } = require('atom');
+const { Emitter } = require('chevron');
 
 module.exports = class StatusBarItem {
   constructor() {

@@ -30,7 +30,7 @@ __export(git_diff_view_exports, {
   default: () => GitDiffView
 });
 module.exports = __toCommonJS(git_diff_view_exports);
-var import_atom = require("atom");
+var import_atom = require("chevron");
 var import_helpers = __toESM(require("./helpers"));
 const MAX_BUFFER_LENGTH_TO_DIFF = 2 * 1024 * 1024;
 class GitDiffView {

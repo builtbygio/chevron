@@ -31,7 +31,7 @@ __export(deprecation_cop_view_exports, {
 });
 module.exports = __toCommonJS(deprecation_cop_view_exports);
 var import_underscore_plus = __toESM(require("underscore-plus"));
-var import_atom = require("atom");
+var import_atom = require("chevron");
 var import_etch = __toESM(require("etch"));
 var import_fs_plus = __toESM(require("fs-plus"));
 var import_grim = __toESM(require("grim"));
