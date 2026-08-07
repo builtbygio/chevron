@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - **Phase S prep (S0 + S1.0):** [docs/security-phase-s.md](docs/security-phase-s.md) — natives inventory with migration classes; community packages blocked from requiring known native addons and direct `.node` bindings (same default-on restrict as privileged modules). Editor `sandbox: true` still blocked pending package-host work and Option A/C decision.
+- **Repo audit P0 hygiene:** real [SECURITY.md](SECURITY.md) (supported 0.6.x, private disclosure, residual-risk scope); Help menu no longer opens dead atom.io / `atom/atom` URLs.
+
+### Fixed
+
+- README / CONTRIBUTING license links point at `LICENSE.md`; CONTRIBUTING workflow documents default branch `master` (not `main`).
+
+### Changed
+
+- **Dockerfile** replaced: Ubuntu 24.04 + Node 24 + Python 3.12 (no Python 2 / Atom-era bootstrap). See comments in `Dockerfile` for usage.
+- Help menus: removed obsolete “Terms of Use” (atom.io product ToS); “View License” remains for in-app license text.
 
 ## [0.6.0] — 2026-08-01
 

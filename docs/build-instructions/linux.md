@@ -34,6 +34,16 @@ xvfb-run -a node script/ci/smoke-test.js
 
 **Do not** run stock `./script/bootstrap` on modern hosts — it exits with a redirect to `bootstrap-modern`.
 
+### Optional: Docker
+
+Root `Dockerfile` is a **Linux build helper** (Ubuntu 24.04, Node 24, Python 3.12 + setuptools). Prefer a native host for day-to-day work; use the image when you need a clean reproducible environment:
+
+```bash
+docker build -t chevron-build .
+docker run --rm -it -v "$PWD":/chevron -w /chevron chevron-build \
+  bash -lc './script/bootstrap-modern && ./script/with-modern-env ./script/build --no-bootstrap'
+```
+
 ---
 
 ## Artifacts
