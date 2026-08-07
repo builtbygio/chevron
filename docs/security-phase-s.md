@@ -1,8 +1,8 @@
 # Security Phase S — editor sandbox prep & package host redesign
 
-**Status:** **prep active** (S0 + S1.0 started 2026-08-01)  
+**Status:** **prep active** (S0 + S1.0 done; **S1.2 design landed**; S3 plan written)  
 **Depends on:** Phase N0–N5.1 (done), Electron BP P0–P3 shippable (done, 0.6.0)  
-**Related:** `docs/security-phase-n.md`, `docs/security-phase-n5.md`, `docs/electron-best-practices-plan.md`, `docs/package-node-policy.md`, `docs/security-threat-model.md`  
+**Related:** `docs/security-phase-n.md`, `docs/security-phase-n5.md`, `docs/electron-best-practices-plan.md`, `docs/package-node-policy.md`, `docs/security-threat-model.md`, **[security-phase-s-package-host.md](./security-phase-s-package-host.md)**, **[security-phase-s-utilityprocess.md](./security-phase-s-utilityprocess.md)**  
 **Inventory:** `src/preload-natives.js`  
 **Handoff:** `GROK.md`
 
@@ -126,9 +126,9 @@ When require-restrict is on (default):
 
 Log community attempts to load natives under `CHEVRON_AUDIT_PACKAGE_REQUIRES` (already logs privileged; extend messaging for native class).
 
-#### S1.2 — Package host design note (follow-up)
+#### S1.2 — Package host design note — **done**
 
-Short design: activation in-process vs separate utility process; what `atom.*` must be proxied; compatibility for packages that only use Atom APIs.
+Authoritative design: **[security-phase-s-package-host.md](./security-phase-s-package-host.md)** — Option B spine, host v1 (require policy) vs v2 (utility package host), hybrid UI strategy, pre-S5 Option C recommendation.
 
 ### S2 — Easy native relocation
 
@@ -150,6 +150,8 @@ Tag natives as `main-only` / `renderer-hot` / `package-t1` and move what is chea
 ### S3 — GitHub workers → utilityProcess
 
 Replace hidden Node `BrowserWindow` workers with Electron `utilityProcess` (or main-process dugite). Large rewrite of owned `github` package. See BP plan P3.1.
+
+**Plan:** **[security-phase-s-utilityprocess.md](./security-phase-s-utilityprocess.md)** (scaffold → dual-path → default-on). Implementation tracked separately (#61).
 
 **Prerequisite:** S1 so community cannot recreate the old worker pattern with Node BWs (already constrained by IPC allowlists).
 
@@ -177,10 +179,10 @@ Flip or not; release notes; update Electron checklist in BP plan.
 | S0.1 | Plan doc | **done** (this file) |
 | S0.2 | Expanded `preload-natives.js` inventory | **done** |
 | S1.0 | Community native addon / `.node` block | **done** (this PR) |
-| S1.1 | Audit messaging for natives | pending |
-| S1.2 | Package host design note | pending |
-| S2.* | Easy native relocation | pending |
-| S3 | utilityProcess github workers | pending (large) |
+| S1.1 | Audit messaging for natives | pending (audit env already logs reason class) |
+| S1.2 | Package host design note | **done** — [security-phase-s-package-host.md](./security-phase-s-package-host.md) |
+| S2.* | Easy native relocation | pending (`nslog`/`fs-admin` already main-only) |
+| S3 | utilityProcess github workers | **plan done** — [security-phase-s-utilityprocess.md](./security-phase-s-utilityprocess.md); impl open |
 | S4 | sendSync → invoke | pending (optional) |
 | S5 | Option A spike / Option C decision | pending |
 | S6 | sandbox product decision | blocked on S1 + S5 |

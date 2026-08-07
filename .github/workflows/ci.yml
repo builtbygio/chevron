@@ -45,8 +45,10 @@ jobs:
           # Live Pulsar hits are useful; allow skip if registry is down.
           CPM_SKIP_LIVE_REGISTRY: '0'
 
-      - name: package-require-audit golden tests (node:test)
-        run: node --test script/ci/package-require-audit.test.js
+      - name: package-require-audit + legacy-transpile unit tests
+        run: |
+          node --test script/ci/package-require-audit.test.js
+          node --test script/ci/legacy-transpile.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64
@@ -244,13 +246,14 @@ jobs:
           if-no-files-found: ignore
 
   # ---------------------------------------------------------------------------
-  # Linux arm64 — deb + tar + rpm (non-blocking if arm runners are scarce)
+  # Linux arm64 — deb + tar + rpm
+  # Bootstrap/build are hard gates. Smoke is soft-gated (Xvfb/renderer flakes)
+  # so packaging regressions still fail the job (audit #65).
   # ---------------------------------------------------------------------------
   build-and-smoke-linux-arm64:
     name: Linux arm64 bootstrap, build, smoke & packages
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 150
-    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v5
@@ -331,7 +334,11 @@ jobs:
             --compress-artifacts
           ls -la out/*.deb out/*.tar.gz out/*.rpm
 
+      # Soft-gate only: historical Xvfb/renderer flakes before packages activate.
+      # Build/package steps above remain hard failures.
       - name: Launch smoke test (Xvfb)
+        id: arm64_smoke
+        continue-on-error: true
         run: xvfb-run -a node script/ci/smoke-test.js
 
       - name: Upload Linux arm64 packages
@@ -344,6 +351,11 @@ jobs:
             out/*.rpm
             out/*.tar.gz
           if-no-files-found: error
+
+      - name: Note soft smoke failure
+        if: steps.arm64_smoke.outcome == 'failure'
+        run: |
+          echo "::warning::Linux arm64 smoke failed (soft-gated). Packages still uploaded if build succeeded."
 
       - name: Upload build output on failure
         if: failure()
