@@ -1,4 +1,4 @@
-const { BufferedProcess } = require('atom');
+const { BufferedProcess } = require('chevron');
 const UpdatePackageDependenciesStatusView = require('./update-package-dependencies-status-view');
 
 module.exports = {

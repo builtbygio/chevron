@@ -20,7 +20,7 @@ const repoRoot = path.resolve(
 
 const PACKAGES = [
   {
-    name: 'autocomplete-atom-api',
+    name: 'autocomplete-chevron-api',
     files: ['lib/main.js', 'lib/provider.js'],
     removeCoffee: ['lib/main.coffee', 'lib/provider.coffee']
   },

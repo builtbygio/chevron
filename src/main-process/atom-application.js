@@ -256,8 +256,8 @@ module.exports = class AtomApplication extends EventEmitter {
   async initialize(options) {
     StartupTime.addMarker('main-process:atom-application:initialize:start');
 
-    global.atomApplication = this;
-
+    global.chevronApplication = this;
+    global.atomApplication = this; // alias
     this.applicationMenu = new ApplicationMenu(
       this.version,
       this.autoUpdateManager

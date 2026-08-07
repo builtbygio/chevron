@@ -20,10 +20,20 @@ __export(helpers_exports, {
   default: () => helpers_default
 });
 module.exports = __toCommonJS(helpers_exports);
-var import_atom = require("atom");
+var import_atom = require("chevron");
 async function helpers_default(goalPath) {
   if (goalPath) {
     return atom.project.repositoryForDirectory(new import_atom.Directory(goalPath));
   }
   return null;
+}
+
+// Chevron: Node require() interop for default-only esbuild ESM modules
+if (module.exports && module.exports.__esModule && module.exports.default != null) {
+  var __keys = Object.keys(module.exports).filter(function (k) {
+    return k !== '__esModule' && k !== 'default';
+  });
+  if (__keys.length === 0) {
+    module.exports = module.exports.default;
+  }
 }

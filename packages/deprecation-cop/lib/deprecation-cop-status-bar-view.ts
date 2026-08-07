@@ -6,7 +6,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 let DeprecationCopStatusBarView;
-const {CompositeDisposable, Disposable} = require('atom');
+const {CompositeDisposable, Disposable} = require('chevron');
 const _ = require('underscore-plus');
 const Grim = require('grim');
 

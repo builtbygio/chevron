@@ -1,5 +1,5 @@
 const helpers = require('../lib/helpers');
-const { TextEditor } = require('atom');
+const { TextEditor } = require('chevron');
 
 describe('line ending selector', () => {
   let lineEndingTile;

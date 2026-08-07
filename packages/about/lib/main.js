@@ -1,4 +1,4 @@
-const { CompositeDisposable } = require('atom');
+const { CompositeDisposable } = require('chevron');
 const semver = require('semver');
 const UpdateManager = require('./update-manager');
 const About = require('./about');

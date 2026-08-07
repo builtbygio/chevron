@@ -33,7 +33,7 @@ __export(main_exports, {
   deserializeIncompatiblePackagesComponent: () => deserializeIncompatiblePackagesComponent
 });
 module.exports = __toCommonJS(main_exports);
-var import_atom = require("atom");
+var import_atom = require("chevron");
 var import_view_uri = __toESM(require("./view-uri"));
 let disposables = null;
 function activate() {

@@ -1,0 +1,12 @@
+{
+  "name": "chevron-dark-ui",
+  "theme": "ui",
+  "version": "0.53.3",
+  "description": "A dark UI theme for Chevron",
+  "license": "MIT",
+  "repository": "https://github.com/builtbygio/chevron",
+  "engines": {
+    "atom": ">0.40.0",
+    "chevron": ">=0.6.0"
+  }
+}

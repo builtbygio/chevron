@@ -1,4 +1,4 @@
-const { CompositeDisposable, File, Directory, Emitter } = require('atom');
+const { CompositeDisposable, File, Directory, Emitter } = require('chevron');
 const path = require('path');
 
 module.exports = class Watcher {

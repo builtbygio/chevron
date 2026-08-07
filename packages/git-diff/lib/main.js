@@ -30,7 +30,7 @@ __export(main_exports, {
   default: () => main_default
 });
 module.exports = __toCommonJS(main_exports);
-var import_atom = require("atom");
+var import_atom = require("chevron");
 var import_git_diff_view = __toESM(require("./git-diff-view"));
 var import_diff_list_view = __toESM(require("./diff-list-view"));
 let diffListView = null;
@@ -69,3 +69,13 @@ var main_default = {
     subscriptions = null;
   }
 };
+
+// Chevron: Node require() interop for default-only esbuild ESM modules
+if (module.exports && module.exports.__esModule && module.exports.default != null) {
+  var __keys = Object.keys(module.exports).filter(function (k) {
+    return k !== '__esModule' && k !== 'default';
+  });
+  if (__keys.length === 0) {
+    module.exports = module.exports.default;
+  }
+}

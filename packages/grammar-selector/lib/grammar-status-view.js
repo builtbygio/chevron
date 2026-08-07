@@ -1,4 +1,4 @@
-const { Disposable } = require('atom');
+const { Disposable } = require('chevron');
 
 module.exports = class GrammarStatusView {
   constructor(statusBar) {

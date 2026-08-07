@@ -47,7 +47,7 @@ describe('atom.themes', function() {
   describe('when the core.themes config value contains invalid entry', () =>
     it('ignores theme', function() {
       atom.config.set('core.themes', [
-        'atom-light-ui',
+        'chevron-light-ui',
         null,
         undefined,
         '',
@@ -55,12 +55,22 @@ describe('atom.themes', function() {
         4,
         {},
         [],
-        'atom-dark-ui'
+        'chevron-dark-ui'
       ]);
 
       expect(atom.themes.getEnabledThemeNames()).toEqual([
-        'atom-dark-ui',
-        'atom-light-ui'
+        'chevron-dark-ui',
+        'chevron-light-ui'
+      ]);
+    }));
+
+
+  describe('legacy atom-* theme names', () =>
+    it('maps atom-dark-ui / atom-light-ui to chevron-* packages', function() {
+      atom.config.set('core.themes', ['atom-light-ui', 'atom-dark-ui']);
+      expect(atom.themes.getEnabledThemeNames()).toEqual([
+        'chevron-dark-ui',
+        'chevron-light-ui'
       ]);
     }));
 
@@ -68,16 +78,16 @@ describe('atom.themes', function() {
     it('returns the theme directories before the themes are loaded', function() {
       atom.config.set('core.themes', [
         'theme-with-index-less',
-        'atom-dark-ui',
-        'atom-light-ui'
+        'chevron-dark-ui',
+        'chevron-light-ui'
       ]);
 
       const paths = atom.themes.getImportPaths();
 
       // syntax theme is not a dir at this time, so only two.
       expect(paths.length).toBe(2);
-      expect(paths[0]).toContain('atom-light-ui');
-      expect(paths[1]).toContain('atom-dark-ui');
+      expect(paths[0]).toContain('chevron-light-ui');
+      expect(paths[1]).toContain('chevron-dark-ui');
     });
 
     it('ignores themes that cannot be resolved to a directory', function() {
@@ -106,7 +116,7 @@ describe('atom.themes', function() {
       runs(function() {
         didChangeActiveThemesHandler.reset();
         expect(document.querySelectorAll('style.theme')).toHaveLength(0);
-        atom.config.set('core.themes', ['atom-dark-ui']);
+        atom.config.set('core.themes', ['chevron-dark-ui']);
       });
 
       waitsFor('b', () => didChangeActiveThemesHandler.callCount === 1);
@@ -120,8 +130,8 @@ describe('atom.themes', function() {
           document
             .querySelector('style[priority="1"]')
             .getAttribute('source-path')
-        ).toMatch(/atom-dark-ui/);
-        atom.config.set('core.themes', ['atom-light-ui', 'atom-dark-ui']);
+        ).toMatch(/chevron-dark-ui/);
+        atom.config.set('core.themes', ['chevron-light-ui', 'chevron-dark-ui']);
       });
 
       waitsFor('c', () => didChangeActiveThemesHandler.callCount === 1);
@@ -135,12 +145,12 @@ describe('atom.themes', function() {
           document
             .querySelectorAll('style[priority="1"]')[0]
             .getAttribute('source-path')
-        ).toMatch(/atom-dark-ui/);
+        ).toMatch(/chevron-dark-ui/);
         expect(
           document
             .querySelectorAll('style[priority="1"]')[1]
             .getAttribute('source-path')
-        ).toMatch(/atom-light-ui/);
+        ).toMatch(/chevron-light-ui/);
         atom.config.set('core.themes', []);
       });
 
@@ -151,10 +161,10 @@ describe('atom.themes', function() {
         expect(document.querySelectorAll('style[priority="1"]')).toHaveLength(
           2
         );
-        // atom-dark-ui has a directory path, the syntax one doesn't
+        // chevron-dark-ui has a directory path, the syntax one doesn't
         atom.config.set('core.themes', [
           'theme-with-index-less',
-          'atom-dark-ui'
+          'chevron-dark-ui'
         ]);
       });
 
@@ -166,12 +176,12 @@ describe('atom.themes', function() {
         );
         const importPaths = atom.themes.getImportPaths();
         expect(importPaths.length).toBe(1);
-        expect(importPaths[0]).toContain('atom-dark-ui');
+        expect(importPaths[0]).toContain('chevron-dark-ui');
       });
     });
 
     it('adds theme-* classes to the workspace for each active theme', function() {
-      atom.config.set('core.themes', ['atom-dark-ui', 'atom-dark-syntax']);
+      atom.config.set('core.themes', ['chevron-dark-ui', 'chevron-dark-syntax']);
 
       let didChangeActiveThemesHandler;
       atom.themes.onDidChangeActiveThemes(
@@ -181,7 +191,7 @@ describe('atom.themes', function() {
 
       const workspaceElement = atom.workspace.getElement();
       runs(function() {
-        expect(workspaceElement).toHaveClass('theme-atom-dark-ui');
+        expect(workspaceElement).toHaveClass('theme-chevron-dark-ui');
 
         atom.themes.onDidChangeActiveThemes(
           (didChangeActiveThemesHandler = jasmine.createSpy())
@@ -200,8 +210,8 @@ describe('atom.themes', function() {
         expect(workspaceElement).toHaveClass(
           'theme-theme-with-syntax-variables'
         );
-        expect(workspaceElement).not.toHaveClass('theme-atom-dark-ui');
-        expect(workspaceElement).not.toHaveClass('theme-atom-dark-syntax');
+        expect(workspaceElement).not.toHaveClass('theme-chevron-dark-ui');
+        expect(workspaceElement).not.toHaveClass('theme-chevron-dark-syntax');
       });
     });
   });
@@ -575,7 +585,7 @@ h2 {
   describe('when in safe mode', function() {
     describe('when the enabled UI and syntax themes are bundled with Atom', function() {
       beforeEach(function() {
-        atom.config.set('core.themes', ['atom-light-ui', 'atom-dark-syntax']);
+        atom.config.set('core.themes', ['chevron-light-ui', 'chevron-dark-syntax']);
 
         waitsForPromise(() => atom.themes.activateThemes());
       });
@@ -583,8 +593,8 @@ h2 {
       it('uses the enabled themes', function() {
         const activeThemeNames = atom.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
-        expect(activeThemeNames).toContain('atom-light-ui');
-        expect(activeThemeNames).toContain('atom-dark-syntax');
+        expect(activeThemeNames).toContain('chevron-light-ui');
+        expect(activeThemeNames).toContain('chevron-dark-syntax');
       });
     });
 
@@ -610,7 +620,7 @@ h2 {
       beforeEach(function() {
         atom.config.set('core.themes', [
           'installed-dark-ui',
-          'atom-light-syntax'
+          'chevron-light-syntax'
         ]);
 
         waitsForPromise(() => atom.themes.activateThemes());
@@ -620,14 +630,14 @@ h2 {
         const activeThemeNames = atom.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
         expect(activeThemeNames).toContain('one-dark-ui');
-        expect(activeThemeNames).toContain('atom-light-syntax');
+        expect(activeThemeNames).toContain('chevron-light-syntax');
       });
     });
 
     describe('when the enabled syntax theme is not bundled with Atom', function() {
       beforeEach(function() {
         atom.config.set('core.themes', [
-          'atom-light-ui',
+          'chevron-light-ui',
           'installed-dark-syntax'
         ]);
 
@@ -637,7 +647,7 @@ h2 {
       it('uses the default one-dark syntax theme', function() {
         const activeThemeNames = atom.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
-        expect(activeThemeNames).toContain('atom-light-ui');
+        expect(activeThemeNames).toContain('chevron-light-ui');
         expect(activeThemeNames).toContain('one-dark-syntax');
       });
     });

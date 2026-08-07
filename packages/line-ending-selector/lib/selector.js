@@ -33,7 +33,7 @@ __export(selector_exports, {
 });
 module.exports = __toCommonJS(selector_exports);
 var import_atom_select_list = __toESM(require("atom-select-list"));
-var import_atom = require("atom");
+var import_atom = require("chevron");
 var import_main = require("./main");
 class Selector {
   // Make a selector object (should be called once)

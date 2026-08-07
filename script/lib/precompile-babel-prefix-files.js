@@ -126,7 +126,34 @@ function transformWithEsbuild(esbuild, sourceCode, filePath) {
     charset: 'utf8',
     sourcefile: path.basename(filePath)
   });
-  return result.code;
+  return fixDefaultOnlyEsbuildExport(result.code);
+}
+
+/**
+ * esbuild wraps default-only ESM as { __esModule, default }. Atom packages and
+ * internal requires expect module.exports to BE the default. Unwrap when there
+ * are no other named exports.
+ */
+function fixDefaultOnlyEsbuildExport(code) {
+  if (!code.includes('__toCommonJS')) return code;
+  if (code.includes('Chevron: Node require() interop for default-only esbuild')) {
+    return code;
+  }
+  return (
+    code.replace(/\s*$/, '') +
+    `
+
+// Chevron: Node require() interop for default-only esbuild ESM modules
+if (module.exports && module.exports.__esModule && module.exports.default != null) {
+  var __keys = Object.keys(module.exports).filter(function (k) {
+    return k !== '__esModule' && k !== 'default';
+  });
+  if (__keys.length === 0) {
+    module.exports = module.exports.default;
+  }
+}
+`
+  );
 }
 
 function transformWithBabel5(sourceCode, filePath) {

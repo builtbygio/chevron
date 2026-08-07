@@ -12,7 +12,7 @@ require('./module-cache');
 if (global.isGeneratingSnapshot) {
   require('about');
   require('archive-view');
-  require('autocomplete-atom-api');
+  require('autocomplete-chevron-api');
   require('autocomplete-css');
   require('autocomplete-html');
   require('autocomplete-plus');
@@ -67,15 +67,17 @@ const clipboard = new Clipboard();
 TextEditor.setClipboard(clipboard);
 TextEditor.viewForItem = item => atom.views.getView(item);
 
-global.atom = new AtomEnvironment({
+// Chevron-primary global; atom remains an alias for dual-support packages.
+const atomEnvironment = new AtomEnvironment({
   clipboard,
   applicationDelegate: new ApplicationDelegate(),
   enablePersistence: true
 });
+global.chevron = atomEnvironment;
+global.atom = atomEnvironment;
 
 TextEditor.setScheduler(global.atom.views);
 global.atom.preloadPackages();
-
 // Like sands through the hourglass, so are the days of our lives.
 module.exports = function({ blobStore }) {
   const { updateProcessEnv } = require('./update-process-env');

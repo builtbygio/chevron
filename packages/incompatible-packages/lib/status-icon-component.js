@@ -42,3 +42,13 @@ class StatusIconComponent {
     return /* @__PURE__ */ import_etch.default.dom("div", { className: "incompatible-packages-status inline-block text text-error" }, /* @__PURE__ */ import_etch.default.dom("span", { className: "icon icon-bug" }), /* @__PURE__ */ import_etch.default.dom("span", { className: "incompatible-packages-count" }, this.count));
   }
 }
+
+// Chevron: Node require() interop for default-only esbuild ESM modules
+if (module.exports && module.exports.__esModule && module.exports.default != null) {
+  var __keys = Object.keys(module.exports).filter(function (k) {
+    return k !== '__esModule' && k !== 'default';
+  });
+  if (__keys.length === 0) {
+    module.exports = module.exports.default;
+  }
+}

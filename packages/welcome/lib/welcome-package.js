@@ -30,7 +30,7 @@ __export(welcome_package_exports, {
   default: () => WelcomePackage
 });
 module.exports = __toCommonJS(welcome_package_exports);
-var import_atom = require("atom");
+var import_atom = require("chevron");
 var import_reporter_proxy = __toESM(require("./reporter-proxy"));
 let WelcomeView, GuideView;
 const WELCOME_URI = "atom://welcome/welcome";
@@ -89,5 +89,15 @@ class WelcomePackage {
   createGuideView(state) {
     if (GuideView == null) GuideView = require("./guide-view");
     return new GuideView({ reporterProxy: this.reporterProxy, ...state });
+  }
+}
+
+// Chevron: Node require() interop for default-only esbuild ESM modules
+if (module.exports && module.exports.__esModule && module.exports.default != null) {
+  var __keys = Object.keys(module.exports).filter(function (k) {
+    return k !== '__esModule' && k !== 'default';
+  });
+  if (__keys.length === 0) {
+    module.exports = module.exports.default;
   }
 }

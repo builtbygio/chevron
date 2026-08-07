@@ -1,4 +1,4 @@
-const { CompositeDisposable, Emitter } = require('atom');
+const { CompositeDisposable, Emitter } = require('chevron');
 const AboutView = require('./components/about-view');
 
 // Deferred requires
