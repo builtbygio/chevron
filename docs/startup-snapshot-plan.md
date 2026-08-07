@@ -1,7 +1,7 @@
 # V8 startup snapshot — investigation and recovery plan
 
 **Status:** plan (proposed)
-**Date:** 2026-08-07
+**Date:** 2026-08-07 (measured 2026-08-08)
 **Subject:** `script/lib/generate-startup-snapshot.js` — custom snapshot disabled since the Electron 43 migration
 **Related:** [cpm-design.md](./cpm-design.md), [lsp-design.md](./lsp-design.md)
 
@@ -64,7 +64,73 @@ specific module, and is therefore findable.
 
 ---
 
-## 4. Phase 0 — measurement gate (do this first)
+## 4. Phase 0 — measurement gate
+
+**Status: ✅ done on macOS Intel — verdict is RESTORE. Linux and Windows pending.**
+
+### 4.1 Results (2026-08-08)
+
+Harness: `script/ci/measure-startup.js` (launches the packaged app, attaches
+over CDP, reads `atom.getStartupMarkers()`).
+
+**Host:** macOS `darwin x64` — Intel Core i5-7360U @ 2.30 GHz, 2 cores (2017).
+A slow machine by 2026 standards, so absolute figures are an **upper bound**;
+the *proportions* below are the hardware-independent part.
+
+| Metric | Cold home | Warm home |
+|--------|-----------|-----------|
+| best | 7,171 ms | 6,502 ms |
+| **median** | **7,816 ms** | **7,291 ms** |
+| Custom V8 snapshot | not in use (stock) | not in use (stock) |
+
+Marker-derived time to `window:onload:end` is **≈5,450 ms**; the wall-clock
+figures include ~1.5–2 s of harness attach/poll overhead. Treat ~5.5 s as
+"time to workspace ready" and the wall numbers as an upper bound.
+
+**Verdict:** far above the 2,500 ms gate → **proceed to Phase 1.**
+
+### 4.2 Where the time goes (the actionable part)
+
+```text
+ 2380 ms  window:setup-window:start
+ 5384 ms  window:initialize:start     ← +3,004 ms  ≈55% of the timeline
+ 5451 ms  window:onload:end
+```
+
+Everything else is well behaved: main process ~1.4 s, window creation ~1 s,
+final environment setup ~67 ms. The single 3-second gap is the renderer loading
+the module tree through plain `require` — **precisely the work a snapshot
+pre-bakes.** The fix is targeted, not diffuse.
+
+### 4.3 Unplanned finding: the compile cache looks ineffective
+
+Warm start beats cold by only ~500 ms (≈7%). A functioning V8 code cache should
+do considerably better. This answers open question §10.3 with *apparently not,
+or not usefully* — and per §7 it may be a **cheaper win than the snapshot**.
+**Investigate before starting bisection.**
+
+### 4.4 Measurement caveats
+
+- One cold run hit **31.9 s** (first-touch OS/dyld caching on a machine that had just been building). The multi-second conclusion is robust to that noise; **±500 ms build-to-build comparisons are not.**
+- No claim is made about whether #81 (dropping runtime transpile) helped: the dominant gap moved 3,386 → 3,004 ms between builds, which is inside the noise of this sample.
+- **Platform coverage is incomplete.** Linux and Windows are unmeasured; the module-load gap may differ materially (different filesystem caching, no dyld). Run the harness on both before treating these numbers as the project's startup story.
+
+### 4.5 Amended gate
+
+The original gate keyed on wall-clock total. Measurement showed the useful
+signal is **which interval dominates** — 6 s spread evenly across main-process
+work would argue for different fixes than 3 s in one renderer interval.
+Future gate:
+
+| Condition | Decision |
+|-----------|----------|
+| A single interval > 40% of the timeline **and** > 1 s | Attack that interval specifically (here: the snapshot) |
+| Total > 2,500 ms with no dominant interval | Profile before choosing a fix |
+| Total < 1,200 ms | Close as won't-fix-now |
+
+---
+
+### Original gate definition (retained for reference)
 
 **Do not debug this until it is known to be worth debugging.**
 
@@ -174,7 +240,9 @@ package's module tree and excluding it is unacceptable, snapshotting only
 
 ## 9. Success criteria
 
-- [ ] Cold-start numbers published for all three desktop platforms, before and after.
+- [x] Cold-start numbers measured on **macOS Intel** (§4.1) — snapshot absent, 55% of the timeline in one interval.
+- [ ] Same measurement on **Linux** and **Windows** (harness is cross-platform; `node script/ci/measure-startup.js`).
+- [ ] Before/after numbers published for whichever platforms ship the fix.
 - [ ] Either: custom snapshot restored and **on by default**, with the fix documented;
       or: a written decision that it stays off, with the measurement that justifies it.
 - [ ] `CHEVRON_FORCE_MKSNAPSHOT` retained as an escape hatch either way.
@@ -187,7 +255,7 @@ package's module tree and excluding it is unacceptable, snapshotting only
 
 1. Is `v8_context_snapshot_generator` strictly required, or can Electron 43 boot from a custom `snapshot_blob.bin` alone? (Determines whether step 3 can simply be dropped.)
 2. Does `electron-link@0.6.x` still track Electron/V8 changes, or is it effectively abandoned? A dead linker caps how far this approach can go.
-3. Is the code-cache path (`NativeCompileCache`) actually populating today? If not, that is a cheaper win than the snapshot and should be fixed first.
+3. ~~Is the code-cache path (`NativeCompileCache`) actually populating today?~~ **Partially answered (§4.3):** warm start beats cold by only ~7% on macOS Intel, which suggests it is not doing useful work. Confirm the mechanism, then fix — likely cheaper than the snapshot.
 4. Does upstream Electron have a supported story for custom app snapshots in 2026, or has that capability quietly bit-rotted for everyone?
 
 ---
@@ -199,6 +267,11 @@ does not, size is irrelevant. The most likely cause is an external-backing-store
 object — the same class of bug already fixed once in tree-sitter — created at
 module load.
 
-But the first task is **measurement, not debugging**. If cold start is already
-acceptable, the honest engineering call is to bank the fallback, publish the
-number, and spend the week on LSP instead.
+Measurement (§4) has now run on macOS Intel and settles the question: **~5.5 s
+to a usable workspace, with 55% of it in a single module-load interval.** That
+is over the gate by a wide margin, and the dominant interval is exactly what a
+snapshot addresses — so Phase 1 is justified.
+
+Two things temper that: Linux and Windows are still unmeasured, and the compile
+cache appears to be underperforming (§4.3), which may be a cheaper win worth
+taking first.
