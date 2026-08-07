@@ -29,7 +29,7 @@ cpm is **not** a rewrite of the editor’s package loader (`PackageManager`, `gl
 | ID | Goal |
 |----|------|
 | G1 | Remove Node 12 + npm 6 + node-gyp 5 from the critical package-install path |
-| G2 | Install community packages into dual-home packages dirs (`~/.chevron` / `~/.atom`) |
+| G2 | Install community packages into package home (`~/.chevron` default; `CHEVRON_HOME`) |
 | G3 | Honour `engines.atom` and optional `engines.chevron` |
 | G4 | Rebuild natives for `package.json` / product `electronVersion` without ambient `npm_config_*` pollution |
 | G5 | Default-safe installs (ignore lifecycle scripts; integrity where available) |
@@ -194,15 +194,14 @@ Same pattern as Electron tools that must match the app ABI. This:
 
 **CI / developers** may still run unit tests under host Node for pure logic; **integration and packaging** use ELECTRON_RUN_AS_NODE.
 
-### 5.3 Install locations (dual-support)
+### 5.3 Install locations (Chevron-only)
 
 Resolution order for **package home** (aligned with `src/atom-paths.js`):
 
 1. `CHEVRON_HOME` if set  
-2. `ATOM_HOME` if set  
-3. Portable `.chevron` / `.atom` beside the app (if present and writable)  
-4. `~/.chevron` if it exists  
-5. else `~/.atom` (default — preserve existing users)
+2. `ATOM_HOME` if set (explicit legacy override only)  
+3. Portable `.chevron` beside the app (if present and writable)  
+4. **`~/.chevron`** (default)
 
 Layout:
 
@@ -213,7 +212,7 @@ $PACKAGE_HOME/
   .apm/               # optional: read legacy cache; do not require for writes
 ```
 
-**Write policy:** prefer `~/.chevron/packages` when the user is on a Chevron home; otherwise write to `~/.atom/packages` so dual-support users keep one tree.
+**Write policy:** install under `$PACKAGE_HOME/packages` (default `~/.chevron/packages`).
 
 ### 5.4 App build vs user packages
 

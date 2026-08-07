@@ -26,10 +26,12 @@ Still early: great for building from source and dogfooding; not a polished daily
 |-------|--------|
 | Electron | **43.1.0** |
 | Bundle ID | `dev.builtbygio.chevron` |
-| Package API | Dual-support forever (`atom://`, `global.atom`, `engines.atom`) |
-| Package manager | **cpm** (Electron-as-Node); `apm` is a long-lived **shim → cpm** |
-| Registry | Pulsar by default (`CPM_REGISTRY_URL` override) |
-| Config home | `~/.atom` by default; `CHEVRON_HOME` / `~/.chevron` supported |
+| Package API | **Chevron only** (`require('chevron')`, `global.chevron`, `engines.chevron`) |
+| Package catalog | **Owned core only** for now; sandboxed community later — [docs/package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md) |
+| Package manager | **cpm** (Electron-as-Node); `apm` is a **shim → cpm** (legacy name) |
+| Registry | Not a product community store yet; cpm/registry tech reserved for future host v2 |
+
+| Config home | **`~/.chevron`** by default (`CHEVRON_HOME`; `ATOM_HOME` only if set) |
 | Security | Phase S Option C — [docs/security-phase-s-decision.md](docs/security-phase-s-decision.md), [docs/security-threat-model.md](docs/security-threat-model.md) |
 
 See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
@@ -49,14 +51,14 @@ See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
 
 - A ground-up rewrite — this is a modernization effort, not a new editor
 - Feature parity with VS Code or other modern editors
-- Dropping Atom package compatibility
+- Supporting Atom as a second product identity (Chevron only)
 
 ## Approach
 
 Chevron is a modernized fork of Atom, maintained in the open. The goal is not a
 from-scratch editor, but a careful forward-port: current Electron, multi-platform
-builds, dual-support for the Atom package ecosystem, and a security-minded IPC
-model (`contextIsolation`, no `remote`).
+builds, **owned packages under Chevron APIs**, and a security-minded IPC model
+(`contextIsolation`, no `remote`).
 
 That path is deliberate. Treating process boundaries, packaging, and native
 modules as first-class problems keeps the codebase honest about what still works

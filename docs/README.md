@@ -30,7 +30,9 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 
 | Doc | Purpose |
 |-----|---------|
-| [REBRANDING.md](./REBRANDING.md) | Chevron dual-support decisions |
+| [REBRANDING.md](./REBRANDING.md) | Chevron-only product decisions |
+| [package-ecosystem-strategy.md](./package-ecosystem-strategy.md) | Owned catalog now; sandboxed community later |
+
 | [onboarding-polish.md](./onboarding-polish.md) | First-run Welcome/Guide checklist |
 | [atom-architecture.md](./atom-architecture.md) | Architecture notes |
 | [atom-architecture-eli5.md](./atom-architecture-eli5.md) | ELI5 architecture |
@@ -47,7 +49,8 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [security-phase-s-utilityprocess.md](./security-phase-s-utilityprocess.md) | **S3** github workers → utilityProcess |
 | [babel-coffee-isolation-plan.md](./babel-coffee-isolation-plan.md) | Coffee + Babel 5 runtime dropped (#62 Options 2–3) |
 | [atom-to-chevron-rename-plan.md](./atom-to-chevron-rename-plan.md) | Atom → Chevron rename program (API, themes, pins) |
-| [REBRANDING.md](./REBRANDING.md) | Product rebrand + Chevron-primary / Atom aliases |
+| [REBRANDING.md](./REBRANDING.md) | Product rebrand + Chevron-only policy |
+
 | [nested-package-modules.md](./nested-package-modules.md) | Nested `packages/*/node_modules` policy |
 | [electron-best-practices-plan.md](./electron-best-practices-plan.md) | BP P0–P3 (closed at 0.6.0) |
 | [security-phase-n.md](./security-phase-n.md) | Phase N plan (package Node surface) |
