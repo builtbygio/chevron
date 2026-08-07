@@ -237,4 +237,12 @@ function applySecurityPolicyEnv(config) {
     const fsStrict = config.get('core.fsIpcStrict');
     process.env.CHEVRON_FS_IPC_STRICT = fsStrict === false ? '0' : '1';
   }
+
+  // Phase S3 / #61: github git workers via utilityProcess (default OFF until dogfood).
+  const utilEnv = process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
+  if (utilEnv === undefined || utilEnv === '' || utilEnv === 'default') {
+    const utilConfig = config.get('core.githubUtilityWorkers');
+    process.env.CHEVRON_GITHUB_UTILITY_WORKERS =
+      utilConfig === true ? '1' : '0';
+  }
 }

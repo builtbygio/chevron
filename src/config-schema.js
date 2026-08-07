@@ -56,6 +56,13 @@ const configSchema = {
         description:
           'Passes Chromium `--enable-experimental-web-platform-features`. Off by default (Electron security checklist). Requires relaunch. Env `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` also enables.'
       },
+      githubUtilityWorkers: {
+        type: 'boolean',
+        default: false,
+        title: 'GitHub package: utilityProcess git workers (experimental)',
+        description:
+          'When enabled, the GitHub package runs git operations in an Electron utilityProcess instead of a hidden Node BrowserWindow (Phase S3). Off by default until dogfooded. Env `CHEVRON_GITHUB_UTILITY_WORKERS=1` also enables. Requires relaunch. See docs/security-phase-s-utilityprocess.md.'
+      },
       disabledPackages: {
         type: 'array',
         default: [],

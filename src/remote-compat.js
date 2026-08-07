@@ -135,9 +135,98 @@ function createWebContentsProxy(webContentsId, windowId) {
   };
 }
 
+function utilityWorkersEnabled() {
+  try {
+    return !!ipcRenderer.sendSync('atom-utility-worker-enabled-sync');
+  } catch (error) {
+    return false;
+  }
+}
+
+function createUtilityWorkerWindow() {
+  const created = ipcRenderer.sendSync('atom-utility-worker-create-sync');
+  if (!created) {
+    throw new Error('Failed to create utilityProcess git worker via IPC');
+  }
+  const windowId = created.id;
+  const webContentsId = created.webContentsId;
+  return {
+    id: windowId,
+    webContents: {
+      id: webContentsId,
+      send(channel, ...args) {
+        // github WorkerManager: webContents.send(channel, { type, data })
+        const payload = args[0];
+        ipcRenderer.send(
+          'atom-utility-worker-send',
+          windowId,
+          channel,
+          payload
+        );
+      },
+      on(eventName, handler) {
+        if (!workerEventHandlers.has(windowId)) {
+          workerEventHandlers.set(windowId, {
+            crashed: new Set(),
+            destroyed: new Set()
+          });
+        }
+        const handlers = workerEventHandlers.get(windowId);
+        if (handlers[eventName]) handlers[eventName].add(handler);
+        return this;
+      },
+      removeListener(eventName, handler) {
+        const handlers = workerEventHandlers.get(windowId);
+        if (handlers && handlers[eventName]) {
+          handlers[eventName].delete(handler);
+        }
+        return this;
+      },
+      isDestroyed() {
+        return !!ipcRenderer.sendSync(
+          'atom-utility-worker-is-destroyed-sync',
+          windowId
+        );
+      }
+    },
+    loadURL(url) {
+      return ipcRenderer.sendSync(
+        'atom-utility-worker-load-sync',
+        windowId,
+        url
+      );
+    },
+    destroy() {
+      workerEventHandlers.delete(windowId);
+      return ipcRenderer.sendSync(
+        'atom-utility-worker-destroy-sync',
+        windowId
+      );
+    },
+    isDestroyed() {
+      return !!ipcRenderer.sendSync(
+        'atom-utility-worker-is-destroyed-sync',
+        windowId
+      );
+    }
+  };
+}
+
 function BrowserWindow(options) {
   if (!(this instanceof BrowserWindow)) {
     return new BrowserWindow(options);
+  }
+  // Phase S3 / #61: optional utilityProcess path for github WorkerManager.
+  // Same BrowserWindow surface so owned github package needs no pin bump yet.
+  if (utilityWorkersEnabled()) {
+    const utilWin = createUtilityWorkerWindow();
+    this.id = utilWin.id;
+    this.webContents = utilWin.webContents;
+    this.loadURL = utilWin.loadURL.bind(utilWin);
+    this.destroy = utilWin.destroy.bind(utilWin);
+    this.isDestroyed = utilWin.isDestroyed.bind(utilWin);
+    this.__chevronUtilityWorker = true;
+    return;
   }
   const created = ipcRenderer.sendSync(
     'atom-create-browser-window-sync',

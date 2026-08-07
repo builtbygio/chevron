@@ -134,7 +134,7 @@ Inventory: **`src/preload-natives.js`**.
 | S1.0 Community native addon / `.node` block | **Done** (default with require restrict) |
 | S1.2 Package host design note | **Done** — `docs/security-phase-s-package-host.md` |
 | S2 Easy native relocation (main-only tags) | Pending (`nslog`/`fs-admin` already main-only) |
-| S3 github → utilityProcess | **Plan done** — `docs/security-phase-s-utilityprocess.md`; **impl open** (#61) |
+| S3 github → utilityProcess | **PR1 scaffold** — flag `CHEVRON_GITHUB_UTILITY_WORKERS` / `core.githubUtilityWorkers` (default off); dogfood then default-on (#61) |
 | S5 Option A spike vs Option C (sandbox may stay false) | Pending (design leans Option C for editor) |
 | S6 Flip editor `sandbox: true` | **Blocked** on S5 decision |
 
@@ -143,7 +143,7 @@ Recommended spine: **Option B** package-host isolation first; full Chromium sand
 1. ~~N0–N5.1~~ **done**  
 2. ~~Electron BP P0–P3 shippable~~ **done** (0.6.0)  
 3. ~~S0 + S1.0 + S1.2~~ **done**  
-4. **S3 impl** utilityProcess dual-path for github **or** small **S2** IPC moves  
+4. **S3 dogfood** `CHEVRON_GITHUB_UTILITY_WORKERS=1` → default-on + remove BrowserWindow workers  
 5. **S5** decide sandbox strategy; only then S6  
 
 **Dev policy env:**  
@@ -152,6 +152,7 @@ Recommended spine: **Option B** package-host isolation first; full Chromium sand
 - `CHEVRON_FS_IPC_STRICT=0` — opt out of strict FS IPC roots  
 - `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` — re-enable experimental Chromium features  
 - `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` — refuse Coffee/Babel-5 compile-cache (see `docs/babel-coffee-isolation-plan.md`)  
+- `CHEVRON_GITHUB_UTILITY_WORKERS=1` — github git workers via utilityProcess (Phase S3; default off)  
 
 ### Optional hygiene
 
