@@ -75,6 +75,7 @@ jobs:
           node --test script/ci/legacy-transpile.test.js
           node --test script/ci/package-pin-policy.test.js
           node --test script/ci/chevron-api-alias.test.js
+          node --test script/ci/lsp-framing.test.js
           node --test script/ci/package-utility-worker.test.js
           node --test script/ci/git-utility-host-integration.test.js
           node --test script/ci/natives-fingerprint.test.js

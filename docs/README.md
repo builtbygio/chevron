@@ -32,6 +32,8 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 |-----|---------|
 | [REBRANDING.md](./REBRANDING.md) | Chevron-only product decisions |
 | [package-ecosystem-strategy.md](./package-ecosystem-strategy.md) | Owned catalog now; sandboxed community later |
+| [lsp-design.md](./lsp-design.md) | **LSP plan** — utilityProcess host, workspace trust, phases 0–5 |
+
 
 | [onboarding-polish.md](./onboarding-polish.md) | First-run Welcome/Guide checklist |
 | [atom-architecture.md](./atom-architecture.md) | Architecture notes |

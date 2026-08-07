@@ -132,10 +132,10 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Primary next tracks (post–Phase S)
 
 1. Expand / modernize **owned catalog** (builtbygio pins) — [package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md)  
-2. **#57** — full Jasmine suite on CI (nightly / opt-in)  
-3. Residual renames: atom-keymap / atom-select-list / `@atom/*`  
-4. **Later (after base is happy):** sandboxed community packages (package host v2)  
-5. Optional: S4 sendSync→invoke  
+2. **LSP** — [docs/lsp-design.md](docs/lsp-design.md) (**plan**); execute phases 0→5  
+3. **#57** — full Jasmine suite on CI (nightly / opt-in)  
+4. Residual renames: atom-keymap / atom-select-list / `@atom/*`  
+5. **Later (after base is happy):** sandboxed community packages (package host v2)  
 
 **Dev policy env:**  
 - `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log privileged + native requires  
