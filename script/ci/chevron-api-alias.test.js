@@ -53,4 +53,19 @@ describe('chevron / atom package API exports', () => {
     assert.ok(src.includes('global.chevronApplication'));
     assert.ok(src.includes('global.atomApplication'));
   });
+
+  it('module-cache registers chevron and atom builtins', () => {
+    const src = fs.readFileSync(
+      path.join(ROOT, 'src/module-cache.js'),
+      'utf8'
+    );
+    assert.ok(
+      /cache\.builtins\.chevron\s*=/.test(src),
+      'must register builtins.chevron'
+    );
+    assert.ok(
+      /cache\.builtins\.atom\s*=/.test(src),
+      'must register builtins.atom'
+    );
+  });
 });

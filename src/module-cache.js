@@ -271,18 +271,27 @@ function resolveModulePath(relativePath, parentModule) {
 }
 
 function registerBuiltins(devMode) {
+  const chevronJsPath = path.join(cache.resourcePath, 'exports', 'chevron.js');
+  const atomJsPath = path.join(cache.resourcePath, 'exports', 'atom.js');
+
   if (
     devMode ||
     !cache.resourcePath.startsWith(`${process.resourcesPath}${path.sep}`)
   ) {
     const fs = require('fs-plus');
-    const atomJsPath = path.join(cache.resourcePath, 'exports', 'atom.js');
+    if (fs.isFileSync(chevronJsPath)) {
+      cache.builtins.chevron = chevronJsPath;
+    }
     if (fs.isFileSync(atomJsPath)) {
       cache.builtins.atom = atomJsPath;
     }
   }
+  // Chevron-primary package API; atom remains an alias file (exports/atom.js).
+  if (cache.builtins.chevron == null) {
+    cache.builtins.chevron = chevronJsPath;
+  }
   if (cache.builtins.atom == null) {
-    cache.builtins.atom = path.join(cache.resourcePath, 'exports', 'atom.js');
+    cache.builtins.atom = atomJsPath;
   }
 }
 
