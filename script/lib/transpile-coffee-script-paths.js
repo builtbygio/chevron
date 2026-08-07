@@ -1,12 +1,9 @@
 'use strict';
 
-/**
- * Historically precompiled package `lib/**/*.coffee` → `.js` for the packaged app.
- * Option 2 (#62): CoffeeScript runtime and app dependency removed; remaining
- * `.coffee` files are maintainer scripts or specs only. Skip transpile.
- *
- * Kept as a no-op so script/build call sites stay stable.
- */
+// Historically precompiled package CoffeeScript libs to JS for the packaged app.
+// Option 2 (#62): CoffeeScript runtime and app dependency removed; remaining
+// .coffee files are maintainer scripts or specs only. Skip transpile.
+// Kept as a no-op so script/build call sites stay stable.
 
 const CONFIG = require('../config');
 
