@@ -1,11 +1,12 @@
-# chevron-lsp — Language Server Protocol support (design)
+# chevron-lsp — Language Server Protocol support (plan)
 
-**Status:** design (proposed — not yet authoritative)
-**Date:** 2026-08-07
-**Product version context:** post-0.6.0; LSP is a multi-release milestone (e.g. 0.7.x / 0.8.x)
-**Related:** [cpm-design.md](./cpm-design.md), [security-phase-s-package-host.md](./security-phase-s-package-host.md), [package-ecosystem-strategy.md](./package-ecosystem-strategy.md)
-**Precedent reused:** Phase S utilityProcess workers (`src/main-process/package-utility-worker.js`)
+**Status:** **plan** (authoritative for implementation sequencing)  
+**Date:** 2026-08-07 (promoted 2026-08-07)  
+**Product version context:** post-0.6.0; multi-release milestone (0.7.x / 0.8.x)  
+**Related:** [cpm-design.md](./cpm-design.md), [security-phase-s-package-host.md](./security-phase-s-package-host.md), [package-ecosystem-strategy.md](./package-ecosystem-strategy.md), [REBRANDING.md](./REBRANDING.md)  
+**Precedent reused:** Phase S utilityProcess workers (`src/main-process/package-utility-worker.js`)  
 
+**How to use this doc:** §5–6 process model and workspace trust are **locked**. §12 open decisions are **resolved** below (or deferred with a named phase). Implement phase-by-phase (§9); record landings in §14.
 ---
 
 ## 1. Purpose
@@ -463,8 +464,8 @@ plainly in user docs — the same honesty standard as cpm-design §6.1.
 | Hover docs | none | Markdown hover | New UI |
 | Works offline | yes | yes | No network in v1 |
 | Untrusted project | full function | **language features off** | Deliberate (§6.2) |
-| Community `linter` packages | n/a | can consume `lsp.diagnostics` | Ecosystem-friendly |
-| `engines.atom` packages | unaffected | unaffected | Dual-support preserved |
+| Owned diagnostics UI | n/a | `packages/lsp-ui` (replaceable via `lsp.diagnostics`) | Closed catalog |
+| Legacy `engines.atom` packages | n/a | unsupported product path | Chevron-only policy |
 
 ---
 
@@ -573,19 +574,32 @@ perennial cross-platform bug (drive letters, UNC paths, spaces, non-ASCII).
 
 ---
 
-## 12. Open decisions
+## 12. Decisions (locked at plan promotion)
 
-1. **Framing library:** ship `vscode-jsonrpc` (recommended) vs maintain the Phase 0 hand-rolled codec. Decide after the spike, on evidence.
-2. **Trust UX:** modal on first open vs passive status-bar affordance with features off until clicked. (Lean: passive — modals on folder-open are hostile.)
-3. **Diagnostics UI home:** `packages/lsp-ui` (recommended, replaceable) vs core `src/`. Also: adopt the Atom-era **`linter` service shape**? Under the closed catalog there is no third-party linter UI to be drop-in compatible *with*, so the argument is now familiarity for future authors and host-v2 readiness — weaker than it looked pre-#83. Consider a Chevron-native shape instead.
-4. **Go-to-definition surface:** patch/fork `symbols-view` to consume a service (it currently provides none) vs a new standalone results view. (Lean: new view in `lsp-ui` for v1; upstream a service into `symbols-view` later.)
-5. **Default `positionEncoding`:** always negotiate, or hard-prefer utf-16 and only support utf-8 servers in Phase 3?
-6. **Host topology:** one host for all servers (recommended) vs one host per server, if a bad server proves able to wedge the host.
-7. **Built-in server table:** ship one at all in v1, or require explicit registration/config? (Lean: ship a table but **only** use entries already on PATH.)
-8. **Server distribution:** stay user-installed forever vs cpm prebuilds in Phase 5.
-9. **Completion ranking (§5.7.3):** priority-trick only (`excludeLowerPriority`) vs a small `sortText` passthrough patch to the now-owned `autocomplete-plus`. Decide on Phase 2 measurement, not up front.
+| # | Topic | Resolution | Phase |
+|---|--------|------------|-------|
+| 1 | Framing library | Phase 0 **hand-rolled** codec for learning + tests; **production** uses **`vscode-jsonrpc`** after Phase 0 notes | 0 → 1 |
+| 2 | Trust UX | **Passive** status-bar / notice: language features off until user trusts project (no modal on folder open) | 1 |
+| 3 | Diagnostics UI | Bundled **`packages/lsp-ui`** (replaceable). **Chevron-native** diagnostics shape + `lsp.diagnostics` service — **not** Atom-era `linter` API | 1 |
+| 4 | Go-to-definition | **New** results view in `lsp-ui` for v1; optional `symbols-view` service later | 2 |
+| 5 | `positionEncoding` | **Always negotiate**; advertise `utf-16` + `utf-8`; prefer utf-16 | 1–3 |
+| 6 | Host topology | **One** utilityProcess host, many servers (revisit only if a server wedges the host) | 1 |
+| 7 | Built-in server table | Ship a small table; use only if binary is **already on PATH** | 1–3 |
+| 8 | Server distribution | v1 user/PATH/package-registered only; **cpm prebuilds optional Phase 5** | 5 |
+| 9 | Completion ranking | Phase 2: priority-trick first; **patch owned `autocomplete-plus` only if measured** | 2 |
 
-Record resolutions in §14 as they close.
+### Implementation order (execute in order)
+
+| Step | Work | Exit criteria |
+|------|------|----------------|
+| **Phase 0** | Framing codec + unit tests; optional real-server spike script | Codec tests green; spike can print hover if `typescript-language-server` on PATH |
+| **Phase 1** | `lsp-worker-manager` + `lsp-host` utilityProcess; trust gate; document sync; diagnostics UI; TypeScript | Live errors on `.ts`; crash restart; untrusted ⇒ 0 processes; CI |
+| **Phase 2** | Hover, definition, completion adapter | Four v1 features for TS |
+| **Phase 3** | `chevron.lsp` registry; multi-server; signature/references | Owned package registers a server without core edits |
+| **Phase 4** | Rename, format, code actions, symbols | Workspace edits with undo grouping |
+| **Phase 5** | Optional cpm server prebuilds | Documented install path for binaries |
+
+Do **not** start Phase 1 until Phase 0 exit criteria pass.
 
 ---
 
@@ -609,6 +623,8 @@ Record resolutions in §14 as they close.
 |------|--------|
 | 2026-08-07 | Initial design: process model (utilityProcess host), transport, trust gate, capability mapping, phases |
 | 2026-08-07 | Rebased on #83 (Chevron-only API policy + closed owned catalog): constraints, service framing, success criteria. Added §5.7 completion integration (`autocomplete-plus` has no `sortText`) and §12.9. Noted LSP host as a rehearsal for package host v2 (§5.2.4). |
+| 2026-08-07 | **Promoted to plan.** §12 decisions locked; implementation order fixed. |
+| 2026-08-07 | **Phase 0 landed:** `src/lsp/framing.js` + `script/ci/lsp-framing.test.js`; optional spike `script/lsp-phase0-spike.js` (typescript-language-server hover). Ready for Phase 1. |
 
 ---
 

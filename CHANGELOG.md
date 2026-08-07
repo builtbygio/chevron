@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Win32 auto-updater `update-downloaded` release URL uses the configured feed / GitHub releases instead of `https://atom.io`.
 - **Restore builtbygio package pins** after #81 accidentally rewrote several ownership URLs back to `atom/*`. Land **`autocomplete-chevron-api`** rename end-to-end (dep key, packageDependencies, require, fork `name`, decaffeinate patch). Pin-policy CI test prevents regressions.
 
+### Added
+
+- **LSP plan:** [docs/lsp-design.md](docs/lsp-design.md) promoted to authoritative implementation plan (utilityProcess host, workspace trust, phased 0–5). Phase 0 framing codec + tests under `src/lsp/`.
+
 ### Changed
 
 - **Chevron-only product policy:** drop dual-support commitment. Default config home is **`~/.chevron`** (no default to `~/.atom`). Prefer `engines.chevron` (cpm warns on `engines.atom` alone). `require('atom')` logs a one-shot deprecation warning. See [docs/REBRANDING.md](docs/REBRANDING.md).
