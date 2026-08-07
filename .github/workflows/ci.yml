@@ -15,12 +15,13 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-# Stable Electron/node-gyp cache dirs (workspace-local for actions/cache).
+# Electron binary cache is workspace-local (reliable for actions/cache).
 # Do not silence npm loglevel — deprecations/peer warnings must stay visible.
+# node-gyp headers use the default OS cache paths (not npm_config_devdir —
+# modern npm treats unknown npm_config_* as errors/warnings).
 env:
   ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
   electron_config_cache: ${{ github.workspace }}/.cache/electron
-  npm_config_devdir: ${{ github.workspace }}/.cache/node-gyp
 
 
 jobs:
@@ -107,7 +108,8 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.cache/electron
-            ${{ github.workspace }}/.cache/node-gyp
+            ~/Library/Caches/node-gyp
+            ~/Library/Caches/electron
           key: electron-${{ runner.os }}-${{ matrix.arch }}-${{ steps.meta.outputs.electron }}
           restore-keys: |
             electron-${{ runner.os }}-${{ matrix.arch }}-
@@ -227,7 +229,8 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.cache/electron
-            ${{ github.workspace }}/.cache/node-gyp
+            ~/.cache/electron
+            ~/.cache/node-gyp
           key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
           restore-keys: |
             electron-${{ runner.os }}-${{ runner.arch }}-
@@ -356,7 +359,8 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.cache/electron
-            ${{ github.workspace }}/.cache/node-gyp
+            ~/.cache/electron
+            ~/.cache/node-gyp
           key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
           restore-keys: |
             electron-${{ runner.os }}-${{ runner.arch }}-
@@ -472,7 +476,8 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.cache/electron
-            ${{ github.workspace }}/.cache/node-gyp
+            ~/AppData/Local/electron
+            ~/AppData/Local/node-gyp
           key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
           restore-keys: |
             electron-${{ runner.os }}-${{ runner.arch }}-
