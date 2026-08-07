@@ -193,18 +193,27 @@ rebuild_package_modern() {
 # whose natives fingerprint still matches, skip the expensive gyp rebuilds.
 # Force with CHEVRON_FORCE_NATIVE_REBUILD=1.
 SKIP_NATIVE_REBUILD=false
-eval "$(node <<'NODE'
+NATIVE_FP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/chevron-nfp.XXXXXX")"
+export NATIVE_FP_DIR
+node <<'NODE'
 'use strict';
+const fs = require('fs');
+const path = require('path');
 const n = require('./script/lib/natives-fingerprint');
 const d = n.shouldSkipRebuild();
-function sh(s) {
-  return "'" + String(s).replace(/'/g, "'\\''") + "'";
+const dir = process.env.NATIVE_FP_DIR;
+if (!dir) {
+  console.error('NATIVE_FP_DIR not set');
+  process.exit(1);
 }
-console.log('NATIVE_FP=' + sh(d.fingerprint));
-console.log('NATIVE_SKIP_REASON=' + sh(d.reason));
-console.log('NATIVE_SKIP=' + (d.skip ? 'true' : 'false'));
+fs.writeFileSync(path.join(dir, 'fingerprint'), d.fingerprint);
+fs.writeFileSync(path.join(dir, 'reason'), d.reason);
+fs.writeFileSync(path.join(dir, 'skip'), d.skip ? 'true' : 'false');
 NODE
-)"
+NATIVE_FP="$(cat "$NATIVE_FP_DIR/fingerprint")"
+NATIVE_SKIP_REASON="$(cat "$NATIVE_FP_DIR/reason")"
+NATIVE_SKIP="$(cat "$NATIVE_FP_DIR/skip")"
+rm -rf "$NATIVE_FP_DIR"
 if [ "${NATIVE_SKIP:-false}" = true ]; then
   SKIP_NATIVE_REBUILD=true
   echo "Skipping native rebuild ($NATIVE_SKIP_REASON)."
