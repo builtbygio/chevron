@@ -506,7 +506,8 @@ plainly in user docs — the same honesty standard as cpm-design §6.1.
 
 ### Phase 5 — Distribution (ties into cpm)
 
-- Optional: language servers distributed as **cpm prebuilds** (`docs/cpm-prebuilds.md` already establishes platform artifacts), so `cpm install chevron-lsp-rust` fetches a pinned binary.
+- Optional: language servers distributed as **cpm packages** with binary/npm prebuilds:
+  `cpm install ./packages/chevron-lsp-rust` (etc.). See [lsp-server-distribution.md](./lsp-server-distribution.md).
 - Keeps N1 intact (nothing bundled in the installer) while removing "install the server yourself" friction.
 
 ### Version framing
@@ -628,6 +629,7 @@ Do **not** start Phase 1 until Phase 0 exit criteria pass.
 | 2026-08-07 | **Phase 1 landed (MVP):** utilityProcess `lsp-host` + manager, workspace trust, document sync, TypeScript built-in when trusted, `packages/lsp-ui` status + trust nudge, CI tests. |
 | 2026-08-08 | **Phase 2 landed:** hover tooltip + `chevron-lsp:show-hover`; go-to-definition (`F12`) + multi-result list in `lsp-ui`; `autocomplete.provider` v4 adapter (priority-trick ranking, generation cancel, resolve on select); completion latency stats on `chevron-lsp:status`. |
 | 2026-08-08 | **Phase 3 landed:** `chevron.lsp` registry (package > user config > builtin); multi-server sessions; rust-analyzer + pyright builtins; owned package `lsp-servers` registers via service; `positionEncoding` negotiation (utf-8 path); signature help + find references. |
+| 2026-08-08 | **Phase 5 landed:** cpm language-server prebuilds (`cpm/lib/language-server-prebuild.js`); optional packages `chevron-lsp-rust` / `-typescript` / `-python`; install docs. N1 preserved (not in packageDependencies). |
 
 ---
 
