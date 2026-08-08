@@ -1,12 +1,12 @@
-# chevron-lsp — Language Server Protocol support (plan)
+# chevron-lsp — Language Server Protocol support
 
-**Status:** **plan** (authoritative for implementation sequencing)  
-**Date:** 2026-08-07 (promoted 2026-08-07)  
+**Status:** **implemented** (phases 0–5 + goal adjustments; this doc remains authoritative)  
+**Date:** 2026-08-07 (promoted); landings through 2026-08-08  
 **Product version context:** post-0.6.0; multi-release milestone (0.7.x / 0.8.x)  
-**Related:** [cpm-design.md](./cpm-design.md), [security-phase-s-package-host.md](./security-phase-s-package-host.md), [package-ecosystem-strategy.md](./package-ecosystem-strategy.md), [REBRANDING.md](./REBRANDING.md)  
+**Related:** [cpm-design.md](./cpm-design.md), [lsp-server-distribution.md](./lsp-server-distribution.md), [security-phase-s-package-host.md](./security-phase-s-package-host.md), [package-ecosystem-strategy.md](./package-ecosystem-strategy.md), [REBRANDING.md](./REBRANDING.md)  
 **Precedent reused:** Phase S utilityProcess workers (`src/main-process/package-utility-worker.js`)  
 
-**How to use this doc:** §5–6 process model and workspace trust are **locked**. §12 open decisions are **resolved** below (or deferred with a named phase). Implement phase-by-phase (§9); record landings in §14.
+**How to use this doc:** §5–6 process model and workspace trust are **locked**. §12 decisions are **resolved**. §9 phases and §14 history record what landed. Remaining polish is incremental, not a new phase gate.
 ---
 
 ## 1. Purpose
@@ -514,10 +514,9 @@ plainly in user docs — the same honesty standard as cpm-design §6.1.
 
 | Product | LSP |
 |---------|-----|
-| 0.6.x | none (today) |
+| 0.6.x | none (historical) |
 | 0.7.x | Phase 0–1 (diagnostics, TypeScript) |
-| 0.8.x | Phase 2–3 (four features, multi-server) |
-| Later | Phase 4–5 |
+| 0.8.x | Phase 2–5 + goal adjustments (four features, multi-server, advanced edits, cpm distribution, supervision, replaceable diagnostics) |
 
 ---
 
@@ -525,29 +524,26 @@ plainly in user docs — the same honesty standard as cpm-design §6.1.
 
 ```text
 src/lsp/                              # renderer-side client (preload world)
-  index.js                            # activation, service registration
-  document-sync.js                    # TextBuffer → LSP notifications
-  position.js                         # UTF-16 ↔ UTF-8 conversion (heavily tested)
-  capability-map.js                   # server capabilities → enabled features
-  language-id.js                      # Atom scope → LSP languageId table
-  providers/
-    autocomplete.js                   # autocomplete.provider v4.0 adapter
-    diagnostics.js
-    hover.js
-    definitions.js
+  index.js                            # activation, commands, IPC client
+  document-sync.js                    # TextBuffer → didOpen/didChange/didSave
+  position.js                         # UTF-16 ↔ UTF-8 conversion
+  framing.js                          # Content-Length codec
+  registry.js                         # package > user > builtin resolution
+  diagnostics-service.js              # lsp.diagnostics 1.0.0 shape
+  providers/                          # hover, definition, completion, …
+  workspace-edit.js                   # multi-file apply + rollback
 src/main-process/
-  lsp-worker-manager.js               # mirrors package-utility-worker.js
-  workers/lsp-host.js                 # utilityProcess entry (pure Node)
-  lsp-trust.js                        # workspace trust store + prompts
-packages/lsp-ui/                      # bundled reference UI (replaceable)
-  lib/diagnostics-panel.js
-  lib/hover-view.js
-  styles/
-script/ci/
-  lsp-host-integration.test.js        # spawns a mock server; five-platform
-  lsp-position.test.js                # property-based, unicode + CRLF
-  lsp-trust.test.js                   # untrusted project spawns nothing
+  lsp-worker-manager.js               # main lifecycle + trust gate
+  workers/lsp-host.js                 # utilityProcess host (spawn, restart, idle)
+  lsp-trust.js                        # $CHEVRON_HOME/trusted-projects.json
+packages/lsp-ui/                      # bundled reference UI + service provides
+packages/lsp-servers/                 # PATH multi-register via chevron.lsp
+packages/lsp-diagnostics-stub/        # alternate lsp.diagnostics consumer (G6)
+packages/chevron-lsp-{rust,typescript,python}/  # optional cpm installs (not bundled)
+cpm/lib/language-server-prebuild.js   # Phase 5 binary fetch at cpm install
+script/ci/lsp-*.test.js
 docs/lsp-design.md                    # this file
+docs/lsp-server-distribution.md       # Phase 5 user install guide
 ```
 
 **Why this split:** core plumbing in `src/` (it is editor infrastructure, and
@@ -632,6 +628,7 @@ Do **not** start Phase 1 until Phase 0 exit criteria pass.
 | 2026-08-08 | **Phase 4 landed:** WorkspaceEdit apply (per-buffer transact + checkpoint rollback); rename (F2); format document/selection + `lsp.formatOnSave`; code actions; document symbols; server `workspace/applyEdit` handling. |
 | 2026-08-08 | **Phase 5 landed:** cpm language-server prebuilds (`cpm/lib/language-server-prebuild.js`); optional packages `chevron-lsp-rust` / `-typescript` / `-python`; install docs. N1 preserved (not in packageDependencies). |
 | 2026-08-08 | **Goal adjustments:** G5 host restart backoff + storm cap + idle shutdown; G6 `lsp.diagnostics` service + gutter/panel + `lsp-diagnostics-stub`; trust UX states unsandboxed. |
+| 2026-08-08 | Housekeeping: status → implemented; layout/version tables aligned with tree; docs index + `src/lsp` README refresh. |
 
 ---
 
