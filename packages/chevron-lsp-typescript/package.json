@@ -1,0 +1,38 @@
+{
+  "name": "chevron-lsp-typescript",
+  "version": "0.1.0",
+  "description": "Optional TypeScript language server for Chevron via cpm (npm deps; not bundled in the app)",
+  "main": "./lib/main",
+  "repository": "https://github.com/builtbygio/chevron",
+  "license": "MIT",
+  "engines": {
+    "chevron": ">=0.6.0"
+  },
+  "dependencies": {
+    "typescript": "~5.7.3",
+    "typescript-language-server": "4.3.4"
+  },
+  "chevron": {
+    "languageServer": {
+      "id": "typescript",
+      "scopes": [
+        "source.ts",
+        "source.tsx",
+        "source.js",
+        "source.js.jsx",
+        "source.jsx",
+        "source.flow"
+      ],
+      "command": "node_modules/.bin/typescript-language-server",
+      "args": ["--stdio"],
+      "initializationOptions": {}
+    }
+  },
+  "consumedServices": {
+    "chevron.lsp": {
+      "versions": {
+        "1.0.0": "consumeLsp"
+      }
+    }
+  }
+}

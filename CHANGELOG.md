@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **LSP plan + Phase 0–3:** [docs/lsp-design.md](docs/lsp-design.md) is the authoritative plan. Phase 0 framing; Phase 1 host + trust + diagnostics; Phase 2 hover/definition/completion; Phase 3 multi-server registry (`chevron.lsp`), rust-analyzer/pyright, signature help, references, utf-8 `positionEncoding`. See `src/lsp/`, `packages/lsp-ui`, `packages/lsp-servers`.
+- **LSP plan + Phase 0–3 (+5 distribution):** [docs/lsp-design.md](docs/lsp-design.md). Core phases 0–3 on master; Phase 4 may land separately. Phase 5 — optional cpm language-server packages (`chevron-lsp-rust` / `-typescript` / `-python`) with prebuild/npm binary install; see [docs/lsp-server-distribution.md](docs/lsp-server-distribution.md).
 
 ### Changed
 

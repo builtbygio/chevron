@@ -5,16 +5,27 @@
 | Phase | Status | Contents |
 |-------|--------|----------|
 | **0** | **Done** | `framing.js` + tests; spike `script/lsp-phase0-spike.js` |
-| **1** | **Done** | Host `workers/lsp-host.js`, trust, document sync, diagnostics, `packages/lsp-ui` status |
+| **1** | **Done** | Host, trust, document sync, diagnostics, `packages/lsp-ui` status |
 | **2** | **Done** | Hover, go-to-definition, `autocomplete.provider` v4 |
-| **3** | **Done** | Multi-server registry (`registry.js`), `chevron.lsp` service, rust/python builtins + `packages/lsp-servers`, signature help, references, `positionEncoding` |
-| 4+ | Not started | Rename, format, code actions, workspace edits |
+| **3** | **Done** | Multi-server registry, `chevron.lsp`, rust/python builtins, signature/references |
+| **4** | See PR | Rename, format, code actions, symbols (if not yet on master) |
+| **5** | **Done** | Optional cpm language-server packages — [lsp-server-distribution.md](../../docs/lsp-server-distribution.md) |
 
 ## Server resolution (precedence)
 
-1. **Package** — `chevron.lsp.registerServer({ id, scopes, command, args })` (e.g. `packages/lsp-servers`)
-2. **User config** — `lsp.servers` in config (`source.rust`: `{ command: "rust-analyzer" }`)
-3. **Built-in** — typescript-language-server, rust-analyzer, pyright when on PATH
+1. **Package** — `chevron.lsp.registerServer(...)` (e.g. `lsp-servers`, `chevron-lsp-rust`)
+2. **User config** — `lsp.servers`
+3. **Built-in** — PATH-only well-known servers
+
+## Optional server install (Phase 5)
+
+```bash
+cpm install ./packages/chevron-lsp-rust
+cpm install ./packages/chevron-lsp-typescript
+cpm install ./packages/chevron-lsp-python
+```
+
+Not in the product installer (N1). Trust project after install.
 
 ## Commands
 

@@ -72,6 +72,17 @@ At install time cpm sets Electron env (`npm_config_runtime=electron`, `npm_confi
 
 See [`.github/workflows/cpm-prebuild-example.yml`](../.github/workflows/cpm-prebuild-example.yml). Prefer generating **prebuildify** artifacts into `prebuilds/` and publishing them in the npm tarball; optional release assets can still feed `chevron.prebuilds` URLs.
 
+## Language server binaries (LSP Phase 5)
+
+Separate from Electron native `.node` prebuilds: packages may declare
+`chevron.languageServer` + platform `prebuilds` URLs (gzip executables).
+cpm fetches them at install into the package tree (e.g. `bin/rust-analyzer`).
+See [lsp-server-distribution.md](./lsp-server-distribution.md) and
+`cpm/lib/language-server-prebuild.js`.
+
+This path is **opt-in** (`cpm install ./packages/chevron-lsp-rust`); language
+servers are never shipped inside the product installer (LSP N1).
+
 ## Notes
 
 - Installs still use **`--ignore-scripts`** by default in product bootstrap; prebuilds are applied by **cpm**, not by untrusted install scripts.  

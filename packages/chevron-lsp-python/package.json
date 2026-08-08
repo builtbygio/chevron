@@ -1,0 +1,29 @@
+{
+  "name": "chevron-lsp-python",
+  "version": "0.1.0",
+  "description": "Optional Pyright language server for Chevron via cpm (not bundled in the app)",
+  "main": "./lib/main",
+  "repository": "https://github.com/builtbygio/chevron",
+  "license": "MIT",
+  "engines": {
+    "chevron": ">=0.6.0"
+  },
+  "dependencies": {
+    "pyright": "1.1.391"
+  },
+  "chevron": {
+    "languageServer": {
+      "id": "pyright",
+      "scopes": ["source.python"],
+      "command": "node_modules/.bin/pyright-langserver",
+      "args": ["--stdio"]
+    }
+  },
+  "consumedServices": {
+    "chevron.lsp": {
+      "versions": {
+        "1.0.0": "consumeLsp"
+      }
+    }
+  }
+}

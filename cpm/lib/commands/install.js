@@ -211,6 +211,33 @@ async function installPackage(spec, options = {}) {
     }
   }
 
+  // LSP Phase 5: optional language-server binary prebuilds (not Electron natives)
+  try {
+    const {
+      getLanguageServerMeta,
+      ensureLanguageServerBinary,
+      readPackageJson
+    } = require('../language-server-prebuild');
+    const meta = readPackageJson(dest);
+    if (getLanguageServerMeta(meta)) {
+      const lsResult = await ensureLanguageServerBinary(dest);
+      if (lsResult.ok) {
+        process.stdout.write(
+          `cpm install: language server ready (${lsResult.strategy}) → ${lsResult.path}\n`
+        );
+      } else {
+        process.stderr.write(
+          `cpm install warning: language server binary not ready (${lsResult.reason}). ` +
+            'The package may still register a PATH fallback when activated.\n'
+        );
+      }
+    }
+  } catch (err) {
+    process.stderr.write(
+      `cpm install warning: language-server prebuild step failed: ${err.message}\n`
+    );
+  }
+
   // Chevron #62: runtime Coffee/Babel transpile removed. Warn authors.
   try {
     const coffeeHits = await findCoffeeRuntimeFiles(dest);
