@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * Renderer-side LSP client (Phases 1–3).
+ * Renderer-side LSP client (Phases 1–4).
  * Multi-server registry, diagnostics, hover, definition, completion,
- * signature help, references — when the project is trusted.
+ * signature help, references, rename, format, code actions, document symbols.
  */
 
 const { CompositeDisposable, Emitter } = require('event-kit');
@@ -25,6 +25,15 @@ const {
   formatSignatureHelp
 } = require('./providers/signature-help');
 const { referencesAt } = require('./providers/references');
+const { prepareRename, renameAt } = require('./providers/rename');
+const { formatDocument, formatRange } = require('./providers/format');
+const {
+  codeActionsAt,
+  resolveCodeAction,
+  executeCommand
+} = require('./providers/code-action');
+const { documentSymbols } = require('./providers/document-symbols');
+const { applyWorkspaceEdit } = require('./workspace-edit');
 
 let activated = false;
 let disposables = null;
@@ -219,6 +228,19 @@ function handleLspEvent(_event, msg) {
     return;
   }
 
+  if (msg.type === 'server-request') {
+    handleServerRequest(msg).catch(err => {
+      ipcRenderer
+        .invoke('lsp:respond', {
+          serverId: msg.serverId,
+          id: msg.id,
+          error: { code: -32603, message: err.message || String(err) }
+        })
+        .catch(() => {});
+    });
+    return;
+  }
+
   if (msg.type === 'server-exit') {
     for (const [key, session] of [...startedSessions]) {
       if (session.serverId === msg.serverId) {
@@ -228,6 +250,39 @@ function handleLspEvent(_event, msg) {
     }
     emitter.emit('did-server-exit', msg);
   }
+}
+
+async function handleServerRequest(msg) {
+  if (msg.method === 'workspace/applyEdit') {
+    const edit = msg.params && msg.params.edit;
+    const result = await applyWorkspaceEdit(edit, {
+      env: global.chevron || global.atom,
+      getEncodingForUri: () => encodingByServerId.get(msg.serverId) || 'utf-16'
+    });
+    await ipcRenderer.invoke('lsp:respond', {
+      serverId: msg.serverId,
+      id: msg.id,
+      result: {
+        applied: result.ok,
+        failureReason: result.ok ? undefined : result.error
+      }
+    });
+    return;
+  }
+  // Unsupported server request — decline gracefully
+  await ipcRenderer.invoke('lsp:respond', {
+    serverId: msg.serverId,
+    id: msg.id,
+    error: { code: -32601, message: `Method not handled: ${msg.method}` }
+  });
+}
+
+async function applyEdit(edit, serverId) {
+  return applyWorkspaceEdit(edit, {
+    env: global.chevron || global.atom,
+    getEncodingForUri: () =>
+      (serverId && encodingByServerId.get(serverId)) || 'utf-16'
+  });
 }
 
 async function hoverAtCursor(editor, point) {
@@ -246,12 +301,82 @@ async function referencesAtCursor(editor, point, opts) {
   return referencesAt(clientApi, editor, point, opts);
 }
 
+async function prepareRenameAtCursor(editor, point) {
+  return prepareRename(clientApi, editor, point);
+}
+
+async function renameAtCursor(editor, newName, point) {
+  const edit = await renameAt(clientApi, editor, newName, point);
+  if (!edit) return { ok: false, error: 'Rename failed or unsupported' };
+  const serverId = getServerIdForEditor(editor);
+  return applyEdit(edit, serverId);
+}
+
+async function formatDocumentAt(editor) {
+  return formatDocument(clientApi, editor);
+}
+
+async function formatRangeAt(editor, range) {
+  return formatRange(clientApi, editor, range);
+}
+
+async function codeActionsAtCursor(editor, range) {
+  const uri = editor.getPath && pathToUri(editor.getPath());
+  const diags = uri ? getDiagnostics(uri) : [];
+  return codeActionsAt(clientApi, editor, range, diags);
+}
+
+async function applyCodeAction(editor, action) {
+  let resolved = action;
+  if (action && !action.edit) {
+    resolved = await resolveCodeAction(clientApi, editor, action);
+  }
+  if (resolved && resolved.edit) {
+    const serverId = getServerIdForEditor(editor);
+    const applied = await applyEdit(resolved.edit, serverId);
+    if (!applied.ok) return applied;
+  }
+  if (resolved && resolved.command) {
+    return executeCommand(clientApi, editor, resolved.command);
+  }
+  return { ok: true };
+}
+
+async function documentSymbolsAt(editor) {
+  return documentSymbols(clientApi, editor);
+}
+
 function getAutocompleteProvider() {
   return createAutocompleteProvider(clientApi);
 }
 
 function getLspService() {
   return createLspService();
+}
+
+function isFormatOnSaveEnabled() {
+  const env = global.chevron || global.atom;
+  if (!env || !env.config) return false;
+  try {
+    return Boolean(env.config.get('lsp.formatOnSave'));
+  } catch (_) {
+    return false;
+  }
+}
+
+function observeFormatOnSave(editor) {
+  if (!editor || !editor.getBuffer) return null;
+  const buffer = editor.getBuffer();
+  if (!buffer || !buffer.onWillSave) return null;
+  return buffer.onWillSave(async () => {
+    if (!isFormatOnSaveEnabled()) return;
+    if (!getServerIdForEditor(editor)) return;
+    try {
+      await formatDocument(clientApi, editor);
+    } catch (_) {
+      /* never block save */
+    }
+  });
 }
 
 function activate() {
@@ -276,6 +401,8 @@ function activate() {
       env.workspace.observeTextEditors(async editor => {
         const serverId = await ensureServerForEditor(editor);
         if (serverId) documentSync.observeEditor(editor);
+        const fos = observeFormatOnSave(editor);
+        if (fos) disposables.add(fos);
       })
     );
   }
@@ -376,6 +503,56 @@ function activate() {
           if (documentSync) documentSync.observeEditor(editor);
           const locations = await referencesAtCursor(editor);
           emitter.emit('did-request-references', { editor, locations });
+        },
+        'chevron-lsp:rename': async () => {
+          const editor = env.workspace.getActiveTextEditor();
+          if (!editor) return;
+          await ensureServerForEditor(editor);
+          if (documentSync) documentSync.observeEditor(editor);
+          const prep = await prepareRenameAtCursor(editor);
+          if (!prep) {
+            env.notifications &&
+              env.notifications.addInfo('Rename not available here');
+            return;
+          }
+          emitter.emit('did-request-rename', { editor, prepare: prep });
+        },
+        'chevron-lsp:format-document': async () => {
+          const editor = env.workspace.getActiveTextEditor();
+          if (!editor) return;
+          await ensureServerForEditor(editor);
+          if (documentSync) documentSync.observeEditor(editor);
+          const result = await formatDocumentAt(editor);
+          if (!result.ok && env.notifications) {
+            env.notifications.addWarning(
+              `Format failed: ${result.error || 'unknown'}`
+            );
+          } else if (result.edits === 0 && env.notifications) {
+            env.notifications.addInfo('Already formatted');
+          }
+        },
+        'chevron-lsp:format-selection': async () => {
+          const editor = env.workspace.getActiveTextEditor();
+          if (!editor) return;
+          await ensureServerForEditor(editor);
+          if (documentSync) documentSync.observeEditor(editor);
+          await formatRangeAt(editor);
+        },
+        'chevron-lsp:code-actions': async () => {
+          const editor = env.workspace.getActiveTextEditor();
+          if (!editor) return;
+          await ensureServerForEditor(editor);
+          if (documentSync) documentSync.observeEditor(editor);
+          const actions = await codeActionsAtCursor(editor);
+          emitter.emit('did-request-code-actions', { editor, actions });
+        },
+        'chevron-lsp:document-symbols': async () => {
+          const editor = env.workspace.getActiveTextEditor();
+          if (!editor) return;
+          await ensureServerForEditor(editor);
+          if (documentSync) documentSync.observeEditor(editor);
+          const symbols = await documentSymbolsAt(editor);
+          emitter.emit('did-request-document-symbols', { editor, symbols });
         }
       })
     );
@@ -429,6 +606,18 @@ function onDidRequestReferences(cb) {
   return emitter.on('did-request-references', cb);
 }
 
+function onDidRequestRename(cb) {
+  return emitter.on('did-request-rename', cb);
+}
+
+function onDidRequestCodeActions(cb) {
+  return emitter.on('did-request-code-actions', cb);
+}
+
+function onDidRequestDocumentSymbols(cb) {
+  return emitter.on('did-request-document-symbols', cb);
+}
+
 module.exports = {
   activate,
   deactivate,
@@ -440,10 +629,21 @@ module.exports = {
   onDidRequestDefinition,
   onDidRequestSignatureHelp,
   onDidRequestReferences,
+  onDidRequestRename,
+  onDidRequestCodeActions,
+  onDidRequestDocumentSymbols,
   hoverAtCursor,
   definitionAtCursor,
   signatureHelpAtCursor,
   referencesAtCursor,
+  prepareRenameAtCursor,
+  renameAtCursor,
+  formatDocumentAt,
+  formatRangeAt,
+  codeActionsAtCursor,
+  applyCodeAction,
+  documentSymbolsAt,
+  applyEdit,
   formatSignatureHelp,
   getAutocompleteProvider,
   getLspService,

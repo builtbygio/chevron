@@ -136,6 +136,15 @@ class ServerSession {
         const p = this.pending.get(msg.id);
         this.pending.delete(msg.id);
         p.resolve(msg);
+      } else if (msg.method && msg.id != null) {
+        // Server → client request (e.g. workspace/applyEdit)
+        post({
+          type: 'server-request',
+          serverId: this.id,
+          id: msg.id,
+          method: msg.method,
+          params: msg.params
+        });
       } else if (msg.method) {
         post({
           type: 'notification',
@@ -144,6 +153,19 @@ class ServerSession {
           params: msg.params
         });
       }
+    }
+  }
+
+  respond(id, result, error) {
+    if (!this.child || !this.child.stdin.writable) return;
+    if (error) {
+      this.child.stdin.write(
+        encodeMessage({ jsonrpc: '2.0', id, error })
+      );
+    } else {
+      this.child.stdin.write(
+        encodeMessage({ jsonrpc: '2.0', id, result })
+      );
     }
   }
 
@@ -206,10 +228,37 @@ class ServerSession {
               snippetSupport: true,
               documentationFormat: ['markdown', 'plaintext']
             }
+          },
+          rename: { prepareSupport: true },
+          codeAction: {
+            codeActionLiteralSupport: {
+              codeActionKind: {
+                valueSet: [
+                  '',
+                  'quickfix',
+                  'refactor',
+                  'refactor.extract',
+                  'refactor.inline',
+                  'refactor.rewrite',
+                  'source',
+                  'source.organizeImports'
+                ]
+              }
+            },
+            resolveSupport: { properties: ['edit'] }
+          },
+          formatting: { dynamicRegistration: false },
+          rangeFormatting: { dynamicRegistration: false },
+          documentSymbol: {
+            hierarchicalDocumentSymbolSupport: true
           }
         },
         workspace: {
-          workspaceFolders: true
+          workspaceFolders: true,
+          applyEdit: true,
+          workspaceEdit: {
+            documentChanges: true
+          }
         }
       },
       initializationOptions: initializationOptions || {},
@@ -349,6 +398,14 @@ async function handleMessage(msg) {
   if (type === 'notify') {
     const session = servers.get(msg.serverId);
     if (session) session.notify(msg.method, msg.params);
+    return;
+  }
+
+  if (type === 'server-response') {
+    const session = servers.get(msg.serverId);
+    if (session) {
+      session.respond(msg.id, msg.result, msg.error);
+    }
     return;
   }
 

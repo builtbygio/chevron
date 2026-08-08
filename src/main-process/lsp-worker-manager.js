@@ -200,6 +200,12 @@ async function notify(serverId, method, params) {
   return { ok: true };
 }
 
+async function respondToServer(serverId, id, result, error) {
+  await ensureHost();
+  postToHost({ type: 'server-response', serverId, id, result, error });
+  return { ok: true };
+}
+
 async function stopServer(serverId) {
   if (!host) return { ok: true };
   postToHost({ type: 'stop-server', serverId });
@@ -247,6 +253,7 @@ module.exports = {
   startServer,
   request,
   notify,
+  respondToServer,
   stopServer,
   listServers,
   shutdownHost,

@@ -629,6 +629,7 @@ Do **not** start Phase 1 until Phase 0 exit criteria pass.
 | 2026-08-07 | **Phase 1 landed (MVP):** utilityProcess `lsp-host` + manager, workspace trust, document sync, TypeScript built-in when trusted, `packages/lsp-ui` status + trust nudge, CI tests. |
 | 2026-08-08 | **Phase 2 landed:** hover tooltip + `chevron-lsp:show-hover`; go-to-definition (`F12`) + multi-result list in `lsp-ui`; `autocomplete.provider` v4 adapter (priority-trick ranking, generation cancel, resolve on select); completion latency stats on `chevron-lsp:status`. |
 | 2026-08-08 | **Phase 3 landed:** `chevron.lsp` registry (package > user config > builtin); multi-server sessions; rust-analyzer + pyright builtins; owned package `lsp-servers` registers via service; `positionEncoding` negotiation (utf-8 path); signature help + find references. |
+| 2026-08-08 | **Phase 4 landed:** WorkspaceEdit apply (per-buffer transact + checkpoint rollback); rename (F2); format document/selection + `lsp.formatOnSave`; code actions; document symbols; server `workspace/applyEdit` handling. |
 | 2026-08-08 | **Phase 5 landed:** cpm language-server prebuilds (`cpm/lib/language-server-prebuild.js`); optional packages `chevron-lsp-rust` / `-typescript` / `-python`; install docs. N1 preserved (not in packageDependencies). |
 
 ---

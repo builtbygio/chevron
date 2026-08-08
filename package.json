@@ -290,6 +290,12 @@
           "type": "object",
           "default": {},
           "description": "User language server map. Keys are scope names (e.g. source.rust) or server ids; values are { command, args?, scopes?, initializationOptions? }. Package-registered servers take precedence. Binaries must be on PATH."
+        },
+        "formatOnSave": {
+          "type": "boolean",
+          "default": false,
+          "title": "Format on Save",
+          "description": "Run language-server document formatting before save when a server is active."
         }
       }
     }
