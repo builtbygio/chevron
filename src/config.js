@@ -613,7 +613,7 @@ class Config {
   //   * `scope` (optional) {ScopeDescriptor} describing a path from
   //     the root of the syntax tree to a token. Get one by calling
   //     {editor.getLastCursor().getScopeDescriptor()}
-  //     //     See [the scopes docs](docs/atom-architecture.md) (historical Atom API)
+  //     See [the scopes docs](docs/atom-architecture.md) (historical Atom API)
   //     for more information.
   //
   // Returns the value from Atom's default settings, the user's configuration
