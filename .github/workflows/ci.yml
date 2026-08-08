@@ -153,6 +153,7 @@ jobs:
           node --test script/ci/lsp-workspace-edit.test.js
           node --test script/ci/lsp-supervision.test.js
           node --test script/ci/lsp-diagnostics-service.test.js
+          node --test script/ci/bootstrap-contract.test.js
           node --test script/ci/package-utility-worker.test.js
           node --test script/ci/git-utility-host-integration.test.js
           node --test script/ci/natives-fingerprint.test.js

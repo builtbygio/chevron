@@ -34,6 +34,9 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [package-ecosystem-strategy.md](./package-ecosystem-strategy.md) | Owned catalog now; sandboxed community later |
 | [lsp-design.md](./lsp-design.md) | **LSP** (implemented) — utilityProcess host, workspace trust, phases 0–5 + goal adjustments |
 | [lsp-server-distribution.md](./lsp-server-distribution.md) | Optional cpm language-server install (`chevron-lsp-*`) |
+| [build-modernization.md](./build-modernization.md) | Bootstrap/build Streams A–E (contract, hygiene, patches, snapshot, deps) |
+| [bootstrap-patch-matrix.md](./bootstrap-patch-matrix.md) | Idempotent bootstrap patches + critical natives |
+| [bootstrap-report.md](./bootstrap-report.md) | Current bootstrap recipe (modern path) |
 
 
 | [onboarding-polish.md](./onboarding-polish.md) | First-run Welcome/Guide checklist |

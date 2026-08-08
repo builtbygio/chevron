@@ -1,148 +1,144 @@
 'use strict';
 
+/**
+ * Host toolchain gate for bootstrap-modern / CI.
+ * Matches script/lib/modern-env.sh contract:
+ *   Node 20–24 (prefer 24 via .nvmrc), Python 3.11–3.13 (+ setuptools on 3.12+).
+ */
+
 const childProcess = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
-module.exports = function(ci) {
-  verifyNode();
-  verifyPython();
+const NODE_MIN_MAJOR = 20;
+const NODE_MAX_MAJOR = 24;
+const PYTHON_MIN = [3, 11];
+const PYTHON_MAX_MINOR_FOR_3 = 13; // 3.11–3.13 inclusive
+
+module.exports = function verifyMachineRequirements(ci) {
+  verifyNode(ci);
+  verifyPython(ci);
 };
 
-function verifyNode() {
+function verifyNode(ci) {
   const fullVersion = process.versions.node;
-  const majorVersion = fullVersion.split('.')[0];
-  const minorVersion = fullVersion.split('.')[1];
-  if (majorVersion >= 11 || (majorVersion === '10' && minorVersion >= 12)) {
-    console.log(`Node:\tv${fullVersion}`);
-  } else {
-    throw new Error(
-      `node v10.12+ is required to build Atom. node v${fullVersion} is installed.`
+  const major = Number(fullVersion.split('.')[0]);
+  if (major >= NODE_MIN_MAJOR && major <= NODE_MAX_MAJOR) {
+    console.log(`Node:\tv${fullVersion} (host; range ${NODE_MIN_MAJOR}–${NODE_MAX_MAJOR})`);
+    return;
+  }
+  throw new Error(
+    `Chevron bootstrap requires Node ${NODE_MIN_MAJOR}–${NODE_MAX_MAJOR} ` +
+      `(prefer 24 via \`nvm use\` / .nvmrc). Found v${fullVersion}.\n` +
+      'See docs/toolchain-node-python-upgrade-plan.md and script/bootstrap-modern.'
+  );
+}
+
+function parsePythonVersion(stdout) {
+  if (!stdout) return null;
+  let s = stdout.toString().trim();
+  s = s.replace(/\+/g, '').replace(/rc.*$/i, '').replace(/a\d+$/i, '').replace(/b\d+$/i, '');
+  const parts = s.split('.').map(n => Number(n));
+  if (parts.length < 2 || Number.isNaN(parts[0]) || Number.isNaN(parts[1])) return null;
+  return { major: parts[0], minor: parts[1], full: s };
+}
+
+function isAcceptablePython(ver) {
+  if (!ver) return false;
+  if (ver.major !== 3) return false;
+  if (ver.minor < PYTHON_MIN[1]) return false;
+  if (ver.minor > PYTHON_MAX_MINOR_FOR_3) return false;
+  return true;
+}
+
+function tryPythonBinary(binary, args = []) {
+  if (!binary) return null;
+  try {
+    const stdout = childProcess.execFileSync(
+      binary,
+      args.concat(['-c', 'import platform; print(platform.python_version())']),
+      { env: process.env, stdio: ['ignore', 'pipe', 'ignore'] }
     );
+    return parsePythonVersion(stdout);
+  } catch (_) {
+    return null;
   }
 }
 
-function verifyPython() {
-  // This function essentially re-implements node-gyp's "find-python.js" library,
-  // but in a synchronous, bootstrap-script-friendly way.
-  // It is based off of the logic of the file from node-gyp v5.x:
-  // https://github.com/nodejs/node-gyp/blob/v5.1.1/lib/find-python.js
-  // This node-gyp is the version in use by current npm (in mid 2020).
-  //
-  // TODO: If this repo ships a newer version of node-gyp (v6.x or later), please update this script.
-  // Host Node 24 + modern npm for bootstrap; product packages use cpm (Electron-as-Node).
-  // Differences between major versions of node-gyp:
-  // node-gyp 5.x looks for python, then python2, then python3.
-  // node-gyp 6.x looks for python3, then python, then python2.)
-  // node-gyp 5.x accepts Python ^2.6 || >= 3.5, node-gyp 6+ only accepts Python == 2.7 || >= 3.5.
-  // node-gyp 7.x stopped using the "-2" flag for "py.exe",
-  // so as to allow finding Python 3 as well, not just Python 2.
-  // https://github.com/nodejs/node-gyp/blob/master/CHANGELOG.md#v700-2020-06-03
+function verifySetuptools(binary) {
+  try {
+    childProcess.execFileSync(
+      binary,
+      ['-c', 'import setuptools; print(setuptools.__version__)'],
+      { env: process.env, stdio: ['ignore', 'pipe', 'ignore'] }
+    );
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
-  let stdout;
-  let fullVersion;
-  let usablePythonWasFound;
-  let triedLog = '';
-  let binaryPlusFlag;
+function verifyPython(ci) {
+  const candidates = [];
+  const push = (bin, args) => {
+    if (bin) candidates.push({ bin, args: args || [] });
+  };
 
-  function verifyBinary(binary, prependFlag) {
-    if (binary && !usablePythonWasFound) {
-      // clear re-used "result" variables now that we're checking another python binary.
-      stdout = '';
-      fullVersion = '';
+  push(process.env.NODE_GYP_FORCE_PYTHON);
+  push(process.env.PYTHON);
+  push(process.env.npm_config_python);
+  // Prefer explicit 3.12/3.11 (modern-env), then python3, then python
+  for (const name of ['python3.12', 'python3.13', 'python3.11', 'python3', 'python']) {
+    push(name);
+  }
+  if (process.platform === 'win32') {
+    push('py.exe', ['-3.12']);
+    push('py.exe', ['-3.11']);
+    push('py.exe', ['-3']);
+  }
 
-      let allFlags = [
-        '-c',
-        'import platform\nprint(platform.python_version())'
-      ];
-      if (prependFlag) {
-        // prependFlag is an optional argument,
-        // used to prepend "-2" for the "py.exe" launcher.
-        //
-        // TODO: Refactor this script by eliminating "prependFlag"
-        // once we update to node-gyp v7.x or newer;
-        // the "-2" flag is not used in node-gyp v7.x.
-        allFlags.unshift(prependFlag);
-      }
+  let found = null;
+  let foundBin = null;
+  const tried = [];
 
-      try {
-        stdout = childProcess.execFileSync(binary, allFlags, {
-          env: process.env,
-          stdio: ['ignore', 'pipe', 'ignore']
-        });
-      } catch (e) {}
+  for (const { bin, args } of candidates) {
+    const ver = tryPythonBinary(bin, args);
+    const label = args.length ? `${bin} ${args.join(' ')}` : bin;
+    tried.push(`${label} → ${ver ? ver.full : 'n/a'}`);
+    if (ver && isAcceptablePython(ver)) {
+      found = ver;
+      foundBin = bin;
+      break;
+    }
+  }
 
-      if (stdout) {
-        if (stdout.indexOf('+') !== -1)
-          stdout = stdout.toString().replace(/\+/g, '');
-        if (stdout.indexOf('rc') !== -1)
-          stdout = stdout.toString().replace(/rc(.*)$/gi, '');
-        fullVersion = stdout.toString().trim();
-      }
+  if (!found) {
+    throw new Error(
+      'Python 3.11–3.13 is required to build Chevron natives (prefer 3.12 + setuptools).\n' +
+        'Tried:\n  ' +
+        tried.join('\n  ') +
+        '\nSet PYTHON or NODE_GYP_FORCE_PYTHON, or: brew install python@3.12 && python3.12 -m pip install setuptools\n' +
+        'See docs/toolchain-node-python-upgrade-plan.md'
+    );
+  }
 
-      if (fullVersion) {
-        let versionComponents = fullVersion.split('.');
-        let majorVersion = Number(versionComponents[0]);
-        let minorVersion = Number(versionComponents[1]);
-        if (
-          (majorVersion === 2 && minorVersion >= 6) ||
-          (majorVersion === 3 && minorVersion >= 5)
-        ) {
-          usablePythonWasFound = true;
-        }
-      }
-
-      // Prepare to log which commands were tried, and the results, in case no usable Python can be found.
-      if (prependFlag) {
-        binaryPlusFlag = binary + ' ' + prependFlag;
-      } else {
-        binaryPlusFlag = binary;
-      }
-      triedLog = triedLog.concat(
-        `log message: tried to check version of "${binaryPlusFlag}", got: "${fullVersion}"\n`
+  // 3.12+ need setuptools (distutils removed)
+  if (found.minor >= 12 && foundBin) {
+    if (!verifySetuptools(foundBin)) {
+      throw new Error(
+        `Python ${found.full} found but setuptools is missing (required for node-gyp on 3.12+).\n` +
+          `Install: ${foundBin} -m pip install setuptools`
       );
     }
   }
 
-  function verifyForcedBinary(binary) {
-    if (typeof binary !== 'undefined' && binary.length > 0) {
-      verifyBinary(binary);
-      if (!usablePythonWasFound) {
-        throw new Error(
-          `NODE_GYP_FORCE_PYTHON is set to: "${binary}", but this is not a valid Python.\n` +
-            'Please set NODE_GYP_FORCE_PYTHON to something valid, or unset it entirely.\n' +
-            '(Python 2.6, 2.7 or 3.5+ is required to build Atom.)\n'
-        );
-      }
-    }
-  }
-
-  // These first two checks do nothing if the relevant
-  // environment variables aren't set.
-  verifyForcedBinary(process.env.NODE_GYP_FORCE_PYTHON);
-  // All the following checks will no-op if a previous check has succeeded.
-  verifyBinary(process.env.PYTHON);
-  verifyBinary('python');
-  verifyBinary('python2');
-  verifyBinary('python3');
-  if (process.platform === 'win32') {
-    verifyBinary('py.exe', '-2');
-    verifyBinary(
-      path.join(process.env.SystemDrive || 'C:', 'Python27', 'python.exe')
-    );
-    verifyBinary(
-      path.join(process.env.SystemDrive || 'C:', 'Python37', 'python.exe')
-    );
-  }
-
-  if (usablePythonWasFound) {
-    console.log(`Python:\tv${fullVersion}`);
-  } else {
-    throw new Error(
-      `\n${triedLog}\n` +
-        'Python 2.6, 2.7 or 3.5+ is required to build Atom.\n' +
-        'verify-machine-requirements.js was unable to find such a version of Python.\n' +
-        "Set the PYTHON env var to e.g. 'C:/path/to/Python27/python.exe'\n" +
-        'if your Python is installed in a non-default location.\n'
-    );
-  }
+  console.log(`Python:\tv${found.full}`);
 }
+
+// test exports
+module.exports._test = {
+  parsePythonVersion,
+  isAcceptablePython,
+  NODE_MIN_MAJOR,
+  NODE_MAX_MAJOR
+};

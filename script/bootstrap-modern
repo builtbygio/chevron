@@ -239,6 +239,7 @@ if [ "$SKIP_NATIVE_REBUILD" = false ]; then
   echo "Force-rebuilding critical natives for Electron $ELECTRON_VERSION..."
   # keyboard-layout is required at runtime (smoke fails without keyboard-layout-manager.node).
   # ctags / fs-admin / oniguruma are also app natives not covered by a partial list.
+  CRITICAL_REBUILD_FAILED=0
   for _pkg in \
     superstring tree-sitter \
     '@atom/watcher' '@atom/nsfw' '@atom/fuzzy-native' \
@@ -248,8 +249,13 @@ if [ "$SKIP_NATIVE_REBUILD" = false ]; then
     _dir="$REPO_ROOT/node_modules/$_pkg"
     if [ -d "$_dir" ]; then
       echo "  rebuild $_pkg..."
-      rebuild_package_modern "$_dir" || \
-        echo "WARNING: rebuild failed for $_pkg"
+      if ! rebuild_package_modern "$_dir"; then
+        echo "ERROR: rebuild failed for $_pkg" >&2
+        CRITICAL_REBUILD_FAILED=1
+      fi
+    else
+      echo "ERROR: critical package missing from node_modules: $_pkg" >&2
+      CRITICAL_REBUILD_FAILED=1
     fi
   done
 
@@ -266,21 +272,53 @@ if [ "$SKIP_NATIVE_REBUILD" = false ]; then
     fi
     _dir="$(cd "$(dirname "$_gyp")" && pwd)"
     echo "  rebuild $_dir..."
+    # Language bindings are best-effort: missing optional grammars should not
+    # fail bootstrap (critical tree-sitter core is already hard-gated above).
     rebuild_package_modern "$_dir" || \
-      echo "WARNING: rebuild failed for $_dir"
+      echo "WARNING: tree-sitter language rebuild failed for $_dir (non-fatal)"
   done < <(find "$REPO_ROOT/node_modules" -path '*/tree-sitter-*/binding.gyp' 2>/dev/null | sort -u)
 
-  if [ ! -f "$REPO_ROOT/node_modules/keytar/build/Release/keytar.node" ]; then
-    echo "Rebuilding keytar for Electron $ELECTRON_VERSION…"
-    rebuild_package_modern "$REPO_ROOT/node_modules/keytar" || true
+  if [ "$CRITICAL_REBUILD_FAILED" -ne 0 ]; then
+    if [ "${CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES:-}" = "1" ] || \
+       [ "${CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES:-}" = "true" ]; then
+      echo "WARNING: critical native rebuild failures ignored (CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1)"
+    else
+      echo "error: one or more critical native rebuilds failed (see ERROR lines above)." >&2
+      echo "  Override only for local debugging: CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1" >&2
+      exit 1
+    fi
   fi
 fi
 
-if [ -f "$REPO_ROOT/node_modules/keytar/build/Release/keytar.node" ]; then
-  echo "keytar.node present."
-else
-  echo "WARNING: keytar.node still missing — github package password storage will fail."
-fi
+# Artifact gate (warm-cache skip path and rebuild path).
+node <<'NODE'
+'use strict';
+const path = require('path');
+const {
+  checkCriticalNatives,
+  allowNativeFailures
+} = require('./script/lib/critical-natives');
+const repoRoot = process.cwd();
+const result = checkCriticalNatives(repoRoot);
+if (result.ok) {
+  console.log(`Critical natives: ${result.found.length} packages OK.`);
+  process.exit(0);
+}
+console.error('Critical native artifacts missing:');
+for (const m of result.missing) {
+  console.error(`  - ${m.name}: ${m.reason}`);
+}
+if (allowNativeFailures()) {
+  console.warn(
+    'WARNING: continuing with missing natives (CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1)'
+  );
+  process.exit(0);
+}
+console.error(
+  'error: bootstrap cannot continue. Rebuild natives or set CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1'
+);
+process.exit(1);
+NODE
 
 DUGITE_GIT="$REPO_ROOT/node_modules/dugite/git/bin/git"
 if [ ! -x "$DUGITE_GIT" ]; then

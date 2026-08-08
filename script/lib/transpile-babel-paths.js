@@ -9,8 +9,6 @@
 const CONFIG = require('../config');
 
 module.exports = function() {
-  console.log(
-    `Skipping Babel transpile in ${CONFIG.intermediateAppPath} ` +
-      '(babel-core runtime removed; see docs/babel-coffee-isolation-plan.md)'
-  );
+  // Stream C: silent no-op (babel-core runtime removed, #62).
+  void CONFIG;
 };
