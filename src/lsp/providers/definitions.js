@@ -6,6 +6,7 @@
 
 const { pointToLsp, lspToPoint, pointToLspWithEncoding } = require('../position');
 const { pathToUri, uriToPath } = require('../path-uri');
+const { createConverter, collectRefs } = require('../inbound-position');
 
 function positionFor(client, editor, serverId, pos) {
   const encoding =
@@ -20,10 +21,16 @@ function positionFor(client, editor, serverId, pos) {
 
 /**
  * Normalize Location | Location[] | LocationLink[] | null
+ *
+ * `convert` maps an LSP position to an Atom point. It defaults to the plain
+ * utf-16 passthrough; `definitionAt` supplies an encoding-aware converter for
+ * utf-8 sessions (goal G7 — see ../inbound-position.js).
+ *
  * @param {unknown} result
+ * @param {(pos: object, uri?: string) => object} [convert]
  * @returns {Array<{ uri: string, path: string|null, range: {start, end}, originSelectionRange?: object }>}
  */
-function normalizeDefinitionResult(result) {
+function normalizeDefinitionResult(result, convert = lspToPoint) {
   if (result == null) return [];
   const items = Array.isArray(result) ? result : [result];
   const out = [];
@@ -37,13 +44,14 @@ function normalizeDefinitionResult(result) {
         uri: item.targetUri,
         path: uriToPath(item.targetUri),
         range: {
-          start: lspToPoint(range.start),
-          end: lspToPoint(range.end)
+          start: convert(range.start, item.targetUri),
+          end: convert(range.end, item.targetUri)
         },
         originSelectionRange: item.originSelectionRange
           ? {
-              start: lspToPoint(item.originSelectionRange.start),
-              end: lspToPoint(item.originSelectionRange.end)
+              // origin ranges are in the *requesting* document
+              start: convert(item.originSelectionRange.start, item.originUri),
+              end: convert(item.originSelectionRange.end, item.originUri)
             }
           : null
       });
@@ -55,13 +63,48 @@ function normalizeDefinitionResult(result) {
         uri: item.uri,
         path: uriToPath(item.uri),
         range: {
-          start: lspToPoint(item.range.start),
-          end: lspToPoint(item.range.end)
+          start: convert(item.range.start, item.uri),
+          end: convert(item.range.end, item.uri)
         }
       });
     }
   }
   return out;
+}
+
+/**
+ * Every {uri, range} an LSP location result refers to, for line pre-loading.
+ * @param {unknown} result
+ */
+function refsForResult(result) {
+  if (result == null) return [];
+  const items = Array.isArray(result) ? result : [result];
+  const entries = [];
+  for (const item of items) {
+    if (!item || typeof item !== 'object') continue;
+    if (item.targetUri) {
+      const range = item.targetSelectionRange || item.targetRange;
+      if (range) entries.push({ uri: item.targetUri, ranges: [range] });
+      if (item.originSelectionRange && item.originUri) {
+        entries.push({ uri: item.originUri, ranges: [item.originSelectionRange] });
+      }
+    } else if (item.uri && item.range) {
+      entries.push({ uri: item.uri, ranges: [item.range] });
+    }
+  }
+  return collectRefs(entries);
+}
+
+/**
+ * Normalize with an encoding-aware converter. utf-16 sessions take the same
+ * synchronous path as before; utf-8 sessions pre-load the referenced lines.
+ * @param {unknown} result
+ * @param {'utf-16'|'utf-8'} encoding
+ */
+async function normalizeDefinitionResultForEncoding(result, encoding) {
+  if (encoding !== 'utf-8') return normalizeDefinitionResult(result);
+  const convert = await createConverter('utf-8', refsForResult(result));
+  return normalizeDefinitionResult(result, convert);
 }
 
 /**
@@ -92,10 +135,15 @@ async function definitionAt(client, editor, point) {
   );
 
   if (error) return [];
-  return normalizeDefinitionResult(result);
+  const encoding =
+    (client.getPositionEncoding && client.getPositionEncoding(serverId)) ||
+    'utf-16';
+  return normalizeDefinitionResultForEncoding(result, encoding);
 }
 
 module.exports = {
   definitionAt,
-  normalizeDefinitionResult
+  normalizeDefinitionResult,
+  normalizeDefinitionResultForEncoding,
+  refsForResult
 };

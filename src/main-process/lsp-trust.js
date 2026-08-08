@@ -81,9 +81,49 @@ function listTrusted() {
   return readStore().roots.slice();
 }
 
+/**
+ * Grant trust only after an explicit user confirmation in the **main**
+ * process (docs/lsp-design.md §6.2: trust is a user decision, not a
+ * renderer-settable flag). Revoking never prompts — removing capability is
+ * always safe.
+ *
+ * Trusting a workspace permits language servers to execute that project's
+ * toolchain (tsserver loads plugins from node_modules; rust-analyzer runs
+ * build scripts), so the prompt must say so plainly.
+ *
+ * @param {string} projectRoot
+ * @param {object} [browserWindow] parent window for the modal
+ * @returns {Promise<boolean>} whether trust is now granted
+ */
+async function confirmAndGrantTrust(projectRoot, browserWindow) {
+  if (!projectRoot) return false;
+  if (isTrusted(projectRoot)) return true;
+
+  const { dialog } = require('electron');
+  const root = normalizeRoot(projectRoot);
+  const { response } = await dialog.showMessageBox(browserWindow || undefined, {
+    type: 'warning',
+    buttons: ['Cancel', 'Trust this folder'],
+    defaultId: 0,
+    cancelId: 0,
+    title: 'Trust this workspace?',
+    message: `Enable language servers for:\n${root}`,
+    detail:
+      'Language servers run this project\u2019s own tooling. They can execute ' +
+      'build scripts and plugins from the project (for example TypeScript ' +
+      'plugins in node_modules, or Rust build scripts and proc macros).\n\n' +
+      'Only trust folders whose contents you trust.'
+  });
+
+  if (response !== 1) return false;
+  setTrusted(root, true);
+  return true;
+}
+
 module.exports = {
   isTrusted,
   setTrusted,
+  confirmAndGrantTrust,
   listTrusted,
   normalizeRoot,
   trustStorePath,

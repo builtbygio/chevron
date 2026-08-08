@@ -42,6 +42,8 @@ let emitter = null;
 let documentSync = null;
 /** uri -> Diagnostic[] */
 const diagnosticsByUri = new Map();
+/** uri -> serverId that published it (for positionEncoding resolution, G7) */
+const diagnosticsServerByUri = new Map();
 /**
  * Running sessions: key `${regId}::${projectRoot}` ->
  * { serverId, projectRoot, regId, positionEncoding, capabilities }
@@ -167,6 +169,15 @@ async function ensureServerForEditor(editor) {
 
   const serverId = `${reg.id}:${projectRoot}`;
   try {
+    // Package-registered servers are unknown to main until declared, since
+    // main validates commands against sources it can read itself
+    // (lsp-command-policy). Builtin/user-config servers need no declaration.
+    if (reg.source === 'package') {
+      await ipcRenderer.invoke('lsp:register-server', {
+        id: reg.id,
+        command: resolved.command
+      });
+    }
     await ipcRenderer.invoke('lsp:start-server', {
       serverId,
       projectRoot,
@@ -237,6 +248,7 @@ function handleLspEvent(_event, msg) {
     const diagnostics = (msg.params && msg.params.diagnostics) || [];
     if (uri) {
       diagnosticsByUri.set(uri, diagnostics);
+      if (msg.serverId) diagnosticsServerByUri.set(uri, msg.serverId);
       emitter.emit('did-publish-diagnostics', { uri, diagnostics });
     }
     return;
@@ -377,7 +389,10 @@ function getDiagnosticsService() {
     const { Emitter } = require('event-kit');
     emitter = new Emitter();
   }
-  return createDiagnosticsService(diagnosticsByUri, emitter);
+  return createDiagnosticsService(diagnosticsByUri, emitter, uri => {
+    const serverId = diagnosticsServerByUri.get(uri);
+    return (serverId && encodingByServerId.get(serverId)) || 'utf-16';
+  });
 }
 
 function isFormatOnSaveEnabled() {
@@ -595,6 +610,7 @@ function deactivate() {
   if (disposables) disposables.dispose();
   disposables = null;
   diagnosticsByUri.clear();
+  diagnosticsServerByUri.clear();
   startedSessions.clear();
   encodingByServerId.clear();
   completionLatencySamples.length = 0;

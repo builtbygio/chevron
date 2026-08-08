@@ -9,6 +9,7 @@
 const path = require('path');
 const { app, utilityProcess, BrowserWindow } = require('electron');
 const lspTrust = require('./lsp-trust');
+const commandPolicy = require('./lsp-command-policy');
 
 const HOST_SCRIPT = path.join(__dirname, 'workers', 'lsp-host.js');
 
@@ -172,6 +173,16 @@ async function startServer(opts) {
     err.code = 'LSP_UNTRUSTED';
     throw err;
   }
+
+  // Main decides what may be spawned; the renderer no longer supplies an
+  // arbitrary binary path (docs/lsp-design.md §6.2 — see lsp-command-policy).
+  const check = commandPolicy.checkCommand(opts.command);
+  if (!check.allowed) {
+    const err = new Error(`Refusing to start language server: ${check.reason}`);
+    err.code = 'LSP_COMMAND_NOT_ALLOWED';
+    throw err;
+  }
+
   await ensureHost();
   postToHost({
     type: 'start-server',
@@ -251,6 +262,8 @@ module.exports = {
   subscribe,
   unsubscribe,
   startServer,
+  recordRegistration: commandPolicy.recordRegistration,
+  forgetRegistration: commandPolicy.forgetRegistration,
   request,
   notify,
   respondToServer,
@@ -258,6 +271,7 @@ module.exports = {
   listServers,
   shutdownHost,
   isTrusted,
+  confirmAndGrantTrust: (root, win) => lspTrust.confirmAndGrantTrust(root, win),
   setTrusted,
   listTrusted
 };
