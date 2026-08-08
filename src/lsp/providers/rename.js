@@ -46,6 +46,13 @@ async function prepareRename(client, editor, point) {
   }
   if (result == null || result === false) return null;
 
+  // prepareRename ranges are always in the *current* editor, so the sync
+  // (open-buffer) converter is correct and needs no disk read (G7).
+  const encoding =
+    (client.getPositionEncoding && client.getPositionEncoding(serverId)) ||
+    'utf-16';
+  const toPoint = createSyncConverter(encoding);
+
   // Range | { range, placeholder } | { defaultBehavior }
   if (result.defaultBehavior) {
     return fallbackPlaceholder(editor, pos);
@@ -54,8 +61,8 @@ async function prepareRename(client, editor, point) {
     return {
       placeholder: result.placeholder,
       range: {
-        start: lspToPoint(result.range.start),
-        end: lspToPoint(result.range.end)
+        start: toPoint(result.range.start, uri),
+        end: toPoint(result.range.end, uri)
       }
     };
   }
@@ -64,14 +71,14 @@ async function prepareRename(client, editor, point) {
     const text =
       editor.getTextInBufferRange &&
       editor.getTextInBufferRange({
-        start: lspToPoint(result.start),
-        end: lspToPoint(result.end)
+        start: toPoint(result.start, uri),
+        end: toPoint(result.end, uri)
       });
     return {
       placeholder: text || '',
       range: {
-        start: lspToPoint(result.start),
-        end: lspToPoint(result.end)
+        start: toPoint(result.start, uri),
+        end: toPoint(result.end, uri)
       }
     };
   }

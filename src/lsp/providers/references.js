@@ -6,7 +6,7 @@
 
 const { pointToLsp, pointToLspWithEncoding } = require('../position');
 const { pathToUri } = require('../path-uri');
-const { normalizeDefinitionResult } = require('./definitions');
+const { normalizeDefinitionResultForEncoding } = require('./definitions');
 
 /**
  * @param {{ request: Function, getServerIdForEditor: Function, getPositionEncoding?: Function }} client
@@ -50,7 +50,7 @@ async function referencesAt(client, editor, point, opts = {}) {
   );
 
   if (error) return [];
-  return normalizeDefinitionResult(result);
+  return normalizeDefinitionResultForEncoding(result, encoding);
 }
 
 module.exports = { referencesAt };

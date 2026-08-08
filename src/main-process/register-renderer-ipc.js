@@ -1005,8 +1005,23 @@ module.exports = function registerRendererIpc(atomApplication) {
     return lspManager.isTrusted(projectRoot);
   });
 
-  ipcMain.handle('lsp:set-trust', async (_event, { projectRoot, trusted } = {}) => {
-    return lspManager.setTrusted(projectRoot, Boolean(trusted));
+  // Granting trust requires an explicit user confirmation in main — the
+  // renderer may *ask*, it may not *decide* (docs/lsp-design.md §6.2).
+  // Revoking needs no prompt: removing capability is always safe.
+  ipcMain.handle('lsp:set-trust', async (event, { projectRoot, trusted } = {}) => {
+    if (!trusted) return lspManager.setTrusted(projectRoot, false);
+    const win = BrowserWindow.fromWebContents(event.sender);
+    return lspManager.confirmAndGrantTrust(projectRoot, win);
+  });
+
+  // Packages declare their servers at activation so main knows which
+  // commands are legitimate; see lsp-command-policy.
+  ipcMain.handle('lsp:register-server', async (_event, { id, command } = {}) => {
+    return lspManager.recordRegistration({ id, command });
+  });
+
+  ipcMain.handle('lsp:unregister-server', async (_event, { id } = {}) => {
+    return lspManager.forgetRegistration(id);
   });
 
   ipcMain.handle('lsp:list-trusted', async () => {

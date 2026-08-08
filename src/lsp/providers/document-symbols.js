@@ -5,6 +5,7 @@
  */
 
 const { lspToPoint } = require('../position');
+const { createSyncConverter } = require('../inbound-position');
 const { pathToUri } = require('../path-uri');
 
 const SYMBOL_KIND = {
@@ -40,7 +41,7 @@ const SYMBOL_KIND = {
  * Flatten DocumentSymbol[] | SymbolInformation[] to a list for UI.
  * @returns {Array<{ name, kind, kindName, detail?, range: {start,end}, containerName? }>}
  */
-function normalizeDocumentSymbols(result) {
+function normalizeDocumentSymbols(result, convert = lspToPoint, uri) {
   if (!Array.isArray(result)) return [];
   const out = [];
 
@@ -55,8 +56,8 @@ function normalizeDocumentSymbols(result) {
         kindName: SYMBOL_KIND[sym.kind] || 'Symbol',
         detail: sym.detail,
         range: {
-          start: lspToPoint(range.start),
-          end: lspToPoint(range.end)
+          start: convert(range.start, uri),
+          end: convert(range.end, uri)
         },
         containerName: container || null
       });
@@ -74,8 +75,8 @@ function normalizeDocumentSymbols(result) {
         kind: sym.kind,
         kindName: SYMBOL_KIND[sym.kind] || 'Symbol',
         range: {
-          start: lspToPoint(sym.location.range.start),
-          end: lspToPoint(sym.location.range.end)
+          start: convert(sym.location.range.start, sym.location.uri || uri),
+          end: convert(sym.location.range.end, sym.location.uri || uri)
         },
         containerName: sym.containerName || container || null
       });
@@ -102,7 +103,12 @@ async function documentSymbols(client, editor) {
   );
 
   if (error || !result) return [];
-  return normalizeDocumentSymbols(result);
+  // Symbols are always for the open editor, so the sync (open-buffer)
+  // converter is sufficient — no disk read needed.
+  const encoding =
+    (client.getPositionEncoding && client.getPositionEncoding(serverId)) ||
+    'utf-16';
+  return normalizeDocumentSymbols(result, createSyncConverter(encoding), uri);
 }
 
 module.exports = {
