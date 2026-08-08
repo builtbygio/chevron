@@ -650,6 +650,17 @@ const configSchema = {
           'Add multiple cursors when pressing the Ctrl key (Command key on MacOS) and clicking the editor.'
       }
     }
+  },
+  lsp: {
+    type: 'object',
+    properties: {
+      servers: {
+        type: 'object',
+        default: {},
+        description:
+          'User language server map (Phase 3). Keys are scope names (e.g. `source.rust`) or server ids; values are `{ command, args?, scopes?, initializationOptions? }`. Package-registered servers take precedence over user config and built-ins. Binaries must already be on PATH — Chevron does not download language servers.'
+      }
+    }
   }
 };
 

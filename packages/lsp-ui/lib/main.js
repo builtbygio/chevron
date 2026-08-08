@@ -1,11 +1,12 @@
 'use strict';
 
 /**
- * LSP reference UI (Phase 1–2):
+ * LSP reference UI (Phases 1–3):
  * - status-bar diagnostic count + trust nudge
  * - hover tooltip (command + idle cursor)
- * - go-to-definition results
- * - autocomplete.provider v4 via core adapter
+ * - go-to-definition / find-references results
+ * - signature help overlay
+ * - autocomplete.provider v4 + chevron.lsp registry service
  */
 
 const { CompositeDisposable } = require('event-kit');
@@ -191,6 +192,45 @@ module.exports = {
       })
     );
 
+    if (typeof client.onDidRequestReferences === 'function') {
+      disposables.add(
+        client.onDidRequestReferences(async ({ locations }) => {
+          const e = env();
+          if (!locations || locations.length === 0) {
+            if (e && e.notifications) {
+              e.notifications.addInfo('No references found');
+            }
+            return;
+          }
+          // Reuse definition list UI for references
+          await definitionView.openLocations(locations, e);
+        })
+      );
+    }
+
+    if (typeof client.onDidRequestSignatureHelp === 'function') {
+      disposables.add(
+        client.onDidRequestSignatureHelp(({ editor, help }) => {
+          if (!help) {
+            const e = env();
+            if (e && e.notifications) {
+              e.notifications.addInfo('No signature help');
+            }
+            return;
+          }
+          const text =
+            typeof client.formatSignatureHelp === 'function'
+              ? client.formatSignatureHelp(help)
+              : (help.signatures && help.signatures[0] && help.signatures[0].label) ||
+                '';
+          hoverView.show(editor, editor.getCursorBufferPosition(), {
+            kind: 'plaintext',
+            value: text
+          });
+        })
+      );
+    }
+
     const e = env();
     if (e && e.workspace) {
       disposables.add(
@@ -266,5 +306,14 @@ module.exports = {
     const client = ensureLsp();
     if (typeof client.activate === 'function') client.activate();
     return client.getAutocompleteProvider();
+  },
+
+  /**
+   * chevron.lsp 1.0.0 — packages register language servers without core edits.
+   */
+  provideLsp() {
+    const client = ensureLsp();
+    if (typeof client.activate === 'function') client.activate();
+    return client.getLspService();
   }
 };

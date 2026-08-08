@@ -62,6 +62,7 @@ if (global.isGeneratingSnapshot) {
   require('whitespace');
   require('wrap-guide');
   require('lsp-ui');
+  require('lsp-servers');
 }
 
 const clipboard = new Clipboard();

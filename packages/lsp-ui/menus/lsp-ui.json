@@ -11,8 +11,16 @@
               "command": "chevron-lsp:go-to-definition"
             },
             {
+              "label": "Find References",
+              "command": "chevron-lsp:find-references"
+            },
+            {
               "label": "Show Hover",
               "command": "chevron-lsp:show-hover"
+            },
+            {
+              "label": "Signature Help",
+              "command": "chevron-lsp:signature-help"
             },
             {
               "label": "Trust Project",
@@ -32,6 +40,10 @@
       {
         "label": "Go to Definition",
         "command": "chevron-lsp:go-to-definition"
+      },
+      {
+        "label": "Find References",
+        "command": "chevron-lsp:find-references"
       }
     ]
   }

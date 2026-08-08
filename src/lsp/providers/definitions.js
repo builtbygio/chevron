@@ -4,8 +4,19 @@
  * textDocument/definition → normalized location list.
  */
 
-const { pointToLsp, lspToPoint } = require('../position');
+const { pointToLsp, lspToPoint, pointToLspWithEncoding } = require('../position');
 const { pathToUri, uriToPath } = require('../path-uri');
+
+function positionFor(client, editor, serverId, pos) {
+  const encoding =
+    (client.getPositionEncoding && client.getPositionEncoding(serverId)) ||
+    'utf-16';
+  if (encoding === 'utf-8' && editor.lineTextForBufferRow) {
+    const line = editor.lineTextForBufferRow(pos.row) || '';
+    return pointToLspWithEncoding(line, pos, 'utf-8');
+  }
+  return pointToLsp(pos);
+}
 
 /**
  * Normalize Location | Location[] | LocationLink[] | null
@@ -54,7 +65,7 @@ function normalizeDefinitionResult(result) {
 }
 
 /**
- * @param {{ request: Function, getServerIdForEditor: Function }} client
+ * @param {{ request: Function, getServerIdForEditor: Function, getPositionEncoding?: Function }} client
  * @param {object} editor
  * @param {{row:number, column:number}|null} [point]
  */
@@ -75,7 +86,7 @@ async function definitionAt(client, editor, point) {
     'textDocument/definition',
     {
       textDocument: { uri },
-      position: pointToLsp(pos)
+      position: positionFor(client, editor, serverId, pos)
     },
     15000
   );

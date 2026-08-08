@@ -32,9 +32,15 @@ process.stdin.on('data',chunk=>{
   for (const body of dec.push(chunk)) {
     const msg=parseBody(body);
     if (msg.method==='initialize') {
-      process.stdout.write(encodeMessage({jsonrpc:'2.0',id:msg.id,result:{capabilities:{
-        hoverProvider:true,definitionProvider:true,completionProvider:{resolveProvider:true},textDocumentSync:1
-      }}}));
+      process.stdout.write(encodeMessage({jsonrpc:'2.0',id:msg.id,result:{
+        capabilities:{
+          hoverProvider:true,definitionProvider:true,referencesProvider:true,
+          signatureHelpProvider:{triggerCharacters:['(',',']},
+          completionProvider:{resolveProvider:true},textDocumentSync:1
+        },
+        // Simulate a utf-8 server (rust-analyzer-like) for encoding negotiation
+        positionEncoding:'utf-8'
+      }}));
     } else if (msg.method==='shutdown') {
       process.stdout.write(encodeMessage({jsonrpc:'2.0',id:msg.id,result:null}));
     } else if (msg.method==='textDocument/hover') {
@@ -109,7 +115,8 @@ describe('LSP host integration (mock server)', () => {
       cwd: tmp
     });
 
-    await waitFor(host, m => m && m.type === 'server-initialized');
+    const initMsg = await waitFor(host, m => m && m.type === 'server-initialized');
+    assert.strictEqual(initMsg.positionEncoding, 'utf-8');
 
     const requestId = 42;
     const responseP = waitFor(

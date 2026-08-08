@@ -606,11 +606,11 @@ Do **not** start Phase 1 until Phase 0 exit criteria pass.
 ## 13. Success criteria (definition of done for "Chevron has LSP")
 
 - [ ] Zero language-server processes spawned from the renderer (Phase S invariant intact).
-- [ ] TypeScript: diagnostics, hover, definition, completion working on all five CI platforms.
-- [ ] Untrusted project: **no** server process starts; editor remains fully usable.
-- [ ] Server crash recovers automatically; restart storm is capped and surfaced.
-- [ ] Position mapping correct for emoji/combining-mark/CRLF fixtures, utf-16 **and** utf-8 servers.
-- [ ] An owned-catalog package registers a server via `chevron.lsp` with no core changes.
+- [x] TypeScript: diagnostics, hover, definition, completion working on all five CI platforms. *(Phase 1–2; CI unit + platform smoke)*
+- [x] Untrusted project: **no** server process starts; editor remains fully usable. *(Phase 1 trust gate)*
+- [ ] Server crash recovers automatically; restart storm is capped and surfaced. *(backoff partial; full storm cap later)*
+- [x] Position mapping correct for emoji/combining-mark/CRLF fixtures, utf-16 **and** utf-8 servers. *(Phase 3 encoding path + unit tests)*
+- [x] An owned-catalog package registers a server via `chevron.lsp` with no core changes. *(packages/lsp-servers)*
 - [ ] Diagnostics UI replaceable via `lsp.diagnostics` (proven by swapping in a second UI, even a stub).
 - [ ] Editor cold-start time unchanged (lazy start verified by measurement).
 - [ ] Docs state plainly that servers are unsandboxed and trust is per-project.
@@ -627,6 +627,7 @@ Do **not** start Phase 1 until Phase 0 exit criteria pass.
 | 2026-08-07 | **Phase 0 landed:** `src/lsp/framing.js` + `script/ci/lsp-framing.test.js`; optional spike `script/lsp-phase0-spike.js` (typescript-language-server hover). Ready for Phase 1. |
 | 2026-08-07 | **Phase 1 landed (MVP):** utilityProcess `lsp-host` + manager, workspace trust, document sync, TypeScript built-in when trusted, `packages/lsp-ui` status + trust nudge, CI tests. |
 | 2026-08-08 | **Phase 2 landed:** hover tooltip + `chevron-lsp:show-hover`; go-to-definition (`F12`) + multi-result list in `lsp-ui`; `autocomplete.provider` v4 adapter (priority-trick ranking, generation cancel, resolve on select); completion latency stats on `chevron-lsp:status`. |
+| 2026-08-08 | **Phase 3 landed:** `chevron.lsp` registry (package > user config > builtin); multi-server sessions; rust-analyzer + pyright builtins; owned package `lsp-servers` registers via service; `positionEncoding` negotiation (utf-8 path); signature help + find references. |
 
 ---
 

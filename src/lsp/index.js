@@ -1,20 +1,30 @@
 'use strict';
 
 /**
- * Renderer-side LSP client (Phase 1 + Phase 2).
- * Diagnostics, document sync, hover, definition, completion for TypeScript
- * when the project is trusted.
+ * Renderer-side LSP client (Phases 1–3).
+ * Multi-server registry, diagnostics, hover, definition, completion,
+ * signature help, references — when the project is trusted.
  */
 
 const { CompositeDisposable, Emitter } = require('event-kit');
 const { ipcRenderer } = require('electron');
 const { DocumentSync } = require('./document-sync');
-const { isTypescriptScope } = require('./language-id');
 const { pathToUri } = require('./path-uri');
-const { resolveBuiltinServer } = require('./builtin-servers');
+const {
+  resolveRegistration,
+  resolveCommand,
+  registerServer,
+  listRegistrations,
+  createLspService
+} = require('./registry');
 const { hoverAt } = require('./providers/hover');
 const { definitionAt } = require('./providers/definitions');
 const { createAutocompleteProvider } = require('./providers/autocomplete');
+const {
+  signatureHelpAt,
+  formatSignatureHelp
+} = require('./providers/signature-help');
+const { referencesAt } = require('./providers/references');
 
 let activated = false;
 let disposables = null;
@@ -22,15 +32,21 @@ let emitter = null;
 let documentSync = null;
 /** uri -> Diagnostic[] */
 const diagnosticsByUri = new Map();
-/** projectRoot -> serverId started */
-const startedRoots = new Map();
-/** completion latency samples (ms) for Phase 2 measurement */
+/**
+ * Running sessions: key `${regId}::${projectRoot}` ->
+ * { serverId, projectRoot, regId, positionEncoding, capabilities }
+ */
+const startedSessions = new Map();
+/** serverId -> positionEncoding */
+const encodingByServerId = new Map();
+/** completion latency samples (ms) */
 const completionLatencySamples = [];
 const MAX_LATENCY_SAMPLES = 200;
 
 const clientApi = {
   request,
   getServerIdForEditor,
+  getPositionEncoding,
   recordCompletionLatency
 };
 
@@ -57,9 +73,24 @@ function projectRootForEditor(editor) {
   return path.dirname(filePath);
 }
 
+function sessionKey(regId, projectRoot) {
+  return `${regId}::${projectRoot}`;
+}
+
 function getServerIdForEditor(editor) {
   const root = projectRootForEditor(editor);
-  return root ? startedRoots.get(root) || null : null;
+  if (!root) return null;
+  const grammar = editor.getGrammar && editor.getGrammar();
+  const scope = grammar && grammar.scopeName;
+  if (!scope) return null;
+  const reg = resolveRegistration(scope, { resourcePath: getResourcePath() });
+  if (!reg) return null;
+  const session = startedSessions.get(sessionKey(reg.id, root));
+  return session ? session.serverId : null;
+}
+
+function getPositionEncoding(serverId) {
+  return encodingByServerId.get(serverId) || 'utf-16';
 }
 
 async function request(serverId, method, params, timeoutMs) {
@@ -96,10 +127,18 @@ function getCompletionLatencyStats() {
 async function ensureServerForEditor(editor) {
   const grammar = editor.getGrammar && editor.getGrammar();
   const scope = grammar && grammar.scopeName;
-  if (!isTypescriptScope(scope)) return null;
+  if (!scope) return null;
 
   const projectRoot = projectRootForEditor(editor);
   if (!projectRoot) return null;
+
+  const reg = resolveRegistration(scope, { resourcePath: getResourcePath() });
+  if (!reg) return null;
+
+  const key = sessionKey(reg.id, projectRoot);
+  if (startedSessions.has(key)) {
+    return startedSessions.get(key).serverId;
+  }
 
   const trusted = await ipcRenderer.invoke('lsp:is-trusted', { projectRoot });
   if (!trusted) {
@@ -107,35 +146,41 @@ async function ensureServerForEditor(editor) {
     return null;
   }
 
-  if (startedRoots.has(projectRoot)) {
-    return startedRoots.get(projectRoot);
-  }
-
-  const builtin = resolveBuiltinServer(scope, {
-    resourcePath: getResourcePath()
-  });
-  if (!builtin) {
+  const resolved = resolveCommand(reg);
+  if (!resolved) {
     emitter.emit('did-fail-start', {
       projectRoot,
-      message:
-        'typescript-language-server not found on PATH. Install it or set PATH.'
+      message: `Language server "${reg.id}" command not found on PATH: ${reg.command}`
     });
     return null;
   }
 
+  const serverId = `${reg.id}:${projectRoot}`;
   try {
     await ipcRenderer.invoke('lsp:start-server', {
-      serverId: `${builtin.serverId}:${projectRoot}`,
+      serverId,
       projectRoot,
-      command: builtin.command,
-      args: builtin.args,
+      command: resolved.command,
+      args: resolved.args || [],
       rootUri: pathToUri(projectRoot),
       cwd: projectRoot,
-      initializationOptions: builtin.initializationOptions
+      initializationOptions: resolved.initializationOptions,
+      env: resolved.env
     });
-    const serverId = `${builtin.serverId}:${projectRoot}`;
-    startedRoots.set(projectRoot, serverId);
-    emitter.emit('did-start-server', { serverId, projectRoot });
+    startedSessions.set(key, {
+      serverId,
+      projectRoot,
+      regId: reg.id,
+      positionEncoding: 'utf-16',
+      source: reg.source
+    });
+    encodingByServerId.set(serverId, 'utf-16');
+    emitter.emit('did-start-server', {
+      serverId,
+      projectRoot,
+      regId: reg.id,
+      source: reg.source
+    });
     return serverId;
   } catch (err) {
     emitter.emit('did-fail-start', {
@@ -150,6 +195,20 @@ async function ensureServerForEditor(editor) {
 function handleLspEvent(_event, msg) {
   if (!msg || typeof msg !== 'object') return;
 
+  if (msg.type === 'server-initialized') {
+    if (msg.serverId && msg.positionEncoding) {
+      encodingByServerId.set(msg.serverId, msg.positionEncoding);
+      for (const session of startedSessions.values()) {
+        if (session.serverId === msg.serverId) {
+          session.positionEncoding = msg.positionEncoding;
+          session.capabilities = msg.capabilities;
+        }
+      }
+    }
+    if (emitter) emitter.emit('did-server-initialized', msg);
+    return;
+  }
+
   if (msg.type === 'notification' && msg.method === 'textDocument/publishDiagnostics') {
     const uri = msg.params && msg.params.uri;
     const diagnostics = (msg.params && msg.params.diagnostics) || [];
@@ -161,8 +220,11 @@ function handleLspEvent(_event, msg) {
   }
 
   if (msg.type === 'server-exit') {
-    for (const [root, id] of [...startedRoots]) {
-      if (id === msg.serverId) startedRoots.delete(root);
+    for (const [key, session] of [...startedSessions]) {
+      if (session.serverId === msg.serverId) {
+        startedSessions.delete(key);
+        encodingByServerId.delete(msg.serverId);
+      }
     }
     emitter.emit('did-server-exit', msg);
   }
@@ -176,8 +238,20 @@ async function definitionAtCursor(editor, point) {
   return definitionAt(clientApi, editor, point);
 }
 
+async function signatureHelpAtCursor(editor, point) {
+  return signatureHelpAt(clientApi, editor, point);
+}
+
+async function referencesAtCursor(editor, point, opts) {
+  return referencesAt(clientApi, editor, point, opts);
+}
+
 function getAutocompleteProvider() {
   return createAutocompleteProvider(clientApi);
+}
+
+function getLspService() {
+  return createLspService();
 }
 
 function activate() {
@@ -241,11 +315,14 @@ function activate() {
             trusted: false
           });
           env.notifications &&
-            env.notifications.addInfo('Project untrusted; language servers stopped for new files');
+            env.notifications.addInfo(
+              'Project untrusted; language servers stopped for new files'
+            );
         },
         'chevron-lsp:status': async () => {
           const servers = await ipcRenderer.invoke('lsp:list-servers');
           const trusted = await ipcRenderer.invoke('lsp:list-trusted');
+          const regs = listRegistrations({ resourcePath: getResourcePath() });
           const lat = getCompletionLatencyStats();
           const latLine =
             lat.n > 0
@@ -254,10 +331,15 @@ function activate() {
           const lines = [
             `Trusted roots: ${trusted.length}`,
             ...trusted.map(r => `  • ${r}`),
-            `Servers: ${servers.length}`,
-            ...servers.map(
-              s => `  • ${s.serverId} state=${s.state} pid=${s.pid || '?'}`
+            `Registrations: ${regs.length}`,
+            ...regs.map(
+              r => `  • ${r.id} [${r.source}] scopes=${r.scopes.join(',')}`
             ),
+            `Running servers: ${servers.length}`,
+            ...servers.map(s => {
+              const enc = encodingByServerId.get(s.serverId) || '?';
+              return `  • ${s.serverId} state=${s.state} pid=${s.pid || '?'} encoding=${enc}`;
+            }),
             latLine
           ];
           env.notifications &&
@@ -278,6 +360,22 @@ function activate() {
           if (documentSync) documentSync.observeEditor(editor);
           const hover = await hoverAtCursor(editor);
           emitter.emit('did-request-hover', { editor, hover });
+        },
+        'chevron-lsp:signature-help': async () => {
+          const editor = env.workspace.getActiveTextEditor();
+          if (!editor) return;
+          await ensureServerForEditor(editor);
+          if (documentSync) documentSync.observeEditor(editor);
+          const help = await signatureHelpAtCursor(editor);
+          emitter.emit('did-request-signature-help', { editor, help });
+        },
+        'chevron-lsp:find-references': async () => {
+          const editor = env.workspace.getActiveTextEditor();
+          if (!editor) return;
+          await ensureServerForEditor(editor);
+          if (documentSync) documentSync.observeEditor(editor);
+          const locations = await referencesAtCursor(editor);
+          emitter.emit('did-request-references', { editor, locations });
         }
       })
     );
@@ -294,7 +392,8 @@ function deactivate() {
   if (disposables) disposables.dispose();
   disposables = null;
   diagnosticsByUri.clear();
-  startedRoots.clear();
+  startedSessions.clear();
+  encodingByServerId.clear();
   completionLatencySamples.length = 0;
 }
 
@@ -322,6 +421,14 @@ function onDidRequestDefinition(cb) {
   return emitter.on('did-request-definition', cb);
 }
 
+function onDidRequestSignatureHelp(cb) {
+  return emitter.on('did-request-signature-help', cb);
+}
+
+function onDidRequestReferences(cb) {
+  return emitter.on('did-request-references', cb);
+}
+
 module.exports = {
   activate,
   deactivate,
@@ -331,17 +438,32 @@ module.exports = {
   onDidFailStart,
   onDidRequestHover,
   onDidRequestDefinition,
+  onDidRequestSignatureHelp,
+  onDidRequestReferences,
   hoverAtCursor,
   definitionAtCursor,
+  signatureHelpAtCursor,
+  referencesAtCursor,
+  formatSignatureHelp,
   getAutocompleteProvider,
+  getLspService,
+  registerServer,
+  listRegistrations,
   getCompletionLatencyStats,
   request,
   getServerIdForEditor,
+  getPositionEncoding,
   // test hooks
   _internals: {
     projectRootForEditor,
     diagnosticsByUri,
-    startedRoots,
+    startedSessions,
+    /** @deprecated use startedSessions */
+    get startedRoots() {
+      // back-compat for lsp-ui diagnostic counting — expose empty Map shape
+      return startedSessions;
+    },
+    encodingByServerId,
     completionLatencySamples,
     clientApi
   }
