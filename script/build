@@ -83,11 +83,13 @@ if (!argv.existingBinaries) {
   cleanOutputDirectory()
   copyAssets()
   transpilePackagesWithCustomTranspilerPaths()
+  // Coffee/Babel build-time transpile are intentional no-ops (#62); still invoked
+  // so custom tooling that hooks these modules keeps working.
   transpileBabelPaths()
   transpileCoffeeScriptPaths()
   // Package libs may ship .ts (owned forks); emit .js before metadata resolve.
   transpileTypeScriptPaths()
-  // Re-apply after coffee→js: settings-view must not keep dead atom.io registry.
+  // Re-apply Pulsar registry URLs on intermediate tree (safety net).
   require('./lib/patch-settings-view-registry')(CONFIG.intermediateAppPath)
   transpileCsonPaths()
   transpilePegJsPaths()

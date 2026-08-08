@@ -8,8 +8,7 @@
 const CONFIG = require('../config');
 
 module.exports = function() {
-  console.log(
-    `Skipping CoffeeScript transpile in ${CONFIG.intermediateAppPath} ` +
-      '(coffee-script runtime removed; see docs/babel-coffee-isolation-plan.md)'
-  );
+  // Stream C: silent no-op (coffee-script runtime removed, #62).
+  // Kept as a call site so script/build stays stable; no log spam.
+  void CONFIG;
 };
