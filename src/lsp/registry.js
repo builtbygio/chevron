@@ -6,8 +6,23 @@
  * See docs/lsp-design.md §5.5.
  */
 
-const { Disposable } = require('event-kit');
+// No event-kit here — unit CI runs without root node_modules.
 const { resolveBuiltinRegistrations, which } = require('./builtin-servers');
+
+function disposable(fn) {
+  let disposed = false;
+  return {
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      try {
+        fn();
+      } catch (_) {
+        /* ignore */
+      }
+    }
+  };
+}
 
 /** @typedef {{
  *   id: string,
@@ -65,7 +80,7 @@ function normalizePackageSpec(spec) {
 function registerServer(spec) {
   const reg = normalizePackageSpec(spec);
   packageRegs.set(reg.id, reg);
-  return new Disposable(() => {
+  return disposable(() => {
     const cur = packageRegs.get(reg.id);
     if (cur === reg || (cur && cur.id === reg.id)) {
       packageRegs.delete(reg.id);
