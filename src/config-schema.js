@@ -1,5 +1,5 @@
 // This is loaded by atom-environment.coffee. See
-// https://atom.io/docs/api/latest/Config for more information about config
+// docs/atom-architecture.md for more information about config
 // schemas.
 const configSchema = {
   core: {
