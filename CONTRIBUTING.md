@@ -13,6 +13,16 @@ Good first contributions while the migration is ongoing:
 - Build/tooling issues on your platform
 - Small, isolated bug fixes that don't touch IPC or the main/renderer boundary
 
+## Finding a good first issue
+
+If you're new to the project, start by looking at open issues labeled `good first issue`.
+
+- Look for the `good first issue` label in the project's open issues.
+- Before starting a large piece of work, open an issue or comment on the relevant issue to discuss your approach.
+- For deeper information about the project's design, see [`docs/README.md`](docs/README.md).
+
+Once you've chosen an issue, follow the [workflow](#workflow) above to create a branch and open a PR against `master`.
+
 ## Workflow
 
 Chevron uses a **branch → PR → merge** workflow, no direct commits to `master`.
