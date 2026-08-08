@@ -1,6 +1,8 @@
 {
   "atom-workspace atom-text-editor:not([mini])": {
     "f12": "chevron-lsp:go-to-definition",
-    "alt-f1": "chevron-lsp:show-hover"
+    "shift-f12": "chevron-lsp:find-references",
+    "alt-f1": "chevron-lsp:show-hover",
+    "ctrl-shift-space": "chevron-lsp:signature-help"
   }
 }

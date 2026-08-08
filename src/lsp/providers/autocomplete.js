@@ -12,9 +12,8 @@
  * - cancel via generation counter (stale responses discarded)
  */
 
-const { pointToLsp } = require('../position');
+const { pointToLsp, pointToLspWithEncoding } = require('../position');
 const { pathToUri } = require('../path-uri');
-const { isTypescriptScope } = require('../language-id');
 const { normalizeMarkup } = require('../markup');
 
 // LSP CompletionItemKind → autocomplete-plus type string
@@ -132,8 +131,9 @@ function createAutocompleteProvider(client) {
   let generation = 0;
 
   return {
+    // Broad selector — getServerIdForEditor gates actual work per language
     selector:
-      '.source.ts, .source.tsx, .source.js, .source.js.jsx, .source.jsx, .source.flow',
+      '.source.ts, .source.tsx, .source.js, .source.js.jsx, .source.jsx, .source.flow, .source.rust, .source.python',
     disableForSelector: '.comment, .string',
     inclusionPriority: 1,
     excludeLowerPriority: true,
@@ -144,10 +144,6 @@ function createAutocompleteProvider(client) {
     getSuggestions(request) {
       const { editor, bufferPosition, prefix, activatedManually } = request;
       if (!editor) return Promise.resolve([]);
-
-      const grammar = editor.getGrammar && editor.getGrammar();
-      const scope = grammar && grammar.scopeName;
-      if (!isTypescriptScope(scope)) return Promise.resolve([]);
 
       const serverId = client.getServerIdForEditor(editor);
       if (!serverId) return Promise.resolve([]);
@@ -162,6 +158,17 @@ function createAutocompleteProvider(client) {
       const uri = pathToUri(filePath);
       if (!uri) return Promise.resolve([]);
 
+      const encoding =
+        (client.getPositionEncoding && client.getPositionEncoding(serverId)) ||
+        'utf-16';
+      let position;
+      if (encoding === 'utf-8' && editor.lineTextForBufferRow) {
+        const line = editor.lineTextForBufferRow(bufferPosition.row) || '';
+        position = pointToLspWithEncoding(line, bufferPosition, 'utf-8');
+      } else {
+        position = pointToLsp(bufferPosition);
+      }
+
       const myGen = ++generation;
       const started = Date.now();
 
@@ -171,7 +178,7 @@ function createAutocompleteProvider(client) {
           'textDocument/completion',
           {
             textDocument: { uri },
-            position: pointToLsp(bufferPosition),
+            position,
             context: {
               triggerKind: activatedManually ? 1 : 1 // Invoked
             }

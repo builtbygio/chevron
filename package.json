@@ -166,7 +166,8 @@
     "chevron-light-ui": "file:packages/chevron-light-ui",
     "chevron-dark-syntax": "file:packages/chevron-dark-syntax",
     "chevron-light-syntax": "file:packages/chevron-light-syntax",
-    "lsp-ui": "file:packages/lsp-ui"
+    "lsp-ui": "file:packages/lsp-ui",
+    "lsp-servers": "file:packages/lsp-servers"
   },
   "packageDependencies": {
     "base16-tomorrow-dark-theme": "file:./packages/base16-tomorrow-dark-theme",
@@ -260,7 +261,8 @@
     "chevron-light-ui": "file:./packages/chevron-light-ui",
     "chevron-dark-syntax": "file:./packages/chevron-dark-syntax",
     "chevron-light-syntax": "file:./packages/chevron-light-syntax",
-    "lsp-ui": "file:./packages/lsp-ui"
+    "lsp-ui": "file:./packages/lsp-ui",
+    "lsp-servers": "file:./packages/lsp-servers"
   },
   "private": true,
   "scripts": {
@@ -279,5 +281,17 @@
       "atom",
       "snapshotResult"
     ]
+  },
+  "configSchema": {
+    "lsp": {
+      "type": "object",
+      "properties": {
+        "servers": {
+          "type": "object",
+          "default": {},
+          "description": "User language server map. Keys are scope names (e.g. source.rust) or server ids; values are { command, args?, scopes?, initializationOptions? }. Package-registered servers take precedence. Binaries must be on PATH."
+        }
+      }
+    }
   }
 }

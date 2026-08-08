@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **LSP plan + Phase 0–2:** [docs/lsp-design.md](docs/lsp-design.md) is the authoritative plan. Phase 0 framing codec; Phase 1 MVP — utilityProcess LSP host, workspace trust, TypeScript diagnostics; Phase 2 — hover, go-to-definition (`F12`), completion via `autocomplete.provider` v4 (`lsp-ui`). See `src/lsp/` and `packages/lsp-ui`.
+- **LSP plan + Phase 0–3:** [docs/lsp-design.md](docs/lsp-design.md) is the authoritative plan. Phase 0 framing; Phase 1 host + trust + diagnostics; Phase 2 hover/definition/completion; Phase 3 multi-server registry (`chevron.lsp`), rust-analyzer/pyright, signature help, references, utf-8 `positionEncoding`. See `src/lsp/`, `packages/lsp-ui`, `packages/lsp-servers`.
 
 ### Changed
 

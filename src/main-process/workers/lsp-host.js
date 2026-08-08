@@ -194,8 +194,18 @@ class ServerSession {
           publishDiagnostics: { relatedInformation: true },
           hover: { contentFormat: ['markdown', 'plaintext'] },
           definition: { linkSupport: true },
+          references: { dynamicRegistration: false },
+          signatureHelp: {
+            signatureInformation: {
+              documentationFormat: ['markdown', 'plaintext'],
+              parameterInformation: { labelOffsetSupport: true }
+            }
+          },
           completion: {
-            completionItem: { snippetSupport: true, documentationFormat: ['markdown', 'plaintext'] }
+            completionItem: {
+              snippetSupport: true,
+              documentationFormat: ['markdown', 'plaintext']
+            }
           }
         },
         workspace: {
@@ -214,6 +224,9 @@ class ServerSession {
     this.initialized = true;
     this.capabilities =
       (result.result && result.result.capabilities) || {};
+    // LSP 3.17 positionEncoding negotiation (prefer utf-16 when server omits)
+    this.positionEncoding =
+      (result.result && result.result.positionEncoding) || 'utf-16';
     return result.result;
   }
 
@@ -285,6 +298,7 @@ async function handleMessage(msg) {
         type: 'server-initialized',
         serverId,
         capabilities: initResult && initResult.capabilities,
+        positionEncoding: session.positionEncoding || 'utf-16',
         pid: session.child && session.child.pid
       });
     } catch (err) {
