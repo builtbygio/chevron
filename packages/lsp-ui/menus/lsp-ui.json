@@ -1,0 +1,38 @@
+{
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": [
+        {
+          "label": "Language Server",
+          "submenu": [
+            {
+              "label": "Go to Definition",
+              "command": "chevron-lsp:go-to-definition"
+            },
+            {
+              "label": "Show Hover",
+              "command": "chevron-lsp:show-hover"
+            },
+            {
+              "label": "Trust Project",
+              "command": "chevron-lsp:trust-project"
+            },
+            {
+              "label": "Status",
+              "command": "chevron-lsp:status"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "context-menu": {
+    "atom-text-editor:not([mini])": [
+      {
+        "label": "Go to Definition",
+        "command": "chevron-lsp:go-to-definition"
+      }
+    ]
+  }
+}
