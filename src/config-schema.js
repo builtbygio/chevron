@@ -659,6 +659,13 @@ const configSchema = {
         default: {},
         description:
           'User language server map (Phase 3). Keys are scope names (e.g. `source.rust`) or server ids; values are `{ command, args?, scopes?, initializationOptions? }`. Package-registered servers take precedence over user config and built-ins. Binaries must already be on PATH — Chevron does not download language servers.'
+      },
+      formatOnSave: {
+        type: 'boolean',
+        default: false,
+        title: 'Format on Save',
+        description:
+          'When a language server supports document formatting, run it before each save for trusted projects with an active server.'
       }
     }
   }

@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **LSP plan + Phase 0–3 (+5 distribution):** [docs/lsp-design.md](docs/lsp-design.md). Core phases 0–3 on master; Phase 4 may land separately. Phase 5 — optional cpm language-server packages (`chevron-lsp-rust` / `-typescript` / `-python`) with prebuild/npm binary install; see [docs/lsp-server-distribution.md](docs/lsp-server-distribution.md).
+- **LSP plan + Phases 0–5:** [docs/lsp-design.md](docs/lsp-design.md). Phases 0–3 core; Phase 4 — rename, format (+ format-on-save), code actions, document symbols, WorkspaceEdit; Phase 5 — optional cpm language-server packages (`chevron-lsp-rust` / `-typescript` / `-python`). See `src/lsp/`, `packages/lsp-ui`, [docs/lsp-server-distribution.md](docs/lsp-server-distribution.md).
 
 ### Changed
 

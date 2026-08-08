@@ -1,17 +1,17 @@
 'use strict';
 
 /**
- * LSP reference UI (Phases 1–3):
- * - status-bar diagnostic count + trust nudge
- * - hover tooltip (command + idle cursor)
- * - go-to-definition / find-references results
- * - signature help overlay
+ * LSP reference UI (Phases 1–4):
+ * - status-bar, hover, definition, references, signature help
+ * - rename modal, code actions, document symbols
  * - autocomplete.provider v4 + chevron.lsp registry service
  */
 
 const { CompositeDisposable } = require('event-kit');
 const { HoverView } = require('./hover-view');
 const { DefinitionView } = require('./definition-view');
+const { RenameView } = require('./rename-view');
+const { ListView } = require('./list-view');
 
 let lsp = null;
 let disposables = null;
@@ -20,6 +20,8 @@ let statusEl = null;
 let totalDiagnostics = 0;
 let hoverView = null;
 let definitionView = null;
+let renameView = null;
+let listView = null;
 let hoverTimer = null;
 const HOVER_DELAY_MS = 400;
 
@@ -120,6 +122,8 @@ module.exports = {
     disposables = new CompositeDisposable();
     hoverView = new HoverView();
     definitionView = new DefinitionView();
+    renameView = new RenameView();
+    listView = new ListView();
 
     const client = ensureLsp();
     if (typeof client.activate === 'function') client.activate();
@@ -231,6 +235,90 @@ module.exports = {
       );
     }
 
+    if (typeof client.onDidRequestRename === 'function') {
+      disposables.add(
+        client.onDidRequestRename(async ({ editor, prepare }) => {
+          const e = env();
+          const newName = await renameView.prompt(
+            (prepare && prepare.placeholder) || '',
+            e
+          );
+          if (!newName) return;
+          const result = await client.renameAtCursor(editor, newName);
+          if (!result.ok && e && e.notifications) {
+            e.notifications.addError(
+              `Rename failed: ${result.error || 'unknown'}`,
+              { dismissable: true }
+            );
+          } else if (result.ok && e && e.notifications) {
+            e.notifications.addSuccess(
+              `Renamed in ${result.files || 0} file(s) (${result.edits || 0} edits)`
+            );
+          }
+        })
+      );
+    }
+
+    if (typeof client.onDidRequestCodeActions === 'function') {
+      disposables.add(
+        client.onDidRequestCodeActions(async ({ editor, actions }) => {
+          const e = env();
+          if (!actions || actions.length === 0) {
+            if (e && e.notifications) {
+              e.notifications.addInfo('No code actions available');
+            }
+            return;
+          }
+          const picked = await listView.pick(
+            'Code actions',
+            actions.map(a => ({
+              label: a.kind ? `${a.title}  ·  ${a.kind}` : a.title,
+              value: a
+            })),
+            e
+          );
+          if (!picked) return;
+          const result = await client.applyCodeAction(editor, picked);
+          if (!result.ok && e && e.notifications) {
+            e.notifications.addWarning(
+              `Code action failed: ${result.error || 'unknown'}`
+            );
+          }
+        })
+      );
+    }
+
+    if (typeof client.onDidRequestDocumentSymbols === 'function') {
+      disposables.add(
+        client.onDidRequestDocumentSymbols(async ({ editor, symbols }) => {
+          const e = env();
+          if (!symbols || symbols.length === 0) {
+            if (e && e.notifications) {
+              e.notifications.addInfo('No symbols in document');
+            }
+            return;
+          }
+          const picked = await listView.pick(
+            'Document symbols',
+            symbols.map(s => ({
+              label: s.containerName
+                ? `${s.kindName} ${s.name}  ·  ${s.containerName}`
+                : `${s.kindName} ${s.name}`,
+              value: s
+            })),
+            e
+          );
+          if (!picked || !editor) return;
+          if (editor.setCursorBufferPosition) {
+            editor.setCursorBufferPosition(picked.range.start);
+            if (editor.scrollToCursorPosition) {
+              editor.scrollToCursorPosition({ center: true });
+            }
+          }
+        })
+      );
+    }
+
     const e = env();
     if (e && e.workspace) {
       disposables.add(
@@ -241,7 +329,7 @@ module.exports = {
       );
     }
 
-    // Escape dismisses hover / definition panel
+    // Escape dismisses hover / definition / lists
     if (e && e.commands) {
       disposables.add(
         e.commands.add('atom-workspace', {
@@ -249,6 +337,8 @@ module.exports = {
             clearHoverTimer();
             if (hoverView) hoverView.hide();
             if (definitionView) definitionView.hide();
+            if (renameView) renameView.hide();
+            if (listView) listView.hide();
           }
         })
       );
@@ -264,6 +354,14 @@ module.exports = {
     if (definitionView) {
       definitionView.destroy();
       definitionView = null;
+    }
+    if (renameView) {
+      renameView.destroy();
+      renameView = null;
+    }
+    if (listView) {
+      listView.destroy();
+      listView = null;
     }
     if (statusTile) {
       statusTile.destroy();

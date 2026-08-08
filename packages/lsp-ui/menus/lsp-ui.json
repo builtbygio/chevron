@@ -15,6 +15,22 @@
               "command": "chevron-lsp:find-references"
             },
             {
+              "label": "Rename Symbol",
+              "command": "chevron-lsp:rename"
+            },
+            {
+              "label": "Format Document",
+              "command": "chevron-lsp:format-document"
+            },
+            {
+              "label": "Code Actions",
+              "command": "chevron-lsp:code-actions"
+            },
+            {
+              "label": "Document Symbols",
+              "command": "chevron-lsp:document-symbols"
+            },
+            {
               "label": "Show Hover",
               "command": "chevron-lsp:show-hover"
             },
@@ -44,6 +60,18 @@
       {
         "label": "Find References",
         "command": "chevron-lsp:find-references"
+      },
+      {
+        "label": "Rename Symbol",
+        "command": "chevron-lsp:rename"
+      },
+      {
+        "label": "Code Actions…",
+        "command": "chevron-lsp:code-actions"
+      },
+      {
+        "label": "Format Document",
+        "command": "chevron-lsp:format-document"
       }
     ]
   }

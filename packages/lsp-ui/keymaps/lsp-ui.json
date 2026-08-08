@@ -2,7 +2,11 @@
   "atom-workspace atom-text-editor:not([mini])": {
     "f12": "chevron-lsp:go-to-definition",
     "shift-f12": "chevron-lsp:find-references",
+    "f2": "chevron-lsp:rename",
     "alt-f1": "chevron-lsp:show-hover",
-    "ctrl-shift-space": "chevron-lsp:signature-help"
+    "ctrl-shift-space": "chevron-lsp:signature-help",
+    "ctrl-shift-i": "chevron-lsp:format-document",
+    "ctrl-.": "chevron-lsp:code-actions",
+    "ctrl-shift-o": "chevron-lsp:document-symbols"
   }
 }

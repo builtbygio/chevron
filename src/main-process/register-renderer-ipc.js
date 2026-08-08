@@ -1025,6 +1025,13 @@ module.exports = function registerRendererIpc(atomApplication) {
     return lspManager.notify(serverId, method, params);
   });
 
+  ipcMain.handle(
+    'lsp:respond',
+    async (_event, { serverId, id, result, error } = {}) => {
+      return lspManager.respondToServer(serverId, id, result, error);
+    }
+  );
+
   ipcMain.handle('lsp:stop-server', async (_event, { serverId } = {}) => {
     return lspManager.stopServer(serverId);
   });
