@@ -7,6 +7,7 @@
     "ctrl-shift-space": "chevron-lsp:signature-help",
     "ctrl-shift-i": "chevron-lsp:format-document",
     "ctrl-.": "chevron-lsp:code-actions",
-    "ctrl-shift-o": "chevron-lsp:document-symbols"
+    "ctrl-shift-o": "chevron-lsp:document-symbols",
+    "ctrl-shift-m": "chevron-lsp:toggle-diagnostics"
   }
 }

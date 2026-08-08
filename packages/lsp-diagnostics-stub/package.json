@@ -1,0 +1,23 @@
+{
+  "name": "lsp-diagnostics-stub",
+  "version": "0.1.0",
+  "description": "Minimal alternate consumer of lsp.diagnostics — proves the service is replaceable (G6)",
+  "main": "./lib/main",
+  "repository": "https://github.com/builtbygio/chevron",
+  "license": "MIT",
+  "engines": {
+    "chevron": ">=0.6.0"
+  },
+  "consumedServices": {
+    "lsp.diagnostics": {
+      "versions": {
+        "1.0.0": "consumeDiagnostics"
+      }
+    },
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
+    }
+  }
+}

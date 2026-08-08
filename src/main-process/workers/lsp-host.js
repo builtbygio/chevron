@@ -28,6 +28,12 @@ function post(msg) {
   }
 }
 
+/** Max unexpected restarts within the window before giving up. */
+const RESTART_MAX = 3;
+const RESTART_WINDOW_MS = 5 * 60 * 1000;
+/** Default idle shutdown: 10 minutes without client traffic. */
+const DEFAULT_IDLE_MS = 10 * 60 * 1000;
+
 class ServerSession {
   constructor(id, config) {
     this.id = id;
@@ -38,12 +44,58 @@ class ServerSession {
     this.nextId = 1;
     this.state = 'starting';
     this.restarts = 0;
+    this.restartHistory = [];
     this.lastStderr = '';
     this.initialized = false;
+    this.intentionalStop = false;
+    this._exitHandled = false;
+    this.lastActivityAt = Date.now();
+    this.idleTimeoutMs =
+      config.idleTimeoutMs != null ? config.idleTimeoutMs : DEFAULT_IDLE_MS;
+    this._idleTimer = null;
+    this._armIdleTimer();
+  }
+
+  touch() {
+    this.lastActivityAt = Date.now();
+    this._armIdleTimer();
+  }
+
+  _armIdleTimer() {
+    if (this._idleTimer) {
+      clearTimeout(this._idleTimer);
+      this._idleTimer = null;
+    }
+    if (!this.idleTimeoutMs || this.idleTimeoutMs <= 0) return;
+    this._idleTimer = setTimeout(() => {
+      this._idleShutdown().catch(() => {});
+    }, this.idleTimeoutMs);
+    if (this._idleTimer.unref) this._idleTimer.unref();
+  }
+
+  async _idleShutdown() {
+    if (this.intentionalStop || this.state === 'exited') return;
+    post({
+      type: 'server-idle-shutdown',
+      serverId: this.id,
+      idleTimeoutMs: this.idleTimeoutMs
+    });
+    this.intentionalStop = true;
+    await this.stop();
+    servers.delete(this.id);
+    post({
+      type: 'server-exit',
+      serverId: this.id,
+      code: 0,
+      reason: 'idle',
+      intentional: true,
+      willRestart: false
+    });
   }
 
   start() {
     const { command, args = [], env, cwd } = this.config;
+    this._exitHandled = false;
     try {
       this.child = spawn(command, args, {
         stdio: ['pipe', 'pipe', 'pipe'],
@@ -57,7 +109,8 @@ class ServerSession {
         type: 'server-exit',
         serverId: this.id,
         code: -1,
-        error: err.message
+        error: err.message,
+        willRestart: false
       });
       return;
     }
@@ -74,28 +127,13 @@ class ServerSession {
       });
     });
     this.child.on('error', err => {
-      this.state = 'error';
-      post({
-        type: 'server-exit',
-        serverId: this.id,
-        code: -1,
-        error: err.message,
-        stderr: this.lastStderr
-      });
+      // 'exit' usually follows; only surface if process never spawned
+      if (!this.child || !this.child.pid) {
+        this._handleUnexpectedExit(-1, null, err.message);
+      }
     });
     this.child.on('exit', (code, signal) => {
-      this.state = 'exited';
-      for (const [, p] of this.pending) {
-        p.reject(new Error(`server exited code=${code} signal=${signal}`));
-      }
-      this.pending.clear();
-      post({
-        type: 'server-exit',
-        serverId: this.id,
-        code,
-        signal,
-        stderr: this.lastStderr
-      });
+      this._handleUnexpectedExit(code, signal, null);
     });
 
     post({
@@ -103,6 +141,117 @@ class ServerSession {
       serverId: this.id,
       pid: this.child.pid,
       state: this.state
+    });
+  }
+
+  _handleUnexpectedExit(code, signal, errorMessage) {
+    if (this._exitHandled) return;
+    this._exitHandled = true;
+    this.state = 'exited';
+    this.child = null;
+    for (const [, p] of this.pending) {
+      p.reject(
+        new Error(
+          errorMessage || `server exited code=${code} signal=${signal}`
+        )
+      );
+    }
+    this.pending.clear();
+
+    if (this.intentionalStop) {
+      post({
+        type: 'server-exit',
+        serverId: this.id,
+        code,
+        signal,
+        error: errorMessage || undefined,
+        stderr: this.lastStderr,
+        intentional: true,
+        willRestart: false
+      });
+      return;
+    }
+
+    const now = Date.now();
+    this.restartHistory = this.restartHistory.filter(
+      t => now - t < RESTART_WINDOW_MS
+    );
+    if (this.restartHistory.length >= RESTART_MAX) {
+      post({
+        type: 'server-exit',
+        serverId: this.id,
+        code,
+        signal,
+        error:
+          errorMessage ||
+          `restart storm: ${RESTART_MAX} restarts within ${RESTART_WINDOW_MS / 60000} min`,
+        stderr: this.lastStderr,
+        willRestart: false,
+        storm: true
+      });
+      servers.delete(this.id);
+      return;
+    }
+
+    const delayMs = Math.min(1000 * Math.pow(2, this.restarts), 8000);
+    this.restarts += 1;
+    this.restartHistory.push(now);
+    post({
+      type: 'server-restarting',
+      serverId: this.id,
+      attempt: this.restarts,
+      delayMs,
+      code,
+      signal,
+      error: errorMessage || undefined,
+      stderr: this.lastStderr
+    });
+    post({
+      type: 'server-exit',
+      serverId: this.id,
+      code,
+      signal,
+      error: errorMessage || undefined,
+      stderr: this.lastStderr,
+      willRestart: true,
+      attempt: this.restarts,
+      delayMs
+    });
+
+    setTimeout(() => {
+      this._restartAfterCrash().catch(err => {
+        post({
+          type: 'server-exit',
+          serverId: this.id,
+          code: -1,
+          error: err.message,
+          stderr: this.lastStderr,
+          willRestart: false
+        });
+        servers.delete(this.id);
+      });
+    }, delayMs);
+  }
+
+  async _restartAfterCrash() {
+    this.decoder = new LspFrameDecoder();
+    this.pending.clear();
+    this.initialized = false;
+    this.nextId = 1;
+    this.start();
+    if (this.state !== 'running') {
+      throw new Error('failed to respawn language server');
+    }
+    const initResult = await this.initialize();
+    this.touch();
+    post({
+      type: 'server-initialized',
+      serverId: this.id,
+      capabilities: initResult && initResult.capabilities,
+      positionEncoding: this.positionEncoding || 'utf-16',
+      pid: this.child && this.child.pid,
+      restarted: true,
+      restarts: this.restarts
     });
   }
 
@@ -173,6 +322,7 @@ class ServerSession {
     if (!this.child || !this.child.stdin.writable) {
       return Promise.reject(new Error('server not running'));
     }
+    this.touch();
     const id = this.nextId++;
     const msg = { jsonrpc: '2.0', id, method, params };
     this.child.stdin.write(encodeMessage(msg));
@@ -196,6 +346,7 @@ class ServerSession {
 
   notify(method, params) {
     if (!this.child || !this.child.stdin.writable) return;
+    this.touch();
     this.child.stdin.write(
       encodeMessage({ jsonrpc: '2.0', method, params })
     );
@@ -280,6 +431,11 @@ class ServerSession {
   }
 
   async stop() {
+    this.intentionalStop = true;
+    if (this._idleTimer) {
+      clearTimeout(this._idleTimer);
+      this._idleTimer = null;
+    }
     if (!this.child) return;
     try {
       if (this.initialized) {
@@ -298,7 +454,7 @@ class ServerSession {
     }
     setTimeout(() => {
       try {
-        if (!child.killed) child.kill('SIGKILL');
+        if (child && !child.killed) child.kill('SIGKILL');
       } catch (_) {
         /* ignore */
       }
@@ -328,7 +484,9 @@ async function handleMessage(msg) {
       return;
     }
     if (servers.has(serverId)) {
-      await servers.get(serverId).stop();
+      const prev = servers.get(serverId);
+      prev.intentionalStop = true;
+      await prev.stop();
       servers.delete(serverId);
     }
     const session = new ServerSession(serverId, {
@@ -337,12 +495,14 @@ async function handleMessage(msg) {
       rootUri,
       cwd,
       env,
-      initializationOptions
+      initializationOptions,
+      idleTimeoutMs: msg.idleTimeoutMs
     });
     servers.set(serverId, session);
     session.start();
     try {
       const initResult = await session.initialize();
+      session.touch();
       post({
         type: 'server-initialized',
         serverId,
@@ -356,8 +516,10 @@ async function handleMessage(msg) {
         serverId,
         code: -1,
         error: err.message,
-        stderr: session.lastStderr
+        stderr: session.lastStderr,
+        willRestart: false
       });
+      session.intentionalStop = true;
       await session.stop();
       servers.delete(serverId);
     }
@@ -412,6 +574,7 @@ async function handleMessage(msg) {
   if (type === 'stop-server') {
     const session = servers.get(msg.serverId);
     if (session) {
+      session.intentionalStop = true;
       await session.stop();
       servers.delete(msg.serverId);
     }
@@ -426,7 +589,9 @@ async function handleMessage(msg) {
         serverId: id,
         state: s.state,
         pid: s.child && s.child.pid,
-        restarts: s.restarts
+        restarts: s.restarts,
+        lastActivityAt: s.lastActivityAt,
+        idleTimeoutMs: s.idleTimeoutMs
       });
     }
     post({ type: 'server-list', servers: list, requestId: msg.requestId });
@@ -435,6 +600,7 @@ async function handleMessage(msg) {
 
   if (type === 'shutdown') {
     for (const [, s] of servers) {
+      s.intentionalStop = true;
       await s.stop();
     }
     servers.clear();
@@ -442,6 +608,13 @@ async function handleMessage(msg) {
     process.exit(0);
   }
 }
+
+// Test hooks (Node fork unit tests)
+module.exports = {
+  RESTART_MAX,
+  RESTART_WINDOW_MS,
+  DEFAULT_IDLE_MS
+};
 
 function onMessage(msg) {
   Promise.resolve(handleMessage(msg)).catch(err => {

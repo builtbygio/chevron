@@ -34,6 +34,7 @@ const {
 } = require('./providers/code-action');
 const { documentSymbols } = require('./providers/document-symbols');
 const { applyWorkspaceEdit } = require('./workspace-edit');
+const { createDiagnosticsService } = require('./diagnostics-service');
 
 let activated = false;
 let disposables = null;
@@ -214,7 +215,20 @@ function handleLspEvent(_event, msg) {
         }
       }
     }
+    // Crash restart: re-open open buffers so the new process has document state
+    if (msg.restarted && documentSync) {
+      try {
+        documentSync.resyncAll();
+      } catch (_) {
+        /* ignore */
+      }
+    }
     if (emitter) emitter.emit('did-server-initialized', msg);
+    return;
+  }
+
+  if (msg.type === 'server-restarting') {
+    if (emitter) emitter.emit('did-server-restarting', msg);
     return;
   }
 
@@ -242,13 +256,16 @@ function handleLspEvent(_event, msg) {
   }
 
   if (msg.type === 'server-exit') {
-    for (const [key, session] of [...startedSessions]) {
-      if (session.serverId === msg.serverId) {
-        startedSessions.delete(key);
-        encodingByServerId.delete(msg.serverId);
+    // Keep session if host will restart (G5 supervision)
+    if (!msg.willRestart) {
+      for (const [key, session] of [...startedSessions]) {
+        if (session.serverId === msg.serverId) {
+          startedSessions.delete(key);
+          encodingByServerId.delete(msg.serverId);
+        }
       }
     }
-    emitter.emit('did-server-exit', msg);
+    if (emitter) emitter.emit('did-server-exit', msg);
   }
 }
 
@@ -352,6 +369,15 @@ function getAutocompleteProvider() {
 
 function getLspService() {
   return createLspService();
+}
+
+function getDiagnosticsService() {
+  if (!emitter) {
+    // Allow service construction after activate; create a no-op emitter shape
+    const { Emitter } = require('event-kit');
+    emitter = new Emitter();
+  }
+  return createDiagnosticsService(diagnosticsByUri, emitter);
 }
 
 function isFormatOnSaveEnabled() {
@@ -590,6 +616,14 @@ function onDidFailStart(cb) {
   return emitter.on('did-fail-start', cb);
 }
 
+function onDidServerExit(cb) {
+  return emitter.on('did-server-exit', cb);
+}
+
+function onDidServerRestarting(cb) {
+  return emitter.on('did-server-restarting', cb);
+}
+
 function onDidRequestHover(cb) {
   return emitter.on('did-request-hover', cb);
 }
@@ -622,9 +656,12 @@ module.exports = {
   activate,
   deactivate,
   getDiagnostics,
+  getDiagnosticsService,
   onDidPublishDiagnostics,
   onDidChangeTrustNeeded,
   onDidFailStart,
+  onDidServerExit,
+  onDidServerRestarting,
   onDidRequestHover,
   onDidRequestDefinition,
   onDidRequestSignatureHelp,

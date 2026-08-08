@@ -90,3 +90,54 @@
     cursor: pointer;
   }
 }
+
+.lsp-ui-diagnostics-panel {
+  max-height: 12em;
+  overflow: auto;
+  padding: 0.5em 0.75em;
+  border-top: 1px solid @base-border-color;
+}
+
+.lsp-ui-diagnostics-title {
+  font-weight: bold;
+  margin-bottom: 0.35em;
+}
+
+.lsp-ui-diagnostics-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    margin: 0.15em 0;
+  }
+
+  a {
+    cursor: pointer;
+  }
+}
+
+.lsp-ui-diag-error,
+.line-number.lsp-ui-diag-error {
+  color: @text-color-error;
+}
+
+.lsp-ui-diag-warning,
+.line-number.lsp-ui-diag-warning {
+  color: @text-color-warning;
+}
+
+.lsp-ui-diag-info,
+.line-number.lsp-ui-diag-info,
+.lsp-ui-diag-hint,
+.line-number.lsp-ui-diag-hint {
+  color: @text-color-info;
+}
+
+.lsp-ui-diag-error-highlight .region {
+  background: fade(@background-color-error, 25%);
+}
+
+.lsp-ui-diag-warning-highlight .region {
+  background: fade(@background-color-warning, 25%);
+}
