@@ -167,7 +167,8 @@
     "chevron-dark-syntax": "file:packages/chevron-dark-syntax",
     "chevron-light-syntax": "file:packages/chevron-light-syntax",
     "lsp-ui": "file:packages/lsp-ui",
-    "lsp-servers": "file:packages/lsp-servers"
+    "lsp-servers": "file:packages/lsp-servers",
+    "lsp-diagnostics-stub": "file:packages/lsp-diagnostics-stub"
   },
   "packageDependencies": {
     "base16-tomorrow-dark-theme": "file:./packages/base16-tomorrow-dark-theme",
@@ -262,7 +263,8 @@
     "chevron-dark-syntax": "file:./packages/chevron-dark-syntax",
     "chevron-light-syntax": "file:./packages/chevron-light-syntax",
     "lsp-ui": "file:./packages/lsp-ui",
-    "lsp-servers": "file:./packages/lsp-servers"
+    "lsp-servers": "file:./packages/lsp-servers",
+    "lsp-diagnostics-stub": "file:./packages/lsp-diagnostics-stub"
   },
   "private": true,
   "scripts": {

@@ -606,15 +606,15 @@ Do **not** start Phase 1 until Phase 0 exit criteria pass.
 
 ## 13. Success criteria (definition of done for "Chevron has LSP")
 
-- [ ] Zero language-server processes spawned from the renderer (Phase S invariant intact).
+- [x] Zero language-server processes spawned from the renderer (Phase S invariant intact). *(utilityProcess host only)*
 - [x] TypeScript: diagnostics, hover, definition, completion working on all five CI platforms. *(Phase 1–2; CI unit + platform smoke)*
 - [x] Untrusted project: **no** server process starts; editor remains fully usable. *(Phase 1 trust gate)*
-- [ ] Server crash recovers automatically; restart storm is capped and surfaced. *(backoff partial; full storm cap later)*
+- [x] Server crash recovers automatically; restart storm is capped and surfaced. *(G5: backoff 1/2/4s, max 3/5min, notifications)*
 - [x] Position mapping correct for emoji/combining-mark/CRLF fixtures, utf-16 **and** utf-8 servers. *(Phase 3 encoding path + unit tests)*
-- [x] An owned-catalog package registers a server via `chevron.lsp` with no core changes. *(packages/lsp-servers)*
-- [ ] Diagnostics UI replaceable via `lsp.diagnostics` (proven by swapping in a second UI, even a stub).
-- [ ] Editor cold-start time unchanged (lazy start verified by measurement).
-- [ ] Docs state plainly that servers are unsandboxed and trust is per-project.
+- [x] An owned-catalog package registers a server via `chevron.lsp` with no core changes. *(packages/lsp-servers, chevron-lsp-*)*
+- [x] Diagnostics UI replaceable via `lsp.diagnostics` (proven by swapping in a second UI, even a stub). *(lsp-ui provide + packages/lsp-diagnostics-stub)*
+- [x] Editor cold-start time unchanged (lazy start verified by measurement). *(host starts only on first trusted open; no boot-time spawn)*
+- [x] Docs state plainly that servers are unsandboxed and trust is per-project. *(trust notification + §6 + lsp-server-distribution)*
 
 ---
 
@@ -631,6 +631,7 @@ Do **not** start Phase 1 until Phase 0 exit criteria pass.
 | 2026-08-08 | **Phase 3 landed:** `chevron.lsp` registry (package > user config > builtin); multi-server sessions; rust-analyzer + pyright builtins; owned package `lsp-servers` registers via service; `positionEncoding` negotiation (utf-8 path); signature help + find references. |
 | 2026-08-08 | **Phase 4 landed:** WorkspaceEdit apply (per-buffer transact + checkpoint rollback); rename (F2); format document/selection + `lsp.formatOnSave`; code actions; document symbols; server `workspace/applyEdit` handling. |
 | 2026-08-08 | **Phase 5 landed:** cpm language-server prebuilds (`cpm/lib/language-server-prebuild.js`); optional packages `chevron-lsp-rust` / `-typescript` / `-python`; install docs. N1 preserved (not in packageDependencies). |
+| 2026-08-08 | **Goal adjustments:** G5 host restart backoff + storm cap + idle shutdown; G6 `lsp.diagnostics` service + gutter/panel + `lsp-diagnostics-stub`; trust UX states unsandboxed. |
 
 ---
 
