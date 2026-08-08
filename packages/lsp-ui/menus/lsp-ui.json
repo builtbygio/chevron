@@ -39,6 +39,10 @@
               "command": "chevron-lsp:signature-help"
             },
             {
+              "label": "Toggle Diagnostics Panel",
+              "command": "chevron-lsp:toggle-diagnostics"
+            },
+            {
               "label": "Trust Project",
               "command": "chevron-lsp:trust-project"
             },
