@@ -36,7 +36,7 @@ CI on tag `v*` builds every platform and attaches artifacts to the GitHub Releas
 | Platform | Typical artifact |
 |----------|------------------|
 | Linux x64 / arm64 | `.deb`, `.rpm`, `.tar.gz` |
-| macOS x64 / arm64 | `.zip` (unsigned `.app`) |
+| macOS x64 / arm64 | `chevron-mac-x64.zip` / `chevron-mac-arm64.zip` (unsigned `.app`) |
 | Windows x64 | `.zip` |
 
 Update URL to give users: **https://github.com/builtbygio/chevron/releases**

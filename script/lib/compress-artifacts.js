@@ -21,7 +21,7 @@ module.exports = function(packagedAppPath) {
     ) {
       const symbolsArchivePath = path.join(
         CONFIG.buildOutputPath,
-        'atom-mac-symbols.zip'
+        `chevron-mac-${process.arch}-symbols.zip`
       );
       compress(CONFIG.symbolsPath, symbolsArchivePath);
     } else {
@@ -35,7 +35,7 @@ module.exports = function(packagedAppPath) {
 function getArchiveName() {
   switch (process.platform) {
     case 'darwin':
-      return 'chevron-mac.zip';
+      return `chevron-mac-${process.arch}.zip`;
     case 'win32':
       return `chevron-${process.arch === 'x64' ? 'x64-' : ''}windows.zip`;
     default:

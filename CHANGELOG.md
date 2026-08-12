@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-—
+### Fixed
+
+- macOS `--compress-artifacts` zip is per-arch (`chevron-mac-x64.zip` / `chevron-mac-arm64.zip`) so a dual-arch GitHub Release no longer overwrites one Mac build.
 
 ## [1.0.0] — 2026-08-12
 
