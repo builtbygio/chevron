@@ -5,6 +5,25 @@ const electronLink = require('electron-link');
 const terser = require('terser');
 const CONFIG = require('../config');
 const { hostCanRunMksnapshot } = require('./mksnapshot-host-support');
+const {
+  shouldSkipCustomSnapshot,
+  stockSnapshotNote
+} = require('./packaging-policy');
+
+function writeStockSnapshotMarker(reason) {
+  try {
+    const dest = path.join(CONFIG.buildOutputPath, 'STOCK_V8_SNAPSHOT.txt');
+    fs.mkdirSync(CONFIG.buildOutputPath, { recursive: true });
+    fs.writeFileSync(
+      dest,
+      `reason=${reason}\nelectron=${CONFIG.appMetadata.electronVersion}\n` +
+        `platform=${process.platform}\narch=${process.arch}\n` +
+        'See docs/packaging.md and docs/startup-snapshot-plan.md.\n'
+    );
+  } catch (_) {
+    /* non-fatal */
+  }
+}
 
 module.exports = function(packagedAppPath) {
   // linux-arm* / win-arm*: electron-mksnapshot is x64-only (cross tools run on
@@ -15,6 +34,7 @@ module.exports = function(packagedAppPath) {
         'electron-mksnapshot does not run on this host. The packaged app will use ' +
         "Electron's stock V8 snapshots (normal boot, no snapshotResult optimisation).\n"
     );
+    writeStockSnapshotMarker('host-unsupported');
     return Promise.resolve();
   }
 
@@ -29,25 +49,19 @@ module.exports = function(packagedAppPath) {
       '\nNOTE: electron-mksnapshot was skipped at install time; ' +
         'using stock Electron V8 snapshots.\n'
     );
+    writeStockSnapshotMarker('mksnapshot-install-skipped');
     return Promise.resolve();
   }
 
   // Electron 43 / V8 15: v8_context_snapshot_generator SIGTRAPs on Chevron's
-  // large custom startup blob (seen on linux-x64, Windows, Apple Silicon).
-  // Attempting mksnapshot only prints a hard Error + WARNING and still falls
-  // back to stock snapshots. Skip by default for a clean build log; set
-  // CHEVRON_FORCE_MKSNAPSHOT=1 to re-attempt generation.
-  const electronMajor = parseInt(
-    String(CONFIG.appMetadata.electronVersion || '').split('.')[0],
-    10
+  // large custom startup blob. Policy: stock snapshots unless forced.
+  const decision = shouldSkipCustomSnapshot(
+    CONFIG.appMetadata.electronVersion,
+    { force: process.env.CHEVRON_FORCE_MKSNAPSHOT === '1' }
   );
-  const forceMksnapshot = process.env.CHEVRON_FORCE_MKSNAPSHOT === '1';
-  if (Number.isFinite(electronMajor) && electronMajor >= 43 && !forceMksnapshot) {
-    console.log(
-      `\nNOTE: custom startup snapshot skipped on Electron ${CONFIG.appMetadata.electronVersion} ` +
-        '(V8 context snapshot generator is incompatible with this app blob). ' +
-        "Using Electron's stock V8 snapshots. Set CHEVRON_FORCE_MKSNAPSHOT=1 to retry.\n"
-    );
+  if (decision.skip) {
+    console.log(`\nNOTE: ${stockSnapshotNote(CONFIG.appMetadata.electronVersion)}\n`);
+    writeStockSnapshotMarker(decision.reason);
     return Promise.resolve();
   }
 

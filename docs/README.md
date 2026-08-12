@@ -37,6 +37,8 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [build-modernization.md](./build-modernization.md) | Bootstrap/build Streams A–E (contract, hygiene, patches, snapshot, deps) |
 | [bootstrap-patch-matrix.md](./bootstrap-patch-matrix.md) | Idempotent bootstrap patches + critical natives |
 | [bootstrap-report.md](./bootstrap-report.md) | Current bootstrap recipe (modern path) |
+| [packaging.md](./packaging.md) | electron-packager + Electron 43 stock snapshot policy |
+| [dependency-graph.md](./dependency-graph.md) | Root dep kinds, `nan` override, atom/* pin ceiling |
 
 
 | [onboarding-polish.md](./onboarding-polish.md) | First-run Welcome/Guide checklist |
