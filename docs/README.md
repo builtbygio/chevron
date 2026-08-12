@@ -1,6 +1,6 @@
 # Chevron documentation
 
-Chevron is a modernized fork of Atom. This tree holds **project-specific** design and ops docs. Historical Atom user docs live in the [Flight Manual](https://flight-manual.atom.io) / archive.
+Chevron is a modernized fork of Atom. This tree holds **project-specific** design and ops docs. Historical Atom Flight Manual / atom.io pages are unmaintained — start here, not there.
 
 ## Package manager (cpm)
 
