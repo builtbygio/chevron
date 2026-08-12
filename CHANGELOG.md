@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+—
+
+## [1.0.0] — 2026-08-12
+
+**Unsigned preview.** Modernization 1.0: owned catalog, Phase S Option C, GitHub Releases as the update URL. Binaries are **not** codesigned. See [docs/releases.md](docs/releases.md) and [docs/dogfood-1.0.md](docs/dogfood-1.0.md).
+
+Deferred on purpose: package host v2, `language-*` forks (#79), `@electron/packager`, custom E43 snapshot, signing.
+
 ### Security
 
 - **Phase S complete (Option C):** editor Chromium `sandbox` stays **false** by product decision ([docs/security-phase-s-decision.md](docs/security-phase-s-decision.md)). GitHub package git workers use **utilityProcess only** (Node BrowserWindow path is emergency-only via `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1`). Community native/privileged require restrict and package-host design remain as shipped. S4 sendSync→invoke and package-host v2 are post–Phase S.
@@ -22,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Unsigned preview releases:** tag `v*` publishes multi-platform CI artifacts to GitHub Releases. Check for Update queries the Releases API and opens the download page (no silent install). Update URL: https://github.com/builtbygio/chevron/releases — [docs/releases.md](docs/releases.md).
 - **LSP plan + Phases 0–5 + goal hardening:** [docs/lsp-design.md](docs/lsp-design.md). Phases 0–5 as planned; adjustments for G5 supervision (crash restart/backoff/storm/idle), G6 replaceable `lsp.diagnostics` (+ gutter/panel + stub consumer), clearer unsandboxed trust copy.
 
 ### Changed
@@ -183,7 +192,8 @@ Initial Chevron tree: Electron modernization, modern host bootstrap (`bootstrap-
 
 ---
 
-[Unreleased]: https://github.com/builtbygio/chevron/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/builtbygio/chevron/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/builtbygio/chevron/releases/tag/v1.0.0
 [0.6.0]: https://github.com/builtbygio/chevron/releases/tag/v0.6.0
 [0.5.0]: https://github.com/builtbygio/chevron/releases/tag/v0.5.0
 [0.4.0]: https://github.com/builtbygio/chevron/releases/tag/v0.4.0

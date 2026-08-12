@@ -18,20 +18,19 @@ Rather than a from-scratch rewrite, Chevron takes the harder — and more educat
 
 ## Status
 
-**0.6.0** — Electron best-practices + **Phase S complete (Option C)**: community require/native restrict, utilityProcess git workers, guests/IPC hardened; editor stays deliberately unsandboxed for hot-path natives and hackability. **cpm** + Pulsar registry, multi-platform CI.
+**1.0.0 unsigned preview** — modernization 1.0. Multi-platform CI builds, **owned catalog only**, Phase S **Option C** (editor `sandbox: false` on purpose). Binaries are **not codesigned**. Download and update URL: [GitHub Releases](https://github.com/builtbygio/chevron/releases). See [docs/releases.md](docs/releases.md).
 
-Still early: great for building from source and dogfooding; not a polished daily-driver release yet.
+This is a dogfoodable preview, not a signed store app. Gatekeeper / SmartScreen will warn.
 
 | Track | Notes |
 |-------|--------|
 | Electron | **43.1.0** |
 | Bundle ID | `dev.builtbygio.chevron` |
 | Package API | **Chevron only** (`require('chevron')`, `global.chevron`, `engines.chevron`) |
-| Package catalog | **Owned core only** for now; sandboxed community later — [docs/package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md) |
-| Package manager | **cpm** (Electron-as-Node); `apm` is a **shim → cpm** (legacy name) |
-| Registry | Not a product community store yet; cpm/registry tech reserved for future host v2 |
-
-| Config home | **`~/.chevron`** by default (`CHEVRON_HOME`; `ATOM_HOME` only if set) |
+| Package catalog | **Owned core only**; sandboxed community is host v2 (later) — [docs/package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md) |
+| Package manager | **cpm** (Electron-as-Node); `apm` is a **shim → cpm** |
+| Updates | **https://github.com/builtbygio/chevron/releases** (unsigned; Check for Update opens this page) |
+| Config home | **`~/.chevron`** (`CHEVRON_HOME`; `ATOM_HOME` only if set) |
 | Security | Phase S Option C — [docs/security-phase-s-decision.md](docs/security-phase-s-decision.md), [docs/security-threat-model.md](docs/security-threat-model.md) |
 
 See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).

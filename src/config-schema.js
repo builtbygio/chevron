@@ -350,7 +350,7 @@ const configSchema = {
       },
       automaticallyUpdate: {
         description:
-          'Automatically update Atom when a new release is available.',
+          'Check GitHub Releases for a newer Chevron unsigned preview. In-app install is not used until builds are signed; Check for Update opens the download page. See docs/releases.md.',
         type: 'boolean',
         default: true
       },

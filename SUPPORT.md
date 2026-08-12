@@ -1,11 +1,12 @@
 # Chevron support
 
-Chevron is an early-stage, modernized fork of Atom. There is no separate support site or forum yet — use this repository.
+Chevron **1.0** is an **unsigned preview**: owned catalog, Phase S Option C, no community store. There is no separate support site — use this repository.
 
 ## Where to look
 
 | Need | Go here |
 |------|---------|
+| Download / update URL | [GitHub Releases](https://github.com/builtbygio/chevron/releases) — [docs/releases.md](docs/releases.md) |
 | What Chevron is, status, how to build | [README.md](README.md) |
 | Project docs (cpm, security, LSP, build) | [docs/README.md](docs/README.md) |
 | How to contribute | [CONTRIBUTING.md](CONTRIBUTING.md) |
