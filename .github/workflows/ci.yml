@@ -131,7 +131,23 @@ jobs:
           mkdir -p "$PREFIX"
           cd "$PREFIX"
           npm init -y >/dev/null
-          npm install --no-package-lock dugite@1.92.0 tree-kill@1.2.2
+          # dugite postinstall downloads GitHub release tarball — flaky (ECONNRESET).
+          # Install JS first, then retry the binary fetch separately.
+          npm install --ignore-scripts --no-package-lock dugite@1.92.0 tree-kill@1.2.2
+          if [ -f node_modules/dugite/script/download-git.js ]; then
+            ok=0
+            for attempt in 1 2 3; do
+              if (cd node_modules/dugite && node ./script/download-git.js); then
+                ok=1
+                break
+              fi
+              echo "WARNING: dugite git download attempt ${attempt} failed; retrying..."
+              sleep $((attempt * 4))
+            done
+            if [ "$ok" -ne 1 ]; then
+              echo "WARNING: dugite embedded git missing after retries; git-utility tests may skip or use PATH git."
+            fi
+          fi
           mkdir -p "${GITHUB_WORKSPACE}/node_modules"
           cp -a node_modules/. "${GITHUB_WORKSPACE}/node_modules/"
           node -e "console.log('dugite', require.resolve('dugite'))"
