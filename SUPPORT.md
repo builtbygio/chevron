@@ -1,9 +1,19 @@
-# Atom Support
+# Chevron support
 
-If you're looking for support for Atom there are a lot of options, check out:
+Chevron is an early-stage, modernized fork of Atom. There is no separate support site or forum yet — use this repository.
 
-* User Documentation &mdash; [The Atom Flight Manual](https://flight-manual.atom.io)
-* Developer Documentation &mdash; [Atom API Documentation](https://atom.io/docs/api/latest)
-* Message Board &mdash; [Github Discussions, the official Atom message board](https://github.com/atom/atom/discussions)
+## Where to look
 
-On Atoms Github Discussions board, there are a bunch of helpful community members that should be willing to point you in the right direction.
+| Need | Go here |
+|------|---------|
+| What Chevron is, status, how to build | [README.md](README.md) |
+| Project docs (cpm, security, LSP, build) | [docs/README.md](docs/README.md) |
+| How to contribute | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| Bugs, questions, feature ideas | [GitHub Issues](https://github.com/builtbygio/chevron/issues) |
+| Security vulnerability | [SECURITY.md](SECURITY.md) — **do not** file a public issue |
+
+Open an issue if something is broken or unclear. For non-trivial work, discuss the approach in an issue before opening a large PR.
+
+## Historical Atom docs
+
+GitHub sunset Atom in 2022. Old **Atom Flight Manual** and **atom.io API** pages are unmaintained and often dead. Do not treat them as current Chevron documentation. Architecture notes that still apply are in [docs/atom-architecture.md](docs/atom-architecture.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
