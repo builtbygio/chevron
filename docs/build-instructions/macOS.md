@@ -42,7 +42,7 @@ open out/Chevron.app
 | Artifact | Description |
 |----------|-------------|
 | `out/Chevron.app` | App bundle (architecture matches the host) |
-| `chevron-mac.zip` | Compressed app (`--compress-artifacts`) |
+| `chevron-mac-x64.zip` / `chevron-mac-arm64.zip` | Compressed app (`--compress-artifacts`; arch matches the host) |
 
 ---
 
