@@ -267,6 +267,9 @@
     "lsp-diagnostics-stub": "file:./packages/lsp-diagnostics-stub"
   },
   "private": true,
+  "overrides": {
+    "nan": "2.28.0"
+  },
   "scripts": {
     "preinstall": "node -e 'process.exit(0)'",
     "test": "node script/test"

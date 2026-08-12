@@ -22,8 +22,8 @@ Override soft native failures only with `CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1
 | Script | Class | Purpose | Retirement path |
 |--------|-------|---------|-----------------|
 | `patch-natives-context-aware.js` | A compile | `NODE_MODULE` → `CONTEXT_AWARE` | Upstream/native pins use context-aware macros |
-| `patch-keytar-nan.js` | A compile | keytar nested nan too old for Electron 14+ | Drop nested nan; depend on root nan ≥2.22 |
-| `patch-nested-nan.js` | A compile | replace nested nan &lt; root | Lockfile only root nan; no nested copies |
+| `patch-keytar-nan.js` | A compile | keytar nested nan too old for Electron 14+ | **Root `overrides.nan=2.28.0`** (Stream B) — patch is now a no-op after clean `npm ci` |
+| `patch-nested-nan.js` | A compile | replace nested nan &lt; root | Same override; keep script until a clean bootstrap log is always no-op |
 | `patch-v8-api.js` | A compile | `CreationContext` → `GetCreationContext` | Fix superstring/tree-sitter sources in monorepo + pins |
 | `patch-oniguruma-gyp.js` | A compile | GCC 14 + K&R in oniguruma | Pin modern oniguruma / gyp |
 | `patch-spellchecker-win.js` | A compile | MSVC C2440 temp wstring | Upstream spellchecker fix |

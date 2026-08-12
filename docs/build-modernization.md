@@ -20,35 +20,38 @@ Follow-up to the 2026-08-08 build audit. Work order: **A → C → B → D/E**.
 | Contributor entry docs | This file + refreshed bootstrap pointers |
 | Atom-era `build-status.md` | Replaced with Chevron CI pointer |
 
-## Stream B — Patch retirement (in progress)
+## Stream B — Patch retirement (this stream)
 
 | Item | Status |
 |------|--------|
 | Inventory + retirement paths | [bootstrap-patch-matrix.md](./bootstrap-patch-matrix.md) |
-| Fold decaff/debabel into pins | Open — when atom/* pins ship precompiled JS |
-| Nested `nan` under keytar only (2.14) | Still needs `patch-keytar-nan` |
-| Safety-net IPC patches | Keep until always zero-diff |
+| Frozen Class C sets | `script/lib/patch-bridge-inventory.js` + CI |
+| Nested `nan` (keytar 2.14) | **Root `overrides.nan=2.28.0`** — lockfile no longer nests 2.14 |
+| Safety-net IPC patches | Kept (zero-diff / already-ok logs); not deleted |
+| Fold decaff/debabel into pins | Still open — owned SHA bumps, not this PR |
 
-Do **not** delete Class A patches until Electron/native pins prove green without them.
+Do **not** delete Class A compile patches until Electron/native pins prove green without them.
 
-## Stream D — Packaging / snapshot (policy)
+## Stream D — Packaging / snapshot
 
 | Item | Status |
 |------|--------|
-| Custom V8 startup snapshot on Electron **≥43** | **Skipped by default** (generator SIGTRAP); stock Electron snapshots |
+| Policy module | `script/lib/packaging-policy.js` + [packaging.md](./packaging.md) |
+| Custom V8 snapshot on Electron **≥43** | **Skipped by default**; `out/STOCK_V8_SNAPSHOT.txt` marker |
 | Force attempt | `CHEVRON_FORCE_MKSNAPSHOT=1` |
-| electron-packager | Retained (Atom-era); migration to a newer packager is a separate project |
-| apm in product | **cpm only**; `apm` name is a shim; `--with-apm` debug-only |
+| electron-packager | **Retained** 15.x (no `@electron/packager` swap) |
+| apm in product | **cpm only** |
 
 See `script/lib/generate-startup-snapshot.js` and [startup-snapshot-plan.md](./startup-snapshot-plan.md).
 
-## Stream E — Dependency graph (ongoing)
+## Stream E — Dependency graph
 
 | Item | Status |
 |------|--------|
-| `--legacy-peer-deps` on app install | Still required for Atom-era peers |
-| Git pins vs semver | Prefer owned releases over time ([owned-package-modernization-checklist.md](./owned-package-modernization-checklist.md)) |
-| SCA | [sca-runtime-inventory.md](./sca-runtime-inventory.md) — not a bootstrap gate yet |
+| Classifier + CI | `script/lib/dep-graph.js` + `script/ci/dep-graph.test.js` |
+| `atom/*` git ceiling | **33** (all `language-*`; issue #79) |
+| `--legacy-peer-deps` | Still required; documented in [dependency-graph.md](./dependency-graph.md) |
+| SCA | [sca-runtime-inventory.md](./sca-runtime-inventory.md) — not a bootstrap gate |
 
 ## Daily commands
 
