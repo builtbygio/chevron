@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Runtime SCA:** owned `markdown-preview`, `autocomplete-plus`, `github`, `notifications`, and `settings-view` pins bump **marked 4.3.0** (last CJS; call `marked.parse`) and **DOMPurify 3.4.13**. `github` sanitizes after parse (marked 1+ dropped `sanitizer`) and uses dugite **1.110.0**. Root overrides force those marked/DOMPurify versions and **tar 6.2.1** under dugite. In-repo `deprecation-cop` matches. Leftover: `request`/`form-data`, `ls-archive` tar 2.x — see [docs/sca-runtime-inventory.md](docs/sca-runtime-inventory.md).
 - **SUPPORT.md** rewritten for Chevron (#75): points at README, `docs/`, CONTRIBUTING, Issues, and SECURITY.md. Dead Atom Flight Manual / atom.io API / Atom Discussions links removed.
 - **Docs hygiene (#76):** first-party `docs/` point at Chevron, not the dead Flight Manual; `docs/rfcs/` marked historical. **package-node-policy.md** matches Chevron-only home and legacy `atom` aliases ([REBRANDING.md](docs/REBRANDING.md)).
 - **Build modernization (Streams A–E):** A–C as before; **B** — `overrides.nan=2.28.0` (no nested keytar nan 2.14), frozen Class C patch sets; **D** — [packaging.md](docs/packaging.md), stock V8 snapshot marker, packager retained; **E** — [dependency-graph.md](docs/dependency-graph.md), `atom/*` git pin ceiling (33). See [docs/build-modernization.md](docs/build-modernization.md).

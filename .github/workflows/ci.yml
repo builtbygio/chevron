@@ -133,7 +133,7 @@ jobs:
           npm init -y >/dev/null
           # dugite postinstall downloads GitHub release tarball — flaky (ECONNRESET).
           # Install JS first, then retry the binary fetch separately.
-          npm install --ignore-scripts --no-package-lock dugite@1.92.0 tree-kill@1.2.2
+          npm install --ignore-scripts --no-package-lock dugite@1.110.0 tree-kill@1.2.2
           if [ -f node_modules/dugite/script/download-git.js ]; then
             ok=0
             for attempt in 1 2 3; do
@@ -171,6 +171,7 @@ jobs:
           node --test script/ci/lsp-diagnostics-service.test.js
           node --test script/ci/bootstrap-contract.test.js
           node --test script/ci/dep-graph.test.js
+          node --test script/ci/sca-runtime.test.js
           node --test script/ci/packaging-policy.test.js
           node --test script/ci/package-utility-worker.test.js
           node --test script/ci/git-utility-host-integration.test.js

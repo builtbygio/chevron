@@ -53,6 +53,13 @@ describe('root dependency graph', () => {
     assert.strictEqual(pkg.overrides.nan, '2.28.0');
   });
 
+  it('overrides runtime SCA hotspots (marked / DOMPurify / dugite tar)', () => {
+    assert.strictEqual(pkg.overrides.dompurify, '3.4.13');
+    assert.strictEqual(pkg.overrides.marked, '4.3.0');
+    assert.ok(pkg.overrides.dugite, 'dugite override missing');
+    assert.strictEqual(pkg.overrides.dugite.tar, '6.2.1');
+  });
+
   it('keeps atom/* git pin count from growing past known ceiling', () => {
     // #79: language-* still on atom/*. Ceiling is current + 0 slack for new pins.
     // If this fails, either fork the package (preferred) or raise the ceiling

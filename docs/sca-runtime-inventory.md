@@ -1,8 +1,8 @@
 # SCA / runtime npm audit inventory
 
-**Status:** living inventory (audit P1 — issue #56)  
+**Status:** living inventory (audit P1)  
 **Method:** `npm audit --omit=dev` on the monorepo root (host Node 24)  
-**Snapshot date:** 2026-08 (post-0.6.0 audit)  
+**Snapshot date:** 2026-08-12 (runtime sanitizer / dugite-tar pass)
 
 Chevron inherits a large Atom-era dependency graph. Many advisories have **no clean fix without forking** packages or replacing deprecated stacks (`request`, Babel 5, old mocha). This doc separates **runtime attack surface** from **test/tooling noise** so effort goes to the former.
 
@@ -10,27 +10,40 @@ Chevron inherits a large Atom-era dependency graph. Many advisories have **no cl
 
 | Severity | Count (typical) | Notes |
 |----------|----------------:|--------|
-| critical | ~9 | Mix of runtime + test (mocha/growl/minimist) |
-| high | ~47 | Includes package-level rollups |
+| critical | dozens | Mix of runtime leftovers + test (mocha/growl/minimist) + `request` |
+| high | many | Includes package-level rollups |
 | moderate / low | rest | Track opportunistically |
 
 Exact numbers drift with registry data; re-run audit after lockfile changes.
 
 ## Priority: runtime / product path
 
-| Package | Severity | Why it matters | Action |
-|---------|----------|----------------|--------|
-| **dompurify** | critical | HTML sanitization; used under markdown / autocomplete stacks | Bump or override via owned **markdown-preview** / **autocomplete-plus** forks |
-| **marked** (via packages) | high | Markdown parse → HTML | Same owned forks |
-| **tar** | critical | Extract paths; **dugite** / install paths | Prefer current dugite; cpm uses pacote — keep cpm deps current |
-| **dugite** | high | github package git exec | Owned **github** pin; upgrade dugite when forking |
-| **async** | high | Direct dep; prototype pollution in ≤3.2.1 | **Bump to ≥3.2.6** (done in audit P1) |
-| **request** | critical | Deprecated HTTP client in old package trees | Replace when touching dependent packages; no global easy fix |
-| **form-data** | critical | Often under `request` | Follows `request` removal |
-| **babel-core@5** | ~~high~~ | ~~Runtime transpile~~ | **Removed** from app deps (#62 Option 3); residual only if transitive |
-| **minimatch** / **brace-expansion** | high | Glob in project search / package paths | Bump when parent allows; watch DoS on untrusted globs |
-| **archive-view** / **ls-archive** | high | Opening archives | Fork **archive-view** when next security touch |
-| **autocomplete-plus** (rollup) | high | Pulls sanitizer stack | Owned fork — land dep bumps there |
+| Package | Severity | Status | Action |
+|---------|----------|--------|--------|
+| **dompurify** | critical | **Done** — 3.4.13 | Owned **markdown-preview**, **autocomplete-plus**, **github**, **notifications**, **settings-view**; in-repo **deprecation-cop**; root override |
+| **marked** | high | **Done** — 4.3.0 (last CJS) | Same packages. marked 5+ is ESM-only — do not jump without converting `require()` |
+| **tar** (dugite extract) | critical | **Done** — 6.2.1 via override | dugite 1.x still declares tar `^4.4.7`; stream extract API works on tar 6. **ls-archive** still on tar 2.x (below) |
+| **dugite** | high | **Partial** — 1.110.0 | github pin. 2.x/3.x change git-embed layout — not this pass |
+| **async** | high | **Done** (≥3.2.6) | Audit P1 |
+| **request** | critical | Open | Deprecated HTTP client in old package trees (settings-view still). Replace when touching those packages |
+| **form-data** | critical | Open | Follows `request` removal |
+| **babel-core@5** | ~~high~~ | **Removed** (#62 Option 3) | Residual only if transitive |
+| **minimatch** / **brace-expansion** | high | Opportunistic | Bump when parent allows; watch DoS on untrusted globs |
+| **archive-view** / **ls-archive** | high | Open | **ls-archive@1.3.4** still pulls **tar 2.2.x**. Fork/bump on next archive-view security touch — do not override blindly (extract API differs) |
+| **autocomplete-plus** (rollup) | high | **Sanitizer done** | Other rollup CVEs still via older helpers |
+
+Root overrides (also documented in [dependency-graph.md](./dependency-graph.md)):
+
+```json
+"overrides": {
+  "nan": "2.28.0",
+  "dompurify": "3.4.13",
+  "marked": "4.3.0",
+  "dugite": { "tar": "6.2.1" }
+}
+```
+
+CI: `script/ci/sca-runtime.test.js` (unit-and-cpm job).
 
 ## npm install warnings (not hidden)
 
@@ -42,7 +55,7 @@ Bootstrap and CI intentionally use **default npm loglevel** so deprecations stay
 | **prebuild-install (deprecated)** | Upstream: use **prebuildify + node-gyp-build** | First-party: tree-sitter/watcher install scripts migrated; cpm prebuild order prefers node-gyp-build; residual transitive pulls from unowned packages only |
 | **Root app** | Nested old trees from git packages | Prefer prebuildify-bundled `prebuilds/`; rebuild via bootstrap when needed |
 | **babel-core@5 / coffee-script** | Deprecation + SCA | **Removed** from app runtime deps (#62 Options 2–3) |
-| **request / form-data** | Critical audit | Fork/replace packages that still pull `request` (#56 ownership) |
+| **request / form-data** | Critical audit | Fork/replace packages that still pull `request` |
 | **legacy-peer-deps** | Peer skew without ERESOLVE | Required for Atom-era tree; not a silence flag — remove only after peer graph is fixed |
 
 Re-check after lockfile changes:
@@ -61,6 +74,7 @@ These often show as critical/high but are not loaded in the production editor pa
 | mocha, growl, debug (old), diff (old mocha tree) | Spec runner / reporters |
 | eslint / standard (nested in packages) | Dev lint inside package trees |
 | minimist/mkdirp via mocha | Test tooling |
+| node-gyp `tar` 4.x | Build-time Electron/native rebuild, not editor HTML/git extract |
 
 Still worth cleaning when upgrading the test stack, but not a Phase S blocker.
 
@@ -69,6 +83,9 @@ Still worth cleaning when upgrading the test stack, but not a Phase S blocker.
 1. **Transitive CVEs with `fixAvailable: false`** until the owning package is forked and dependency tree rewritten.  
 2. **Community packages** install their own deps via cpm/Pulsar — outside this inventory; community require restrict limits privileged Node, not every transitive npm CVE.  
 3. **Babel 5 + coffee-script** removed from app runtime deps (#62 Options 2–3). Community packages must precompile.
+4. **`request` / `form-data`** remain until settings-view (and similar) drop the old HTTP client.  
+5. **`ls-archive` tar 2.x** remains until archive-view is forked for extract.  
+6. **dugite 2/3** not taken — GitProcess embed layout change is a separate github-package pass.
 
 ## How to re-run
 

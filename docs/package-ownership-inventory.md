@@ -36,7 +36,7 @@
 | github | Git workers utilityProcess (Phase S) |
 | image-view | Next-tier |
 | keybinding-resolver | Debabel patch |
-| markdown-preview | SCA priority (`dompurify`/`marked`) |
+| markdown-preview | SCA: marked 4.3.0 + DOMPurify 3.4.13 |
 | notifications | Owned |
 | open-on-github | Next-tier |
 | package-generator | Next-tier |
