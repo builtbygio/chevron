@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **SUPPORT.md** rewritten for Chevron (#75): points at README, `docs/`, CONTRIBUTING, Issues, and SECURITY.md. Dead Atom Flight Manual / atom.io API / Atom Discussions links removed.
+- **Docs hygiene (#76):** first-party `docs/` point at Chevron, not the dead Flight Manual; `docs/rfcs/` marked historical. **package-node-policy.md** matches Chevron-only home and legacy `atom` aliases ([REBRANDING.md](docs/REBRANDING.md)).
 - **Build modernization (Streams A–E):** A–C as before; **B** — `overrides.nan=2.28.0` (no nested keytar nan 2.14), frozen Class C patch sets; **D** — [packaging.md](docs/packaging.md), stock V8 snapshot marker, packager retained; **E** — [dependency-graph.md](docs/dependency-graph.md), `atom/*` git pin ceiling (33). See [docs/build-modernization.md](docs/build-modernization.md).
 - **Chevron-only product policy:** drop dual-support commitment. Default config home is **`~/.chevron`** (no default to `~/.atom`). Prefer `engines.chevron` (cpm warns on `engines.atom` alone). `require('atom')` logs a one-shot deprecation warning. See [docs/REBRANDING.md](docs/REBRANDING.md).
 - **Package ecosystem:** **owned catalog only** for the near term; open/sandboxed community packages deferred until base Chevron is ready (package host v2). See [docs/package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md).

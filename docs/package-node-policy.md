@@ -1,17 +1,22 @@
 # Package Node policy (Chevron)
 
-**Status:** Phase N3 + Phase S1 product policy  
+**Status:** Phase N3 + Phase S complete (Option C); **Chevron-only** product policy  
 **Audience:** package authors and Chevron maintainers  
-**Related:** [security-phase-n.md](./security-phase-n.md), [security-phase-n3.md](./security-phase-n3.md), [security-phase-s.md](./security-phase-s.md)
+**Related:** [REBRANDING.md](./REBRANDING.md), [package-ecosystem-strategy.md](./package-ecosystem-strategy.md), [security-phase-n.md](./security-phase-n.md), [security-phase-s-decision.md](./security-phase-s-decision.md)
 
-## Dual-support forever (API names)
+This doc is **privilege and Node policy**, not a dual-product promise. Names and config home follow [REBRANDING.md](./REBRANDING.md).
 
-Chevron keeps **Atom package compatibility** for stable surfaces:
+## Product names (legacy aliases only)
 
-- `global.atom` / `require('atom')`
-- `engines.atom` (and optional `engines.chevron`)
-- URI scheme `atom://` (+ `chevron://` alias)
-- Config home dual-resolution (`ATOM_HOME` / `CHEVRON_HOME` / `~/.atom` / `~/.chevron`)
+| Surface | Supported | Legacy (unsupported; may warn) |
+|---------|-----------|--------------------------------|
+| Editor env | `global.chevron` | `global.atom` |
+| Package module | `require('chevron')` | `require('atom')` (one-shot warning) |
+| Engines | `engines.chevron` | `engines.atom` alone → cpm warning |
+| Protocol | `chevron://` | `atom://` still registered |
+| Config home | **`~/.chevron`** | `ATOM_HOME` only if **explicitly** set — **no default to `~/.atom`** |
+
+Config home order: `CHEVRON_HOME` → explicit `ATOM_HOME` → portable `.chevron` → **`~/.chevron`**.
 
 That is **not** a promise that packages get unrestricted Node forever.
 
@@ -20,26 +25,27 @@ That is **not** a promise that packages get unrestricted Node forever.
 | Tier | Who | Node in package code |
 |------|-----|----------------------|
 | **T0 Core** | Editor preload + `src/` | Allowed; new privileged ops should use main IPC |
-| **T1 Bundled** | Ship-in packages (github, tree-view, …) | Prefer `atom.*` / applicationDelegate IPC; no new `electron.remote` |
-| **T2 Community** | User-installed packages | **No guaranteed Node** long-term; use published `atom.*` APIs only |
+| **T1 Bundled** | Ship-in packages (github, tree-view, …) | Prefer `chevron.*` / applicationDelegate IPC; no new `electron.remote` |
+| **T2 Community** | User-installed packages | **No guaranteed Node** long-term; published editor APIs only. Catalog is **owned-only** until package host v2 |
 
-Today (0.6.x): T1/T2 still share the **preload Node world** for compatibility. Community (T2) privileged requires and **native addon** loads are **blocked by default**. Phase S prep redesigns the package host toward long-term isolation ([security-phase-s.md](./security-phase-s.md)).
+Today (0.6.x): T1/T2 still share the **preload Node world** for compatibility. Community (T2) privileged requires and **native addon** loads are **blocked by default**. Phase S Option C keeps editor Chromium `sandbox` false; isolation is utilityProcess + restrict, not a full guest sandbox.
 
 ## Do / don’t
 
 **Do**
 
-- Use `atom.workspace`, `atom.project`, `atom.packages`, `atom.notifications`, `BufferedProcess` / `Task`
-- Open external URLs via `atom.applicationDelegate.openExternal` (scheme allowlist in main)
+- Use `chevron.workspace`, `chevron.project`, `chevron.packages`, `chevron.notifications`, `BufferedProcess` / `Task` (`atom.*` aliases still exist)
+- Open external URLs via `applicationDelegate.openExternal` (scheme allowlist in main)
 - File manager / trash via `showItemInFolder` / `moveItemToTrash` on applicationDelegate
-- Declare `engines.atom` (and optionally `engines.chevron`)
+- Declare **`engines.chevron`**
 
 **Don’t**
 
 - `require('electron').remote` / `@electron/remote` (removed; temporary compat only for some bundled code)
 - `shell.openExternal` with arbitrary schemes
-- Assume `require('fs')` / `child_process` / `net` will keep working in future releases
-- Use the Atom preload as a webview preload or enable Node for guest content
+- Assume `require('fs')` / `child_process` / `net` will keep working for community packages
+- Use the editor preload as a webview preload or enable Node for guest content
+- Assume `~/.atom` is the config or package home
 
 ## Auditing / restricting privileged requires (developers)
 
@@ -57,7 +63,7 @@ CHEVRON_RESTRICT_PACKAGE_REQUIRES=0 ./out/Chevron-linux-x64/chevron --no-sandbox
 | Env | Effect |
 |-----|--------|
 | `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` | Log **one warning per caller path + module** for privileged / native requires |
-| `CHEVRON_RESTRICT_PACKAGE_REQUIRES` unset / `1` | **Throw** on blocked requires from **community** packages (`~/.atom/packages`, `~/.chevron/packages`). Core + bundled (app.asar) still allowed |
+| `CHEVRON_RESTRICT_PACKAGE_REQUIRES` unset / `1` | **Throw** on blocked requires from **community** packages (`~/.chevron/packages`, or `~/.atom/packages` only if that path is used). Core + bundled (app.asar) still allowed |
 | `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` | **Disable** restrict (escape hatch) |
 
 **Blocked for community (default on):**
@@ -66,43 +72,44 @@ CHEVRON_RESTRICT_PACKAGE_REQUIRES=0 ./out/Chevron-linux-x64/chevron --no-sandbox
 2. **Native addon packages** — inventory names such as `superstring`, `keytar`, `@atom/fuzzy-native`, … (`nativeAddonModuleIds`)
 3. **Direct `.node` bindings** — e.g. `require('./binding.node')`
 
-**Default is on** (Electron BP P1.2 + Phase S1.0). Main process sets the env from `core.restrictCommunityPackageRequires` (default `true`) unless the env is already set. Community packages that need raw Node or natives must migrate to `atom.*` APIs or users must opt out explicitly.
+**Default is on** (Electron BP P1.2 + Phase S1.0). Main process sets the env from `core.restrictCommunityPackageRequires` (default `true`) unless the env is already set.
 
 Threat model: [security-threat-model.md](./security-threat-model.md).
 
 ## Classification edge cases (known failure modes)
 
-`classifyCallerPath` in `src/package-require-audit.js` uses **path heuristics**. Golden coverage lives in `spec/package-require-audit-spec.js` and `script/ci/package-require-audit.test.js`.
+`classifyCallerPath` in `src/package-require-audit.js` uses **path heuristics**. Coverage: `spec/package-require-audit-spec.js` and `script/ci/package-require-audit.test.js`.
 
 | Situation | Classification today | Notes |
 |-----------|----------------------|--------|
 | Path under `app.asar/` or `resources/app/` | `bundled` | Correct for packaged app |
 | Path under monorepo `…/packages/<name>/` (not user home) | `bundled` | Dev resource-path |
-| Path under `~/.atom/packages/` or `~/.chevron/packages/` | `community` | Enforced restrict |
-| Path `…/atom/packages/…` (legacy absolute) | `community` | Matches older install layouts |
+| Path under `~/.chevron/packages/` | `community` | Enforced restrict |
+| Path under `~/.atom/packages/` | `community` | Only if that tree exists (not the default home) |
+| Path `…/atom/packages/…` (legacy absolute) | `community` | Older install layouts |
 | Path under `node_modules/` outside asar | `bundled` | Treats dep as core/bundled helper |
 | Symlinked community package into monorepo `packages/` | may be `bundled` | **Known gap** — prefer real paths under user package homes |
 | `unknown` caller (no stack path) | not restricted | Restrict only when `kind === 'community'` |
 | Windows paths | supported via stack parser | Drive-letter + backslash frames |
 
-Do not rely on restrict alone for untrusted code execution models; it is a package-policy layer, not a Chromium sandbox.
+Do not rely on restrict alone for untrusted code execution; it is a package-policy layer, not a Chromium sandbox.
 
 ## Install / rebuild
 
 Use **cpm** (or the `apm` shim → cpm). Prefer prebuilds for natives. See [cpm-cutover.md](./cpm-cutover.md) and [cpm-prebuilds.md](./cpm-prebuilds.md).
 
-## Owned package CI (Option B)
+## Owned package CI
 
 Bundled Tier-1 packages live in `builtbygio/*` forks and are **git-pinned** from the Chevron monorepo.
 
-- **Package-repo CI** may only check metadata (`package.json`, `repository`, `engines.chevron`). Do not install Atom or run `atom --test` there (Atom download channels are dead; patches target Chevron IPC).
-- **Integration gate** is Chevron CI: bootstrap, build, and smoke with the pinned SHAs. Bump the pin in Chevron to validate package changes.
+- **Package-repo CI** may only check metadata (`package.json`, `repository`, `engines.chevron`). Do not install Atom or run `atom --test` there.
+- **Integration gate** is Chevron CI: bootstrap, build, and smoke with the pinned SHAs.
 
 See `GROK.md` § Owned package CI.
 
 ## End state (aspirational)
 
-- Packages use Atom services and main IPC only
+- Packages use Chevron services and main IPC only
 - Guest content never has Node
-- Community cannot load natives or privileged Node (S1 — in progress)
-- Editor may enable `sandbox: true` only after Phase S prerequisites (`docs/security-phase-s.md`); full sandbox is optional if Option C (host isolation without Chromium sandbox) is chosen
+- Community cannot load natives or privileged Node (S1 — default on)
+- Editor Chromium `sandbox` stays **false** under Phase S **Option C** until a later host/natives design says otherwise ([security-phase-s-decision.md](./security-phase-s-decision.md))
