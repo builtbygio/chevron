@@ -20,7 +20,7 @@
 
 ### Option 2 — Drop Coffee — **shipped**
 
-- Bootstrap decaffeinates `autocomplete-chevron-api`, `autocomplete-css`, `bookmarks`, `wrap-guide` (`script/patches/decaffeinated-bundled-packages/`).
+- Owned pins ship precompiled JS (`autocomplete-chevron-api`, `autocomplete-css`, `bookmarks`, `wrap-guide`). Class C bootstrap patches **deleted**.
 - `src/coffee-script.js` always errors on compile.
 - cpm warns on install if runtime `.coffee` is present.
 
@@ -32,7 +32,7 @@ Mirror Coffee: **no runtime `babel-core`**. Sources that used Atom opt-in prefix
 |-------|-----|
 | **Monorepo `packages/*`** | esbuild precompile in tree (dalek, git-diff, welcome, …) |
 | **Owned builtbygio forks** | Commits on `chevron/drop-runtime-babel` pinned from Chevron `package.json` (settings-view, find-and-replace, autocomplete-plus, command-palette, tree-view) |
-| **Remaining atom/* pins** | Bootstrap patch `script/lib/patch-debabel-bundled-packages.js` + `script/patches/debabelled-bundled-packages/` |
+| **Owned babel-prefix leftovers** | Folded into pins (`archive-view`, `bookmarks`, `keybinding-resolver`, `open-on-github`, `styleguide`, `symbols-view`, `timecop`). Class C patch **deleted**. |
 
 Prefixes no longer supported at runtime:
 
@@ -70,5 +70,5 @@ CHEVRON_DISABLE_LEGACY_TRANSPILE=1
 
 ## Related
 
-- Bootstrap: `patch-decaffeinate-bundled-packages.js`, `patch-debabel-bundled-packages.js`
+- Class C bootstrap patches retired; re-run `script/lib/precompile-babel-prefix-files.js` only if a new pin still ships a babel prefix
 - cpm install warnings for residual `.coffee` / babel-prefix under `lib/` / `src/`

@@ -28,8 +28,8 @@ Override soft native failures only with `CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1
 | `patch-oniguruma-gyp.js` | A compile | GCC 14 + K&R in oniguruma | Pin modern oniguruma / gyp |
 | `patch-spellchecker-win.js` | A compile | MSVC C2440 temp wstring | Upstream spellchecker fix |
 | `patch-dep-package-json.js` | Hygiene | DEP0128 / broken package.json | Fix upstream package metadata |
-| `patch-decaffeinate-bundled-packages.js` | C bridge | #62 coffee → JS for atom/* leftovers | Replace pins with precompiled SHAs; delete `script/patches/decaffeinated-*` |
-| `patch-debabel-bundled-packages.js` | C bridge | #62 babel-prefix → JS | Same; delete `script/patches/debabelled-*` |
+| ~~`patch-decaffeinate-bundled-packages.js`~~ | C retired | Folded into owned pins | **Deleted** |
+| ~~`patch-debabel-bundled-packages.js`~~ | C retired | Folded into owned pins | **Deleted** |
 | `patch-packages-remote-ipc.js` | B safety net | remote → IPC | Folded into builtbygio; keep until always no-op |
 | `patch-github-remote.js` | B safety net | github worker | Folded into builtbygio/github |
 | `patch-tree-view-stats.js` | B safety net | Stats.mtime on modern Node | Folded into tree-view pin |
@@ -41,8 +41,8 @@ Override soft native failures only with `CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1
 
 | Path | Role |
 |------|------|
-| `script/patches/decaffeinated-bundled-packages/` | Offline JS for remaining coffee `lib/` atom pins |
-| `script/patches/debabelled-bundled-packages/` | Offline JS for babel-prefix atom pins |
+| ~~`script/patches/decaffeinated-bundled-packages/`~~ | Folded into owned SHAs — **deleted** |
+| ~~`script/patches/debabelled-bundled-packages/`~~ | Folded into owned SHAs — **deleted** |
 
 ## Critical natives (hard gate)
 
@@ -66,5 +66,5 @@ node -e "const c=require('./script/lib/critical-natives'); console.log(c.checkCr
 
 1. **A** — keep until Electron/native upgrades remove need  
 2. **B** — delete when bootstrap log always shows no-op / zero files changed  
-3. **C** — delete when no atom/* coffee/babel pins remain  
+3. **C** — **retired** (owned pins ship precompiled JS)  
 4. **D** — delete with apm debug path  

@@ -19,15 +19,15 @@
 
 | Package | Notes |
 |---------|--------|
-| archive-view | Next-tier (#80) |
-| **autocomplete-chevron-api** | Renamed from `autocomplete-atom-api`; pin `af35f1f` |
-| autocomplete-css | Next-tier; bootstrap decaffeinate residual coffee if present |
+| archive-view | Class C fold — plain JS pin |
+| **autocomplete-chevron-api** | Renamed from `autocomplete-atom-api`; Class C fold (no coffee) |
+| autocomplete-css | Class C fold — no runtime coffee |
 | autocomplete-html | Next-tier |
 | autocomplete-plus | Babel-prefix drop pin |
 | autocomplete-snippets | Next-tier |
 | autosave | Next-tier |
 | background-tips | Next-tier |
-| bookmarks | Decaffeinate patch for main |
+| bookmarks | Class C fold — no coffee / babel-prefix |
 | bracket-matcher | Next-tier |
 | command-palette | Babel drop pin |
 | encoding-selector | Next-tier |
@@ -35,22 +35,22 @@
 | fuzzy-finder | Path probes via main |
 | github | Git workers utilityProcess (Phase S) |
 | image-view | Next-tier |
-| keybinding-resolver | Debabel patch |
+| keybinding-resolver | Class C fold — plain JS |
 | markdown-preview | SCA: marked 4.3.0 + DOMPurify 3.4.13 |
 | notifications | Owned |
-| open-on-github | Next-tier |
+| open-on-github | Class C fold — plain JS |
 | package-generator | Next-tier |
 | settings-view | Babel drop pin; Pulsar registry |
 | snippets | Owned |
 | spell-check | Owned |
 | status-bar | Owned |
-| styleguide | Debabel patch |
-| symbols-view | Debabel patch |
+| styleguide | Class C fold — plain JS |
+| symbols-view | Class C fold — plain JS |
 | tabs | Owned |
-| timecop | Debabel patch |
+| timecop | Class C fold — plain JS |
 | tree-view | Babel drop pin |
 | whitespace | Next-tier |
-| wrap-guide | Decaffeinate patch |
+| wrap-guide | Class C fold — no runtime coffee |
 
 ## Remaining `atom/*` pins
 

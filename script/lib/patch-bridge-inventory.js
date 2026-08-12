@@ -1,26 +1,13 @@
 'use strict';
 
 /**
- * Stream B: remaining Class C bridges (decaff / debabel) that bootstrap still
- * applies onto node_modules. Used by CI so the set cannot grow unnoticed.
+ * Remaining bootstrap patch bridges. Class C (decaff / debabel) is empty —
+ * those packages now ship precompiled JS in owned pins.
  */
 
-const DECAFFEINATE_PACKAGES = [
-  'autocomplete-chevron-api',
-  'autocomplete-css',
-  'bookmarks',
-  'wrap-guide'
-];
+const DECAFFEINATE_PACKAGES = [];
 
-const DEBABEL_PACKAGES = [
-  'archive-view',
-  'bookmarks',
-  'keybinding-resolver',
-  'open-on-github',
-  'styleguide',
-  'symbols-view',
-  'timecop'
-];
+const DEBABEL_PACKAGES = [];
 
 const SAFETY_NET_PATCHES = [
   'patch-packages-remote-ipc.js',
