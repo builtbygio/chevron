@@ -519,6 +519,30 @@
           "enabled": false
         },
         {
+          "id": "Restart and Install Update",
+          "label": "Open latest download page",
+          "command": "application:install-update",
+          "visible": false
+        },
+        {
+          "id": "Check for Update",
+          "label": "Check for Update",
+          "command": "application:check-for-update",
+          "visible": false
+        },
+        {
+          "id": "Checking for Update",
+          "label": "Checking for Update",
+          "enabled": false,
+          "visible": false
+        },
+        {
+          "id": "Downloading Update",
+          "label": "Downloading Update",
+          "enabled": false,
+          "visible": false
+        },
+        {
           "type": "separator"
         },
         {

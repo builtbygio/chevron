@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-08 (Phase S complete / Option C)
+**Date of this handoff:** 2026-08 (1.0.0 unsigned preview)
 
 ---
 
@@ -22,11 +22,11 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 ---
 
-## Current baseline (0.6.0)
+## Current baseline (1.0.0 unsigned preview)
 
 | Item | Value |
 |------|--------|
-| Version | **0.6.0** |
+| Version | **1.0.0** (unsigned preview — [docs/releases.md](docs/releases.md)) |
 | Electron | **43.1.0** (ladder complete) |
 | Package / productName | `chevron` / **Chevron** |
 | Bundle ID | `dev.builtbygio.chevron` |
