@@ -36,6 +36,12 @@ var import_etch = __toESM(require("etch"));
 var import_fs_plus = __toESM(require("fs-plus"));
 var import_grim = __toESM(require("grim"));
 var import_marked = require("marked");
+var import_dompurify = __toESM(require("dompurify"));
+function sanitizeMarkdown(src) {
+  const parse = import_marked.parse || import_marked.marked;
+  const html = parse(src);
+  return import_dompurify.default().sanitize(html);
+}
 var import_path = __toESM(require("path"));
 var import_electron = require("electron");
 class DeprecationCopView {
@@ -134,7 +140,7 @@ class DeprecationCopView {
           "div",
           {
             className: "list-item deprecation-message",
-            innerHTML: (0, import_marked.marked)(deprecation.getMessage())
+            innerHTML: sanitizeMarkdown(deprecation.getMessage())
           }
         ), this.renderIssueURLIfNeeded(
           packageName,
@@ -193,7 +199,7 @@ ${deprecation.message}`;
             "div",
             {
               className: "list-item deprecation-message",
-              innerHTML: (0, import_marked.marked)(deprecation.message)
+              innerHTML: sanitizeMarkdown(deprecation.message)
             }
           ), this.renderSelectorIssueURLIfNeeded(
             packageName,

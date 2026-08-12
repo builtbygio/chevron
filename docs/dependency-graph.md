@@ -12,15 +12,24 @@
 | `git+…atom/*` | Still-upstream language / leftover pins — [issue #79](https://github.com/builtbygio/chevron/issues/79) |
 | semver | npm registry |
 
-Guards: `script/ci/package-pin-policy.test.js` (owned pins) and `script/ci/dep-graph.test.js` (counts, forbidden runtimes, `nan` override).
+Guards: `script/ci/package-pin-policy.test.js` (owned pins), `script/ci/dep-graph.test.js` (counts, forbidden runtimes, overrides), and `script/ci/sca-runtime.test.js` (marked / DOMPurify / dugite tar).
 
-## Overrides (Stream B)
+## Overrides (Stream B + runtime SCA)
 
 ```json
-"overrides": { "nan": "2.28.0" }
+"overrides": {
+  "nan": "2.28.0",
+  "dompurify": "3.4.13",
+  "marked": "4.3.0",
+  "dugite": { "tar": "6.2.1" }
+}
 ```
 
-Forces **keytar** (and any other nested `nan`) onto the V8-safe line so `patch-keytar-nan` / `patch-nested-nan` become no-ops after a clean `npm ci`.
+- **nan** — keytar (and other nested `nan`) on the V8-safe line so `patch-keytar-nan` / `patch-nested-nan` become no-ops after a clean `npm ci`.
+- **dompurify / marked** — product-path HTML sanitizer/parser (last CJS marked; current DOMPurify). Owned package pins declare the same versions.
+- **dugite.tar** — dugite 1.x still asks for tar 4; 6.2.1 is the last 6.x with the path-traversal fix and still supports the stream extract API dugite uses.
+
+See [sca-runtime-inventory.md](./sca-runtime-inventory.md).
 
 ## What we are not doing in this stream
 
