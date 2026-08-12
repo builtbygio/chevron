@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Class C fold:** owned pins now ship the precompiled decaffeinate/debabel JS (`archive-view`, `autocomplete-chevron-api`, `autocomplete-css`, `bookmarks`, `keybinding-resolver`, `open-on-github`, `styleguide`, `symbols-view`, `timecop`, `wrap-guide`). Bootstrap no longer patches `node_modules` for Coffee/babel-prefix leftovers; `script/patches/decaffeinated-*` and `debabelled-*` removed.
 - **Runtime SCA:** owned `markdown-preview`, `autocomplete-plus`, `github`, `notifications`, and `settings-view` pins bump **marked 4.3.0** (last CJS; call `marked.parse`) and **DOMPurify 3.4.13**. `github` sanitizes after parse (marked 1+ dropped `sanitizer`) and uses dugite **1.110.0**. Root overrides force those marked/DOMPurify versions and **tar 6.2.1** under dugite. In-repo `deprecation-cop` matches. Leftover: `request`/`form-data`, `ls-archive` tar 2.x — see [docs/sca-runtime-inventory.md](docs/sca-runtime-inventory.md).
 - **SUPPORT.md** rewritten for Chevron (#75): points at README, `docs/`, CONTRIBUTING, Issues, and SECURITY.md. Dead Atom Flight Manual / atom.io API / Atom Discussions links removed.
 - **Docs hygiene (#76):** first-party `docs/` point at Chevron, not the dead Flight Manual; `docs/rfcs/` marked historical. **package-node-policy.md** matches Chevron-only home and legacy `atom` aliases ([REBRANDING.md](docs/REBRANDING.md)).

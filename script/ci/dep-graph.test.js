@@ -84,26 +84,25 @@ describe('root dependency graph', () => {
   });
 });
 
-describe('Class C patch bridges (Stream B)', () => {
-  it('decaffeinate set is frozen', () => {
-    assert.deepStrictEqual(DECAFFEINATE_PACKAGES.slice().sort(), [
-      'autocomplete-chevron-api',
-      'autocomplete-css',
-      'bookmarks',
-      'wrap-guide'
-    ]);
+describe('Class C patch bridges (retired)', () => {
+  it('decaffeinate / debabel sets are empty (folded into owned pins)', () => {
+    assert.deepStrictEqual(DECAFFEINATE_PACKAGES, []);
+    assert.deepStrictEqual(DEBABEL_PACKAGES, []);
   });
 
-  it('debabel set is frozen', () => {
-    assert.deepStrictEqual(DEBABEL_PACKAGES.slice().sort(), [
-      'archive-view',
-      'bookmarks',
-      'keybinding-resolver',
-      'open-on-github',
-      'styleguide',
-      'symbols-view',
-      'timecop'
-    ]);
+  it('offline Class C patch trees and scripts are gone', () => {
+    const gone = [
+      'script/lib/patch-decaffeinate-bundled-packages.js',
+      'script/lib/patch-debabel-bundled-packages.js',
+      'script/patches/decaffeinated-bundled-packages',
+      'script/patches/debabelled-bundled-packages'
+    ];
+    for (const rel of gone) {
+      assert.ok(
+        !fs.existsSync(path.join(ROOT, rel)),
+        `Class C leftover still present: ${rel}`
+      );
+    }
   });
 
   it('safety-net patch files exist', () => {

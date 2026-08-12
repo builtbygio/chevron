@@ -25,10 +25,10 @@ Follow-up to the 2026-08-08 build audit. Work order: **A → C → B → D/E**.
 | Item | Status |
 |------|--------|
 | Inventory + retirement paths | [bootstrap-patch-matrix.md](./bootstrap-patch-matrix.md) |
-| Frozen Class C sets | `script/lib/patch-bridge-inventory.js` + CI |
+| Frozen Class C sets | **Empty** — folded into owned pins; inventory + CI assert no leftover trees |
 | Nested `nan` (keytar 2.14) | **Root `overrides.nan=2.28.0`** — lockfile no longer nests 2.14 |
 | Safety-net IPC patches | Kept (zero-diff / already-ok logs); not deleted |
-| Fold decaff/debabel into pins | Still open — owned SHA bumps, not this PR |
+| Fold decaff/debabel into pins | **Done** — owned SHA bumps; bootstrap no longer patches Coffee/babel-prefix |
 
 Do **not** delete Class A compile patches until Electron/native pins prove green without them.
 
