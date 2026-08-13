@@ -11,7 +11,7 @@
 | Class | Count | Policy |
 |-------|------:|--------|
 | **Owned** (`builtbygio/*` git pins) | **32** | Primary maintenance + security patches |
-| **Upstream Atom** (`atom/*` git pins) | **33** | Almost all `language-*` — SHA pins only |
+| **Upstream Atom** (`atom/*` git pins) | **22** | Remaining TextMate-only `language-*` — SHA pins only (#79 leftover) |
 | **In-repo** (`file:packages/*`) | 29 | Monorepo packages (themes, about, welcome, natives, …) |
 | **npm registry** (semver / file natives) | rest | Host npm / Electron rebuild |
 
@@ -51,12 +51,25 @@
 | tree-view | Babel drop pin |
 | whitespace | Next-tier |
 | wrap-guide | Class C fold — no runtime coffee |
+| language-c | Tree-sitter ABI 13–15 (`tree-sitter-c` / `cpp`) |
+| language-css | Tree-sitter ABI 13–15 |
+| language-go | Tree-sitter ABI 13–15 |
+| language-html | Tree-sitter ABI 13–15 + embedded-template |
+| language-java | Tree-sitter ABI 13–15 (`tree-sitter-java`, was `java-dev`) |
+| language-javascript | Tree-sitter ABI 13–15 (js / jsdoc / regex) |
+| language-json | Tree-sitter ABI 13–15 |
+| language-python | Tree-sitter ABI 13–15 |
+| language-ruby | Tree-sitter ABI 13–15 |
+| language-shellscript | Tree-sitter ABI 13–15 (`tree-sitter-bash`) |
+| language-typescript | Tree-sitter ABI 13–15 (ts / tsx) |
+
+Binding: official npm `tree-sitter@0.25.1` (not DeeDeeG / `file:packages/tree-sitter`).
 
 ## Remaining `atom/*` pins
 
-### low-grammar (defer — #79)
+### TextMate-only language-* (defer — #79)
 
-All `language-*` packages pinned to `atom/*` (except in-repo `language-rust-bundled`). Action: **leave** on SHA; re-pin or fork only for syntax regressions.
+No tree-sitter grammar in the package. Still `atom/*` SHA pins. Fork when needed for other reasons.
 
 ## Process
 

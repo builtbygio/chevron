@@ -146,9 +146,13 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 
 ### LSP — **phases 0–5 landed**
 
-1. Expand / modernize **owned catalog** (builtbygio pins) — [package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md)  
-2. **LSP** — [docs/lsp-design.md](docs/lsp-design.md) (**plan**); execute phases 0→5  
-3. **#57** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
+[docs/lsp-design.md](docs/lsp-design.md). Host v2 / more servers later.
+
+### Primary next tracks
+
+1. **Dogfood week (#106)** — use the unsigned preview; file blockers  
+2. **#57** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
+3. **#79** — Tree-sitter-backed `language-*` now **builtbygio** + official `tree-sitter@0.25.1`. Remaining **22** TextMate-only `language-*` still `atom/*`.
 4. Residual renames: atom-keymap / atom-select-list / `@atom/*`  
 5. **Later:** sandboxed community packages (package host v2); packager/snapshot; signing  
 
