@@ -11,6 +11,9 @@ const Package = require('./package');
 const ThemePackage = require('./theme-package');
 const ModuleCache = require('./module-cache');
 const packageJSON = require('../package.json');
+const {
+  isDeferredStartupPackage
+} = require('./deferred-startup-packages');
 
 // Extended: Package manager for coordinating the lifecycle of Atom packages.
 //
@@ -577,9 +580,14 @@ module.exports = class PackageManager {
     );
   }
 
+  isDeferredStartupPackage(name) {
+    return isDeferredStartupPackage(name);
+  }
+
   preloadPackages() {
     const result = [];
     for (const packageName in this.packagesCache) {
+      if (this.isDeferredStartupPackage(packageName)) continue;
       result.push(
         this.preloadPackage(packageName, this.packagesCache[packageName])
       );
@@ -768,6 +776,26 @@ module.exports = class PackageManager {
     }
   }
 
+  activateDeferredStartupPackages() {
+    const names = Object.keys(this.packageDependencies).filter(name =>
+      this.isDeferredStartupPackage(name)
+    );
+    const promises = [];
+    for (const name of names) {
+      if (this.isPackageDisabled(name)) continue;
+      if (this.getActivePackage(name)) continue;
+      promises.push(
+        this.activatePackage(name).catch(error => {
+          console.warn(
+            `Failed to activate deferred startup package ${name}:`,
+            error
+          );
+        })
+      );
+    }
+    return Promise.all(promises);
+  }
+
   // Activate all the packages that should be activated.
   activate() {
     let promises = [];
@@ -798,6 +826,9 @@ module.exports = class PackageManager {
     const promises = [];
     this.config.transactAsync(() => {
       for (const pack of packages) {
+        if (this.isDeferredStartupPackage(pack.name) && !pack.deserialized) {
+          continue;
+        }
         const promise = this.activatePackage(pack.name);
         if (!pack.activationShouldBeDeferred()) {
           promises.push(promise);

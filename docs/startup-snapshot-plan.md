@@ -163,6 +163,29 @@ is required only after snapshot generation. Snapshot-time execution still
 builds `AtomEnvironment` and, when `isGeneratingSnapshot`, `require`s ~50
 bundled packages — bisection if we resume Phase 1 for Mac.
 
+### 4.7 Deferred startup packages (2026-08-13)
+
+`preloadPackages()` no longer `require`s every bundled main before first paint.
+Heavy packages (`github`, `markdown-preview`, `find-and-replace`,
+`settings-view`, `spell-check`, `fuzzy-finder`, …) load/activate on
+`requestIdleCallback` after `setup-window:end`. First-paint set stays:
+tree-view, tabs, status-bar, welcome, notifications, themes, snippets,
+autocomplete, bracket-matcher, language-*.
+
+Same host and harness as §4.6:
+
+| Metric | Before (all preloaded) | After (deferred) |
+|--------|------------------------|------------------|
+| median wall | 2,148 ms | **1,965 ms** |
+| `setup-window:end` (best) | 1,582 ms | **1,103 ms** |
+| `setup-window:start` → `initialize:start` | 626 ms | **327 ms** |
+| `activate-packages` | 51 ms | 26 ms |
+| deferred activate | — | 42 ms *after* first paint |
+
+Workspace-ready marker improved **~480 ms (−30%)**. Wall improved less
+because harness attach/poll is a near-constant ~800 ms. Compile-cache
+conclusion in §4.3 is unchanged.
+
 ### 4.4 Measurement caveats
 
 - One cold run hit **31.9 s** (first-touch OS/dyld caching on a machine that had just been building). The multi-second conclusion is robust to that noise; **±500 ms build-to-build comparisons are not.**

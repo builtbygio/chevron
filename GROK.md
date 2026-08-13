@@ -154,7 +154,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 2. **#57** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
 3. **#79** — Tree-sitter-backed `language-*` now **builtbygio** + official `tree-sitter@0.25.1`. Remaining **22** TextMate-only `language-*` still `atom/*`.
 4. Residual renames: atom-keymap / atom-select-list / `@atom/*`  
-5. **Startup perf** — Linux x64 1.0.1 is ~2.1 s cold (compile cache works, −6%). Mac still the snapshot candidate. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).  
+5. **Startup perf** — Linux x64 ~2.1 s cold; deferred preload cut `setup-window:end` 1582 → 1103 ms. Mac still the snapshot candidate. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).  
 6. **Later:** sandboxed community packages (package host v2); packager/snapshot; signing  
 
 ### Known dogfood leftovers (found 2026-08-13)

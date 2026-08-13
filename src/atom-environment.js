@@ -1055,7 +1055,23 @@ class AtomEnvironment {
 
     StartupTime.addMarker('window:environment:start-editor-window:end');
 
+    this.scheduleDeferredStartupPackages();
+
     return output;
+  }
+
+  scheduleDeferredStartupPackages() {
+    const run = () => {
+      StartupTime.addMarker(
+        'window:environment:start-editor-window:activate-deferred-packages'
+      );
+      this.packages.activateDeferredStartupPackages();
+    };
+    if (this.window && typeof this.window.requestIdleCallback === 'function') {
+      this.window.requestIdleCallback(run, { timeout: 2000 });
+    } else {
+      setTimeout(run, 0);
+    }
   }
 
   serialize(options) {
