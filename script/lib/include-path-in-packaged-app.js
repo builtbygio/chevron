@@ -2,8 +2,10 @@
 
 const path = require('path');
 const CONFIG = require('../config');
+const { isForeignPrebuildPath } = require('./packaging-policy');
 
 module.exports = function(filePath) {
+  if (isForeignPrebuildPath(filePath)) return false;
   return (
     !EXCLUDED_PATHS_REGEXP.test(filePath) ||
     INCLUDED_PATHS_REGEXP.test(filePath)

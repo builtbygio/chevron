@@ -7,13 +7,14 @@
     "grammar",
     "rust"
   ],
-  "main": "lib/main.js",
+  "main": "./lib/main",
   "repository": "https://github.com/atom/atom",
   "license": "MIT",
   "dependencies": {
-    "tree-sitter-rust": "^0.17.0"
+    "tree-sitter-rust": "0.24.0"
   },
   "engines": {
-    "atom": ">=1.0.0 <2.0.0"
+    "atom": ">=1.0.0 <2.0.0",
+    "chevron": "*"
   }
 }

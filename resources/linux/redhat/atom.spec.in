@@ -20,6 +20,11 @@ Recommends: /usr/bin/lsb_release
 # See: https://github.com/atom/atom/issues/21937
 %undefine __brp_mangle_shebangs
 
+# Official tree-sitter prebuilds are multi-arch; host strip cannot process
+# foreign ELF, and some .node files are not valid strip input. Packaging
+# already drops other-arch prebuilds; do not fail the RPM on leftover natives.
+%undefine __brp_strip
+
 %description
 <%= description %>
 

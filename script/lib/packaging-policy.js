@@ -34,9 +34,28 @@ function stockSnapshotNote(electronVersion) {
   );
 }
 
+/**
+ * Official tree-sitter-* (prebuildify) ships prebuilds/<platform>-<arch>[suffix]/.
+ * Keep the host tag (and libc/napi suffixes like linux-x64-gnu); drop the rest
+ * so RPM brp-strip is not asked to process foreign ELF.
+ */
+function isForeignPrebuildPath(
+  filePath,
+  platform = process.platform,
+  arch = process.arch
+) {
+  if (!filePath) return false;
+  const normalized = String(filePath).replace(/\\/g, '/');
+  const match = normalized.match(/\/prebuilds\/([^/]+)/i);
+  if (!match) return false;
+  const host = `${platform}-${arch}`;
+  return !match[1].startsWith(host);
+}
+
 module.exports = {
   STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR,
   electronMajor,
   shouldSkipCustomSnapshot,
-  stockSnapshotNote
+  stockSnapshotNote,
+  isForeignPrebuildPath
 };

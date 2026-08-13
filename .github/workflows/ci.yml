@@ -181,6 +181,7 @@ jobs:
           node --test script/ci/github-release-check.test.js
           node --test script/ci/sca-runtime.test.js
           node --test script/ci/packaging-policy.test.js
+          node --test script/ci/load-tree-sitter-language.test.js
           node --test script/ci/package-utility-worker.test.js
           node --test script/ci/git-utility-host-integration.test.js
           node --test script/ci/natives-fingerprint.test.js

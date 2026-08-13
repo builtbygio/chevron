@@ -115,20 +115,14 @@ class TreeSitterLanguageMode {
   parse(language, oldTree, ranges) {
     const parser = PARSER_POOL.pop() || new Parser();
     parser.setLanguage(language);
-    const result = parser.parseTextBuffer(this.buffer.buffer, oldTree, {
-      syncTimeoutMicros: this.syncTimeoutMicros,
+    // Official tree-sitter 0.25 has parse(string|callback), not Atom's
+    // parseTextBuffer(superstring). Copy the buffer text (sync).
+    const text = this.buffer.getText();
+    const tree = parser.parse(text, oldTree || null, {
       includedRanges: ranges
     });
-
-    if (result.then) {
-      return result.then(tree => {
-        PARSER_POOL.push(parser);
-        return tree;
-      });
-    } else {
-      PARSER_POOL.push(parser);
-      return result;
-    }
+    PARSER_POOL.push(parser);
+    return tree;
   }
 
   get tree() {
