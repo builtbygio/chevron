@@ -10,7 +10,7 @@
 
 | Class | Count | Policy |
 |-------|------:|--------|
-| **Owned** (`builtbygio/*` git pins) | **32** | Primary maintenance + security patches |
+| **Owned** (`builtbygio/*` git pins) | **43** | Primary maintenance + security patches |
 | **Upstream Atom** (`atom/*` git pins) | **22** | Remaining TextMate-only `language-*` — SHA pins only (#79 leftover) |
 | **In-repo** (`file:packages/*`) | 29 | Monorepo packages (themes, about, welcome, natives, …) |
 | **npm registry** (semver / file natives) | rest | Host npm / Electron rebuild |
@@ -19,38 +19,38 @@
 
 | Package | Notes |
 |---------|--------|
-| archive-view | Class C fold — plain JS pin |
-| **autocomplete-chevron-api** | Renamed from `autocomplete-atom-api`; Class C fold (no coffee) |
-| autocomplete-css | Class C fold — no runtime coffee |
-| autocomplete-html | Next-tier |
-| autocomplete-plus | Babel-prefix drop pin |
-| autocomplete-snippets | Next-tier |
-| autosave | Next-tier |
-| background-tips | Next-tier |
-| bookmarks | Class C fold — no coffee / babel-prefix |
-| bracket-matcher | Next-tier |
-| command-palette | Babel drop pin |
-| encoding-selector | Next-tier |
-| find-and-replace | Babel drop pin |
-| fuzzy-finder | Path probes via main |
-| github | Git workers utilityProcess (Phase S) |
-| image-view | Next-tier |
-| keybinding-resolver | Class C fold — plain JS |
+| archive-view | JSON keymaps; still **ls-archive** tar 2.x |
+| **autocomplete-chevron-api** | Coffee gone; update script uses `fetch` (no `request`) |
+| autocomplete-css | Coffee gone; update script uses `fetch` (no `request`) |
+| autocomplete-html | Update scripts use `fetch` (no `request`) |
+| autocomplete-plus | TS; sanitizers; coffeelint gone |
+| autocomplete-snippets | coffeelint gone |
+| autosave | `engines.chevron` |
+| background-tips | `engines.chevron` |
+| bookmarks | JSON keymaps/menus |
+| bracket-matcher | JSON keymaps/menus |
+| command-palette | TS; coffeelint gone |
+| encoding-selector | JSON keymaps/menus |
+| find-and-replace | TS; coffeelint gone |
+| fuzzy-finder | `engines.chevron` |
+| github | Git workers utilityProcess (Phase S); sanitizers |
+| image-view | JSON keymaps/menus |
+| keybinding-resolver | JSON keymaps/menus |
 | markdown-preview | SCA: marked 4.3.0 + DOMPurify 3.4.13 |
-| notifications | Owned |
-| open-on-github | Class C fold — plain JS |
-| package-generator | Next-tier |
-| settings-view | Babel drop pin; Pulsar registry |
-| snippets | Owned |
-| spell-check | Owned |
-| status-bar | Owned |
-| styleguide | Class C fold — plain JS |
-| symbols-view | Class C fold — plain JS |
-| tabs | Owned |
-| timecop | Class C fold — plain JS |
-| tree-view | Babel drop pin |
-| whitespace | Next-tier |
-| wrap-guide | Class C fold — no runtime coffee |
+| notifications | TS; sanitizers |
+| open-on-github | JSON keymaps/menus |
+| package-generator | JSON menus |
+| settings-view | Pulsar registry; **runtime `request` remains** (`atom-io-client`) |
+| snippets | TS; coffeelint gone |
+| spell-check | TS |
+| status-bar | TS; coffeelint gone |
+| styleguide | JSON keymaps/menus |
+| symbols-view | JSON keymaps/menus |
+| tabs | TS; coffeelint gone |
+| timecop | JSON menus |
+| tree-view | TS; coffeelint gone |
+| whitespace | JSON menus |
+| wrap-guide | Coffee gone (lib + specs TypeScript) |
 | language-c | Tree-sitter ABI 13–15 (`tree-sitter-c` / `cpp`); JSON + TypeScript |
 | language-css | Tree-sitter ABI 13–15; JSON + TypeScript |
 | language-go | Tree-sitter ABI 13–15; JSON + TypeScript |

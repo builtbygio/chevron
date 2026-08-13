@@ -25,7 +25,7 @@ Exact numbers drift with registry data; re-run audit after lockfile changes.
 | **tar** (dugite extract) | critical | **Done** — 6.2.1 via override | dugite 1.x still declares tar `^4.4.7`; stream extract API works on tar 6. **ls-archive** still on tar 2.x (below) |
 | **dugite** | high | **Partial** — 1.110.0 | github pin. 2.x/3.x change git-embed layout — not this pass |
 | **async** | high | **Done** (≥3.2.6) | Audit P1 |
-| **request** | critical | Open | Deprecated HTTP client in old package trees (settings-view still). Replace when touching those packages |
+| **request** | critical | Partial | Removed from autocomplete-*-api/css/html update scripts (`fetch`). **settings-view** `atom-io-client` still uses `request` at runtime |
 | **form-data** | critical | Open | Follows `request` removal |
 | **babel-core@5** | ~~high~~ | **Removed** (#62 Option 3) | Residual only if transitive |
 | **minimatch** / **brace-expansion** | high | Opportunistic | Bump when parent allows; watch DoS on untrusted globs |
