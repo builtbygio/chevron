@@ -24,7 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - Dependabot lockfile hygiene: npm `overrides` pin patched same-major releases (`minimatch` 3.1.4, `brace-expansion` 1.1.18, `js-yaml` 3.15.1, `lodash` 4.18.x, `form-data` 2.5.6, `tar` 6.2.1 / 7.5.21, `postcss` 8.5.23, and similar) on the root, `script/`, `apm/`, nested package, and leftover VSTS/update-server lockfiles. Direct bumps: `minimatch` 3.1.4, `postcss` 8.5.23, script `semver` 5.7.2 / `simple-git` 3.x, update-server `express` 4.21. Unpatched: `request`/`hawk`, ls-archive tar 2.x, mocha/growl.
-- Autocomplete update/doc-fetch scripts (`autocomplete-chevron-api`, `autocomplete-css`, `autocomplete-html`) use `fetch` instead of the deprecated `request` package. `settings-view` still uses `request` at runtime (`atom-io-client`); `archive-view` still depends on `ls-archive` tar 2.x.
+- Autocomplete update/doc-fetch scripts (`autocomplete-chevron-api`, `autocomplete-css`, `autocomplete-html`) use `fetch` instead of the deprecated `request` package.
+- **settings-view** `atom-io-client` uses `fetch` for Pulsar registry + GitHub avatars; the runtime `request` dependency is gone. `archive-view` still depends on `ls-archive` tar 2.x.
 - Code scanning: CI `permissions: contents: read`; skip `__proto__` in `Config.deepDefaults`; Windows `BufferedProcess` quoting escapes backslashes and ignores `COMSPEC`; tooltip HTML goes through DOMPurify (attribute titles stay text); lockfile git URL rewrite only matches a prefix; local Squirrel test server confines `sendFile` and rate-limits.
 
 ### Fixed
