@@ -1,6 +1,7 @@
-# Chevron 1.0 unsigned preview
+# Chevron unsigned preview releases
 
-**Status:** 1.0 product contract  
+**Status:** 1.0.1 product contract  
+**Current tag:** [v1.0.1](https://github.com/builtbygio/chevron/releases/tag/v1.0.1)  
 **Update URL:** https://github.com/builtbygio/chevron/releases
 
 This is a **modernization 1.0**, published as an **unsigned preview**. It is not a signed, notarized daily-driver store build.
@@ -33,11 +34,15 @@ A Squirrel-style feed (`CHEVRON_UPDATE_URL_PREFIX` / legacy `ATOM_UPDATE_URL_PRE
 
 CI on tag `v*` builds every platform and attaches artifacts to the GitHub Release (`prerelease: true`).
 
-| Platform | Typical artifact |
-|----------|------------------|
-| Linux x64 / arm64 | `.deb`, `.rpm`, `.tar.gz` |
-| macOS x64 / arm64 | `chevron-mac-x64.zip` / `chevron-mac-arm64.zip` (unsigned `.app`) |
-| Windows x64 | `.zip` |
+**1.0.1:** https://github.com/builtbygio/chevron/releases/tag/v1.0.1
+
+| Platform | File |
+|----------|------|
+| Linux x64 | `chevron_1.0.1_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz` |
+| Linux arm64 | `chevron_1.0.1_arm64.deb`, `chevron.aarch64.rpm`, `chevron-arm64.tar.gz` |
+| macOS Intel | `chevron-mac-x64.zip` (unsigned `.app`) |
+| macOS Apple Silicon | `chevron-mac-arm64.zip` (unsigned `.app`) |
+| Windows x64 | `chevron-x64-windows.zip` |
 
 Update URL to give users: **https://github.com/builtbygio/chevron/releases**
 
@@ -54,8 +59,8 @@ Env overrides (advanced):
 ```bash
 git checkout master
 git pull
-git tag -a v1.0.0 -m "Chevron 1.0.0 unsigned preview"
-git push origin v1.0.0
+git tag -a v1.0.1 -m "Chevron 1.0.1 unsigned preview"
+git push origin v1.0.1
 ```
 
 The `publish-unsigned-preview` CI job waits for the five-platform matrix, then creates the GitHub Release.

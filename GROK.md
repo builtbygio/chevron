@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-08-13 (1.0.0 unsigned preview + #108 tree-view)
+**Date of this handoff:** 2026-08-13 (1.0.1 unsigned preview)
 
 ---
 
@@ -22,11 +22,11 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 ---
 
-## Current baseline (1.0.0 unsigned preview)
+## Current baseline (1.0.1 unsigned preview)
 
 | Item | Value |
 |------|--------|
-| Version | **1.0.0** (unsigned preview — [docs/releases.md](docs/releases.md)) |
+| Version | **1.0.1** (unsigned preview — [docs/releases.md](docs/releases.md)) |
 | Electron | **43.1.0** (ladder complete) |
 | Package / productName | `chevron` / **Chevron** |
 | Bundle ID | `dev.builtbygio.chevron` |
@@ -126,8 +126,8 @@ Workflow when changing a package:
 
 ### 1.0 unsigned preview — **published**
 
-Tag `v1.0.0`. Docs: [docs/releases.md](docs/releases.md), [docs/dogfood-1.0.md](docs/dogfood-1.0.md).  
-Tracker: **#106**. Next mac zip names are per-arch (`#107`); `v1.0.0` itself still has one `chevron-mac.zip`.
+Tag `v1.0.1` (after `v1.0.0`). Docs: [docs/releases.md](docs/releases.md), [docs/dogfood-1.0.md](docs/dogfood-1.0.md).  
+Tracker: **#106**. 1.0.1 mac zips are per-arch (`chevron-mac-x64.zip` / `chevron-mac-arm64.zip`).
 
 Landed with 1.0 / immediately after:
 

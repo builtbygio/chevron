@@ -2,13 +2,12 @@
 
 ## Supported versions
 
-Chevron is early-stage (pre-1.0). Security fixes land on the default branch and ship in the next tagged release when practical.
+Security fixes land on the default branch and ship in the next tagged release when practical.
 
 | Version | Supported |
 | ------- | --------- |
-| **0.6.x** | Yes — current series |
-| 0.5.x | Best effort only (prefer upgrade to 0.6.x) |
-| 0.4.x and earlier | No |
+| **1.0.x** | Yes — current series (unsigned preview) |
+| 0.6.x and earlier | No |
 
 Electron, Chromium, and Node security fixes generally require rebuilding on a current Electron ladder step; see [README](README.md) and [CHANGELOG](CHANGELOG.md).
 

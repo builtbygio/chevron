@@ -16,11 +16,23 @@ Atom was officially [sunset by GitHub in December 2022](https://github.blog/2022
 
 Rather than a from-scratch rewrite, Chevron takes the harder — and more educational — path: bring Atom's existing codebase forward through modern Electron versions, one breaking change at a time.
 
+## Download
+
+**[1.0.1 unsigned preview](https://github.com/builtbygio/chevron/releases/tag/v1.0.1)** — installers are attached to that GitHub Release. Binaries are **not codesigned**; macOS Gatekeeper and Windows SmartScreen will warn.
+
+| Platform | File |
+|----------|------|
+| Linux x64 | `chevron_1.0.1_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz` |
+| Linux arm64 | `chevron_1.0.1_arm64.deb`, `chevron.aarch64.rpm`, `chevron-arm64.tar.gz` |
+| macOS Intel | `chevron-mac-x64.zip` |
+| macOS Apple Silicon | `chevron-mac-arm64.zip` |
+| Windows x64 | `chevron-x64-windows.zip` |
+
+All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtbygio/chevron/releases). Details: [docs/releases.md](docs/releases.md).
+
 ## Status
 
-**1.0.0 unsigned preview** — modernization 1.0. Multi-platform CI builds, **owned catalog only**, Phase S **Option C** (editor `sandbox: false` on purpose). Binaries are **not codesigned**. Download and update URL: [GitHub Releases](https://github.com/builtbygio/chevron/releases). See [docs/releases.md](docs/releases.md).
-
-This is a dogfoodable preview, not a signed store app. Gatekeeper / SmartScreen will warn.
+**1.0.1 unsigned preview** — modernization 1.0 plus tree-view / archive / owned-package follow-ups. **Owned catalog only**, Phase S **Option C** (editor `sandbox: false` on purpose). This is a dogfoodable preview, not a signed store app.
 
 | Track | Notes |
 |-------|--------|
