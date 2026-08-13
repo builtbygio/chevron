@@ -67,7 +67,7 @@ Patches (`patch-packages-remote-ipc.js`):
 
 ## N2.3 — tree-view bulk fs (done)
 
-All tree-view disk I/O is routed through **`node_modules/tree-view/lib/fs-via-main.js`** (written by `script/lib/write-tree-view-fs-shim.js` on bootstrap):
+All tree-view disk I/O is routed through **`node_modules/tree-view/lib/fs-via-main.ts`** (written by `script/lib/write-tree-view-fs-shim.js` on bootstrap):
 
 | Layer | Role |
 |-------|------|

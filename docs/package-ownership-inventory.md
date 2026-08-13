@@ -19,7 +19,7 @@
 
 | Package | Notes |
 |---------|--------|
-| archive-view | JSON keymaps; **ls-archive** is [builtbygio/ls-archive](https://github.com/builtbygio/ls-archive) (tar 7) |
+| archive-view | JSON keymaps; `require('chevron')` in lib; **ls-archive** is [builtbygio/ls-archive](https://github.com/builtbygio/ls-archive) (tar 7) |
 | **autocomplete-chevron-api** | Coffee gone; update script uses `fetch` (no `request`) |
 | autocomplete-css | Coffee gone; update script uses `fetch` (no `request`) |
 | autocomplete-html | Update scripts use `fetch` (no `request`) |
@@ -48,9 +48,9 @@
 | symbols-view | JSON keymaps/menus |
 | tabs | TS; coffeelint gone |
 | timecop | JSON menus |
-| tree-view | TS; coffeelint gone |
+| tree-view | TS (lib complete); coffeelint gone; `require('chevron')` |
 | whitespace | JSON menus |
-| wrap-guide | Coffee gone (lib + specs TypeScript) |
+| wrap-guide | Coffee gone; `require('chevron')` in lib |
 | language-c | Tree-sitter ABI 13–15 (`tree-sitter-c` / `cpp`); JSON + TypeScript |
 | language-css | Tree-sitter ABI 13–15; JSON + TypeScript |
 | language-go | Tree-sitter ABI 13–15; JSON + TypeScript |
