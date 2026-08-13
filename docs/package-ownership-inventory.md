@@ -40,7 +40,7 @@
 | notifications | TS; sanitizers |
 | open-on-github | JSON keymaps/menus |
 | package-generator | JSON menus |
-| settings-view | Pulsar registry; **runtime `request` remains** (`atom-io-client`) |
+| settings-view | Pulsar registry via `fetch` (no `request`) |
 | snippets | TS; coffeelint gone |
 | spell-check | TS |
 | status-bar | TS; coffeelint gone |
