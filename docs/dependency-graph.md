@@ -21,13 +21,18 @@ Guards: `script/ci/package-pin-policy.test.js` (owned pins), `script/ci/dep-grap
   "nan": "2.28.0",
   "dompurify": "3.4.13",
   "marked": "4.3.0",
-  "dugite": { "tar": "6.2.1" }
+  "dugite": { "tar": "6.2.1" },
+  "minimatch@3": "3.1.4",
+  "brace-expansion@1": "1.1.18",
+  "js-yaml@3": "3.15.1",
+  "lodash": "4.18.0"
 }
 ```
 
 - **nan** — keytar (and other nested `nan`) on the V8-safe line so `patch-keytar-nan` / `patch-nested-nan` become no-ops after a clean `npm ci`.
 - **dompurify / marked** — product-path HTML sanitizer/parser (last CJS marked; current DOMPurify). Owned package pins declare the same versions.
 - **dugite.tar** — dugite 1.x still asks for tar 4; 6.2.1 is the last 6.x with the path-traversal fix and still supports the stream extract API dugite uses.
+- **minimatch / brace-expansion / js-yaml / lodash** — same-major Dependabot pins (plus form-data / tar 6–7 / postcss 8 in `package.json`). Does not replace `request` or tar 2.x.
 
 See [sca-runtime-inventory.md](./sca-runtime-inventory.md).
 

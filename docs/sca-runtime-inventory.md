@@ -39,9 +39,18 @@ Root overrides (also documented in [dependency-graph.md](./dependency-graph.md))
   "nan": "2.28.0",
   "dompurify": "3.4.13",
   "marked": "4.3.0",
-  "dugite": { "tar": "6.2.1" }
+  "dugite": { "tar": "6.2.1" },
+  "minimatch@3": "3.1.4",
+  "brace-expansion@1": "1.1.18",
+  "js-yaml@3": "3.15.1",
+  "lodash": "4.18.0",
+  "form-data@2": "2.5.6",
+  "tar@6": "6.2.1",
+  "tar@7": "7.5.21"
 }
 ```
+
+The same-major security overrides are also on `script/`, `apm/`, in-repo package locks, and leftover `script/vsts` + `script/update-server` (Dependabot scans every committed lockfile). Still **no clean fix** for `request`/`hawk`/`hoek`, **ls-archive tar 2.x**, or mocha/growl test trees.
 
 CI: `script/ci/sca-runtime.test.js` (unit-and-cpm job).
 
