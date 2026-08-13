@@ -95,8 +95,11 @@ module.exports = class BufferedProcess {
             // quotes since they will not be interpreted correctly if they are
             return arg;
           } else {
-            // Escape double quotes by putting a backslash in front of them
-            return `"${arg.toString().replace(/"/g, '\\"')}"`;
+            // Escape backslashes first, then double quotes (cmd quoting).
+            return `"${arg
+              .toString()
+              .replace(/\\/g, '\\\\')
+              .replace(/"/g, '\\"')}"`;
           }
         });
     }
@@ -237,13 +240,12 @@ module.exports = class BufferedProcess {
   }
 
   getCmdPath() {
-    if (process.env.comspec) {
-      return process.env.comspec;
-    } else if (process.env.SystemRoot) {
-      return path.join(process.env.SystemRoot, 'System32', 'cmd.exe');
-    } else {
-      return 'cmd.exe';
+    // Do not honor COMSPEC — it is attacker-controlled on some Windows setups.
+    const root = process.env.SystemRoot || process.env.windir || 'C:\\Windows';
+    if (!/^[A-Za-z]:[\\/]/.test(root)) {
+      return 'C:\\Windows\\System32\\cmd.exe';
     }
+    return path.join(root, 'System32', 'cmd.exe');
   }
 
   // Public: Terminate the process.

@@ -7,6 +7,20 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3456;
 
+// Local Squirrel test server only — cap request rate so CodeQL is happy
+// and a runaway client cannot hammer disk.
+const hits = [];
+app.use((req, res, next) => {
+  const now = Date.now();
+  while (hits.length && now - hits[0] > 1000) hits.shift();
+  if (hits.length >= 30) {
+    res.sendStatus(429);
+    return;
+  }
+  hits.push(now);
+  next();
+});
+
 // Load the metadata for the local build of Atom
 const buildPath = path.resolve(__dirname, '..', '..', 'out');
 const packageJsonPath = path.join(buildPath, 'app', 'package.json');
@@ -30,6 +44,15 @@ const appMetadata = require(packageJsonPath);
 const versionMatch = appMetadata.version.match(/-(beta|nightly)\d+$/);
 const releaseChannel = versionMatch ? versionMatch[1] : 'stable';
 
+function safeAssetPath(fileName) {
+  const base = path.basename(String(fileName || ''));
+  if (!/^[\w.+-]+$/.test(base)) return null;
+  const full = path.resolve(buildPath, base);
+  const root = buildPath.endsWith(path.sep) ? buildPath : buildPath + path.sep;
+  if (full !== buildPath && !full.startsWith(root)) return null;
+  return full;
+}
+
 console.log(
   `Serving ${
     appMetadata.productName
@@ -38,11 +61,17 @@ console.log(
 
 function getMacZip(req, res) {
   console.log(`Received request for atom-mac.zip, sending it`);
-  res.sendFile(path.join(buildPath, 'atom-mac.zip'));
+  const filePath = safeAssetPath('atom-mac.zip');
+  if (!filePath) {
+    res.sendStatus(404);
+    return;
+  }
+  res.sendFile(filePath);
 }
 
 function getMacUpdates(req, res) {
-  if (req.query.version !== appMetadata.version) {
+  const requested = String(req.query.version || '');
+  if (requested !== appMetadata.version) {
     const updateInfo = {
       name: appMetadata.version,
       pub_date: new Date().toISOString(),
@@ -51,17 +80,15 @@ function getMacUpdates(req, res) {
     };
 
     console.log(
-      `Received request for macOS updates (version = ${
-        req.query.version
-      }), sending\n`,
+      'Received request for macOS updates (version = %s), sending',
+      requested,
       updateInfo
     );
     res.json(updateInfo);
   } else {
     console.log(
-      `Received request for macOS updates, sending 204 as Atom is up to date (version = ${
-        req.query.version
-      })`
+      'Received request for macOS updates, sending 204 as Atom is up to date (version = %s)',
+      requested
     );
     res.sendStatus(204);
   }
@@ -69,43 +96,54 @@ function getMacUpdates(req, res) {
 
 function getReleasesFile(fileName) {
   return function(req, res) {
-    console.log(
-      `Received request for ${fileName}, version: ${req.query.version}`
-    );
-    if (req.query.version) {
-      const versionMatch = (req.query.version || '').match(
-        /-(beta|nightly)\d+$/
-      );
+    const requested = String(req.query.version || '');
+    console.log('Received request for %s, version: %s', fileName, requested);
+    if (requested) {
+      const versionMatch = requested.match(/-(beta|nightly)\d+$/);
       const versionChannel = (versionMatch && versionMatch[1]) || 'stable';
       if (releaseChannel !== versionChannel) {
         console.log(
-          `Atom requested an update for version ${
-            req.query.version
-          } but the current release channel is ${releaseChannel}`
+          'Atom requested an update for version %s but the current release channel is %s',
+          requested,
+          releaseChannel
         );
         res.sendStatus(404);
         return;
       }
     }
 
-    res.sendFile(path.join(buildPath, fileName));
+    const filePath = safeAssetPath(fileName);
+    if (!filePath) {
+      res.sendStatus(404);
+      return;
+    }
+    res.sendFile(filePath);
   };
 }
 
 function getNupkgFile(is64bit) {
   return function(req, res) {
-    let nupkgFile = req.params.nupkg;
+    let nupkgFile = path.basename(String(req.params.nupkg || ''));
     if (is64bit) {
-      const nupkgMatch = nupkgFile.match(/atom-(.+)-(delta|full)\.nupkg/);
+      const nupkgMatch = nupkgFile.match(
+        /^atom-([A-Za-z0-9._-]+)-(delta|full)\.nupkg$/
+      );
       if (nupkgMatch) {
         nupkgFile = `atom-x64-${nupkgMatch[1]}-${nupkgMatch[2]}.nupkg`;
       }
     }
 
+    const filePath = safeAssetPath(nupkgFile);
     console.log(
-      `Received request for ${req.params.nupkg}, sending ${nupkgFile}`
+      'Received request for %s, sending %s',
+      String(req.params.nupkg || ''),
+      nupkgFile
     );
-    res.sendFile(path.join(buildPath, nupkgFile));
+    if (!filePath) {
+      res.sendStatus(404);
+      return;
+    }
+    res.sendFile(filePath);
   };
 }
 
