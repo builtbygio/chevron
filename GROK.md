@@ -12,8 +12,8 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 | Horizon | Goal |
 |---------|------|
-| **Near term** | 1.0 dogfood (#106); fix dogfood blockers; full Jasmine CI (#57) |
-| **Medium term** | `language-*` forks (#79); package host v2; Git polish |
+| **Near term** | 1.0 dogfood (#106); Jasmine nightly is wired (#57); #79 language-* later |
+| **Medium term** | Package host v2, Git polish, optional AI |
 | **Long term** | Possible Avalonia rehost; keep hackable package spirit |
 
 **Do not** rebase onto Pulsar unless the owner revisits that decision.  
@@ -146,13 +146,9 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 
 ### LSP — **phases 0–5 landed**
 
-[docs/lsp-design.md](docs/lsp-design.md). Host v2 / more servers later.
-
-### Primary next tracks
-
-1. **Dogfood week (#106)** — use the unsigned preview; file blockers  
-2. **#57** — full Jasmine suite on CI (nightly / opt-in); `script/ci` unit job already exists  
-3. **#79** — fork/re-pin `language-*` off `atom/*` (ceiling 33)  
+1. Expand / modernize **owned catalog** (builtbygio pins) — [package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md)  
+2. **LSP** — [docs/lsp-design.md](docs/lsp-design.md) (**plan**); execute phases 0→5  
+3. **#57** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
 4. Residual renames: atom-keymap / atom-select-list / `@atom/*`  
 5. **Later:** sandboxed community packages (package host v2); packager/snapshot; signing  
 

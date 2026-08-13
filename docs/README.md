@@ -47,6 +47,7 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [atom-architecture.md](./atom-architecture.md) | Architecture notes |
 | [atom-architecture-eli5.md](./atom-architecture-eli5.md) | ELI5 architecture |
 | [CHANGELOG.md](../CHANGELOG.md) | Release notes |
+| [jasmine-ci.md](./jasmine-ci.md) | Full `script/test` nightly / opt-in (#57) |
 
 ## Security
 

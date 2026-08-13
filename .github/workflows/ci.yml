@@ -94,8 +94,9 @@ jobs:
 
   # ---------------------------------------------------------------------------
   # Fast unit path — cpm + package-require-audit (no Electron package)
-  # Full Jasmine (script/test) remains local or workflow_dispatch+input; needs
-  # a packaged app and is not a default PR gate yet (audit #57).
+  # Full Jasmine (script/test) is not a default PR gate (audit #57):
+  #   - nightly + manual: .github/workflows/jasmine.yml
+  #   - opt-in on this workflow: dispatch run_full_core_tests or PR label "jasmine"
   # Always runs, including on docs-only changes.
   # ---------------------------------------------------------------------------
   unit-and-cpm:
@@ -179,6 +180,7 @@ jobs:
           node --test script/ci/git-utility-host-integration.test.js
           node --test script/ci/natives-fingerprint.test.js
           node --test script/ci/fs-ipc-roots.test.js
+          node --test script/ci/find-packaged-app.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64
@@ -285,7 +287,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 240
 
     steps:
       - uses: actions/checkout@v5
@@ -387,6 +389,29 @@ jobs:
 
       - name: Launch smoke test (Xvfb)
         run: xvfb-run -a node script/ci/smoke-test.js
+
+      - name: Full Jasmine (opt-in)
+        if: |
+          (github.event_name == 'workflow_dispatch' && inputs.run_full_core_tests) ||
+          (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'jasmine'))
+        env:
+          CI: 'true'
+          ATOM_RUN_CORE_TESTS: 'true'
+          ATOM_RUN_PACKAGE_TESTS: 'true'
+          ELECTRON_OZONE_PLATFORM_HINT: x11
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          TEST_JUNIT_XML_ROOT: ${{ runner.temp }}/jasmine-junit
+        run: |
+          mkdir -p "$TEST_JUNIT_XML_ROOT"
+          xvfb-run -a ./script/with-modern-env ./script/test
+
+      - name: Upload Jasmine JUnit
+        if: always() && ((github.event_name == 'workflow_dispatch' && inputs.run_full_core_tests) || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'jasmine')))
+        uses: actions/upload-artifact@v6
+        with:
+          name: jasmine-junit-linux-x64-opt-in
+          path: ${{ runner.temp }}/jasmine-junit
+          if-no-files-found: ignore
 
       - name: Upload Linux packages
         if: success()
