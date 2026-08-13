@@ -1072,6 +1072,11 @@ class AtomEnvironment {
     } else {
       setTimeout(run, 0);
     }
+    this.disposables.add(
+      this.workspace.observeTextEditors(editor => {
+        if (editor.getPath()) this.packages.activateDeferredLanguagePackages();
+      })
+    );
   }
 
   serialize(options) {
@@ -1122,6 +1127,13 @@ class AtomEnvironment {
 
   openInitialEmptyEditorIfNecessary() {
     if (!this.config.get('core.openEmptyEditorOnStart')) return;
+    // Welcome/Guide own the first pane when that package will auto-open.
+    if (
+      !this.packages.isPackageDisabled('welcome') &&
+      this.config.get('welcome.showOnStartup') !== false
+    ) {
+      return;
+    }
     const { hasOpenFiles } = this.getLoadSettings();
     if (!hasOpenFiles && this.workspace.getPaneItems().length === 0) {
       return this.workspace.open(null, { pending: true });

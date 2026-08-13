@@ -375,6 +375,7 @@ describe('AtomEnvironment', () => {
       );
 
       it('opens an empty buffer', () => {
+        atom.config.set('welcome.showOnStartup', false);
         spyOn(atom.workspace, 'open');
         atom.openInitialEmptyEditorIfNecessary();
         expect(atom.workspace.open).toHaveBeenCalledWith(null, {
@@ -391,6 +392,13 @@ describe('AtomEnvironment', () => {
 
       it('does not open an empty buffer when core.openEmptyEditorOnStart is false', async () => {
         atom.config.set('core.openEmptyEditorOnStart', false);
+        spyOn(atom.workspace, 'open');
+        atom.openInitialEmptyEditorIfNecessary();
+        expect(atom.workspace.open).not.toHaveBeenCalled();
+      });
+
+      it('does not open an empty buffer when Welcome will auto-open', () => {
+        atom.config.set('welcome.showOnStartup', true);
         spyOn(atom.workspace, 'open');
         atom.openInitialEmptyEditorIfNecessary();
         expect(atom.workspace.open).not.toHaveBeenCalled();

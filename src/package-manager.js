@@ -777,9 +777,17 @@ module.exports = class PackageManager {
   }
 
   activateDeferredStartupPackages() {
-    const names = Object.keys(this.packageDependencies).filter(name =>
-      this.isDeferredStartupPackage(name)
+    return this._activateDeferredNamed(name => this.isDeferredStartupPackage(name));
+  }
+
+  activateDeferredLanguagePackages() {
+    return this._activateDeferredNamed(
+      name => typeof name === 'string' && name.startsWith('language-')
     );
+  }
+
+  _activateDeferredNamed(predicate) {
+    const names = Object.keys(this.packageDependencies).filter(predicate);
     const promises = [];
     for (const name of names) {
       if (this.isPackageDisabled(name)) continue;

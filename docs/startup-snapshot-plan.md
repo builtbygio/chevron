@@ -186,6 +186,14 @@ Workspace-ready marker improved **~480 ms (−30%)**. Wall improved less
 because harness attach/poll is a near-constant ~800 ms. Compile-cache
 conclusion in §4.3 is unchanged.
 
+A second pass deferred autocomplete / snippets / bracket-matcher and every
+`language-*`, and skipped the untitled editor when Welcome will auto-open.
+On this host that **did not move** `setup-window:end` (~1100 ms). The leftover
+~310 ms `setup-window` → `initialize` interval is mostly core
+`require` (`atom-environment`, `text-editor`, `text-editor-component`) plus
+the first-paint shell, not grammars. Opening a file before idle still
+activates `language-*` immediately.
+
 ### 4.4 Measurement caveats
 
 - One cold run hit **31.9 s** (first-touch OS/dyld caching on a machine that had just been building). The multi-second conclusion is robust to that noise; **±500 ms build-to-build comparisons are not.**

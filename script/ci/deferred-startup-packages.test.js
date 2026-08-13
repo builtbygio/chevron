@@ -23,9 +23,6 @@ const FIRST_PAINT = [
   'status-bar',
   'welcome',
   'notifications',
-  'snippets',
-  'autocomplete-plus',
-  'bracket-matcher',
   'whitespace',
   'wrap-guide',
   'chevron-dark-ui',
@@ -57,8 +54,21 @@ describe('deferred startup packages', () => {
       'find-and-replace',
       'settings-view',
       'spell-check',
-      'fuzzy-finder'
+      'fuzzy-finder',
+      'autocomplete-plus',
+      'snippets',
+      'bracket-matcher'
     ]) {
+      assert.ok(isDeferredStartupPackage(name), name);
+    }
+  });
+
+  it('defers every bundled language-* package', () => {
+    const langs = Object.keys(pkg.packageDependencies || {}).filter(n =>
+      n.startsWith('language-')
+    );
+    assert.ok(langs.length > 10, 'expected bundled language-* packages');
+    for (const name of langs) {
       assert.ok(isDeferredStartupPackage(name), name);
     }
   });
