@@ -48,7 +48,7 @@ Chevron is the only supported product. We do **not** promise dual-support for At
 
 1. Migrate first-party `global.atom` / `atomApplication` call sites to chevron  
 2. Package openers: prefer `chevron://` URIs in monorepo packages  
-3. Remove `require('atom')` builtin after deprecation window  
+3. Remove `require('atom')` builtin after deprecation window (owned `lib/`/`src/` already use `require('chevron')`)  
 4. `atom-keymap` / `atom-select-list` / `@atom/*` renames  
 5. **Package ecosystem:** owned catalog only now; sandboxed community (host v2) after base is ready — [package-ecosystem-strategy.md](./package-ecosystem-strategy.md)  
 

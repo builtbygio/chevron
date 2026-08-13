@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Phase N2.3: write tree-view/lib/fs-via-main.js and retarget fs-plus requires.
+ * Phase N2.3: write tree-view/lib/fs-via-main.ts and retarget fs-plus requires.
  *
  * Disk ops go through atom.applicationDelegate (main IPC). Pure path helpers
  * stay on fs-plus (isReadmePath, isCaseInsensitive, extension checks).
@@ -130,19 +130,25 @@ module.exports = function writeTreeViewFsShim(repoRoot) {
     return;
   }
 
-  const shimPath = path.join(libDir, 'fs-via-main.js');
+  const shimPath = path.join(libDir, 'fs-via-main.ts');
+  const staleJs = path.join(libDir, 'fs-via-main.js');
   const prev = fs.existsSync(shimPath) ? fs.readFileSync(shimPath, 'utf8') : '';
   if (prev !== SHIM_SOURCE) {
     fs.writeFileSync(shimPath, SHIM_SOURCE);
-    console.log('wrote: node_modules/tree-view/lib/fs-via-main.js');
+    console.log('wrote: node_modules/tree-view/lib/fs-via-main.ts');
   } else {
-    console.log('ok (already): node_modules/tree-view/lib/fs-via-main.js');
+    console.log('ok (already): node_modules/tree-view/lib/fs-via-main.ts');
+  }
+  if (fs.existsSync(staleJs)) {
+    fs.unlinkSync(staleJs);
+    console.log('removed stale: node_modules/tree-view/lib/fs-via-main.js');
   }
 
   const files = fs.readdirSync(libDir).filter(name => {
     return (
-      (name.endsWith('.js') || name.endsWith('.coffee')) &&
-      name !== 'fs-via-main.js'
+      (name.endsWith('.js') || name.endsWith('.ts') || name.endsWith('.coffee')) &&
+      name !== 'fs-via-main.js' &&
+      name !== 'fs-via-main.ts'
     );
   });
 

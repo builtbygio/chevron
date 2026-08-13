@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pin `tree-sitter-css` **0.23.2** (CJS) so packaged macOS/Windows can `require()` the grammar; 0.25.0 is ESM + top-level await.
 - Owned tree-sitter `language-*` (and in-repo `language-rust-bundled`) no longer ship CoffeeScript: grammars/settings/snippets are JSON; injection mains and specs are TypeScript.
 - Owned catalog modernization pass (32 `builtbygio/*` product packages): remaining CoffeeScript/CSON dropped (JSON keymaps/menus; TypeScript specs/mains), `engines.chevron` on every fork, coffeelint removed.
+- Owned product `lib/` / `src/` use `require('chevron')`. The `require('atom')` host shim stays for community packages and specs.
+- **tree-view** leftover `lib/*.js` is TypeScript (`fs-via-main` included).
 
 ### Security
 
