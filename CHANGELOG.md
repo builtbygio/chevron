@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Startup harness waits for `window:setup-window:end` (workspace ready) and graceful-quits so the V8 compile cache can persist. Linux x64 1.0.1 baseline: ~2.1 s cold / ~2.0 s warm; cache writes but only saves ~6%. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).
 - Defer heavy bundled packages (`github`, `markdown-preview`, `settings-view`, autocomplete, `language-*`, …) until after first paint. Linux `setup-window:end` **1582 → 1103 ms**. Skip the untitled editor when Welcome will auto-open.
+- Restore the custom V8 startup snapshot on Electron 43: evaluate modules at snapshot time, construct `AtomEnvironment` at runtime. Linux require interval **327 → 11 ms**; workspace-ready is unchanged on a fast host because construction still runs at runtime. `electron-mksnapshot` is driven so the context generator sees the custom isolate blob, not Electron's stock one. `CHEVRON_SKIP_MKSNAPSHOT=1` keeps the stock path.
 
 ## [1.0.1] — 2026-08-13
 

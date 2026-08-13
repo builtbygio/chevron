@@ -11,6 +11,7 @@ const assert = require('assert');
 const path = require('path');
 const {
   DEFERRED_STARTUP_PACKAGES,
+  SNAPSHOT_STARTUP_PACKAGES,
   isDeferredStartupPackage
 } = require('../../src/deferred-startup-packages');
 
@@ -61,6 +62,33 @@ describe('deferred startup packages', () => {
     ]) {
       assert.ok(isDeferredStartupPackage(name), name);
     }
+  });
+
+  it('snapshot startup packages are first-paint and statically required', () => {
+    const init = require('fs').readFileSync(
+      path.join(ROOT, 'src/initialize-application-window.js'),
+      'utf8'
+    );
+    assert.ok(SNAPSHOT_STARTUP_PACKAGES.length > 5);
+    for (const name of SNAPSHOT_STARTUP_PACKAGES) {
+      assert.equal(
+        isDeferredStartupPackage(name),
+        false,
+        `${name} cannot be both snapshotted and deferred`
+      );
+      assert.ok(
+        init.includes(`require('${name}')`),
+        `initialize-application-window.js must statically require ${name}`
+      );
+    }
+    assert.ok(
+      /if\s*\(\s*!global\.isGeneratingSnapshot\s*\)/.test(init),
+      'must skip AtomEnvironment construction during snapshot generation'
+    );
+    assert.ok(
+      init.includes('function installEnvironment'),
+      'must construct AtomEnvironment at runtime via installEnvironment'
+    );
   });
 
   it('defers every bundled language-* package', () => {

@@ -1,7 +1,7 @@
 # V8 startup snapshot — investigation and recovery plan
 
-**Status:** plan (proposed)
-**Date:** 2026-08-07 (measured 2026-08-08)
+**Status:** restored on Linux x64 (2026-08-13) — see §4.8
+**Date:** 2026-08-07 (measured 2026-08-08 / 2026-08-13)
 **Subject:** `script/lib/generate-startup-snapshot.js` — custom snapshot disabled since the Electron 43 migration
 **Related:** [cpm-design.md](./cpm-design.md), [lsp-design.md](./lsp-design.md)
 
@@ -194,6 +194,51 @@ On this host that **did not move** `setup-window:end` (~1100 ms). The leftover
 the first-paint shell, not grammars. Opening a file before idle still
 activates `language-*` immediately.
 
+### 4.8 Custom V8 snapshot restored (2026-08-13)
+
+The generator SIGTRAP was **not** a content-size bug and **not** “Linux
+does not need a snapshot.” Findings:
+
+| Experiment | Result |
+|------------|--------|
+| Trivial script | mksnapshot + generator pass |
+| Unminified ~10 MB linked script | **mksnapshot SIGTRAP** (minify first) |
+| Minified script, `generateSnapshot.call({})` stripped | mksnapshot + generator pass (~12 MB context) |
+| Minified script, modules evaluated, `new AtomEnvironment()` | **generator SIGTRAP** |
+| Minified script, modules evaluated, construction deferred to runtime | **pass** (first-paint ~19 MB context; full package list ~31 MB) |
+
+`electron-mksnapshot@43.1.0` `mksnapshot.js` runs
+`v8_context_snapshot_generator` with `cwd` = the stock bin directory, so
+it serializes the **stock** isolate blob (723 KB). Chevron now drives both
+tools from a temp copy that contains the custom `snapshot_blob.bin`
+(`script/lib/run-mksnapshot.js`). Context blobs ≤ 2 MB are treated as
+stock and rejected.
+
+Product change: `installEnvironment()` constructs `AtomEnvironment` at
+runtime. Snapshot-time `require()`s cover first-paint packages only
+(`SNAPSHOT_STARTUP_PACKAGES`). `require('chevron')` is a core-module
+exclusion so electron-link does not try to open a file named `chevron`.
+
+Default is now **attempt custom snapshot**. `CHEVRON_SKIP_MKSNAPSHOT=1`
+keeps the old stock path.
+
+**Linux x64 measurement** (same Ryzen 7 5700X, packaged app, 5 cold runs)
+after this restore, on top of the §4.7 deferral:
+
+| Metric | Stock + defer (§4.7) | Custom snapshot + defer |
+|--------|----------------------|-------------------------|
+| median wall | 1,965–1,995 ms | **2,022 ms** |
+| `setup-window:end` | 1,103 ms | **1,137 ms** |
+| `setup-window` → `initialize` | 327 ms | **11 ms** |
+| `snapshotResult` defined | no | **yes** |
+
+The require interval is gone. Workspace-ready is a wash on this host
+because `installEnvironment()` still constructs `AtomEnvironment` and
+preloads first-paint packages at runtime (~400 ms
+`load-packages` → `deserialize-state`). That constructor heap is what
+the generator refuses; baking it is a follow-up bisection. On the 2017
+Mac the same module-eval skip is the 3 s gap.
+
 ### 4.4 Measurement caveats
 
 - One cold run hit **31.9 s** (first-touch OS/dyld caching on a machine that had just been building). The multi-second conclusion is robust to that noise; **±500 ms build-to-build comparisons are not.**
@@ -329,11 +374,11 @@ package's module tree and excluding it is unacceptable, snapshotting only
 - [x] Same measurement on **Linux x64** (§4.6) — 2.1 s median; compile cache works (−6%); §7 first.
 - [ ] Same measurement on **Windows**.
 - [ ] Before/after numbers published for whichever platforms ship the fix.
-- [ ] Either: custom snapshot restored and **on by default**, with the fix documented;
+- [x] Either: custom snapshot restored and **on by default**, with the fix documented (§4.8);
       or: a written decision that it stays off, with the measurement that justifies it.
-- [ ] `CHEVRON_FORCE_MKSNAPSHOT` retained as an escape hatch either way.
-- [ ] **CI guard:** if the snapshot is restored, a build-time assertion that both blobs were installed — silent regression to stock snapshots is exactly how this was lost.
-- [ ] `snapshotResult`-dependent code paths in `static/index.js` verified on whichever path ships.
+- [x] `CHEVRON_FORCE_MKSNAPSHOT` retained; `CHEVRON_SKIP_MKSNAPSHOT=1` is the skip hatch.
+- [x] **CI guard:** context blob ≤ 2 MB is rejected as stock; failed builds write `STOCK_V8_SNAPSHOT.txt`.
+- [x] `snapshotResult`-dependent code paths in `static/index.js` verified on Linux (`measure-startup.js`: `custom V8 snapshot in use: YES`).
 
 ---
 
