@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-08 (1.0.0 unsigned preview)
+**Date of this handoff:** 2026-08-13 (1.0.0 unsigned preview + #108 tree-view)
 
 ---
 
@@ -12,8 +12,8 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 | Horizon | Goal |
 |---------|------|
-| **Near term** | Package ownership forks (#58), full Jasmine CI (#57), product polish |
-| **Medium term** | Package host v2, Git polish, optional AI |
+| **Near term** | 1.0 dogfood (#106); fix dogfood blockers; full Jasmine CI (#57) |
+| **Medium term** | `language-*` forks (#79); package host v2; Git polish |
 | **Long term** | Possible Avalonia rehost; keep hackable package spirit |
 
 **Do not** rebase onto Pulsar unless the owner revisits that decision.  
@@ -124,18 +124,43 @@ Workflow when changing a package:
 
 ## What needs to be done next
 
+### 1.0 unsigned preview — **published**
+
+Tag `v1.0.0`. Docs: [docs/releases.md](docs/releases.md), [docs/dogfood-1.0.md](docs/dogfood-1.0.md).  
+Tracker: **#106**. Next mac zip names are per-arch (`#107`); `v1.0.0` itself still has one `chevron-mac.zip`.
+
+Landed with 1.0 / immediately after:
+
+| Item | PR |
+|------|-----|
+| SCA sanitizer + dugite tar | #103 |
+| Class C decaff/debabel folded into owned SHAs | #104 |
+| Unsigned preview publish + GitHub Releases update URL | #105 |
+| Per-arch mac zip names | #107 |
+| Empty tree-view / Open a Project / false `registerElement` deprecation | #108 |
+
 ### Phase S — **complete**
 
 Authoritative: **`docs/security-phase-s.md`** + **`docs/security-phase-s-decision.md`** (Option C).  
 Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require restrict.
 
-### Primary next tracks (post–Phase S)
+### LSP — **phases 0–5 landed**
 
-1. Expand / modernize **owned catalog** (builtbygio pins) — [package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md)  
-2. **LSP** — [docs/lsp-design.md](docs/lsp-design.md) (**plan**); execute phases 0→5  
-3. **#57** — full Jasmine suite on CI (nightly / opt-in)  
+[docs/lsp-design.md](docs/lsp-design.md). Host v2 / more servers later.
+
+### Primary next tracks
+
+1. **Dogfood week (#106)** — use the unsigned preview; file blockers  
+2. **#57** — full Jasmine suite on CI (nightly / opt-in); `script/ci` unit job already exists  
+3. **#79** — fork/re-pin `language-*` off `atom/*` (ceiling 33)  
 4. Residual renames: atom-keymap / atom-select-list / `@atom/*`  
-5. **Later (after base is happy):** sandboxed community packages (package host v2)  
+5. **Later:** sandboxed community packages (package host v2); packager/snapshot; signing  
+
+### Known dogfood leftovers (found 2026-08-13)
+
+- **Fixed in #108:** empty tree-view — `collectDefaultRoots` used `atomApplication.windows` (never set); must use `getAllWindows()`. `/tmp` projects hid this. Keep `document-register-element` (contextIsolation); do not Grim-wrap `registerElement`.  
+- **Still broken:** find-in-project (`vscode-ripgrep` `rg` ENOENT under `app.asar.unpacked`); settings-view `cpm`/`apm` list (`Fetching local/outdated packages failed`).  
+- Owned packages still `require('atom')` (one-shot legacy warning).
 
 **Dev policy env:**  
 - `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log privileged + native requires  
@@ -206,6 +231,9 @@ git status
 | Packaged github `renderer.html` | Unpack `github/lib/**` in `package-application.js` |
 | Custom mksnapshot on E43 | Soft-fail; stock V8 snapshots |
 | Windows ASAR integrity fuse | Leave off — FATAL without packager-embedded resources |
+| FS IPC `atomApplication.windows` | Never set — use `getAllWindows()` (#108) |
+| Skip `document-register-element` | Breaks `document.createElement('atom-*')` under contextIsolation |
+| Tree-view tests only under `/tmp` | Temp is always an FS IPC root; real folders can still be blocked |
 
 ---
 
