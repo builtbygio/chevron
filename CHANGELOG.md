@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Official **tree-sitter 0.25.1** (N-API) replaces `file:packages/tree-sitter` (DeeDeeG / ABI 12). Tree-sitter-backed `language-*` are now **builtbygio** pins with current `tree-sitter-*` grammars (ABI 13–15). `parseTextBuffer` → `parse(buffer.getText())`. TextMate-only `language-*` stay on `atom/*` (#79).
 - ESM official grammars (`tree-sitter-css@0.25` is `"type": "module"`) load through `node-gyp-build` instead of sync `require()`. Packaging keeps only host-arch `prebuilds/`; RPM `brp-strip` is undefined so leftover `.node` files cannot fail the package.
+- Pin `tree-sitter-css` **0.23.2** (CJS) so packaged macOS/Windows can `require()` the grammar; 0.25.0 is ESM + top-level await.
 - Owned tree-sitter `language-*` (and in-repo `language-rust-bundled`) no longer ship CoffeeScript: grammars/settings/snippets are JSON; injection mains and specs are TypeScript.
 
 ### Security
