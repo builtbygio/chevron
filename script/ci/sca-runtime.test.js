@@ -110,4 +110,42 @@ describe('runtime SCA lockfile', () => {
     assert.strictEqual(v.major, 6, `dugite tar ${dugiteTar.version}`);
     assert.ok(v.minor >= 2, `dugite tar ${dugiteTar.version}`);
   });
+
+  it('ls-archive is the builtbygio fork on tar 7', () => {
+    const packages = lock.packages || {};
+    const hits = Object.entries(packages).filter(([key, value]) => {
+      if (!value) return false;
+      return key === 'node_modules/ls-archive' || key.endsWith('/node_modules/ls-archive');
+    });
+    assert.ok(hits.length > 0, 'no ls-archive entries in lockfile');
+    for (const [key, value] of hits) {
+      const resolved = String(value.resolved || value.from || '');
+      assert.ok(
+        resolved.includes('builtbygio/ls-archive') ||
+          (value.version && parseVer(value.version).major >= 2),
+        `${key} must be builtbygio/ls-archive (tar 7), got version=${value.version} resolved=${resolved}`
+      );
+    }
+
+    const lsaTars = Object.entries(packages).filter(([key, value]) => {
+      if (!value || typeof value.version !== 'string') return false;
+      if (!(key === 'node_modules/tar' || key.endsWith('/node_modules/tar'))) return false;
+      return key.includes('ls-archive');
+    });
+    const tarsToCheck =
+      lsaTars.length > 0
+        ? lsaTars
+        : Object.entries(packages).filter(([key, value]) => {
+            return (
+              value &&
+              typeof value.version === 'string' &&
+              (key === 'node_modules/tar' || key.endsWith('/node_modules/tar')) &&
+              parseVer(value.version).major === 7
+            );
+          });
+    assert.ok(tarsToCheck.length > 0, 'no tar 7 for ls-archive in lockfile');
+    for (const [key, value] of tarsToCheck) {
+      assert.strictEqual(parseVer(value.version).major, 7, `${key} tar ${value.version}`);
+    }
+  });
 });

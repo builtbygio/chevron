@@ -2,7 +2,7 @@
 
 **Status:** living inventory (audit P1)  
 **Method:** `npm audit --omit=dev` on the monorepo root (host Node 24)  
-**Snapshot date:** 2026-08-12 (runtime sanitizer / dugite-tar pass)
+**Snapshot date:** 2026-08-13 (ls-archive tar 7 fork)
 
 Chevron inherits a large Atom-era dependency graph. Many advisories have **no clean fix without forking** packages or replacing deprecated stacks (`request`, Babel 5, old mocha). This doc separates **runtime attack surface** from **test/tooling noise** so effort goes to the former.
 
@@ -22,14 +22,14 @@ Exact numbers drift with registry data; re-run audit after lockfile changes.
 |---------|----------|--------|--------|
 | **dompurify** | critical | **Done** — 3.4.13 | Owned **markdown-preview**, **autocomplete-plus**, **github**, **notifications**, **settings-view**; in-repo **deprecation-cop**; root override |
 | **marked** | high | **Done** — 4.3.0 (last CJS) | Same packages. marked 5+ is ESM-only — do not jump without converting `require()` |
-| **tar** (dugite extract) | critical | **Done** — 6.2.1 via override | dugite 1.x still declares tar `^4.4.7`; stream extract API works on tar 6. **ls-archive** still on tar 2.x (below) |
+| **tar** (dugite extract) | critical | **Done** — 6.2.1 via override | dugite 1.x still declares tar `^4.4.7`; stream extract API works on tar 6. archive-view uses owned **ls-archive** on tar 7 |
 | **dugite** | high | **Partial** — 1.110.0 | github pin. 2.x/3.x change git-embed layout — not this pass |
 | **async** | high | **Done** (≥3.2.6) | Audit P1 |
 | **request** | critical | **Done** for owned runtime | settings-view `atom-io-client` and autocomplete update scripts use `fetch`. Residual `request` only if an unowned/test tree still pulls it |
 | **form-data** | critical | Open | Follows `request` removal |
 | **babel-core@5** | ~~high~~ | **Removed** (#62 Option 3) | Residual only if transitive |
 | **minimatch** / **brace-expansion** | high | Opportunistic | Bump when parent allows; watch DoS on untrusted globs |
-| **archive-view** / **ls-archive** | high | Open | **ls-archive@1.3.4** still pulls **tar 2.2.x**. Fork/bump on next archive-view security touch — do not override blindly (extract API differs) |
+| **archive-view** / **ls-archive** | high | **Done** | **builtbygio/ls-archive** keeps `list`/`readFile`; **tar 7** `Parser` replaces `tar@2` `Parse()`. Zip still `yauzl`. Do not npm-override the old 1.3.4 extract API |
 | **autocomplete-plus** (rollup) | high | **Sanitizer done** | Other rollup CVEs still via older helpers |
 
 Root overrides (also documented in [dependency-graph.md](./dependency-graph.md)):
@@ -50,7 +50,7 @@ Root overrides (also documented in [dependency-graph.md](./dependency-graph.md))
 }
 ```
 
-The same-major security overrides are also on `script/`, `apm/`, in-repo package locks, and leftover `script/vsts` + `script/update-server` (Dependabot scans every committed lockfile). Still **no clean fix** for `request`/`hawk`/`hoek`, **ls-archive tar 2.x**, or mocha/growl test trees.
+The same-major security overrides are also on `script/`, `apm/`, in-repo package locks, and leftover `script/vsts` + `script/update-server` (Dependabot scans every committed lockfile). Still **no clean fix** for residual `request`/`hawk`/`hoek` or mocha/growl test trees.
 
 CI: `script/ci/sca-runtime.test.js` (unit-and-cpm job).
 
@@ -92,8 +92,8 @@ Still worth cleaning when upgrading the test stack, but not a Phase S blocker.
 1. **Transitive CVEs with `fixAvailable: false`** until the owning package is forked and dependency tree rewritten.  
 2. **Community packages** install their own deps via cpm/Pulsar — outside this inventory; community require restrict limits privileged Node, not every transitive npm CVE.  
 3. **Babel 5 + coffee-script** removed from app runtime deps (#62 Options 2–3). Community packages must precompile.
-4. **`request` / `form-data`** remain until settings-view (and similar) drop the old HTTP client.  
-5. **`ls-archive` tar 2.x** remains until archive-view is forked for extract.  
+4. Residual **`request` / `form-data`** only if an unowned or test tree still pulls them. Owned runtime clients use `fetch`.  
+5. **`ls-archive` tar 2.x** replaced by [builtbygio/ls-archive](https://github.com/builtbygio/ls-archive) (tar 7).  
 6. **dugite 2/3** not taken — GitProcess embed layout change is a separate github-package pass.
 
 ## How to re-run
