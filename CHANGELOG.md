@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Linux **Jasmine** nightly + manual workflow (`jasmine.yml`) and opt-in on the main CI (dispatch `run_full_core_tests` or PR label `jasmine`). Not a required PR gate. `script/test` finds `Chevron-linux-<arch>/chevron`. See [docs/jasmine-ci.md](docs/jasmine-ci.md) (#57).
 
+### Security
+
+- Dependabot lockfile hygiene: npm `overrides` pin patched same-major releases (`minimatch` 3.1.4, `brace-expansion` 1.1.18, `js-yaml` 3.15.1, `lodash` 4.18.x, `form-data` 2.5.6, `tar` 6.2.1 / 7.5.21, `postcss` 8.5.23, and similar) on the root, `script/`, `apm/`, nested package, and leftover VSTS/update-server lockfiles. Direct bumps: `minimatch` 3.1.4, `postcss` 8.5.23, script `semver` 5.7.2 / `simple-git` 3.x, update-server `express` 4.21. Unpatched: `request`/`hawk`, ls-archive tar 2.x, mocha/growl.
+
 ### Fixed
 
 - Welcome / Guide **Open a Project** uses `application:add-project-folder` (Linux/Windows `application:open` mixed file+folder dialogs often cancel immediately). Off-macOS `promptForPath('all')` is a folder picker with dialog errors logged.
