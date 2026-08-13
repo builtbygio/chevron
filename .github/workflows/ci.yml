@@ -12,6 +12,11 @@ on:
         type: boolean
         default: false
 
+# Least privilege for GITHUB_TOKEN (code scanning: actions/missing-workflow-permissions).
+# publish-unsigned-preview sets contents: write on that job only.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true

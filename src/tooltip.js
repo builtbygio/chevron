@@ -413,9 +413,29 @@ Tooltip.prototype.setContent = function() {
   } else {
     const title = this.getTitle();
     if (this.options.html) {
-      inner.innerHTML = title;
+      // Attribute titles are DOM text — never reinterpret as HTML.
+      const fromAttr = this.element.getAttribute('data-original-title');
+      if (fromAttr && title === fromAttr) {
+        inner.textContent = fromAttr;
+      } else {
+        let purify;
+        try {
+          purify = require('dompurify');
+        } catch (error) {
+          purify = null;
+        }
+        const html = title == null ? '' : String(title);
+        if (purify && typeof purify.sanitize === 'function') {
+          inner.innerHTML = purify.sanitize(html, {
+            ALLOWED_TAGS: ['span', 'code', 'kbd', 'strong', 'em', 'b', 'i'],
+            ALLOWED_ATTR: ['class']
+          });
+        } else {
+          inner.textContent = html;
+        }
+      }
     } else {
-      inner.textContent = title;
+      inner.textContent = title == null ? '' : String(title);
     }
   }
 

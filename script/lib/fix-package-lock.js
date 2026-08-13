@@ -38,17 +38,17 @@ let sshUrls = 0;
 
 function fixGitUrl(value) {
   if (typeof value !== 'string') return value;
-  if (value.includes('git://github.com')) {
+  // Only rewrite URLs that *start* as GitHub git/ssh (not a substring embed).
+  if (
+    value.startsWith('git://github.com/') ||
+    value.startsWith('git://github.com:')
+  ) {
     gitProtocol++;
-    value = value.startsWith('git://github.com')
-      ? 'git+https://' + value.slice('git://'.length)
-      : value.replace('git://github.com', 'git+https://github.com');
+    return 'git+https://' + value.slice('git://'.length);
   }
-  if (value.includes('git+ssh://git@github.com/')) {
+  if (value.startsWith('git+ssh://git@github.com/')) {
     sshUrls++;
-    value = value
-      .split('git+ssh://git@github.com/')
-      .join('git+https://github.com/');
+    return 'git+https://github.com/' + value.slice('git+ssh://git@github.com/'.length);
   }
   return value;
 }

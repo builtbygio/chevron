@@ -1210,6 +1210,13 @@ class Config {
       const object = arguments[i];
       if (isPlainObject(result) && isPlainObject(object)) {
         for (let key of Object.keys(object)) {
+          if (
+            key === '__proto__' ||
+            key === 'constructor' ||
+            key === 'prototype'
+          ) {
+            continue;
+          }
           result[key] = this.deepDefaults(result[key], object[key]);
         }
       } else {
