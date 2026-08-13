@@ -66,7 +66,7 @@ specific module, and is therefore findable.
 
 ## 4. Phase 0 — measurement gate
 
-**Status: ✅ done on macOS Intel — verdict is RESTORE. Linux and Windows pending.**
+**Status: ✅ done on macOS Intel (RESTORE) and Linux x64 (cheaper alternatives first). Windows still pending.**
 
 ### 4.1 Results (2026-08-08)
 
@@ -102,18 +102,72 @@ final environment setup ~67 ms. The single 3-second gap is the renderer loading
 the module tree through plain `require` — **precisely the work a snapshot
 pre-bakes.** The fix is targeted, not diffuse.
 
-### 4.3 Unplanned finding: the compile cache looks ineffective
+### 4.3 Compile cache — writes, but does not buy much
 
-Warm start beats cold by only ~500 ms (≈7%). A functioning V8 code cache should
-do considerably better. This answers open question §10.3 with *apparently not,
-or not usefully* — and per §7 it may be a **cheaper win than the snapshot**.
-**Investigate before starting bisection.**
+The cache **does** populate when the window unloads (`blobStore.save()` from
+`unloadEditorWindow`). After a graceful quit on Linux 1.0.1: **6.0 MB**
+`ATOM_HOME/blob-store/BLOB`, **1395** MAP keys.
+
+Warm vs cold on that same home: median wall **2014 ms vs 2148 ms (−6%)**.
+`setup-window:start` → `initialize:start` shrank **626 → 520 ms**. The old
+macOS Intel ~7% gap is the same story, not a dead cache: `NativeCompileCache`
+skips *compile*, and most of the interval is *execute* (`require` of
+`initialize-application-window` + `preloadPackages()`).
+
+The original harness **SIGKILL**d the app, which skips `beforeunload` and
+never saved the blob. That made earlier “warm” runs look like a broken cache.
+`measure-startup.js` now graceful-quits (save + `SIGTERM`) so `--home` reuse
+is a real warm compile cache.
+
+### 4.6 Results (2026-08-13) — Linux x64
+
+Harness: same `script/ci/measure-startup.js`, now waiting for
+`window:setup-window:end` (workspace ready). Earlier it stopped at
+`window:onload:end`, which is written when the onload handler *returns* —
+before async `setupWindow()` finishes. On a fast host that cut the timeline
+~350 ms short.
+
+**Host:** Linux `x64` — AMD Ryzen 7 5700X 8-Core (16 threads). Packaged
+**1.0.1**, stock V8 snapshot (`out/STOCK_V8_SNAPSHOT.txt`).
+
+| Metric | Cold home | Warm home (blob-store reused) |
+|--------|-----------|-------------------------------|
+| best | 2,114 ms | 2,009 ms |
+| **median** | **2,148 ms** | **2,014 ms** |
+| Custom V8 snapshot | not in use (stock) | not in use (stock) |
+
+Marker timeline (best cold run, ms since process start):
+
+```text
+   279 ms  main-process:atom-window:end
+   558 ms  window:start
+   581 ms  window:setup-window:start
+  1207 ms  window:initialize:start     ← +626 ms  require init + preloadPackages
+  1219 ms  start-editor-window:start
+  1273 ms  activate-packages           ← +51 ms   activate already-required pkgs
+  1324 ms  open-editor
+  1582 ms  setup-window:end            ← +258 ms  first empty editor
+```
+
+**Verdict (Linux):** **2,148 ms** is in the 1.2–2.5 s band → **§7 cheaper
+alternatives first**. There is no single interval that is both >40% of the
+timeline *and* >1 s. The require/`preloadPackages` gap is still the largest
+slice (~40% of marker time) but it is **626 ms here vs 3,004 ms on the 2017
+Mac** — snapshot restore remains the right Mac play, not the first Linux
+lever.
+
+Phase 1 greps on `src/` (2026-08-13): no module-scope `Intl` / `WeakRef` /
+`FinalizationRegistry`. `Buffer.alloc(0)` in `file-system-blob-store.js` is
+constructor-time. `src/lsp/framing.js` has module-scope `Buffer.from` but LSP
+is required only after snapshot generation. Snapshot-time execution still
+builds `AtomEnvironment` and, when `isGeneratingSnapshot`, `require`s ~50
+bundled packages — bisection if we resume Phase 1 for Mac.
 
 ### 4.4 Measurement caveats
 
 - One cold run hit **31.9 s** (first-touch OS/dyld caching on a machine that had just been building). The multi-second conclusion is robust to that noise; **±500 ms build-to-build comparisons are not.**
 - No claim is made about whether #81 (dropping runtime transpile) helped: the dominant gap moved 3,386 → 3,004 ms between builds, which is inside the noise of this sample.
-- **Platform coverage is incomplete.** Linux and Windows are unmeasured; the module-load gap may differ materially (different filesystem caching, no dyld). Run the harness on both before treating these numbers as the project's startup story.
+- **Platform coverage:** Linux x64 measured (§4.6). Windows still unmeasured.
 
 ### 4.5 Amended gate
 
@@ -241,7 +295,8 @@ package's module tree and excluding it is unacceptable, snapshotting only
 ## 9. Success criteria
 
 - [x] Cold-start numbers measured on **macOS Intel** (§4.1) — snapshot absent, 55% of the timeline in one interval.
-- [ ] Same measurement on **Linux** and **Windows** (harness is cross-platform; `node script/ci/measure-startup.js`).
+- [x] Same measurement on **Linux x64** (§4.6) — 2.1 s median; compile cache works (−6%); §7 first.
+- [ ] Same measurement on **Windows**.
 - [ ] Before/after numbers published for whichever platforms ship the fix.
 - [ ] Either: custom snapshot restored and **on by default**, with the fix documented;
       or: a written decision that it stays off, with the measurement that justifies it.
@@ -255,7 +310,7 @@ package's module tree and excluding it is unacceptable, snapshotting only
 
 1. Is `v8_context_snapshot_generator` strictly required, or can Electron 43 boot from a custom `snapshot_blob.bin` alone? (Determines whether step 3 can simply be dropped.)
 2. Does `electron-link@0.6.x` still track Electron/V8 changes, or is it effectively abandoned? A dead linker caps how far this approach can go.
-3. ~~Is the code-cache path (`NativeCompileCache`) actually populating today?~~ **Partially answered (§4.3):** warm start beats cold by only ~7% on macOS Intel, which suggests it is not doing useful work. Confirm the mechanism, then fix — likely cheaper than the snapshot.
+3. ~~Is the code-cache path (`NativeCompileCache`) actually populating today?~~ **Yes (§4.3 / §4.6).** 1395 blobs / 6 MB after a graceful quit. Warm start is only ~6–7% faster because the interval is execute, not compile. Not a silent breakage.
 4. Does upstream Electron have a supported story for custom app snapshots in 2026, or has that capability quietly bit-rotted for everyone?
 
 ---
