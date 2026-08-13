@@ -448,6 +448,11 @@ module.exports = class AtomApplication extends EventEmitter {
   // Public: Adds the {AtomWindow} to the global window list.
   addWindow(window) {
     this.windowStack.addWindow(window);
+    try {
+      require('./register-fs-ipc').refreshFsIpcRoots();
+    } catch (error) {
+      /* IPC not registered yet */
+    }
     if (this.applicationMenu)
       this.applicationMenu.addWindow(window.browserWindow);
 

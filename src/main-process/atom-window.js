@@ -657,6 +657,11 @@ module.exports = class AtomWindow extends EventEmitter {
 
     this.projectRoots = Array.from(roots);
     this.projectRoots.sort();
+    try {
+      require('./register-fs-ipc').refreshFsIpcRoots();
+    } catch (error) {
+      /* IPC not registered yet / constructor before addWindow */
+    }
   }
 
   replaceEnvironment(env) {

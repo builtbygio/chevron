@@ -168,24 +168,36 @@
       ? snapshotResult.customRequire('../src/crash-reporter-start.js')
       : require('../src/crash-reporter-start');
 
-    useSnapshot
-      ? snapshotResult.customRequire(
-          '../node_modules/document-register-element/build/document-register-element.node.js'
-        )
-      : require('document-register-element');
+    // Electron 43 / Chromium already has Custom Elements v1. The
+    // document-register-element polyfill replaces customElements.define with a
+    // wrapper that calls document.registerElement — which then hits the Grim
+    // wrap below on every core define() (styles-element, pane-element, …).
+    const hasNativeCustomElements =
+      typeof customElements !== 'undefined' &&
+      typeof customElements.define === 'function';
 
-    const Grim = useSnapshot
-      ? snapshotResult.customRequire('../node_modules/grim/lib/grim.js')
-      : require('grim');
-    const documentRegisterElement = document.registerElement;
+    if (!hasNativeCustomElements) {
+      useSnapshot
+        ? snapshotResult.customRequire(
+            '../node_modules/document-register-element/build/document-register-element.node.js'
+          )
+        : require('document-register-element');
+    }
 
-    document.registerElement = (type, options) => {
-      Grim.deprecate(
-        'Use `customElements.define` instead of `document.registerElement` see https://javascript.info/custom-elements'
-      );
+    if (typeof document.registerElement === 'function') {
+      const Grim = useSnapshot
+        ? snapshotResult.customRequire('../node_modules/grim/lib/grim.js')
+        : require('grim');
+      const documentRegisterElement = document.registerElement;
 
-      return documentRegisterElement(type, options);
-    };
+      document.registerElement = (type, options) => {
+        Grim.deprecate(
+          'Use `customElements.define` instead of `document.registerElement` see https://javascript.info/custom-elements'
+        );
+
+        return documentRegisterElement(type, options);
+      };
+    }
 
     const { appVersion } = getWindowLoadSettings();
     const releaseChannel = getReleaseChannel(appVersion);

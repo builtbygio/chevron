@@ -974,6 +974,21 @@ describe('Project', () => {
         })
       ).toThrow();
     });
+
+    it('syncs FS IPC project roots before did-change-paths listeners', () => {
+      const order = [];
+      spyOn(atom.applicationDelegate, 'setProjectRoots').andCallFake(() => {
+        order.push('setProjectRoots');
+      });
+      atom.project.onDidChangePaths(() => {
+        order.push('did-change-paths');
+      });
+
+      const newPath = temp.mkdirSync('atom-project-fs-ipc');
+      atom.project.addPath(newPath);
+
+      expect(order).toEqual(['setProjectRoots', 'did-change-paths']);
+    });
   });
 
   describe('.removePath(path)', () => {

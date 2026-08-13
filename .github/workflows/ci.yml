@@ -178,6 +178,7 @@ jobs:
           node --test script/ci/package-utility-worker.test.js
           node --test script/ci/git-utility-host-integration.test.js
           node --test script/ci/natives-fingerprint.test.js
+          node --test script/ci/fs-ipc-roots.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64

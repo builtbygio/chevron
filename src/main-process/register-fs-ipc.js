@@ -9,7 +9,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { ipcMain, app } = require('electron');
+const { ipcMain, app, BrowserWindow } = require('electron');
 const { pathContained } = require('./atom-protocol-path');
 
 const READ_FILE_MAX_BYTES = 64 * 1024 * 1024; // 64 MiB cap for sync read/copy path
@@ -99,6 +99,42 @@ function isAllowedFsPath(fullPath) {
   return allowedRoots.some(root => pathContained(root, resolved));
 }
 
+// Tree-view / project open can race a refresh: retry once after collecting
+// current window projectRoots.
+function isAllowedFsPathOrRefresh(fullPath) {
+  if (isAllowedFsPath(fullPath)) return true;
+  refreshFsIpcRoots();
+  return isAllowedFsPath(fullPath);
+}
+
+function applyProjectRootsFromRenderer(event, projectRootPaths) {
+  const paths = Array.isArray(projectRootPaths) ? projectRootPaths : [];
+  try {
+    const bw =
+      event && event.sender ? BrowserWindow.fromWebContents(event.sender) : null;
+    const win =
+      atomApplicationRef &&
+      typeof atomApplicationRef.atomWindowForBrowserWindow === 'function'
+        ? atomApplicationRef.atomWindowForBrowserWindow(bw)
+        : null;
+    if (win && typeof win.setProjectRoots === 'function') {
+      win.setProjectRoots(paths);
+    } else {
+      refreshFsIpcRoots();
+      setFsIpcPolicy({
+        strict: strictMode,
+        roots: collectDefaultRoots(atomApplicationRef).concat(paths)
+      });
+    }
+  } catch (error) {
+    refreshFsIpcRoots();
+    setFsIpcPolicy({
+      strict: strictMode,
+      roots: collectDefaultRoots(atomApplicationRef).concat(paths)
+    });
+  }
+}
+
 function deny(event, channel, fullPath) {
   console.warn(`${channel}: blocked path ${String(fullPath)}`);
   event.returnValue = { ok: false, error: 'invalid-path', code: 'EINVAL' };
@@ -164,10 +200,17 @@ module.exports = function registerFsIpc(atomApplication) {
     event.returnValue = { ok: true, strict: strictMode, roots: allowedRoots };
   });
 
+  // Sync: renderer Project.setPaths/addPath must update allowed roots before
+  // did-change-paths listeners (tree-view) lstat the new folder.
+  ipcMain.on('atom-window-set-project-roots-sync', (event, projectRootPaths) => {
+    applyProjectRootsFromRenderer(event, projectRootPaths);
+    event.returnValue = { ok: true, strict: strictMode, roots: allowedRoots };
+  });
+
   // --- probes ---------------------------------------------------------------
 
   ipcMain.on('atom-fs-exists-sync', (event, fullPath) => {
-    if (!isAllowedFsPath(fullPath))
+    if (!isAllowedFsPathOrRefresh(fullPath))
       return deny(event, 'atom-fs-exists-sync', fullPath);
     try {
       ok(event, fs.existsSync(fullPath));
@@ -177,7 +220,7 @@ module.exports = function registerFsIpc(atomApplication) {
   });
 
   ipcMain.on('atom-fs-path-kind-sync', (event, fullPath) => {
-    if (!isAllowedFsPath(fullPath)) {
+    if (!isAllowedFsPathOrRefresh(fullPath)) {
       console.warn(`atom-fs-path-kind-sync: blocked path ${String(fullPath)}`);
       event.returnValue = null;
       return;
@@ -194,7 +237,7 @@ module.exports = function registerFsIpc(atomApplication) {
   });
 
   ipcMain.on('atom-fs-realpath-sync', (event, fullPath) => {
-    if (!isAllowedFsPath(fullPath)) {
+    if (!isAllowedFsPathOrRefresh(fullPath)) {
       console.warn(`atom-fs-realpath-sync: blocked path ${String(fullPath)}`);
       event.returnValue = null;
       return;
@@ -207,7 +250,7 @@ module.exports = function registerFsIpc(atomApplication) {
   });
 
   ipcMain.on('atom-fs-stat-sync', (event, fullPath, followLinks) => {
-    if (!isAllowedFsPath(fullPath))
+    if (!isAllowedFsPathOrRefresh(fullPath))
       return deny(event, 'atom-fs-stat-sync', fullPath);
     try {
       const st = followLinks ? fs.statSync(fullPath) : fs.lstatSync(fullPath);
@@ -218,7 +261,7 @@ module.exports = function registerFsIpc(atomApplication) {
   });
 
   ipcMain.on('atom-fs-stat-no-exception-sync', (event, fullPath, followLinks) => {
-    if (!isAllowedFsPath(fullPath)) {
+    if (!isAllowedFsPathOrRefresh(fullPath)) {
       event.returnValue = { ok: true, value: false };
       return;
     }
@@ -231,7 +274,7 @@ module.exports = function registerFsIpc(atomApplication) {
   });
 
   ipcMain.on('atom-fs-readdir-sync', (event, fullPath) => {
-    if (!isAllowedFsPath(fullPath))
+    if (!isAllowedFsPathOrRefresh(fullPath))
       return deny(event, 'atom-fs-readdir-sync', fullPath);
     try {
       ok(event, fs.readdirSync(fullPath));
@@ -241,7 +284,7 @@ module.exports = function registerFsIpc(atomApplication) {
   });
 
   ipcMain.on('atom-fs-list-sync', (event, fullPath) => {
-    if (!isAllowedFsPath(fullPath))
+    if (!isAllowedFsPathOrRefresh(fullPath))
       return deny(event, 'atom-fs-list-sync', fullPath);
     try {
       const names = fs.readdirSync(fullPath);
@@ -351,3 +394,5 @@ module.exports = function registerFsIpc(atomApplication) {
 module.exports.setFsIpcPolicy = setFsIpcPolicy;
 module.exports.refreshFsIpcRoots = refreshFsIpcRoots;
 module.exports.isAllowedFsPath = isAllowedFsPath;
+module.exports.isAllowedFsPathOrRefresh = isAllowedFsPathOrRefresh;
+module.exports.applyProjectRootsFromRenderer = applyProjectRootsFromRenderer;

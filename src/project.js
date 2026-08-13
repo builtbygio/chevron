@@ -398,6 +398,7 @@ module.exports = class Project extends Model {
       }
     }
 
+    this.syncFsIpcProjectRoots();
     this.emitter.emit('did-change-paths', projectPaths);
 
     if (options.mustExist === true && missingProjectPaths.length > 0) {
@@ -480,7 +481,24 @@ module.exports = class Project extends Model {
     }
 
     if (options.emitEvent !== false) {
+      this.syncFsIpcProjectRoots();
       this.emitter.emit('did-change-paths', this.getPaths());
+    }
+  }
+
+  // Strict FS IPC collects allowed roots from the main-process window's
+  // projectRoots. Refresh those before did-change-paths so tree-view's
+  // lstatSyncNoException (fs-via-main) can see the new folder.
+  syncFsIpcProjectRoots() {
+    if (
+      this.applicationDelegate &&
+      typeof this.applicationDelegate.setProjectRoots === 'function'
+    ) {
+      try {
+        this.applicationDelegate.setProjectRoots(this.getPaths());
+      } catch (error) {
+        // Headless / unit tests without IPC.
+      }
     }
   }
 
@@ -552,6 +570,7 @@ module.exports = class Project extends Model {
         this.watcherPromisesByPath[projectPath].then(w => w.dispose());
       }
       delete this.watcherPromisesByPath[projectPath];
+      this.syncFsIpcProjectRoots();
       this.emitter.emit('did-change-paths', this.getPaths());
       return true;
     } else {
