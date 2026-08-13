@@ -19,7 +19,7 @@
     "@atom/source-map-support": "^0.3.4",
     "@atom/watcher": "file:packages/watcher",
     "about": "file:packages/about",
-    "archive-view": "git+https://github.com/builtbygio/archive-view.git#3597df274cf8eb3d380f4c5414e137b609cd7550",
+    "archive-view": "git+https://github.com/builtbygio/archive-view.git#3293c65118f2c438d30d802c05a0c87e035e7b47",
     "async": "3.2.6",
     "atom-keymap": "8.2.15",
     "atom-select-list": "^0.8.1",

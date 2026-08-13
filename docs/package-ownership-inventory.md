@@ -19,7 +19,7 @@
 
 | Package | Notes |
 |---------|--------|
-| archive-view | JSON keymaps; still **ls-archive** tar 2.x |
+| archive-view | JSON keymaps; **ls-archive** is [builtbygio/ls-archive](https://github.com/builtbygio/ls-archive) (tar 7) |
 | **autocomplete-chevron-api** | Coffee gone; update script uses `fetch` (no `request`) |
 | autocomplete-css | Coffee gone; update script uses `fetch` (no `request`) |
 | autocomplete-html | Update scripts use `fetch` (no `request`) |
