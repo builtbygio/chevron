@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-08-13
+
+**Unsigned preview.** Same 1.0 contract as 1.0.0: owned catalog, Phase S Option C, GitHub Releases. Installers: [v1.0.1](https://github.com/builtbygio/chevron/releases/tag/v1.0.1). See [docs/releases.md](docs/releases.md).
+
 ### Added
 
 - Linux **Jasmine** nightly + manual workflow (`jasmine.yml`) and opt-in on the main CI (dispatch `run_full_core_tests` or PR label `jasmine`). Not a required PR gate. `script/test` finds `Chevron-linux-<arch>/chevron`. See [docs/jasmine-ci.md](docs/jasmine-ci.md) (#57).
@@ -222,7 +226,8 @@ Initial Chevron tree: Electron modernization, modern host bootstrap (`bootstrap-
 
 ---
 
-[Unreleased]: https://github.com/builtbygio/chevron/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/builtbygio/chevron/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/builtbygio/chevron/releases/tag/v1.0.1
 [1.0.0]: https://github.com/builtbygio/chevron/releases/tag/v1.0.0
 [0.6.0]: https://github.com/builtbygio/chevron/releases/tag/v0.6.0
 [0.5.0]: https://github.com/builtbygio/chevron/releases/tag/v0.5.0

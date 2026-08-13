@@ -16,7 +16,7 @@
 - [ ] Day 1 — install / first-run Welcome + Guide; open a real project; save a file
 - [ ] Day 2 — search / find-and-replace; tree-view; git status + commit (github package)
 - [ ] Day 3 — markdown preview; autocomplete; one language grammar you actually use
-- [ ] Day 4 — Check for Update opens the Releases page; About version is 1.0.0
+- [ ] Day 4 — Check for Update opens the Releases page; About version is 1.0.1
 - [ ] Day 5 — LSP path if you use it (`chevron-lsp-*` or workspace trust)
 - [ ] Day 6 — settings-view (install is owned-catalog only); notifications
 - [ ] Day 7 — cold start, large file, and “would I use this tomorrow?”
