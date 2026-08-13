@@ -89,9 +89,11 @@ function jsonList() {
 
 // Read markers from the isolated world — with contextIsolation, `atom` lives in
 // the preload context, so a main-world evaluate silently sees nothing.
-// `window:onload:end` is the final marker on the boot path (see the
-// addMarker calls in static/index.js / src/atom-environment.js).
-const TERMINAL_MARKER = /window:onload:end|start-editor-window:end/;
+// `window:setup-window:end` is after startEditorWindow() — workspace ready.
+// Do not stop at `window:onload:end`: that marker is written when the onload
+// handler returns, before the async setupWindow() work finishes. On a fast
+// host the harness would otherwise stop ~1s too early.
+const TERMINAL_MARKER = /window:setup-window:end|window:environment:start-editor-window:end/;
 
 const MARKERS_EXPR = `(function () {
   if (typeof atom === 'undefined' || !atom.getStartupMarkers) return 'nope:no-atom';
@@ -165,6 +167,47 @@ async function probe() {
   }
 }
 
+async function gracefulQuit(app) {
+  try {
+    const targets = await jsonList();
+    const page = targets.find(t => t.type === 'page' && /index\.html/.test(t.url));
+    if (page) {
+      const ws = new WebSocket(page.webSocketDebuggerUrl, {
+        maxPayload: 64 * 1024 * 1024
+      });
+      await new Promise((res, rej) => {
+        ws.once('open', res);
+        ws.once('error', rej);
+      });
+      ws.send(
+        JSON.stringify({
+          id: 1,
+          method: 'Runtime.evaluate',
+          params: {
+            expression:
+              '(function(){ try { if (typeof atom !== "undefined") { if (atom.saveBlobStoreSync) atom.saveBlobStoreSync(); if (atom.close) atom.close(); } } catch (e) {} try { window.close(); } catch (e) {} })()',
+            returnByValue: true
+          }
+        })
+      );
+      await delay(200);
+      ws.close();
+    }
+  } catch (e) {
+    /* CDP already gone */
+  }
+  try {
+    app.kill('SIGTERM');
+  } catch (e) {
+    /* gone */
+  }
+  const deadline = Date.now() + 8000;
+  while (Date.now() < deadline) {
+    if (app.exitCode != null) break;
+    await delay(100);
+  }
+}
+
 async function singleRun(binary, runIndex, reuseHome) {
   const home =
     reuseHome || fs.mkdtempSync(path.join(os.tmpdir(), `chevron-cold-${runIndex}-`));
@@ -198,7 +241,8 @@ async function singleRun(binary, runIndex, reuseHome) {
       const state = await probe();
       if (state) {
         const wall = Date.now() - t0;
-        return { wall, ...state };
+        await gracefulQuit(app);
+        return { wall, home, ...state };
       }
       await delay(250);
     }
@@ -210,7 +254,9 @@ async function singleRun(binary, runIndex, reuseHome) {
       /* gone */
     }
     await delay(1500); // let the port free before the next run
-    if (!reuseHome) fs.rmSync(home, { recursive: true, force: true });
+    if (!reuseHome && !arg('keep-home', null)) {
+      fs.rmSync(home, { recursive: true, force: true });
+    }
   }
 }
 
