@@ -219,8 +219,11 @@ runtime. Snapshot-time `require()`s cover first-paint packages only
 (`SNAPSHOT_STARTUP_PACKAGES`). `require('chevron')` is a core-module
 exclusion so electron-link does not try to open a file named `chevron`.
 
-Default is now **attempt custom snapshot**. `CHEVRON_SKIP_MKSNAPSHOT=1`
-keeps the old stock path.
+Default is now **attempt custom snapshot** on Linux and Windows.
+**macOS stays on stock snapshots** — generation succeeds, then Electron 43
+dies at process start (CI #121, empty renderer output).
+`CHEVRON_FORCE_MKSNAPSHOT=1` retries on darwin; `CHEVRON_SKIP_MKSNAPSHOT=1`
+keeps the stock path everywhere.
 
 **Linux x64 measurement** (same Ryzen 7 5700X, packaged app, 5 cold runs)
 after this restore, on top of the §4.7 deferral:

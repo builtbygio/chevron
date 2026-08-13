@@ -40,6 +40,19 @@ describe('packaging policy (Stream D)', () => {
 
     const host = shouldSkipCustomSnapshot('28.3.0', { hostCanRun: false });
     assert.strictEqual(host.skip, true);
+
+    const darwin = shouldSkipCustomSnapshot('43.1.0', { platform: 'darwin' });
+    assert.strictEqual(darwin.skip, true);
+    assert.strictEqual(darwin.reason, 'darwin-boot-crash');
+
+    const darwinForced = shouldSkipCustomSnapshot('43.1.0', {
+      platform: 'darwin',
+      force: true
+    });
+    assert.strictEqual(darwinForced.skip, false);
+
+    const linux = shouldSkipCustomSnapshot('43.1.0', { platform: 'linux' });
+    assert.strictEqual(linux.skip, false);
   });
 
   it('note mentions CHEVRON_SKIP_MKSNAPSHOT', () => {

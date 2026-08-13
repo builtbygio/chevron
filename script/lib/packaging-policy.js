@@ -21,6 +21,13 @@ function shouldSkipCustomSnapshot(electronVersion, opts = {}) {
   if (opts.hostCanRun === false) return { skip: true, reason: 'host-unsupported' };
   if (opts.skip && !opts.force) return { skip: true, reason: 'env-skip' };
   if (opts.force) return { skip: false, reason: 'forced' };
+  const platform = opts.platform || process.platform;
+  // Electron 43 on macOS generates a valid pair then dies at process start
+  // (CI #121: empty renderer output). Linux and Windows boot. Keep stock
+  // on darwin until a Mac boot is verified.
+  if (platform === 'darwin') {
+    return { skip: true, reason: 'darwin-boot-crash' };
+  }
   return { skip: false, reason: 'generate' };
 }
 
