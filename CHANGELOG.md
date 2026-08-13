@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Welcome / Guide **Open a Project** uses `application:add-project-folder` (Linux/Windows `application:open` mixed file+folder dialogs often cancel immediately). Off-macOS `promptForPath('all')` is a folder picker with dialog errors logged.
 - Opening a project folder now updates FS IPC allowed roots **before** tree-view `lstat`s the path. Strict `core.fsIpcStrict` was treating the new folder as missing, so the tree stayed empty.
-- Skip the `document-register-element` polyfill when native `customElements.define` exists. The polyfill routed every core `define()` through `document.registerElement` and fired a false Grim deprecation from `styles-element.js`.
+- Stop wrapping `document.registerElement` with Grim. The `document-register-element` polyfill must stay (contextIsolation: native `define()` does not upgrade `document.createElement('atom-*')`); its `define()` calls `registerElement`, which was a false deprecation from `styles-element.js`.
 - First-party `src/text-editor-element.js` `require('chevron')` so startup no longer emits the `require("atom")` legacy warning from core.
 - Deprecation Cop labels untitled Grim stacks as **chevron core**, not atom core.
 - macOS `--compress-artifacts` zip is per-arch (`chevron-mac-x64.zip` / `chevron-mac-arm64.zip`) so a dual-arch GitHub Release no longer overwrites one Mac build.

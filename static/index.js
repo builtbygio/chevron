@@ -168,36 +168,20 @@
       ? snapshotResult.customRequire('../src/crash-reporter-start.js')
       : require('../src/crash-reporter-start');
 
-    // Electron 43 / Chromium already has Custom Elements v1. The
-    // document-register-element polyfill replaces customElements.define with a
-    // wrapper that calls document.registerElement — which then hits the Grim
-    // wrap below on every core define() (styles-element, pane-element, …).
-    const hasNativeCustomElements =
-      typeof customElements !== 'undefined' &&
-      typeof customElements.define === 'function';
-
-    if (!hasNativeCustomElements) {
-      useSnapshot
-        ? snapshotResult.customRequire(
-            '../node_modules/document-register-element/build/document-register-element.node.js'
-          )
-        : require('document-register-element');
-    }
-
-    if (typeof document.registerElement === 'function') {
-      const Grim = useSnapshot
-        ? snapshotResult.customRequire('../node_modules/grim/lib/grim.js')
-        : require('grim');
-      const documentRegisterElement = document.registerElement;
-
-      document.registerElement = (type, options) => {
-        Grim.deprecate(
-          'Use `customElements.define` instead of `document.registerElement` see https://javascript.info/custom-elements'
-        );
-
-        return documentRegisterElement(type, options);
-      };
-    }
+    // Keep document-register-element even though Chromium has Custom Elements
+    // v1. With contextIsolation, native customElements.define() in the preload
+    // realm does not upgrade document.createElement('atom-*') / parser-created
+    // nodes (workspace axes, pane resize handles). The polyfill patches the
+    // shared document so those tags actually become their element classes.
+    //
+    // Do not wrap document.registerElement with Grim.deprecate: the polyfill's
+    // customElements.define() calls registerElement, so every core define()
+    // (styles-element, pane-element, …) looked like a false deprecation.
+    useSnapshot
+      ? snapshotResult.customRequire(
+          '../node_modules/document-register-element/build/document-register-element.node.js'
+        )
+      : require('document-register-element');
 
     const { appVersion } = getWindowLoadSettings();
     const releaseChannel = getReleaseChannel(appVersion);

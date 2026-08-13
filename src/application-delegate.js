@@ -174,7 +174,11 @@ module.exports = class ApplicationDelegate {
     // Must be sync: tree-view updateRoots lstats via FS IPC on the same
     // did-change-paths turn. Async window-method updates allowed roots too late,
     // so lstat looks like a missing path and the tree stays empty.
-    return ipcRenderer.sendSync('atom-window-set-project-roots-sync', paths);
+    try {
+      return ipcRenderer.sendSync('atom-window-set-project-roots-sync', paths);
+    } catch (error) {
+      return ipcHelpers.call('window-method', 'setProjectRoots', paths);
+    }
   }
 
   setAutoHideWindowMenuBar(autoHide) {
