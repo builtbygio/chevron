@@ -61,3 +61,18 @@ test('applyProjectRootsFromRenderer allows a newly opened project folder', () =>
     true
   );
 });
+
+test('refresh collects projectRoots via getAllWindows, not missing .windows', () => {
+  const projectDir = path.join(path.sep, 'home', 'keeper', 'Workspace', 'c_programming');
+  registerFsIpc({
+    resourcePath: path.join(tmp, 'app'),
+    getAllWindows() {
+      return [{ projectRoots: [projectDir] }];
+    }
+  });
+  assert.equal(registerFsIpc.isAllowedFsPath(projectDir), true);
+  assert.equal(
+    registerFsIpc.isAllowedFsPath(path.join(projectDir, 'main.c')),
+    true
+  );
+});

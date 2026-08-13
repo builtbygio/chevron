@@ -53,12 +53,16 @@ function collectDefaultRoots(atomApplication) {
   } catch (error) {
     /* ignore */
   }
-  if (atomApplication && Array.isArray(atomApplication.windows)) {
-    for (const win of atomApplication.windows) {
-      if (win && Array.isArray(win.projectRoots)) {
-        for (const r of win.projectRoots) {
-          if (r) roots.push(r);
-        }
+  const windows =
+    atomApplication && typeof atomApplication.getAllWindows === 'function'
+      ? atomApplication.getAllWindows()
+      : atomApplication && Array.isArray(atomApplication.windows)
+        ? atomApplication.windows
+        : [];
+  for (const win of windows) {
+    if (win && Array.isArray(win.projectRoots)) {
+      for (const r of win.projectRoots) {
+        if (r) roots.push(r);
       }
     }
   }
