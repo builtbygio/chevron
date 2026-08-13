@@ -51,17 +51,17 @@
 | tree-view | Babel drop pin |
 | whitespace | Next-tier |
 | wrap-guide | Class C fold — no runtime coffee |
-| language-c | Tree-sitter ABI 13–15 (`tree-sitter-c` / `cpp`) |
-| language-css | Tree-sitter ABI 13–15 |
-| language-go | Tree-sitter ABI 13–15 |
-| language-html | Tree-sitter ABI 13–15 + embedded-template |
-| language-java | Tree-sitter ABI 13–15 (`tree-sitter-java`, was `java-dev`) |
-| language-javascript | Tree-sitter ABI 13–15 (js / jsdoc / regex) |
-| language-json | Tree-sitter ABI 13–15 |
-| language-python | Tree-sitter ABI 13–15 |
-| language-ruby | Tree-sitter ABI 13–15 |
-| language-shellscript | Tree-sitter ABI 13–15 (`tree-sitter-bash`) |
-| language-typescript | Tree-sitter ABI 13–15 (ts / tsx) |
+| language-c | Tree-sitter ABI 13–15 (`tree-sitter-c` / `cpp`); JSON + TypeScript |
+| language-css | Tree-sitter ABI 13–15; JSON + TypeScript |
+| language-go | Tree-sitter ABI 13–15; JSON + TypeScript |
+| language-html | Tree-sitter ABI 13–15 + embedded-template; JSON + TypeScript |
+| language-java | Tree-sitter ABI 13–15 (`tree-sitter-java`, was `java-dev`); JSON + TypeScript |
+| language-javascript | Tree-sitter ABI 13–15 (js / jsdoc / regex); JSON + TypeScript |
+| language-json | Tree-sitter ABI 13–15; JSON + TypeScript |
+| language-python | Tree-sitter ABI 13–15; JSON + TypeScript |
+| language-ruby | Tree-sitter ABI 13–15; JSON + TypeScript |
+| language-shellscript | Tree-sitter ABI 13–15 (`tree-sitter-bash`); JSON + TypeScript |
+| language-typescript | Tree-sitter ABI 13–15 (ts / tsx); JSON + TypeScript |
 
 Binding: official npm `tree-sitter@0.25.1` (not DeeDeeG / `file:packages/tree-sitter`).
 
