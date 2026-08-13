@@ -130,7 +130,7 @@ class DeprecationCopView {
           className: "deprecation-info list-item",
           onclick: (event) => event.target.parentElement.classList.toggle("collapsed")
         },
-        /* @__PURE__ */ import_etch.default.dom("span", { className: "text-highlight" }, packageName || "atom core"),
+        /* @__PURE__ */ import_etch.default.dom("span", { className: "text-highlight" }, packageName || "chevron core"),
         /* @__PURE__ */ import_etch.default.dom("span", null, ` (${import_underscore_plus.default.pluralize(
           deprecationsByPackageName[packageName].length,
           "deprecation"

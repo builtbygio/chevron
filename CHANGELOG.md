@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Welcome / Guide **Open a Project** uses `application:add-project-folder` (Linux/Windows `application:open` mixed file+folder dialogs often cancel immediately). Off-macOS `promptForPath('all')` is a folder picker with dialog errors logged.
+- First-party `src/text-editor-element.js` `require('chevron')` so startup no longer emits the `require("atom")` legacy warning from core.
+- Deprecation Cop labels untitled Grim stacks as **chevron core**, not atom core.
 - macOS `--compress-artifacts` zip is per-arch (`chevron-mac-x64.zip` / `chevron-mac-arm64.zip`) so a dual-arch GitHub Release no longer overwrites one Mac build.
 
 ## [1.0.0] — 2026-08-12

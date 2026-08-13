@@ -269,7 +269,7 @@ class GuideView {
     this.props.reporterProxy.sendEvent("clicked-project-cta");
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
-      "application:open"
+      "application:add-project-folder"
     );
   }
   didClickGitButton() {

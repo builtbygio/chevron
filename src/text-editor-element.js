@@ -1,4 +1,4 @@
-const { Emitter, Range } = require('atom');
+const { Emitter, Range } = require('chevron');
 const Grim = require('grim');
 const TextEditorComponent = require('./text-editor-component');
 const dedent = require('dedent');
