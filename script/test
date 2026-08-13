@@ -33,7 +33,6 @@ const argv = require('yargs')
   })
   .help().argv;
 
-const assert = require('assert');
 const asyncSeries = require('async/series');
 const childProcess = require('child_process');
 const fs = require('fs-extra');
@@ -44,45 +43,29 @@ const temp = require('temp').track();
 const CONFIG = require('./config');
 const backupNodeModules = require('./lib/backup-node-modules');
 const installPackageDepsHostNpm = require('./lib/install-package-deps-host-npm');
+const { findPackagedApp } = require('./lib/find-packaged-app');
 
-function assertExecutablePaths(executablePaths) {
-  assert(
-    executablePaths.length !== 0,
-    `No atom build found. Please run "script/build" and try again.`
-  );
-  assert(
-    executablePaths.length === 1,
-    `More than one application to run tests against was found. ${executablePaths.join(
-      ','
-    )}`
+const resourcePath = CONFIG.repositoryRootPath;
+const executablePath = findPackagedApp({
+  outDir: CONFIG.buildOutputPath,
+  platform: process.platform,
+  arch: process.arch,
+  executableName: CONFIG.executableName,
+  appName: CONFIG.appName
+});
+if (!executablePath) {
+  throw new Error(
+    '##[error] No Chevron build found. Run "script/build" and try again.'
   );
 }
 
-const resourcePath = CONFIG.repositoryRootPath;
-let executablePath;
-if (process.platform === 'darwin') {
-  const executablePaths = glob.sync(path.join(CONFIG.buildOutputPath, '*.app'));
-  assertExecutablePaths(executablePaths);
-  executablePath = path.join(
-    executablePaths[0],
-    'Contents',
-    'MacOS',
-    path.basename(executablePaths[0], '.app')
-  );
-} else if (process.platform === 'linux') {
-  const executablePaths = glob.sync(
-    path.join(CONFIG.buildOutputPath, 'atom-*', 'atom')
-  );
-  assertExecutablePaths(executablePaths);
-  executablePath = executablePaths[0];
-} else if (process.platform === 'win32') {
-  const executablePaths = glob.sync(
-    path.join(CONFIG.buildOutputPath, '**', 'atom*.exe')
-  );
-  assertExecutablePaths(executablePaths);
-  executablePath = executablePaths[0];
-} else {
-  throw new Error('##[error] Running tests on this platform is not supported.');
+function linuxCiTestArgs(testArguments) {
+  if (process.env.CI && process.platform === 'linux') {
+    if (!testArguments.includes('--no-sandbox')) {
+      testArguments.push('--no-sandbox');
+    }
+  }
+  return testArguments;
 }
 
 function prepareEnv(suiteName) {
@@ -236,17 +219,13 @@ function shouldTryAgain(testKey) {
 
 function runCoreMainProcessTests(callback) {
   const testPath = path.join(CONFIG.repositoryRootPath, 'spec', 'main-process');
-  const testArguments = [
+  const testArguments = linuxCiTestArgs([
     '--resource-path',
     resourcePath,
     '--test',
     '--main-process',
     testPath
-  ];
-
-  if (process.env.CI && process.platform === 'linux') {
-    testArguments.push('--no-sandbox');
-  }
+  ]);
 
   const testEnv = Object.assign({}, prepareEnv('core-main-process'), {
     ATOM_GITHUB_INLINE_GIT_EXEC: 'true'
@@ -270,7 +249,12 @@ function getCoreRenderProcessTestSuites() {
     path.join(testPath, '*-spec.+(js|coffee|ts|jsx|tsx|mjs)')
   );
   for (let testFile of testFiles) {
-    const testArguments = ['--resource-path', resourcePath, '--test', testFile];
+    const testArguments = linuxCiTestArgs([
+      '--resource-path',
+      resourcePath,
+      '--test',
+      testFile
+    ]);
     // the function which runs by async:
     coreRenderProcessTestSuites.push(function(callback) {
       const testEnv = prepareEnv('core-render-process');
@@ -318,12 +302,12 @@ function getPackageTestSuites() {
 
     const testFolder = path.join(repositoryPackagePath, testSubdir);
 
-    const testArguments = [
+    const testArguments = linuxCiTestArgs([
       '--resource-path',
       resourcePath,
       '--test',
       testFolder
-    ];
+    ]);
 
     const pkgJsonPath = path.join(repositoryPackagePath, 'package.json');
     const nodeModulesPath = path.join(repositoryPackagePath, 'node_modules');

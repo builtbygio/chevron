@@ -1,0 +1,129 @@
+name: Jasmine
+
+# Full in-app Jasmine (script/test). Not a PR gate — #57.
+# Nightly on master + manual dispatch. Linux x64 only.
+on:
+  schedule:
+    # 04:00 UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: jasmine-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
+  electron_config_cache: ${{ github.workspace }}/.cache/electron
+  ELECTRON_OZONE_PLATFORM_HINT: x11
+  LIBGL_ALWAYS_SOFTWARE: '1'
+
+jobs:
+  jasmine-linux:
+    name: Linux x64 full script/test
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install system build dependencies
+        run: |
+          set -euo pipefail
+          sudo rm -f /etc/apt/sources.list.d/google-chrome*.list \
+            /etc/apt/sources.list.d/google*.list 2>/dev/null || true
+          sudo apt-get update -o Acquire::Retries=3
+          if apt-cache show libasound2t64 >/dev/null 2>&1; then
+            ALSA_PKG=libasound2t64
+          else
+            ALSA_PKG=libasound2
+          fi
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            libx11-dev \
+            libxkbfile-dev \
+            libsecret-1-dev \
+            libxss-dev \
+            libgtk-3-0 \
+            libnotify4 \
+            libnss3 \
+            "${ALSA_PKG}" \
+            libgbm1 \
+            libx11-xcb1 \
+            libxcb-dri3-0 \
+            libxtst6 \
+            xvfb \
+            fakeroot \
+            dpkg-dev
+
+      - name: Use Node 24
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Use Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install setuptools
+        run: python -m pip install --upgrade pip setuptools
+
+      - name: Rewrite git ssh URLs to https
+        run: |
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
+          git config --global --add url."https://github.com/".insteadOf "git://github.com/"
+
+      - name: Resolve Electron version
+        id: meta
+        run: echo "electron=$(node -p "require('./package.json').electronVersion")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Electron binaries and headers
+        uses: actions/cache@v5
+        with:
+          path: |
+            ${{ github.workspace }}/.cache/electron
+            ~/.cache/electron
+            ~/.cache/node-gyp
+          key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
+          restore-keys: |
+            electron-${{ runner.os }}-${{ runner.arch }}-
+            electron-${{ runner.os }}-
+
+      - name: Cache npm + node_modules
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            script/node_modules
+            cpm/node_modules
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          restore-keys: |
+            nm-${{ runner.os }}-${{ runner.arch }}-node24-
+
+      - name: Bootstrap
+        run: ./script/bootstrap-modern --ci
+
+      - name: Build (no distro packages)
+        run: ./script/with-modern-env ./script/build --no-bootstrap
+
+      - name: Full Jasmine (Xvfb)
+        env:
+          CI: 'true'
+          ATOM_RUN_CORE_TESTS: 'true'
+          ATOM_RUN_PACKAGE_TESTS: 'true'
+          TEST_JUNIT_XML_ROOT: ${{ runner.temp }}/jasmine-junit
+        run: |
+          mkdir -p "$TEST_JUNIT_XML_ROOT"
+          xvfb-run -a ./script/with-modern-env ./script/test
+
+      - name: Upload JUnit
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: jasmine-junit-linux-x64
+          path: ${{ runner.temp }}/jasmine-junit
+          if-no-files-found: warn

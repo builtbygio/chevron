@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Linux **Jasmine** nightly + manual workflow (`jasmine.yml`) and opt-in on the main CI (dispatch `run_full_core_tests` or PR label `jasmine`). Not a required PR gate. `script/test` finds `Chevron-linux-<arch>/chevron`. See [docs/jasmine-ci.md](docs/jasmine-ci.md) (#57).
+
 ### Fixed
 
 - Welcome / Guide **Open a Project** uses `application:add-project-folder` (Linux/Windows `application:open` mixed file+folder dialogs often cancel immediately). Off-macOS `promptForPath('all')` is a folder picker with dialog errors logged.
