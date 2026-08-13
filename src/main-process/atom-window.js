@@ -542,12 +542,17 @@ module.exports = class AtomWindow extends EventEmitter {
     } catch (error) {
       /* ignore */
     }
-    if (this.atomApplication && Array.isArray(this.atomApplication.windows)) {
-      for (const win of this.atomApplication.windows) {
-        if (win && Array.isArray(win.projectRoots)) {
-          for (const r of win.projectRoots) {
-            if (r) roots.push(r);
-          }
+    const windows =
+      this.atomApplication &&
+      typeof this.atomApplication.getAllWindows === 'function'
+        ? this.atomApplication.getAllWindows()
+        : this.atomApplication && Array.isArray(this.atomApplication.windows)
+          ? this.atomApplication.windows
+          : [];
+    for (const win of windows) {
+      if (win && Array.isArray(win.projectRoots)) {
+        for (const r of win.projectRoots) {
+          if (r) roots.push(r);
         }
       }
     }
@@ -657,6 +662,11 @@ module.exports = class AtomWindow extends EventEmitter {
 
     this.projectRoots = Array.from(roots);
     this.projectRoots.sort();
+    try {
+      require('./register-fs-ipc').refreshFsIpcRoots();
+    } catch (error) {
+      /* IPC not registered yet / constructor before addWindow */
+    }
   }
 
   replaceEnvironment(env) {

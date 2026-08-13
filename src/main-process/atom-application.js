@@ -448,6 +448,11 @@ module.exports = class AtomApplication extends EventEmitter {
   // Public: Adds the {AtomWindow} to the global window list.
   addWindow(window) {
     this.windowStack.addWindow(window);
+    try {
+      require('./register-fs-ipc').refreshFsIpcRoots();
+    } catch (error) {
+      /* IPC not registered yet */
+    }
     if (this.applicationMenu)
       this.applicationMenu.addWindow(window.browserWindow);
 
@@ -2010,8 +2015,15 @@ module.exports = class AtomApplication extends EventEmitter {
   }
 
   promptForPath(type, callback, path) {
+    // GTK/Windows cannot show a combined file+folder picker. Electron maps
+    // ['openFile','openDirectory'] to a directory picker, but some portal
+    // backends cancel immediately — treat "all" as a folder picker off-macOS
+    // so Welcome "Open a Project" actually opens a dialog.
+    const effectiveType =
+      type === 'all' && process.platform !== 'darwin' ? 'folder' : type;
+
     const properties = (() => {
-      switch (type) {
+      switch (effectiveType) {
         case 'file':
           return ['openFile'];
         case 'folder':
@@ -2029,9 +2041,13 @@ module.exports = class AtomApplication extends EventEmitter {
       process.platform === 'darwin' ? null : BrowserWindow.getFocusedWindow();
 
     const openOptions = {
-      properties: properties.concat(['multiSelections', 'createDirectory']),
+      properties: properties.concat(
+        process.platform === 'darwin'
+          ? ['multiSelections', 'createDirectory']
+          : ['multiSelections']
+      ),
       title: (() => {
-        switch (type) {
+        switch (effectiveType) {
           case 'file':
             return 'Open File';
           case 'folder':
@@ -2050,6 +2066,10 @@ module.exports = class AtomApplication extends EventEmitter {
         if (typeof callback === 'function') {
           callback(filePaths, bookmarks);
         }
+      })
+      .catch(error => {
+        console.error('showOpenDialog failed', error);
+        if (typeof callback === 'function') callback([]);
       });
   }
 
