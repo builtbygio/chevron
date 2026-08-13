@@ -8,7 +8,8 @@ const path = require('path');
 const {
   STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR,
   shouldSkipCustomSnapshot,
-  stockSnapshotNote
+  stockSnapshotNote,
+  isForeignPrebuildPath
 } = require('../lib/packaging-policy');
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -50,5 +51,44 @@ describe('packaging policy (Stream D)', () => {
     assert.ok(
       fs.existsSync(path.join(ROOT, 'docs', 'packaging.md'))
     );
+  });
+
+  it('drops other-arch prebuilds and keeps host + suffix tags', () => {
+    const keep = isForeignPrebuildPath(
+      'node_modules/tree-sitter-css/prebuilds/linux-x64/tree-sitter-css.node',
+      'linux',
+      'x64'
+    );
+    const keepGnu = isForeignPrebuildPath(
+      'node_modules/tree-sitter-c/prebuilds/linux-x64-gnu/x.node',
+      'linux',
+      'x64'
+    );
+    const dropArm = isForeignPrebuildPath(
+      'node_modules/tree-sitter-css/prebuilds/linux-arm64/tree-sitter-css.node',
+      'linux',
+      'x64'
+    );
+    const dropWin = isForeignPrebuildPath(
+      'node_modules/tree-sitter-js/prebuilds/win32-x64/tree-sitter-javascript.node',
+      'linux',
+      'x64'
+    );
+    const nested = isForeignPrebuildPath(
+      'node_modules/tree-sitter-cpp/node_modules/tree-sitter-c/prebuilds/darwin-arm64/x.node',
+      'linux',
+      'x64'
+    );
+    const notPrebuild = isForeignPrebuildPath(
+      'node_modules/tree-sitter-css/build/Release/tree_sitter_css.node',
+      'linux',
+      'x64'
+    );
+    assert.strictEqual(keep, false);
+    assert.strictEqual(keepGnu, false);
+    assert.strictEqual(dropArm, true);
+    assert.strictEqual(dropWin, true);
+    assert.strictEqual(nested, true);
+    assert.strictEqual(notPrebuild, false);
   });
 });
