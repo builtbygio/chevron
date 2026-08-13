@@ -1055,7 +1055,28 @@ class AtomEnvironment {
 
     StartupTime.addMarker('window:environment:start-editor-window:end');
 
+    this.scheduleDeferredStartupPackages();
+
     return output;
+  }
+
+  scheduleDeferredStartupPackages() {
+    const run = () => {
+      StartupTime.addMarker(
+        'window:environment:start-editor-window:activate-deferred-packages'
+      );
+      this.packages.activateDeferredStartupPackages();
+    };
+    if (this.window && typeof this.window.requestIdleCallback === 'function') {
+      this.window.requestIdleCallback(run, { timeout: 2000 });
+    } else {
+      setTimeout(run, 0);
+    }
+    this.disposables.add(
+      this.workspace.observeTextEditors(editor => {
+        if (editor.getPath()) this.packages.activateDeferredLanguagePackages();
+      })
+    );
   }
 
   serialize(options) {
@@ -1106,6 +1127,13 @@ class AtomEnvironment {
 
   openInitialEmptyEditorIfNecessary() {
     if (!this.config.get('core.openEmptyEditorOnStart')) return;
+    // Welcome/Guide own the first pane when that package will auto-open.
+    if (
+      !this.packages.isPackageDisabled('welcome') &&
+      this.config.get('welcome.showOnStartup') !== false
+    ) {
+      return;
+    }
     const { hasOpenFiles } = this.getLoadSettings();
     if (!hasOpenFiles && this.workspace.getPaneItems().length === 0) {
       return this.workspace.open(null, { pending: true });

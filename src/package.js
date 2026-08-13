@@ -152,6 +152,12 @@ module.exports = class Package {
   }
 
   shouldRequireMainModuleOnLoad() {
+    if (
+      this.packageManager &&
+      this.packageManager.isDeferredStartupPackage(this.name)
+    ) {
+      return false;
+    }
     return !(
       this.metadata.deserializers ||
       this.metadata.viewProviders ||

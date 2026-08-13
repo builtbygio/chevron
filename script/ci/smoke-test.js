@@ -513,7 +513,15 @@ async function main() {
       ) {
         bestBoot = state;
       }
-      if (state && state.status === 'ready') break;
+      if (
+        state &&
+        state.status === 'ready' &&
+        state.packagesActive >= MIN_ACTIVE_PACKAGES
+      ) {
+        break;
+      }
+      // `ready` can land on first-paint (deferred packages still idle, ≤2s).
+      // Keep polling until the idle activate brings the count over the bar.
       const progress = JSON.stringify(state);
       if (progress !== lastLog) {
         console.log('smoke-test: progress', progress);
