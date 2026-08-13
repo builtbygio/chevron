@@ -18,18 +18,21 @@ The product is assembled with **`electron-packager` 15.x** (script-tree dep). Th
 
 ## Startup snapshot
 
-| Electron | Default |
-|----------|---------|
-| &lt; 43 | Attempt custom blob (`electron-link` + `mksnapshot`) when the host can run it |
-| **≥ 43** | **Stock Electron V8 snapshots** — generator SIGTRAPs on this app blob |
+Custom V8 snapshot is attempted on Linux and Windows whenever the host can run `electron-mksnapshot`. **macOS stays on Electron's stock snapshots** — a custom pair generates cleanly but the process dies at boot on Electron 43 (CI). Electron 43 works when `AtomEnvironment` is **not** constructed during snapshot generation (modules are evaluated into the cache; construction happens at runtime in `installEnvironment()`). `electron-mksnapshot`'s stock `mksnapshot.js` serializes the stock isolate blob for the context generator — Chevron drives both tools from a temp copy that contains the custom `snapshot_blob.bin` (`script/lib/run-mksnapshot.js`).
 
-Force a custom-snapshot attempt:
+Skip a custom-snapshot attempt:
+
+```bash
+CHEVRON_SKIP_MKSNAPSHOT=1 ./script/with-modern-env ./script/build --no-bootstrap
+```
+
+Force one after a skip:
 
 ```bash
 CHEVRON_FORCE_MKSNAPSHOT=1 ./script/with-modern-env ./script/build --no-bootstrap
 ```
 
-Skipped builds write `out/STOCK_V8_SNAPSHOT.txt` (`reason=…`) so CI artifacts show the policy that applied.
+Failed builds write `out/STOCK_V8_SNAPSHOT.txt` (`reason=…`) so CI artifacts show the policy that applied. A successful custom pair removes that marker. Context blobs ≤ 2 MB are rejected as stock.
 
 Hosts that cannot run `electron-mksnapshot` (linux-arm, win-arm) always use stock snapshots.
 

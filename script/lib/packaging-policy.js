@@ -2,7 +2,8 @@
 
 /**
  * Stream D: packaging / startup-snapshot policy.
- * Custom V8 snapshot is opt-in on Electron ≥43 (generator SIGTRAP).
+ * Custom V8 snapshot is attempted whenever the host can run mksnapshot.
+ * Escape hatch: CHEVRON_SKIP_MKSNAPSHOT=1.
  */
 
 const STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR = 43;
@@ -14,23 +15,26 @@ function electronMajor(version) {
 
 /**
  * @param {string} electronVersion
- * @param {{ force?: boolean, hostCanRun?: boolean }} [opts]
+ * @param {{ force?: boolean, skip?: boolean, hostCanRun?: boolean }} [opts]
  */
 function shouldSkipCustomSnapshot(electronVersion, opts = {}) {
   if (opts.hostCanRun === false) return { skip: true, reason: 'host-unsupported' };
+  if (opts.skip && !opts.force) return { skip: true, reason: 'env-skip' };
   if (opts.force) return { skip: false, reason: 'forced' };
-  const major = electronMajor(electronVersion);
-  if (major != null && major >= STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR) {
-    return { skip: true, reason: 'electron-43-stock-default' };
+  const platform = opts.platform || process.platform;
+  // Electron 43 on macOS generates a valid pair then dies at process start
+  // (CI #121: empty renderer output). Linux and Windows boot. Keep stock
+  // on darwin until a Mac boot is verified.
+  if (platform === 'darwin') {
+    return { skip: true, reason: 'darwin-boot-crash' };
   }
   return { skip: false, reason: 'generate' };
 }
 
 function stockSnapshotNote(electronVersion) {
   return (
-    `Custom startup snapshot skipped on Electron ${electronVersion} ` +
-    '(V8 context snapshot generator is incompatible with this app blob). ' +
-    "Using Electron's stock V8 snapshots. Set CHEVRON_FORCE_MKSNAPSHOT=1 to retry."
+    `Custom startup snapshot skipped on Electron ${electronVersion}. ` +
+    "Using Electron's stock V8 snapshots. Unset CHEVRON_SKIP_MKSNAPSHOT to retry."
   );
 }
 

@@ -11,7 +11,32 @@
  * whitespace, wrap-guide, and git-diff off this list.
  *
  * language-* is matched by prefix (not listed one-by-one).
+ *
+ * SNAPSHOT_STARTUP_PACKAGES is the static require() list in
+ * initialize-application-window.js (electron-link cannot follow a loop).
+ * Keep the two in sync. Do not add deferred packages here: they load after
+ * first paint and their top-level heap is not needed in the V8 snapshot.
  */
+const SNAPSHOT_STARTUP_PACKAGES = [
+  'autoflow',
+  'autosave',
+  'bookmarks',
+  'command-palette',
+  'encoding-selector',
+  'git-diff',
+  'go-to-line',
+  'grammar-selector',
+  'line-ending-selector',
+  'link',
+  'notifications',
+  'status-bar',
+  'tabs',
+  'tree-view',
+  'welcome',
+  'whitespace',
+  'wrap-guide'
+];
+
 const DEFERRED_STARTUP_PACKAGES = new Set([
   'about',
   'archive-view',
@@ -55,5 +80,6 @@ function isDeferredStartupPackage(name) {
 
 module.exports = {
   DEFERRED_STARTUP_PACKAGES,
+  SNAPSHOT_STARTUP_PACKAGES,
   isDeferredStartupPackage
 };

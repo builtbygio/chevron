@@ -11,28 +11,52 @@ const {
   stockSnapshotNote,
   isForeignPrebuildPath
 } = require('../lib/packaging-policy');
+const { shouldExcludeModule } = require('../lib/snapshot-exclude');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 
 describe('packaging policy (Stream D)', () => {
-  it('skips custom snapshot on Electron 43+ unless forced', () => {
+  it('attempts custom snapshot on Electron 43+ unless skipped or host-unsupported', () => {
     assert.strictEqual(STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR, 43);
-    const skip = shouldSkipCustomSnapshot('43.1.0');
-    assert.strictEqual(skip.skip, true);
-    assert.strictEqual(skip.reason, 'electron-43-stock-default');
+    const generate = shouldSkipCustomSnapshot('43.1.0');
+    assert.strictEqual(generate.skip, false);
+    assert.strictEqual(generate.reason, 'generate');
 
     const forced = shouldSkipCustomSnapshot('43.1.0', { force: true });
     assert.strictEqual(forced.skip, false);
+
+    const skipped = shouldSkipCustomSnapshot('43.1.0', { skip: true });
+    assert.strictEqual(skipped.skip, true);
+    assert.strictEqual(skipped.reason, 'env-skip');
+
+    const forceWins = shouldSkipCustomSnapshot('43.1.0', {
+      skip: true,
+      force: true
+    });
+    assert.strictEqual(forceWins.skip, false);
 
     const old = shouldSkipCustomSnapshot('28.3.0');
     assert.strictEqual(old.skip, false);
 
     const host = shouldSkipCustomSnapshot('28.3.0', { hostCanRun: false });
     assert.strictEqual(host.skip, true);
+
+    const darwin = shouldSkipCustomSnapshot('43.1.0', { platform: 'darwin' });
+    assert.strictEqual(darwin.skip, true);
+    assert.strictEqual(darwin.reason, 'darwin-boot-crash');
+
+    const darwinForced = shouldSkipCustomSnapshot('43.1.0', {
+      platform: 'darwin',
+      force: true
+    });
+    assert.strictEqual(darwinForced.skip, false);
+
+    const linux = shouldSkipCustomSnapshot('43.1.0', { platform: 'linux' });
+    assert.strictEqual(linux.skip, false);
   });
 
-  it('note mentions CHEVRON_FORCE_MKSNAPSHOT', () => {
-    assert.ok(stockSnapshotNote('43.1.0').includes('CHEVRON_FORCE_MKSNAPSHOT'));
+  it('note mentions CHEVRON_SKIP_MKSNAPSHOT', () => {
+    assert.ok(stockSnapshotNote('43.1.0').includes('CHEVRON_SKIP_MKSNAPSHOT'));
   });
 
   it('script still uses electron-packager (no silent swap)', () => {
@@ -45,6 +69,25 @@ describe('packaging policy (Stream D)', () => {
       'utf8'
     );
     assert.ok(impl.includes("require('electron-packager')"));
+  });
+
+  it('excludes require("chevron") from the snapshot graph', () => {
+    assert.strictEqual(
+      shouldExcludeModule({
+        baseDirPath: '/tmp',
+        requiringModulePath: '/tmp/x.js',
+        requiredModulePath: 'chevron'
+      }),
+      true
+    );
+    assert.strictEqual(
+      shouldExcludeModule({
+        baseDirPath: '/tmp',
+        requiringModulePath: '/tmp/x.js',
+        requiredModulePath: 'atom'
+      }),
+      true
+    );
   });
 
   it('docs/packaging.md exists', () => {

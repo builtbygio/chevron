@@ -9,80 +9,56 @@ require('./native-compile-cache');
 require('./compile-cache');
 require('./module-cache');
 
+// electron-link only follows static require()s. Keep this list aligned with
+// first-paint packages (see SNAPSHOT_STARTUP_PACKAGES). Do not construct
+// AtomEnvironment while generating the snapshot: that heap is what
+// v8_context_snapshot_generator SIGTRAPs on under Electron 43 / V8 15.
 if (global.isGeneratingSnapshot) {
-  require('about');
-  require('archive-view');
-  require('autocomplete-chevron-api');
-  require('autocomplete-css');
-  require('autocomplete-html');
-  require('autocomplete-plus');
-  require('autocomplete-snippets');
   require('autoflow');
   require('autosave');
-  require('background-tips');
   require('bookmarks');
-  require('bracket-matcher');
   require('command-palette');
-  require('deprecation-cop');
-  require('dev-live-reload');
   require('encoding-selector');
-  require('dalek');
-  require('find-and-replace');
-  require('fuzzy-finder');
-  require('github');
   require('git-diff');
   require('go-to-line');
   require('grammar-selector');
-  require('image-view');
-  require('incompatible-packages');
-  require('keybinding-resolver');
-  require('language-c');
-  require('language-html');
-  require('language-javascript');
-  require('language-ruby');
-  require('language-rust-bundled');
-  require('language-typescript');
   require('line-ending-selector');
   require('link');
-  require('markdown-preview');
   require('notifications');
-  require('open-on-github');
-  require('package-generator');
-  require('settings-view');
-  require('snippets');
-  require('spell-check');
   require('status-bar');
-  require('styleguide');
-  require('symbols-view');
   require('tabs');
-  require('timecop');
   require('tree-view');
-  require('update-package-dependencies');
   require('welcome');
   require('whitespace');
   require('wrap-guide');
-  require('lsp-ui');
-  require('lsp-diagnostics-stub');
-  require('lsp-servers');
 }
 
-const clipboard = new Clipboard();
-TextEditor.setClipboard(clipboard);
-TextEditor.viewForItem = item => atom.views.getView(item);
+function installEnvironment() {
+  if (global.chevron) return global.chevron;
+  const clipboard = new Clipboard();
+  TextEditor.setClipboard(clipboard);
+  TextEditor.viewForItem = item => atom.views.getView(item);
 
-// Chevron-only product global. global.atom is an unsupported legacy alias.
-const atomEnvironment = new AtomEnvironment({
-  clipboard,
-  applicationDelegate: new ApplicationDelegate(),
-  enablePersistence: true
-});
-global.chevron = atomEnvironment;
-global.atom = atomEnvironment;
+  // Chevron-only product global. global.atom is an unsupported legacy alias.
+  const atomEnvironment = new AtomEnvironment({
+    clipboard,
+    applicationDelegate: new ApplicationDelegate(),
+    enablePersistence: true
+  });
+  global.chevron = atomEnvironment;
+  global.atom = atomEnvironment;
 
-TextEditor.setScheduler(global.chevron.views);
-global.chevron.preloadPackages();
-// Like sands through the hourglass, so are the days of our lives.
+  TextEditor.setScheduler(global.chevron.views);
+  global.chevron.preloadPackages();
+  return atomEnvironment;
+}
+
+if (!global.isGeneratingSnapshot) {
+  installEnvironment();
+}
+
 module.exports = function({ blobStore }) {
+  installEnvironment();
   const { updateProcessEnv } = require('./update-process-env');
   const path = require('path');
   require('./window');
