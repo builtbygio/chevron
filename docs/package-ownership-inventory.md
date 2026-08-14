@@ -21,16 +21,16 @@
 
 | Package | Repo | Notes |
 |---------|------|--------|
-| `@atom/fuzzy-native` | [fuzzy-native](https://github.com/builtbygio/fuzzy-native) | CONTEXT_AWARE, `<cstdint>`, V8 15 `WriteUtf8` / `Set().Check()` |
-| `@atom/nsfw` | [nsfw](https://github.com/builtbygio/nsfw) | CONTEXT_AWARE |
-| `ctags` | [node-ctags](https://github.com/builtbygio/node-ctags) | CONTEXT_AWARE |
-| `git-utils` | [git-utils](https://github.com/builtbygio/git-utils) | CONTEXT_AWARE; vendored `deps/libgit2` (no submodule) |
-| `keyboard-layout` | [keyboard-layout](https://github.com/builtbygio/keyboard-layout) | CONTEXT_AWARE |
-| `keytar` | [node-keytar](https://github.com/builtbygio/node-keytar) | `nan@2.28.0` |
-| `nslog` | [node-nslog](https://github.com/builtbygio/node-nslog) | CONTEXT_AWARE |
-| `oniguruma` | [node-oniguruma](https://github.com/builtbygio/node-oniguruma) | CONTEXT_AWARE, V8 `GetIsolate`, GCC 14 `gnu89` |
-| `pathwatcher` | [node-pathwatcher](https://github.com/builtbygio/node-pathwatcher) | CONTEXT_AWARE |
-| `spellchecker` | [node-spellchecker](https://github.com/builtbygio/node-spellchecker) | CONTEXT_AWARE, V8 `Write`/`GetIsolate`, MSVC wstring |
+| `@atom/fuzzy-native` | [fuzzy-native](https://github.com/builtbygio/fuzzy-native) | Native export as-is (fuzzy-finder). CONTEXT_AWARE / V8 15 |
+| `@atom/nsfw` | [nsfw](https://github.com/builtbygio/nsfw) | Callable + `actions` 0–3 (`path-watcher.js`). CONTEXT_AWARE |
+| `ctags` | [node-ctags](https://github.com/builtbygio/node-ctags) | `findTags` 3-arg + `createReadStream` (symbols-view). No Coffee |
+| `git-utils` | [git-utils](https://github.com/builtbygio/git-utils) | `open(path)` Repository (`git-repository.js`). Vendored libgit2 |
+| `keyboard-layout` | [keyboard-layout](https://github.com/builtbygio/keyboard-layout) | Keymap observers (atom-keymap). CONTEXT_AWARE |
+| `keytar` | [node-keytar](https://github.com/builtbygio/node-keytar) | Promise get/set/delete/find (github). No prebuild-install |
+| `nslog` | [node-nslog](https://github.com/builtbygio/node-nslog) | Function export (`console.log = nslog`). No Coffee |
+| `oniguruma` | [node-oniguruma](https://github.com/builtbygio/node-oniguruma) | `OnigRegExp` + `OnigScanner` (TextMate + first-mate) |
+| `pathwatcher` | [node-pathwatcher](https://github.com/builtbygio/node-pathwatcher) | `{ File, Directory }` + `watch`. CONTEXT_AWARE |
+| `spellchecker` | [node-spellchecker](https://github.com/builtbygio/node-spellchecker) | Hunspell/system API (spell-check). CONTEXT_AWARE |
 
 Root `overrides` pin nested copies (first-mate → oniguruma, spell-check → spellchecker / atom-pathspec, symbols-view → ctags, scandal → `isbinaryfile@2`, …) to the same SHAs.
 
