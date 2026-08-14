@@ -51,6 +51,20 @@ describe('verify-machine-requirements policy', () => {
   });
 });
 
+describe('official tree-sitter 0.25 is not overwritten', () => {
+  it('bootstrap does not force-copy packages/tree-sitter (DeeDeeG 0.17)', () => {
+    const sh = fs.readFileSync(
+      path.join(__dirname, '../lib/force-patched-superstring.sh'),
+      'utf8'
+    );
+    assert.ok(
+      !/chevron_force_one_native[^\n]*packages\/tree-sitter/.test(sh),
+      'force-copying packages/tree-sitter overwrites npm tree-sitter@0.25'
+    );
+    assert.ok(sh.includes('Official npm tree-sitter@0.25'));
+  });
+});
+
 describe('critical-natives', () => {
   it('lists core packages', () => {
     assert.ok(CRITICAL_REBUILD_PACKAGES.includes('superstring'));

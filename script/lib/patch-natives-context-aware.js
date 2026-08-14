@@ -70,12 +70,6 @@ const TARGETS = [
     name: 'watcher',
     fn: 'initialize',
     arity: 1
-  },
-  {
-    file: 'packages/tree-sitter/src/binding.cc',
-    name: 'tree_sitter_runtime_binding',
-    fn: 'InitAll',
-    arity: 1
   }
 ];
 

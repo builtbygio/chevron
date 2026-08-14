@@ -50,7 +50,12 @@ const CRITICAL_NATIVE_PACKAGES = [
 
 const CRITICAL_NODE_FILES = [
   path.join('superstring', 'build', 'Release', 'superstring.node'),
-  path.join('tree-sitter', 'build', 'Release', 'tree_sitter.node'),
+  path.join(
+    'tree-sitter',
+    'prebuilds',
+    `${process.platform}-${process.arch}`,
+    'tree-sitter.node'
+  ),
   path.join('pathwatcher', 'build', 'Release', 'pathwatcher.node')
 ];
 

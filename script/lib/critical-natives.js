@@ -33,7 +33,11 @@ const CRITICAL_REBUILD_PACKAGES = [
  */
 const ARTIFACT_GLOBS = {
   superstring: ['build/Release/superstring.node'],
-  'tree-sitter': ['build/Release/tree_sitter.node', 'build/Release/tree-sitter.node'],
+  'tree-sitter': [
+    `prebuilds/${process.platform}-${process.arch}/tree-sitter.node`,
+    'build/Release/tree-sitter.node',
+    'build/Release/tree_sitter_runtime_binding.node'
+  ],
   '@atom/watcher': ['build/Release/watcher.node'],
   '@atom/nsfw': ['build/Release/nsfw.node'],
   '@atom/fuzzy-native': ['build/Release/fuzzy-native.node'],

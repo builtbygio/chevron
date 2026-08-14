@@ -39,7 +39,15 @@ chevron_resync_nested_built_natives() {
     local node_bin=""
     case "$npm_name" in
       superstring) node_bin="$root_dest/build/Release/superstring.node" ;;
-      tree-sitter) node_bin="$root_dest/build/Release/tree_sitter_runtime_binding.node" ;;
+      tree-sitter)
+        node_bin=""
+        for cand in \
+          "$root_dest/prebuilds/$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/;s/aarch64/arm64/')/tree-sitter.node" \
+          "$root_dest/build/Release/tree-sitter.node"
+        do
+          if [ -f "$cand" ]; then node_bin="$cand"; break; fi
+        done
+        ;;
       keytar) node_bin="$root_dest/build/Release/keytar.node" ;;
       '@atom/watcher') node_bin="$root_dest/build/Release/watcher.node" ;;
     esac
@@ -197,14 +205,9 @@ chevron_force_patched_natives() {
   local repo_root="${1:-$(pwd)}"
   chevron_force_one_native "$repo_root" "superstring" "packages/superstring" "superstring" || return 1
   chevron_force_one_native "$repo_root" "@atom/watcher" "packages/watcher" "@atom/watcher" || return 1
-  chevron_force_one_native "$repo_root" "tree-sitter" "packages/tree-sitter" "tree-sitter" || return 1
-
-  # tree-sitter only needs nan + vendor/; drop accidental nested packages
-  # (e.g. tree-sitter-javascript from a polluted npm install)
-  if [ -d "$repo_root/node_modules/tree-sitter/node_modules" ]; then
-    find "$repo_root/node_modules/tree-sitter/node_modules" -mindepth 1 -maxdepth 1 \
-      ! -name nan -exec rm -rf {} + 2>/dev/null || true
-  fi
+  # Official npm tree-sitter@0.25 (N-API). Do not overwrite it with
+  # packages/tree-sitter (DeeDeeG 0.17 / ABI 12) — that is what left
+  # official language-* grammars uncoloured.
 
   chevron_upgrade_nan_for_electron14 "$repo_root"
 

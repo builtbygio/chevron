@@ -20,9 +20,7 @@ const repoRoot = path.resolve(
 );
 
 const ROOTS = [
-  'node_modules/tree-sitter/src',
   'node_modules/superstring/src',
-  'packages/tree-sitter/src',
   'packages/superstring/src'
 ];
 
