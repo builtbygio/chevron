@@ -4,6 +4,16 @@
  * Fix broken nested package.json metadata that produces Node DEP0128 warnings
  * (or broken requires) during packaging / runtime.
  *
+ * Today this only rewrites scandal's nested isbinaryfile@2.0.4, whose
+ * published `main` is `./lib/panino.js` (not in the tarball). scandal calls
+ * the 2.x API `isBinaryFile(buffer, bytesRead)` — do **not** override to
+ * isbinaryfile@3 (filepath API).
+ *
+ * Retirement (do in one PR):
+ *  1. Fork isbinaryfile 2.0.4 → builtbygio/isbinaryfile with `"main": "index.js"`.
+ *  2. `overrides["isbinaryfile@2"]` = that git pin (scandal stays on ^2.0.4).
+ *  3. Delete this script and its bootstrap-modern call.
+ *
  * Idempotent. Usage: node script/lib/patch-dep-package-json.js [repoRoot]
  */
 

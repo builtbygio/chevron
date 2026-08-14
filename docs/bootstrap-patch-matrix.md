@@ -21,8 +21,9 @@ Override soft native failures only with `CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1
 
 | Script | Class | Purpose | Retirement path |
 |--------|-------|---------|-----------------|
-| `patch-nested-nan.js` | A compile | replace nested nan &lt; root | Root `overrides.nan=2.28.0`; keep until a clean bootstrap log is always no-op |
-| `patch-dep-package-json.js` | Hygiene | DEP0128 / broken package.json | Fix upstream package metadata |
+| `patch-dep-package-json.js` | Hygiene | scandal nests `isbinaryfile@2.0.4` with missing `lib/panino.js` | Fork 2.0.4, set `main` to `index.js`, `overrides["isbinaryfile@2"]`. Do **not** jump to 3.x (API change). |
+| `patch-packages-remote-ipc.js` | B leftover | `atom-pathspec` still uses `electron.remote.app` | Fork to builtbygio, fold IPC `getPath`, override so spell-check resolves it |
+| ~~`patch-nested-nan.js`~~ | A retired | nested nan hoist | `overrides.nan=2.28.0` — **deleted** |
 | ~~`patch-natives-context-aware.js`~~ | A retired | `NODE_MODULE` → `CONTEXT_AWARE` | Folded into owned native forks — **deleted** |
 | ~~`patch-v8-api.js`~~ | A retired | V8 15 removals | Folded into owned native forks — **deleted** |
 | ~~`patch-oniguruma-gyp.js`~~ | A retired | GCC 14 + K&R | Folded into builtbygio/node-oniguruma — **deleted** |
@@ -31,11 +32,16 @@ Override soft native failures only with `CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1
 | ~~`patch-decaffeinate-bundled-packages.js`~~ | C retired | Folded into owned pins | **Deleted** |
 | ~~`patch-debabel-bundled-packages.js`~~ | C retired | Folded into owned pins | **Deleted** |
 | ~~`patch-tree-view-stats.js`~~ | B retired | Stats.mtime on modern Node | Folded into builtbygio/tree-view — **deleted** |
-| `patch-packages-remote-ipc.js` | B safety net | remote → IPC | Folded into builtbygio; keep until always no-op |
-| `patch-github-remote.js` | B safety net | github worker | Folded into builtbygio/github |
-| `patch-settings-view-registry.js` | B safety net | atom.io → Pulsar | Folded into settings-view; re-run after intermediate transpile |
-| `patch-apm-download-node.js` / `patch-apm-npm.js` | D legacy | apm debug only | Remove when `--with-apm` is deleted |
+| ~~`patch-github-remote.js`~~ | B retired | github worker | Folded into builtbygio/github — **deleted** |
+| ~~`patch-settings-view-registry.js`~~ | B retired | atom.io → Pulsar | Folded into settings-view — **deleted** |
+| ~~`patch-apm-download-node.js`~~ / ~~`patch-apm-npm.js`~~ | D retired | apm debug only | Unused on the cpm path — **deleted** |
 | `force-patched-superstring.sh` | A compile | monorepo superstring wins | Keep while monorepo packages/superstring is source of truth |
+
+### Remaining — do next
+
+**`patch-dep-package-json.js`:** `scandal@3.2.0` depends on `isbinaryfile@^2.0.4`. The 2.0.4 tarball ships `index.js` but `package.json` `main` is `./lib/panino.js` (missing). scandal calls the **2.x** API `isBinaryFile(buffer, bytesRead)`. Root already has `isbinaryfile@3.0.3` (filepath API) — overriding `@2` → `3` would break find-in-project. Plan: fork 2.0.4, set `main` to `index.js`, pin via `overrides["isbinaryfile@2"]`, delete the patch.
+
+**`patch-packages-remote-ipc.js`:** only consumer is unowned `atom-pathspec@0.0.0` (via owned `spell-check`). It still does `electron.remote.app.getPath`. Plan: fork to `builtbygio/atom-pathspec`, fold `ipcRenderer.sendSync('atom-app-get-path-sync')`, direct-pin + override, delete the patch.
 
 ### Static patch trees
 

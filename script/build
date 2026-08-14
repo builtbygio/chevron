@@ -89,8 +89,6 @@ if (!argv.existingBinaries) {
   transpileCoffeeScriptPaths()
   // Package libs may ship .ts (owned forks); emit .js before metadata resolve.
   transpileTypeScriptPaths()
-  // Re-apply Pulsar registry URLs on intermediate tree (safety net).
-  require('./lib/patch-settings-view-registry')(CONFIG.intermediateAppPath)
   transpileCsonPaths()
   transpilePegJsPaths()
   generateModuleCache()

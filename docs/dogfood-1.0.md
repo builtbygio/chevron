@@ -13,7 +13,7 @@
 
 ## Daily checklist (copy into the tracking issue)
 
-- [ ] Day 1 — install / first-run Welcome + Guide; open a real project; save a file
+- [x] Day 1 — install / first-run Welcome + Guide; open a real project; save a file
 - [ ] Day 2 — search / find-and-replace; tree-view; git status + commit (github package)
 - [ ] Day 3 — markdown preview; autocomplete; one language grammar you actually use
 - [ ] Day 4 — Check for Update opens the Releases page; About version is 1.0.1

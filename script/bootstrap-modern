@@ -123,10 +123,7 @@ fi
 . "$SCRIPT_DIR/lib/force-patched-superstring.sh"
 chevron_force_patched_superstring "$REPO_ROOT"
 
-echo "Replacing outdated nested nan copies with root nan…"
-node "$SCRIPT_DIR/lib/patch-nested-nan.js" "$REPO_ROOT"
-
-echo "Patching bundled packages for remote->IPC..."
+echo "Patching atom-pathspec remote→IPC…"
 node "$SCRIPT_DIR/lib/patch-packages-remote-ipc.js" "$REPO_ROOT"
 
 echo "Patching nested package.json metadata (isbinaryfile, etc.)…"

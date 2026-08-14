@@ -62,7 +62,12 @@ describe('compile patches folded into owned native forks', () => {
       'patch-v8-api',
       'patch-oniguruma-gyp',
       'patch-spellchecker-win',
-      'patch-keytar-nan'
+      'patch-keytar-nan',
+      'patch-nested-nan',
+      'patch-github-remote',
+      'patch-settings-view-registry',
+      'patch-apm-npm',
+      'patch-apm-download-node'
     ]) {
       assert.ok(
         !text.includes(name),
@@ -149,7 +154,7 @@ describe('patch matrix doc exists', () => {
     const p = path.join(__dirname, '..', '..', 'docs', 'bootstrap-patch-matrix.md');
     assert.ok(fs.existsSync(p));
     const text = fs.readFileSync(p, 'utf8');
-    assert.ok(text.includes('patch-nested-nan'));
+    assert.ok(text.includes('patch-dep-package-json'));
     assert.ok(text.includes('critical-natives'));
   });
 });

@@ -100,6 +100,12 @@ describe('Class C patch bridges (retired)', () => {
       'script/lib/patch-oniguruma-gyp.js',
       'script/lib/patch-spellchecker-win.js',
       'script/lib/patch-keytar-nan.js',
+      'script/lib/patch-nested-nan.js',
+      'script/lib/patch-github-remote.js',
+      'script/lib/patch-settings-view-registry.js',
+      'script/lib/patch-apm-npm.js',
+      'script/lib/patch-apm-download-node.js',
+      'script/lib/write-tree-view-fs-shim.js',
       'script/patches/decaffeinated-bundled-packages',
       'script/patches/debabelled-bundled-packages'
     ];

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deleted unused `packages/tree-sitter` (DeeDeeG 0.17). Runtime is npm `tree-sitter@0.25.1` plus official `tree-sitter-*` N-API prebuilds.
 - Deleted `patch-tree-view-stats.js` (already in builtbygio/tree-view). Stopped rewriting official grammar addons and owned superstring/watcher sources that already have the V8 / context-aware fixes.
 - Forked remaining compile-patched natives to `builtbygio` and folded the Electron 43 / V8 15 fixes into those sources. Deleted `patch-natives-context-aware`, `patch-v8-api`, `patch-oniguruma-gyp`, `patch-spellchecker-win`, and `patch-keytar-nan`.
+- Deleted no-op / unused bootstrap patches: `patch-nested-nan`, `patch-github-remote`, `patch-settings-view-registry`, `patch-apm-npm`, `patch-apm-download-node`. Remaining: `patch-dep-package-json` (scandal `isbinaryfile@2` `main`) and `patch-packages-remote-ipc` (`atom-pathspec` `remote.app`).
 - Settings install/uninstall: accept apm's `install --json`, `install --check`, and `uninstall --hard` so commander 12 does not reject the settings-view argv.
 - Find-in-project: download `vscode-ripgrep`'s `rg` during bootstrap/package (skipped by `--ignore-scripts`) so packaged `app.asar.unpacked` has the binary.
 - Settings installed/outdated lists: `cpm ls --json` emits the apm `{ user, core, dev, git }` shape; `cpm outdated --json` exits 0 with `[]`.
