@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Own the remaining 22 TextMate-only `language-*` packages (`#79`). No `atom/*` app git pins left.
 - Pre-transpile `builtbygio/github` `lib/` to CJS and drop `atomTranspilers`. Packaging no longer runs a host Babel 7 install inside that package.
 - Custom V8 snapshot is attempted on Darwin too (same eval-only + custom isolate cwd as Linux/Windows). Mac smoke is the gate; `CHEVRON_SKIP_MKSNAPSHOT=1` still keeps stock.
+- Mac arm64 bootstrap: `ensure-ripgrep` was dying on an unauthenticated GitHub API 403 (`microsoft/ripgrep-prebuilt` v12.1.1). Pass `GITHUB_TOKEN`, `--force` when `bin/rg` is missing, and fall back to the release asset URL.
 
 ### Fixed
 

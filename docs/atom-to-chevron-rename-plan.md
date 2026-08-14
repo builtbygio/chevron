@@ -19,7 +19,7 @@
 
 - Mass-rename `@atom/*` natives or `atom-keymap` in one PR  
 - Good-first-issue docs hygiene assigned elsewhere (#75–#78)  
-- language-* forks (#79)
+- ~~language-* forks (#79)~~ done — owned `builtbygio` pins
 
 ## Policy (Chevron only)
 

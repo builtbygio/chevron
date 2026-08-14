@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-08-14 (master after #124; core JS/native ownership in flight)
+**Date of this handoff:** 2026-08-14 (#125: own remaining loaders + language-* + github CJS)
 
 ---
 
@@ -12,7 +12,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 | Horizon | Goal |
 |---------|------|
-| **Near term** | 1.0 dogfood (#106); Jasmine nightly is wired (#57); #79 language-* later |
+| **Near term** | 1.0 dogfood (#106); Jasmine nightly is wired (#57) |
 | **Medium term** | Package host v2, Git polish, optional AI |
 | **Long term** | Possible Avalonia rehost; keep hackable package spirit |
 

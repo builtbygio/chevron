@@ -25,7 +25,7 @@ This pairs with **Chevron-only** API policy (no dual-support product goal). Comm
 
 - Guaranteeing Pulsar / Atom registry packages install and run  
 - Dual-support of `engines.atom` / `require('atom')` as a first-class authoring path  
-- Supporting unowned `atom/*` language packs except as temporary SHA pins (#79)  
+- Treating unowned `atom/*` language packs as a product path — they are owned `builtbygio` pins (#79)
 
 ### Engineering notes
 

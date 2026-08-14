@@ -28,6 +28,9 @@ concurrency:
 env:
   ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
   electron_config_cache: ${{ github.workspace }}/.cache/electron
+  # vscode-ripgrep's postinstall hits api.github.com; unauthenticated 403s
+  # on shared Mac runners. The default token is enough for public releases.
+  GITHUB_TOKEN: ${{ github.token }}
 
 
 jobs:

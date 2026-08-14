@@ -27,4 +27,4 @@ Local Class C fold build: `node script/ci/smoke-test.js` **PASSED** (linux-boot,
 
 ## Out of scope this week
 
-Host v2, language-* forks, packager/snapshot, signing.
+Host v2, `@electron/packager`, signing. Language-* forks (#79) and the Linux/Windows snapshot landed.

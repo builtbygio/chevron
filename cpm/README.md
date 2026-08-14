@@ -29,7 +29,7 @@ cd cpm && npm install
 ```bash
 export ATOM_HOME=/tmp/cpm-test   # optional dual home
 ./cpm/bin/cpm install ./cpm/test/fixtures/pure-js-package
-./cpm/bin/cpm install git+https://github.com/atom/language-toml.git#master
+./cpm/bin/cpm install git+https://github.com/builtbygio/language-toml.git#chevron
 ./cpm/bin/cpm search linter
 ./cpm/bin/cpm view linter
 ./cpm/bin/cpm featured --json         # Settings → Install featured list

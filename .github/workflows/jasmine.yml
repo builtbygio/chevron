@@ -17,6 +17,7 @@ env:
   electron_config_cache: ${{ github.workspace }}/.cache/electron
   ELECTRON_OZONE_PLATFORM_HINT: x11
   LIBGL_ALWAYS_SOFTWARE: '1'
+  GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
   jasmine-linux:

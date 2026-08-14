@@ -40,9 +40,9 @@ module.exports = function() {
         intermediatePackagePath
       );
 
-      // Host npm install for transpiler devDeps (Phase 0 — no apm).
-      // Skip lifecycle scripts: we only need JS for atomTranspilers; natives
-      // are already built at repo root and linked in next.
+      // Safety net only: owned github pin ships pre-transpiled CJS (no
+      // atomTranspilers). If a package still declares them, host-npm the
+      // Babel deps (no apm) and link already-built natives.
       installPackageDepsHostNpm(rootPackagePath, { ignoreScripts: true });
       linkPackageNativesToRoot(CONFIG.repositoryRootPath, rootPackagePath);
 
