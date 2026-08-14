@@ -191,8 +191,9 @@ A second pass deferred autocomplete / snippets / bracket-matcher and every
 On this host that **did not move** `setup-window:end` (~1100 ms). The leftover
 ~310 ms `setup-window` → `initialize` interval is mostly core
 `require` (`atom-environment`, `text-editor`, `text-editor-component`) plus
-the first-paint shell, not grammars. Opening a file before idle still
-activates `language-*` immediately.
+the first-paint shell, not grammars. **`language-*` is no longer deferred** —
+grammars must be registered before the first editor or `.c` files stay on
+the null grammar.
 
 ### 4.8 Custom V8 snapshot restored (2026-08-13)
 

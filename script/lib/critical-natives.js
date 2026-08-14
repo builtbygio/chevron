@@ -11,7 +11,6 @@ const path = require('path');
 /** Packages rebuilt explicitly in bootstrap-modern (order not significant). */
 const CRITICAL_REBUILD_PACKAGES = [
   'superstring',
-  'tree-sitter',
   '@atom/watcher',
   '@atom/nsfw',
   '@atom/fuzzy-native',
@@ -33,7 +32,6 @@ const CRITICAL_REBUILD_PACKAGES = [
  */
 const ARTIFACT_GLOBS = {
   superstring: ['build/Release/superstring.node'],
-  'tree-sitter': ['build/Release/tree_sitter.node', 'build/Release/tree-sitter.node'],
   '@atom/watcher': ['build/Release/watcher.node'],
   '@atom/nsfw': ['build/Release/nsfw.node'],
   '@atom/fuzzy-native': ['build/Release/fuzzy-native.node'],

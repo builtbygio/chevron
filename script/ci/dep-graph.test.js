@@ -94,6 +94,20 @@ describe('Class C patch bridges (retired)', () => {
     const gone = [
       'script/lib/patch-decaffeinate-bundled-packages.js',
       'script/lib/patch-debabel-bundled-packages.js',
+      'script/lib/patch-tree-view-stats.js',
+      'script/lib/patch-natives-context-aware.js',
+      'script/lib/patch-v8-api.js',
+      'script/lib/patch-oniguruma-gyp.js',
+      'script/lib/patch-spellchecker-win.js',
+      'script/lib/patch-keytar-nan.js',
+      'script/lib/patch-nested-nan.js',
+      'script/lib/patch-github-remote.js',
+      'script/lib/patch-settings-view-registry.js',
+      'script/lib/patch-apm-npm.js',
+      'script/lib/patch-apm-download-node.js',
+      'script/lib/write-tree-view-fs-shim.js',
+      'script/lib/patch-packages-remote-ipc.js',
+      'script/lib/patch-dep-package-json.js',
       'script/patches/decaffeinated-bundled-packages',
       'script/patches/debabelled-bundled-packages'
     ];

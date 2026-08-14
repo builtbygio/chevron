@@ -1,20 +1,15 @@
 'use strict';
 
 /**
- * Remaining bootstrap patch bridges. Class C (decaff / debabel) is empty —
- * those packages now ship precompiled JS in owned pins.
+ * Remaining bootstrap patch bridges. Class B/C safety nets are empty —
+ * leftover compile and remote/IPC rewrites now live in owned pins.
  */
 
 const DECAFFEINATE_PACKAGES = [];
 
 const DEBABEL_PACKAGES = [];
 
-const SAFETY_NET_PATCHES = [
-  'patch-packages-remote-ipc.js',
-  'patch-github-remote.js',
-  'patch-tree-view-stats.js',
-  'patch-settings-view-registry.js'
-];
+const SAFETY_NET_PATCHES = [];
 
 module.exports = {
   DECAFFEINATE_PACKAGES,

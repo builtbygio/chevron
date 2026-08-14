@@ -17,7 +17,10 @@ const pkg = JSON.parse(
 
 /** Packages that must stay on builtbygio git pins (ownership + rename program). */
 const OWNED_BUILTBYGIO = [
+  '@atom/fuzzy-native',
+  '@atom/nsfw',
   'archive-view',
+  'atom-pathspec',
   'autocomplete-chevron-api',
   'autocomplete-css',
   'autocomplete-html',
@@ -28,12 +31,16 @@ const OWNED_BUILTBYGIO = [
   'bookmarks',
   'bracket-matcher',
   'command-palette',
+  'ctags',
   'encoding-selector',
   'find-and-replace',
   'fuzzy-finder',
+  'git-utils',
   'github',
   'image-view',
+  'keyboard-layout',
   'keybinding-resolver',
+  'keytar',
   'language-c',
   'language-css',
   'language-go',
@@ -47,11 +54,15 @@ const OWNED_BUILTBYGIO = [
   'language-typescript',
   'markdown-preview',
   'notifications',
+  'nslog',
+  'oniguruma',
   'open-on-github',
+  'pathwatcher',
   'package-generator',
   'settings-view',
   'snippets',
   'spell-check',
+  'spellchecker',
   'status-bar',
   'styleguide',
   'symbols-view',
@@ -106,6 +117,18 @@ describe('package pin policy', () => {
         `${name} must not return to app dependencies`
       );
     }
+  });
+
+  it('isbinaryfile@2 override is the owned 2.0.4 fork (not 3.x)', () => {
+    const spec = pkg.overrides && pkg.overrides['isbinaryfile@2'];
+    assert.ok(
+      isBuiltbygioGit(spec),
+      `isbinaryfile@2 must be builtbygio git pin, got: ${spec}`
+    );
+    assert.ok(
+      String(spec).includes('isbinaryfile.git'),
+      `expected builtbygio/isbinaryfile, got: ${spec}`
+    );
   });
 
   it('autocomplete package uses chevron-api name (not atom-api)', () => {

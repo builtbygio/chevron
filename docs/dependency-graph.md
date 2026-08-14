@@ -29,7 +29,7 @@ Guards: `script/ci/package-pin-policy.test.js` (owned pins), `script/ci/dep-grap
 }
 ```
 
-- **nan** — keytar (and other nested `nan`) on the V8-safe line so `patch-keytar-nan` / `patch-nested-nan` become no-ops after a clean `npm ci`.
+- **nan** — `overrides.nan=2.28.0`; owned native forks declare `nan@2.28.0`.
 - **dompurify / marked** — product-path HTML sanitizer/parser (last CJS marked; current DOMPurify). Owned package pins declare the same versions.
 - **dugite.tar** — dugite 1.x still asks for tar 4; 6.2.1 is the last 6.x with the path-traversal fix and still supports the stream extract API dugite uses.
 - **minimatch / brace-expansion / js-yaml / lodash** — same-major Dependabot pins (plus form-data / tar 6–7 / postcss 8 in `package.json`). Does not replace residual `request`. archive-view's **ls-archive** is the owned tar 7 fork.

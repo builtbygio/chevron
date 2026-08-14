@@ -67,7 +67,7 @@ Patches (`patch-packages-remote-ipc.js`):
 
 ## N2.3 — tree-view bulk fs (done)
 
-All tree-view disk I/O is routed through **`node_modules/tree-view/lib/fs-via-main.ts`** (written by `script/lib/write-tree-view-fs-shim.js` on bootstrap):
+All tree-view disk I/O is routed through **`node_modules/tree-view/lib/fs-via-main.ts`** (ships in the owned tree-view pin):
 
 | Layer | Role |
 |-------|------|
@@ -87,7 +87,7 @@ Covers add/copy/move dialogs, directory listing, file realpath, trash already on
 | headless isVisible | `require('electron').remote.getCurrentWindow()` (compat proxy) |
 | shell.openExternal | already applicationDelegate (N2) |
 
-Worker `sendTo` / lifecycle still via `patch-github-remote.js`.
+Worker `sendTo` / lifecycle ships in the owned github pin.
 
 ## Deferred (later N2 / N3)
 

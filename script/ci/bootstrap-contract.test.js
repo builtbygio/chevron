@@ -51,6 +51,55 @@ describe('verify-machine-requirements policy', () => {
   });
 });
 
+describe('compile patches folded into owned native forks', () => {
+  it('bootstrap-modern does not run retired native compile patches', () => {
+    const text = fs.readFileSync(
+      path.join(__dirname, '../bootstrap-modern'),
+      'utf8'
+    );
+    for (const name of [
+      'patch-natives-context-aware',
+      'patch-v8-api',
+      'patch-oniguruma-gyp',
+      'patch-spellchecker-win',
+      'patch-keytar-nan',
+      'patch-nested-nan',
+      'patch-github-remote',
+      'patch-settings-view-registry',
+      'patch-apm-npm',
+      'patch-apm-download-node',
+      'patch-packages-remote-ipc',
+      'patch-dep-package-json'
+    ]) {
+      assert.ok(
+        !text.includes(name),
+        `bootstrap-modern still calls retired ${name}`
+      );
+    }
+  });
+});
+
+describe('official tree-sitter 0.25 is not overwritten', () => {
+  it('does not vendor DeeDeeG packages/tree-sitter', () => {
+    assert.ok(
+      !fs.existsSync(path.join(__dirname, '../../packages/tree-sitter')),
+      'packages/tree-sitter is the old DeeDeeG 0.17 tree; runtime is npm 0.25.1'
+    );
+  });
+
+  it('bootstrap does not force-copy a vendored tree-sitter', () => {
+    const sh = fs.readFileSync(
+      path.join(__dirname, '../lib/force-patched-superstring.sh'),
+      'utf8'
+    );
+    assert.ok(
+      !/chevron_force_one_native[^\n]*packages\/tree-sitter/.test(sh),
+      'force-copying packages/tree-sitter overwrites npm tree-sitter@0.25'
+    );
+    assert.ok(!CRITICAL_REBUILD_PACKAGES.includes('tree-sitter'));
+  });
+});
+
 describe('critical-natives', () => {
   it('lists core packages', () => {
     assert.ok(CRITICAL_REBUILD_PACKAGES.includes('superstring'));
@@ -107,7 +156,7 @@ describe('patch matrix doc exists', () => {
     const p = path.join(__dirname, '..', '..', 'docs', 'bootstrap-patch-matrix.md');
     assert.ok(fs.existsSync(p));
     const text = fs.readFileSync(p, 'utf8');
-    assert.ok(text.includes('patch-v8-api'));
     assert.ok(text.includes('critical-natives'));
+    assert.ok(text.includes('force-patched-superstring'));
   });
 });

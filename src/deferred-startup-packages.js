@@ -10,7 +10,8 @@
  * Keep tree-view, tabs, status-bar, welcome, notifications, themes,
  * whitespace, wrap-guide, and git-diff off this list.
  *
- * language-* is matched by prefix (not listed one-by-one).
+ * Do not defer language-*: grammars must be registered before the first
+ * editor opens or .c/.js/… files stay on the null grammar (no colour).
  *
  * SNAPSHOT_STARTUP_PACKAGES is the static require() list in
  * initialize-application-window.js (electron-link cannot follow a loop).
@@ -72,10 +73,7 @@ const DEFERRED_STARTUP_PACKAGES = new Set([
 ]);
 
 function isDeferredStartupPackage(name) {
-  return (
-    DEFERRED_STARTUP_PACKAGES.has(name) ||
-    (typeof name === 'string' && name.startsWith('language-'))
-  );
+  return DEFERRED_STARTUP_PACKAGES.has(name);
 }
 
 module.exports = {

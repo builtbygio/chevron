@@ -29,6 +29,14 @@ describe('load-tree-sitter-language', () => {
     assert.strictEqual(unwrapLanguage(inner), inner);
   });
 
+  it('keeps official CJS grammar modules that carry nodeTypeInfo', () => {
+    const language = { native: true };
+    const mod = { name: 'c', language, nodeTypeInfo: [{ type: 'translation_unit' }] };
+    assert.strictEqual(unwrapLanguage(mod), mod);
+    const esm = { default: mod };
+    assert.strictEqual(unwrapLanguage(esm), mod);
+  });
+
   it('detects ESM require errors', () => {
     assert.strictEqual(
       isEsmRequireError({ code: 'ERR_REQUIRE_ESM' }),
@@ -90,5 +98,43 @@ describe('load-tree-sitter-language', () => {
     const loaded = loadLanguageModule('tree-sitter-esm-fixture', grammarPath);
     assert.strictEqual(loaded.fromNgb, true);
     assert.strictEqual(loaded.pkgRoot, pkg);
+  });
+
+  it('does not call DeeDeeG method-style hasChanges()', () => {
+    const mode = fs.readFileSync(
+      path.join(__dirname, '../../src/tree-sitter-language-mode.js'),
+      'utf8'
+    );
+    assert.ok(
+      !/\.hasChanges\s*\(/.test(mode),
+      'tree-sitter 0.25 exposes hasChanges as a boolean getter'
+    );
+  });
+
+  it('lockfile pins official tree-sitter, not the DeeDeeG 0.17 fork', () => {
+    const declared = require('../../package.json').dependencies['tree-sitter'];
+    assert.strictEqual(declared, '0.25.1');
+    const lock = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '../../package-lock.json'), 'utf8')
+    );
+    const entry = lock.packages && lock.packages['node_modules/tree-sitter'];
+    assert.ok(entry, 'package-lock must list node_modules/tree-sitter');
+    assert.strictEqual(entry.version, '0.25.1');
+    assert.ok(
+      String(entry.resolved || '').includes('registry.npmjs.org/tree-sitter'),
+      `expected npm registry tree-sitter, got ${entry.resolved}`
+    );
+    const installedPath = path.join(
+      __dirname,
+      '../../node_modules/tree-sitter/package.json'
+    );
+    if (fs.existsSync(installedPath)) {
+      const installed = JSON.parse(fs.readFileSync(installedPath, 'utf8'));
+      assert.strictEqual(
+        installed.version,
+        '0.25.1',
+        `node_modules/tree-sitter is ${installed.version}, expected 0.25.1`
+      );
+    }
   });
 });

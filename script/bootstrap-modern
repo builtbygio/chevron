@@ -123,33 +123,6 @@ fi
 . "$SCRIPT_DIR/lib/force-patched-superstring.sh"
 chevron_force_patched_superstring "$REPO_ROOT"
 
-echo "Patching natives for NODE_MODULE_CONTEXT_AWARE…"
-node "$SCRIPT_DIR/lib/patch-natives-context-aware.js" "$REPO_ROOT"
-
-echo "Patching keytar nested nan for Electron 14+…"
-node "$SCRIPT_DIR/lib/patch-keytar-nan.js" "$REPO_ROOT"
-
-echo "Patching spellchecker for modern MSVC…"
-node "$SCRIPT_DIR/lib/patch-spellchecker-win.js" "$REPO_ROOT"
-
-echo "Replacing outdated nested nan copies with root nan…"
-node "$SCRIPT_DIR/lib/patch-nested-nan.js" "$REPO_ROOT"
-
-echo "Patching bundled packages for remote->IPC..."
-node "$SCRIPT_DIR/lib/patch-packages-remote-ipc.js" "$REPO_ROOT"
-
-echo "Patching tree-view Stats flattening for modern Node…"
-node "$SCRIPT_DIR/lib/patch-tree-view-stats.js" "$REPO_ROOT"
-
-echo "Patching natives for removed V8 APIs…"
-node "$SCRIPT_DIR/lib/patch-v8-api.js" "$REPO_ROOT"
-
-echo "Patching oniguruma gyp for GCC 14+…"
-node "$SCRIPT_DIR/lib/patch-oniguruma-gyp.js" "$REPO_ROOT"
-
-echo "Patching nested package.json metadata (isbinaryfile, etc.)…"
-node "$SCRIPT_DIR/lib/patch-dep-package-json.js" "$REPO_ROOT"
-
 # Class C decaff/debabel patches retired: owned pins ship plain JS.
 
 # --- Step 3: rebuild natives for Electron ------------------------------------
@@ -240,7 +213,7 @@ if [ "$SKIP_NATIVE_REBUILD" = false ]; then
   # ctags / fs-admin / oniguruma are also app natives not covered by a partial list.
   CRITICAL_REBUILD_FAILED=0
   for _pkg in \
-    superstring tree-sitter \
+    superstring \
     '@atom/watcher' '@atom/nsfw' '@atom/fuzzy-native' \
     keytar spellchecker pathwatcher git-utils scrollbar-style nslog \
     keyboard-layout ctags fs-admin oniguruma
@@ -258,24 +231,8 @@ if [ "$SKIP_NATIVE_REBUILD" = false ]; then
     fi
   done
 
-  echo "Force-rebuilding tree-sitter language bindings..."
-  # tree-sitter-typescript ships comment-only placeholder binding.gyp files under
-  # tsx/ and typescript/; only rebuild dirs whose binding.gyp is real JSON (starts
-  # with '{'). The package root binding builds both language targets.
-  while IFS= read -r _gyp; do
-    [ -z "$_gyp" ] && continue
-    # Skip non-JSON placeholders (gyp would SyntaxError on '# comment' lines).
-    if ! head -c 1 "$_gyp" 2>/dev/null | grep -q '{'; then
-      echo "  skip placeholder binding.gyp: $_gyp"
-      continue
-    fi
-    _dir="$(cd "$(dirname "$_gyp")" && pwd)"
-    echo "  rebuild $_dir..."
-    # Language bindings are best-effort: missing optional grammars should not
-    # fail bootstrap (critical tree-sitter core is already hard-gated above).
-    rebuild_package_modern "$_dir" || \
-      echo "WARNING: tree-sitter language rebuild failed for $_dir (non-fatal)"
-  done < <(find "$REPO_ROOT/node_modules" -path '*/tree-sitter-*/binding.gyp' 2>/dev/null | sort -u)
+  echo "Using official tree-sitter@0.25 and tree-sitter-* prebuilds (N-API)."
+  echo "  Not rebuilding tree-sitter or tree-sitter-* addons."
 
   if [ "$CRITICAL_REBUILD_FAILED" -ne 0 ]; then
     if [ "${CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES:-}" = "1" ] || \

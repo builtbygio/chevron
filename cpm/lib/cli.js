@@ -72,7 +72,20 @@ async function main(argv = process.argv) {
       '--strict',
       'Fail when engines.atom / engines.chevron are not satisfied'
     )
+    .option(
+      '--json',
+      'JSON array of {metadata} (settings-view / apm install --json)'
+    )
+    .option(
+      '--check',
+      'Probe native build tools and exit 0 (settings-view checkNativeBuildTools)'
+    )
     .action(async (spec, opts) => {
+      if (opts.check) {
+        if (opts.json) process.stdout.write('[]\n');
+        process.exitCode = 0;
+        return;
+      }
       if (!spec) {
         process.stderr.write('cpm install: package name, URL, or path required\n');
         process.exitCode = 1;
@@ -80,13 +93,20 @@ async function main(argv = process.argv) {
       }
       process.exitCode = await installPackage(spec, {
         allowScripts: opts.allowScripts,
-        strict: opts.strict
+        strict: opts.strict,
+        json: Boolean(opts.json)
       });
     });
 
-  program.command('uninstall <name>').action(async name => {
-    process.exitCode = await uninstallPackage(name);
-  });
+  program
+    .command('uninstall [name]')
+    .option(
+      '--hard',
+      'Accepted for apm compatibility (cpm always deletes the package dir)'
+    )
+    .action(async name => {
+      process.exitCode = await uninstallPackage(name);
+    });
 
   program.command('remove <name>').action(async name => {
     process.exitCode = await uninstallPackage(name);

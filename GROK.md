@@ -224,7 +224,7 @@ git status
 | Python without distutils | **3.12** + setuptools (CI pin) |
 | Dead atom.io Electron headers | `ATOM_ELECTRON_URL=https://www.electronjs.org/headers` |
 | Snapshot without less prebuild | Full `script/build` only |
-| Non-context-aware natives | `patch-natives-context-aware.js` + rebuild in bootstrap-modern |
+| Non-context-aware natives | Folded into owned `builtbygio` native forks; bootstrap rebuilds for Electron |
 | Probing `atom` from CDP | Eval in **Electron Isolated Context**, not page world |
 | Nested superstring without `.node` | Re-sync nested natives after rebuild (bootstrap-modern) |
 | GitHub workers | Still Node + `contextIsolation: false` (trusted hidden windows) |

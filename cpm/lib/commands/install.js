@@ -144,7 +144,8 @@ async function installPackage(spec, options = {}) {
   }
 
   const dest = path.join(packagesDir, packageDirName(name));
-  process.stdout.write(
+  const progress = options.json ? process.stderr : process.stdout;
+  progress.write(
     `Installing ${name}@${manifest.version || '?'} → ${dest}${
       registryNote ? ` (${registryNote})` : ''
     }\n`
@@ -260,8 +261,21 @@ async function installPackage(spec, options = {}) {
     /* non-fatal */
   }
 
-  process.stdout.write(`Installed ${name}@${manifest.version || '?'}\n`);
-  process.stdout.write(`Package home: ${getPackageHome()}\n`);
+  if (options.json) {
+    process.stdout.write(
+      JSON.stringify([
+        {
+          metadata: {
+            name,
+            version: manifest.version || '0.0.0'
+          }
+        }
+      ]) + '\n'
+    );
+  } else {
+    process.stdout.write(`Installed ${name}@${manifest.version || '?'}\n`);
+    process.stdout.write(`Package home: ${getPackageHome()}\n`);
+  }
   return 0;
 }
 

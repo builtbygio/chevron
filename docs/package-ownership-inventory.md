@@ -10,12 +10,36 @@
 
 | Class | Count | Policy |
 |-------|------:|--------|
-| **Owned** (`builtbygio/*` git pins) | **43** | Primary maintenance + security patches |
+| **Owned** (`builtbygio/*` git pins) | **54** | Primary maintenance + security patches |
 | **Upstream Atom** (`atom/*` git pins) | **22** | Remaining TextMate-only `language-*` — SHA pins only (#79 leftover) |
 | **In-repo** (`file:packages/*`) | 29 | Monorepo packages (themes, about, welcome, natives, …) |
 | **npm registry** (semver / file natives) | rest | Host npm / Electron rebuild |
 
 ## Owned forks (`builtbygio/*`)
+
+### Natives (compile fixes folded in-source)
+
+| Package | Repo | Notes |
+|---------|------|--------|
+| `@atom/fuzzy-native` | [fuzzy-native](https://github.com/builtbygio/fuzzy-native) | CONTEXT_AWARE, `<cstdint>`, V8 15 `WriteUtf8` / `Set().Check()` |
+| `@atom/nsfw` | [nsfw](https://github.com/builtbygio/nsfw) | CONTEXT_AWARE |
+| `ctags` | [node-ctags](https://github.com/builtbygio/node-ctags) | CONTEXT_AWARE |
+| `git-utils` | [git-utils](https://github.com/builtbygio/git-utils) | CONTEXT_AWARE; vendored `deps/libgit2` (no submodule) |
+| `keyboard-layout` | [keyboard-layout](https://github.com/builtbygio/keyboard-layout) | CONTEXT_AWARE |
+| `keytar` | [node-keytar](https://github.com/builtbygio/node-keytar) | `nan@2.28.0` |
+| `nslog` | [node-nslog](https://github.com/builtbygio/node-nslog) | CONTEXT_AWARE |
+| `oniguruma` | [node-oniguruma](https://github.com/builtbygio/node-oniguruma) | CONTEXT_AWARE, V8 `GetIsolate`, GCC 14 `gnu89` |
+| `pathwatcher` | [node-pathwatcher](https://github.com/builtbygio/node-pathwatcher) | CONTEXT_AWARE |
+| `spellchecker` | [node-spellchecker](https://github.com/builtbygio/node-spellchecker) | CONTEXT_AWARE, V8 `Write`/`GetIsolate`, MSVC wstring |
+
+Root `overrides` pin nested copies (first-mate → oniguruma, spell-check → spellchecker / atom-pathspec, symbols-view → ctags, scandal → `isbinaryfile@2`, …) to the same SHAs.
+
+| Package | Repo | Notes |
+|---------|------|--------|
+| `atom-pathspec` | [atom-pathspec](https://github.com/builtbygio/atom-pathspec) | `remote.app.getPath` → `atom-app-get-path-sync` (spell-check) |
+| `isbinaryfile@2` | [isbinaryfile](https://github.com/builtbygio/isbinaryfile) | 2.0.4 with `main: index.js`; root `isbinaryfile@3` stays 3.x |
+
+### Product packages
 
 | Package | Notes |
 |---------|--------|
@@ -63,7 +87,7 @@
 | language-shellscript | Tree-sitter ABI 13–15 (`tree-sitter-bash`); JSON + TypeScript |
 | language-typescript | Tree-sitter ABI 13–15 (ts / tsx); JSON + TypeScript |
 
-Binding: official npm `tree-sitter@0.25.1` (not DeeDeeG / `file:packages/tree-sitter`).
+Binding: official npm `tree-sitter@0.25.1`. The old DeeDeeG `packages/tree-sitter` tree is gone.
 
 ## Remaining `atom/*` pins
 
