@@ -100,6 +100,17 @@ describe('load-tree-sitter-language', () => {
     assert.strictEqual(loaded.pkgRoot, pkg);
   });
 
+  it('does not call DeeDeeG method-style hasChanges()', () => {
+    const mode = fs.readFileSync(
+      path.join(__dirname, '../../src/tree-sitter-language-mode.js'),
+      'utf8'
+    );
+    assert.ok(
+      !/\.hasChanges\s*\(/.test(mode),
+      'tree-sitter 0.25 exposes hasChanges as a boolean getter'
+    );
+  });
+
   it('installed tree-sitter matches package.json (not the old DeeDeeG 0.17 fork)', () => {
     const declared = require('../../package.json').dependencies['tree-sitter'];
     const installed = require('../../node_modules/tree-sitter/package.json')

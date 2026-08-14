@@ -708,7 +708,7 @@ class LanguageLayer {
     if (!this.currentParsePromise) {
       while (
         !this.destroyed &&
-        (!this.tree || this.tree.rootNode.hasChanges())
+        (!this.tree || this.tree.rootNode.hasChanges)
       ) {
         const params = { async: false };
         this.currentParsePromise = this._performUpdate(nodeRangeSet, params);

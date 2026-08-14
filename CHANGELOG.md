@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `.c` (and other official tree-sitter languages) had no colour: `loadLanguageModule` stripped `{ name, language, nodeTypeInfo }` down to the raw Language, so tree-sitter 0.25 could not build node classes. Keep the full module. Also stop deferring `language-*` so grammars exist before the first editor. Reject an unusable parser so the TextMate grammar can still win.
+- Incremental tree-sitter highlight after edits: official `hasChanges` is a boolean getter, not DeeDeeG's `hasChanges()`.
+- Settings install/uninstall: accept apm's `install --json`, `install --check`, and `uninstall --hard` so commander 12 does not reject the settings-view argv.
 - Find-in-project: download `vscode-ripgrep`'s `rg` during bootstrap/package (skipped by `--ignore-scripts`) so packaged `app.asar.unpacked` has the binary.
 - Settings installed/outdated lists: `cpm ls --json` emits the apm `{ user, core, dev, git }` shape; `cpm outdated --json` exits 0 with `[]`.
 

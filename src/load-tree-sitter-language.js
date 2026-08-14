@@ -66,6 +66,21 @@ function loadLanguageModule(parserName, grammarFilePath) {
       paths: Module._nodeModulePaths(path.dirname(languageModulePath))
     });
     mod = require(ngbId)(pkgRoot);
+    // node-gyp-build returns the raw Language. Official CJS bindings attach
+    // nodeTypeInfo on the same export — restore that so 0.25 can highlight.
+    try {
+      const typesPath = path.join(pkgRoot, 'src', 'node-types.json');
+      if (mod && typeof mod === 'object' && !mod.nodeTypeInfo && fs.existsSync(typesPath)) {
+        const nodeTypeInfo = JSON.parse(fs.readFileSync(typesPath, 'utf8'));
+        if (!mod.language) {
+          mod = { name: parserName, language: mod, nodeTypeInfo };
+        } else {
+          mod.nodeTypeInfo = nodeTypeInfo;
+        }
+      }
+    } catch (_) {
+      /* keep raw binding; setLanguage probe will fail closed */
+    }
   }
   return unwrapLanguage(mod);
 }
