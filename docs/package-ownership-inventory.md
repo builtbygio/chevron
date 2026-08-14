@@ -10,12 +10,31 @@
 
 | Class | Count | Policy |
 |-------|------:|--------|
-| **Owned** (`builtbygio/*` git pins) | **43** | Primary maintenance + security patches |
+| **Owned** (`builtbygio/*` git pins) | **53** | Primary maintenance + security patches |
 | **Upstream Atom** (`atom/*` git pins) | **22** | Remaining TextMate-only `language-*` — SHA pins only (#79 leftover) |
 | **In-repo** (`file:packages/*`) | 29 | Monorepo packages (themes, about, welcome, natives, …) |
 | **npm registry** (semver / file natives) | rest | Host npm / Electron rebuild |
 
 ## Owned forks (`builtbygio/*`)
+
+### Natives (compile fixes folded in-source)
+
+| Package | Repo | Notes |
+|---------|------|--------|
+| `@atom/fuzzy-native` | [fuzzy-native](https://github.com/builtbygio/fuzzy-native) | CONTEXT_AWARE, `<cstdint>`, V8 15 `WriteUtf8` / `Set().Check()` |
+| `@atom/nsfw` | [nsfw](https://github.com/builtbygio/nsfw) | CONTEXT_AWARE |
+| `ctags` | [node-ctags](https://github.com/builtbygio/node-ctags) | CONTEXT_AWARE |
+| `git-utils` | [git-utils](https://github.com/builtbygio/git-utils) | CONTEXT_AWARE; vendored `deps/libgit2` (no submodule) |
+| `keyboard-layout` | [keyboard-layout](https://github.com/builtbygio/keyboard-layout) | CONTEXT_AWARE |
+| `keytar` | [node-keytar](https://github.com/builtbygio/node-keytar) | `nan@2.28.0` |
+| `nslog` | [node-nslog](https://github.com/builtbygio/node-nslog) | CONTEXT_AWARE |
+| `oniguruma` | [node-oniguruma](https://github.com/builtbygio/node-oniguruma) | CONTEXT_AWARE, V8 `GetIsolate`, GCC 14 `gnu89` |
+| `pathwatcher` | [node-pathwatcher](https://github.com/builtbygio/node-pathwatcher) | CONTEXT_AWARE |
+| `spellchecker` | [node-spellchecker](https://github.com/builtbygio/node-spellchecker) | CONTEXT_AWARE, V8 `Write`/`GetIsolate`, MSVC wstring |
+
+Root `overrides` pin nested copies (first-mate → oniguruma, spell-check → spellchecker, symbols-view → ctags, …) to the same SHAs.
+
+### Product packages
 
 | Package | Notes |
 |---------|--------|

@@ -51,6 +51,27 @@ describe('verify-machine-requirements policy', () => {
   });
 });
 
+describe('compile patches folded into owned native forks', () => {
+  it('bootstrap-modern does not run retired native compile patches', () => {
+    const text = fs.readFileSync(
+      path.join(__dirname, '../bootstrap-modern'),
+      'utf8'
+    );
+    for (const name of [
+      'patch-natives-context-aware',
+      'patch-v8-api',
+      'patch-oniguruma-gyp',
+      'patch-spellchecker-win',
+      'patch-keytar-nan'
+    ]) {
+      assert.ok(
+        !text.includes(name),
+        `bootstrap-modern still calls retired ${name}`
+      );
+    }
+  });
+});
+
 describe('official tree-sitter 0.25 is not overwritten', () => {
   it('does not vendor DeeDeeG packages/tree-sitter', () => {
     assert.ok(
@@ -128,7 +149,7 @@ describe('patch matrix doc exists', () => {
     const p = path.join(__dirname, '..', '..', 'docs', 'bootstrap-patch-matrix.md');
     assert.ok(fs.existsSync(p));
     const text = fs.readFileSync(p, 'utf8');
-    assert.ok(text.includes('patch-v8-api'));
+    assert.ok(text.includes('patch-nested-nan'));
     assert.ok(text.includes('critical-natives'));
   });
 });

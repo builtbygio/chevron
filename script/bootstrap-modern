@@ -123,26 +123,11 @@ fi
 . "$SCRIPT_DIR/lib/force-patched-superstring.sh"
 chevron_force_patched_superstring "$REPO_ROOT"
 
-echo "Patching natives for NODE_MODULE_CONTEXT_AWARE…"
-node "$SCRIPT_DIR/lib/patch-natives-context-aware.js" "$REPO_ROOT"
-
-echo "Patching keytar nested nan for Electron 14+…"
-node "$SCRIPT_DIR/lib/patch-keytar-nan.js" "$REPO_ROOT"
-
-echo "Patching spellchecker for modern MSVC…"
-node "$SCRIPT_DIR/lib/patch-spellchecker-win.js" "$REPO_ROOT"
-
 echo "Replacing outdated nested nan copies with root nan…"
 node "$SCRIPT_DIR/lib/patch-nested-nan.js" "$REPO_ROOT"
 
 echo "Patching bundled packages for remote->IPC..."
 node "$SCRIPT_DIR/lib/patch-packages-remote-ipc.js" "$REPO_ROOT"
-
-echo "Patching natives for removed V8 APIs…"
-node "$SCRIPT_DIR/lib/patch-v8-api.js" "$REPO_ROOT"
-
-echo "Patching oniguruma gyp for GCC 14+…"
-node "$SCRIPT_DIR/lib/patch-oniguruma-gyp.js" "$REPO_ROOT"
 
 echo "Patching nested package.json metadata (isbinaryfile, etc.)…"
 node "$SCRIPT_DIR/lib/patch-dep-package-json.js" "$REPO_ROOT"

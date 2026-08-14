@@ -21,13 +21,13 @@ Override soft native failures only with `CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1
 
 | Script | Class | Purpose | Retirement path |
 |--------|-------|---------|-----------------|
-| `patch-natives-context-aware.js` | A compile | `NODE_MODULE` → `CONTEXT_AWARE` on **unowned** natives | Owned superstring/watcher already ship CONTEXT_AWARE. Official `tree-sitter-*` are N-API. |
-| `patch-keytar-nan.js` | A compile | keytar nested nan too old for Electron 14+ | **Root `overrides.nan=2.28.0`** — no-op after clean `npm ci` |
-| `patch-nested-nan.js` | A compile | replace nested nan &lt; root | Same override; keep until a clean bootstrap log is always no-op |
-| `patch-v8-api.js` | A compile | V8 15 removals in fuzzy-native / oniguruma / spellchecker | Fork or pin those unowned natives. Superstring already fixed in `packages/superstring`. |
-| `patch-oniguruma-gyp.js` | A compile | GCC 14 + K&R in oniguruma | Pin modern oniguruma / gyp |
-| `patch-spellchecker-win.js` | A compile | MSVC C2440 temp wstring | Upstream spellchecker fix |
+| `patch-nested-nan.js` | A compile | replace nested nan &lt; root | Root `overrides.nan=2.28.0`; keep until a clean bootstrap log is always no-op |
 | `patch-dep-package-json.js` | Hygiene | DEP0128 / broken package.json | Fix upstream package metadata |
+| ~~`patch-natives-context-aware.js`~~ | A retired | `NODE_MODULE` → `CONTEXT_AWARE` | Folded into owned native forks — **deleted** |
+| ~~`patch-v8-api.js`~~ | A retired | V8 15 removals | Folded into owned native forks — **deleted** |
+| ~~`patch-oniguruma-gyp.js`~~ | A retired | GCC 14 + K&R | Folded into builtbygio/node-oniguruma — **deleted** |
+| ~~`patch-spellchecker-win.js`~~ | A retired | MSVC C2440 | Folded into builtbygio/node-spellchecker — **deleted** |
+| ~~`patch-keytar-nan.js`~~ | A retired | keytar nested nan | Folded into builtbygio/node-keytar (`nan@2.28.0`) — **deleted** |
 | ~~`patch-decaffeinate-bundled-packages.js`~~ | C retired | Folded into owned pins | **Deleted** |
 | ~~`patch-debabel-bundled-packages.js`~~ | C retired | Folded into owned pins | **Deleted** |
 | ~~`patch-tree-view-stats.js`~~ | B retired | Stats.mtime on modern Node | Folded into builtbygio/tree-view — **deleted** |

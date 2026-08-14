@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `bootstrap-modern` no longer overwrites npm `tree-sitter@0.25` with a vendored DeeDeeG 0.17 / ABI 12 tree. That is why local builds kept an old runtime after #113.
 - Deleted unused `packages/tree-sitter` (DeeDeeG 0.17). Runtime is npm `tree-sitter@0.25.1` plus official `tree-sitter-*` N-API prebuilds.
 - Deleted `patch-tree-view-stats.js` (already in builtbygio/tree-view). Stopped rewriting official grammar addons and owned superstring/watcher sources that already have the V8 / context-aware fixes.
+- Forked remaining compile-patched natives to `builtbygio` and folded the Electron 43 / V8 15 fixes into those sources. Deleted `patch-natives-context-aware`, `patch-v8-api`, `patch-oniguruma-gyp`, `patch-spellchecker-win`, and `patch-keytar-nan`.
 - Settings install/uninstall: accept apm's `install --json`, `install --check`, and `uninstall --hard` so commander 12 does not reject the settings-view argv.
 - Find-in-project: download `vscode-ripgrep`'s `rg` during bootstrap/package (skipped by `--ignore-scripts`) so packaged `app.asar.unpacked` has the binary.
 - Settings installed/outdated lists: `cpm ls --json` emits the apm `{ user, core, dev, git }` shape; `cpm outdated --json` exits 0 with `[]`.
