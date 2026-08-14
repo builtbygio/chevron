@@ -10,8 +10,8 @@
 
 | Class | Count | Policy |
 |-------|------:|--------|
-| **Owned** (`builtbygio/*` git pins) | **54** | Primary maintenance + security patches |
-| **Upstream Atom** (`atom/*` git pins) | **22** | Remaining TextMate-only `language-*` — SHA pins only (#79 leftover) |
+| **Owned** (`builtbygio/*` git pins) | **84** | Primary maintenance + security patches |
+| **Upstream Atom** (`atom/*` git pins) | **0** | #79 closed — TextMate `language-*` are owned |
 | **In-repo** (`file:packages/*`) | 29 | Monorepo packages (themes, about, welcome, natives, …) |
 | **npm registry** (semver / file natives) | rest | Host npm / Electron rebuild |
 
@@ -31,13 +31,26 @@
 | `oniguruma` | [node-oniguruma](https://github.com/builtbygio/node-oniguruma) | `OnigRegExp` + `OnigScanner` (TextMate + first-mate) |
 | `pathwatcher` | [node-pathwatcher](https://github.com/builtbygio/node-pathwatcher) | `{ File, Directory }` + `watch`. CONTEXT_AWARE |
 | `spellchecker` | [node-spellchecker](https://github.com/builtbygio/node-spellchecker) | Hunspell/system API (spell-check). CONTEXT_AWARE |
+| `fs-admin` | [fs-admin](https://github.com/builtbygio/fs-admin) | 0.15.0 `symlink` / `makeTree` / `recursiveCopy` / `createWriteStream`. Override replaces text-buffer’s nested 0.19 |
+| `scrollbar-style` | [scrollbar-style](https://github.com/builtbygio/scrollbar-style) | `observePreferredScrollbarStyle` (`workspace-element.js`). N-API |
 
-Root `overrides` pin nested copies (first-mate → oniguruma, spell-check → spellchecker / atom-pathspec, symbols-view → ctags, scandal → `isbinaryfile@2`, …) to the same SHAs.
+### Core JS (registry packages now owned)
+
+| Package | Repo | Notes |
+|---------|------|--------|
+| `first-mate` | [first-mate](https://github.com/builtbygio/first-mate) | 7.4.3 `GrammarRegistry` / `ScopeSelector`. Compiled `lib/` from npm (no v7.4.3 git tag) |
+| `atom-keymap` | [atom-keymap](https://github.com/builtbygio/atom-keymap) | 8.2.15 `KeymapManager`. Compiled `lib/` (git tag is Coffee) |
+| `atom-select-list` | [atom-select-list](https://github.com/builtbygio/atom-select-list) | 0.8.1 `SelectListView`. Override unifies nested 0.7.2 |
+| `season` | [season](https://github.com/builtbygio/season) | 6.0.2 CSON `readFile(Sync)` / `writeFile(Sync)` / `setCacheDir` |
+| `scandal` | [scandal](https://github.com/builtbygio/scandal) | 3.2.0 `PathSearcher` / `PathScanner` / `search`. Keeps `isbinaryfile@2` |
+| `text-buffer` | [text-buffer](https://github.com/builtbygio/text-buffer) | 13.18.6. Nested superstring is `file:packages/superstring` |
+
+Root `overrides` pin nested copies (first-mate → oniguruma, spell-check → spellchecker / atom-pathspec, symbols-view → ctags, scandal → `isbinaryfile@2`, text-buffer → `fs-admin` 0.15, atom-select-list 0.8.1, …) to the same SHAs.
 
 | Package | Repo | Notes |
 |---------|------|--------|
 | `atom-pathspec` | [atom-pathspec](https://github.com/builtbygio/atom-pathspec) | `remote.app.getPath` → `atom-app-get-path-sync` (spell-check) |
-| `isbinaryfile@2` | [isbinaryfile](https://github.com/builtbygio/isbinaryfile) | 2.0.4 with `main: index.js`; root `isbinaryfile@3` stays 3.x |
+| `isbinaryfile@2` | [isbinaryfile](https://github.com/builtbygio/isbinaryfile) | 2.0.4 with `main: index.js` (scandal). 3.x is only hoisted from `electron-osx-sign`, not an app dep |
 
 ### Product packages
 
@@ -89,11 +102,13 @@ Root `overrides` pin nested copies (first-mate → oniguruma, spell-check → sp
 
 Binding: official npm `tree-sitter@0.25.1`. The old DeeDeeG `packages/tree-sitter` tree is gone.
 
-## Remaining `atom/*` pins
+### TextMate-only language-* (#79 done)
 
-### TextMate-only language-* (defer — #79)
+Owned `builtbygio` pins of the previous `atom/*` SHAs. No tree-sitter grammar. Grammars/settings/snippets unchanged.
 
-No tree-sitter grammar in the package. Still `atom/*` SHA pins. Fork when needed for other reasons.
+`language-clojure`, `language-coffee-script`, `language-csharp`, `language-gfm`, `language-git`, `language-hyperlink`, `language-less`, `language-make`, `language-mustache`, `language-objective-c`, `language-perl`, `language-php`, `language-property-list`, `language-ruby-on-rails`, `language-sass`, `language-source`, `language-sql`, `language-text`, `language-todo`, `language-toml`, `language-xml`, `language-yaml`.
+
+In-repo exception: `language-rust-bundled` (`file:packages/…`).
 
 ## Process
 

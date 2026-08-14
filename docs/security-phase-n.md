@@ -1,6 +1,6 @@
 # Security Phase N — narrow package Node surface
 
-**Status:** **complete** for N0–N5.1; next track is **Phase S prep** — [security-phase-s.md](./security-phase-s.md) (editor sandbox still blocked on natives)
+**Status:** **complete** for N0–N5.1. Phase S is **done** as Option C ([security-phase-s-decision.md](./security-phase-s-decision.md)): editor `sandbox: false` is intentional. Bootstrap no longer applies `patch-github-remote.js` / `patch-packages-remote-ipc.js` (deleted #123).
 **Depends on:** Phase R (remote removal) and Phase I (contextIsolation + preload boot) — both done.  
 **Follows:** `docs/remote-ipc-inventory.md` §4 / §9.  
 **Handoff:** `GROK.md`
@@ -23,7 +23,7 @@ Terminal state (aspirational):
 | Main process | Yes | n/a | Windowing, IPC handlers, shell, dialogs |
 | Editor preload / isolated world | **Yes** | `contextIsolation: true` | Boots Atom + loads packages |
 | Editor page world | **No** | (same partition) | Empty shell / upgraded custom elements |
-| GitHub worker `BrowserWindow` | **Yes** | **false** | Hidden git workers via `remote-compat` |
+| GitHub git worker | **Yes** | utilityProcess | Phase S3 default; Node BrowserWindow only via `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1` |
 | Packaged natives | on disk under `app.asar.unpacked` | n/a | `.node`, dugite, github lib/bin, … |
 
 Main editor flags (`src/main-process/atom-window.js`):
@@ -31,7 +31,7 @@ Main editor flags (`src/main-process/atom-window.js`):
 - `nodeIntegration: false` (page)
 - `contextIsolation: true`
 - `sandbox: false` (preload loads superstring / pathwatcher / tree-sitter natives)
-- `nodeIntegrationInWorker: true`
+- `nodeIntegrationInWorker: false`
 
 ## Inventory snapshot (2026-07-16)
 
@@ -170,4 +170,4 @@ Suggested order: **settings-view paths** → **fuzzy-finder spawn** → **tree-v
 - `src/main-process/register-renderer-ipc.js` — main trust boundary
 - `src/remote-compat.js` — temporary package bridge
 - `script/lib/package-application.js` — asar unpack globs
-- `script/lib/patch-github-remote.js` — worker sendTo → main relay
+- owned `builtbygio/github` — worker sendTo (was `patch-github-remote.js`, deleted)

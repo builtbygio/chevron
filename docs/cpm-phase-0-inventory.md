@@ -1,5 +1,7 @@
 # Phase 0 — Step 1 inventory
 
+**Historical.** Phase 0–4 shipped. Do not treat this as current procedure: host npm + `bootstrap-modern` is the path; `patch-apm-*` / `patch-natives-*` / `patch-packages-remote-ipc.js` are **deleted**. See [bootstrap-patch-matrix.md](./bootstrap-patch-matrix.md) and [cpm-phase-4-complete.md](./cpm-phase-4-complete.md).
+
 **Branch:** `feat/phase-0-host-npm-bootstrap`  
 **Date:** 2026-07-21  
 **Purpose:** Map every place apm touches **app build / bootstrap**, so Phase 0 can replace root install with host npm without guessing.

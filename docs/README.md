@@ -39,7 +39,7 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [build-modernization.md](./build-modernization.md) | Bootstrap/build Streams A–E (contract, hygiene, patches, snapshot, deps) |
 | [bootstrap-patch-matrix.md](./bootstrap-patch-matrix.md) | Idempotent bootstrap patches + critical natives |
 | [bootstrap-report.md](./bootstrap-report.md) | Current bootstrap recipe (modern path) |
-| [packaging.md](./packaging.md) | electron-packager + Electron 43 stock snapshot policy |
+| [packaging.md](./packaging.md) | electron-packager + custom V8 snapshot (Linux/Windows; Darwin stock) |
 | [dependency-graph.md](./dependency-graph.md) | Root dep kinds, `nan` override, atom/* pin ceiling |
 
 
@@ -70,7 +70,7 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [security-phase-n4.md](./security-phase-n4.md) | N4 guest WebContents polish |
 | [security-phase-n5.md](./security-phase-n5.md) | N5 secondary windows; Phase S path (hackable-compatible) |
 | [package-node-policy.md](./package-node-policy.md) | Package author Node policy |
-| [package-ownership-inventory.md](./package-ownership-inventory.md) | Owned vs `atom/*` pins (language packs deferred) |
+| [package-ownership-inventory.md](./package-ownership-inventory.md) | Owned catalog (no `atom/*` app pins) |
 | [owned-package-modernization-checklist.md](./owned-package-modernization-checklist.md) | Per-package ownership → modernize PR checklist |
 | [sca-runtime-inventory.md](./sca-runtime-inventory.md) | npm audit prioritisation (runtime vs test) |
 | [remote-ipc-inventory.md](./remote-ipc-inventory.md) | Historical remote/IPC map |

@@ -4,7 +4,7 @@
 **Entry:** `./script/bootstrap-modern`  
 **Related:** [toolchain-node-python-upgrade-plan.md](./toolchain-node-python-upgrade-plan.md), build audit Streams A–B
 
-Idempotent scripts under `script/lib/patch-*.js` rewrite `node_modules` (and some monorepo natives) after host `npm ci --ignore-scripts`. Goal: **shrink this list** by folding fixes into pins/sources.
+There are **no** remaining `script/lib/patch-*.js` mutators. Fixes live in owned `builtbygio` pins. The only install-time native rewrite is `force-patched-superstring.sh` (monorepo superstring / watcher source over npm), and it runs **only when** natives are rebuilt.
 
 ## Host contract (Stream A)
 
@@ -35,9 +35,9 @@ Override soft native failures only with `CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1
 | ~~`patch-github-remote.js`~~ | B retired | github worker | Folded into builtbygio/github — **deleted** |
 | ~~`patch-settings-view-registry.js`~~ | B retired | atom.io → Pulsar | Folded into settings-view — **deleted** |
 | ~~`patch-apm-download-node.js`~~ / ~~`patch-apm-npm.js`~~ | D retired | apm debug only | Unused on the cpm path — **deleted** |
-| `force-patched-superstring.sh` | A compile | monorepo superstring wins | Keep while monorepo packages/superstring is source of truth |
+| `force-patched-superstring.sh` | A compile | monorepo superstring / watcher source (not `build/`) | Keep while `packages/superstring` is source of truth. Skipped on fingerprint-warm rebuild. `rsync` excludes `build/` so a local host-Node `.node` cannot overwrite the Electron addon. |
 
-Bootstrap no longer rewrites `node_modules` for compile or remote/IPC. The only remaining install-time native step is `force-patched-superstring.sh` (monorepo superstring / watcher overwrite npm).
+Bootstrap no longer rewrites `node_modules` for compile or remote/IPC. The only remaining install-time native step is `force-patched-superstring.sh` (monorepo superstring / watcher overwrite npm **on rebuild**).
 
 ### Static patch trees
 

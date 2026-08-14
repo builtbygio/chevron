@@ -9,7 +9,7 @@
 |------|---------|
 | `file:` | Monorepo `packages/*` |
 | `git+…builtbygio` | Owned catalog pins (must not regress to `atom/*`) |
-| `git+…atom/*` | Still-upstream language / leftover pins — [issue #79](https://github.com/builtbygio/chevron/issues/79) |
+| `git+…atom/*` | **None** (#79 closed). Ceiling test is 0. |
 | semver | npm registry |
 
 Guards: `script/ci/package-pin-policy.test.js` (owned pins), `script/ci/dep-graph.test.js` (counts, forbidden runtimes, overrides), and `script/ci/sca-runtime.test.js` (marked / DOMPurify / dugite tar).

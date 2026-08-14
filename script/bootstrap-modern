@@ -121,7 +121,6 @@ fi
 
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/lib/force-patched-superstring.sh"
-chevron_force_patched_superstring "$REPO_ROOT"
 
 # Class C decaff/debabel patches retired: owned pins ship plain JS.
 
@@ -202,6 +201,10 @@ else
 fi
 
 if [ "$SKIP_NATIVE_REBUILD" = false ]; then
+  # Copy monorepo superstring/watcher *source* over npm after the skip
+  # decision so a warm cache keeps its Electron-built .node files.
+  chevron_force_patched_superstring "$REPO_ROOT"
+
   echo "Electron $ELECTRON_VERSION: modern node-gyp force rebuild of critical natives"
   # Skip blanket `npm rebuild`: host/app nested node-gyp is too old for Node 24
   # (read-only cflags crash) and prints hard errors even when the modern force

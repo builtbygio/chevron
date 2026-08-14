@@ -49,7 +49,7 @@ See `script/lib/generate-startup-snapshot.js` and [startup-snapshot-plan.md](./s
 | Item | Status |
 |------|--------|
 | Classifier + CI | `script/lib/dep-graph.js` + `script/ci/dep-graph.test.js` |
-| `atom/*` git ceiling | **33** (all `language-*`; issue #79) |
+| `atom/*` git ceiling | **0** (#79 closed) |
 | `--legacy-peer-deps` | Still required; documented in [dependency-graph.md](./dependency-graph.md) |
 | SCA | [sca-runtime-inventory.md](./sca-runtime-inventory.md) — not a bootstrap gate |
 

@@ -1,6 +1,8 @@
 # Security Phase N2 — package shell / remote IPC
 
 **Date:** 2026-07-16  
+**Status:** historical. The IPC channels below shipped. The bootstrap rewriter `script/lib/patch-packages-remote-ipc.js` was **deleted** in #123 — those edits live in owned `builtbygio` pins (settings-view, tree-view, github, fuzzy-finder, atom-pathspec). Do **not** recreate that script.
+
 **Branch theme:** route privileged package Electron shell calls through main-process IPC.
 
 ## What shipped
@@ -17,9 +19,9 @@
 
 - `renderer-ipc.js` + `ApplicationDelegate`: `showItemInFolder`, `moveItemToTrash` (Promise-returning).
 
-### Package patches (`script/lib/patch-packages-remote-ipc.js`)
+### Package patches (`script/lib/patch-packages-remote-ipc.js`) — **deleted**
 
-Applied on every `bootstrap-modern` (idempotent):
+These used to be applied on every `bootstrap-modern`. They are now source in the owned pins:
 
 | Package | Change |
 |---------|--------|
@@ -43,7 +45,7 @@ Avatar images no longer use renderer `fs-plus` / `glob` under `userData`.
 | `atom-settings-view-cache-write` | basename + buffer; max 5 MiB; path confined to cache root |
 | `atom-settings-view-cache-unlink` | basename only; confined |
 
-Patch: `script/lib/patch-packages-remote-ipc.js` rewrites `atom-io-client.coffee` (idempotent; marker `atom-settings-view-cache-ensure`).
+Shipped in the owned settings-view pin (no bootstrap rewrite).
 
 ## N2.2 — fuzzy-finder UI path probes (done post-0.4.0)
 
@@ -54,7 +56,7 @@ Patch: `script/lib/patch-packages-remote-ipc.js` rewrites `atom-io-client.coffee
 
 Renderer: `applicationDelegate.isDirectorySync` / `isFileSync` / `isSymbolicLinkSync` / `realpathSync`.
 
-Patches (`patch-packages-remote-ipc.js`):
+Shipped in the owned fuzzy-finder pin (no bootstrap rewrite):
 
 | File | Change |
 |------|--------|
@@ -98,11 +100,10 @@ Worker `sendTo` / lifecycle ships in the owned github pin.
 ## Verify
 
 ```bash
-# After bootstrap or re-run:
-node script/lib/patch-packages-remote-ipc.js
+# Do not run patch-packages-remote-ipc.js — the file is gone.
 
 # Smoke (packaged or dev):
-node script/ci/smoke-test.js "out/Atom.app"   # or Atom Dev.app
+node script/ci/smoke-test.js   # finds out/Chevron*
 
 # Manual:
 # - Settings → package card / Learn more → opens https in browser (not file://)

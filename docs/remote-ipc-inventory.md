@@ -309,7 +309,7 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 | **P0** Boot load-settings / markers / error UI | **Done** | `renderer-ipc` + `register-renderer-ipc` |
 | **P1** ApplicationDelegate | **Done** | Window proxy + dialog/screen/shell IPC |
 | **P2** Context menu, jump list, clipboard | **Done** | Core paths on IPC |
-| **P3** Bundled packages | **Done** | settings-view, atom-pathspec patches; github via full `remote-compat` (Menu, BrowserWindow workers) + `patch-github-remote.js` |
+| **P3** Bundled packages | **Done** | settings-view / atom-pathspec / github edits live in owned pins (`patch-github-remote.js` deleted). Git workers are utilityProcess. |
 | **P4** Remove `@electron/remote` | **Done** | Dependency removed; `electron.remote` = `src/remote-compat.js` only |
 
 ### Architecture after P4

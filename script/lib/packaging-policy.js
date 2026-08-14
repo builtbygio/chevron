@@ -22,9 +22,10 @@ function shouldSkipCustomSnapshot(electronVersion, opts = {}) {
   if (opts.skip && !opts.force) return { skip: true, reason: 'env-skip' };
   if (opts.force) return { skip: false, reason: 'forced' };
   const platform = opts.platform || process.platform;
-  // Electron 43 on macOS generates a valid pair then dies at process start
-  // (CI #121: empty renderer output). Linux and Windows boot. Keep stock
-  // on darwin until a Mac boot is verified.
+  // CI #125: eval-only + custom isolate cwd still produces a valid pair
+  // (~17 MB blob / ~19 MB context) then Chevron exits during smoke
+  // (ECONNREFUSED, empty renderer) on both darwin-x64 and darwin-arm64.
+  // Linux and Windows boot. Keep stock on Darwin.
   if (platform === 'darwin') {
     return { skip: true, reason: 'darwin-boot-crash' };
   }

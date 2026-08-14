@@ -98,6 +98,46 @@ describe('official tree-sitter 0.25 is not overwritten', () => {
     );
     assert.ok(!CRITICAL_REBUILD_PACKAGES.includes('tree-sitter'));
   });
+
+  it('force-copy excludes local build/ (host ABI)', () => {
+    const sh = fs.readFileSync(
+      path.join(__dirname, '../lib/force-patched-superstring.sh'),
+      'utf8'
+    );
+    assert.ok(
+      /rsync -a --exclude node_modules --exclude package-lock.json --exclude build/.test(
+        sh
+      ),
+      'rsync must exclude packages/*/build so a host-Node .node is not copied'
+    );
+  });
+
+  it('link-package-natives-to-root does not copy tree-sitter', () => {
+    const js = fs.readFileSync(
+      path.join(__dirname, '../lib/link-package-natives-to-root.js'),
+      'utf8'
+    );
+    assert.ok(
+      !/['"]tree-sitter['"]/.test(js),
+      'copying root tree-sitter over a nested copy reintroduces the 0.25 overwrite'
+    );
+  });
+
+  it('bootstrap-modern force-copies natives only when rebuilding', () => {
+    const text = fs.readFileSync(
+      path.join(__dirname, '../bootstrap-modern'),
+      'utf8'
+    );
+    const skipIdx = text.indexOf('SKIP_NATIVE_REBUILD=false');
+    const copyIdx = text.indexOf('chevron_force_patched_superstring');
+    assert.ok(skipIdx > 0 && copyIdx > skipIdx, 'force-copy must run after skip decision');
+    assert.ok(
+      /if \[ "\$SKIP_NATIVE_REBUILD" = false \]; then[\s\S]*chevron_force_patched_superstring/.test(
+        text
+      ),
+      'warm-cache skip must not wipe Electron-built superstring/watcher'
+    );
+  });
 });
 
 describe('critical-natives', () => {
@@ -148,6 +188,43 @@ describe('critical-natives', () => {
     assert.strictEqual(allowNativeFailures(), false);
     if (prev === undefined) delete process.env.CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES;
     else process.env.CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES = prev;
+  });
+});
+
+describe('github atomTranspilers folded', () => {
+  it('no bundled package still declares atomTranspilers', () => {
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf8')
+    );
+    const hits = [];
+    for (const name of Object.keys(pkg.packageDependencies || {})) {
+      const metaPath = path.join(
+        __dirname,
+        '../../node_modules',
+        name,
+        'package.json'
+      );
+      if (!fs.existsSync(metaPath)) continue;
+      const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+      if (meta.atomTranspilers) hits.push(name);
+    }
+    assert.deepStrictEqual(
+      hits,
+      [],
+      `atomTranspilers still present: ${hits.join(', ')}`
+    );
+  });
+});
+
+describe('script/build does not call the dead bootstrap stub', () => {
+  it('fails closed on a cold tree and skips when already bootstrapped', () => {
+    const text = fs.readFileSync(path.join(__dirname, '../build'), 'utf8');
+    assert.ok(
+      !/require\('\.\/bootstrap'\)/.test(text),
+      './script/build must not require the legacy bootstrap stub'
+    );
+    assert.ok(text.includes('bootstrap-modern'));
+    assert.ok(text.includes('already bootstrapped'));
   });
 });
 

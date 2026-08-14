@@ -8,6 +8,7 @@ const path = require('path');
 const {
   rgBinName,
   rgBinPath,
+  rgTarget,
   ensureRipgrepAt
 } = require('../lib/ensure-ripgrep');
 const { resolveRgPath } = require('../../src/ripgrep-directory-searcher');
@@ -45,6 +46,14 @@ describe('ensure-ripgrep / resolveRgPath', () => {
       rgBinPath(dir, 'linux'),
       path.join(dir, 'bin', 'rg')
     );
+  });
+
+  it('maps vscode-ripgrep 1.9.0 / ripgrep-prebuilt v12.1.1 targets', () => {
+    assert.strictEqual(rgTarget('darwin', 'arm64'), 'x86_64-apple-darwin');
+    assert.strictEqual(rgTarget('darwin', 'x64'), 'x86_64-apple-darwin');
+    assert.strictEqual(rgTarget('linux', 'x64'), 'x86_64-unknown-linux-musl');
+    assert.strictEqual(rgTarget('linux', 'arm64'), 'aarch64-unknown-linux-gnu');
+    assert.strictEqual(rgTarget('win32', 'x64'), 'x86_64-pc-windows-msvc');
   });
 
   it('vscode-ripgrep is a root dependency', () => {

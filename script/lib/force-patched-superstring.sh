@@ -30,7 +30,7 @@ chevron_resync_nested_built_natives() {
   local repo_root="${1:-$(pwd)}"
   local npm_name base_name root_dest nested
 
-  for npm_name in superstring keytar '@atom/watcher'; do
+  for npm_name in superstring keytar '@atom/watcher' fs-admin; do
     root_dest="$repo_root/node_modules/$npm_name"
     if [ ! -d "$root_dest" ]; then
       continue
@@ -41,6 +41,7 @@ chevron_resync_nested_built_natives() {
       superstring) node_bin="$root_dest/build/Release/superstring.node" ;;
       keytar) node_bin="$root_dest/build/Release/keytar.node" ;;
       '@atom/watcher') node_bin="$root_dest/build/Release/watcher.node" ;;
+      fs-admin) node_bin="$root_dest/build/Release/fs_admin.node" ;;
     esac
     if [ -n "$node_bin" ] && [ ! -f "$node_bin" ]; then
       echo "WARNING: $npm_name missing built binary at $node_bin — nested resync may still fail" >&2
@@ -91,13 +92,15 @@ chevron_force_one_native() {
   mkdir -p "$root_dest"
   # Prefer a real directory copy (not a symlink) so electron-packager with
   # derefSymlinks:false still ships the package into the asar tree.
-  # Include build/ when present so rebuilt context-aware .node files package.
+  # Never copy a local host-Node build/ — Electron rebuild produces the
+  # .node after this copy. Including packages/*/build/ plus a fingerprint
+  # skip shipped the wrong ABI.
   if command -v rsync >/dev/null 2>&1; then
-    rsync -a --exclude node_modules --exclude package-lock.json \
+    rsync -a --exclude node_modules --exclude package-lock.json --exclude build \
       "$fork/" "$root_dest/"
   else
     tar -C "$fork" \
-      --exclude=node_modules --exclude=package-lock.json \
+      --exclude=node_modules --exclude=package-lock.json --exclude=build \
       -cf - . | tar -C "$root_dest" -xf -
   fi
 

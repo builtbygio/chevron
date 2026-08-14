@@ -10,7 +10,7 @@ The product is assembled with **`electron-packager` 15.x** (script-tree dep). Th
 | Topic | Policy |
 |-------|--------|
 | Identity | `dev.builtbygio.chevron` / helper `dev.builtbygio.chevron.helper` |
-| Unpack asar | natives / helpers via `include-path-in-packaged-app` |
+| Unpack asar | `package-application.js` `asar.unpack` (`*.node`, dugite, github `lib/**`, vscode-ripgrep). `include-path-in-packaged-app.js` is the **copy** filter, not unpack |
 | Fuses | `@electron/fuses` after pack (`flip-electron-fuses.js`); soft-fail if missing |
 | Linux layout | `<Name>-linux-<arch>/` (smoke + docs) |
 | apm | **Not shipped.** `apm` paths are **cpm shims** |
@@ -18,7 +18,7 @@ The product is assembled with **`electron-packager` 15.x** (script-tree dep). Th
 
 ## Startup snapshot
 
-Custom V8 snapshot is attempted on Linux and Windows whenever the host can run `electron-mksnapshot`. **macOS stays on Electron's stock snapshots** — a custom pair generates cleanly but the process dies at boot on Electron 43 (CI). Electron 43 works when `AtomEnvironment` is **not** constructed during snapshot generation (modules are evaluated into the cache; construction happens at runtime in `installEnvironment()`). `electron-mksnapshot`'s stock `mksnapshot.js` serializes the stock isolate blob for the context generator — Chevron drives both tools from a temp copy that contains the custom `snapshot_blob.bin` (`script/lib/run-mksnapshot.js`).
+Custom V8 snapshot is attempted on Linux and Windows whenever the host can run `electron-mksnapshot`. **macOS stays on Electron's stock snapshots** — CI #125 still dies at process start after installing a valid custom pair. Electron 43 works when `AtomEnvironment` is **not** constructed during snapshot generation (modules are evaluated into the cache; construction happens at runtime in `installEnvironment()`). `electron-mksnapshot`'s stock `mksnapshot.js` serializes the stock isolate blob for the context generator — Chevron drives both tools from a temp copy that contains the custom `snapshot_blob.bin` (`script/lib/run-mksnapshot.js`).
 
 Skip a custom-snapshot attempt:
 

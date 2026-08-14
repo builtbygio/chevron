@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Own remaining unowned core loaders as `builtbygio` git pins: `first-mate@7.4.3`, `atom-keymap@8.2.15`, `atom-select-list@0.8.1`, `season@6.0.2`, `scandal@3.2.0`, `text-buffer@13.18.6`, `fs-admin@0.15.0`, `scrollbar-style@4.0.1`. Each ships compiled `lib/` from the npm tarball (several Atom git tags were Coffee-only or missing the published version). `prepare`/`prepublish` that `rimraf lib/` are no-ops. Overrides hoist nested copies (including text-buffer’s `fs-admin@0.19` and owned-package `atom-select-list@0.7.2`) to the same SHAs.
+- Bootstrap force-copy of monorepo superstring/watcher no longer includes `packages/*/build/` and only runs when natives are actually rebuilt, so a warm cache cannot ship a host-Node `.node`. `link-package-natives-to-root` no longer copies `tree-sitter`.
+- `./script/build` without `--no-bootstrap` no longer calls the dead `script/bootstrap` stub. A bootstrapped tree packages; a cold tree prints the `bootstrap-modern` commands.
+- Own the remaining 22 TextMate-only `language-*` packages (`#79`). No `atom/*` app git pins left.
+- Pre-transpile `builtbygio/github` `lib/` to CJS and drop `atomTranspilers`. Packaging no longer runs a host Babel 7 install inside that package.
+- Custom V8 snapshot stays **stock on Darwin**. CI #125 generated a valid pair on both Mac archs then the process died at smoke (`app exited during startup`). Linux/Windows keep the custom snapshot. `CHEVRON_FORCE_MKSNAPSHOT=1` still retries.
+- Mac arm64 bootstrap: `ensure-ripgrep` was dying on an unauthenticated GitHub API 403 (`microsoft/ripgrep-prebuilt` v12.1.1). Pass `GITHUB_TOKEN`, `--force` when `bin/rg` is missing, and fall back to the release asset URL.
+
 ### Fixed
 
 - `.c` (and other official tree-sitter languages) had no colour: `loadLanguageModule` stripped `{ name, language, nodeTypeInfo }` down to the raw Language, so tree-sitter 0.25 could not build node classes. Keep the full module. Also stop deferring `language-*` so grammars exist before the first editor. Reject an unusable parser so the TextMate grammar can still win.

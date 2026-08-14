@@ -16,7 +16,6 @@ module.exports = function linkPackageNativesToRoot(repoRoot, packagePath) {
   const nativeRelPaths = [
     'superstring',
     'keytar',
-    'tree-sitter',
     path.join('@atom', 'watcher')
   ];
 

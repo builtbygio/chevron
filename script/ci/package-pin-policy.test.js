@@ -20,7 +20,9 @@ const OWNED_BUILTBYGIO = [
   '@atom/fuzzy-native',
   '@atom/nsfw',
   'archive-view',
+  'atom-keymap',
   'atom-pathspec',
+  'atom-select-list',
   'autocomplete-chevron-api',
   'autocomplete-css',
   'autocomplete-html',
@@ -34,6 +36,8 @@ const OWNED_BUILTBYGIO = [
   'ctags',
   'encoding-selector',
   'find-and-replace',
+  'first-mate',
+  'fs-admin',
   'fuzzy-finder',
   'git-utils',
   'github',
@@ -42,16 +46,38 @@ const OWNED_BUILTBYGIO = [
   'keybinding-resolver',
   'keytar',
   'language-c',
+  'language-clojure',
+  'language-coffee-script',
+  'language-csharp',
   'language-css',
+  'language-gfm',
+  'language-git',
   'language-go',
   'language-html',
+  'language-hyperlink',
   'language-java',
   'language-javascript',
   'language-json',
+  'language-less',
+  'language-make',
+  'language-mustache',
+  'language-objective-c',
+  'language-perl',
+  'language-php',
+  'language-property-list',
   'language-python',
   'language-ruby',
+  'language-ruby-on-rails',
+  'language-sass',
   'language-shellscript',
+  'language-source',
+  'language-sql',
+  'language-text',
+  'language-todo',
+  'language-toml',
   'language-typescript',
+  'language-xml',
+  'language-yaml',
   'markdown-preview',
   'notifications',
   'nslog',
@@ -59,6 +85,9 @@ const OWNED_BUILTBYGIO = [
   'open-on-github',
   'pathwatcher',
   'package-generator',
+  'scandal',
+  'scrollbar-style',
+  'season',
   'settings-view',
   'snippets',
   'spell-check',
@@ -67,6 +96,7 @@ const OWNED_BUILTBYGIO = [
   'styleguide',
   'symbols-view',
   'tabs',
+  'text-buffer',
   'timecop',
   'tree-view',
   'whitespace',
@@ -119,6 +149,19 @@ describe('package pin policy', () => {
     }
   });
 
+  it('fs-admin override is the owned 0.15 pin (not nested 0.19)', () => {
+    const spec = pkg.overrides && pkg.overrides['fs-admin'];
+    assert.strictEqual(
+      spec,
+      '$fs-admin',
+      `fs-admin override must follow the root pin, got: ${spec}`
+    );
+    assert.ok(
+      isBuiltbygioGit(pkg.dependencies['fs-admin']),
+      `fs-admin must be builtbygio git pin, got: ${pkg.dependencies['fs-admin']}`
+    );
+  });
+
   it('isbinaryfile@2 override is the owned 2.0.4 fork (not 3.x)', () => {
     const spec = pkg.overrides && pkg.overrides['isbinaryfile@2'];
     assert.ok(
@@ -128,6 +171,17 @@ describe('package pin policy', () => {
     assert.ok(
       String(spec).includes('isbinaryfile.git'),
       `expected builtbygio/isbinaryfile, got: ${spec}`
+    );
+  });
+
+  it('no remaining atom/* git pins in app dependencies', () => {
+    const leftover = Object.entries(pkg.dependencies).filter(([, url]) =>
+      String(url).includes('github.com/atom/')
+    );
+    assert.deepStrictEqual(
+      leftover,
+      [],
+      `atom/* pins remain: ${leftover.map(([n]) => n).join(', ')}`
     );
   });
 

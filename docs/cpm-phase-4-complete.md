@@ -27,7 +27,7 @@
 ## Not deleted (intentionally)
 
 - Source tree `apm/package.json` pin of `atom-package-manager` for optional archaeology.
-- Patch scripts `patch-apm-*` (only with `--with-apm`).
+- `--with-apm` still installs that tree with `--ignore-scripts` (debug only). The `patch-apm-*` scripts are **deleted** — this path is not a working product bootstrap.
 
 ## Phases
 
