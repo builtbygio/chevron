@@ -19,6 +19,10 @@ module.exports = function({logFile, headless, testPaths, buildAtomEnvironment}) 
   const object = require('../vendor/jasmine');
   for (var key in object) { var value = object[key]; window[key] = value; }
 
+  // jasmine-tagged → jasmine-focused → jasmine-node/reporter requires
+  // ./failure-tree (Coffee only). Chevron does not transpile Coffee (#62).
+  ensureJasmineNodeFailureTree();
+
   require('jasmine-tagged');
 
   // Rewrite global jasmine functions to have support for async tests.
@@ -128,6 +132,20 @@ var disableFocusMethods = () => ['fdescribe', 'ffdescribe', 'fffdescribe', 'fit'
     return focusMethod(description, function() { throw error; });
   };
 });
+
+function ensureJasmineNodeFailureTree() {
+  let jasmineNodeDir;
+  try {
+    jasmineNodeDir = path.dirname(require.resolve('jasmine-node'));
+  } catch (error) {
+    return;
+  }
+  const dest = path.join(jasmineNodeDir, 'failure-tree.js');
+  if (fs.existsSync(dest)) return;
+  const src = path.join(__dirname, 'support', 'jasmine-node-failure-tree.js');
+  if (!fs.existsSync(src)) return;
+  fs.copyFileSync(src, dest);
+}
 
 var requireSpecs = function(testPath, specType) {
   if (fs.isDirectorySync(testPath)) {

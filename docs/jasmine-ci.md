@@ -48,7 +48,14 @@ runs the whole thing on one Linux x64 box on purpose (simpler; measure first).
 
 ## Expected flakes / first-run redness
 
-Treat the first several nightlies as **measurement**, not a product failure:
+Treat the first several nightlies as **measurement**, not a product failure.
+
+First nightly (`71d4856b0`, 2026-08-14) was red for **two systematic reasons**, not 80 package bugs:
+
+1. **Renderer:** `jasmine-tagged` → `jasmine-node/reporter` required `failure-tree.coffee`. Chevron does not transpile Coffee (#62). The runner now copies `spec/support/jasmine-node-failure-tree.js` next to that file.
+2. **Core main (16 / 125):** `AtomWindow` tests constructed windows without `resourcePath` (`path.join(undefined, …)`), and one title assertion still expected `Atom` instead of `Chevron`.
+
+Remaining redness after those fixes is real spec debt (Atom paths, Xvfb, timeouts, `rg`/`cpm`, github signatures):
 
 - Renderer specs that assume Atom paths, `atom://`, or `require('atom')` only
 - Display / Xvfb / ozone (we force `ELECTRON_OZONE_PLATFORM_HINT=x11`)
