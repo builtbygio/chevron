@@ -1,12 +1,31 @@
 #!/usr/bin/env bash
-# Install a user-level .desktop + hicolor icons for a local packaged build.
-# Wayland shells (GNOME, etc.) show the generic binary icon unless the window
-# app_id / WM_CLASS matches an installed desktop entry with Icon=.
+# Optional user-level .desktop + hicolor icons for a local packaged build.
+# Not run by script/build. Debian/RPM installers ship their own entries.
 #
 # Usage (from repo root, after build):
 #   ./script/install-local-linux-desktop.sh
 #   ./script/install-local-linux-desktop.sh /path/to/Chevron-linux-x64
+#   ./script/install-local-linux-desktop.sh --uninstall
 set -euo pipefail
+
+if [[ "${1:-}" == "--uninstall" || "${1:-}" == "uninstall" ]]; then
+  DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+  HICOLOR="$DATA_HOME/icons/hicolor"
+  APPS="$DATA_HOME/applications"
+  echo "Removing user-level Chevron desktop entries and icons"
+  rm -f "$APPS/chevron.desktop" "$APPS/Chevron.desktop"
+  for size in 16 24 32 48 64 128 256 512 1024; do
+    rm -f "$HICOLOR/${size}x${size}/apps/chevron.png"
+  done
+  if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -f -t "$HICOLOR" 2>/dev/null || true
+  fi
+  if command -v update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database "$APPS" 2>/dev/null || true
+  fi
+  echo "Removed."
+  exit 0
+fi
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PACKAGED="${1:-$REPO_ROOT/out/Chevron-linux-x64}"

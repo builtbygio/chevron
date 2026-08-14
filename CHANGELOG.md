@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Find-in-project: download `vscode-ripgrep`'s `rg` during bootstrap/package (skipped by `--ignore-scripts`) so packaged `app.asar.unpacked` has the binary.
+- Settings installed/outdated lists: `cpm ls --json` emits the apm `{ user, core, dev, git }` shape; `cpm outdated --json` exits 0 with `[]`.
+
 ### Changed
 
 - Startup harness waits for `window:setup-window:end` (workspace ready) and graceful-quits so the V8 compile cache can persist. Linux x64 1.0.1 baseline: ~2.1 s cold / ~2.0 s warm; cache writes but only saves ~6%. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).

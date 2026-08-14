@@ -12,6 +12,7 @@ const spawnSync = require('./spawn-sync');
 const template = require('lodash.template');
 
 const CONFIG = require('../config');
+const { ensureRipgrep } = require('./ensure-ripgrep');
 const HOST_ARCH = hostArch();
 
 module.exports = function() {
@@ -21,6 +22,7 @@ module.exports = function() {
       CONFIG.intermediateAppPath
     } with app name "${appName}"`
   );
+  ensureRipgrep();
   return runPackager({
     // Public install identity (new reverse-DNS; no Atom upgrade path).
     appBundleId: 'dev.builtbygio.chevron',

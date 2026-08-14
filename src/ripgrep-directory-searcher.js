@@ -1,5 +1,15 @@
 const { spawn } = require('child_process');
+const fs = require('fs');
 const path = require('path');
+
+function resolveRgPath(rgPath, existsFn = p => fs.existsSync(p)) {
+  const raw = rgPath || require('vscode-ripgrep').rgPath;
+  const unpacked = String(raw).replace(/\bapp\.asar\b/, 'app.asar.unpacked');
+  for (const candidate of [unpacked, raw]) {
+    if (candidate && existsFn(candidate)) return candidate;
+  }
+  return unpacked;
+}
 
 // `ripgrep` and `scandal` have a different way of handling the trailing and leading
 // context lines:
@@ -221,10 +231,7 @@ module.exports = class RipgrepDirectorySearcher {
   searchInDirectory(directory, regexp, options, numPathsFound) {
     // Delay the require of vscode-ripgrep to not mess with the snapshot creation.
     if (!this.rgPath) {
-      this.rgPath = require('vscode-ripgrep').rgPath.replace(
-        /\bapp\.asar\b/,
-        'app.asar.unpacked'
-      );
+      this.rgPath = resolveRgPath();
     }
 
     const directoryPath = directory.getPath();
@@ -424,3 +431,5 @@ module.exports = class RipgrepDirectorySearcher {
     return false;
   }
 };
+
+module.exports.resolveRgPath = resolveRgPath;

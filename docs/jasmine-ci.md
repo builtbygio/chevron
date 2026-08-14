@@ -53,8 +53,7 @@ Treat the first several nightlies as **measurement**, not a product failure:
 - Renderer specs that assume Atom paths, `atom://`, or `require('atom')` only
 - Display / Xvfb / ozone (we force `ELECTRON_OZONE_PLATFORM_HINT=x11`)
 - Timeouts (the runner retries timeout-looking stderr up to 6 times)
-- Package specs that spawn `rg` (packaged `vscode-ripgrep` is currently
-  missing — find-in-project ENOENT)
+- Package specs that spawn `rg` (bootstrap now downloads vscode-ripgrep)
 - settings-view specs that spawn `cpm`/`apm`
 - GitHub package update-signature errors (already treated as retryable)
 

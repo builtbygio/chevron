@@ -187,6 +187,8 @@ jobs:
           node --test script/ci/natives-fingerprint.test.js
           node --test script/ci/fs-ipc-roots.test.js
           node --test script/ci/find-packaged-app.test.js
+          node --test script/ci/ensure-ripgrep.test.js
+          node --test script/ci/deferred-startup-packages.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64
