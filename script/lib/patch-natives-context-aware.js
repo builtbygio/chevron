@@ -4,6 +4,10 @@
  * Patch classic NODE_MODULE() natives to NODE_MODULE_CONTEXT_AWARE so they can
  * load in Electron 12+ renderer processes (process model reuse).
  *
+ * Owned superstring and watcher already register with CONTEXT_AWARE in
+ * packages/. Official tree-sitter@0.25 and tree-sitter-* grammars are N-API
+ * (NODE_API_MODULE) and must not be rewritten.
+ *
  * Idempotent. Safe to re-run after npm installs that restore sources.
  *
  * Usage: node script/lib/patch-natives-context-aware.js [repoRoot]
@@ -58,18 +62,6 @@ const TARGETS = [
     name: 'spellchecker',
     fn: 'Init',
     arity: 2
-  },
-  {
-    file: 'packages/superstring/src/bindings/bindings.cc',
-    name: 'superstring',
-    fn: 'Init',
-    arity: 1
-  },
-  {
-    file: 'packages/watcher/src/binding.cpp',
-    name: 'watcher',
-    fn: 'initialize',
-    arity: 1
   }
 ];
 
@@ -203,53 +195,6 @@ function patchKeyboardLayout() {
   }
 }
 
-// Binding sources are not always at src/binding.cc: tree-sitter-css uses
-// bindings/node/binding.cc, tree-sitter-typescript has typescript/src and
-// tsx/src. Find every binding.cc in the package (skipping nested deps).
-function findBindingSources(dir, depth = 0, results = []) {
-  if (depth > 3) return results;
-  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (ent.isDirectory()) {
-      if (ent.name === 'node_modules' || ent.name === 'build') continue;
-      findBindingSources(path.join(dir, ent.name), depth + 1, results);
-    } else if (ent.name === 'binding.cc') {
-      results.push(path.join(dir, ent.name));
-    }
-  }
-  return results;
-}
-
-function patchTreeSitterLanguages() {
-  const nm = path.join(repoRoot, 'node_modules');
-  if (!fs.existsSync(nm)) return;
-  for (const ent of fs.readdirSync(nm)) {
-    if (!ent.startsWith('tree-sitter-')) continue;
-    for (const binding of findBindingSources(path.join(nm, ent))) {
-      const rel = path.relative(repoRoot, binding);
-      let text = fs.readFileSync(binding, 'utf8');
-      if (text.includes('NODE_MODULE_CONTEXT_AWARE')) {
-        console.log(`ok (already): ${rel}`);
-        continue;
-      }
-      const m = text.match(
-        /NODE_MODULE\(\s*([A-Za-z0-9_]+)\s*,\s*([A-Za-z0-9_:]+)\s*\)\s*;?/
-      );
-      if (!m) continue;
-      const name = m[1];
-      const fn = m[2];
-      const arity = /void\s+Init\s*\(\s*Local<\s*Object\s*>\s*\w+\s*,\s*Local<\s*Object\s*>/.test(
-        text
-      )
-        ? 2
-        : 1;
-      const rep = makeReplacement(name, fn, arity);
-      text = text.replace(m[0], rep);
-      fs.writeFileSync(binding, text);
-      console.log(`patched: ${rel}`);
-    }
-  }
-}
-
 function main() {
   let count = 0;
   for (const t of TARGETS) {
@@ -257,7 +202,6 @@ function main() {
   }
   patchNsfw();
   patchKeyboardLayout();
-  patchTreeSitterLanguages();
   console.log(`context-aware native patches done (${count} core files changed)`);
 }
 

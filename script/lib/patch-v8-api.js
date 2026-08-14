@@ -1,13 +1,12 @@
 'use strict';
 
 /**
- * V8 10.x (Electron 21/22) removed v8::Object::CreationContext(); the
- * replacement is GetCreationContext(), which returns a MaybeLocal.
- * Old natives (tree-sitter runtime, superstring) still use the removed form.
+ * V8 15 (Electron 43) removals in unowned registry natives.
  *
- * Rewrites `->CreationContext()` to `->GetCreationContext().ToLocalChecked()`
- * in both node_modules copies and the vendored packages/ sources (the
- * vendored superstring overwrites node_modules during bootstrap).
+ * Owned superstring already uses GetCreationContext() / Data() in
+ * packages/superstring. Official tree-sitter@0.25 is N-API and needs
+ * no V8 rewrite. This script only touches packages we do not own:
+ * fuzzy-native, oniguruma, spellchecker.
  *
  * Idempotent. Usage: node script/lib/patch-v8-api.js [repoRoot]
  */
@@ -19,34 +18,7 @@ const repoRoot = path.resolve(
   process.argv[2] || path.join(__dirname, '..', '..')
 );
 
-const ROOTS = [
-  'node_modules/superstring/src',
-  'packages/superstring/src'
-];
-
-const BROKEN = '->CreationContext()';
-const FIXED = '->GetCreationContext().ToLocalChecked()';
-
-function* sourceFiles(dir) {
-  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    const p = path.join(dir, ent.name);
-    if (ent.isDirectory()) yield* sourceFiles(p);
-    else if (/\.(cc|cpp|h)$/.test(ent.name)) yield p;
-  }
-}
-
 let patched = 0;
-for (const root of ROOTS) {
-  const abs = path.join(repoRoot, root);
-  if (!fs.existsSync(abs)) continue;
-  for (const file of sourceFiles(abs)) {
-    const text = fs.readFileSync(file, 'utf8');
-    if (!text.includes(BROKEN)) continue;
-    fs.writeFileSync(file, text.split(BROKEN).join(FIXED));
-    console.log(`patch-v8-api: patched ${path.relative(repoRoot, file)}`);
-    patched++;
-  }
-}
 
 // GCC 15+ / libstdc++ no longer injects uint32_t via transitive headers.
 // @atom/fuzzy-native needs an explicit <cstdint> include.

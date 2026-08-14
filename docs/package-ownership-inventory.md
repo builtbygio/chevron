@@ -63,7 +63,7 @@
 | language-shellscript | Tree-sitter ABI 13–15 (`tree-sitter-bash`); JSON + TypeScript |
 | language-typescript | Tree-sitter ABI 13–15 (ts / tsx); JSON + TypeScript |
 
-Binding: official npm `tree-sitter@0.25.1` (not DeeDeeG / `file:packages/tree-sitter`).
+Binding: official npm `tree-sitter@0.25.1`. The old DeeDeeG `packages/tree-sitter` tree is gone.
 
 ## Remaining `atom/*` pins
 

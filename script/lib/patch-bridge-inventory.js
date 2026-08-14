@@ -12,7 +12,6 @@ const DEBABEL_PACKAGES = [];
 const SAFETY_NET_PATCHES = [
   'patch-packages-remote-ipc.js',
   'patch-github-remote.js',
-  'patch-tree-view-stats.js',
   'patch-settings-view-registry.js'
 ];
 

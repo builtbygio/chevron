@@ -94,6 +94,7 @@ describe('Class C patch bridges (retired)', () => {
     const gone = [
       'script/lib/patch-decaffeinate-bundled-packages.js',
       'script/lib/patch-debabel-bundled-packages.js',
+      'script/lib/patch-tree-view-stats.js',
       'script/patches/decaffeinated-bundled-packages',
       'script/patches/debabelled-bundled-packages'
     ];

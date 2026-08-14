@@ -32,7 +32,6 @@ const FINGERPRINT_PATH = path.join(
 // Must stay aligned with script/bootstrap-modern critical rebuild list.
 const CRITICAL_NATIVE_PACKAGES = [
   'superstring',
-  'tree-sitter',
   '@atom/watcher',
   '@atom/nsfw',
   '@atom/fuzzy-native',
@@ -50,12 +49,6 @@ const CRITICAL_NATIVE_PACKAGES = [
 
 const CRITICAL_NODE_FILES = [
   path.join('superstring', 'build', 'Release', 'superstring.node'),
-  path.join(
-    'tree-sitter',
-    'prebuilds',
-    `${process.platform}-${process.arch}`,
-    'tree-sitter.node'
-  ),
   path.join('pathwatcher', 'build', 'Release', 'pathwatcher.node')
 ];
 

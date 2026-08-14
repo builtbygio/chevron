@@ -30,7 +30,7 @@ chevron_resync_nested_built_natives() {
   local repo_root="${1:-$(pwd)}"
   local npm_name base_name root_dest nested
 
-  for npm_name in superstring tree-sitter keytar '@atom/watcher'; do
+  for npm_name in superstring keytar '@atom/watcher'; do
     root_dest="$repo_root/node_modules/$npm_name"
     if [ ! -d "$root_dest" ]; then
       continue
@@ -39,15 +39,6 @@ chevron_resync_nested_built_natives() {
     local node_bin=""
     case "$npm_name" in
       superstring) node_bin="$root_dest/build/Release/superstring.node" ;;
-      tree-sitter)
-        node_bin=""
-        for cand in \
-          "$root_dest/prebuilds/$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/;s/aarch64/arm64/')/tree-sitter.node" \
-          "$root_dest/build/Release/tree-sitter.node"
-        do
-          if [ -f "$cand" ]; then node_bin="$cand"; break; fi
-        done
-        ;;
       keytar) node_bin="$root_dest/build/Release/keytar.node" ;;
       '@atom/watcher') node_bin="$root_dest/build/Release/watcher.node" ;;
     esac
@@ -205,9 +196,8 @@ chevron_force_patched_natives() {
   local repo_root="${1:-$(pwd)}"
   chevron_force_one_native "$repo_root" "superstring" "packages/superstring" "superstring" || return 1
   chevron_force_one_native "$repo_root" "@atom/watcher" "packages/watcher" "@atom/watcher" || return 1
-  # Official npm tree-sitter@0.25 (N-API). Do not overwrite it with
-  # packages/tree-sitter (DeeDeeG 0.17 / ABI 12) — that is what left
-  # official language-* grammars uncoloured.
+  # tree-sitter is official npm 0.25 (N-API prebuilds). Do not vendor or
+  # overwrite it.
 
   chevron_upgrade_nan_for_electron14 "$repo_root"
 

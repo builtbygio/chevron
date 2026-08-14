@@ -111,14 +111,30 @@ describe('load-tree-sitter-language', () => {
     );
   });
 
-  it('installed tree-sitter matches package.json (not the old DeeDeeG 0.17 fork)', () => {
+  it('lockfile pins official tree-sitter, not the DeeDeeG 0.17 fork', () => {
     const declared = require('../../package.json').dependencies['tree-sitter'];
-    const installed = require('../../node_modules/tree-sitter/package.json')
-      .version;
-    assert.strictEqual(
-      installed,
-      declared,
-      `node_modules/tree-sitter is ${installed}, expected ${declared}. Official language-* grammars cannot colour files on 0.17.`
+    assert.strictEqual(declared, '0.25.1');
+    const lock = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '../../package-lock.json'), 'utf8')
     );
+    const entry = lock.packages && lock.packages['node_modules/tree-sitter'];
+    assert.ok(entry, 'package-lock must list node_modules/tree-sitter');
+    assert.strictEqual(entry.version, '0.25.1');
+    assert.ok(
+      String(entry.resolved || '').includes('registry.npmjs.org/tree-sitter'),
+      `expected npm registry tree-sitter, got ${entry.resolved}`
+    );
+    const installedPath = path.join(
+      __dirname,
+      '../../node_modules/tree-sitter/package.json'
+    );
+    if (fs.existsSync(installedPath)) {
+      const installed = JSON.parse(fs.readFileSync(installedPath, 'utf8'));
+      assert.strictEqual(
+        installed.version,
+        '0.25.1',
+        `node_modules/tree-sitter is ${installed.version}, expected 0.25.1`
+      );
+    }
   });
 });

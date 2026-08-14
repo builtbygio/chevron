@@ -21,18 +21,18 @@ Override soft native failures only with `CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1
 
 | Script | Class | Purpose | Retirement path |
 |--------|-------|---------|-----------------|
-| `patch-natives-context-aware.js` | A compile | `NODE_MODULE` → `CONTEXT_AWARE` | Upstream/native pins use context-aware macros |
-| `patch-keytar-nan.js` | A compile | keytar nested nan too old for Electron 14+ | **Root `overrides.nan=2.28.0`** (Stream B) — patch is now a no-op after clean `npm ci` |
-| `patch-nested-nan.js` | A compile | replace nested nan &lt; root | Same override; keep script until a clean bootstrap log is always no-op |
-| `patch-v8-api.js` | A compile | `CreationContext` → `GetCreationContext` | Fix superstring/tree-sitter sources in monorepo + pins |
+| `patch-natives-context-aware.js` | A compile | `NODE_MODULE` → `CONTEXT_AWARE` on **unowned** natives | Owned superstring/watcher already ship CONTEXT_AWARE. Official `tree-sitter-*` are N-API. |
+| `patch-keytar-nan.js` | A compile | keytar nested nan too old for Electron 14+ | **Root `overrides.nan=2.28.0`** — no-op after clean `npm ci` |
+| `patch-nested-nan.js` | A compile | replace nested nan &lt; root | Same override; keep until a clean bootstrap log is always no-op |
+| `patch-v8-api.js` | A compile | V8 15 removals in fuzzy-native / oniguruma / spellchecker | Fork or pin those unowned natives. Superstring already fixed in `packages/superstring`. |
 | `patch-oniguruma-gyp.js` | A compile | GCC 14 + K&R in oniguruma | Pin modern oniguruma / gyp |
 | `patch-spellchecker-win.js` | A compile | MSVC C2440 temp wstring | Upstream spellchecker fix |
 | `patch-dep-package-json.js` | Hygiene | DEP0128 / broken package.json | Fix upstream package metadata |
 | ~~`patch-decaffeinate-bundled-packages.js`~~ | C retired | Folded into owned pins | **Deleted** |
 | ~~`patch-debabel-bundled-packages.js`~~ | C retired | Folded into owned pins | **Deleted** |
+| ~~`patch-tree-view-stats.js`~~ | B retired | Stats.mtime on modern Node | Folded into builtbygio/tree-view — **deleted** |
 | `patch-packages-remote-ipc.js` | B safety net | remote → IPC | Folded into builtbygio; keep until always no-op |
 | `patch-github-remote.js` | B safety net | github worker | Folded into builtbygio/github |
-| `patch-tree-view-stats.js` | B safety net | Stats.mtime on modern Node | Folded into tree-view pin |
 | `patch-settings-view-registry.js` | B safety net | atom.io → Pulsar | Folded into settings-view; re-run after intermediate transpile |
 | `patch-apm-download-node.js` / `patch-apm-npm.js` | D legacy | apm debug only | Remove when `--with-apm` is deleted |
 | `force-patched-superstring.sh` | A compile | monorepo superstring wins | Keep while monorepo packages/superstring is source of truth |
@@ -48,7 +48,9 @@ Override soft native failures only with `CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1
 
 After rebuild (or warm cache skip), these must expose a `.node` under `build/Release/` (see `script/lib/critical-natives.js`):
 
-`superstring`, `tree-sitter`, `@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`, `keytar`, `spellchecker`, `pathwatcher`, `git-utils`, `scrollbar-style`, `nslog`, `keyboard-layout`, `ctags`, `fs-admin`, `oniguruma`.
+`superstring`, `@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`, `keytar`, `spellchecker`, `pathwatcher`, `git-utils`, `scrollbar-style`, `nslog`, `keyboard-layout`, `ctags`, `fs-admin`, `oniguruma`.
+
+`tree-sitter` / `tree-sitter-*` are official N-API prebuilds and are **not** rebuilt.
 
 ## CI checks
 
