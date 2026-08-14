@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-08-14 (#125: own remaining loaders + language-* + github CJS)
+**Date of this handoff:** 2026-08-14 (master + #125; dogfood Day 1 done)
 
 ---
 
@@ -65,7 +65,7 @@ Threat model: **`docs/security-threat-model.md`**.
 | P2.4 Guest `file:` roots | **Done** |
 | P3.2 Production Electron fuses | **Done** (ASAR integrity macOS-only) |
 | P3.4 `certificate-error` deny | **Done** |
-| P3.1 utilityProcess workers | **Follow-on** (github rewrite) |
+| P3.1 utilityProcess workers | **Done** (Phase S3; BW emergency-only) |
 | P3.3 Editor `sandbox: true` | **Declined (Option C)** — see security-phase-s-decision.md |
 
 ### Electron + remote removal
@@ -143,6 +143,7 @@ Landed with 1.0 / immediately after:
 | Ship ripgrep; cpm ls/outdated; desktop uninstall helper | #122 |
 | Colour + own remaining natives + delete bootstrap patches | #123 |
 | Modernize those native forks (keep required APIs) | #124 |
+| Own remaining loaders + language-* + github CJS; Darwin stock snapshot | #125 |
 
 ### Phase S — **complete**
 
@@ -155,9 +156,9 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 
 ### Primary next tracks
 
-1. **Dogfood week (#106)** — use the unsigned preview; file blockers. Smoke is not dogfood.  
+1. **Dogfood week (#106)** — Day 1 done. Days 2–7 still open. Smoke is not dogfood.  
 2. **#57** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
-3. **#79 done** — all bundled `language-*` are `builtbygio` pins (tree-sitter ones + 22 TextMate-only). No `atom/*` app git pins.
+3. **#79 done** — all bundled `language-*` are `builtbygio` pins. No `atom/*` app git pins.
 4. Residual `@atom/*` **names** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — owned repos, old npm scope.
 5. **Startup perf** — custom V8 snapshot on Linux/Windows; Darwin stock (CI #125 still dies at boot after a valid pair). Constructor heap still runtime. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).  
 6. **Later:** sandboxed community packages (package host v2); `@electron/packager`; signing
