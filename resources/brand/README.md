@@ -45,6 +45,7 @@ Wayland shells often ignore `BrowserWindow` icons and use the installed
 For a **local packaged build** (`out/Chevron-linux-x64`):
 
 ```bash
-./script/install-local-linux-desktop.sh
+./script/install-local-linux-desktop.sh          # optional; not part of script/build
+./script/install-local-linux-desktop.sh --uninstall
 gtk-launch chevron   # prefer this over running the binary path directly
 ```

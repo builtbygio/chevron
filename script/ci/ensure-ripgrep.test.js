@@ -1,0 +1,56 @@
+'use strict';
+
+const { describe, it } = require('node:test');
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+
+const {
+  rgBinName,
+  rgBinPath,
+  ensureRipgrepAt
+} = require('../lib/ensure-ripgrep');
+const { resolveRgPath } = require('../../src/ripgrep-directory-searcher');
+
+describe('ensure-ripgrep / resolveRgPath', () => {
+  it('names the host binary', () => {
+    assert.strictEqual(rgBinName('linux'), 'rg');
+    assert.strictEqual(rgBinName('win32'), 'rg.exe');
+  });
+
+  it('rewrites app.asar to app.asar.unpacked and prefers the file that exists', () => {
+    const asar =
+      '/tmp/Chevron/resources/app.asar/node_modules/vscode-ripgrep/bin/rg';
+    const unpacked = asar.replace('app.asar', 'app.asar.unpacked');
+    const existing = new Set([unpacked]);
+    assert.strictEqual(
+      resolveRgPath(asar, p => existing.has(p)),
+      unpacked
+    );
+  });
+
+  it('falls back to unpacked path when neither file exists', () => {
+    const asar =
+      '/tmp/Chevron/resources/app.asar/node_modules/vscode-ripgrep/bin/rg';
+    assert.ok(resolveRgPath(asar, () => false).includes('app.asar.unpacked'));
+  });
+
+  it('no-ops when the package dir is missing', () => {
+    assert.strictEqual(ensureRipgrepAt('/tmp/definitely-no-vscode-ripgrep'), null);
+  });
+
+  it('computes bin path under the package', () => {
+    const dir = '/tmp/vscode-ripgrep';
+    assert.strictEqual(
+      rgBinPath(dir, 'linux'),
+      path.join(dir, 'bin', 'rg')
+    );
+  });
+
+  it('vscode-ripgrep is a root dependency', () => {
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8')
+    );
+    assert.ok(pkg.dependencies['vscode-ripgrep']);
+  });
+});

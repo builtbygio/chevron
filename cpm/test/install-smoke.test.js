@@ -60,7 +60,8 @@ describe('cpm install smoke', () => {
     const list = runCpm(['list', '--json'], env);
     assert.strictEqual(list.status, 0, list.stderr);
     const parsed = JSON.parse(list.stdout);
-    assert.ok(parsed.some(p => p.name === 'cpm-smoke-pure-js'));
+    const user = Array.isArray(parsed) ? parsed : parsed.user || [];
+    assert.ok(user.some(p => p.name === 'cpm-smoke-pure-js'));
 
     const uninstall = runCpm(['uninstall', 'cpm-smoke-pure-js'], env);
     assert.strictEqual(uninstall.status, 0, uninstall.stderr);

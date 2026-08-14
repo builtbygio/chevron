@@ -105,6 +105,9 @@ installAppDependencies(ci, { ignoreScripts: true, legacyPeerDeps: true });
 NODE
 fi
 
+echo "Ensuring vscode-ripgrep binary (skipped by --ignore-scripts)…"
+node "$SCRIPT_DIR/lib/ensure-ripgrep.js"
+
 # Phase 1: cpm CLI dependencies (pacote, arborist, @electron/rebuild)
 if [ -d "$REPO_ROOT/cpm" ] && [ -f "$REPO_ROOT/cpm/package.json" ]; then
   echo "Installing cpm dependencies (host npm)…"

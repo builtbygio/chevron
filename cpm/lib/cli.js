@@ -2,6 +2,7 @@
 
 const { Command } = require('commander');
 const { listPackages } = require('./commands/list');
+const { listOutdated } = require('./commands/outdated');
 const { doctor } = require('./commands/doctor');
 const { rebuildPackages } = require('./commands/rebuild');
 const { installPackage } = require('./commands/install');
@@ -22,14 +23,25 @@ async function main(argv = process.argv) {
 
   program
     .command('list')
+    .alias('ls')
     .option('--json', 'JSON output')
     .action(opts => {
       process.exitCode = listPackages(opts);
     });
 
-  program.command('ls').action(() => {
-    process.exitCode = listPackages({});
-  });
+  program
+    .command('outdated')
+    .description(
+      'List outdated community packages (settings-view / apm outdated --json)'
+    )
+    .option('--json', 'JSON output')
+    .option(
+      '--compatible <version>',
+      'Accepted for apm compatibility (currently unused)'
+    )
+    .action(opts => {
+      process.exitCode = listOutdated(opts);
+    });
 
   program.command('doctor').action(() => {
     process.exitCode = doctor();

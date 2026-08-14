@@ -154,14 +154,13 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 2. **#57** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
 3. **#79** — Tree-sitter-backed `language-*` now **builtbygio** + official `tree-sitter@0.25.1`. Remaining **22** TextMate-only `language-*` still `atom/*`.
 4. Residual renames: atom-keymap / atom-select-list / `@atom/*`  
-5. **Startup perf** — Linux x64 ~2.1 s cold; deferred preload cut `setup-window:end` 1582 → 1103 ms. Mac still the snapshot candidate. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).  
+5. **Startup perf** — Linux custom V8 snapshot on (#121); macOS stock (boot crash). Constructor heap still runtime. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).  
 6. **Later:** sandboxed community packages (package host v2); packager/snapshot; signing  
 
 ### Known dogfood leftovers (found 2026-08-13)
 
 - **Fixed in #108:** empty tree-view — `collectDefaultRoots` used `atomApplication.windows` (never set); must use `getAllWindows()`. `/tmp` projects hid this. Keep `document-register-element` (contextIsolation); do not Grim-wrap `registerElement`.  
-- **Still broken:** find-in-project (`vscode-ripgrep` `rg` ENOENT under `app.asar.unpacked`); settings-view `cpm`/`apm` list (`Fetching local/outdated packages failed`).  
-- Owned packages still `require('atom')` (one-shot legacy warning).
+- Owned packages still `require('atom')` in specs/comments (one-shot legacy warning; shim stays).
 
 **Dev policy env:**  
 - `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log privileged + native requires  
@@ -175,7 +174,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Optional hygiene
 
 - Linux arm64: bootstrap/build are hard gates; **smoke only** is soft-gated (`continue-on-error` on smoke step)  
-- Custom V8 startup snapshot still disabled on Electron 43 (stock snapshots + warning)  
+- Custom V8 snapshot on Linux/Windows; macOS stays stock (`darwin-boot-crash`)  
 - Keep `GROK.md` / CHANGELOG current when landing epics  
 - Nested `packages/*/node_modules`: untracked; policy in `docs/nested-package-modules.md`  
 - CI: Electron + node-gyp cache at `$GITHUB_WORKSPACE/.cache/*`; `node_modules` cache enables bootstrap **native rebuild skip** (`script/lib/natives-fingerprint.js`); force with `CHEVRON_FORCE_NATIVE_REBUILD=1`  
