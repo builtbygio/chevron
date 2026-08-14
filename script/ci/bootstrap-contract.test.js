@@ -191,6 +191,31 @@ describe('critical-natives', () => {
   });
 });
 
+describe('github atomTranspilers folded', () => {
+  it('no bundled package still declares atomTranspilers', () => {
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf8')
+    );
+    const hits = [];
+    for (const name of Object.keys(pkg.packageDependencies || {})) {
+      const metaPath = path.join(
+        __dirname,
+        '../../node_modules',
+        name,
+        'package.json'
+      );
+      if (!fs.existsSync(metaPath)) continue;
+      const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+      if (meta.atomTranspilers) hits.push(name);
+    }
+    assert.deepStrictEqual(
+      hits,
+      [],
+      `atomTranspilers still present: ${hits.join(', ')}`
+    );
+  });
+});
+
 describe('script/build does not call the dead bootstrap stub', () => {
   it('fails closed on a cold tree and skips when already bootstrapped', () => {
     const text = fs.readFileSync(path.join(__dirname, '../build'), 'utf8');

@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Own remaining unowned core loaders as `builtbygio` git pins: `first-mate@7.4.3`, `atom-keymap@8.2.15`, `atom-select-list@0.8.1`, `season@6.0.2`, `scandal@3.2.0`, `text-buffer@13.18.6`, `fs-admin@0.15.0`, `scrollbar-style@4.0.1`. Each ships compiled `lib/` from the npm tarball (several Atom git tags were Coffee-only or missing the published version). `prepare`/`prepublish` that `rimraf lib/` are no-ops. Overrides hoist nested copies (including text-buffer’s `fs-admin@0.19` and owned-package `atom-select-list@0.7.2`) to the same SHAs.
 - Bootstrap force-copy of monorepo superstring/watcher no longer includes `packages/*/build/` and only runs when natives are actually rebuilt, so a warm cache cannot ship a host-Node `.node`. `link-package-natives-to-root` no longer copies `tree-sitter`.
 - `./script/build` without `--no-bootstrap` no longer calls the dead `script/bootstrap` stub. A bootstrapped tree packages; a cold tree prints the `bootstrap-modern` commands.
+- Own the remaining 22 TextMate-only `language-*` packages (`#79`). No `atom/*` app git pins left.
+- Pre-transpile `builtbygio/github` `lib/` to CJS and drop `atomTranspilers`. Packaging no longer runs a host Babel 7 install inside that package.
+- Custom V8 snapshot is attempted on Darwin too (same eval-only + custom isolate cwd as Linux/Windows). Mac smoke is the gate; `CHEVRON_SKIP_MKSNAPSHOT=1` still keeps stock.
 
 ### Fixed
 

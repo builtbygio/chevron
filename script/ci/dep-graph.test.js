@@ -61,10 +61,8 @@ describe('root dependency graph', () => {
   });
 
   it('keeps atom/* git pin count from growing past known ceiling', () => {
-    // #79: language-* still on atom/*. Ceiling is current + 0 slack for new pins.
-    // If this fails, either fork the package (preferred) or raise the ceiling
-    // with an issue comment — do not silently add atom/* pins.
-    const CEILING = 22;
+    // #79 closed: no app atom/* git pins. Do not add new ones.
+    const CEILING = 0;
     assert.ok(
       counts['git-atom'] <= CEILING,
       `atom/* git pins ${counts['git-atom']} > ceiling ${CEILING}: ${lists['git-atom'].join(', ')}`

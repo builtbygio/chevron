@@ -21,13 +21,9 @@ function shouldSkipCustomSnapshot(electronVersion, opts = {}) {
   if (opts.hostCanRun === false) return { skip: true, reason: 'host-unsupported' };
   if (opts.skip && !opts.force) return { skip: true, reason: 'env-skip' };
   if (opts.force) return { skip: false, reason: 'forced' };
-  const platform = opts.platform || process.platform;
-  // Electron 43 on macOS generates a valid pair then dies at process start
-  // (CI #121: empty renderer output). Linux and Windows boot. Keep stock
-  // on darwin until a Mac boot is verified.
-  if (platform === 'darwin') {
-    return { skip: true, reason: 'darwin-boot-crash' };
-  }
+  // Darwin used to hard-skip after CI #121 (custom pair generated, then
+  // empty renderer). That was before eval-only + custom isolate cwd.
+  // Generate on every host that can run mksnapshot; smoke is the gate.
   return { skip: false, reason: 'generate' };
 }
 

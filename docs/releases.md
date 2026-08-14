@@ -23,7 +23,7 @@ See [package-ecosystem-strategy.md](./package-ecosystem-strategy.md) and [securi
 Deferred on purpose (not blockers for this tag):
 
 - Package host v2 / sandboxed community packages
-- Mass-fork of `language-*` off `atom/*` ([#79](https://github.com/builtbygio/chevron/issues/79))
+- ~~Mass-fork of `language-*` off `atom/*`~~ **done** ([#79](https://github.com/builtbygio/chevron/issues/79))
 - `@electron/packager` migration
 - Custom Electron 43 V8 snapshot on Linux/Windows (#121); Darwin stock
 - Codesign / notarization / Squirrel install feed

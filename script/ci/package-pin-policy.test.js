@@ -46,16 +46,38 @@ const OWNED_BUILTBYGIO = [
   'keybinding-resolver',
   'keytar',
   'language-c',
+  'language-clojure',
+  'language-coffee-script',
+  'language-csharp',
   'language-css',
+  'language-gfm',
+  'language-git',
   'language-go',
   'language-html',
+  'language-hyperlink',
   'language-java',
   'language-javascript',
   'language-json',
+  'language-less',
+  'language-make',
+  'language-mustache',
+  'language-objective-c',
+  'language-perl',
+  'language-php',
+  'language-property-list',
   'language-python',
   'language-ruby',
+  'language-ruby-on-rails',
+  'language-sass',
   'language-shellscript',
+  'language-source',
+  'language-sql',
+  'language-text',
+  'language-todo',
+  'language-toml',
   'language-typescript',
+  'language-xml',
+  'language-yaml',
   'markdown-preview',
   'notifications',
   'nslog',
@@ -149,6 +171,17 @@ describe('package pin policy', () => {
     assert.ok(
       String(spec).includes('isbinaryfile.git'),
       `expected builtbygio/isbinaryfile, got: ${spec}`
+    );
+  });
+
+  it('no remaining atom/* git pins in app dependencies', () => {
+    const leftover = Object.entries(pkg.dependencies).filter(([, url]) =>
+      String(url).includes('github.com/atom/')
+    );
+    assert.deepStrictEqual(
+      leftover,
+      [],
+      `atom/* pins remain: ${leftover.map(([n]) => n).join(', ')}`
     );
   });
 

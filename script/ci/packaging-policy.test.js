@@ -42,8 +42,8 @@ describe('packaging policy (Stream D)', () => {
     assert.strictEqual(host.skip, true);
 
     const darwin = shouldSkipCustomSnapshot('43.1.0', { platform: 'darwin' });
-    assert.strictEqual(darwin.skip, true);
-    assert.strictEqual(darwin.reason, 'darwin-boot-crash');
+    assert.strictEqual(darwin.skip, false);
+    assert.strictEqual(darwin.reason, 'generate');
 
     const darwinForced = shouldSkipCustomSnapshot('43.1.0', {
       platform: 'darwin',

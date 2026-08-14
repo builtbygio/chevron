@@ -10,8 +10,8 @@
 
 | Class | Count | Policy |
 |-------|------:|--------|
-| **Owned** (`builtbygio/*` git pins) | **62** | Primary maintenance + security patches |
-| **Upstream Atom** (`atom/*` git pins) | **22** | Remaining TextMate-only `language-*` — SHA pins only (#79 leftover) |
+| **Owned** (`builtbygio/*` git pins) | **84** | Primary maintenance + security patches |
+| **Upstream Atom** (`atom/*` git pins) | **0** | #79 closed — TextMate `language-*` are owned |
 | **In-repo** (`file:packages/*`) | 29 | Monorepo packages (themes, about, welcome, natives, …) |
 | **npm registry** (semver / file natives) | rest | Host npm / Electron rebuild |
 
@@ -102,11 +102,13 @@ Root `overrides` pin nested copies (first-mate → oniguruma, spell-check → sp
 
 Binding: official npm `tree-sitter@0.25.1`. The old DeeDeeG `packages/tree-sitter` tree is gone.
 
-## Remaining `atom/*` pins
+### TextMate-only language-* (#79 done)
 
-### TextMate-only language-* (defer — #79)
+Owned `builtbygio` pins of the previous `atom/*` SHAs. No tree-sitter grammar. Grammars/settings/snippets unchanged.
 
-No tree-sitter grammar in the package. Still `atom/*` SHA pins. Fork when needed for other reasons.
+`language-clojure`, `language-coffee-script`, `language-csharp`, `language-gfm`, `language-git`, `language-hyperlink`, `language-less`, `language-make`, `language-mustache`, `language-objective-c`, `language-perl`, `language-php`, `language-property-list`, `language-ruby-on-rails`, `language-sass`, `language-source`, `language-sql`, `language-text`, `language-todo`, `language-toml`, `language-xml`, `language-yaml`.
+
+In-repo exception: `language-rust-bundled` (`file:packages/…`).
 
 ## Process
 

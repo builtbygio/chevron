@@ -157,10 +157,10 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 
 1. **Dogfood week (#106)** — use the unsigned preview; file blockers. Smoke is not dogfood.  
 2. **#57** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
-3. **#79** — Tree-sitter-backed `language-*` now **builtbygio** + official `tree-sitter@0.25.1`. Remaining **22** TextMate-only `language-*` still `atom/*`.
-4. Residual `@atom/*` names (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`). `atom-keymap` / `atom-select-list` / `first-mate` / `season` / `scandal` / `text-buffer` / `fs-admin` / `scrollbar-style` are now owned pins.
-5. **Startup perf** — Linux custom V8 snapshot on (#121); macOS stock (boot crash). Constructor heap still runtime. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).  
-6. **Later:** sandboxed community packages (package host v2); `@electron/packager`; signing; github `atomTranspilers` fold  
+3. **#79 done** — all bundled `language-*` are `builtbygio` pins (tree-sitter ones + 22 TextMate-only). No `atom/*` app git pins.
+4. Residual `@atom/*` **names** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — owned repos, old npm scope.
+5. **Startup perf** — custom V8 snapshot on Linux/Windows/Darwin (eval-only). Constructor heap still runtime. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).  
+6. **Later:** sandboxed community packages (package host v2); `@electron/packager`; signing
 7. **Build:** `./script/bootstrap-modern` then `./script/with-modern-env ./script/build --no-bootstrap`. Bare `./script/build` now packages if the tree is already bootstrapped (does not call the dead stub).
 
 ### Known dogfood leftovers (found 2026-08-13)
@@ -180,7 +180,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Optional hygiene
 
 - Linux arm64: bootstrap/build are hard gates; **smoke only** is soft-gated (`continue-on-error` on smoke step)  
-- Custom V8 snapshot on Linux/Windows; macOS stays stock (`darwin-boot-crash`)  
+- Custom V8 snapshot on Linux/Windows/Darwin; `CHEVRON_SKIP_MKSNAPSHOT=1` keeps stock
 - Keep `GROK.md` / CHANGELOG current when landing epics  
 - Nested `packages/*/node_modules`: untracked; policy in `docs/nested-package-modules.md`  
 - CI: Electron + node-gyp cache at `$GITHUB_WORKSPACE/.cache/*`; `node_modules` cache enables bootstrap **native rebuild skip** (`script/lib/natives-fingerprint.js`); force with `CHEVRON_FORCE_NATIVE_REBUILD=1`  
@@ -235,7 +235,7 @@ git status
 | Nested superstring without `.node` | Re-sync nested natives after rebuild. Force-copy **excludes** `build/` and is skipped on warm cache. |
 | GitHub workers | **utilityProcess** by default; Node BW only via `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1` |
 | Packaged github `renderer.html` | Unpack `github/lib/**` in `package-application.js` |
-| Custom mksnapshot on E43 | Linux/Windows custom (#121); Darwin stock (`darwin-boot-crash`) |
+| Custom mksnapshot on E43 | Generate on every host that can run mksnapshot; soft-fail to stock |
 | Windows ASAR integrity fuse | Leave off — FATAL without packager-embedded resources |
 | FS IPC `atomApplication.windows` | Never set — use `getAllWindows()` (#108) |
 | Skip `document-register-element` | Breaks `document.createElement('atom-*')` under contextIsolation |
