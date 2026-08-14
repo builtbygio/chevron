@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pre-transpile `builtbygio/github` `lib/` to CJS and drop `atomTranspilers`. Packaging no longer runs a host Babel 7 install inside that package.
 - Custom V8 snapshot stays **stock on Darwin**. CI #125 generated a valid pair on both Mac archs then the process died at smoke (`app exited during startup`). Linux/Windows keep the custom snapshot. `CHEVRON_FORCE_MKSNAPSHOT=1` still retries.
 - Mac arm64 bootstrap: `ensure-ripgrep` was dying on an unauthenticated GitHub API 403 (`microsoft/ripgrep-prebuilt` v12.1.1). Pass `GITHUB_TOKEN`, `--force` when `bin/rg` is missing, and fall back to the release asset URL.
+- Jasmine (#57) first nightly: every renderer spec crashed on `jasmine-node` `failure-tree.coffee` (#62). Ship a compiled stand-in. `AtomWindow` tests no longer require `resourcePath` / `Atom` in the window title.
 
 ### Fixed
 
