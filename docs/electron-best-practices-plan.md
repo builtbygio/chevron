@@ -16,7 +16,7 @@ Terminal state for **this plan** (not full Phase S) — **all met**:
 2. ~~Window / webContents IPC is method- and ownership-allowlisted.~~ **done** (P0.2–P0.3)
 3. ~~CSP and Chromium flags are tightened where compatible.~~ **done** (P1.1, P1.3)
 4. ~~Community package privilege is opt-out (or install-time explicit), not silent full Node.~~ **done** (P1.2)
-5. Longer tracks (utilityProcess workers, editor sandbox) stay sequenced under **Phase S** (not this plan).
+5. Longer tracks (utilityProcess, editor sandbox) were sequenced under **Phase S** (not this plan). Both closed: S3 utilityProcess shipped; Option C keeps editor `sandbox: false`.
 
 ## Product posture (do not regress)
 
@@ -82,7 +82,7 @@ Key files:
 |------|-------|--------|
 | Editor page isolation | Good | Isolation + empty page |
 | Guest webviews | Good | N3/N4 + P2.4 file roots |
-| Package workers | Fair | N5.1 prefs + P0 IPC; full Node remains until P3.1 |
+| Package workers | Good | Phase S3 utilityProcess (BW emergency-only) |
 | IPC trust boundary | Good | Protocol, bw-id, wc-send, FS roots allowlisted |
 | Editor sandbox / package Node | Weak (intentional) | Phase S |
 | CSP | Fair | Tightened; `unsafe-eval` / `unsafe-inline` still required |
@@ -161,7 +161,7 @@ Guests limited to project roots / package preview temps.
 
 ### P3 — Release hardening + Phase S sequencing
 
-#### P3.1 — GitHub workers → `utilityProcess` — **out of scope (follow-on)**
+#### P3.1 — GitHub workers → `utilityProcess` — **done** (Phase S3)
 
 Large github package rewrite. Track as **Phase S / utilityProcess**, not unfinished BP work.
 
@@ -213,7 +213,7 @@ Shipped as a single track in PR #48 (+ Windows fuse fix), then released as **0.6
 | **PR-A–C** | P0 protocol + bw-id + wc-send | done |
 | **PR-D–E** | P1 CSP / flag / community policy | done |
 | **PR-F** | P2 FS IPC + guest file + worker Node flag | done |
-| Later | P2.2 invoke migration, P3.1 utilityProcess, P3.3 sandbox | **Phase S track** |
+| Later | P2.2 invoke migration; P3.3 sandbox declined (Option C) | P3.1 shipped |
 
 ## Verification
 
@@ -251,7 +251,7 @@ node script/ci/smoke-test.js out/Chevron-linux-x64
 | P2.2 | sendSync → invoke | P2 | **closed** — inventory only; follow-on Phase S prep |
 | P2.3 | nodeIntegrationInWorker | P2 | **done** (false) |
 | P2.4 | Guest file: roots | P2 | **done** |
-| P3.1 | utilityProcess workers | P3 | **follow-on** (github rewrite) |
+| P3.1 | utilityProcess workers | P3 | **done** (Phase S3; BW emergency-only) |
 | P3.2 | Fuses / ASAR integrity | P3 | **done** (platform-aware) |
 | P3.3 | Phase S sandbox | P3 | **follow-on** (blocked on natives) |
 | P3.4 | Cert deny | P3 | **done** |
@@ -262,5 +262,5 @@ node script/ci/smoke-test.js out/Chevron-linux-x64
 
 1. **Phase S prep** — migrate/replace in-process natives (`src/preload-natives.js`); redesign package host so community code cannot load arbitrary `.node` in editor preload.  
 2. Optional: shrink `remote-compat`; migrate non-boot `sendSync` to `invoke` (inventory §11).  
-3. Optional: github workers → `utilityProcess`.  
-4. Do **not** set editor `sandbox: true` until (1) has a real path.
+3. GitHub workers → `utilityProcess` — **done** (Phase S3).  
+4. Do **not** set editor `sandbox: true` — Option C (see `security-phase-s-decision.md`).
