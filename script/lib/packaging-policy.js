@@ -21,9 +21,14 @@ function shouldSkipCustomSnapshot(electronVersion, opts = {}) {
   if (opts.hostCanRun === false) return { skip: true, reason: 'host-unsupported' };
   if (opts.skip && !opts.force) return { skip: true, reason: 'env-skip' };
   if (opts.force) return { skip: false, reason: 'forced' };
-  // Darwin used to hard-skip after CI #121 (custom pair generated, then
-  // empty renderer). That was before eval-only + custom isolate cwd.
-  // Generate on every host that can run mksnapshot; smoke is the gate.
+  const platform = opts.platform || process.platform;
+  // CI #125: eval-only + custom isolate cwd still produces a valid pair
+  // (~17 MB blob / ~19 MB context) then Chevron exits during smoke
+  // (ECONNREFUSED, empty renderer) on both darwin-x64 and darwin-arm64.
+  // Linux and Windows boot. Keep stock on Darwin.
+  if (platform === 'darwin') {
+    return { skip: true, reason: 'darwin-boot-crash' };
+  }
   return { skip: false, reason: 'generate' };
 }
 

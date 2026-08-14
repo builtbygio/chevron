@@ -1,6 +1,6 @@
 # V8 startup snapshot — investigation and recovery plan
 
-**Status:** restored on Linux/Windows x64 (2026-08-13, #121) and attempted on Darwin (eval-only + custom isolate cwd). See §4.8.
+**Status:** restored on Linux/Windows x64 (2026-08-13, #121). Darwin stays stock — CI #125 reconfirmed the boot crash after a valid pair. See §4.8.
 **Date:** 2026-08-07 (measured 2026-08-08 / 2026-08-13)
 **Subject:** `script/lib/generate-startup-snapshot.js` — custom snapshot **on** for Linux/Windows (eval-only; `AtomEnvironment` constructed at runtime)
 **Related:** [cpm-design.md](./cpm-design.md), [lsp-design.md](./lsp-design.md)
@@ -220,11 +220,12 @@ runtime. Snapshot-time `require()`s cover first-paint packages only
 (`SNAPSHOT_STARTUP_PACKAGES`). `require('chevron')` is a core-module
 exclusion so electron-link does not try to open a file named `chevron`.
 
-Default is now **attempt custom snapshot** on every host that can run
-`electron-mksnapshot` (Linux, Windows, Darwin). CI #121 saw an empty
-renderer on Darwin *before* eval-only + custom isolate cwd; that hard-skip
-is gone so Mac smoke is the gate. `CHEVRON_SKIP_MKSNAPSHOT=1` keeps stock.
-`CHEVRON_FORCE_MKSNAPSHOT=1` still overrides an env skip.
+Default is **attempt custom snapshot** on Linux and Windows.
+**macOS stays on stock snapshots.** CI #125 generated a valid pair
+(~17 MB blob / ~19 MB context) on darwin-x64 and darwin-arm64, then
+smoke exited during startup (`ECONNREFUSED`). Same failure as #121.
+`CHEVRON_FORCE_MKSNAPSHOT=1` retries on Darwin; `CHEVRON_SKIP_MKSNAPSHOT=1`
+keeps stock everywhere.
 
 **Linux x64 measurement** (same Ryzen 7 5700X, packaged app, 5 cold runs)
 after this restore, on top of the §4.7 deferral:

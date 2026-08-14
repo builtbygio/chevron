@@ -18,7 +18,7 @@ The product is assembled with **`electron-packager` 15.x** (script-tree dep). Th
 
 ## Startup snapshot
 
-Custom V8 snapshot is attempted on Linux, Windows, and Darwin whenever the host can run `electron-mksnapshot`. Electron 43 works when `AtomEnvironment` is **not** constructed during snapshot generation (modules are evaluated into the cache; construction happens at runtime in `installEnvironment()`). `electron-mksnapshot`'s stock `mksnapshot.js` serializes the stock isolate blob for the context generator — Chevron drives both tools from a temp copy that contains the custom `snapshot_blob.bin` (`script/lib/run-mksnapshot.js`). Mac smoke is the Darwin gate.
+Custom V8 snapshot is attempted on Linux and Windows whenever the host can run `electron-mksnapshot`. **macOS stays on Electron's stock snapshots** — CI #125 still dies at process start after installing a valid custom pair. Electron 43 works when `AtomEnvironment` is **not** constructed during snapshot generation (modules are evaluated into the cache; construction happens at runtime in `installEnvironment()`). `electron-mksnapshot`'s stock `mksnapshot.js` serializes the stock isolate blob for the context generator — Chevron drives both tools from a temp copy that contains the custom `snapshot_blob.bin` (`script/lib/run-mksnapshot.js`).
 
 Skip a custom-snapshot attempt:
 
