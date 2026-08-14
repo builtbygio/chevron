@@ -5,9 +5,25 @@
 if (process.argv.includes('--no-bootstrap')) {
   console.log('Skipping bootstrap')
 } else {
-  // Bootstrap first to ensure all the dependencies used later in this script
-  // are installed.
-  require('./bootstrap')
+  // ./script/bootstrap is a hard-error stub. A modern tree that already
+  // ran bootstrap-modern can package; a cold tree must bootstrap first.
+  const fs = require('fs')
+  const path = require('path')
+  const repoRoot = path.resolve(__dirname, '..')
+  const ready =
+    fs.existsSync(path.join(repoRoot, 'node_modules', 'superstring', 'package.json')) &&
+    fs.existsSync(path.join(repoRoot, 'script', 'node_modules', 'colors'))
+  if (!ready) {
+    console.error('')
+    console.error('error: this tree is not bootstrapped.')
+    console.error('')
+    console.error('  Use:')
+    console.error('    ./script/bootstrap-modern')
+    console.error('    ./script/with-modern-env ./script/build --no-bootstrap')
+    console.error('')
+    process.exit(1)
+  }
+  console.log('Skipping bootstrap (tree already bootstrapped)')
 }
 
 require('colors')

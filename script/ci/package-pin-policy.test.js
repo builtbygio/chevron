@@ -20,7 +20,9 @@ const OWNED_BUILTBYGIO = [
   '@atom/fuzzy-native',
   '@atom/nsfw',
   'archive-view',
+  'atom-keymap',
   'atom-pathspec',
+  'atom-select-list',
   'autocomplete-chevron-api',
   'autocomplete-css',
   'autocomplete-html',
@@ -34,6 +36,8 @@ const OWNED_BUILTBYGIO = [
   'ctags',
   'encoding-selector',
   'find-and-replace',
+  'first-mate',
+  'fs-admin',
   'fuzzy-finder',
   'git-utils',
   'github',
@@ -59,6 +63,9 @@ const OWNED_BUILTBYGIO = [
   'open-on-github',
   'pathwatcher',
   'package-generator',
+  'scandal',
+  'scrollbar-style',
+  'season',
   'settings-view',
   'snippets',
   'spell-check',
@@ -67,6 +74,7 @@ const OWNED_BUILTBYGIO = [
   'styleguide',
   'symbols-view',
   'tabs',
+  'text-buffer',
   'timecop',
   'tree-view',
   'whitespace',
@@ -117,6 +125,19 @@ describe('package pin policy', () => {
         `${name} must not return to app dependencies`
       );
     }
+  });
+
+  it('fs-admin override is the owned 0.15 pin (not nested 0.19)', () => {
+    const spec = pkg.overrides && pkg.overrides['fs-admin'];
+    assert.strictEqual(
+      spec,
+      '$fs-admin',
+      `fs-admin override must follow the root pin, got: ${spec}`
+    );
+    assert.ok(
+      isBuiltbygioGit(pkg.dependencies['fs-admin']),
+      `fs-admin must be builtbygio git pin, got: ${pkg.dependencies['fs-admin']}`
+    );
   });
 
   it('isbinaryfile@2 override is the owned 2.0.4 fork (not 3.x)', () => {

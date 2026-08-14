@@ -20,7 +20,7 @@ This is the user-facing cutover guide for the package-manager transition.
 | Registry search | Dead atom.io | **Pulsar package API** by default (`CPM_REGISTRY_URL`) |
 | Native modules | Fragile Node 12 rebuilds | Prefer **prebuilds**, then `@electron/rebuild` |
 
-**Dual-support forever is unchanged:** `global.atom`, `engines.atom`, `atom://`, and the **`apm` name** remain.
+Product policy is **Chevron-only** (`global.chevron`, `engines.chevron`, `~/.chevron`). `global.atom` / `engines.atom` / the **`apm` name** are leftover shims, not a dual-support product goal.
 
 ---
 

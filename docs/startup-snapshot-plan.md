@@ -1,17 +1,17 @@
 # V8 startup snapshot — investigation and recovery plan
 
-**Status:** restored on Linux x64 (2026-08-13) — see §4.8
+**Status:** restored on Linux/Windows x64 (2026-08-13, #121) — see §4.8. Darwin stays stock (`darwin-boot-crash`).
 **Date:** 2026-08-07 (measured 2026-08-08 / 2026-08-13)
-**Subject:** `script/lib/generate-startup-snapshot.js` — custom snapshot disabled since the Electron 43 migration
+**Subject:** `script/lib/generate-startup-snapshot.js` — custom snapshot **on** for Linux/Windows (eval-only; `AtomEnvironment` constructed at runtime)
 **Related:** [cpm-design.md](./cpm-design.md), [lsp-design.md](./lsp-design.md)
 
 ---
 
 ## 1. Purpose
 
-Chevron's tagline says **Fast**. Right now that word is unearned: the custom V8
-startup snapshot — Atom's single biggest cold-start optimization — is **disabled**,
-and the packaged app boots through the plain `require` path.
+Chevron's tagline says **Fast**. The custom V8 startup snapshot is **restored**
+on Linux/Windows (#121): modules evaluate at snapshot time; `AtomEnvironment`
+is constructed at runtime. macOS still uses Electron's stock blobs.
 
 This plan does three things, in order:
 

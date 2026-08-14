@@ -25,7 +25,7 @@ Deferred on purpose (not blockers for this tag):
 - Package host v2 / sandboxed community packages
 - Mass-fork of `language-*` off `atom/*` ([#79](https://github.com/builtbygio/chevron/issues/79))
 - `@electron/packager` migration
-- Custom Electron 43 V8 snapshot (stock snapshots are policy)
+- Custom Electron 43 V8 snapshot on Linux/Windows (#121); Darwin stock
 - Codesign / notarization / Squirrel install feed
 
 A Squirrel-style feed (`CHEVRON_UPDATE_URL_PREFIX` / legacy `ATOM_UPDATE_URL_PREFIX`) stays available for a later signed build. Do not point it at unsigned artifacts.
