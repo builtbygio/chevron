@@ -91,13 +91,17 @@ describe('deferred startup packages', () => {
     );
   });
 
-  it('defers every bundled language-* package', () => {
+  it('does not defer language-* (grammars must exist before the first editor)', () => {
     const langs = Object.keys(pkg.packageDependencies || {}).filter(n =>
       n.startsWith('language-')
     );
     assert.ok(langs.length > 10, 'expected bundled language-* packages');
     for (const name of langs) {
-      assert.ok(isDeferredStartupPackage(name), name);
+      assert.equal(
+        isDeferredStartupPackage(name),
+        false,
+        `${name} must activate with first paint so .c/.js files get a grammar`
+      );
     }
   });
 });

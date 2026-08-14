@@ -50,6 +50,20 @@ module.exports = class TreeSitterGrammar {
     }
 
     this.languageModule = loadLanguageModule(params.parser, filePath);
+    // Official grammars on an Atom-era tree-sitter (or ABI mismatch) throw
+    // "Invalid language object" at parse time and leave the buffer uncoloured.
+    // Fail construction so the TextMate grammar for the same scope can win.
+    try {
+      const Parser = require('tree-sitter');
+      const probe = new Parser();
+      probe.setLanguage(this.languageModule);
+    } catch (err) {
+      throw new Error(
+        `tree-sitter parser ${params.parser} is not usable with this runtime: ${
+          err && err.message ? err.message : err
+        }`
+      );
+    }
     this.classNamesById = new Map();
     this.scopeNamesById = new Map();
     this.idsByScope = Object.create(null);

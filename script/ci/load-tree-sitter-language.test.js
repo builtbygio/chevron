@@ -29,6 +29,14 @@ describe('load-tree-sitter-language', () => {
     assert.strictEqual(unwrapLanguage(inner), inner);
   });
 
+  it('keeps official CJS grammar modules that carry nodeTypeInfo', () => {
+    const language = { native: true };
+    const mod = { name: 'c', language, nodeTypeInfo: [{ type: 'translation_unit' }] };
+    assert.strictEqual(unwrapLanguage(mod), mod);
+    const esm = { default: mod };
+    assert.strictEqual(unwrapLanguage(esm), mod);
+  });
+
   it('detects ESM require errors', () => {
     assert.strictEqual(
       isEsmRequireError({ code: 'ERR_REQUIRE_ESM' }),
@@ -90,5 +98,16 @@ describe('load-tree-sitter-language', () => {
     const loaded = loadLanguageModule('tree-sitter-esm-fixture', grammarPath);
     assert.strictEqual(loaded.fromNgb, true);
     assert.strictEqual(loaded.pkgRoot, pkg);
+  });
+
+  it('installed tree-sitter matches package.json (not the old DeeDeeG 0.17 fork)', () => {
+    const declared = require('../../package.json').dependencies['tree-sitter'];
+    const installed = require('../../node_modules/tree-sitter/package.json')
+      .version;
+    assert.strictEqual(
+      installed,
+      declared,
+      `node_modules/tree-sitter is ${installed}, expected ${declared}. Official language-* grammars cannot colour files on 0.17.`
+    );
   });
 });
