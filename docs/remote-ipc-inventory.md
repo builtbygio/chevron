@@ -316,7 +316,7 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 
 - Core + packages: `src/remote-compat.js` (Menu, BrowserWindow, dialog, app, webContents) over `src/renderer-ipc.js`
 - Main: `register-renderer-ipc.js` (worker windows, popup menus, dialogs, clipboard, …)
-- Bootstrap: `patch-packages-remote-ipc.js` only still rewrites unowned `atom-pathspec` (`remote.app` → IPC). Owned github / settings-view / tree-view ship the IPC forms.
+- Bootstrap: no remote→IPC rewrite. `atom-pathspec` is the owned pin; github / settings-view / tree-view already ship IPC forms.
 
 ### Preload + contextIsolation (done 2026-07-13)
 

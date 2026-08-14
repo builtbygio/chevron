@@ -106,6 +106,8 @@ describe('Class C patch bridges (retired)', () => {
       'script/lib/patch-apm-npm.js',
       'script/lib/patch-apm-download-node.js',
       'script/lib/write-tree-view-fs-shim.js',
+      'script/lib/patch-packages-remote-ipc.js',
+      'script/lib/patch-dep-package-json.js',
       'script/patches/decaffeinated-bundled-packages',
       'script/patches/debabelled-bundled-packages'
     ];

@@ -22,6 +22,7 @@
     "archive-view": "git+https://github.com/builtbygio/archive-view.git#e5744fce62e02cce46fb4839bec641c75291448c",
     "async": "3.2.6",
     "atom-keymap": "8.2.15",
+    "atom-pathspec": "git+https://github.com/builtbygio/atom-pathspec.git#2bd2d528b9e2abea577a32e7ddac2692074db2f9",
     "atom-select-list": "^0.8.1",
     "autocomplete-chevron-api": "git+https://github.com/builtbygio/autocomplete-chevron-api.git#390e1b129ffdb1048a4f670cb4b3b9f2ce3506e4",
     "autocomplete-css": "git+https://github.com/builtbygio/autocomplete-css.git#ddb7215937b8f23ae10bec10efec885c6de120c2",
@@ -321,7 +322,9 @@
     "nslog": "$nslog",
     "oniguruma": "$oniguruma",
     "pathwatcher": "$pathwatcher",
-    "spellchecker": "$spellchecker"
+    "spellchecker": "$spellchecker",
+    "atom-pathspec": "$atom-pathspec",
+    "isbinaryfile@2": "git+https://github.com/builtbygio/isbinaryfile.git#6483524e9cc7b88df832b4170e6cb3a86614a2f6"
   },
   "scripts": {
     "preinstall": "node -e 'process.exit(0)'",

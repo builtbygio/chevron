@@ -20,6 +20,7 @@ const OWNED_BUILTBYGIO = [
   '@atom/fuzzy-native',
   '@atom/nsfw',
   'archive-view',
+  'atom-pathspec',
   'autocomplete-chevron-api',
   'autocomplete-css',
   'autocomplete-html',
@@ -116,6 +117,18 @@ describe('package pin policy', () => {
         `${name} must not return to app dependencies`
       );
     }
+  });
+
+  it('isbinaryfile@2 override is the owned 2.0.4 fork (not 3.x)', () => {
+    const spec = pkg.overrides && pkg.overrides['isbinaryfile@2'];
+    assert.ok(
+      isBuiltbygioGit(spec),
+      `isbinaryfile@2 must be builtbygio git pin, got: ${spec}`
+    );
+    assert.ok(
+      String(spec).includes('isbinaryfile.git'),
+      `expected builtbygio/isbinaryfile, got: ${spec}`
+    );
   });
 
   it('autocomplete package uses chevron-api name (not atom-api)', () => {

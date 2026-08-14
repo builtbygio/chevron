@@ -123,12 +123,6 @@ fi
 . "$SCRIPT_DIR/lib/force-patched-superstring.sh"
 chevron_force_patched_superstring "$REPO_ROOT"
 
-echo "Patching atom-pathspec remote→IPC…"
-node "$SCRIPT_DIR/lib/patch-packages-remote-ipc.js" "$REPO_ROOT"
-
-echo "Patching nested package.json metadata (isbinaryfile, etc.)…"
-node "$SCRIPT_DIR/lib/patch-dep-package-json.js" "$REPO_ROOT"
-
 # Class C decaff/debabel patches retired: owned pins ship plain JS.
 
 # --- Step 3: rebuild natives for Electron ------------------------------------

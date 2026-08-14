@@ -10,7 +10,7 @@
 
 | Class | Count | Policy |
 |-------|------:|--------|
-| **Owned** (`builtbygio/*` git pins) | **53** | Primary maintenance + security patches |
+| **Owned** (`builtbygio/*` git pins) | **54** | Primary maintenance + security patches |
 | **Upstream Atom** (`atom/*` git pins) | **22** | Remaining TextMate-only `language-*` — SHA pins only (#79 leftover) |
 | **In-repo** (`file:packages/*`) | 29 | Monorepo packages (themes, about, welcome, natives, …) |
 | **npm registry** (semver / file natives) | rest | Host npm / Electron rebuild |
@@ -32,7 +32,12 @@
 | `pathwatcher` | [node-pathwatcher](https://github.com/builtbygio/node-pathwatcher) | CONTEXT_AWARE |
 | `spellchecker` | [node-spellchecker](https://github.com/builtbygio/node-spellchecker) | CONTEXT_AWARE, V8 `Write`/`GetIsolate`, MSVC wstring |
 
-Root `overrides` pin nested copies (first-mate → oniguruma, spell-check → spellchecker, symbols-view → ctags, …) to the same SHAs.
+Root `overrides` pin nested copies (first-mate → oniguruma, spell-check → spellchecker / atom-pathspec, symbols-view → ctags, scandal → `isbinaryfile@2`, …) to the same SHAs.
+
+| Package | Repo | Notes |
+|---------|------|--------|
+| `atom-pathspec` | [atom-pathspec](https://github.com/builtbygio/atom-pathspec) | `remote.app.getPath` → `atom-app-get-path-sync` (spell-check) |
+| `isbinaryfile@2` | [isbinaryfile](https://github.com/builtbygio/isbinaryfile) | 2.0.4 with `main: index.js`; root `isbinaryfile@3` stays 3.x |
 
 ### Product packages
 

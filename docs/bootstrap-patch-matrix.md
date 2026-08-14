@@ -21,8 +21,8 @@ Override soft native failures only with `CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1
 
 | Script | Class | Purpose | Retirement path |
 |--------|-------|---------|-----------------|
-| `patch-dep-package-json.js` | Hygiene | scandal nests `isbinaryfile@2.0.4` with missing `lib/panino.js` | Fork 2.0.4, set `main` to `index.js`, `overrides["isbinaryfile@2"]`. Do **not** jump to 3.x (API change). |
-| `patch-packages-remote-ipc.js` | B leftover | `atom-pathspec` still uses `electron.remote.app` | Fork to builtbygio, fold IPC `getPath`, override so spell-check resolves it |
+| ~~`patch-dep-package-json.js`~~ | Hygiene retired | scandal `isbinaryfile@2` `main` | [builtbygio/isbinaryfile](https://github.com/builtbygio/isbinaryfile) + `overrides["isbinaryfile@2"]` — **deleted** |
+| ~~`patch-packages-remote-ipc.js`~~ | B retired | `atom-pathspec` `remote.app` | [builtbygio/atom-pathspec](https://github.com/builtbygio/atom-pathspec) — **deleted** |
 | ~~`patch-nested-nan.js`~~ | A retired | nested nan hoist | `overrides.nan=2.28.0` — **deleted** |
 | ~~`patch-natives-context-aware.js`~~ | A retired | `NODE_MODULE` → `CONTEXT_AWARE` | Folded into owned native forks — **deleted** |
 | ~~`patch-v8-api.js`~~ | A retired | V8 15 removals | Folded into owned native forks — **deleted** |
@@ -37,11 +37,7 @@ Override soft native failures only with `CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1
 | ~~`patch-apm-download-node.js`~~ / ~~`patch-apm-npm.js`~~ | D retired | apm debug only | Unused on the cpm path — **deleted** |
 | `force-patched-superstring.sh` | A compile | monorepo superstring wins | Keep while monorepo packages/superstring is source of truth |
 
-### Remaining — do next
-
-**`patch-dep-package-json.js`:** `scandal@3.2.0` depends on `isbinaryfile@^2.0.4`. The 2.0.4 tarball ships `index.js` but `package.json` `main` is `./lib/panino.js` (missing). scandal calls the **2.x** API `isBinaryFile(buffer, bytesRead)`. Root already has `isbinaryfile@3.0.3` (filepath API) — overriding `@2` → `3` would break find-in-project. Plan: fork 2.0.4, set `main` to `index.js`, pin via `overrides["isbinaryfile@2"]`, delete the patch.
-
-**`patch-packages-remote-ipc.js`:** only consumer is unowned `atom-pathspec@0.0.0` (via owned `spell-check`). It still does `electron.remote.app.getPath`. Plan: fork to `builtbygio/atom-pathspec`, fold `ipcRenderer.sendSync('atom-app-get-path-sync')`, direct-pin + override, delete the patch.
+Bootstrap no longer rewrites `node_modules` for compile or remote/IPC. The only remaining install-time native step is `force-patched-superstring.sh` (monorepo superstring / watcher overwrite npm).
 
 ### Static patch trees
 
