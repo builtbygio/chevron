@@ -4,11 +4,14 @@
  * User config / keymap / snippets file format (architecture H1 PR 5).
  * Default writer is JSON. Dual-read CSON. Never delete .cson.
  * Never overwrite an existing config.json. Escape: CHEVRON_CONFIG_CSON=1.
+ *
+ * Do not require('season') at load — the unit-and-cpm CI job has no app
+ * node_modules. JSON-shaped CSON is parsed with JSON.parse; real CSON
+ * lazy-loads season (present in the packaged app).
  */
 
 const fs = require('fs');
 const path = require('path');
-const CSON = require('season');
 
 const STEMS = ['config', 'keymap', 'snippets'];
 
@@ -49,18 +52,33 @@ function resolveUserDataFile(homeDir, stem, env = process.env) {
   return { filePath: json, format: 'json' };
 }
 
+function readObjectFile(filePath) {
+  const text = fs.readFileSync(filePath, 'utf8');
+  if (!text.trim()) return {};
+  try {
+    return JSON.parse(text);
+  } catch (jsonError) {
+    if (path.extname(filePath) === '.json') throw jsonError;
+    return require('season').readFileSync(filePath);
+  }
+}
+
+function writeJsonFile(filePath, data) {
+  fs.writeFileSync(filePath, JSON.stringify(data || {}, null, 2) + '\n');
+}
+
 function migrateStemToJson(homeDir, stem, env = process.env) {
   if (preferCson(env)) return { migrated: false };
   const { json, cson } = pathsFor(homeDir, stem);
   if (exists(json) || !exists(cson)) return { migrated: false };
   let data;
   try {
-    data = CSON.readFileSync(cson);
+    data = readObjectFile(cson);
   } catch (error) {
     return { migrated: false, error };
   }
   try {
-    CSON.writeFileSync(json, data || {});
+    writeJsonFile(json, data);
   } catch (error) {
     return { migrated: false, error };
   }
@@ -79,5 +97,7 @@ module.exports = {
   preferCson,
   resolveUserDataFile,
   migrateStemToJson,
-  migrateUserDataFiles
+  migrateUserDataFiles,
+  readObjectFile,
+  writeJsonFile
 };

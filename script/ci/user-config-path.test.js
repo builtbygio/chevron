@@ -3,6 +3,9 @@
 /**
  * User config/keymap/snippets: JSON default, dual-read CSON (H1 PR 5).
  * Run: node --test script/ci/user-config-path.test.js
+ *
+ * Does not require('season') — the unit-and-cpm job has no app node_modules.
+ * CSON fixtures are JSON (valid CSON) so migrate can JSON.parse them.
  */
 
 const { describe, it, beforeEach, afterEach } = require('node:test');
@@ -10,7 +13,6 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const CSON = require('season');
 const {
   preferCson,
   resolveUserDataFile,
@@ -22,6 +24,10 @@ let tmp;
 
 function write(filePath, contents) {
   fs.writeFileSync(filePath, contents);
+}
+
+function writeJsonShapedCson(filePath, data) {
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n');
 }
 
 describe('preferCson', () => {
@@ -55,7 +61,7 @@ describe('resolveUserDataFile', () => {
   });
 
   it('reads config.cson when json is absent', () => {
-    write(path.join(tmp, 'config.cson'), "'*':\n  core:\n    telemetryConsent: 'no'\n");
+    write(path.join(tmp, 'config.cson'), '{"*":{"core":{"telemetryConsent":"no"}}}');
     const r = resolveUserDataFile(tmp, 'config', {});
     assert.strictEqual(r.filePath, path.join(tmp, 'config.cson'));
     assert.strictEqual(r.format, 'cson');
@@ -64,7 +70,7 @@ describe('resolveUserDataFile', () => {
 
   it('prefers json when both exist', () => {
     write(path.join(tmp, 'config.json'), '{"*":{}}');
-    write(path.join(tmp, 'config.cson'), "'*':\n  stale: true\n");
+    write(path.join(tmp, 'config.cson'), '{"stale":true}');
     const r = resolveUserDataFile(tmp, 'config', {});
     assert.strictEqual(r.filePath, path.join(tmp, 'config.json'));
     assert.strictEqual(r.format, 'json');
@@ -76,7 +82,7 @@ describe('resolveUserDataFile', () => {
       resolveUserDataFile(tmp, 'config', env).filePath,
       path.join(tmp, 'config.cson')
     );
-    write(path.join(tmp, 'config.cson'), "'*': {}\n");
+    write(path.join(tmp, 'config.cson'), '{}');
     write(path.join(tmp, 'config.json'), '{}');
     assert.strictEqual(
       resolveUserDataFile(tmp, 'config', env).filePath,
@@ -95,7 +101,7 @@ describe('migrateStemToJson', () => {
 
   it('copies cson to json and leaves cson in place', () => {
     const cson = path.join(tmp, 'config.cson');
-    CSON.writeFileSync(cson, { '*': { core: { telemetryConsent: 'no' } } });
+    writeJsonShapedCson(cson, { '*': { core: { telemetryConsent: 'no' } } });
     const r = migrateStemToJson(tmp, 'config', {});
     assert.strictEqual(r.migrated, true);
     assert.strictEqual(r.to, path.join(tmp, 'config.json'));
@@ -106,7 +112,7 @@ describe('migrateStemToJson', () => {
 
   it('never overwrites an existing config.json', () => {
     write(path.join(tmp, 'config.json'), '{"keep":true}');
-    CSON.writeFileSync(path.join(tmp, 'config.cson'), { stale: true });
+    writeJsonShapedCson(path.join(tmp, 'config.cson'), { stale: true });
     const r = migrateStemToJson(tmp, 'config', {});
     assert.strictEqual(r.migrated, false);
     assert.deepStrictEqual(
@@ -116,15 +122,19 @@ describe('migrateStemToJson', () => {
   });
 
   it('does nothing when CHEVRON_CONFIG_CSON=1', () => {
-    CSON.writeFileSync(path.join(tmp, 'config.cson'), { '*': {} });
+    writeJsonShapedCson(path.join(tmp, 'config.cson'), { '*': {} });
     const r = migrateStemToJson(tmp, 'config', { CHEVRON_CONFIG_CSON: '1' });
     assert.strictEqual(r.migrated, false);
     assert.strictEqual(fs.existsSync(path.join(tmp, 'config.json')), false);
   });
 
   it('migrates keymap and snippets the same way', () => {
-    CSON.writeFileSync(path.join(tmp, 'keymap.cson'), { 'atom-workspace': { 'ctrl-x': 'core:close' } });
-    CSON.writeFileSync(path.join(tmp, 'snippets.cson'), { '.source.js': { log: { prefix: 'log', body: 'console.log' } } });
+    writeJsonShapedCson(path.join(tmp, 'keymap.cson'), {
+      'atom-workspace': { 'ctrl-x': 'core:close' }
+    });
+    writeJsonShapedCson(path.join(tmp, 'snippets.cson'), {
+      '.source.js': { log: { prefix: 'log', body: 'console.log' } }
+    });
     const all = migrateUserDataFiles(tmp, {});
     assert.strictEqual(all.keymap.migrated, true);
     assert.strictEqual(all.snippets.migrated, true);
