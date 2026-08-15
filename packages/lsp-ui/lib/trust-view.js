@@ -14,33 +14,48 @@ class TrustView {
     this.titleEl.classList.add('lsp-ui-trust-title');
     this.titleEl.textContent = 'Trust this project?';
 
-    this.pathEl = document.createElement('code');
-    this.pathEl.classList.add('lsp-ui-trust-path');
+    this.leadEl = document.createElement('p');
+    this.leadEl.classList.add('lsp-ui-trust-lead');
+    this.leadEl.textContent =
+      'Language servers can run this folder’s own tools — TypeScript plugins, Rust build scripts, and similar.';
+
+    this.pathWrap = document.createElement('div');
+    this.pathWrap.classList.add('lsp-ui-trust-path-wrap');
+
+    this.pathLabel = document.createElement('div');
+    this.pathLabel.classList.add('lsp-ui-trust-path-label');
+    this.pathLabel.textContent = 'Project folder';
+
+    this.pathEl = document.createElement('div');
+    this.pathEl.classList.add('lsp-ui-trust-path', 'icon', 'icon-file-directory');
+
+    this.pathWrap.appendChild(this.pathLabel);
+    this.pathWrap.appendChild(this.pathEl);
 
     this.bodyEl = document.createElement('p');
     this.bodyEl.classList.add('lsp-ui-trust-body');
     this.bodyEl.textContent =
-      'Language servers run this project’s own tooling. They can execute ' +
-      'build scripts and plugins from the folder (for example TypeScript ' +
-      'plugins in node_modules, or Rust build scripts). Only trust folders ' +
-      'whose contents you trust. Chevron will remember this choice.';
+      'Only trust folders whose contents you trust. Chevron remembers this choice for this folder.';
 
     this.actions = document.createElement('div');
     this.actions.classList.add('lsp-ui-trust-actions');
 
     this.declineBtn = document.createElement('button');
     this.declineBtn.classList.add('btn');
+    this.declineBtn.type = 'button';
     this.declineBtn.textContent = "Don't trust";
 
     this.trustBtn = document.createElement('button');
     this.trustBtn.classList.add('btn', 'btn-primary');
+    this.trustBtn.type = 'button';
     this.trustBtn.textContent = 'Trust project';
 
     this.actions.appendChild(this.declineBtn);
     this.actions.appendChild(this.trustBtn);
 
     this.element.appendChild(this.titleEl);
-    this.element.appendChild(this.pathEl);
+    this.element.appendChild(this.leadEl);
+    this.element.appendChild(this.pathWrap);
     this.element.appendChild(this.bodyEl);
     this.element.appendChild(this.actions);
 
@@ -66,6 +81,7 @@ class TrustView {
         return;
       }
       this.pathEl.textContent = projectRoot || '';
+      this.pathEl.setAttribute('title', projectRoot || '');
       this._panel = env.workspace.addModalPanel({
         item: this.element,
         visible: true,

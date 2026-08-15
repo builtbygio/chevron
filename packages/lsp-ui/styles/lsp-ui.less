@@ -51,43 +51,80 @@
 }
 
 .lsp-ui-trust {
-  padding: @component-padding;
-  min-width: 28em;
-  max-width: 36em;
+  box-sizing: border-box;
+  padding: 1.25em 1.4em 1.1em;
+  min-width: 32em;
+  max-width: 40em;
 
   .lsp-ui-trust-title {
-    margin: 0 0 0.6em;
-    font-size: 1.2em;
-    font-weight: bold;
+    margin: 0 0 0.55em;
+    font-size: 1.35em;
+    font-weight: 600;
+    line-height: 1.25;
     color: @text-color-highlight;
+  }
+
+  .lsp-ui-trust-lead {
+    margin: 0 0 1em;
+    font-size: 1.05em;
+    line-height: 1.5;
+    color: @text-color-highlight;
+    opacity: 0.88;
+  }
+
+  .lsp-ui-trust-path-wrap {
+    margin: 0 0 1em;
+    padding: 0.65em 0.75em;
+    background: @inset-panel-background-color;
+    border: 1px solid @inset-panel-border-color;
+    border-radius: @component-border-radius;
+  }
+
+  .lsp-ui-trust-path-label {
+    margin: 0 0 0.3em;
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: @text-color-subtle;
   }
 
   .lsp-ui-trust-path {
     display: block;
-    margin: 0 0 0.75em;
-    padding: 0.4em 0.55em;
+    margin: 0;
+    padding: 0;
     word-break: break-all;
-    font-family: @font-family;
-    font-size: 0.9em;
-    color: @text-color;
-    background: @input-background-color;
-    border: 1px solid @input-border-color;
-    border-radius: @component-border-radius;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.95em;
+    line-height: 1.4;
+    color: @text-color-highlight;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+
+    &.icon:before {
+      margin-right: 0.4em;
+      color: @text-color-info;
+    }
   }
 
   .lsp-ui-trust-body {
-    margin: 0 0 1em;
-    line-height: 1.45;
-    color: @text-color;
+    margin: 0 0 1.15em;
+    font-size: 1em;
+    line-height: 1.5;
+    color: @text-color-highlight;
+    opacity: 0.78;
   }
 
   .lsp-ui-trust-actions {
     display: flex;
     justify-content: flex-end;
-    gap: @component-padding;
+    align-items: center;
+    gap: 0.6em;
 
     .btn {
-      margin-left: 0;
+      margin: 0;
+      min-width: 7.5em;
     }
   }
 }
