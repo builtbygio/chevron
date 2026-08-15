@@ -1,7 +1,8 @@
 'use strict';
 
-// Unsupported legacy alias for require('chevron'). Chevron-only product policy:
-// new packages must use require('chevron'). This shim may be removed later.
+// Unsupported legacy alias for require('chevron'). Not a community-compat
+// product. New packages must use require('chevron'). Dedicated removal is
+// architecture H3 (docs/chevron-architecture-modernization.md PR 23).
 if (!global.__chevronAtomRequireWarned) {
   global.__chevronAtomRequireWarned = true;
   console.warn(

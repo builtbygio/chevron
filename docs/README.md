@@ -32,6 +32,7 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 |-----|---------|
 | [releases.md](./releases.md) | **1.0 unsigned preview** — update URL, signing later |
 | [dogfood-1.0.md](./dogfood-1.0.md) | 1.0 dogfood-week checklist |
+| [chevron-architecture-modernization.md](./chevron-architecture-modernization.md) | **Architecture target** + H1–H3 PR plan (authoritative) |
 | [REBRANDING.md](./REBRANDING.md) | Chevron-only product decisions |
 | [package-ecosystem-strategy.md](./package-ecosystem-strategy.md) | Owned catalog now; sandboxed community later |
 | [lsp-design.md](./lsp-design.md) | **LSP** (implemented) — utilityProcess host, workspace trust, phases 0–5 + goal adjustments |
@@ -44,7 +45,7 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 
 
 | [onboarding-polish.md](./onboarding-polish.md) | First-run Welcome/Guide checklist |
-| [atom-architecture.md](./atom-architecture.md) | Architecture notes |
+| [atom-architecture.md](./atom-architecture.md) | Current-state architecture sketch (defers to the target doc) |
 | [atom-architecture-eli5.md](./atom-architecture-eli5.md) | ELI5 architecture |
 | [CHANGELOG.md](../CHANGELOG.md) | Release notes |
 | [jasmine-ci.md](./jasmine-ci.md) | Full `script/test` nightly / opt-in (#57) |

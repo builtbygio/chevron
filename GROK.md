@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-08-14 (master + #125; dogfood Day 1 done)
+**Date of this handoff:** 2026-08-15 (architecture target rev 3; dogfood Day 1 done)
 
 ---
 
@@ -144,6 +144,7 @@ Landed with 1.0 / immediately after:
 | Colour + own remaining natives + delete bootstrap patches | #123 |
 | Modernize those native forks (keep required APIs) | #124 |
 | Own remaining loaders + language-* + github CJS; Darwin stock snapshot | #125 |
+| Jasmine runner after #62 Coffee removal | #127 |
 
 ### Phase S — **complete**
 
@@ -156,13 +157,14 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 
 ### Primary next tracks
 
-1. **Dogfood week (#106)** — Day 1 done. Days 2–7 still open. Smoke is not dogfood.  
-2. **#57** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
-3. **#79 done** — all bundled `language-*` are `builtbygio` pins. No `atom/*` app git pins.
-4. Residual `@atom/*` **names** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — owned repos, old npm scope.
-5. **Startup perf** — custom V8 snapshot on Linux/Windows; Darwin stock (CI #125 still dies at boot after a valid pair). Constructor heap still runtime. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).  
-6. **Later:** sandboxed community packages (package host v2); `@electron/packager`; signing
-7. **Build:** `./script/bootstrap-modern` then `./script/with-modern-env ./script/build --no-bootstrap`. Bare `./script/build` now packages if the tree is already bootstrapped (does not call the dead stub).
+1. **Dogfood week (#106)** — Day 1 done. Days 2–7 still open. Smoke is not dogfood. Architecture PRs after this docs PR should not land over unfinished Days 2–7 without owner OK.  
+2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1 after this docs PR: product ripgrep default (PR 2), `rg` spawn from main (PR 2b), replace off scandal, JSON config, `@electron/packager`, … Do **not** delete `Task` / `season` / `document-register-element` in H1. github epic waits on Days 2–7 (Q1).  
+3. **#57 / #127** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
+4. **#79 done** — all bundled `language-*` are `builtbygio` pins. No `atom/*` app git pins.
+5. Residual `@atom/*` **names** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — owned repos, old npm scope.
+6. **Startup perf** — custom V8 snapshot on Linux/Windows; Darwin stock (CI #125 still dies at boot after a valid pair). Constructor heap still runtime. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).  
+7. **Later:** sandboxed community packages (package host v2); `@electron/packager` (H1 PR 6); signing
+8. **Build:** `./script/bootstrap-modern` then `./script/with-modern-env ./script/build --no-bootstrap`. Bare `./script/build` now packages if the tree is already bootstrapped (does not call the dead stub).
 
 ### Known dogfood leftovers (found 2026-08-13)
 
@@ -216,10 +218,12 @@ git status
 **Read first:**
 
 1. This file  
-2. `docs/security-phase-s.md` (active) + `src/preload-natives.js`  
-3. `docs/electron-best-practices-plan.md` (closed)  
-4. `docs/security-threat-model.md`  
-5. `src/main-process/register-renderer-ipc.js` (trust boundary)  
+2. `docs/chevron-architecture-modernization.md` (**architecture target** + H1–H3 PR plan)  
+3. `docs/atom-architecture.md` (current-state sketch; defers to the target)  
+4. `docs/security-phase-s.md` (active) + `src/preload-natives.js`  
+5. `docs/electron-best-practices-plan.md` (closed)  
+6. `docs/security-threat-model.md`  
+7. `src/main-process/register-renderer-ipc.js` (trust boundary)  
 
 ---
 

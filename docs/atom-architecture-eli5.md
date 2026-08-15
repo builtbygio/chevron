@@ -1,7 +1,7 @@
 # How Chevron works — explained simply
 
 **Audience:** anyone who wants the big picture without programming jargon  
-**Companion:** the technical version is in `docs/atom-architecture.md`
+**Companion:** the technical current-state sketch is in `docs/atom-architecture.md`. The architecture **target** is `docs/chevron-architecture-modernization.md`.
 
 Imagine Chevron is not one machine, but a **small building with rooms**, and each room has different keys and permissions. That is basically how the app is built.
 
@@ -191,7 +191,7 @@ That was convenient but risky. Chevron is moving away from it.
 
 Today:
 
-- Preferred path: Atom APIs → application delegate → main process handlers  
+- Preferred path: Chevron APIs (`require('chevron')`) → application delegate → main process handlers  
 - Temporary bridge: `remote-compat` for leftover package code  
 - Main process only accepts **allowed** requests (not “anything goes”)
 
@@ -206,7 +206,7 @@ When developers say “Node version,” they often mean different things:
 | Name | What it is | Why you care |
 |------|------------|--------------|
 | **Host Node** | The Node on your machine used to *build* the app | Bootstrap, CI, compile scripts |
-| **apm’s Node 12** | A tiny old Node shipped only for the package installer | Installing Atom packages the classic way |
+| **cpm (Electron as Node)** | The package installer, running *as* the app’s Electron | Installing packages; no bundled Node 12 |
 | **Electron’s Node** | The Node *inside* the running app | What the editor actually runs with |
 
 **You do not need all of that to use Chevron.**  
@@ -218,7 +218,7 @@ You only need it if you are **building** Chevron from source.
 
 ### Using
 
-Double-click (or `open out/Atom.app`) and edit files. Done.
+Double-click (or `open out/Chevron.app`) and edit files. Done.
 
 ### Building (developers)
 

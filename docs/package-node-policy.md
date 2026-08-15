@@ -2,7 +2,7 @@
 
 **Status:** Phase N3 + Phase S complete (Option C); **Chevron-only** product policy  
 **Audience:** package authors and Chevron maintainers  
-**Related:** [REBRANDING.md](./REBRANDING.md), [package-ecosystem-strategy.md](./package-ecosystem-strategy.md), [security-phase-n.md](./security-phase-n.md), [security-phase-s-decision.md](./security-phase-s-decision.md)
+**Related:** [REBRANDING.md](./REBRANDING.md), [package-ecosystem-strategy.md](./package-ecosystem-strategy.md), [chevron-architecture-modernization.md](./chevron-architecture-modernization.md), [security-phase-n.md](./security-phase-n.md), [security-phase-s-decision.md](./security-phase-s-decision.md)
 
 This doc is **privilege and Node policy**, not a dual-product promise. Names and config home follow [REBRANDING.md](./REBRANDING.md).
 
@@ -34,7 +34,8 @@ Today (0.6.x): T1/T2 still share the **preload Node world** for compatibility. C
 
 **Do**
 
-- Use `chevron.workspace`, `chevron.project`, `chevron.packages`, `chevron.notifications`, `BufferedProcess` / `Task` (`atom.*` aliases still exist)
+- Use `chevron.workspace`, `chevron.project`, `chevron.packages`, `chevron.notifications`, `BufferedProcess`
+- Long work: spawn via `BufferedProcess` or a main / `utilityProcess` host. **Do not add new `Task` callers.** `Task` is a wrap-then-delete leftover (`child_process.fork` + fake DOM) used only by existing owned pins (fuzzy-finder, symbols-view, `Workspace.replace`)
 - Open external URLs via `applicationDelegate.openExternal` (scheme allowlist in main)
 - File manager / trash via `showItemInFolder` / `moveItemToTrash` on applicationDelegate
 - Declare **`engines.chevron`**
@@ -46,6 +47,7 @@ Today (0.6.x): T1/T2 still share the **preload Node world** for compatibility. C
 - Assume `require('fs')` / `child_process` / `net` will keep working for community packages
 - Use the editor preload as a webview preload or enable Node for guest content
 - Assume `~/.atom` is the config or package home
+- Add new `Task` callers or treat `require('atom')` as a supported API
 
 ## Auditing / restricting privileged requires (developers)
 
