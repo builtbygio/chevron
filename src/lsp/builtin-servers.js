@@ -62,18 +62,105 @@ function resolveTsserverPath(resourcePath) {
 }
 
 /**
- * All built-in registrations that have a binary on PATH.
+ * Optional Phase 5 packages (not in the product installer). After
+ * `cpm install ./packages/chevron-lsp-*` they live under
+ * $CHEVRON_HOME/packages/. Dev checkouts may also have them under
+ * resourcePath/packages/ if someone ran npm in that folder.
+ *
+ * Discovered here (main + renderer, pure Node) so T2 community restrict
+ * cannot block registration — chevron-lsp-* activate() uses `fs`.
+ */
+const OPTIONAL_SERVER_PACKAGES = [
+  {
+    id: 'typescript',
+    packageName: 'chevron-lsp-typescript',
+    bins: [
+      path.join('node_modules', '.bin', 'typescript-language-server')
+    ],
+    scopes: [
+      'source.ts',
+      'source.tsx',
+      'source.js',
+      'source.js.jsx',
+      'source.jsx',
+      'source.flow'
+    ],
+    args: ['--stdio']
+  },
+  {
+    id: 'rust-analyzer',
+    packageName: 'chevron-lsp-rust',
+    bins: ['bin/rust-analyzer', path.join('node_modules', '.bin', 'rust-analyzer')],
+    scopes: ['source.rust'],
+    args: []
+  },
+  {
+    id: 'pyright',
+    packageName: 'chevron-lsp-python',
+    bins: [path.join('node_modules', '.bin', 'pyright-langserver')],
+    scopes: ['source.python'],
+    args: ['--stdio']
+  }
+];
+
+function packageSearchRoots(resourcePath) {
+  const roots = [];
+  const home = process.env.CHEVRON_HOME || process.env.ATOM_HOME;
+  if (home) roots.push(path.join(home, 'packages'));
+  if (resourcePath) roots.push(path.join(resourcePath, 'packages'));
+  return roots;
+}
+
+function resolveInstalledPackageCommand(spec, resourcePath) {
+  for (const root of packageSearchRoots(resourcePath)) {
+    const pkgDir = path.join(root, spec.packageName);
+    for (const rel of spec.bins) {
+      const candidate = path.join(pkgDir, rel);
+      const hit = which(candidate);
+      if (hit) return hit;
+    }
+  }
+  return null;
+}
+
+/**
+ * All built-in registrations that have a binary (cpm package home, then PATH).
  * @param {{ resourcePath?: string }} [options]
  * @returns {Array<object>}
  */
 function resolveBuiltinRegistrations(options = {}) {
   const out = [];
+  const seen = new Set();
+
+  function push(reg) {
+    if (!reg || seen.has(reg.id)) return;
+    seen.add(reg.id);
+    out.push(reg);
+  }
+
+  for (const spec of OPTIONAL_SERVER_PACKAGES) {
+    const installed = resolveInstalledPackageCommand(spec, options.resourcePath);
+    if (!installed) continue;
+    const extra = {};
+    if (spec.id === 'typescript') {
+      const tsserverPath = resolveTsserverPath(options.resourcePath);
+      if (tsserverPath) extra.initializationOptions = { tsserver: { path: tsserverPath } };
+    }
+    push({
+      id: spec.id,
+      scopes: spec.scopes.slice(),
+      command: installed,
+      args: spec.args.slice(),
+      initializationOptions: extra.initializationOptions || {},
+      source: 'builtin'
+    });
+  }
 
   // TypeScript / JavaScript family
   const tsls = which('typescript-language-server');
   if (tsls) {
     const tsserverPath = resolveTsserverPath(options.resourcePath);
-    out.push({
+    push({
       id: 'typescript',
       scopes: [
         'source.ts',
@@ -95,7 +182,7 @@ function resolveBuiltinRegistrations(options = {}) {
   // Rust — often negotiates utf-8 positionEncoding
   const rustAnalyzer = which('rust-analyzer');
   if (rustAnalyzer) {
-    out.push({
+    push({
       id: 'rust-analyzer',
       scopes: ['source.rust'],
       command: rustAnalyzer,
@@ -114,7 +201,7 @@ function resolveBuiltinRegistrations(options = {}) {
     // pyright-langserver uses --stdio; bare pyright uses --langserver
     const isLangserver =
       path.basename(pyright).toLowerCase().includes('langserver');
-    out.push({
+    push({
       id: 'pyright',
       scopes: ['source.python'],
       command: pyright,
@@ -168,5 +255,7 @@ module.exports = {
   resolveBuiltinRegistrations,
   resolveBuiltinServer,
   resolveTypescriptLanguageServer,
-  resolveTsserverPath
+  resolveTsserverPath,
+  resolveInstalledPackageCommand,
+  OPTIONAL_SERVER_PACKAGES
 };

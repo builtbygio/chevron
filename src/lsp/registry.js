@@ -163,16 +163,25 @@ function resolveRegistration(scopeName, options = {}) {
   if (!scopeName) return null;
 
   for (const reg of packageRegs.values()) {
-    if (matchesScope(reg, scopeName)) return reg;
+    if (matchesScope(reg, scopeName)) {
+      const resolved = resolveCommand(reg);
+      if (resolved) return resolved;
+    }
   }
 
   for (const reg of loadUserRegistrations()) {
-    if (matchesScope(reg, scopeName)) return reg;
+    if (matchesScope(reg, scopeName)) {
+      const resolved = resolveCommand(reg);
+      if (resolved) return resolved;
+    }
   }
 
   const builtins = resolveBuiltinRegistrations(options);
   for (const reg of builtins) {
-    if (matchesScope(reg, scopeName)) return reg;
+    if (matchesScope(reg, scopeName)) {
+      const resolved = resolveCommand(reg);
+      if (resolved) return resolved;
+    }
   }
 
   return null;

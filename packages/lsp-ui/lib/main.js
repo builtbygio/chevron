@@ -133,6 +133,58 @@ module.exports = {
 
     const client = ensureLsp();
     if (typeof client.activate === 'function') client.activate();
+
+    const showTrustNeeded = projectRoot => {
+      const e = env();
+      if (!e || !e.notifications) return;
+      e.notifications.addWarning(
+        'Language servers are disabled until you trust this project.\n' +
+          'Servers run with full user privileges and can execute project ' +
+          'build tooling (they are not sandboxed).\n' +
+          `Project: ${projectRoot}`,
+        {
+          dismissable: true,
+          buttons: [
+            {
+              text: 'Trust project',
+              onDidClick: () => {
+                e.commands.dispatch(
+                  e.views.getView(e.workspace),
+                  'chevron-lsp:trust-project'
+                );
+              }
+            }
+          ]
+        }
+      );
+    };
+
+    const showNoServer = notice => {
+      const e = env();
+      if (!e || !e.notifications) return;
+      e.notifications.addInfo(
+        (notice && notice.message) || 'No language server for this file.',
+        { dismissable: true }
+      );
+    };
+
+    if (typeof client.getPendingNotice === 'function') {
+      const pending = client.getPendingNotice();
+      if (pending && pending.kind === 'trust-needed') {
+        showTrustNeeded(pending.projectRoot);
+      } else if (pending && pending.kind === 'no-server') {
+        showNoServer(pending);
+      } else if (pending && pending.kind === 'fail-start' && pending.message) {
+        const e = env();
+        if (e && e.notifications) {
+          e.notifications.addError(
+            `Language server failed to start:\n${pending.message}`,
+            { dismissable: true }
+          );
+        }
+      }
+    }
+
     diagnosticsService =
       typeof client.getDiagnosticsService === 'function'
         ? client.getDiagnosticsService()
@@ -179,31 +231,13 @@ module.exports = {
 
     disposables.add(
       client.onDidChangeTrustNeeded(({ projectRoot }) => {
-        const e = env();
-        if (e && e.notifications) {
-          e.notifications.addWarning(
-            'Language servers are disabled until you trust this project.\n' +
-              'Servers run with full user privileges and can execute project ' +
-              'build tooling (they are not sandboxed).\n' +
-              `Project: ${projectRoot}`,
-            {
-              dismissable: true,
-              buttons: [
-                {
-                  text: 'Trust project',
-                  onDidClick: () => {
-                    e.commands.dispatch(
-                      e.views.getView(e.workspace),
-                      'chevron-lsp:trust-project'
-                    );
-                  }
-                }
-              ]
-            }
-          );
-        }
+        showTrustNeeded(projectRoot);
       })
     );
+
+    if (typeof client.onDidNoServer === 'function') {
+      disposables.add(client.onDidNoServer(notice => showNoServer(notice)));
+    }
 
     if (typeof client.onDidServerRestarting === 'function') {
       disposables.add(

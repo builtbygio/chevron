@@ -28,6 +28,12 @@ Restart Chevron (or reload packages). Trust the project, then open a matching fi
 PATH fallback still works: if the prebuild/npm binary is missing, the package
 registers the short command name and `builtin-servers` / PATH may still find it.
 
+**If nothing happens when you open a `.ts` / `.rs` / `.py` file:** there is
+no server binary (install one of the packages above, or put the server on
+`PATH`) **and** the project is not trusted. Command palette →
+`Chevron Lsp: Status` shows registrations and trusted roots.
+`Chevron Lsp: Trust Project` is required before any server starts.
+
 ## What cpm does
 
 | Package | How the binary arrives |

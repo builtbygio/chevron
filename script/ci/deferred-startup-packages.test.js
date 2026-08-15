@@ -25,6 +25,7 @@ const FIRST_PAINT = [
   'welcome',
   'notifications',
   'settings-view',
+  'lsp-ui',
   'whitespace',
   'wrap-guide',
   'chevron-dark-ui',

@@ -45,7 +45,7 @@ function commandKey(command) {
 }
 
 function loadBuiltinCommands() {
-  if (builtinCommands) return builtinCommands;
+  // Re-scan: a cpm-installed chevron-lsp-* binary may appear after launch.
   builtinCommands = new Set();
   try {
     // Pure Node module; safe to require from the main process.

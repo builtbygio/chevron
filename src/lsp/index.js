@@ -54,6 +54,10 @@ const encodingByServerId = new Map();
 /** completion latency samples (ms) */
 const completionLatencySamples = [];
 const MAX_LATENCY_SAMPLES = 200;
+/** Last why-LSP-is-idle notice so a late lsp-ui still shows it. */
+let lastNotice = null;
+const noticedNoServer = new Set();
+const noticedTrust = new Set();
 
 const clientApi = {
   request,
@@ -145,7 +149,24 @@ async function ensureServerForEditor(editor) {
   if (!projectRoot) return null;
 
   const reg = resolveRegistration(scope, { resourcePath: getResourcePath() });
-  if (!reg) return null;
+  if (!reg) {
+    const noticeKey = `${scope}::${projectRoot}`;
+    if (!noticedNoServer.has(noticeKey)) {
+      noticedNoServer.add(noticeKey);
+      lastNotice = {
+        kind: 'no-server',
+        scope,
+        projectRoot,
+        message:
+          `No language server for ${scope}. Install chevron-lsp-typescript, ` +
+          `chevron-lsp-rust, or chevron-lsp-python with cpm ` +
+          `(see docs/lsp-server-distribution.md), or put the server on PATH. ` +
+          `Then run "Chevron Lsp: Trust Project".`
+      };
+      emitter.emit('did-no-server', lastNotice);
+    }
+    return null;
+  }
 
   const key = sessionKey(reg.id, projectRoot);
   if (startedSessions.has(key)) {
@@ -154,16 +175,22 @@ async function ensureServerForEditor(editor) {
 
   const trusted = await ipcRenderer.invoke('lsp:is-trusted', { projectRoot });
   if (!trusted) {
-    emitter.emit('did-change-trust-needed', { projectRoot });
+    if (!noticedTrust.has(projectRoot)) {
+      noticedTrust.add(projectRoot);
+      lastNotice = { kind: 'trust-needed', projectRoot };
+      emitter.emit('did-change-trust-needed', { projectRoot });
+    }
     return null;
   }
 
   const resolved = resolveCommand(reg);
   if (!resolved) {
-    emitter.emit('did-fail-start', {
+    lastNotice = {
+      kind: 'fail-start',
       projectRoot,
       message: `Language server "${reg.id}" command not found on PATH: ${reg.command}`
-    });
+    };
+    emitter.emit('did-fail-start', lastNotice);
     return null;
   }
 
@@ -204,11 +231,13 @@ async function ensureServerForEditor(editor) {
     });
     return serverId;
   } catch (err) {
-    emitter.emit('did-fail-start', {
+    lastNotice = {
+      kind: 'fail-start',
       projectRoot,
       message: err.message,
       code: err.code
-    });
+    };
+    emitter.emit('did-fail-start', lastNotice);
     return null;
   }
 }
@@ -632,6 +661,14 @@ function onDidFailStart(cb) {
   return emitter.on('did-fail-start', cb);
 }
 
+function onDidNoServer(cb) {
+  return emitter.on('did-no-server', cb);
+}
+
+function getPendingNotice() {
+  return lastNotice;
+}
+
 function onDidServerExit(cb) {
   return emitter.on('did-server-exit', cb);
 }
@@ -676,6 +713,8 @@ module.exports = {
   onDidPublishDiagnostics,
   onDidChangeTrustNeeded,
   onDidFailStart,
+  onDidNoServer,
+  getPendingNotice,
   onDidServerExit,
   onDidServerRestarting,
   onDidRequestHover,
@@ -718,6 +757,14 @@ module.exports = {
     },
     encodingByServerId,
     completionLatencySamples,
-    clientApi
+    clientApi,
+    get lastNotice() {
+      return lastNotice;
+    },
+    resetNotices() {
+      lastNotice = null;
+      noticedNoServer.clear();
+      noticedTrust.clear();
+    }
   }
 };
