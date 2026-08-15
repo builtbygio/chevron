@@ -46,6 +46,10 @@ const TextEditorRegistry = require('./text-editor-registry');
 const AutoUpdateManager = require('./auto-update-manager');
 const StartupTime = require('./startup-time');
 const getReleaseChannel = require('./get-release-channel');
+const {
+  resolveUserDataFile,
+  migrateUserDataFiles
+} = require('./user-config-path');
 
 const stat = util.promisify(fs.stat);
 
@@ -254,10 +258,13 @@ class AtomEnvironment {
         'The directory where projects are assumed to be located. Packages created using the Package Generator will be stored here by default.'
     };
 
+    if (this.enablePersistence && this.configDirPath) {
+      migrateUserDataFiles(this.configDirPath);
+    }
     this.config.initialize({
       mainSource:
         this.enablePersistence &&
-        path.join(this.configDirPath, 'config.json'),
+        resolveUserDataFile(this.configDirPath, 'config').filePath,
       projectHomeSchema: ConfigSchema.projectHome
     });
     this.config.resetUserSettings(userSettings);
@@ -329,6 +336,17 @@ class AtomEnvironment {
         this.history.loadState()
       )
     );
+
+    this.notifyConfigJsonMigration();
+  }
+
+  notifyConfigJsonMigration() {
+    if (!this.getLoadSettings().configMigratedFromCson) return;
+    this.notifications.addInfo('Chevron now saves settings as JSON', {
+      description:
+        'Your existing `config.cson` was copied to `config.json` and left in place. Set `CHEVRON_CONFIG_CSON=1` to keep writing CSON for this release.',
+      dismissable: true
+    });
   }
 
   preloadPackages() {

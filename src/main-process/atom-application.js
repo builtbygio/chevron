@@ -5,6 +5,10 @@ const AutoUpdateManager = require('./auto-update-manager');
 const StorageFolder = require('../storage-folder');
 const Config = require('../config');
 const ConfigFile = require('../config-file');
+const {
+  resolveUserDataFile,
+  migrateUserDataFiles
+} = require('../user-config-path');
 const FileRecoveryService = require('./file-recovery-service');
 const StartupTime = require('../startup-time');
 const ipcHelpers = require('../ipc-helpers');
@@ -212,13 +216,15 @@ module.exports = class AtomApplication extends EventEmitter {
 
     this.initializeAtomHome(process.env.ATOM_HOME);
 
-    const configFilePath = fs.existsSync(
-      path.join(process.env.ATOM_HOME, 'config.json')
-    )
-      ? path.join(process.env.ATOM_HOME, 'config.json')
-      : path.join(process.env.ATOM_HOME, 'config.cson');
-
-    this.configFile = ConfigFile.at(configFilePath);
+    const migrated = migrateUserDataFiles(process.env.ATOM_HOME);
+    this.configMigratedFromCson = Boolean(
+      migrated.config && migrated.config.migrated
+    );
+    this.configFilePath = resolveUserDataFile(
+      process.env.ATOM_HOME,
+      'config'
+    ).filePath;
+    this.configFile = ConfigFile.at(this.configFilePath);
     this.config = new Config({
       saveCallback: settings => {
         if (!this.quitting) {

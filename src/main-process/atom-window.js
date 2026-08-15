@@ -255,7 +255,10 @@ module.exports = class AtomWindow extends EventEmitter {
             {
               userSettings: !this.isSpec
                 ? this.atomApplication.configFile.get()
-                : null
+                : null,
+              configMigratedFromCson: Boolean(
+                this.atomApplication.configMigratedFromCson
+              )
             },
             this.loadSettings
           )
