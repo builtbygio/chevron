@@ -7,8 +7,9 @@
  * unless noted, but their main modules are not required in preloadPackages()
  * and they are not activate()'d until after setup-window:end.
  *
- * Keep tree-view, tabs, status-bar, welcome, notifications, themes,
- * whitespace, wrap-guide, and git-diff off this list.
+ * Keep tree-view, tabs, status-bar, welcome, notifications, settings-view,
+ * themes, whitespace, wrap-guide, and git-diff off this list.
+ * Welcome Guide Open Installer / theme picker require settings-view.
  *
  * Do not defer language-*: grammars must be registered before the first
  * editor opens or .c/.js/… files stay on the null grammar (no colour).
@@ -63,7 +64,6 @@ const DEFERRED_STARTUP_PACKAGES = new Set([
   'markdown-preview',
   'open-on-github',
   'package-generator',
-  'settings-view',
   'snippets',
   'spell-check',
   'styleguide',

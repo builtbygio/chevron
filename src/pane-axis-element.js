@@ -12,9 +12,15 @@ class PaneAxisElement extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.subscriptions.dispose();
-    this.subscriptions = null;
-    this.model.getChildren().map(child => this.childRemoved({ child }));
+    if (this.subscriptions) {
+      this.subscriptions.dispose();
+      this.subscriptions = null;
+    }
+    // Do not detach child pane views here. Closing the last item in a split
+    // removes this axis from the document while reparenting the surviving
+    // pane (pane-container-element rootChanged). Stripping children in
+    // disconnectedCallback leaves the remaining editors off-DOM until a
+    // later split recreates views (dogfood Day 3: close markdown preview).
   }
 
   initialize(model, viewRegistry) {

@@ -63,6 +63,8 @@ describe('PaneContainerElement', function() {
 
       rightPane.destroy();
       expect(containerElement).toHaveClass('panes');
+      expect(containerElement.contains(leftPaneElement)).toBe(true);
+      expect(containerElement.querySelectorAll('atom-pane').length).toBe(1);
       expect(document.activeElement).toBe(leftPaneElement);
     });
   });

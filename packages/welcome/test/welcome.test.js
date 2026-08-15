@@ -140,6 +140,25 @@ describe("Welcome", () => {
             }
           }
         });
+        it("activates settings-view before opening installer and theme picker", async () => {
+          const opened = [];
+          const activated = [];
+          atom.packages.activatePackage = (name) => {
+            activated.push(name);
+            return Promise.resolve();
+          };
+          atom.workspace.open = (uri) => {
+            opened.push(uri);
+            return Promise.resolve();
+          };
+          await guideView.didClickPackagesButton();
+          await guideView.didClickThemesButton();
+          import_assert.default.deepEqual(activated, ["settings-view", "settings-view"]);
+          import_assert.default.deepEqual(opened, [
+            "atom://config/install",
+            "atom://config/themes"
+          ]);
+        });
       });
     });
     describe("when the reporter changes", () => it("sends all queued events", () => {
