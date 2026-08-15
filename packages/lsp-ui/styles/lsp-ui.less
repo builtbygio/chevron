@@ -50,33 +50,41 @@
   }
 }
 
+// Colors are also set in JS from the modal's computed background so a
+// light inset-panel token or syntax `code` rule cannot paint a white field.
+atom-panel.modal .lsp-ui-trust,
 .lsp-ui-trust {
   box-sizing: border-box;
   padding: 1.25em 1.4em 1.1em;
   min-width: 32em;
   max-width: 40em;
+  color: @text-color-highlight;
+
+  h1,
+  p,
+  div {
+    color: @text-color-highlight;
+    opacity: 1;
+  }
 
   .lsp-ui-trust-title {
     margin: 0 0 0.55em;
     font-size: 1.35em;
     font-weight: 600;
     line-height: 1.25;
-    color: @text-color-highlight;
   }
 
   .lsp-ui-trust-lead {
     margin: 0 0 1em;
     font-size: 1.05em;
     line-height: 1.5;
-    color: @text-color-highlight;
-    opacity: 0.88;
   }
 
   .lsp-ui-trust-path-wrap {
     margin: 0 0 1em;
     padding: 0.65em 0.75em;
-    background: @inset-panel-background-color;
-    border: 1px solid @inset-panel-border-color;
+    background: fade(@text-color-highlight, 8%);
+    border: 1px solid fade(@text-color-highlight, 14%);
     border-radius: @component-border-radius;
   }
 
@@ -97,23 +105,15 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.95em;
     line-height: 1.4;
-    color: @text-color-highlight;
-    background: transparent;
+    background: transparent !important;
     border: 0;
     box-shadow: none;
-
-    &.icon:before {
-      margin-right: 0.4em;
-      color: @text-color-info;
-    }
   }
 
   .lsp-ui-trust-body {
     margin: 0 0 1.15em;
     font-size: 1em;
     line-height: 1.5;
-    color: @text-color-highlight;
-    opacity: 0.78;
   }
 
   .lsp-ui-trust-actions {

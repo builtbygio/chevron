@@ -2,7 +2,24 @@
 
 /**
  * In-editor workspace-trust modal (Chevron theme, not a native OS dialog).
+ * Colors are applied from the modal panel after attach so syntax/code
+ * styles and light inset-panel tokens cannot paint a white field.
  */
+
+function parseRgb(color) {
+  if (!color || color === 'transparent') return null;
+  const m = String(color).match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (!m) return null;
+  return { r: Number(m[1]), g: Number(m[2]), b: Number(m[3]) };
+}
+
+function luminance({ r, g, b }) {
+  return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
+function rgba({ r, g, b }, a) {
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
 
 class TrustView {
   constructor() {
@@ -27,7 +44,7 @@ class TrustView {
     this.pathLabel.textContent = 'Project folder';
 
     this.pathEl = document.createElement('div');
-    this.pathEl.classList.add('lsp-ui-trust-path', 'icon', 'icon-file-directory');
+    this.pathEl.classList.add('lsp-ui-trust-path');
 
     this.pathWrap.appendChild(this.pathLabel);
     this.pathWrap.appendChild(this.pathEl);
@@ -67,6 +84,35 @@ class TrustView {
     this.declineBtn.addEventListener('click', () => this._finish(false));
   }
 
+  applyContrast() {
+    const host =
+      (this.element.closest && this.element.closest('atom-panel.modal')) ||
+      this.element;
+    const bg = parseRgb(window.getComputedStyle(host).backgroundColor) || {
+      r: 32,
+      g: 33,
+      b: 35
+    };
+    const dark = luminance(bg) < 140;
+    const ink = dark ? { r: 236, g: 236, b: 236 } : { r: 28, g: 28, b: 28 };
+    const muted = dark ? { r: 176, g: 180, b: 186 } : { r: 90, g: 94, b: 100 };
+    const lift = dark
+      ? rgba({ r: 255, g: 255, b: 255 }, 0.08)
+      : rgba({ r: 0, g: 0, b: 0 }, 0.06);
+    const edge = dark
+      ? rgba({ r: 255, g: 255, b: 255 }, 0.14)
+      : rgba({ r: 0, g: 0, b: 0 }, 0.12);
+
+    this.element.style.color = rgba(ink, 1);
+    this.titleEl.style.color = rgba(ink, 1);
+    this.leadEl.style.color = rgba(ink, 0.92);
+    this.bodyEl.style.color = rgba(ink, 0.88);
+    this.pathLabel.style.color = rgba(muted, 1);
+    this.pathEl.style.color = rgba(ink, 1);
+    this.pathWrap.style.background = lift;
+    this.pathWrap.style.borderColor = edge;
+  }
+
   /**
    * @param {string} projectRoot
    * @param {object} env
@@ -95,6 +141,7 @@ class TrustView {
       }
       requestAnimationFrame(() => {
         try {
+          this.applyContrast();
           this.trustBtn.focus();
         } catch (_) {
           /* ignore */
