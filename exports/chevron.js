@@ -1,7 +1,8 @@
 'use strict';
 
-// Chevron package API surface (preferred). require('atom') re-exports this module
-// so community packages keep working. See docs/atom-to-chevron-rename-plan.md.
+// Chevron package API surface (preferred). require('atom') is an unsupported
+// legacy alias that re-exports this module — not a community-compat promise.
+// See docs/REBRANDING.md and docs/chevron-architecture-modernization.md.
 
 const TextBuffer = require('text-buffer');
 const { Point, Range } = TextBuffer;

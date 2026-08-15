@@ -13,12 +13,12 @@
 Build **cpm** (Chevron Package Manager): a modern package installer and lifecycle tool for Chevron that:
 
 1. Runs on the **product Electron binary** via `ELECTRON_RUN_AS_NODE=1` (no bundled Node 12; ABI always matches the editor).
-2. Installs **Atom-compatible packages** (dual-support forever).
+2. Installs packages into **`~/.chevron`** (owned catalog is the product; a user-folder install is a CLI capability, **not** a dual-product / community-store promise).
 3. Rebuilds natives against **product Electron** (currently 43.x) via a clear path.
 4. Improves **supply-chain / install-time security** relative to classic apm.
-5. Ships as **`cpm`**, with **`apm` as a long-lived shim** for muscle memory and scripts (including Windows `apm.cmd` and shell/PATH install).
+5. Ships as **`cpm`**. **`apm` is a name shim** for muscle memory and scripts (including Windows `apm.cmd`) — not a long-lived dual-support product.
 
-cpm is **not** a rewrite of the editor’s package loader (`PackageManager`, `global.atom`). It is the **installer and rebuild CLI** (and later, registry client).
+cpm is **not** a rewrite of the editor’s package loader (`PackageManager`, `global.chevron`). It is the **installer and rebuild CLI** (and later, registry client). Product policy: [REBRANDING.md](./REBRANDING.md), [chevron-architecture-modernization.md](./chevron-architecture-modernization.md).
 
 ---
 
@@ -30,7 +30,7 @@ cpm is **not** a rewrite of the editor’s package loader (`PackageManager`, `gl
 |----|------|
 | G1 | Remove Node 12 + npm 6 + node-gyp 5 from the critical package-install path |
 | G2 | Install community packages into package home (`~/.chevron` default; `CHEVRON_HOME`) |
-| G3 | Honour `engines.atom` and optional `engines.chevron` |
+| G3 | Honour **`engines.chevron`**. `engines.atom` alone is a **warning shim**, not a product |
 | G4 | Rebuild natives for `package.json` / product `electronVersion` without ambient `npm_config_*` pollution |
 | G5 | Default-safe installs (ignore lifecycle scripts; integrity where available) |
 | G6 | Keep GUI package UX working via `core.apmPath` → cpm (**settings-view** and **incompatible-packages** rebuild flow) |
@@ -44,18 +44,19 @@ cpm is **not** a rewrite of the editor’s package loader (`PackageManager`, `gl
 |----|----------|
 | N1 | VS Code–style extension host isolation (separate process, capability API only) |
 | N2 | Full Marketplace product (billing, publisher org verification at MS scale) |
-| N3 | Replacing `global.atom` / `require('atom')` package API |
+| N3 | Replacing `global.chevron` / `require('chevron')` package API |
 | N4 | Bundling a private Node binary with cpm |
 | N5 | Forking and maintaining npm 6 forever (Pulsar’s ppm choice) as the end state |
 | N6 | Forcing all existing packages to republish under a new format on day one |
 
-### Dual-support forever (locked)
+### Chevron-only (replaces “dual-support forever”)
 
-From product rebrand decisions:
+Locked product policy ([REBRANDING.md](./REBRANDING.md), [chevron-architecture-modernization.md](./chevron-architecture-modernization.md)):
 
-- Keep **`engines.atom`**, **`atom://`**, **`global.atom`**, **`apm` name as alias**.
-- Default config home remains compatible with **`~/.atom`** when no Chevron home is set.
-- Do not break honest community packages that still declare Atom engines.
+- Supported: **`engines.chevron`**, **`chevron://`**, **`global.chevron`**, **`require('chevron')`**, **`~/.chevron`**, **`cpm`**.
+- **`engines.atom`**, **`atom://`**, **`global.atom`**, **`require('atom')`**, **`apm`** are **unsupported shims** slated for removal. They are not a platform.
+- Default config / package home is **`~/.chevron`**. `ATOM_HOME` is honoured only if **explicitly** set — no default to `~/.atom`.
+- Catalog is **owned-only** until package host v2. cpm may still talk to Pulsar as a **client implementation**; product UX must not promise a community store.
 
 ---
 
@@ -115,7 +116,7 @@ From product rebrand decisions:
 
 | Source | Adopt | Avoid |
 |--------|--------|--------|
-| Atom | Package **directory format**, `engines.atom`, packages dir layout | Bundled Node 12, dead atom.io as sole trust root |
+| Atom | Package **directory format**, packages dir layout | Bundled Node 12, dead atom.io, dual-identity forever |
 | Pulsar | Compatibility posture, registry corpus as **optional backend** | Committing forever to npm 6 under the hood |
 | VS Code | Sealed artifacts (later), prebuilds, install transparency, permissions *later* | Pretending cpm alone equals extension-host security |
 
@@ -332,7 +333,7 @@ set ELECTRON_RUN_AS_NODE=1
 
 ### 6.1 Trust model (honest statement)
 
-**Today and under cpm v1 runtime:** community packages still load with **editor-level trust** (classic Atom). They can use Node `fs`, `child_process`, network, and `atom` APIs once activated.
+**Today and under cpm v1 runtime:** a folder dropped in `~/.chevron/packages` still loads in the preload world. Community privileged `require` and native loads are **restricted by default**. They must use `chevron` APIs once activated. This is **not** a promise of unrestricted Node or of `atom` APIs.
 
 **cpm reduces the chance of installing known-bad or tampered code.**  
 **cpm does not sandbox a package the user activates.**  
@@ -432,8 +433,8 @@ Respect licenses and Pulsar terms if proxying their API; document attribution.
 | Install by name | yes | yes | Via index/registry |
 | Install git URL | yes | yes | SHA preferred/required |
 | Install path / link | yes | yes | Dev workflow |
-| `engines.atom` | yes | yes | Dual-support |
-| `engines.chevron` | no | yes | Optional stricter gate |
+| `engines.atom` | yes | warning shim | Not a product; cpm warns |
+| `engines.chevron` | no | yes | Supported gate |
 | Rebuild for Electron | partial / outdated gyp | yes | Modern rebuild under ELECTRON_RUN_AS_NODE |
 | `rebuild --no-color` + `{code,stdout,stderr}` | yes (`Package.runRebuildProcess`) | **required** | §5.5.1; incompatible-packages UI |
 | Search | broken (atom.io) | yes if backend configured | |
@@ -573,7 +574,7 @@ Security tests: assert scripts do not run by default; assert branch-only git URL
 
 ## 13. Open decisions (resolve during Phase 0–1 implementation)
 
-1. **Default package write home:** always `~/.atom/packages` vs prefer `~/.chevron/packages` when Chevron home exists.  
+1. **~~Default package write home~~ — RESOLVED:** **`~/.chevron/packages`**. `ATOM_HOME` only if explicitly set. Not dual-home-by-default.  
 2. **~~cpm process: host Node vs ELECTRON_RUN_AS_NODE~~ — RESOLVED:** always **`ELECTRON_RUN_AS_NODE=1` + product binary**. Host Node only for unit tests of pure logic. See §5.2, §5.7.  
 3. **~~Registry default~~ — RESOLVED:** Pulsar API (`https://api.pulsar-edit.dev`) first; override with `CPM_REGISTRY_URL`. Static index later if needed.  
 4. **~~Root app `node_modules` install~~ — RESOLVED (Phase 0):** pure **host npm** (`npm ci` / `npm install --ignore-scripts --legacy-peer-deps`) + modern Electron rebuild in `bootstrap-modern`. Not cpm. Optional `--with-apm` only for packaging/dev until Phase 1.  
