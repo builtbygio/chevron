@@ -167,7 +167,7 @@ Large github package rewrite. Track as **Phase S / utilityProcess**, not unfinis
 
 #### P3.2 — Electron fuses — **done**
 
-`script/lib/flip-electron-fuses.js` on package. ASAR integrity enabled on macOS only (Windows lacks embedded integrity resources with electron-packager). `OnlyLoadAppFromAsar` off (unpacked natives + cpm). `RunAsNode` kept for tooling.
+`script/lib/flip-electron-fuses.js` on package. ASAR integrity enabled on macOS only (Windows lacks embedded integrity resources with `@electron/packager`). `OnlyLoadAppFromAsar` off (unpacked natives + cpm). `RunAsNode` kept for tooling.
 
 #### P3.3 — Phase S: editor `sandbox: true` — **out of scope (blocked)**
 

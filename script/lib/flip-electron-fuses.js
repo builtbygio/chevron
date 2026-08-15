@@ -64,7 +64,7 @@ async function flipFusesOnApp(packagedAppPath) {
   console.log(`Flipping Electron fuses on ${electronPath}`);
   try {
     // EnableEmbeddedAsarIntegrityValidation requires packager-embedded
-    // integrity resources. electron-packager does this on macOS; on Windows
+    // integrity resources. @electron/packager does this on macOS; on Windows
     // the fuse makes the app FATAL at startup (archive_win.cc FindResource).
     // OnlyLoadAppFromAsar breaks app.asar.unpacked natives + out-of-asar cpm.
     // Leave both off until packaging embeds integrity for all platforms.

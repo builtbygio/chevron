@@ -13,7 +13,7 @@ resources/app-icons/<channel>/
 
 Channels: `stable`, `beta`, `nightly`, `dev` (tinted variants).
 
-Packaging prefers the **`chevron`** basename (`package-application` icon path, Windows setup icon, `CFBundleIconFile`). Linux **requires** `chevron.png` next to that basename (electron-packager does not read `png/1024.png` automatically).
+Packaging prefers the **`chevron`** basename (`package-application` icon path, Windows setup icon, `CFBundleIconFile`). Linux **requires** `chevron.png` next to that basename (`@electron/packager` does not read `png/1024.png` automatically).
 
 ## Mark
 

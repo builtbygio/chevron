@@ -40,7 +40,7 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [build-modernization.md](./build-modernization.md) | Bootstrap/build Streams A–E (contract, hygiene, patches, snapshot, deps) |
 | [bootstrap-patch-matrix.md](./bootstrap-patch-matrix.md) | Idempotent bootstrap patches + critical natives |
 | [bootstrap-report.md](./bootstrap-report.md) | Current bootstrap recipe (modern path) |
-| [packaging.md](./packaging.md) | electron-packager + custom V8 snapshot (Linux/Windows; Darwin stock) |
+| [packaging.md](./packaging.md) | `@electron/packager` + custom V8 snapshot (Linux/Windows; Darwin stock) |
 | [dependency-graph.md](./dependency-graph.md) | Root dep kinds, `nan` override, atom/* pin ceiling |
 
 

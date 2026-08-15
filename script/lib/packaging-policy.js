@@ -6,6 +6,10 @@
  * Escape hatch: CHEVRON_SKIP_MKSNAPSHOT=1.
  */
 
+const path = require('path');
+
+const PACKAGER_MODULE = '@electron/packager';
+
 const STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR = 43;
 
 function electronMajor(version) {
@@ -57,10 +61,41 @@ function isForeignPrebuildPath(
   return !match[1].startsWith(host);
 }
 
+/**
+ * Files that must live on the real filesystem (not only inside app.asar).
+ * Keep this list identical across the packager swap so rollback is a dep bump.
+ */
+function asarUnpackGlobs() {
+  return [
+    '*.node',
+    'ctags-config',
+    'ctags-darwin',
+    'ctags-linux',
+    'ctags-win32.exe',
+    path.join('**', 'node_modules', 'spellchecker', '**'),
+    path.join('**', 'node_modules', 'dugite', 'git', '**'),
+    path.join('**', 'node_modules', 'github', 'bin', '**'),
+    path.join('**', 'node_modules', 'github', 'lib', '**'),
+    path.join('**', 'src', 'main-process', 'workers', '**'),
+    path.join('**', 'node_modules', 'dugite', '**'),
+    path.join('**', 'node_modules', 'vscode-ripgrep', 'bin', '**'),
+    path.join('**', 'resources', 'atom.png'),
+    path.join('**', 'resources', 'chevron.png'),
+    path.join('**', 'resources', 'icons', '**')
+  ];
+}
+
+function asarUnpackExpression() {
+  return `{${asarUnpackGlobs().join(',')}}`;
+}
+
 module.exports = {
   STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR,
+  PACKAGER_MODULE,
   electronMajor,
   shouldSkipCustomSnapshot,
   stockSnapshotNote,
-  isForeignPrebuildPath
+  isForeignPrebuildPath,
+  asarUnpackGlobs,
+  asarUnpackExpression
 };

@@ -39,7 +39,7 @@ Do **not** delete Class A compile patches until Electron/native pins prove green
 | Policy module | `script/lib/packaging-policy.js` + [packaging.md](./packaging.md) |
 | Custom V8 snapshot | **On** for Linux/Windows when `electron-mksnapshot` can run. **Stock on Darwin** (`darwin-boot-crash` — CI #125 generated a valid pair then died at boot). Hosts that cannot run mksnapshot (linux-arm, win-arm) stay stock. Marker: `out/STOCK_V8_SNAPSHOT.txt` |
 | Skip / force | `CHEVRON_SKIP_MKSNAPSHOT=1` / `CHEVRON_FORCE_MKSNAPSHOT=1` |
-| electron-packager | **Retained** 15.x. Swap to `@electron/packager` is architecture H1 PR 6, not this stream |
+| `@electron/packager` | **18.4.4** (scoped successor of electron-packager 15). Same unpack globs, fuses, Linux dir shape. 19+ ESM bump is later |
 | apm in product | **cpm only** |
 
 Custom snapshot is optional acceleration, not product identity. If `electron-link` dies, drop snapshots rather than fork. See `script/lib/generate-startup-snapshot.js`, [startup-snapshot-plan.md](./startup-snapshot-plan.md), [chevron-architecture-modernization.md](./chevron-architecture-modernization.md).
