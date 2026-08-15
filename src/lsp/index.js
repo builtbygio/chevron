@@ -490,16 +490,7 @@ function activate() {
               env.notifications.addWarning('No project folder open');
             return;
           }
-          await ipcRenderer.invoke('lsp:set-trust', {
-            projectRoot: root,
-            trusted: true
-          });
-          env.notifications &&
-            env.notifications.addSuccess(`Trusted project for language servers:\n${root}`);
-          for (const editor of env.workspace.getTextEditors()) {
-            const serverId = await ensureServerForEditor(editor);
-            if (serverId) documentSync.observeEditor(editor);
-          }
+          emitter.emit('did-request-trust-prompt', { projectRoot: root, force: true });
         },
         'chevron-lsp:untrust-project': async () => {
           const root =
@@ -657,6 +648,10 @@ function onDidChangeTrustNeeded(cb) {
   return emitter.on('did-change-trust-needed', cb);
 }
 
+function onDidRequestTrustPrompt(cb) {
+  return emitter.on('did-request-trust-prompt', cb);
+}
+
 function onDidFailStart(cb) {
   return emitter.on('did-fail-start', cb);
 }
@@ -667,6 +662,23 @@ function onDidNoServer(cb) {
 
 function getPendingNotice() {
   return lastNotice;
+}
+
+async function getTrustState(projectRoot) {
+  return ipcRenderer.invoke('lsp:get-trust-state', { projectRoot });
+}
+
+async function recordTrustDecision(projectRoot, trusted) {
+  return ipcRenderer.invoke('lsp:set-trust', { projectRoot, trusted });
+}
+
+async function startServersForOpenEditors() {
+  const env = global.chevron || global.atom;
+  if (!env || !env.workspace || !documentSync) return;
+  for (const editor of env.workspace.getTextEditors()) {
+    const serverId = await ensureServerForEditor(editor);
+    if (serverId) documentSync.observeEditor(editor);
+  }
 }
 
 function onDidServerExit(cb) {
@@ -712,6 +724,10 @@ module.exports = {
   getDiagnosticsService,
   onDidPublishDiagnostics,
   onDidChangeTrustNeeded,
+  onDidRequestTrustPrompt,
+  getTrustState,
+  recordTrustDecision,
+  startServersForOpenEditors,
   onDidFailStart,
   onDidNoServer,
   getPendingNotice,

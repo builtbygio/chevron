@@ -257,6 +257,10 @@ function listTrusted() {
   return lspTrust.listTrusted();
 }
 
+function getTrustState(projectRoot) {
+  return lspTrust.getTrustState(projectRoot);
+}
+
 module.exports = {
   ensureHost,
   subscribe,
@@ -271,6 +275,7 @@ module.exports = {
   listServers,
   shutdownHost,
   isTrusted,
+  getTrustState,
   confirmAndGrantTrust: (root, win) => lspTrust.confirmAndGrantTrust(root, win),
   setTrusted,
   listTrusted

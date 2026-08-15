@@ -14,19 +14,27 @@ function trustStorePath() {
   return path.join(home, 'trusted-projects.json');
 }
 
+function emptyStore() {
+  return { version: 1, roots: [], declined: [] };
+}
+
 function readStore() {
   const file = trustStorePath();
   if (!file || !fs.existsSync(file)) {
-    return { version: 1, roots: [] };
+    return emptyStore();
   }
   try {
     const data = JSON.parse(fs.readFileSync(file, 'utf8'));
-    if (!data || !Array.isArray(data.roots)) {
-      return { version: 1, roots: [] };
-    }
-    return { version: 1, roots: data.roots.map(normalizeRoot).filter(Boolean) };
+    if (!data || typeof data !== 'object') return emptyStore();
+    const roots = Array.isArray(data.roots)
+      ? data.roots.map(normalizeRoot).filter(Boolean)
+      : [];
+    const declined = Array.isArray(data.declined)
+      ? data.declined.map(normalizeRoot).filter(Boolean)
+      : [];
+    return { version: 1, roots, declined };
   } catch (_) {
-    return { version: 1, roots: [] };
+    return emptyStore();
   }
 }
 
@@ -61,20 +69,51 @@ function isTrusted(projectRoot) {
   return false;
 }
 
+function matchesRoot(candidate, root) {
+  return candidate === root || candidate.startsWith(root + path.sep);
+}
+
 function setTrusted(projectRoot, trusted) {
   const root = normalizeRoot(projectRoot);
   if (!root) throw new Error('invalid project root');
   const store = readStore();
-  const set = new Set(store.roots);
-  if (trusted) set.add(root);
-  else {
-    for (const r of [...set]) {
-      if (r === root || r.startsWith(root + path.sep)) set.delete(r);
+  const trustedSet = new Set(store.roots);
+  const declinedSet = new Set(store.declined);
+  if (trusted) {
+    trustedSet.add(root);
+    for (const r of [...declinedSet]) {
+      if (matchesRoot(r, root)) declinedSet.delete(r);
     }
+  } else {
+    for (const r of [...trustedSet]) {
+      if (matchesRoot(r, root)) trustedSet.delete(r);
+    }
+    declinedSet.add(root);
   }
-  store.roots = [...set].sort();
+  store.roots = [...trustedSet].sort();
+  store.declined = [...declinedSet].sort();
   writeStore(store);
   return store.roots;
+}
+
+function isDeclined(projectRoot) {
+  const root = normalizeRoot(projectRoot);
+  if (!root) return false;
+  if (isTrusted(root)) return false;
+  const { declined } = readStore();
+  for (const d of declined) {
+    if (root === d || root.startsWith(d + path.sep)) return true;
+  }
+  return false;
+}
+
+/**
+ * @returns {'trusted'|'declined'|'unknown'}
+ */
+function getTrustState(projectRoot) {
+  if (isTrusted(projectRoot)) return 'trusted';
+  if (isDeclined(projectRoot)) return 'declined';
+  return 'unknown';
 }
 
 function listTrusted() {
@@ -122,6 +161,8 @@ async function confirmAndGrantTrust(projectRoot, browserWindow) {
 
 module.exports = {
   isTrusted,
+  isDeclined,
+  getTrustState,
   setTrusted,
   confirmAndGrantTrust,
   listTrusted,

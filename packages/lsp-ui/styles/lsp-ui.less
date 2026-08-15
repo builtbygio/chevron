@@ -50,6 +50,48 @@
   }
 }
 
+.lsp-ui-trust {
+  padding: @component-padding;
+  min-width: 28em;
+  max-width: 36em;
+
+  .lsp-ui-trust-title {
+    margin: 0 0 0.6em;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: @text-color-highlight;
+  }
+
+  .lsp-ui-trust-path {
+    display: block;
+    margin: 0 0 0.75em;
+    padding: 0.4em 0.55em;
+    word-break: break-all;
+    font-family: @font-family;
+    font-size: 0.9em;
+    color: @text-color;
+    background: @input-background-color;
+    border: 1px solid @input-border-color;
+    border-radius: @component-border-radius;
+  }
+
+  .lsp-ui-trust-body {
+    margin: 0 0 1em;
+    line-height: 1.45;
+    color: @text-color;
+  }
+
+  .lsp-ui-trust-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: @component-padding;
+
+    .btn {
+      margin-left: 0;
+    }
+  }
+}
+
 .lsp-ui-rename {
   padding: 1em;
   min-width: 20em;

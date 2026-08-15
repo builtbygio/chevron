@@ -28,11 +28,14 @@ Restart Chevron (or reload packages). Trust the project, then open a matching fi
 PATH fallback still works: if the prebuild/npm binary is missing, the package
 registers the short command name and `builtin-servers` / PATH may still find it.
 
-**If nothing happens when you open a `.ts` / `.rs` / `.py` file:** there is
-no server binary (install one of the packages above, or put the server on
-`PATH`) **and** the project is not trusted. Command palette →
-`Chevron Lsp: Status` shows registrations and trusted roots.
-`Chevron Lsp: Trust Project` is required before any server starts.
+Opening a project folder shows a **Chevron-themed** trust modal. Trust or
+Don't trust is saved in `$CHEVRON_HOME/trusted-projects.json` and is not
+asked again for that folder. Command palette → `Chevron Lsp: Trust Project`
+can change a previous "Don't trust". `Chevron Lsp: Status` lists
+registrations and trusted roots.
+
+If no server is installed, a notice still explains how to add
+`chevron-lsp-typescript` / rust / python.
 
 ## What cpm does
 
