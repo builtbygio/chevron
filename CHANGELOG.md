@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Project replace no longer uses scandal `PathReplacer`. Closed files are rewritten with JS `RegExp` (same semantics as the open-buffer path). `Task` still hosts the worker. Scandal remains for the search escape hatch.
+
 - Find-in-project defaults to ripgrep. `find-and-replace.useRipgrep` is now `true`. `Workspace.scan` treats an omitted `options.ripgrep` as ripgrep. One-release escape: set the pin to `false` and/or `CHEVRON_SEARCH_ENGINE=scandal`. Scandal search and `Task` stay.
 
 - Architecture target is [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). Living docs no longer teach Atom dual-support, apm Node 12, or `Task` as the package-author worker. `docs/atom-architecture.md` is a current-state sketch that defers to that target. Custom V8 snapshot status in `docs/build-modernization.md`: Linux/Windows on, Darwin stock.
