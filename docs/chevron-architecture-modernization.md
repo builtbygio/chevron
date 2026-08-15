@@ -91,8 +91,8 @@ Every leftover named here has a delete / wrap / migrate verdict. Items missed in
 | first-mate + oniguruma NAN | `grammar-registry.js`, `text-mate-language-mode.js` | **Wrap** as supported fallback; lazy-load; delete only if exception list is empty (optional H3) |
 | `tree-sitter@0.25.1` | app dep | **Keep** |
 | TextMate-only catalog languages | yaml, xml, php, sql, toml, less/sass, perl, clojure, csharp, objective-c, gfm, git, todo, coffee-script, ruby-on-rails, … | **Migrate** via an H2 grammar-port **stream**; until then they **are** the exception list |
-| scandal search (`scan-handler.ts`) | `DefaultDirectorySearcher` | **Delete** after product search is ripgrep |
-| scandal replace (`replace-handler.ts`) | `Workspace.replace` | **Migrate** to ripgrep-or-in-process **before** dropping the `scandal` dep |
+| scandal search (`scan-handler.ts`) | `DefaultDirectorySearcher` | **Deleted** (PR 4) |
+| scandal replace (`replace-handler.ts`) | `Workspace.replace` | **Migrated** (PR 3; JS RegExp via Task) |
 | Public `Task` | `exports/chevron.js`; `src/task.ts` | **Wrap** until owned callers migrate; **not** a synonym for search (D16) |
 | `vscode-ripgrep@1.9.0` | app + fuzzy-finder | **Keep**; rename to `@vscode/ripgrep` only after `rgPath` + unpack + `ensure-ripgrep` + fuzzy-finder pin verify (PR 15, not coupled to 2b) |
 | Preload `spawn(rg)` | `src/ripgrep-directory-searcher.js` 1, 285 | **Migrate** to allowlisted main spawn + `invoke` in H1 (PR 2b). No new utilityProcess. No `sandbox: true` |
@@ -284,12 +284,12 @@ Risk (**medium**): some TextMate scopes are load-bearing for snippets, autocompl
 
 | Job | Path today | Engine |
 |-----|------------|--------|
-| **Find-in-project (UI)** | `find-and-replace` `results-model.ts` ~221–230 → `atom.workspace.scan({ ripgrep: useRipgrep })` | `useRipgrep` schema **defaults `false`**. Core `Workspace.scan` (`src/workspace.js` 2060–2062) uses ripgrep only when that flag is truthy; otherwise scandal via `DefaultDirectorySearcher` → `Task` → `scan-handler.ts` |
-| **Project replace** | `find-and-replace` → `atom.workspace.replace` (~274) → `Workspace.replace` (`src/workspace.js` ~2213) → `Task.once(replace-handler)` → scandal **`PathReplacer`** (`src/replace-handler.ts`) | No ripgrep path. Open buffers replace in-process; other files go through scandal |
+| **Find-in-project (UI)** | `find-and-replace` → `workspace.scan` → `RipgrepDirectorySearcher` | Ripgrep only (PR 2 + PR 4). `atom.directory-searcher` providers can still override a directory. `useRipgrep === false` / `CHEVRON_SEARCH_ENGINE=scandal` no longer select a second engine |
+| **Project replace** | `find-and-replace` → `workspace.replace` → `Task.once(replace-handler)` → `replace-in-files.js` | JS `RegExp` (PR 3). Open buffers in-process; other files via Task. No scandal |
 | **Quick-open crawl** | `fuzzy-finder/lib/path-loader.js` `const {Task} = require('chevron')` + `Task.once(load-paths-handler)` | Already has its own `fuzzy-finder.useRipGrep` (**default `true`**). Still **requires `Task`** to run either crawler |
 | **Go-to-symbol (no LSP)** | `symbols-view/lib/tag-reader.js` `Task.once(handlerPath, …)` | ctags in a `Task`. Pillar 1 **keeps** this fallback (LSP N3) |
 
-`Task` itself (`src/task.ts`) is `ChildProcess.fork` of `task-bootstrap.js` (fake `document` / `console`). It is exported from `require('chevron')` (`exports/chevron.js` 42). `src/task.ts` still documents the real uses: “Used by the fuzzy-finder and find in project.”
+`Task` itself (`src/task.ts`) is `ChildProcess.fork` of `task-bootstrap.js` (fake `document` / `console`). It is exported from `require('chevron')` (`exports/chevron.js` 42). Remaining callers: fuzzy-finder, symbols-view, `Workspace.replace`.
 
 `vscode-ripgrep@1.9.0` is in app deps (npm name **deprecated**). Bootstrap downloads `rg` because `--ignore-scripts` skips the package fetch. Fuzzy-finder also depends on `vscode-ripgrep`. Git/LSP already use `utilityProcess`. Search/replace/crawl did not.
 
@@ -311,9 +311,9 @@ Risk (**medium**): some TextMate scopes are load-bearing for snippets, autocompl
 |-------|---------|
 | `src/ripgrep-directory-searcher.js` | **Keep** the adapter; **migrate** `spawn` to main (PR 2b) |
 | `find-and-replace.useRipgrep` default | **Migrate** to `true` (this is the product switch) |
-| `DefaultDirectorySearcher` + `scan-handler.ts` | **Delete** after product search is ripgrep |
-| `replace-handler.ts` + scandal `PathReplacer` | **Migrate** first; then delete with scandal |
-| `scandal` dep | **Delete** only after **both** scan and replace are off it |
+| `DefaultDirectorySearcher` + `scan-handler.ts` | **Deleted** (PR 4) |
+| `replace-handler.ts` + scandal `PathReplacer` | **Migrated** (PR 3) |
+| `scandal` dep | **Deleted** (PR 4; scan and replace both off it) |
 | `Task` / `task-bootstrap.js` / `exports/chevron.js` `Task` | **Wrap** through H1; **delete** after owned callers migrate (H2) |
 | `vscode-ripgrep` | **Keep**; rename later with verification |
 
@@ -707,7 +707,7 @@ That set survives every pillar above.
 
 No new required methods in H1. Documented preferred names:
 
-- `chevron.workspace.scan` — ripgrep when `options.ripgrep` is true **or omitted** (new core default). find-and-replace’s own `useRipgrep` (new default **true**) is what the UI passes. `options.ripgrep === false` / `CHEVRON_SEARCH_ENGINE=scandal` / `find-and-replace.useRipgrep = false` restore scandal for one release.
+- `chevron.workspace.scan` — **ripgrep only**. find-and-replace’s `useRipgrep` (default **true**) is still what the UI passes; `false` no longer selects a second engine. `CHEVRON_SEARCH_ENGINE=scandal` is ignored.
 - `chevron.grammars` — tree-sitter preferred when `core.useTreeSitterParsers` is true (already).
 - `chevron.packages` — unchanged lifecycle.
 
@@ -875,7 +875,7 @@ No product telemetry. Observability is **local + CI**.
 | Snapshot policy | `out/STOCK_V8_SNAPSHOT.txt` (`reason=darwin-boot-crash` / `env-skip` / …). |
 | Package requires | `CHEVRON_AUDIT_PACKAGE_REQUIRES=1`. |
 | LSP | `chevron-lsp:status` (already); host logs stay local. |
-| Search engine | One log line at first `Workspace.scan` in H1: `searcher=ripgrep|scandal`. Remove after scandal dies. |
+| Search engine | One log line at first `Workspace.scan`: `searcher=ripgrep`. Scandal path is gone (PR 4). |
 | Config format | One-shot notification if a `.cson` was migrated to JSON. |
 | Tests | `unit-and-cpm` duration; Jasmine nightly JUnit artifact (`docs/jasmine-ci.md`). Treat nightly redness as a dashboard, not a page. |
 | Dogfood | #106 Days 2–7 remain human. Architecture PRs should not land over an unfinished dogfood week without owner OK. **Epic 18 / PR 19 are blocked until Days 2–7 answer Q1** (inbox load-bearing vs git-in-the-editor). |
@@ -891,8 +891,8 @@ No product telemetry. Observability is **local + CI**.
 | Knob | Default | Role in this plan |
 |------|---------|-------------------|
 | `core.useTreeSitterParsers` | existing | Keep; H2 ports add more languages |
-| `find-and-replace.useRipgrep` | **new default `true`** | **Product** find-in-project switch. One-release escape: set `false` |
-| Core `Workspace.scan` ripgrep | **new default on** when flag omitted | `CHEVRON_SEARCH_ENGINE=scandal` forces scandal for one release |
+| `find-and-replace.useRipgrep` | **default `true`** | UI still passes this flag; it no longer selects scandal (PR 4) |
+| Core `Workspace.scan` ripgrep | **only engine** | `CHEVRON_SEARCH_ENGINE=scandal` is ignored |
 | Config JSON writer | **new default on** | `CHEVRON_CONFIG_CSON=1` forces old writer one release. Does **not** remove season |
 | `CHEVRON_SKIP_MKSNAPSHOT` | Darwin implicit skip | Unchanged |
 | `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW` | off | Delete after dogfood |
@@ -909,7 +909,7 @@ No product telemetry. Observability is **local + CI**.
 
 - Every H1 PR is revertible independently.
 - Config: if JSON writer bugs, set `CHEVRON_CONFIG_CSON=1` or revert the PR; `.cson` is still on disk during the dual-read window.
-- Search: `find-and-replace.useRipgrep = false` **and/or** `CHEVRON_SEARCH_ENGINE=scandal`, or revert the pin + core default PRs. PR 2b rollback: revert the IPC channel; preload `spawn` path can return for one release if main spawn regresses (keep the old function behind a flag only if needed; prefer revert).
+- Search: revert PR 4 to restore `DefaultDirectorySearcher` / `scandal`. PR 2 / pin rollback no longer switches engines. PR 2b rollback: revert the IPC channel; preload `spawn` path can return for one release if main spawn regresses (keep the old function behind a flag only if needed; prefer revert).
 - Packager: revert to electron-packager 15; keep unpack globs identical so rollback is a dep bump.
 - Snapshot: `CHEVRON_SKIP_MKSNAPSHOT=1` already exists.
 
@@ -1043,9 +1043,10 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 4 — Delete scandal **search** only
 
 - **Title:** `search: remove DefaultDirectorySearcher / scan-handler`
-- **Files:** `src/default-directory-searcher.js`, `src/scan-handler.ts`, `src/workspace.js` (scandal searcher field), specs. **Not** `task.ts`, **not** `exports/chevron.js` `Task`, **not** `scandal` dep yet if replace still needs it
-- **Depends on:** PR 2 + dogfood window on default ripgrep; PR 3 if we also drop the `scandal` package in this PR
-- **Description:** Dead search path only. If PR 3 has landed, drop the `scandal` dependency here. `Task` stays.
+- **Status:** **this change**
+- **Files:** `src/default-directory-searcher.js`, `src/scan-handler.ts`, `src/workspace.js` (scandal searcher field), specs, root `package.json` (`scandal` + `isbinaryfile@2` override). **Not** `task.ts`, **not** `exports/chevron.js` `Task`
+- **Depends on:** PR 2 + dogfood window on default ripgrep; PR 3 (replace already off scandal)
+- **Description:** Dead search path only. PR 3 landed, so drop the `scandal` dependency here. `Task` stays.
 
 #### PR 5 — User config/keymaps write JSON; dual-read CSON
 

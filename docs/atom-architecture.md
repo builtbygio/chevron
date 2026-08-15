@@ -151,7 +151,7 @@ TextBuffer (text-buffer package)
 
 Language: official **tree-sitter 0.25** where a grammar exists; **TextMate / first-mate / oniguruma** for the exception list (yaml, xml, php, sql, toml, …). first-mate is a supported fallback, not the default engine.
 
-Find-in-project: `Workspace.scan` uses ripgrep when `options.ripgrep` is true or omitted. Scandal is the one-release escape (`options.ripgrep === false` or `CHEVRON_SEARCH_ENGINE=scandal`). The **product** switch is `find-and-replace.useRipgrep` (default **true**).
+Find-in-project: `Workspace.scan` is **ripgrep only**, spawned from main (`chevron:rg-search-start`). Packages may still provide `atom.directory-searcher` for a given directory. `CHEVRON_SEARCH_ENGINE=scandal` is ignored. The product UI is `find-and-replace` (`useRipgrep` default **true**).
 
 ---
 
@@ -249,7 +249,7 @@ What to change next is sequenced in [chevron-architecture-modernization.md](./ch
 | Packages | `src/package-manager.js`, `src/package.js`, `packages/*`, root `package.json` |
 | IPC | `src/remote-compat.js`, `src/renderer-ipc.js`, `src/main-process/register-renderer-ipc.js` |
 | LSP | `src/lsp/`, `src/main-process/workers/lsp-host.js` |
-| Search | `src/ripgrep-directory-searcher.js`, `src/default-directory-searcher.js` |
+| Search | `src/ripgrep-directory-searcher.js` |
 | Build | `script/bootstrap-modern`, `script/build`, `script/lib/packaging-policy.js` |
 
 ---
