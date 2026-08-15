@@ -3143,7 +3143,7 @@ describe('Workspace', () => {
               waitsFor(() => atom.workspace.directorySearchers.length > 0);
             });
 
-            it('can override the DefaultDirectorySearcher on a per-directory basis', async () => {
+            it('can override the built-in directory searcher on a per-directory basis', async () => {
               const foreignFilePath = 'ssh://foreign-directory:8080/hello.txt';
               const numPathsSearchedInDir2 = 1;
               const numPathsToPretendToSearchInCustomDirectorySearcher = 10;

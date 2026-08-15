@@ -250,8 +250,6 @@ function shouldExcludeModule({
     requiredModuleRelativePath ===
       path.join('..', 'node_modules', 'winreg', 'lib', 'registry.js') ||
     requiredModuleRelativePath ===
-      path.join('..', 'node_modules', 'scandal', 'lib', 'scandal.js') ||
-    requiredModuleRelativePath ===
       path.join('..', 'node_modules', '@atom', 'fuzzy-native', 'lib', 'main.js') ||
     requiredModuleRelativePath ===
       path.join('..', 'node_modules', 'vscode-ripgrep', 'lib', 'index.js') ||

@@ -42,15 +42,15 @@
 | `atom-keymap` | [atom-keymap](https://github.com/builtbygio/atom-keymap) | 8.2.15 `KeymapManager`. Compiled `lib/` (git tag is Coffee) |
 | `atom-select-list` | [atom-select-list](https://github.com/builtbygio/atom-select-list) | 0.8.1 `SelectListView`. Override unifies nested 0.7.2 |
 | `season` | [season](https://github.com/builtbygio/season) | 6.0.2 CSON `readFile(Sync)` / `writeFile(Sync)` / `setCacheDir` |
-| `scandal` | [scandal](https://github.com/builtbygio/scandal) | 3.2.0 `PathSearcher` / `PathScanner` / `search`. Keeps `isbinaryfile@2` |
 | `text-buffer` | [text-buffer](https://github.com/builtbygio/text-buffer) | 13.18.6. Nested superstring is `file:packages/superstring` |
 
-Root `overrides` pin nested copies (first-mate → oniguruma, spell-check → spellchecker / atom-pathspec, symbols-view → ctags, scandal → `isbinaryfile@2`, text-buffer → `fs-admin` 0.15, atom-select-list 0.8.1, …) to the same SHAs.
+`scandal` (and its `isbinaryfile@2` override) dropped after search and replace left it (architecture H1 PR 4).
+
+Root `overrides` pin nested copies (first-mate → oniguruma, spell-check → spellchecker / atom-pathspec, symbols-view → ctags, text-buffer → `fs-admin` 0.15, atom-select-list 0.8.1, …) to the same SHAs.
 
 | Package | Repo | Notes |
 |---------|------|--------|
 | `atom-pathspec` | [atom-pathspec](https://github.com/builtbygio/atom-pathspec) | `remote.app.getPath` → `atom-app-get-path-sync` (spell-check) |
-| `isbinaryfile@2` | [isbinaryfile](https://github.com/builtbygio/isbinaryfile) | 2.0.4 with `main: index.js` (scandal). 3.x is only hoisted from `electron-osx-sign`, not an app dep |
 
 ### Product packages
 

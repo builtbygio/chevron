@@ -85,7 +85,6 @@ const OWNED_BUILTBYGIO = [
   'open-on-github',
   'pathwatcher',
   'package-generator',
-  'scandal',
   'scrollbar-style',
   'season',
   'settings-view',
@@ -104,7 +103,7 @@ const OWNED_BUILTBYGIO = [
 ];
 
 /** Must not reappear as app dependencies (issue #62). */
-const FORBIDDEN_APP_DEPS = ['babel-core', 'coffee-script'];
+const FORBIDDEN_APP_DEPS = ['babel-core', 'coffee-script', 'scandal'];
 
 function isBuiltbygioGit(url) {
   return (
@@ -162,15 +161,16 @@ describe('package pin policy', () => {
     );
   });
 
-  it('isbinaryfile@2 override is the owned 2.0.4 fork (not 3.x)', () => {
-    const spec = pkg.overrides && pkg.overrides['isbinaryfile@2'];
-    assert.ok(
-      isBuiltbygioGit(spec),
-      `isbinaryfile@2 must be builtbygio git pin, got: ${spec}`
+  it('does not keep the scandal-only isbinaryfile@2 override', () => {
+    assert.strictEqual(
+      pkg.overrides && pkg.overrides['isbinaryfile@2'],
+      undefined,
+      'isbinaryfile@2 override was only for scandal'
     );
-    assert.ok(
-      String(spec).includes('isbinaryfile.git'),
-      `expected builtbygio/isbinaryfile, got: ${spec}`
+    assert.strictEqual(
+      pkg.overrides && pkg.overrides.scandal,
+      undefined,
+      'scandal override must not return'
     );
   });
 

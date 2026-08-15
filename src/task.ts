@@ -15,10 +15,9 @@ const Grim = require('grim');
 
 // Extended: Run a node script in a separate process.
 //
-// Used by the fuzzy-finder and [find in project](https://github.com/atom/atom/blob/master/src/scan-handler.coffee).
-//
-// For a real-world example, see the [scan-handler](https://github.com/atom/atom/blob/master/src/scan-handler.coffee)
-// and the [instantiation of the task](https://github.com/atom/atom/blob/4a20f13162f65afc816b512ad7201e528c3443d7/src/project.coffee#L245).
+// Used by fuzzy-finder (path crawl), symbols-view (ctags), and
+// Workspace.replace (`src/replace-handler.ts`). Find-in-project no longer
+// uses Task (ripgrep). Do not add new Task callers.
 //
 // ## Examples
 //

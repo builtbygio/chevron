@@ -5,7 +5,6 @@ const { Emitter, Disposable, CompositeDisposable } = require('event-kit');
 const fs = require('fs-plus');
 const { Directory } = require('pathwatcher');
 const Grim = require('grim');
-const DefaultDirectorySearcher = require('./default-directory-searcher');
 const RipgrepDirectorySearcher = require('./ripgrep-directory-searcher');
 const {
   resolveScanEngine,
@@ -212,7 +211,6 @@ module.exports = class Workspace extends Model {
     this.destroyedItemURIs = [];
     this.stoppedChangingActivePaneItemTimeout = null;
 
-    this.scandalDirectorySearcher = new DefaultDirectorySearcher();
     this.ripgrepDirectorySearcher = new RipgrepDirectorySearcher();
     this.consumeServices(this.packageManager);
 
@@ -2060,13 +2058,9 @@ module.exports = class Workspace extends Model {
     // Find a searcher for every Directory in the project. Each searcher that is matched
     // will be associated with an Array of Directory objects in the Map.
     const directoriesForSearcher = new Map();
+    logScanEngineOnce(resolveScanEngine(options));
     for (const directory of this.project.getDirectories()) {
-      const engine = resolveScanEngine(options);
-      logScanEngineOnce(engine);
-      let searcher =
-        engine === 'ripgrep'
-          ? this.ripgrepDirectorySearcher
-          : this.scandalDirectorySearcher;
+      let searcher = this.ripgrepDirectorySearcher;
       for (const directorySearcher of this.directorySearchers) {
         if (directorySearcher.canSearchDirectory(directory)) {
           searcher = directorySearcher;
