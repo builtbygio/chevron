@@ -8,6 +8,7 @@ const path = require('path');
 const {
   STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR,
   PACKAGER_MODULE,
+  getHostArch,
   shouldSkipCustomSnapshot,
   stockSnapshotNote,
   isForeignPrebuildPath,
@@ -60,6 +61,18 @@ describe('packaging policy (Stream D)', () => {
 
   it('note mentions CHEVRON_SKIP_MKSNAPSHOT', () => {
     assert.ok(stockSnapshotNote('43.1.0').includes('CHEVRON_SKIP_MKSNAPSHOT'));
+  });
+
+  it('getHostArch does not require @electron/get', () => {
+    assert.strictEqual(getHostArch({}, 'x64'), 'x64');
+    assert.strictEqual(getHostArch({}, 'arm64'), 'arm64');
+    assert.strictEqual(getHostArch({ npm_config_arch: 'arm64' }, 'x64'), 'arm64');
+    assert.strictEqual(getHostArch({}, 'arm'), 'armv7l');
+    const impl = fs.readFileSync(
+      path.join(ROOT, 'script', 'lib', 'package-application.js'),
+      'utf8'
+    );
+    assert.ok(!impl.includes("require('@electron/get')"));
   });
 
   it('script uses @electron/packager (not electron-packager 15)', () => {

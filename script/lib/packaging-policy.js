@@ -12,6 +12,24 @@ const PACKAGER_MODULE = '@electron/packager';
 
 const STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR = 43;
 
+/**
+ * Electron's host arch. Used to be require('@electron/get').getHostArch,
+ * which only resolved because electron-packager 15 hoisted @electron/get.
+ * @electron/packager 18 nests it, so resolve here.
+ */
+function getHostArch(env = process.env, nodeArch = process.arch) {
+  const override = env.npm_config_arch || env.npm_config_target_arch;
+  const arch = override || nodeArch;
+  if (arch === 'arm') {
+    const version =
+      process.config &&
+      process.config.variables &&
+      String(process.config.variables.arm_version);
+    return version === '6' ? 'armv6l' : 'armv7l';
+  }
+  return arch;
+}
+
 function electronMajor(version) {
   const n = parseInt(String(version || '').split('.')[0], 10);
   return Number.isFinite(n) ? n : null;
@@ -92,6 +110,7 @@ function asarUnpackExpression() {
 module.exports = {
   STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR,
   PACKAGER_MODULE,
+  getHostArch,
   electronMajor,
   shouldSkipCustomSnapshot,
   stockSnapshotNote,

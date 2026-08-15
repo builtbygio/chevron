@@ -4,7 +4,6 @@ const assert = require('assert');
 const childProcess = require('child_process');
 const electronPackager = require('@electron/packager');
 const fs = require('fs-extra');
-const hostArch = require('@electron/get').getHostArch;
 const includePathInPackagedApp = require('./include-path-in-packaged-app');
 const getLicenseText = require('./get-license-text');
 const path = require('path');
@@ -13,8 +12,11 @@ const template = require('lodash.template');
 
 const CONFIG = require('../config');
 const { ensureRipgrep } = require('./ensure-ripgrep');
-const { asarUnpackExpression } = require('./packaging-policy');
-const HOST_ARCH = hostArch();
+const {
+  asarUnpackExpression,
+  getHostArch
+} = require('./packaging-policy');
+const HOST_ARCH = getHostArch();
 
 module.exports = function() {
   const appName = getAppName();
