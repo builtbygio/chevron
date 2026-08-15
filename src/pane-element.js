@@ -14,16 +14,17 @@ class PaneElement extends HTMLElement {
   connectedCallback() {
     this.initializeContent();
     this.attached = true;
-    if (this.model.isFocused()) {
+    if (this.model && this.model.isFocused()) {
       this.focus();
     }
   }
 
-  detachedCallback() {
+  disconnectedCallback() {
     this.attached = false;
   }
 
   initializeContent() {
+    if (this.itemViews.parentNode === this) return;
     this.setAttribute('class', 'pane');
     this.setAttribute('tabindex', -1);
     this.appendChild(this.itemViews);

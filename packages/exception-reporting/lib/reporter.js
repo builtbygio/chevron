@@ -229,7 +229,7 @@ class Reporter {
     if (error.privateMetadata != null && error.privateMetadataDescription != null) {
       this.requestPrivateMetadataConsent(
         error,
-        "The Atom team would like to collect the following information to resolve this error:",
+        "Chevron would like to collect the following information to resolve this error:",
         (error2) => this.reportUncaughtException(error2)
       );
       return;
@@ -246,7 +246,7 @@ class Reporter {
     if (error.privateMetadata != null && error.privateMetadataDescription != null) {
       this.requestPrivateMetadataConsent(
         error,
-        "The Atom team would like to collect some information to resolve an unexpected condition:",
+        "Chevron would like to collect some information to resolve an unexpected condition:",
         (error2) => this.reportFailedAssertion(error2)
       );
       return;

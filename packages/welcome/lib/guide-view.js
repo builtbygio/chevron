@@ -105,7 +105,7 @@ class GuideView {
           className: "welcome-img",
           src: "atom://welcome/assets/package.svg"
         }
-      )), /* @__PURE__ */ import_etch.default.dom("p", null, "Packages extend Chevron using the Atom package API (", /* @__PURE__ */ import_etch.default.dom("code", null, "global.atom"), ", ", /* @__PURE__ */ import_etch.default.dom("code", null, "engines.atom"), "). Install with ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), " (or ", /* @__PURE__ */ import_etch.default.dom("code", null, "apm"), ", a shim to cpm)."), /* @__PURE__ */ import_etch.default.dom("p", { className: "welcome-note" }, /* @__PURE__ */ import_etch.default.dom("strong", null, "Package manager:"), " Settings and the CLI use", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), " (Electron-as-Node). Registry search defaults to the Pulsar package API; override with", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "CPM_REGISTRY_URL"), ". You can also install from a local path or git URL. See", " ", /* @__PURE__ */ import_etch.default.dom("a", { href: "https://github.com/builtbygio/chevron" }, "builtbygio/chevron"), " ", "docs for ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), " guidance."), /* @__PURE__ */ import_etch.default.dom("p", null, /* @__PURE__ */ import_etch.default.dom(
+      )), /* @__PURE__ */ import_etch.default.dom("p", null, "Packages extend Chevron with ", /* @__PURE__ */ import_etch.default.dom("code", null, "require('chevron')"), " and ", /* @__PURE__ */ import_etch.default.dom("code", null, "engines.chevron"), ". Install with ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), " (or ", /* @__PURE__ */ import_etch.default.dom("code", null, "apm"), ", a shim to cpm)."), /* @__PURE__ */ import_etch.default.dom("p", { className: "welcome-note" }, /* @__PURE__ */ import_etch.default.dom("strong", null, "Package manager:"), " Settings and the CLI use", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), " (Electron-as-Node). Registry search defaults to the Pulsar package API; override with", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "CPM_REGISTRY_URL"), ". You can also install from a local path or git URL. See", " ", /* @__PURE__ */ import_etch.default.dom("a", { href: "https://github.com/builtbygio/chevron" }, "builtbygio/chevron"), " ", "docs for ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), " guidance."), /* @__PURE__ */ import_etch.default.dom("p", null, /* @__PURE__ */ import_etch.default.dom(
         "button",
         {
           ref: "packagesButton",
@@ -286,13 +286,25 @@ class GuideView {
       "github:toggle-github-tab"
     );
   }
+  async openSettings(uri) {
+    try {
+      await atom.packages.activatePackage("settings-view");
+    } catch (error) {
+      atom.notifications.addError("Could not open Settings", {
+        detail: error && error.message ? error.message : String(error),
+        dismissable: true
+      });
+      return;
+    }
+    return atom.workspace.open(uri, { split: "left" });
+  }
   didClickPackagesButton() {
     this.props.reporterProxy.sendEvent("clicked-packages-cta");
-    atom.workspace.open("atom://config/install", { split: "left" });
+    return this.openSettings("atom://config/install");
   }
   didClickThemesButton() {
     this.props.reporterProxy.sendEvent("clicked-themes-cta");
-    atom.workspace.open("atom://config/themes", { split: "left" });
+    return this.openSettings("atom://config/themes");
   }
   didClickStylingButton() {
     this.props.reporterProxy.sendEvent("clicked-styling-cta");

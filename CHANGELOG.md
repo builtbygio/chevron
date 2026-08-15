@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Closing a split pane (Markdown Preview) no longer strips the surviving pane’s DOM. Welcome Guide **Open Installer** / **theme picker** activate `settings-view` before opening `atom://config/*`. Crash / recovery dialogs say Chevron and point at `builtbygio/chevron`.
 - `.c` (and other official tree-sitter languages) had no colour: `loadLanguageModule` stripped `{ name, language, nodeTypeInfo }` down to the raw Language, so tree-sitter 0.25 could not build node classes. Keep the full module. Also stop deferring `language-*` so grammars exist before the first editor. Reject an unusable parser so the TextMate grammar can still win.
 - Incremental tree-sitter highlight after edits: official `hasChanges` is a boolean getter, not DeeDeeG's `hasChanges()`.
 - `bootstrap-modern` no longer overwrites npm `tree-sitter@0.25` with a vendored DeeDeeG 0.17 / ABI 12 tree. That is why local builds kept an old runtime after #113.
