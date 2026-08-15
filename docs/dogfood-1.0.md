@@ -16,13 +16,14 @@
 - [x] Day 1 — install / first-run Welcome + Guide; open a real project; save a file
 - [x] Day 2 — search / find-and-replace; tree-view; git status + commit (github package)
 - [x] Day 3 — markdown preview; autocomplete; one language grammar you actually use
-- [ ] Day 4 — Check for Update opens the Releases page; About version is 1.0.1
-- [ ] Day 5 — LSP path if you use it (`chevron-lsp-*` or workspace trust)
-- [ ] Day 6 — settings-view (install is owned-catalog only); notifications
-- [ ] Day 7 — cold start, large file, and “would I use this tomorrow?”
+- [x] Day 4 — Check for Update opens the Releases page; About version is 1.0.1
+- [x] Day 5 — LSP path if you use it (`chevron-lsp-*` or workspace trust)
+- [x] Day 6 — settings-view (install is owned-catalog only); notifications
+- [x] Day 7 — cold start, large file, and “would I use this tomorrow?”
 
 ## Findings (owner, 2026-08-15)
 
+- **Week complete.** Days 1–7 checked.
 - **Day 2:** OK.
 - **Day 3:** Closing Markdown Preview hides every center pane. Clicking a project file in tree-view does not bring editors back. Choosing **Markdown Preview** on the file restores the panes. Crash dialog still said Atom / atom/atom.
 - **Day 6:** Welcome Guide **Open Installer** and **Open the theme picker** do nothing (`atom://config/*` while `settings-view` was deferred).

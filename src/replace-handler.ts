@@ -1,19 +1,19 @@
 /*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ * Task worker for project replace (files not open in a buffer).
+ * JS RegExp semantics. Task shell stays until owned callers leave Task.
  */
-const {PathReplacer} = require('scandal');
+const { replaceInFiles } = require('./replace-in-files');
 
-module.exports = function(filePaths, regexSource, regexFlags, replacementText) {
+module.exports = function(
+  filePaths,
+  regexSource,
+  regexFlags,
+  replacementText
+) {
   const callback = this.async();
-
-  const replacer = new PathReplacer();
   const regex = new RegExp(regexSource, regexFlags);
-
-  replacer.on('file-error', ({code, path, message}) => emit('replace:file-error', {code, path, message}));
-
-  replacer.on('path-replaced', result => emit('replace:path-replaced', result));
-
-  return replacer.replacePaths(regex, replacementText, filePaths, () => callback());
+  replaceInFiles(filePaths, regex, replacementText, (event, payload) => {
+    emit(event, payload);
+  });
+  callback();
 };

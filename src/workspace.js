@@ -2208,7 +2208,7 @@ module.exports = class Workspace extends Model {
         }
       };
 
-      if (!outOfProcessFinished.length) {
+      if (outOfProcessPaths.length) {
         let flags = 'g';
         if (regex.multiline) {
           flags += 'm';
