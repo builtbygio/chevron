@@ -31,7 +31,7 @@ module.exports = class ConfigFile {
     this.value = {};
     this.reloadCallbacks = [];
 
-    // Use a queue to prevent multiple concurrent write to the same file.
+    // season writes JSON when this.path ends in .json, CSON when .cson.
     const writeQueue = asyncQueue((data, callback) =>
       CSON.writeFile(this.path, data, error => {
         if (error) {

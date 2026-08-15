@@ -97,7 +97,7 @@ Every leftover named here has a delete / wrap / migrate verdict. Items missed in
 | `vscode-ripgrep@1.9.0` | app + fuzzy-finder | **Keep**; rename to `@vscode/ripgrep` only after `rgPath` + unpack + `ensure-ripgrep` + fuzzy-finder pin verify (PR 15, not coupled to 2b) |
 | Preload `spawn(rg)` | `src/ripgrep-directory-searcher.js` 1, 285 | **Migrate** to allowlisted main spawn + `invoke` in H1 (PR 2b). No new utilityProcess. No `sandbox: true` |
 | season / pin CSON (~70 files) | `language-*` git pins; `transpile-cson-paths.js` is **live** | **Wrap** JSON+CSON reader until pins convert; **do not** delete season after a user-config window |
-| User `config.cson` | `src/config-file.js` | **Migrate** to JSON with dual-read (H1, parallel) |
+| User `config.cson` | `src/config-file.js` | **Migrated** (PR 5: JSON default, dual-read CSON) |
 | Coffee/Babel compile-cache stubs | `src/coffee-script.js`, `src/babel.js` | **Delete** after error-window (not bundled with CSON transpile) |
 | `transpileCsonPaths()` | `script/build` 108 | **Keep** until pins are JSON |
 | `transpileCoffeeScriptPaths` / `transpileBabelPaths` | `script/build` 104–105 | **Delete** if unused (quiet no-ops) |
@@ -358,7 +358,7 @@ Risk (**high** if we delete early): landing “delete Task + scandal after a dog
 | Piece | Verdict |
 |-------|---------|
 | Config schema + scoped store + observe API | **Keep** |
-| User `config.cson` / `keymap.cson` | **Migrate** to JSON (H1, parallel) |
+| User `config.cson` / `keymap.cson` | **Migrated** (PR 5; dual-read CSON, `season` stays) |
 | Pin `.cson` (~70) | **Migrate** per-package (H2 stream); checklist already says this |
 | `transpile-cson-paths.js` | **Keep** until pins are JSON |
 | `season` | **Wrap** until pins + user dual-read are done; then **delete** |
@@ -717,10 +717,10 @@ Class rename `AtomEnvironment` → `ChevronEnvironment` is **explicitly not H1**
 
 | Path | Now | Target |
 |------|-----|--------|
-| `~/.chevron/config.cson` | Default writer via season | Dual-read; migrate to `config.json` on save |
-| `~/.chevron/config.json` | Supported if present | **Default** |
-| `~/.chevron/keymap.cson` | Dual-read (`CSON.resolve`) | Dual-read then JSON only |
-| `~/.chevron/keymap.json` | Preferred for new files already | **Default** |
+| `~/.chevron/config.cson` | Dual-read; left in place after copy | Do not auto-delete |
+| `~/.chevron/config.json` | **Default** writer | Escape: `CHEVRON_CONFIG_CSON=1` |
+| `~/.chevron/keymap.cson` | Dual-read; left in place after copy | Same as config |
+| `~/.chevron/keymap.json` | **Default** | Same as config |
 
 ### IPC
 
@@ -893,7 +893,7 @@ No product telemetry. Observability is **local + CI**.
 | `core.useTreeSitterParsers` | existing | Keep; H2 ports add more languages |
 | `find-and-replace.useRipgrep` | **default `true`** | UI still passes this flag; it no longer selects scandal (PR 4) |
 | Core `Workspace.scan` ripgrep | **only engine** | `CHEVRON_SEARCH_ENGINE=scandal` is ignored |
-| Config JSON writer | **new default on** | `CHEVRON_CONFIG_CSON=1` forces old writer one release. Does **not** remove season |
+| Config JSON writer | **default on** (PR 5) | `CHEVRON_CONFIG_CSON=1` forces CSON writer one release. Does **not** remove season |
 | `CHEVRON_SKIP_MKSNAPSHOT` | Darwin implicit skip | Unchanged |
 | `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW` | off | Delete after dogfood |
 | `CHEVRON_RESTRICT_PACKAGE_REQUIRES` | on | Unchanged |
@@ -1051,9 +1051,10 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 5 — User config/keymaps write JSON; dual-read CSON
 
 - **Title:** `config: JSON default for ~/.chevron; dual-read CSON`
-- **Files:** `src/config-file.js`, `src/keymap-extensions.ts`, `src/main-process/start.js`, `static/index.js` (CSON cache setup stays — pins still need it), `dot-atom/*`, settings-view pin if it assumes `.cson`, tests, CHANGELOG
+- **Status:** **this change**
+- **Files:** `src/user-config-path.js`, `src/config-file.js`, `src/keymap-extensions.ts`, `src/atom-environment.js`, `src/main-process/start.js`, `src/main-process/atom-application.js`, `static/index.js` (CSON cache setup stays — pins still need it), `dot-atom/*` (already JSON), tests, CHANGELOG
 - **Depends on:** none (parallel with 2–4)
-- **Description:** New homes get `config.json` / `keymap.json`. Existing `*.cson` still load; next save writes JSON. One-shot notification. Escape: `CHEVRON_CONFIG_CSON=1`. **Does not remove `season`.**
+- **Description:** New homes get `config.json` / `keymap.json`. Existing `*.cson` still load; first boot copies to JSON and leaves CSON. One-shot notification. Escape: `CHEVRON_CONFIG_CSON=1`. **Does not remove `season`.**
 
 #### PR 5b — (H2, not H1) Remove `season` after pin CSON is gone
 

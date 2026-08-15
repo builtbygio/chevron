@@ -24,6 +24,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const { resolveUserDataFile } = require('../user-config-path');
 
 /** registrationId -> command, as declared by the renderer at activation */
 const registered = new Map();
@@ -89,17 +90,15 @@ function readUserConfig() {
     process.env.CHEVRON_HOME ||
     process.env.ATOM_HOME ||
     path.join(require('os').homedir(), '.chevron');
-  for (const name of ['config.cson', 'config.json']) {
-    const file = path.join(home, name);
-    try {
-      if (!fs.existsSync(file)) continue;
-      if (name.endsWith('.json')) {
-        return JSON.parse(fs.readFileSync(file, 'utf8'));
-      }
-      return require('season').readFileSync(file);
-    } catch (_) {
-      /* unreadable/malformed config → treat as no user servers */
+  const { filePath } = resolveUserDataFile(home, 'config');
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    if (filePath.endsWith('.json')) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf8'));
     }
+    return require('season').readFileSync(filePath);
+  } catch (_) {
+    /* unreadable/malformed config → treat as no user servers */
   }
   return null;
 }

@@ -41,12 +41,19 @@ KeymapManager.prototype.getUserKeymapPath = function() {
   let userKeymapPath;
   if (this.configDirPath == null) { return ""; }
 
+  if (process.env.CHEVRON_CONFIG_CSON === '1') {
+    const csonPath = path.join(this.configDirPath, 'keymap.cson');
+    if (fs.isFileSync(csonPath)) { return csonPath; }
+    if ((userKeymapPath = CSON.resolve(path.join(this.configDirPath, 'keymap')))) {
+      return userKeymapPath;
+    }
+    return csonPath;
+  }
+
   if ((userKeymapPath = CSON.resolve(path.join(this.configDirPath, 'keymap')))) {
     return userKeymapPath;
-  } else {
-    // Prefer JSON for new user keymaps; season still reads legacy keymap.cson.
-    return path.join(this.configDirPath, 'keymap.json');
   }
+  return path.join(this.configDirPath, 'keymap.json');
 };
 
 KeymapManager.prototype.loadUserKeymap = function() {

@@ -9,6 +9,7 @@ const atomPaths = require('../atom-paths');
 const fs = require('fs');
 const CSON = require('season');
 const Config = require('../config');
+const { resolveUserDataFile } = require('../user-config-path');
 const StartupTime = require('../startup-time');
 
 StartupTime.setStartTime();
@@ -175,16 +176,12 @@ function handleStartupEventWithSquirrel() {
 
 function getConfig() {
   const config = new Config();
+  const home = process.env.ATOM_HOME;
+  if (!home) return config;
 
-  let configFilePath;
-  if (fs.existsSync(path.join(process.env.ATOM_HOME, 'config.json'))) {
-    configFilePath = path.join(process.env.ATOM_HOME, 'config.json');
-  } else if (fs.existsSync(path.join(process.env.ATOM_HOME, 'config.cson'))) {
-    configFilePath = path.join(process.env.ATOM_HOME, 'config.cson');
-  }
-
-  if (configFilePath) {
-    const configFileData = CSON.readFileSync(configFilePath);
+  const { filePath } = resolveUserDataFile(home, 'config');
+  if (fs.existsSync(filePath)) {
+    const configFileData = CSON.readFileSync(filePath);
     config.resetUserSettings(configFileData);
   }
 
