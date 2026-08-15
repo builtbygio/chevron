@@ -151,7 +151,7 @@ TextBuffer (text-buffer package)
 
 Language: official **tree-sitter 0.25** where a grammar exists; **TextMate / first-mate / oniguruma** for the exception list (yaml, xml, php, sql, toml, …). first-mate is a supported fallback, not the default engine.
 
-Find-in-project: `Workspace.scan` can use ripgrep (`src/ripgrep-directory-searcher.js`) or scandal (`DefaultDirectorySearcher`). The **product** switch is `find-and-replace.useRipgrep` (still defaults **false**). Architecture H1 flips that pin and then deletes the scandal searcher.
+Find-in-project: `Workspace.scan` uses ripgrep when `options.ripgrep` is true or omitted. Scandal is the one-release escape (`options.ripgrep === false` or `CHEVRON_SEARCH_ENGINE=scandal`). The **product** switch is `find-and-replace.useRipgrep` (default **true**).
 
 ---
 
