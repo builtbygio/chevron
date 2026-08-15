@@ -174,6 +174,9 @@ module.exports = function registerRendererIpc(atomApplication) {
   // Phase N2.2–N2.3 + P2.1 filesystem bridge (absolute paths + optional strict roots).
   require('./register-fs-ipc')(atomApplication);
 
+  // H1 PR 2b — ripgrep spawn lives in main, not the preload searcher.
+  require('./register-rg-ipc')(atomApplication);
+
   // Phase S3 / #61 — github git workers via utilityProcess (feature-flagged).
   const packageUtilityWorker = require('./package-utility-worker');
 

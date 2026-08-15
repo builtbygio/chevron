@@ -1,6 +1,9 @@
-const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+
+function getIpcRenderer() {
+  return require('electron').ipcRenderer;
+}
 
 function resolveRgPath(rgPath, existsFn = p => fs.existsSync(p)) {
   const raw = rgPath || require('vscode-ripgrep').rgPath;
@@ -282,89 +285,98 @@ module.exports = class RipgrepDirectorySearcher {
 
     args.push('.');
 
-    const child = spawn(this.rgPath, args, {
-      cwd: directoryPath,
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
-
     const didMatch = options.didMatch || (() => {});
     let cancelled = false;
+    let searchId = null;
 
-    const returnedPromise = new Promise((resolve, reject) => {
-      let buffer = '';
-      let bufferError = '';
-      let pendingEvent;
-      let pendingLeadingContext;
-      let pendingTrailingContexts;
+    const ipcRenderer = getIpcRenderer();
+    const start = ipcRenderer.invoke('chevron:rg-search-start', {
+      args,
+      cwd: directoryPath
+    });
 
-      child.on('close', (code, signal) => {
-        // code 1 is used when no results are found.
-        if (code !== null && code > 1) {
-          reject(new Error(bufferError));
-        } else {
-          resolve();
-        }
-      });
+    const returnedPromise = start.then(({ searchId: id }) => {
+      searchId = id;
+      if (cancelled) {
+        return ipcRenderer.invoke('chevron:rg-search-cancel', { searchId });
+      }
 
-      child.stderr.on('data', chunk => {
-        bufferError += chunk;
-      });
+      return new Promise((resolve, reject) => {
+        let buffer = '';
+        let pendingEvent;
+        let pendingLeadingContext;
+        let pendingTrailingContexts;
 
-      child.stdout.on('data', chunk => {
-        if (cancelled) {
-          return;
-        }
+        const onData = (_event, msg) => {
+          if (!msg || msg.searchId !== searchId || cancelled) return;
+          buffer += msg.chunk || '';
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+          for (const line of lines) {
+            const message = JSON.parse(line);
+            updateTrailingContexts(message, pendingTrailingContexts, options);
 
-        buffer += chunk;
-        const lines = buffer.split('\n');
-        buffer = lines.pop();
-        for (const line of lines) {
-          const message = JSON.parse(line);
-          updateTrailingContexts(message, pendingTrailingContexts, options);
+            if (message.type === 'begin') {
+              pendingEvent = {
+                filePath: path.join(directoryPath, getText(message.data.path)),
+                matches: []
+              };
+              pendingLeadingContext = [];
+              pendingTrailingContexts = new Set();
+            } else if (message.type === 'match') {
+              const trailingContextLines = [];
+              pendingTrailingContexts.add(trailingContextLines);
 
-          if (message.type === 'begin') {
-            pendingEvent = {
-              filePath: path.join(directoryPath, getText(message.data.path)),
-              matches: []
-            };
-            pendingLeadingContext = [];
-            pendingTrailingContexts = new Set();
-          } else if (message.type === 'match') {
-            const trailingContextLines = [];
-            pendingTrailingContexts.add(trailingContextLines);
+              processUnicodeMatch(message.data);
 
-            processUnicodeMatch(message.data);
+              for (const submatch of message.data.submatches) {
+                const { lineText, range } = processSubmatch(
+                  submatch,
+                  getText(message.data.lines),
+                  message.data.line_number - 1
+                );
 
-            for (const submatch of message.data.submatches) {
-              const { lineText, range } = processSubmatch(
-                submatch,
-                getText(message.data.lines),
-                message.data.line_number - 1
-              );
-
-              pendingEvent.matches.push({
-                matchText: getText(submatch.match),
-                lineText,
-                lineTextOffset: 0,
-                range,
-                leadingContextLines: [...pendingLeadingContext],
-                trailingContextLines
-              });
+                pendingEvent.matches.push({
+                  matchText: getText(submatch.match),
+                  lineText,
+                  lineTextOffset: 0,
+                  range,
+                  leadingContextLines: [...pendingLeadingContext],
+                  trailingContextLines
+                });
+              }
+            } else if (message.type === 'end') {
+              options.didSearchPaths(++numPathsFound.num);
+              didMatch(pendingEvent);
+              pendingEvent = null;
             }
-          } else if (message.type === 'end') {
-            options.didSearchPaths(++numPathsFound.num);
-            didMatch(pendingEvent);
-            pendingEvent = null;
-          }
 
-          updateLeadingContext(message, pendingLeadingContext, options);
-        }
+            updateLeadingContext(message, pendingLeadingContext, options);
+          }
+        };
+
+        const onClose = (_event, msg) => {
+          if (!msg || msg.searchId !== searchId) return;
+          ipcRenderer.removeListener('chevron:rg-search-data', onData);
+          ipcRenderer.removeListener('chevron:rg-search-close', onClose);
+          // code 1 is used when no results are found.
+          if (msg.code !== null && msg.code > 1) {
+            reject(new Error(msg.stderr || 'ripgrep failed'));
+          } else {
+            resolve();
+          }
+        };
+
+        ipcRenderer.on('chevron:rg-search-data', onData);
+        ipcRenderer.on('chevron:rg-search-close', onClose);
       });
     });
 
     returnedPromise.cancel = () => {
-      child.kill();
       cancelled = true;
+      if (searchId != null) {
+        ipcRenderer.invoke('chevron:rg-search-cancel', { searchId });
+      }
     };
 
     return returnedPromise;

@@ -66,7 +66,7 @@ Responsibilities:
 - **IPC hub** (`register-renderer-ipc.js`, `register-fs-ipc.js`) — allowlisted only
 - Supervise **git** and **LSP** `utilityProcess` hosts
 
-This is the only place that should talk freely to the OS for sensitive work. Find-in-project `rg` spawn moves here (architecture H1 PR 2b); today it still starts from the preload searcher.
+This is the only place that should talk freely to the OS for sensitive work. Find-in-project `rg` is an allowlisted main-process spawn (`chevron:rg-search-start`).
 
 ### 2. Editor window (renderer)
 

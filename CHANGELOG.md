@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Find-in-project ripgrep is spawned from main (`chevron:rg-search-start` / cancel), not `child_process.spawn` in the preload searcher. JSON-line adapter and event semantics are unchanged. `shell: false`.
+
 - Project replace no longer uses scandal `PathReplacer`. Closed files are rewritten with JS `RegExp` (same semantics as the open-buffer path). `Task` still hosts the worker. Scandal remains for the search escape hatch.
 
 - Find-in-project defaults to ripgrep. `find-and-replace.useRipgrep` is now `true`. `Workspace.scan` treats an omitted `options.ripgrep` as ripgrep. One-release escape: set the pin to `false` and/or `CHEVRON_SEARCH_ENGINE=scandal`. Scandal search and `Task` stay.
