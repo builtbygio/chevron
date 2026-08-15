@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Find-in-project defaults to ripgrep. `find-and-replace.useRipgrep` is now `true`. `Workspace.scan` treats an omitted `options.ripgrep` as ripgrep. One-release escape: set the pin to `false` and/or `CHEVRON_SEARCH_ENGINE=scandal`. Scandal search and `Task` stay.
+
 - Architecture target is [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). Living docs no longer teach Atom dual-support, apm Node 12, or `Task` as the package-author worker. `docs/atom-architecture.md` is a current-state sketch that defers to that target. Custom V8 snapshot status in `docs/build-modernization.md`: Linux/Windows on, Darwin stock.
 - Own remaining unowned core loaders as `builtbygio` git pins: `first-mate@7.4.3`, `atom-keymap@8.2.15`, `atom-select-list@0.8.1`, `season@6.0.2`, `scandal@3.2.0`, `text-buffer@13.18.6`, `fs-admin@0.15.0`, `scrollbar-style@4.0.1`. Each ships compiled `lib/` from the npm tarball (several Atom git tags were Coffee-only or missing the published version). `prepare`/`prepublish` that `rimraf lib/` are no-ops. Overrides hoist nested copies (including text-buffer’s `fs-admin@0.19` and owned-package `atom-select-list@0.7.2`) to the same SHAs.
 - Bootstrap force-copy of monorepo superstring/watcher no longer includes `packages/*/build/` and only runs when natives are actually rebuilt, so a warm cache cannot ship a host-Node `.node`. `link-package-natives-to-root` no longer copies `tree-sitter`.

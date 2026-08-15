@@ -57,7 +57,7 @@
     "encoding-selector": "git+https://github.com/builtbygio/encoding-selector.git#4b95a8933137cff30a02296de72d44dd09a3c6c5",
     "etch": "0.14.1",
     "event-kit": "^2.5.3",
-    "find-and-replace": "git+https://github.com/builtbygio/find-and-replace.git#1bc9025db6047ecdee5717405ce737c6b4da5fd9",
+    "find-and-replace": "git+https://github.com/builtbygio/find-and-replace.git#4f2b57c5845358f36b821e787f826429a58cc9ce",
     "find-parent-dir": "^0.3.0",
     "first-mate": "git+https://github.com/builtbygio/first-mate.git#e52aeda272b034e70d6af2f0a77c9d201d8a6df5",
     "focus-trap": "6.3.0",

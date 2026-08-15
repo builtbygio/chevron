@@ -7,6 +7,10 @@ const { Directory } = require('pathwatcher');
 const Grim = require('grim');
 const DefaultDirectorySearcher = require('./default-directory-searcher');
 const RipgrepDirectorySearcher = require('./ripgrep-directory-searcher');
+const {
+  resolveScanEngine,
+  logScanEngineOnce
+} = require('./search-engine');
 const Dock = require('./dock');
 const Model = require('./model');
 const StateStore = require('./state-store');
@@ -2057,9 +2061,12 @@ module.exports = class Workspace extends Model {
     // will be associated with an Array of Directory objects in the Map.
     const directoriesForSearcher = new Map();
     for (const directory of this.project.getDirectories()) {
-      let searcher = options.ripgrep
-        ? this.ripgrepDirectorySearcher
-        : this.scandalDirectorySearcher;
+      const engine = resolveScanEngine(options);
+      logScanEngineOnce(engine);
+      let searcher =
+        engine === 'ripgrep'
+          ? this.ripgrepDirectorySearcher
+          : this.scandalDirectorySearcher;
       for (const directorySearcher of this.directorySearchers) {
         if (directorySearcher.canSearchDirectory(directory)) {
           searcher = directorySearcher;
