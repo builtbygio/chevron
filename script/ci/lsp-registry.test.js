@@ -54,6 +54,18 @@ describe('registry', () => {
     if (after) assert.notStrictEqual(after.id, 'custom-ts');
   });
 
+  it('skips a package registration whose command is not on PATH', () => {
+    const d = registerServer({
+      id: 'missing-ts',
+      scopes: ['source.ts'],
+      command: 'definitely-not-a-real-langserver-xyz',
+      args: ['--stdio']
+    });
+    const reg = resolveRegistration('source.ts', {});
+    if (reg) assert.notStrictEqual(reg.id, 'missing-ts');
+    d.dispose();
+  });
+
   it('matchesScope supports prefix', () => {
     const reg = { scopes: ['source.js'] };
     assert.ok(matchesScope(reg, 'source.js'));

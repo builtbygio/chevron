@@ -8,8 +8,9 @@
  * and they are not activate()'d until after setup-window:end.
  *
  * Keep tree-view, tabs, status-bar, welcome, notifications, settings-view,
- * themes, whitespace, wrap-guide, and git-diff off this list.
+ * lsp-ui, themes, whitespace, wrap-guide, and git-diff off this list.
  * Welcome Guide Open Installer / theme picker require settings-view.
+ * lsp-ui must be up for the trust / "no server" notifications.
  *
  * Do not defer language-*: grammars must be registered before the first
  * editor opens or .c/.js/… files stay on the null grammar (no colour).
@@ -60,7 +61,6 @@ const DEFERRED_STARTUP_PACKAGES = new Set([
   'keybinding-resolver',
   'lsp-diagnostics-stub',
   'lsp-servers',
-  'lsp-ui',
   'markdown-preview',
   'open-on-github',
   'package-generator',

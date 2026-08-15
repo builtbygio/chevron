@@ -28,6 +28,15 @@ Restart Chevron (or reload packages). Trust the project, then open a matching fi
 PATH fallback still works: if the prebuild/npm binary is missing, the package
 registers the short command name and `builtin-servers` / PATH may still find it.
 
+Opening a project folder shows a **Chevron-themed** trust modal. Trust or
+Don't trust is saved in `$CHEVRON_HOME/trusted-projects.json` and is not
+asked again for that folder. Command palette → `Chevron Lsp: Trust Project`
+can change a previous "Don't trust". `Chevron Lsp: Status` lists
+registrations and trusted roots.
+
+If no server is installed, a notice still explains how to add
+`chevron-lsp-typescript` / rust / python.
+
 ## What cpm does
 
 | Package | How the binary arrives |

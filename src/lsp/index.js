@@ -54,6 +54,10 @@ const encodingByServerId = new Map();
 /** completion latency samples (ms) */
 const completionLatencySamples = [];
 const MAX_LATENCY_SAMPLES = 200;
+/** Last why-LSP-is-idle notice so a late lsp-ui still shows it. */
+let lastNotice = null;
+const noticedNoServer = new Set();
+const noticedTrust = new Set();
 
 const clientApi = {
   request,
@@ -145,7 +149,24 @@ async function ensureServerForEditor(editor) {
   if (!projectRoot) return null;
 
   const reg = resolveRegistration(scope, { resourcePath: getResourcePath() });
-  if (!reg) return null;
+  if (!reg) {
+    const noticeKey = `${scope}::${projectRoot}`;
+    if (!noticedNoServer.has(noticeKey)) {
+      noticedNoServer.add(noticeKey);
+      lastNotice = {
+        kind: 'no-server',
+        scope,
+        projectRoot,
+        message:
+          `No language server for ${scope}. Install chevron-lsp-typescript, ` +
+          `chevron-lsp-rust, or chevron-lsp-python with cpm ` +
+          `(see docs/lsp-server-distribution.md), or put the server on PATH. ` +
+          `Then run "Chevron Lsp: Trust Project".`
+      };
+      emitter.emit('did-no-server', lastNotice);
+    }
+    return null;
+  }
 
   const key = sessionKey(reg.id, projectRoot);
   if (startedSessions.has(key)) {
@@ -154,16 +175,22 @@ async function ensureServerForEditor(editor) {
 
   const trusted = await ipcRenderer.invoke('lsp:is-trusted', { projectRoot });
   if (!trusted) {
-    emitter.emit('did-change-trust-needed', { projectRoot });
+    if (!noticedTrust.has(projectRoot)) {
+      noticedTrust.add(projectRoot);
+      lastNotice = { kind: 'trust-needed', projectRoot };
+      emitter.emit('did-change-trust-needed', { projectRoot });
+    }
     return null;
   }
 
   const resolved = resolveCommand(reg);
   if (!resolved) {
-    emitter.emit('did-fail-start', {
+    lastNotice = {
+      kind: 'fail-start',
       projectRoot,
       message: `Language server "${reg.id}" command not found on PATH: ${reg.command}`
-    });
+    };
+    emitter.emit('did-fail-start', lastNotice);
     return null;
   }
 
@@ -204,11 +231,13 @@ async function ensureServerForEditor(editor) {
     });
     return serverId;
   } catch (err) {
-    emitter.emit('did-fail-start', {
+    lastNotice = {
+      kind: 'fail-start',
       projectRoot,
       message: err.message,
       code: err.code
-    });
+    };
+    emitter.emit('did-fail-start', lastNotice);
     return null;
   }
 }
@@ -461,16 +490,7 @@ function activate() {
               env.notifications.addWarning('No project folder open');
             return;
           }
-          await ipcRenderer.invoke('lsp:set-trust', {
-            projectRoot: root,
-            trusted: true
-          });
-          env.notifications &&
-            env.notifications.addSuccess(`Trusted project for language servers:\n${root}`);
-          for (const editor of env.workspace.getTextEditors()) {
-            const serverId = await ensureServerForEditor(editor);
-            if (serverId) documentSync.observeEditor(editor);
-          }
+          emitter.emit('did-request-trust-prompt', { projectRoot: root, force: true });
         },
         'chevron-lsp:untrust-project': async () => {
           const root =
@@ -628,8 +648,37 @@ function onDidChangeTrustNeeded(cb) {
   return emitter.on('did-change-trust-needed', cb);
 }
 
+function onDidRequestTrustPrompt(cb) {
+  return emitter.on('did-request-trust-prompt', cb);
+}
+
 function onDidFailStart(cb) {
   return emitter.on('did-fail-start', cb);
+}
+
+function onDidNoServer(cb) {
+  return emitter.on('did-no-server', cb);
+}
+
+function getPendingNotice() {
+  return lastNotice;
+}
+
+async function getTrustState(projectRoot) {
+  return ipcRenderer.invoke('lsp:get-trust-state', { projectRoot });
+}
+
+async function recordTrustDecision(projectRoot, trusted) {
+  return ipcRenderer.invoke('lsp:set-trust', { projectRoot, trusted });
+}
+
+async function startServersForOpenEditors() {
+  const env = global.chevron || global.atom;
+  if (!env || !env.workspace || !documentSync) return;
+  for (const editor of env.workspace.getTextEditors()) {
+    const serverId = await ensureServerForEditor(editor);
+    if (serverId) documentSync.observeEditor(editor);
+  }
 }
 
 function onDidServerExit(cb) {
@@ -675,7 +724,13 @@ module.exports = {
   getDiagnosticsService,
   onDidPublishDiagnostics,
   onDidChangeTrustNeeded,
+  onDidRequestTrustPrompt,
+  getTrustState,
+  recordTrustDecision,
+  startServersForOpenEditors,
   onDidFailStart,
+  onDidNoServer,
+  getPendingNotice,
   onDidServerExit,
   onDidServerRestarting,
   onDidRequestHover,
@@ -718,6 +773,14 @@ module.exports = {
     },
     encodingByServerId,
     completionLatencySamples,
-    clientApi
+    clientApi,
+    get lastNotice() {
+      return lastNotice;
+    },
+    resetNotices() {
+      lastNotice = null;
+      noticedNoServer.clear();
+      noticedTrust.clear();
+    }
   }
 };

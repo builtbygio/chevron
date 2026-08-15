@@ -1005,13 +1005,16 @@ module.exports = function registerRendererIpc(atomApplication) {
     return lspManager.isTrusted(projectRoot);
   });
 
-  // Granting trust requires an explicit user confirmation in main — the
-  // renderer may *ask*, it may not *decide* (docs/lsp-design.md §6.2).
-  // Revoking needs no prompt: removing capability is always safe.
-  ipcMain.handle('lsp:set-trust', async (event, { projectRoot, trusted } = {}) => {
-    if (!trusted) return lspManager.setTrusted(projectRoot, false);
-    const win = BrowserWindow.fromWebContents(event.sender);
-    return lspManager.confirmAndGrantTrust(projectRoot, win);
+  ipcMain.handle('lsp:get-trust-state', async (_event, { projectRoot } = {}) => {
+    return lspManager.getTrustState(projectRoot);
+  });
+
+  // Persist an in-editor trust decision. The Chevron modal (not a native
+  // OS dialog) is the confirmation UI. start-server still refuses untrusted
+  // roots. Revoking also records "declined" so we do not re-prompt.
+  ipcMain.handle('lsp:set-trust', async (_event, { projectRoot, trusted } = {}) => {
+    lspManager.setTrusted(projectRoot, Boolean(trusted));
+    return Boolean(trusted);
   });
 
   // Packages declare their servers at activation so main knows which

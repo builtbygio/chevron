@@ -2,34 +2,44 @@
 
 /**
  * Optional Pyright package — install via cpm (Phase 5).
- *   cpm install ./packages/chevron-lsp-python
+ * Binary distributor only. Core discovers the install under $CHEVRON_HOME.
+ * Do not require('event-kit') or 'fs' — this is a T2 user package.
  */
 
 const path = require('path');
-const { CompositeDisposable } = require('event-kit');
-const { registerWithLsp } = require('./resolve');
 
-const PACKAGE_ROOT = path.join(__dirname, '..');
-let disposables = null;
+const BIN = path.join(
+  __dirname,
+  '..',
+  'node_modules',
+  '.bin',
+  'pyright-langserver'
+);
+
+let registration = null;
 
 module.exports = {
-  activate() {
-    disposables = new CompositeDisposable();
-  },
+  activate() {},
 
   deactivate() {
-    if (disposables) disposables.dispose();
-    disposables = null;
+    if (registration && typeof registration.dispose === 'function') {
+      registration.dispose();
+    }
+    registration = null;
   },
 
   consumeLsp(lsp) {
-    if (!disposables) disposables = new CompositeDisposable();
+    if (!lsp || typeof lsp.registerServer !== 'function') return;
     try {
-      const d = registerWithLsp(lsp, PACKAGE_ROOT);
-      if (d && d.dispose) disposables.add(d);
+      registration = lsp.registerServer({
+        id: 'pyright',
+        scopes: ['source.python'],
+        command: BIN,
+        args: ['--stdio']
+      });
     } catch (err) {
       if (typeof console !== 'undefined' && console.warn) {
-        console.warn('[chevron-lsp-python]', err.message);
+        console.warn('[chevron-lsp-python]', err && err.message);
       }
     }
   }

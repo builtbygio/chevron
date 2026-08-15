@@ -14,6 +14,7 @@ const { DefinitionView } = require('./definition-view');
 const { RenameView } = require('./rename-view');
 const { ListView } = require('./list-view');
 const { DiagnosticsView } = require('./diagnostics-view');
+const { TrustView } = require('./trust-view');
 const { pathToUri } = require('../../../src/lsp/path-uri');
 
 let lsp = null;
@@ -26,6 +27,7 @@ let definitionView = null;
 let renameView = null;
 let listView = null;
 let diagnosticsView = null;
+let trustView = null;
 let diagnosticsService = null;
 let hoverTimer = null;
 const HOVER_DELAY_MS = 400;
@@ -130,9 +132,94 @@ module.exports = {
     renameView = new RenameView();
     listView = new ListView();
     diagnosticsView = new DiagnosticsView();
+    trustView = new TrustView();
 
     const client = ensureLsp();
     if (typeof client.activate === 'function') client.activate();
+
+    let trustPromptBusy = false;
+    const trustPromptQueue = [];
+
+    const applyTrustDecision = async (projectRoot, trusted) => {
+      if (typeof client.recordTrustDecision === 'function') {
+        await client.recordTrustDecision(projectRoot, trusted);
+      }
+      const e = env();
+      if (trusted) {
+        if (e && e.notifications) {
+          e.notifications.addSuccess(
+            `Trusted project for language servers:\n${projectRoot}`
+          );
+        }
+        if (typeof client.startServersForOpenEditors === 'function') {
+          await client.startServersForOpenEditors();
+        }
+      }
+    };
+
+    const runTrustPrompt = async (projectRoot, force) => {
+      if (!projectRoot) return;
+      const e = env();
+      if (!e || !e.workspace) return;
+      if (typeof client.getTrustState === 'function' && !force) {
+        const state = await client.getTrustState(projectRoot);
+        if (state === 'trusted' || state === 'declined') return;
+      }
+      const trusted = await trustView.prompt(projectRoot, e);
+      await applyTrustDecision(projectRoot, trusted);
+    };
+
+    const enqueueTrustPrompt = (projectRoot, force) => {
+      if (!projectRoot) return;
+      trustPromptQueue.push({ projectRoot, force: Boolean(force) });
+      if (trustPromptBusy) return;
+      trustPromptBusy = true;
+      const drain = async () => {
+        while (trustPromptQueue.length) {
+          const next = trustPromptQueue.shift();
+          try {
+            await runTrustPrompt(next.projectRoot, next.force);
+          } catch (err) {
+            if (typeof console !== 'undefined' && console.warn) {
+              console.warn('[lsp-ui] trust prompt', err && err.message);
+            }
+          }
+        }
+        trustPromptBusy = false;
+      };
+      drain();
+    };
+
+    const showTrustNeeded = projectRoot => {
+      enqueueTrustPrompt(projectRoot, false);
+    };
+
+    const showNoServer = notice => {
+      const e = env();
+      if (!e || !e.notifications) return;
+      e.notifications.addInfo(
+        (notice && notice.message) || 'No language server for this file.',
+        { dismissable: true }
+      );
+    };
+
+    if (typeof client.getPendingNotice === 'function') {
+      const pending = client.getPendingNotice();
+      if (pending && pending.kind === 'trust-needed') {
+        showTrustNeeded(pending.projectRoot);
+      } else if (pending && pending.kind === 'no-server') {
+        showNoServer(pending);
+      } else if (pending && pending.kind === 'fail-start' && pending.message) {
+        const e = env();
+        if (e && e.notifications) {
+          e.notifications.addError(
+            `Language server failed to start:\n${pending.message}`,
+            { dismissable: true }
+          );
+        }
+      }
+    }
+
     diagnosticsService =
       typeof client.getDiagnosticsService === 'function'
         ? client.getDiagnosticsService()
@@ -179,31 +266,34 @@ module.exports = {
 
     disposables.add(
       client.onDidChangeTrustNeeded(({ projectRoot }) => {
-        const e = env();
-        if (e && e.notifications) {
-          e.notifications.addWarning(
-            'Language servers are disabled until you trust this project.\n' +
-              'Servers run with full user privileges and can execute project ' +
-              'build tooling (they are not sandboxed).\n' +
-              `Project: ${projectRoot}`,
-            {
-              dismissable: true,
-              buttons: [
-                {
-                  text: 'Trust project',
-                  onDidClick: () => {
-                    e.commands.dispatch(
-                      e.views.getView(e.workspace),
-                      'chevron-lsp:trust-project'
-                    );
-                  }
-                }
-              ]
-            }
-          );
-        }
+        showTrustNeeded(projectRoot);
       })
     );
+
+    if (typeof client.onDidNoServer === 'function') {
+      disposables.add(client.onDidNoServer(notice => showNoServer(notice)));
+    }
+
+    if (typeof client.onDidRequestTrustPrompt === 'function') {
+      disposables.add(
+        client.onDidRequestTrustPrompt(({ projectRoot, force }) => {
+          enqueueTrustPrompt(projectRoot, force);
+        })
+      );
+    }
+
+    const e0 = env();
+    if (e0 && e0.project) {
+      const promptOpenProjects = () => {
+        const paths =
+          (e0.project.getPaths && e0.project.getPaths()) || [];
+        for (const p of paths) enqueueTrustPrompt(p, false);
+      };
+      promptOpenProjects();
+      if (e0.project.onDidChangePaths) {
+        disposables.add(e0.project.onDidChangePaths(promptOpenProjects));
+      }
+    }
 
     if (typeof client.onDidServerRestarting === 'function') {
       disposables.add(
@@ -413,6 +503,7 @@ module.exports = {
             if (definitionView) definitionView.hide();
             if (renameView) renameView.hide();
             if (listView) listView.hide();
+            if (trustView) trustView.hide();
           },
           'chevron-lsp:toggle-diagnostics': () => {
             if (diagnosticsService && diagnosticsView) {
@@ -449,6 +540,10 @@ module.exports = {
     if (diagnosticsView) {
       diagnosticsView.destroy();
       diagnosticsView = null;
+    }
+    if (trustView) {
+      trustView.destroy();
+      trustView = null;
     }
     diagnosticsService = null;
     if (statusTile) {

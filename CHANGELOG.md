@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- LSP no longer fails silently: notify when no server is registered or the project is untrusted (`lsp-ui` stays on first paint). Discover `chevron-lsp-*` binaries installed under `~/.chevron/packages` so cpm installs work without PATH. `chevron-lsp-typescript` no longer requires `event-kit` (user-home packages cannot see app `node_modules`). Opening a project shows a Chevron-themed trust modal; the choice is saved in `trusted-projects.json`.
 - Closing a split pane (Markdown Preview) no longer strips the surviving pane’s DOM. Welcome Guide **Open Installer** / **theme picker** activate `settings-view` before opening `atom://config/*`. Crash / recovery dialogs say Chevron and point at `builtbygio/chevron`.
 - `.c` (and other official tree-sitter languages) had no colour: `loadLanguageModule` stripped `{ name, language, nodeTypeInfo }` down to the raw Language, so tree-sitter 0.25 could not build node classes. Keep the full module. Also stop deferring `language-*` so grammars exist before the first editor. Reject an unusable parser so the TextMate grammar can still win.
 - Incremental tree-sitter highlight after edits: official `hasChanges` is a boolean getter, not DeeDeeG's `hasChanges()`.

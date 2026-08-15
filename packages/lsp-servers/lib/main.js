@@ -14,6 +14,19 @@ let disposables = null;
 
 const SERVERS = [
   {
+    id: 'typescript',
+    scopes: [
+      'source.ts',
+      'source.tsx',
+      'source.js',
+      'source.js.jsx',
+      'source.jsx',
+      'source.flow'
+    ],
+    command: 'typescript-language-server',
+    args: ['--stdio']
+  },
+  {
     id: 'rust-analyzer',
     scopes: ['source.rust'],
     command: 'rust-analyzer',

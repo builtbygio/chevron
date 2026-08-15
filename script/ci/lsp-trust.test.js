@@ -67,4 +67,23 @@ describe('LSP workspace trust', () => {
     fs.mkdirSync(root);
     assert.strictEqual(lspTrust.isTrusted(root), false);
   });
+
+  it('records declined so the same project is not prompted again', () => {
+    const root = path.join(tmpHome, 'proj-e');
+    fs.mkdirSync(root);
+    assert.strictEqual(lspTrust.getTrustState(root), 'unknown');
+    lspTrust.setTrusted(root, false);
+    assert.strictEqual(lspTrust.getTrustState(root), 'declined');
+    assert.strictEqual(lspTrust.isTrusted(root), false);
+    assert.strictEqual(lspTrust.isDeclined(root), true);
+  });
+
+  it('trusting after decline flips the stored decision', () => {
+    const root = path.join(tmpHome, 'proj-f');
+    fs.mkdirSync(root);
+    lspTrust.setTrusted(root, false);
+    lspTrust.setTrusted(root, true);
+    assert.strictEqual(lspTrust.getTrustState(root), 'trusted');
+    assert.strictEqual(lspTrust.isDeclined(root), false);
+  });
 });
