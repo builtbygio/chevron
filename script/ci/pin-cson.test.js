@@ -13,7 +13,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 
-const CONVERTED = ['language-source', 'language-hyperlink'];
+const CONVERTED = ['language-source', 'language-hyperlink', 'language-text'];
 
 const STILL_CSON = [
   'language-clojure',
@@ -31,7 +31,6 @@ const STILL_CSON = [
   'language-ruby-on-rails',
   'language-sass',
   'language-sql',
-  'language-text',
   'language-todo',
   'language-toml',
   'language-xml',
@@ -89,6 +88,25 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(parsed['.source'], 'settings keyed on .source');
   });
 
+  it('language-text ships JSON grammar and snippets and no shipped CSON', () => {
+    const cson = shippedCson('language-text');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const grammar = path.join(
+      packageRoot('language-text'),
+      'grammars',
+      'plain text.json'
+    );
+    const snippets = path.join(
+      packageRoot('language-text'),
+      'snippets',
+      'language-text.json'
+    );
+    assert.ok(fs.existsSync(grammar), 'grammars/plain text.json');
+    assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
+    const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
+    assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
   it('language-hyperlink ships JSON grammar and no shipped CSON', () => {
     const cson = shippedCson('language-hyperlink');
     assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
@@ -113,7 +131,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 20);
+    assert.strictEqual(STILL_CSON.length, 19);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
@@ -121,6 +139,6 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
         `${name} has no shipped CSON — move it to CONVERTED`
       );
     }
-    assert.match(doc, /language-text/);
+    assert.match(doc, /language-todo/);
   });
 });
