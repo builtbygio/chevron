@@ -351,7 +351,7 @@ Risk (**high** if we delete early): landing “delete Task + scandal after a dog
 2. **Default user files are JSON:** `~/.chevron/config.json`, `keymap.json`, `snippets.json`, `styles.less`.
 3. **Dual-read for one release:** if `config.cson` exists and `config.json` does not, read CSON and write JSON on next save. Then stop **writing** CSON. **Keep reading** CSON for package grammars/settings/snippets until pins convert.
 4. **`season` stays in the app runtime** (wrap) until the pin conversion stream is done **or** pack-time `transpile-cson-paths` + a **dev-only** season path is the remaining reader. Do **not** write “inventory says no.”
-5. `core.themes` default still names `one-dark-*`; product default should move to `chevron-dark-ui` / `chevron-dark-syntax` in a dedicated PR (branding, not architecture).
+5. `core.themes` default is `chevron-dark-ui` / `chevron-dark-syntax` (PR 17). `one-dark-*` stays shipped as an optional bundled theme.
 
 **Delete / wrap / migrate**
 
@@ -1186,7 +1186,8 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 17 — Theme default → `chevron-dark-*`; config copy cleanup
 
 - **Title:** `brand: default themes to chevron-dark; fix Atom wording in config-schema`
-- **Files:** `src/config-schema.js` (still says “when Atom starts”), `src/package.js` `getType()` still returns `'atom'`, settings-view strings
+- **Status:** **this change**. Default + fallback `chevron-dark-*`; `Package.getType()` is `'chevron'`; config-schema and settings-view product copy. Does **not** change Windows userData name.
+- **Files:** `src/config-schema.js`, `src/theme-manager.js` fallback, `src/package.js` `getType()`, settings-view pin strings
 - **Depends on:** none
 - **Description:** Product copy and defaults match Chevron-only. Mechanical, user-visible. Does **not** change Windows intermediate `package.json` `name` (that is PR 23b).
 

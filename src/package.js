@@ -85,7 +85,7 @@ module.exports = class Package {
   }
 
   getType() {
-    return 'atom';
+    return 'chevron';
   }
 
   getStyleSheetPriority() {
