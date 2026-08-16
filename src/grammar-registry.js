@@ -327,7 +327,7 @@ module.exports = class GrammarRegistry {
       ];
     }
 
-    let { fileTypes } = grammar;
+    let fileTypes = grammar.fileTypes || [];
     if (customFileTypes) {
       fileTypes = fileTypes.concat(customFileTypes);
     }
@@ -338,7 +338,7 @@ module.exports = class GrammarRegistry {
       const pathSuffix = pathComponents.slice(-fileTypeComponents.length);
       if (_.isEqual(pathSuffix, fileTypeComponents)) {
         pathScore = Math.max(pathScore, fileType.length);
-        if (i >= grammar.fileTypes.length) {
+        if (i >= (grammar.fileTypes || []).length) {
           pathScore += 0.5;
         }
       }
@@ -348,7 +348,7 @@ module.exports = class GrammarRegistry {
   }
 
   grammarMatchesPrefix(grammar, contents) {
-    if (contents && grammar.firstLineRegex) {
+    if (contents && grammar.firstLineRegex && grammar.firstLineRegex.source) {
       let escaped = false;
       let numberOfNewlinesInRegex = 0;
       for (let character of grammar.firstLineRegex.source) {

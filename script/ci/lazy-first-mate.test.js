@@ -59,4 +59,10 @@ describe('lazy first-mate (H2 PR 14)', () => {
     assert.ok(re.test('#!/usr/bin/env node'));
     assert.strictEqual(toJsRegex(null), null);
   });
+
+  it('Null Grammar exposes empty fileTypes so path scoring cannot throw', () => {
+    const NullGrammar = require('../../src/null-grammar');
+    assert.ok(Array.isArray(NullGrammar.fileTypes));
+    assert.strictEqual(NullGrammar.fileTypes.length, 0);
+  });
 });
