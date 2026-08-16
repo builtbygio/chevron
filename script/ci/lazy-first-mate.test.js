@@ -65,4 +65,12 @@ describe('lazy first-mate (H2 PR 14)', () => {
     assert.ok(Array.isArray(NullGrammar.fileTypes));
     assert.strictEqual(NullGrammar.fileTypes.length, 0);
   });
+
+  it('grammarAddedOrUpdated does not assume updateForInjection', () => {
+    const src = read('src/grammar-registry.js');
+    assert.match(
+      src,
+      /typeof languageMode\.updateForInjection === 'function'/
+    );
+  });
 });

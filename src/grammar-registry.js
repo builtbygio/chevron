@@ -471,7 +471,12 @@ module.exports = class GrammarRegistry {
         }
       }
 
-      languageMode.updateForInjection(grammar);
+      // text-buffer's NullLanguageMode (and any mode mid-assignment) has no
+      // injections. Lazy first-mate materialize fires this while the opening
+      // buffer is still on that default mode.
+      if (typeof languageMode.updateForInjection === 'function') {
+        languageMode.updateForInjection(grammar);
+      }
     });
   }
 
