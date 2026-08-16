@@ -253,7 +253,7 @@ GrammarRegistry
 
 **Today (coverage, not slogan)**
 
-Tree-sitter-backed catalog languages today: javascript, typescript, python, ruby, go, c/cpp, html, css, json, java, bash, rust (`language-rust-bundled`). Still **TextMate-only** (and often still `.cson`): yaml, xml, php, sql, toml, less/sass, perl, clojure, csharp, objective-c, gfm, git, todo, coffee-script, ruby-on-rails, plus smaller packs (`language-mustache`, `language-make`, `language-property-list`, `language-hyperlink`, `language-text`, `language-source`).
+Authoritative catalog: [language-stack.md](./language-stack.md). 12 packages ship a tree-sitter grammar (11 also keep TextMate; rust is tree-sitter only). 21 are TextMate-only; `language-source` is settings only. First 13b ports: yaml, xml, php, toml, sql. “keep TextMate” is a valid owner decision — that list is why first-mate stays.
 
 **Target**
 
@@ -986,6 +986,7 @@ Owner answers 2026-08-15. These are **final**.
 | `docs/security-phase-s-package-host.md` | Host v1/v2 |
 | `docs/security-threat-model.md` | Trust tiers |
 | `docs/lsp-design.md` | Language-server architecture (shipped) |
+| `docs/language-stack.md` | Tree-sitter vs TextMate catalog + exception list (PR 13) |
 | `docs/cpm-design.md` | Installer (shipped; dual-support text is stale) |
 | `docs/startup-snapshot-plan.md` | Snapshot measurements |
 | `docs/packaging.md` | Packager 15 + unpack + snapshot policy |
@@ -1121,7 +1122,7 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 12 — Snapshot honesty: measure Windows; document Darwin as won’t-fix-now
 
 - **Title:** `perf: publish Windows startup numbers; freeze Darwin stock snapshot`
-- **Status:** **this change**
+- **Status:** landed (#145)
 - **Files:** `docs/startup-snapshot-plan.md`, `script/ci/measure-startup.js`, `.github/workflows/ci.yml` (Windows measure step), CHANGELOG, `GROK.md`
 - **Depends on:** none
 - **Description:** Close the snapshot plan’s open measurement. Do not start Darwin constructor bisection in this PR.
@@ -1131,7 +1132,8 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 13 — Tree-sitter coverage audit + TextMate exception list
 
 - **Title:** `grammars: catalog tree-sitter coverage and TextMate exception list`
-- **Files:** new `docs/language-stack.md`, `src/grammar-registry.js` (comments/metrics)
+- **Status:** **this change**
+- **Files:** new `docs/language-stack.md`, `src/grammar-registry.js` (comments/metrics), `script/ci/language-stack.test.js`
 - **Depends on:** PR 1
 - **Description:** List every `packageDependencies` language: tree-sitter, TextMate-only, or both. Name an **owner** per TextMate-only language (“port” or “keep TextMate”). This is the exception list, not a promise that first-mate dies.
 

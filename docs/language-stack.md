@@ -1,0 +1,136 @@
+# Language stack — tree-sitter coverage and TextMate exception list
+
+**Status:** H2 PR 13 catalog. This is the exception list, not a promise that first-mate dies.  
+**Owner:** `builtbygio`  
+**Code:** `src/grammar-registry.js` (`getParserKindCounts()`). Runtime: official `tree-sitter@0.25.1` + first-mate / oniguruma.
+
+Tree-sitter is the default highlighter when `core.useTreeSitterParsers` is on (product default) **and** the catalog language ships a `type: tree-sitter` grammar. TextMate is the **supported fallback** for every row in §3. Deleting first-mate is optional H3 PR 22 and is gated on this list being empty.
+
+Do **not** treat a “port” decision as work started. Ports are PR 13b (one language per PR).
+
+---
+
+## 1. Counts (2026-08-16)
+
+34 `packageDependencies` keys named `language-*`. Audited from the installed pins (`node_modules/language-*` + in-repo `packages/language-rust-bundled`).
+
+| Kind | Packages |
+|------|----------|
+| Tree-sitter + TextMate (both) | 11 |
+| Tree-sitter only | 1 (`language-rust-bundled`) |
+| TextMate only | 21 |
+| No grammar (settings only) | 1 (`language-source`) |
+
+A package is **both** when it ships at least one `type: tree-sitter` grammar *and* at least one TextMate grammar. Sibling scopes in a “both” package can still be TextMate-only (e.g. `source.go` is tree-sitter; `source.mod` is not).
+
+---
+
+## 2. Every bundled language
+
+| Package | Highlighter | Tree-sitter parser(s) | Primary scope(s) | Grammar on disk | Decision |
+|---------|-------------|----------------------|------------------|-----------------|----------|
+| `language-c` | both | `tree-sitter-c`, `tree-sitter-cpp` | `source.c`, `source.cpp` | JSON | — (already TS) |
+| `language-css` | both | `tree-sitter-css` | `source.css` | JSON | — |
+| `language-go` | both | `tree-sitter-go` | `source.go` (TS). TM-only siblings: `text.html.gohtml`, `source.mod`, `source.sum`, `source.gotemplate` | JSON | — |
+| `language-html` | both | `tree-sitter-html`, `tree-sitter-embedded-template` | `text.html.basic`, `text.html.ejs`, `text.html.erb` | JSON | — |
+| `language-java` | both | `tree-sitter-java` | `source.java` (TS). TM-only siblings: JSP, properties, EL, junit | JSON | — |
+| `language-javascript` | both | `tree-sitter-javascript`, `tree-sitter-jsdoc`, `tree-sitter-regex` | `source.js`, `source.jsdoc`, `source.js.regexp` | JSON | — |
+| `language-json` | both | `tree-sitter-json` | `source.json` | JSON | — |
+| `language-python` | both | `tree-sitter-python` | `source.python` (TS). TM-only siblings: console, traceback, python regexp | JSON | — |
+| `language-ruby` | both | `tree-sitter-ruby` | `source.ruby` (TS). TM-only siblings: Gemfile, ERB | JSON | — |
+| `language-rust-bundled` | tree-sitter | `tree-sitter-rust` | `source.rust` | JSON | — |
+| `language-shellscript` | both | `tree-sitter-bash` | `source.shell` (TS). TM-only sibling: `text.shell-session` | JSON | — |
+| `language-typescript` | both | `tree-sitter-typescript` (ts / tsx / flow) | `source.ts`, `source.tsx`, `source.flow` | JSON | — |
+| `language-yaml` | TextMate | — | `source.yaml` | CSON | **port** (13b first) |
+| `language-xml` | TextMate | — | `text.xml`, `text.xml.xsl` | CSON | **port** (13b first) |
+| `language-php` | TextMate | — | `source.php`, `text.html.php` | CSON | **port** (13b first) |
+| `language-toml` | TextMate | — | `source.toml` | CSON | **port** (13b first) |
+| `language-sql` | TextMate | — | `source.sql` | CSON | **port** (13b first) |
+| `language-less` | TextMate | — | `source.css.less` | CSON | **port** (13b later) |
+| `language-sass` | TextMate | — | `source.css.scss`, `source.sass`, `source.sassdoc` | CSON | **port** (13b later) |
+| `language-perl` | TextMate | — | `source.perl`, `source.perl6` | CSON | **port** (13b later) |
+| `language-clojure` | TextMate | — | `source.clojure` | CSON | **port** (13b later) |
+| `language-csharp` | TextMate | — | `source.cs`, `source.csx`, `source.cake` | CSON | **port** (13b later) |
+| `language-coffee-script` | TextMate | — | `source.coffee`, `source.litcoffee` | CSON | **keep TextMate** |
+| `language-objective-c` | TextMate | — | `source.objc`, `source.objcpp`, `source.strings` | CSON | **keep TextMate** |
+| `language-gfm` | TextMate | — | `source.gfm` | JSON grammar; CSON snippets/settings | **keep TextMate** |
+| `language-git` | TextMate | — | `text.git-commit`, `source.git-config`, `text.git-rebase` | CSON | **keep TextMate** |
+| `language-ruby-on-rails` | TextMate | — | `source.ruby.rails` + html/js/sql/rjs overlays | CSON | **keep TextMate** |
+| `language-mustache` | TextMate | — | `text.html.mustache`, `source.sql.mustache` | CSON | **keep TextMate** |
+| `language-make` | TextMate | — | `source.makefile` | CSON | **keep TextMate** |
+| `language-property-list` | TextMate | — | `source.plist`, `text.xml.plist` | CSON | **keep TextMate** |
+| `language-hyperlink` | TextMate (injection) | — | `text.hyperlink` | CSON | **keep TextMate** |
+| `language-todo` | TextMate (injection) | — | `text.todo` | CSON | **keep TextMate** |
+| `language-text` | TextMate | — | `text.plain` | CSON | **keep TextMate** |
+| `language-source` | none | — | settings only (`.source` indent/comments) | CSON settings | **keep TextMate** |
+
+---
+
+## 3. Exception list (TextMate-only + no-grammar)
+
+Named owner for every row: **`builtbygio`**. “keep TextMate” is a valid owner decision. These packages **are** why first-mate stays.
+
+### Port — first tranche (PR 13b, one PR each)
+
+High-traffic file types. Official `tree-sitter-*` grammars exist on npm; the work is wiring them into the owned pin (`type: tree-sitter` JSON + parser dep + `load-tree-sitter-language` path), not inventing a grammar.
+
+| Package | Owner | Why port |
+|---------|-------|----------|
+| `language-yaml` | builtbygio | Config / CI / k8s. First 13b. |
+| `language-xml` | builtbygio | Markup sibling of already-ported HTML. |
+| `language-php` | builtbygio | High-traffic. |
+| `language-toml` | builtbygio | Cargo / pyproject / config. |
+| `language-sql` | builtbygio | High-traffic. Pick one maintained `tree-sitter-sql` and pin it. |
+
+### Port — later (PR 13b after the first tranche)
+
+| Package | Owner | Notes |
+|---------|-------|-------|
+| `language-less` | builtbygio | After yaml/xml/php/toml/sql. |
+| `language-sass` | builtbygio | SCSS + Sass + SassDoc. |
+| `language-perl` | builtbygio | Includes Perl 6 / Raku as a sibling scope. |
+| `language-clojure` | builtbygio | |
+| `language-csharp` | builtbygio | `source.cs` / `csx` / `cake`. |
+
+### Keep TextMate
+
+Not a programming-language port, or nobody will staff one. Revisit only if an owner says so.
+
+| Package | Owner | Why keep |
+|---------|-------|----------|
+| `language-coffee-script` | builtbygio | Architecture: exception until someone cares. |
+| `language-objective-c` | builtbygio | Not in the 13b stream. |
+| `language-gfm` | builtbygio | GFM-specific TextMate grammar; `tree-sitter-markdown` is a later product call, not this list. |
+| `language-git` | builtbygio | Commit / rebase / config buffers, not a language engine. |
+| `language-ruby-on-rails` | builtbygio | Dialect overlays on ruby/html/js/sql. Port ruby (done) covers the file types that matter. |
+| `language-mustache` | builtbygio | Template injection. |
+| `language-make` | builtbygio | Small surface. |
+| `language-property-list` | builtbygio | macOS plist; xml port may cover the XML flavour later. |
+| `language-hyperlink` | builtbygio | Injection grammar (`text.hyperlink`). Snippets / gfm / comments depend on it. |
+| `language-todo` | builtbygio | Injection grammar (`text.todo`). Load-bearing for TODO/FIXME scopes. |
+| `language-text` | builtbygio | Plain text. |
+| `language-source` | builtbygio | No grammar — shared `.source` editor settings. |
+
+---
+
+## 4. What this document is not
+
+- **Not** a delete plan for first-mate or oniguruma. H2 PR 14 lazy-loads them. H3 PR 22 deletes them **only if** this exception list is empty (or the owner accepts dropping the remaining TextMate-only langs).
+- **Not** PR 13b. Do not add `tree-sitter-*` to a pin in this PR.
+- **Not** PR 13c. CSON → JSON for pin grammars/settings/snippets is a separate stream. The “Grammar on disk” column is only so 13c has an inventory.
+- **Not** an LSP list. Semantics stay in `src/lsp/` (utilityProcess). ctags / `symbols-view` stay the no-server fallback.
+
+Public language ids stay the TextMate scope name (`source.js`) even when the highlighter is tree-sitter. `GrammarRegistry` already maps `textMateScopeNamesByTreeSitterLanguageId`.
+
+---
+
+## 5. How a 13b port lands (later)
+
+In the **owned** `builtbygio/language-<name>` repo, then a Chevron pin bump:
+
+1. Depend on an official / maintained `tree-sitter-<name>` that `load-tree-sitter-language.js` can open.
+2. Add `grammars/tree-sitter-<name>.json` with `"type": "tree-sitter"` and `"parser"`.
+3. Keep the TextMate grammar until a dogfood cycle proves colour/indent parity (Pillar 1). Do not delete it in the first port PR.
+4. Bump the SHA in Chevron `packageDependencies`.
+
+CI: `script/ci/language-stack.test.js` fails if a `language-*` pin is added or removed without updating this file.

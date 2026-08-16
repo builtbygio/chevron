@@ -104,11 +104,9 @@ Binding: official npm `tree-sitter@0.25.1`. The old DeeDeeG `packages/tree-sitte
 
 ### TextMate-only language-* (#79 done)
 
-Owned `builtbygio` pins of the previous `atom/*` SHAs. No tree-sitter grammar. Grammars/settings/snippets unchanged.
+Owned `builtbygio` pins. Coverage, exception list, and port/keep decisions live in [language-stack.md](./language-stack.md) (H2 PR 13). Do not duplicate that list here.
 
-`language-clojure`, `language-coffee-script`, `language-csharp`, `language-gfm`, `language-git`, `language-hyperlink`, `language-less`, `language-make`, `language-mustache`, `language-objective-c`, `language-perl`, `language-php`, `language-property-list`, `language-ruby-on-rails`, `language-sass`, `language-source`, `language-sql`, `language-text`, `language-todo`, `language-toml`, `language-xml`, `language-yaml`.
-
-In-repo exception: `language-rust-bundled` (`file:packages/…`).
+In-repo exception: `language-rust-bundled` (`file:packages/…`) — tree-sitter only.
 
 ## Process
 
