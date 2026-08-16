@@ -128,7 +128,7 @@ function findAppBinary(appArg) {
     return binary;
   }
 
-  // Linux: electron-packager dir e.g. out/Chevron-linux-x64/chevron
+  // Linux: @electron/packager dir e.g. out/Chevron-linux-x64/chevron
   let appDir = appArg;
   if (!appDir) {
     const candidates = listOutDirs().filter(p => {

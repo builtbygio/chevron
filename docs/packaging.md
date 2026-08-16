@@ -5,16 +5,15 @@
 
 ## Packager
 
-The product is assembled with **`electron-packager` 15.x** (script-tree dep). That is the Atom-era packager still in use.
+The product is assembled with **`@electron/packager` 18.4.4** (script-tree dep). That is the scoped successor of `electron-packager` 15 (same CJS API). 19+ is ESM-only / Node 22.12+ and is a later bump.
 
 | Topic | Policy |
 |-------|--------|
 | Identity | `dev.builtbygio.chevron` / helper `dev.builtbygio.chevron.helper` |
-| Unpack asar | `package-application.js` `asar.unpack` (`*.node`, dugite, github `lib/**`, vscode-ripgrep). `include-path-in-packaged-app.js` is the **copy** filter, not unpack |
+| Unpack asar | `packaging-policy.js` `asarUnpackExpression()` (`*.node`, dugite, github `lib/**`, vscode-ripgrep). `include-path-in-packaged-app.js` is the **copy** filter, not unpack |
 | Fuses | `@electron/fuses` after pack (`flip-electron-fuses.js`); soft-fail if missing |
 | Linux layout | `<Name>-linux-<arch>/` (smoke + docs) |
 | apm | **Not shipped.** `apm` paths are **cpm shims** |
-| Migration to `@electron/packager` | **Not in this stream** — API/layout change; separate project |
 
 ## Startup snapshot
 

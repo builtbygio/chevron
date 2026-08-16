@@ -158,13 +158,13 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Primary next tracks
 
 1. **Dogfood week (#106)** — Days 1–3 done. Day 2 OK. Day 3 markdown-preview close hid panes; Day 6 Welcome installer/theme picker dead; crash dialog said Atom. Days 4–7 still open. Smoke is not dogfood.  
-2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1 PR 1–4 and PR 2b landed. PR 5 is JSON user config (this change). Next: `@electron/packager` (PR 6). Do **not** delete `Task` / `season` / `document-register-element` in H1. github epic waits on Q1 after dogfood.  
+2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1 PR 1–5 and PR 2b landed. PR 6 is `@electron/packager` (this change). Next: CE factory (PR 7), S4 IPC (PR 8). Do **not** delete `Task` / `season` / `document-register-element` in H1. github epic waits on Q1 after dogfood.  
 
 3. **#57 / #127** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
 4. **#79 done** — all bundled `language-*` are `builtbygio` pins. No `atom/*` app git pins.
 5. Residual `@atom/*` **names** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — owned repos, old npm scope.
 6. **Startup perf** — custom V8 snapshot on Linux/Windows; Darwin stock (CI #125 still dies at boot after a valid pair). Constructor heap still runtime. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).  
-7. **Later:** sandboxed community packages (package host v2); `@electron/packager` (H1 PR 6); signing
+7. **Later:** sandboxed community packages (package host v2); signing
 8. **Build:** `./script/bootstrap-modern` then `./script/with-modern-env ./script/build --no-bootstrap`. Bare `./script/build` now packages if the tree is already bootstrapped (does not call the dead stub).
 
 ### Known dogfood leftovers (found 2026-08-13)

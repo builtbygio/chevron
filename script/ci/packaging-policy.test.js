@@ -7,9 +7,13 @@ const path = require('path');
 
 const {
   STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR,
+  PACKAGER_MODULE,
+  getHostArch,
   shouldSkipCustomSnapshot,
   stockSnapshotNote,
-  isForeignPrebuildPath
+  isForeignPrebuildPath,
+  asarUnpackGlobs,
+  asarUnpackExpression
 } = require('../lib/packaging-policy');
 const { shouldExcludeModule } = require('../lib/snapshot-exclude');
 
@@ -59,16 +63,45 @@ describe('packaging policy (Stream D)', () => {
     assert.ok(stockSnapshotNote('43.1.0').includes('CHEVRON_SKIP_MKSNAPSHOT'));
   });
 
-  it('script still uses electron-packager (no silent swap)', () => {
-    const scriptPkg = JSON.parse(
-      fs.readFileSync(path.join(ROOT, 'script', 'package.json'), 'utf8')
-    );
-    assert.ok(scriptPkg.dependencies['electron-packager']);
+  it('getHostArch does not require @electron/get', () => {
+    assert.strictEqual(getHostArch({}, 'x64'), 'x64');
+    assert.strictEqual(getHostArch({}, 'arm64'), 'arm64');
+    assert.strictEqual(getHostArch({ npm_config_arch: 'arm64' }, 'x64'), 'arm64');
+    assert.strictEqual(getHostArch({}, 'arm'), 'armv7l');
     const impl = fs.readFileSync(
       path.join(ROOT, 'script', 'lib', 'package-application.js'),
       'utf8'
     );
-    assert.ok(impl.includes("require('electron-packager')"));
+    assert.ok(!impl.includes("require('@electron/get')"));
+  });
+
+  it('script uses @electron/packager (not electron-packager 15)', () => {
+    const scriptPkg = JSON.parse(
+      fs.readFileSync(path.join(ROOT, 'script', 'package.json'), 'utf8')
+    );
+    assert.ok(scriptPkg.dependencies[PACKAGER_MODULE]);
+    assert.strictEqual(scriptPkg.dependencies['electron-packager'], undefined);
+    const impl = fs.readFileSync(
+      path.join(ROOT, 'script', 'lib', 'package-application.js'),
+      'utf8'
+    );
+    assert.ok(impl.includes(`require('${PACKAGER_MODULE}')`));
+    assert.ok(!impl.includes("require('electron-packager')"));
+  });
+
+  it('asar unpack globs keep natives, dugite, github, rg, workers', () => {
+    const globs = asarUnpackGlobs();
+    const joined = asarUnpackExpression();
+    assert.ok(globs.includes('*.node'));
+    assert.ok(joined.includes('vscode-ripgrep'));
+    assert.ok(joined.includes('dugite'));
+    assert.ok(joined.includes(`${path.join('github', 'lib')}`));
+    assert.ok(joined.includes('workers'));
+    const impl = fs.readFileSync(
+      path.join(ROOT, 'script', 'lib', 'package-application.js'),
+      'utf8'
+    );
+    assert.ok(impl.includes('asarUnpackExpression()'));
   });
 
   it('excludes require("chevron") from the snapshot graph', () => {

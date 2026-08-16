@@ -2,9 +2,8 @@
 
 const assert = require('assert');
 const childProcess = require('child_process');
-const electronPackager = require('electron-packager');
+const electronPackager = require('@electron/packager');
 const fs = require('fs-extra');
-const hostArch = require('@electron/get').getHostArch;
 const includePathInPackagedApp = require('./include-path-in-packaged-app');
 const getLicenseText = require('./get-license-text');
 const path = require('path');
@@ -13,12 +12,16 @@ const template = require('lodash.template');
 
 const CONFIG = require('../config');
 const { ensureRipgrep } = require('./ensure-ripgrep');
-const HOST_ARCH = hostArch();
+const {
+  asarUnpackExpression,
+  getHostArch
+} = require('./packaging-policy');
+const HOST_ARCH = getHostArch();
 
 module.exports = function() {
   const appName = getAppName();
   console.log(
-    `Running electron-packager on ${
+    `Running @electron/packager on ${
       CONFIG.intermediateAppPath
     } with app name "${appName}"`
   );
@@ -30,10 +33,11 @@ module.exports = function() {
     appVersion: CONFIG.appMetadata.version,
     // Native arch on each host (Intel x64 or Apple Silicon arm64 on macOS).
     arch: HOST_ARCH,
-    asar: { unpack: buildAsarUnpackGlobExpression() },
+    asar: { unpack: asarUnpackExpression() },
     buildVersion: CONFIG.appMetadata.version,
     derefSymlinks: false,
-    download: { cache: CONFIG.electronDownloadPath },
+    // @electron/get: cacheRoot (electron-packager 15 accepted `cache`).
+    download: { cacheRoot: CONFIG.electronDownloadPath },
     dir: CONFIG.intermediateAppPath,
     electronVersion: CONFIG.appMetadata.electronVersion,
     extendInfo: path.join(
@@ -51,7 +55,7 @@ module.exports = function() {
       'chevron'
     ),
     name: appName,
-    // electron-packager appends .exe on Windows; CONFIG.executableName already
+    // @electron/packager appends .exe on Windows; CONFIG.executableName already
     // includes it for installers/signing — strip so we get chevron.exe not
     // chevron.exe.exe.
     executableName:
@@ -252,7 +256,7 @@ function copyNonASARResources(packagedAppPath, bundledResourcesPath) {
 
 function setAtomHelperVersion(packagedAppPath) {
   const frameworksPath = path.join(packagedAppPath, 'Contents', 'Frameworks');
-  // electron-packager names helpers from the app name (e.g. "Chevron Helper.app").
+  // @electron/packager names helpers from the app name (e.g. "Chevron Helper.app").
   // Fall back to legacy Atom Helper if present.
   const appName = getAppName();
   const helperCandidates = [
@@ -311,45 +315,14 @@ function chmodNodeFiles(packagedAppPath) {
   );
 }
 
-function buildAsarUnpackGlobExpression() {
-  // Files that must live on the real filesystem (not only inside app.asar):
-  //
-  // - Native .node addons and helper binaries (ctags, ripgrep, dugite git).
-  // - github worker assets: WorkerManager loads renderer.html + worker.js via
-  //   file:// under app.asar.unpacked (see getPackageRoot() in the github
-  //   package). Previously only github/bin was unpacked, which produced
-  //   ERR_FILE_NOT_FOUND for lib/renderer.html in packaged builds.
-  const unpack = [
-    '*.node',
-    'ctags-config',
-    'ctags-darwin',
-    'ctags-linux',
-    'ctags-win32.exe',
-    path.join('**', 'node_modules', 'spellchecker', '**'),
-    path.join('**', 'node_modules', 'dugite', 'git', '**'),
-    path.join('**', 'node_modules', 'github', 'bin', '**'),
-    path.join('**', 'node_modules', 'github', 'lib', '**'),
-    // Phase S3 utilityProcess host + dugite native git binary
-    path.join('**', 'src', 'main-process', 'workers', '**'),
-    path.join('**', 'node_modules', 'dugite', '**'),
-    path.join('**', 'node_modules', 'vscode-ripgrep', 'bin', '**'),
-    path.join('**', 'resources', 'atom.png'),
-    // Window/taskbar icons (Linux createFromPath needs real files, not asar).
-    path.join('**', 'resources', 'chevron.png'),
-    path.join('**', 'resources', 'icons', '**')
-  ];
-
-  return `{${unpack.join(',')}}`;
-}
-
 function getAppName() {
   if (process.platform === 'darwin') {
     return CONFIG.appName;
   } else if (process.platform === 'win32') {
-    // electron-packager product folder name; binary is CONFIG.executableName (chevron.exe).
+    // @electron/packager product folder name; binary is CONFIG.executableName (chevron.exe).
     return CONFIG.appName.replace(/\s+/g, '-');
   } else {
-    // Linux: electron-packager dir is <name>-linux-<arch> (e.g. Chevron-linux-x64).
+    // Linux: @electron/packager dir is <name>-linux-<arch> (e.g. Chevron-linux-x64).
     // Spaces in product names become awkward paths; normalize for non-stable channels.
     return CONFIG.appName.replace(/\s+/g, '-');
   }
@@ -377,7 +350,7 @@ function renamePackagedAppDir(packageOutputDirPath) {
       packagedAppPath
     );
   } else if (process.platform === 'linux') {
-    // Keep electron-packager layout: <AppName>-linux-<arch> (matches smoke-test + docs).
+    // Keep @electron/packager layout: <AppName>-linux-<arch> (matches smoke-test + docs).
     // Binary inside is CONFIG.executableName (chevron / chevron-<channel>).
     packagedAppPath = packageOutputDirPath;
   } else {

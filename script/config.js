@@ -108,7 +108,7 @@ function getExecutableName(channel, appName) {
   } else if (process.platform === 'win32') {
     return channel === 'stable' ? 'chevron.exe' : `chevron-${channel}.exe`;
   } else {
-    // Linux binary name inside the electron-packager output dir
+    // Linux binary name inside the @electron/packager output dir
     return channel === 'stable' ? 'chevron' : `chevron-${channel}`;
   }
 }

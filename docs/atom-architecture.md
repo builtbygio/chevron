@@ -5,7 +5,7 @@
 **Runtime:** Electron 43.1.0 (Chromium + Node ~24 in-app)  
 **Current-state sketch.** The **target** (what to delete, wrap, or migrate next) is [chevron-architecture-modernization.md](./chevron-architecture-modernization.md). If this file disagrees with that one on intent, the modernization doc wins.
 
-Chevron is a **hackable Electron 43 editor**. The package *model* (`activate` / services / keymaps / styles, `require('chevron')`, inspectable preload) stays. Atom-era *machinery* (CSON-as-config, `Task` fork workers, scandal search, TextMate as the default language engine, `electron-packager@15`, Jasmine-as-hero) does not.
+Chevron is a **hackable Electron 43 editor**. The package *model* (`activate` / services / keymaps / styles, `require('chevron')`, inspectable preload) stays. Atom-era *machinery* (CSON-as-config, `Task` fork workers, scandal search, TextMate as the default language engine, Jasmine-as-hero) does not. User config is JSON; packager is `@electron/packager`.
 
 ---
 

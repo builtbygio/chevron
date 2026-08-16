@@ -82,7 +82,7 @@ Every leftover named here has a delete / wrap / migrate verdict. Items missed in
 
 | Leftover | Where | Verdict |
 |----------|-------|---------|
-| `electron-packager@15` | `script/package.json` | **Migrate** to `@electron/packager` (H1, independent) |
+| `electron-packager@15` | `script/package.json` | **Migrated** to `@electron/packager` 18.4.4 (PR 6) |
 | Custom `mksnapshot` | `script/lib/generate-startup-snapshot.js`; Darwin `packaging-policy.js` | **Wrap** — Linux/Windows on, Darwin stock; drop if `electron-link` dies |
 | asar unpack | `package-application.js` 322–340 | **Keep** |
 | Preload Node + Option C | `atom-window.js` 184–210 | **Keep** |
@@ -556,7 +556,7 @@ H1 only: keep shipping `github`, keep it deferred, delete emergency BW workers i
 
 | Tool | Version / policy | Problem |
 |------|------------------|---------|
-| `electron-packager` | `^15.1.0` (`script/package.json`) | Atom-era; `@electron/packager` is the maintained line (`docs/packaging.md`, `GROK.md` “later”) |
+| `@electron/packager` | `18.4.4` (`script/package.json`) | PR 6. 19+ is ESM-only; later bump |
 | asar unpack | `*.node`, dugite, github `lib/**`, vscode-ripgrep, workers, icons (`package-application.js` 322–340) | Correct and **stays** — natives cannot live only in asar |
 | `electron-link@0.6.0` + `electron-mksnapshot@43` | Linux/Windows custom; Darwin stock | Linker is unmaintained-looking; Darwin still crashes after a valid pair |
 | Fuses | `RunAsNode` on (cpm); ASAR integrity **macOS only**; `OnlyLoadAppFromAsar` **off** (`flip-electron-fuses.js` 67–81) | Honest: unpacked natives + cpm require this |
@@ -1066,9 +1066,10 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 6 — `@electron/packager` migration
 
 - **Title:** `build: replace electron-packager 15 with @electron/packager`
-- **Files:** `script/package.json`, `script/lib/package-application.js`, `script/lib/packaging-policy.js`, `script/lib/include-path-in-packaged-app.js`, `script/ci/find-packaged-app.test.js`, `docs/packaging.md`
+- **Status:** **this change**
+- **Files:** `script/package.json`, `script/lib/package-application.js`, `script/lib/packaging-policy.js`, `script/lib/include-path-in-packaged-app.js`, `script/ci/find-packaged-app.test.js`, `script/ci/packaging-policy.test.js`, `docs/packaging.md`
 - **Depends on:** none (do not couple to snapshot work)
-- **Description:** Preserve output names, asar unpack globs, fuse flip, Linux `Chevron-linux-<arch>` layout. Gate: `find-packaged-app` + packaging-policy tests + **existing hard smoke** (Linux x64; other platforms as today’s workflow already runs them). Linux arm64 smoke stays soft-gated (`GROK.md` `continue-on-error`). Do not require five-platform hard smoke.
+- **Description:** Preserve output names, asar unpack globs, fuse flip, Linux `Chevron-linux-<arch>` layout. Pin **18.4.4** (CJS, same API as 15). 19+ is ESM-only / Node 22.12+ and is a later bump. Gate: `find-packaged-app` + packaging-policy tests + **existing hard smoke** (Linux x64; other platforms as today’s workflow already runs them). Linux arm64 smoke stays soft-gated (`GROK.md` `continue-on-error`). Do not require five-platform hard smoke.
 
 #### PR 7 — Factory-only custom elements (**do not** delete the polyfill)
 
