@@ -126,4 +126,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-perl` \| both/);
     assert.match(doc, /tree-sitter-perl/);
   });
+
+  it('language-clojure is catalogued as both after the 13b port', () => {
+    assert.match(doc, /`language-clojure` \| both/);
+    assert.match(doc, /tree-sitter-clojure-orchard/);
+  });
 });

@@ -26,7 +26,8 @@ const CRITICAL_REBUILD_PACKAGES = [
   'oniguruma',
   '@derekstride/tree-sitter-sql',
   'tree-sitter-less',
-  'tree-sitter-perl'
+  'tree-sitter-perl',
+  'tree-sitter-clojure-orchard'
 ];
 
 /**
@@ -52,7 +53,10 @@ const ARTIFACT_GLOBS = {
     'build/Release/tree_sitter_sql_binding.node'
   ],
   'tree-sitter-less': ['build/Release/tree_sitter_less_binding.node'],
-  'tree-sitter-perl': ['build/Release/tree_sitter_perl_binding.node']
+  'tree-sitter-perl': ['build/Release/tree_sitter_perl_binding.node'],
+  'tree-sitter-clojure-orchard': [
+    'build/Release/tree_sitter_clojure_orchard_binding.node'
+  ]
 };
 
 function packageDir(repoRoot, name) {

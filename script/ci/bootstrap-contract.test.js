@@ -157,6 +157,10 @@ describe('critical-natives', () => {
       CRITICAL_REBUILD_PACKAGES.includes('tree-sitter-perl'),
       'Perl tree-sitter addon has no npm prebuilds'
     );
+    assert.ok(
+      CRITICAL_REBUILD_PACKAGES.includes('tree-sitter-clojure-orchard'),
+      'Clojure tree-sitter addon has no npm prebuilds'
+    );
   });
 
   it('findArtifact reports missing package', () => {
