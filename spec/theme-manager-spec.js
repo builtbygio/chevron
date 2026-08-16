@@ -573,17 +573,17 @@ h2 {
       waitsForPromise(() => atom.themes.activateThemes());
     });
 
-    it('uses the default one-dark UI and syntax themes and logs a warning', function() {
+    it('uses the default chevron-dark UI and syntax themes and logs a warning', function() {
       const activeThemeNames = atom.themes.getActiveThemeNames();
       expect(console.warn.callCount).toBe(2);
       expect(activeThemeNames.length).toBe(2);
-      expect(activeThemeNames).toContain('one-dark-ui');
-      expect(activeThemeNames).toContain('one-dark-syntax');
+      expect(activeThemeNames).toContain('chevron-dark-ui');
+      expect(activeThemeNames).toContain('chevron-dark-syntax');
     });
   });
 
   describe('when in safe mode', function() {
-    describe('when the enabled UI and syntax themes are bundled with Atom', function() {
+    describe('when the enabled UI and syntax themes are bundled with Chevron', function() {
       beforeEach(function() {
         atom.config.set('core.themes', ['chevron-light-ui', 'chevron-dark-syntax']);
 
@@ -598,7 +598,7 @@ h2 {
       });
     });
 
-    describe('when the enabled UI and syntax themes are not bundled with Atom', function() {
+    describe('when the enabled UI and syntax themes are not bundled with Chevron', function() {
       beforeEach(function() {
         atom.config.set('core.themes', [
           'installed-dark-ui',
@@ -611,12 +611,12 @@ h2 {
       it('uses the default dark UI and syntax themes', function() {
         const activeThemeNames = atom.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
-        expect(activeThemeNames).toContain('one-dark-ui');
-        expect(activeThemeNames).toContain('one-dark-syntax');
+        expect(activeThemeNames).toContain('chevron-dark-ui');
+        expect(activeThemeNames).toContain('chevron-dark-syntax');
       });
     });
 
-    describe('when the enabled UI theme is not bundled with Atom', function() {
+    describe('when the enabled UI theme is not bundled with Chevron', function() {
       beforeEach(function() {
         atom.config.set('core.themes', [
           'installed-dark-ui',
@@ -626,15 +626,15 @@ h2 {
         waitsForPromise(() => atom.themes.activateThemes());
       });
 
-      it('uses the default one-dark UI theme', function() {
+      it('uses the default chevron-dark UI theme', function() {
         const activeThemeNames = atom.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
-        expect(activeThemeNames).toContain('one-dark-ui');
+        expect(activeThemeNames).toContain('chevron-dark-ui');
         expect(activeThemeNames).toContain('chevron-light-syntax');
       });
     });
 
-    describe('when the enabled syntax theme is not bundled with Atom', function() {
+    describe('when the enabled syntax theme is not bundled with Chevron', function() {
       beforeEach(function() {
         atom.config.set('core.themes', [
           'chevron-light-ui',
@@ -644,11 +644,11 @@ h2 {
         waitsForPromise(() => atom.themes.activateThemes());
       });
 
-      it('uses the default one-dark syntax theme', function() {
+      it('uses the default chevron-dark syntax theme', function() {
         const activeThemeNames = atom.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
         expect(activeThemeNames).toContain('chevron-light-ui');
-        expect(activeThemeNames).toContain('one-dark-syntax');
+        expect(activeThemeNames).toContain('chevron-dark-syntax');
       });
     });
   });

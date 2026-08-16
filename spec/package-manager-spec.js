@@ -1765,7 +1765,7 @@ describe('PackageManager', () => {
 
       const packages = packageActivator.mostRecentCall.args[0];
       for (let pack of packages) {
-        expect(['atom', 'textmate']).toContain(pack.getType());
+        expect(['chevron', 'textmate']).toContain(pack.getType());
       }
 
       const themes = themeActivator.mostRecentCall.args[0];

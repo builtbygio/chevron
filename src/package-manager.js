@@ -67,7 +67,7 @@ module.exports = class PackageManager {
     this.serviceHub = new ServiceHub();
 
     this.packageActivators = [];
-    this.registerPackageActivator(this, ['atom', 'textmate']);
+    this.registerPackageActivator(this, ['chevron', 'textmate']);
   }
 
   initialize(params) {
@@ -374,7 +374,7 @@ module.exports = class PackageManager {
 
   // Get packages for a certain package type
   //
-  // * `types` an {Array} of {String}s like ['atom', 'textmate'].
+  // * `types` an {Array} of {String}s like ['chevron', 'textmate'].
   getLoadedPackagesForTypes(types) {
     return this.getLoadedPackages().filter(p => types.includes(p.getType()));
   }

@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Default UI/syntax themes are `chevron-dark-ui` / `chevron-dark-syntax`. Theme-manager fallback matches. `one-dark-*` stays bundled. Config-schema and settings-view product copy say Chevron (H2 PR 17). `Package.getType()` is `'chevron'`. Does not change Windows userData name.
+
 - New `src/` files are TypeScript. Existing `src/**/*.js` is grandfathered and converted only when already being edited (H2 PR 16). CI bans new `.js` under `src/`. No mass rename.
 
 - Replace deprecated `vscode-ripgrep@1.9.0` with `@vscode/ripgrep@1.15.14` (H2 PR 15). Same CJS `rgPath` / `bin/rg` layout. Bootstrap fallback now fetches `microsoft/ripgrep-prebuilt` v13.0.0-13 (native darwin-arm64). Not 1.18 (ESM + optionalDependencies).

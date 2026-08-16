@@ -163,6 +163,10 @@ module.exports = class ThemeManager {
         'chevron-dark-ui',
         'chevron-light-syntax',
         'chevron-light-ui',
+        'one-dark-syntax',
+        'one-dark-ui',
+        'one-light-syntax',
+        'one-light-ui',
         'base16-tomorrow-dark-theme',
         'base16-tomorrow-light-theme',
         'solarized-dark-syntax',
@@ -170,12 +174,12 @@ module.exports = class ThemeManager {
       ];
       themeNames = _.intersection(themeNames, builtInThemeNames);
       if (themeNames.length === 0) {
-        themeNames = ['one-dark-syntax', 'one-dark-ui'];
+        themeNames = ['chevron-dark-syntax', 'chevron-dark-ui'];
       } else if (themeNames.length === 1) {
         if (themeNames[0].endsWith('-ui')) {
-          themeNames.unshift('one-dark-syntax');
+          themeNames.unshift('chevron-dark-syntax');
         } else {
-          themeNames.push('one-dark-ui');
+          themeNames.push('chevron-dark-ui');
         }
       }
     }
