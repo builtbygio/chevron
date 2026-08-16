@@ -9,7 +9,9 @@ const path = require('path');
 const {
   loadLanguageModule,
   unwrapLanguage,
-  isEsmRequireError
+  isEsmRequireError,
+  fileLooksLikeEsm,
+  onDiskPackageRoot
 } = require('../../src/load-tree-sitter-language');
 
 function write(filePath, contents) {
@@ -43,10 +45,59 @@ describe('load-tree-sitter-language', () => {
       true
     );
     assert.strictEqual(
+      isEsmRequireError({ code: 'ERR_REQUIRE_ASYNC_MODULE' }),
+      true
+    );
+    assert.strictEqual(
       isEsmRequireError({ message: 'Must use import to load ES Module' }),
       true
     );
+    assert.strictEqual(
+      isEsmRequireError({
+        name: 'SyntaxError',
+        message: 'Cannot use import statement outside a module'
+      }),
+      true
+    );
+    assert.strictEqual(
+      isEsmRequireError({ message: "Cannot use 'import.meta' outside a module" }),
+      true
+    );
     assert.strictEqual(isEsmRequireError({ code: 'MODULE_NOT_FOUND' }), false);
+  });
+
+  it('detects ESM syntax without type:module (tree-sitter-perl)', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-esm-detect-'));
+    const esmFile = path.join(root, 'index.js');
+    write(
+      esmFile,
+      'import { readFileSync } from "node:fs";\nexport default {};\n'
+    );
+    assert.strictEqual(fileLooksLikeEsm(esmFile), true);
+    const cjsFile = path.join(root, 'cjs.js');
+    write(cjsFile, 'module.exports = { fromCjs: true };\n');
+    assert.strictEqual(fileLooksLikeEsm(cjsFile), false);
+  });
+
+  it('rewrites app.asar package roots to app.asar.unpacked when present', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-asar-'));
+    const asarPkg = path.join(
+      root,
+      'app.asar',
+      'node_modules',
+      'tree-sitter-perl'
+    );
+    const unpackedPkg = path.join(
+      root,
+      'app.asar.unpacked',
+      'node_modules',
+      'tree-sitter-perl'
+    );
+    write(path.join(unpackedPkg, 'build', 'Release', 'x.node'), '');
+    assert.strictEqual(onDiskPackageRoot(asarPkg), unpackedPkg);
+    assert.strictEqual(onDiskPackageRoot(unpackedPkg), unpackedPkg);
+    const missing = path.join(root, 'app.asar', 'node_modules', 'nope');
+    assert.strictEqual(onDiskPackageRoot(missing), missing);
   });
 
   it('require()s a CJS grammar parser as-is', () => {
@@ -96,6 +147,74 @@ describe('load-tree-sitter-language', () => {
     write(grammarPath, 'scopeName: source.x\n');
 
     const loaded = loadLanguageModule('tree-sitter-esm-fixture', grammarPath);
+    assert.strictEqual(loaded.fromNgb, true);
+    assert.strictEqual(loaded.pkgRoot, pkg);
+  });
+
+  it('loads ESM-without-type:module via node-gyp-build (tree-sitter-perl)', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-perl-esm-'));
+    const pkg = path.join(root, 'node_modules', 'tree-sitter-perl-fixture');
+    write(
+      path.join(pkg, 'package.json'),
+      JSON.stringify({
+        name: 'tree-sitter-perl-fixture',
+        main: 'bindings/node'
+      })
+    );
+    write(path.join(pkg, 'binding.gyp'), '{ "targets": [] }\n');
+    write(
+      path.join(pkg, 'bindings', 'node', 'index.js'),
+      'import { readFileSync } from "node:fs";\n' +
+        'const root = fileURLToPath(new URL("../..", import.meta.url));\n' +
+        'const binding = (await import("node-gyp-build")).default(root);\n' +
+        'export default binding;\n'
+    );
+    write(
+      path.join(root, 'node_modules', 'node-gyp-build', 'package.json'),
+      JSON.stringify({ name: 'node-gyp-build', main: 'index.js' })
+    );
+    write(
+      path.join(root, 'node_modules', 'node-gyp-build', 'index.js'),
+      'module.exports = (pkgRoot) => ({ fromNgb: true, pkgRoot });\n'
+    );
+    const grammarPath = path.join(root, 'grammars', 'x.json');
+    write(grammarPath, '{"scopeName":"source.x"}\n');
+
+    const loaded = loadLanguageModule('tree-sitter-perl-fixture', grammarPath);
+    assert.strictEqual(loaded.fromNgb, true);
+    assert.strictEqual(loaded.pkgRoot, pkg);
+  });
+
+  it('falls back to node-gyp-build when require throws SyntaxError on an addon', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-syntax-'));
+    const pkg = path.join(root, 'node_modules', 'tree-sitter-syntax-fixture');
+    write(
+      path.join(pkg, 'package.json'),
+      JSON.stringify({
+        name: 'tree-sitter-syntax-fixture',
+        main: 'bindings/node'
+      })
+    );
+    write(path.join(pkg, 'binding.gyp'), '{ "targets": [] }\n');
+    write(
+      path.join(pkg, 'bindings', 'node', 'index.js'),
+      'throw Object.assign(new SyntaxError("Cannot use import statement outside a module"), { code: undefined });\n'
+    );
+    write(
+      path.join(root, 'node_modules', 'node-gyp-build', 'package.json'),
+      JSON.stringify({ name: 'node-gyp-build', main: 'index.js' })
+    );
+    write(
+      path.join(root, 'node_modules', 'node-gyp-build', 'index.js'),
+      'module.exports = (pkgRoot) => ({ fromNgb: true, pkgRoot });\n'
+    );
+    const grammarPath = path.join(root, 'grammars', 'x.json');
+    write(grammarPath, '{"scopeName":"source.x"}\n');
+
+    const loaded = loadLanguageModule(
+      'tree-sitter-syntax-fixture',
+      grammarPath
+    );
     assert.strictEqual(loaded.fromNgb, true);
     assert.strictEqual(loaded.pkgRoot, pkg);
   });

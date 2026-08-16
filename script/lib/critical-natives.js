@@ -25,7 +25,8 @@ const CRITICAL_REBUILD_PACKAGES = [
   'fs-admin',
   'oniguruma',
   '@derekstride/tree-sitter-sql',
-  'tree-sitter-less'
+  'tree-sitter-less',
+  'tree-sitter-perl'
 ];
 
 /**
@@ -50,7 +51,8 @@ const ARTIFACT_GLOBS = {
   '@derekstride/tree-sitter-sql': [
     'build/Release/tree_sitter_sql_binding.node'
   ],
-  'tree-sitter-less': ['build/Release/tree_sitter_less_binding.node']
+  'tree-sitter-less': ['build/Release/tree_sitter_less_binding.node'],
+  'tree-sitter-perl': ['build/Release/tree_sitter_perl_binding.node']
 };
 
 function packageDir(repoRoot, name) {

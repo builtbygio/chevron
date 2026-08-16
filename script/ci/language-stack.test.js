@@ -121,4 +121,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-sass` \| both/);
     assert.match(doc, /tree-sitter-scss/);
   });
+
+  it('language-perl is catalogued as both after the 13b port', () => {
+    assert.match(doc, /`language-perl` \| both/);
+    assert.match(doc, /tree-sitter-perl/);
+  });
 });
