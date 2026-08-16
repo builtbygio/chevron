@@ -136,4 +136,10 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-csharp` \| both/);
     assert.match(doc, /tree-sitter-c-sharp/);
   });
+
+  it('language-source 13c ships JSON settings', () => {
+    assert.match(doc, /`language-source` \| none/);
+    assert.match(doc, /JSON settings/);
+    assert.match(doc, /PR 13c/);
+  });
 });
