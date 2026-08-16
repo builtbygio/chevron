@@ -111,4 +111,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-sql` \| both/);
     assert.match(doc, /@derekstride\/tree-sitter-sql/);
   });
+
+  it('language-less is catalogued as both after the 13b port', () => {
+    assert.match(doc, /`language-less` \| both/);
+    assert.match(doc, /tree-sitter-less/);
+  });
 });

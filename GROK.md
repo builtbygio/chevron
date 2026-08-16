@@ -158,7 +158,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Primary next tracks
 
 1. **Dogfood week (#106)** — Days 1–3 done. Day 2 OK. Day 3 markdown-preview close hid panes; Day 6 Welcome installer/theme picker dead; crash dialog said Atom. Days 4–7 still open. Smoke is not dogfood.  
-2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1 (PR 1–12 + 2b) landed. H2 PR 13 catalog landed. PR 13b first tranche (yaml, xml, php, toml, sql) landed (this change is SQL). Next 13b is less/sass — only if asked. Do **not** delete `Task` / `season` / `document-register-element` / first-mate. github epic waits on Q1 after dogfood.  
+2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1 (PR 1–12 + 2b) landed. H2 PR 13 catalog landed. PR 13b first tranche done; later tranche started with Less (this change). Next 13b is sass — only if asked (sass PR may already be stacked). Do **not** delete `Task` / `season` / `document-register-element` / first-mate. github epic waits on Q1 after dogfood.  
 
 3. **#57 / #127** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
 4. **#79 done** — all bundled `language-*` are `builtbygio` pins. No `atom/*` app git pins.
