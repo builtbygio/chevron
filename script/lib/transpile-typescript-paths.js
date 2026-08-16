@@ -2,8 +2,8 @@
 
 /**
  * Compile package (and app) .ts/.tsx to .js for the intermediate app tree.
- * Mirrors transpile-coffee-script-paths.js so generate-metadata can
- * require.resolve extensionless package mains (Node only resolves .js by default).
+ * generate-metadata require.resolve()s extensionless package mains
+ * (Node only resolves .js by default).
  */
 
 const CompileCache = require('../../src/compile-cache');

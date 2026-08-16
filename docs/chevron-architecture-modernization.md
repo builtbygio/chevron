@@ -100,7 +100,7 @@ Every leftover named here has a delete / wrap / migrate verdict. Items missed in
 | User `config.cson` | `src/config-file.js` | **Migrated** (PR 5: JSON default, dual-read CSON) |
 | Coffee/Babel compile-cache stubs | `src/coffee-script.js`, `src/babel.js` | **Delete** after error-window (not bundled with CSON transpile) |
 | `transpileCsonPaths()` | `script/build` 108 | **Keep** until pins are JSON |
-| `transpileCoffeeScriptPaths` / `transpileBabelPaths` | `script/build` 104–105 | **Delete** if unused (quiet no-ops) |
+| `transpileCoffeeScriptPaths` / `transpileBabelPaths` | `script/build` | **Deleted** (PR 10; were quiet no-ops) |
 | script `babel-core@5`, coffeelint, donna/joanna/tello, npm@6 | `script/package.json` | **Delete only if** a CI-invocation grep shows unused. donna/tello still required by `script/lib/generate-api-docs.js`; coffeelint by `script/lib/lint-coffee-script-paths.js` |
 | Mocha + Jasmine-in-Electron | `script/test`, `vendor/jasmine.js` | **Wrap** as compatibility harness |
 | github React 16 + Relay 5 | `node_modules/github/package.json` | **Migrate** as an **epic** (inventory → one surface → drop Relay), not two PRs |
@@ -376,7 +376,7 @@ Risk (**high** if we delete early): landing “delete Task + scandal after a dog
 - `src/compile-cache.js` still registers compilers for `.js` (Babel-prefix detector that **throws**), `.ts`/`.tsx` (TypeScript 6 `transpileModule` → CJS), `.coffee` (throws).
 - `src/module-cache.js` is Atom’s boot-time dependency resolver (avoids walking `node_modules`).
 - `src/native-compile-cache.js` + `file-system-blob-store.js` cache V8 code; measured warm-start win is ~6%.
-- `script/build` 101–108 still invokes `transpileBabelPaths()` / `transpileCoffeeScriptPaths()` (quiet no-ops, #62), `transpileTypeScriptPaths()`, **and `transpileCsonPaths()`** — the last of these is **live** (rewrites owned-pin `.cson` → `.json` at pack). Do not bundle CSON transpile removal with Coffee/Babel no-op removal.
+- `script/build` invokes `transpileTypeScriptPaths()` and **`transpileCsonPaths()`** (live: owned-pin `.cson` → `.json` at pack). Coffee/Babel no-op transpile is gone (PR 10). Do not delete `transpile-cson-paths.js` as Coffee archaeology.
 - `script/package.json` still depends on **`babel-core@5.8.38`**, **`coffeelint@1.15.7`** (still required by `script/lib/lint-coffee-script-paths.js`), **`donna` / `joanna` / `tello`** (still required by `script/lib/generate-api-docs.js` — not referenced from current CI greps), **`npm@6`** (no `require('npm')` in `script/**/*.js`; likely leftover, unproven), **`season@5.3.0`**.
 
 **2026 practice:** TypeScript as source, emit or load CJS/ESM explicitly, no runtime Coffee/Babel 5, no custom compile-cache for first-party code in production (precompile at pack). ESM is the language default; Electron can load it, but a snapshot linker and a `require('chevron')` package API are CJS-shaped.
@@ -1105,9 +1105,10 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 10 — Test policy + script-tree fossil hunt (not CSON transpile)
 
 - **Title:** `test: node:test-first policy; drop unused Coffee/API-doc fossils`
-- **Files:** `docs/jasmine-ci.md`, `CONTRIBUTING.md`, `script/package.json` (only deps a **CI-invocation grep** proves unused), `script/build` Coffee/Babel no-op entry points. **Not** `transpile-cson-paths.js`. **Not** coffeelint/donna/tello unless grep shows they are unused
+- **Status:** **this change**
+- **Files:** `docs/jasmine-ci.md`, `CONTRIBUTING.md`, `script/package.json`, `script/build` Coffee/Babel no-op entry points. **Not** `transpile-cson-paths.js`. **Not** coffeelint/donna/tello (still invoked)
 - **Depends on:** none
-- **Description:** New tests are `script/ci` `node:test`. Do not delete `script/test`. Do not treat CSON transpile as Coffee archaeology.
+- **Description:** New tests are `script/ci` `node:test`. Do not delete `script/test`. Do not treat CSON transpile as Coffee archaeology. CI grep: donna/joanna/tello stay (`generate-api-docs` from `script/build`). coffeelint stays (`script/lint`, not GitHub CI). Removed unused script `babel-core@5` and Coffee/Babel no-op transpile.
 
 #### PR 11 — Compile-cache: delete Coffee/Babel compiler entries
 

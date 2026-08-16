@@ -38,6 +38,12 @@ Chevron uses a **branch → PR → merge** workflow, no direct commits to `maste
 5. Expect discussion/review even on solo-adjacent projects — it's how the codebase stays coherent
 6. PRs are typically merged with `--squash` to keep `master` history clean
 
+## Tests
+
+- **New tests go in `script/ci/*.test.js` and use Node's built-in `node:test`.** That job runs on every PR.
+- Do not add Jasmine / `spec/*-spec.js` for new work. `script/test` (Jasmine in Electron) stays as a compatibility harness — nightly and the `jasmine` PR label — not the merge gate. See [docs/jasmine-ci.md](docs/jasmine-ci.md).
+- Do not treat CSON pack-time transpile (`script/lib/transpile-cson-paths.js`) as leftover Coffee tooling.
+
 ## Code style
 
 - Match the existing surrounding code style rather than introducing a new one, even if you'd personally do it differently

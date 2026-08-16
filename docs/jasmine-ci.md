@@ -1,8 +1,11 @@
-# Jasmine CI (#57)
+# Tests
+
+**New tests are `node --test` files under `script/ci/`.** That is the PR
+gate (`unit-and-cpm`). Do not add Jasmine specs for new work.
 
 The in-app suite is `script/test`. It boots the packaged binary and runs
-Jasmine (renderer) plus mocha (main process). That is **not** the fast
-`node --test script/ci/*` job.
+Jasmine (renderer) plus mocha (main process). Keep it as a compatibility
+harness (nightly / label `jasmine`). Do **not** delete `script/test`.
 
 ## What runs where
 

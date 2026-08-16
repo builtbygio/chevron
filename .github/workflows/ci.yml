@@ -187,6 +187,7 @@ jobs:
           node --test script/ci/packaging-policy.test.js
           node --test script/ci/custom-element-factory.test.js
           node --test script/ci/s4-ipc-slice.test.js
+          node --test script/ci/script-fossils.test.js
           node --test script/ci/load-tree-sitter-language.test.js
           node --test script/ci/package-utility-worker.test.js
           node --test script/ci/git-utility-host-integration.test.js
