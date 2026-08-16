@@ -94,7 +94,7 @@ Every leftover named here has a delete / wrap / migrate verdict. Items missed in
 | scandal search (`scan-handler.ts`) | `DefaultDirectorySearcher` | **Deleted** (PR 4) |
 | scandal replace (`replace-handler.ts`) | `Workspace.replace` | **Migrated** (PR 3; JS RegExp via Task) |
 | Public `Task` | `exports/chevron.js`; `src/task.ts` | **Wrap** until owned callers migrate; **not** a synonym for search (D16) |
-| `vscode-ripgrep@1.9.0` | app + fuzzy-finder | **Keep**; rename to `@vscode/ripgrep` only after `rgPath` + unpack + `ensure-ripgrep` + fuzzy-finder pin verify (PR 15, not coupled to 2b) |
+| `@vscode/ripgrep@1.15.14` | app + fuzzy-finder | **Done** (PR 15). CJS `rgPath` + `bin/rg`. Not 1.18 (ESM + optionalDeps). |
 | Preload `spawn(rg)` | `src/ripgrep-directory-searcher.js` 1, 285 | **Migrate** to allowlisted main spawn + `invoke` in H1 (PR 2b). No new utilityProcess. No `sandbox: true` |
 | season / pin CSON (~70 files) | `language-*` git pins; `transpile-cson-paths.js` is **live** | **Wrap** JSON+CSON reader until pins convert; **do not** delete season after a user-config window |
 | User `config.cson` | `src/config-file.js` | **Migrated** (PR 5: JSON default, dual-read CSON) |
@@ -1170,7 +1170,8 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 15 — Rename `vscode-ripgrep` → `@vscode/ripgrep`
 
 - **Title:** `deps: vscode-ripgrep → @vscode/ripgrep`
-- **Files:** root `package.json`, `src/ripgrep-directory-searcher.js` (`rgPath`), `script/lib/package-application.js` unpack glob `node_modules/vscode-ripgrep/bin/**`, bootstrap `ensure-ripgrep`, **fuzzy-finder pin** (also depends on `vscode-ripgrep`), tests
+- **Status:** **this change**. Pin `@vscode/ripgrep@1.15.14` (CJS `rgPath` + `bin/rg` + postinstall). Not 1.18 (ESM + per-platform optionalDependencies). Fallback downloads `microsoft/ripgrep-prebuilt` **v13.0.0-13**.
+- **Files:** root `package.json`, `src/ripgrep-directory-searcher.js` (`rgPath`), `script/lib/packaging-policy.js` unpack glob, bootstrap `ensure-ripgrep`, **fuzzy-finder pin**, tests
 - **Depends on:** PR 2
 - **Description:** Verify `rgPath` + unpack + `ensure-ripgrep` + fuzzy-finder. Not assumed drop-in. Do not claim “behaviour unchanged” until those four agree.
 

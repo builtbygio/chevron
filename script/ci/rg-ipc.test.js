@@ -104,7 +104,7 @@ describe('createRgSearchManager cancel', () => {
         spawned = { bin, args, opts };
         return fakeChild();
       },
-      resolveRgPath: () => '/app/vscode-ripgrep/bin/rg',
+      resolveRgPath: () => '/app/@vscode/ripgrep/bin/rg',
       existsSync: () => true,
       isDirectory: () => true
     });
@@ -113,7 +113,7 @@ describe('createRgSearchManager cancel', () => {
       cwd: path.resolve('/tmp'),
       sender: { isDestroyed: () => true, send() {} }
     });
-    assert.strictEqual(spawned.bin, '/app/vscode-ripgrep/bin/rg');
+    assert.strictEqual(spawned.bin, '/app/@vscode/ripgrep/bin/rg');
     assert.strictEqual(spawned.opts.shell, false);
   });
 });

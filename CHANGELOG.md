@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replace deprecated `vscode-ripgrep@1.9.0` with `@vscode/ripgrep@1.15.14` (H2 PR 15). Same CJS `rgPath` / `bin/rg` layout. Bootstrap fallback now fetches `microsoft/ripgrep-prebuilt` v13.0.0-13 (native darwin-arm64). Not 1.18 (ESM + optionalDependencies).
+
 - `language-text` 0.8.0 ships the `text.plain` grammar and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
 
 - `language-hyperlink` 0.18.0 ships the `text.hyperlink` injection grammar as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).

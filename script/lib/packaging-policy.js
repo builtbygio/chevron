@@ -98,7 +98,7 @@ function asarUnpackGlobs() {
     path.join('**', 'node_modules', 'github', 'lib', '**'),
     path.join('**', 'src', 'main-process', 'workers', '**'),
     path.join('**', 'node_modules', 'dugite', '**'),
-    path.join('**', 'node_modules', 'vscode-ripgrep', 'bin', '**'),
+    path.join('**', 'node_modules', '@vscode', 'ripgrep', 'bin', '**'),
     path.join('**', 'resources', 'atom.png'),
     path.join('**', 'resources', 'chevron.png'),
     path.join('**', 'resources', 'icons', '**')

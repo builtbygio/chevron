@@ -21,7 +21,7 @@ describe('ensure-ripgrep / resolveRgPath', () => {
 
   it('rewrites app.asar to app.asar.unpacked and prefers the file that exists', () => {
     const asar =
-      '/tmp/Chevron/resources/app.asar/node_modules/vscode-ripgrep/bin/rg';
+      '/tmp/Chevron/resources/app.asar/node_modules/@vscode/ripgrep/bin/rg';
     const unpacked = asar.replace('app.asar', 'app.asar.unpacked');
     const existing = new Set([unpacked]);
     assert.strictEqual(
@@ -32,7 +32,7 @@ describe('ensure-ripgrep / resolveRgPath', () => {
 
   it('falls back to unpacked path when neither file exists', () => {
     const asar =
-      '/tmp/Chevron/resources/app.asar/node_modules/vscode-ripgrep/bin/rg';
+      '/tmp/Chevron/resources/app.asar/node_modules/@vscode/ripgrep/bin/rg';
     assert.ok(resolveRgPath(asar, () => false).includes('app.asar.unpacked'));
   });
 
@@ -41,25 +41,26 @@ describe('ensure-ripgrep / resolveRgPath', () => {
   });
 
   it('computes bin path under the package', () => {
-    const dir = '/tmp/vscode-ripgrep';
+    const dir = '/tmp/@vscode/ripgrep';
     assert.strictEqual(
       rgBinPath(dir, 'linux'),
       path.join(dir, 'bin', 'rg')
     );
   });
 
-  it('maps vscode-ripgrep 1.9.0 / ripgrep-prebuilt v12.1.1 targets', () => {
-    assert.strictEqual(rgTarget('darwin', 'arm64'), 'x86_64-apple-darwin');
+  it('maps @vscode/ripgrep 1.15.14 / ripgrep-prebuilt v13.0.0-13 targets', () => {
+    assert.strictEqual(rgTarget('darwin', 'arm64'), 'aarch64-apple-darwin');
     assert.strictEqual(rgTarget('darwin', 'x64'), 'x86_64-apple-darwin');
     assert.strictEqual(rgTarget('linux', 'x64'), 'x86_64-unknown-linux-musl');
-    assert.strictEqual(rgTarget('linux', 'arm64'), 'aarch64-unknown-linux-gnu');
+    assert.strictEqual(rgTarget('linux', 'arm64'), 'aarch64-unknown-linux-musl');
     assert.strictEqual(rgTarget('win32', 'x64'), 'x86_64-pc-windows-msvc');
   });
 
-  it('vscode-ripgrep is a root dependency', () => {
+  it('@vscode/ripgrep is a root dependency and vscode-ripgrep is gone', () => {
     const pkg = JSON.parse(
       fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8')
     );
-    assert.ok(pkg.dependencies['vscode-ripgrep']);
+    assert.strictEqual(pkg.dependencies['@vscode/ripgrep'], '1.15.14');
+    assert.ok(!pkg.dependencies['vscode-ripgrep']);
   });
 });
