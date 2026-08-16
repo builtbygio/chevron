@@ -158,12 +158,12 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Primary next tracks
 
 1. **Dogfood week (#106)** — Days 1–3 done. Day 2 OK. Day 3 markdown-preview close hid panes; Day 6 Welcome installer/theme picker dead; crash dialog said Atom. Days 4–7 still open. Smoke is not dogfood.  
-2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1 PR 1–10 and PR 2b landed. PR 11 deletes Coffee/Babel compile-cache stubs (this change). Next: snapshot measure (PR 12). Do **not** delete `Task` / `season` / `document-register-element` in H1. github epic waits on Q1 after dogfood.  
+2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1 PR 1–11 and PR 2b landed. PR 12 publishes Windows startup numbers and freezes Darwin stock (this change). Next is H2 (PR 13 grammar audit) only if asked. Do **not** delete `Task` / `season` / `document-register-element` in H1. github epic waits on Q1 after dogfood.  
 
 3. **#57 / #127** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
 4. **#79 done** — all bundled `language-*` are `builtbygio` pins. No `atom/*` app git pins.
 5. Residual `@atom/*` **names** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — owned repos, old npm scope.
-6. **Startup perf** — custom V8 snapshot on Linux/Windows; Darwin stock (CI #125 still dies at boot after a valid pair). Constructor heap still runtime. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).  
+6. **Startup perf** — custom V8 snapshot on Linux/Windows; Darwin stock **frozen** (Q2; do not staff constructor bisection). Windows GHA median wall **2,734 ms** / workspace-ready **1,585 ms** / require **15 ms** — keep custom (Q3). See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md) §4.8–§4.10.  
 7. **Later:** sandboxed community packages (package host v2); signing
 8. **Build:** `./script/bootstrap-modern` then `./script/with-modern-env ./script/build --no-bootstrap`. Bare `./script/build` now packages if the tree is already bootstrapped (does not call the dead stub).
 
@@ -183,7 +183,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Optional hygiene
 
 - Linux arm64: bootstrap/build are hard gates; **smoke only** is soft-gated (`continue-on-error` on smoke step)  
-- Custom V8 snapshot on Linux/Windows; Darwin stock (`darwin-boot-crash`, reconfirmed #125)
+- Custom V8 snapshot on Linux/Windows; Darwin stock **frozen** (`darwin-boot-crash`, Q2)
 - Keep `GROK.md` / CHANGELOG current when landing epics  
 - Nested `packages/*/node_modules`: untracked; policy in `docs/nested-package-modules.md`  
 - CI: Electron + node-gyp cache at `$GITHUB_WORKSPACE/.cache/*`; `node_modules` cache enables bootstrap **native rebuild skip** (`script/lib/natives-fingerprint.js`); force with `CHEVRON_FORCE_NATIVE_REBUILD=1`  
@@ -240,7 +240,7 @@ git status
 | Nested superstring without `.node` | Re-sync nested natives after rebuild. Force-copy **excludes** `build/` and is skipped on warm cache. |
 | GitHub workers | **utilityProcess only**. Node BrowserWindow workers are gone. |
 | Packaged github `renderer.html` | Unpack `github/lib/**` in `package-application.js` |
-| Custom mksnapshot on E43 | Linux/Windows custom; Darwin stock (`darwin-boot-crash`) |
+| Custom mksnapshot on E43 | Linux/Windows custom; Darwin stock **frozen** (`darwin-boot-crash`, Q2) |
 | Windows ASAR integrity fuse | Leave off — FATAL without packager-embedded resources |
 | FS IPC `atomApplication.windows` | Never set — use `getAllWindows()` (#108) |
 | Skip `document-register-element` | Breaks `document.createElement('atom-*')` under contextIsolation |

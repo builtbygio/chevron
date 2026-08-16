@@ -74,6 +74,15 @@ test('win32 finds Chevron x64/chevron.exe', () => {
   );
 });
 
+test('measure-startup locates apps via find-packaged-app (win32 is Chevron x64, not -win32-)', () => {
+  const src = fs.readFileSync(
+    path.join(__dirname, 'measure-startup.js'),
+    'utf8'
+  );
+  assert.match(src, /require\('\.\.\/lib\/find-packaged-app'\)/);
+  assert.doesNotMatch(src, /includes\('-win32-'\)/);
+});
+
 test('returns null when out/ is empty', () => {
   const out = makeOut();
   assert.equal(
