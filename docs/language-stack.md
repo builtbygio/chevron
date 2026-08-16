@@ -1,6 +1,6 @@
 # Language stack — tree-sitter coverage and TextMate exception list
 
-**Status:** H2 PR 13 catalog + PR 13b stream. First tranche (yaml, xml, php, toml, sql) ported. This is the exception list, not a promise that first-mate dies.  
+**Status:** H2 PR 13 catalog + PR 13b stream. First tranche done; later tranche started (less). This is the exception list, not a promise that first-mate dies.  
 **Owner:** `builtbygio`  
 **Code:** `src/grammar-registry.js` (`getParserKindCounts()`). Runtime: official `tree-sitter@0.25.1` + first-mate / oniguruma.
 
@@ -16,9 +16,9 @@ Do **not** treat a “port” decision as work started. Ports are PR 13b (one la
 
 | Kind | Packages |
 |------|----------|
-| Tree-sitter + TextMate (both) | 16 |
+| Tree-sitter + TextMate (both) | 17 |
 | Tree-sitter only | 1 (`language-rust-bundled`) |
-| TextMate only | 16 |
+| TextMate only | 15 |
 | No grammar (settings only) | 1 (`language-source`) |
 
 A package is **both** when it ships at least one `type: tree-sitter` grammar *and* at least one TextMate grammar. Sibling scopes in a “both” package can still be TextMate-only (e.g. `source.go` is tree-sitter; `source.mod` is not).
@@ -46,7 +46,7 @@ A package is **both** when it ships at least one `type: tree-sitter` grammar *an
 | `language-php` | both | `tree-sitter-php` (`text.html.php`) + `tree-sitter-php/php_only` (`source.php`) | `text.html.php`, `source.php` | JSON + CSON fallback | **ported** (13b) |
 | `language-toml` | both | `@tree-sitter-grammars/tree-sitter-toml` | `source.toml` | JSON + CSON fallback | **ported** (13b) |
 | `language-sql` | both | `@derekstride/tree-sitter-sql` | `source.sql` | JSON + CSON fallback | **ported** (13b) |
-| `language-less` | TextMate | — | `source.css.less` | CSON | **port** (13b later) |
+| `language-less` | both | `tree-sitter-less` (`mdovale/tree-sitter-less`) | `source.css.less` | JSON + CSON fallback | **ported** (13b) |
 | `language-sass` | TextMate | — | `source.css.scss`, `source.sass`, `source.sassdoc` | CSON | **port** (13b later) |
 | `language-perl` | TextMate | — | `source.perl`, `source.perl6` | CSON | **port** (13b later) |
 | `language-clojure` | TextMate | — | `source.clojure` | CSON | **port** (13b later) |
@@ -78,8 +78,7 @@ Named owner for every row: **`builtbygio`**. “keep TextMate” is a valid owne
 
 | Package | Owner | Notes |
 |---------|-------|-------|
-| `language-less` | builtbygio | After yaml/xml/php/toml/sql. |
-| `language-sass` | builtbygio | SCSS + Sass + SassDoc. |
+| `language-sass` | builtbygio | SCSS + Sass + SassDoc. Next 13b. |
 | `language-perl` | builtbygio | Includes Perl 6 / Raku as a sibling scope. |
 | `language-clojure` | builtbygio | |
 | `language-csharp` | builtbygio | `source.cs` / `csx` / `cake`. |

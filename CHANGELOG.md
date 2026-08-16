@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Less highlighting defaults to tree-sitter (`mdovale/tree-sitter-less` via `builtbygio/language-less` 0.35.0). No published npm package; bootstrap rebuilds the N-API addon. TextMate `less.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
+
 - SQL highlighting defaults to tree-sitter (`@derekstride/tree-sitter-sql@0.3.11` via `builtbygio/language-sql` 0.26.0). No official `tree-sitter/tree-sitter-sql`; this is the maintained grammar. TextMate `sql.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
 
 - TOML highlighting defaults to tree-sitter (`@tree-sitter-grammars/tree-sitter-toml@0.7.0` via `builtbygio/language-toml` 0.21.0). TextMate `toml.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
