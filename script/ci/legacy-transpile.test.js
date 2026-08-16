@@ -1,92 +1,40 @@
 'use strict';
 
 /**
- * CHEVRON_DISABLE_LEGACY_TRANSPILE behaviour for babel/coffee compilers.
- * Run: node --test script/ci/legacy-transpile.test.js
+ * Compile-cache no longer claims Coffee/Babel compilers (H1 PR 11).
+ * TypeScript and CSON stay. Run: node --test script/ci/legacy-transpile.test.js
+ *
+ * Does not require compile-cache.js (app deps). Grep the source.
  */
 
-const { describe, it, before, after } = require('node:test');
+const { describe, it } = require('node:test');
 const assert = require('assert');
+const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 
-describe('legacy transpile isolation', () => {
-  let prev;
-
-  before(() => {
-    prev = process.env.CHEVRON_DISABLE_LEGACY_TRANSPILE;
-  });
-
-  after(() => {
-    if (prev === undefined) delete process.env.CHEVRON_DISABLE_LEGACY_TRANSPILE;
-    else process.env.CHEVRON_DISABLE_LEGACY_TRANSPILE = prev;
-    // Compilers cache module state; re-require fresh by clearing cache.
-    delete require.cache[require.resolve(path.join(ROOT, 'src/babel.js'))];
-    delete require.cache[require.resolve(path.join(ROOT, 'src/coffee-script.js'))];
-  });
-
-  it('refuses coffee and babel when CHEVRON_DISABLE_LEGACY_TRANSPILE=1', () => {
-    process.env.CHEVRON_DISABLE_LEGACY_TRANSPILE = '1';
-    delete require.cache[require.resolve(path.join(ROOT, 'src/babel.js'))];
-    delete require.cache[require.resolve(path.join(ROOT, 'src/coffee-script.js'))];
-    const babel = require(path.join(ROOT, 'src/babel.js'));
-    const coffee = require(path.join(ROOT, 'src/coffee-script.js'));
-
-    assert.strictEqual(coffee.shouldCompile(), false);
+describe('compile-cache after Coffee/Babel stub delete', () => {
+  it('does not ship babel.js or coffee-script.js stubs', () => {
+    assert.strictEqual(fs.existsSync(path.join(ROOT, 'src', 'babel.js')), false);
     assert.strictEqual(
-      babel.shouldCompile('/** @babel */\nconst x = 1;'),
+      fs.existsSync(path.join(ROOT, 'src', 'coffee-script.js')),
       false
     );
-    assert.throws(
-      () => coffee.compile('x = 1', '/tmp/x.coffee'),
-      /CHEVRON_DISABLE_LEGACY_TRANSPILE/
-    );
-    assert.throws(
-      () => babel.compile('/** @babel */\nconst x = 1;', '/tmp/x.js'),
-      /CHEVRON_DISABLE_LEGACY_TRANSPILE/
-    );
   });
 
-  it('detects babel prefixes when legacy transpile env is off', () => {
-    delete process.env.CHEVRON_DISABLE_LEGACY_TRANSPILE;
-    delete require.cache[require.resolve(path.join(ROOT, 'src/babel.js'))];
-    delete require.cache[require.resolve(path.join(ROOT, 'src/coffee-script.js'))];
-    const babel = require(path.join(ROOT, 'src/babel.js'));
-    const coffee = require(path.join(ROOT, 'src/coffee-script.js'));
-
-    assert.strictEqual(coffee.shouldCompile(), true);
-    assert.strictEqual(
-      babel.shouldCompile('/** @babel */\nconst x = 1;'),
-      true
+  it('compile-cache only wraps TypeScript; CSON stays on season', () => {
+    const src = fs.readFileSync(
+      path.join(ROOT, 'src', 'compile-cache.js'),
+      'utf8'
     );
-    assert.strictEqual(babel.shouldCompile('const x = 1;'), false);
-  });
-
-  it('refuses coffee compile after coffee-script dependency removal (Option 2)', () => {
-    delete process.env.CHEVRON_DISABLE_LEGACY_TRANSPILE;
-    delete require.cache[require.resolve(path.join(ROOT, 'src/coffee-script.js'))];
-    const coffee = require(path.join(ROOT, 'src/coffee-script.js'));
-
-    assert.strictEqual(coffee.shouldCompile(), true);
-    assert.throws(
-      () => coffee.compile('x = 1', '/tmp/x.coffee'),
-      /issue #62|CoffeeScript runtime transpile was removed/
-    );
-  });
-
-  it('refuses babel compile after babel-core dependency removal (Option 3)', () => {
-    delete process.env.CHEVRON_DISABLE_LEGACY_TRANSPILE;
-    delete require.cache[require.resolve(path.join(ROOT, 'src/babel.js'))];
-    const babel = require(path.join(ROOT, 'src/babel.js'));
-
-    assert.strictEqual(
-      babel.shouldCompile('/** @babel */\nconst x = 1;'),
-      true
-    );
-    assert.throws(
-      () => babel.compile('/** @babel */\nconst x = 1;', '/tmp/x.js'),
-      /issue #62|Babel runtime transpile was removed/
-    );
+    assert.ok(src.includes("require('./typescript')"));
+    assert.ok(src.includes("'.ts'"));
+    assert.ok(src.includes("'.tsx'"));
+    assert.ok(!src.includes("require('./babel')"));
+    assert.ok(!src.includes("require('./coffee-script')"));
+    assert.ok(!/\.coffee['"]/.test(src));
+    assert.ok(src.includes("extension === '.cson'"));
+    assert.ok(src.includes("require('season')"));
   });
 });
