@@ -219,7 +219,8 @@ if [ "$SKIP_NATIVE_REBUILD" = false ]; then
     superstring \
     '@atom/watcher' '@atom/nsfw' '@atom/fuzzy-native' \
     keytar spellchecker pathwatcher git-utils scrollbar-style nslog \
-    keyboard-layout ctags fs-admin oniguruma
+    keyboard-layout ctags fs-admin oniguruma \
+    '@derekstride/tree-sitter-sql'
   do
     _dir="$REPO_ROOT/node_modules/$_pkg"
     if [ -d "$_dir" ]; then
@@ -235,7 +236,8 @@ if [ "$SKIP_NATIVE_REBUILD" = false ]; then
   done
 
   echo "Using official tree-sitter@0.25 and tree-sitter-* prebuilds (N-API)."
-  echo "  Not rebuilding tree-sitter or tree-sitter-* addons."
+  echo "  Not rebuilding tree-sitter or official tree-sitter-* addons."
+  echo "  @derekstride/tree-sitter-sql is on the critical list (no npm prebuilds)."
 
   if [ "$CRITICAL_REBUILD_FAILED" -ne 0 ]; then
     if [ "${CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES:-}" = "1" ] || \

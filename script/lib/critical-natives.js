@@ -23,7 +23,8 @@ const CRITICAL_REBUILD_PACKAGES = [
   'keyboard-layout',
   'ctags',
   'fs-admin',
-  'oniguruma'
+  'oniguruma',
+  '@derekstride/tree-sitter-sql'
 ];
 
 /**
@@ -44,7 +45,10 @@ const ARTIFACT_GLOBS = {
   'keyboard-layout': ['build/Release/keyboard-layout-manager.node'],
   ctags: ['build/Release/ctags.node'],
   'fs-admin': ['build/Release/fs_admin.node', 'build/Release/fs-admin.node'],
-  oniguruma: ['build/Release/onig_scanner.node', 'build/Release/oniguruma.node']
+  oniguruma: ['build/Release/onig_scanner.node', 'build/Release/oniguruma.node'],
+  '@derekstride/tree-sitter-sql': [
+    'build/Release/tree_sitter_sql_binding.node'
+  ]
 };
 
 function packageDir(repoRoot, name) {
