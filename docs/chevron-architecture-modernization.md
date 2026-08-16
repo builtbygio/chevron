@@ -1089,9 +1089,10 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 8 — S4: inventory + one slice
 
 - **Title:** `ipc: refresh §11; migrate one sendSync slice; deprecate exports/remote`
-- **Files:** `docs/remote-ipc-inventory.md` §11 (status per row), `exports/remote.js` (deprecate), plus **either** dialog channels **or** already-async clipboard callers (`src/application-delegate.js`, `src/main-process/register-renderer-ipc.js`). Not FS. Not worker create.
+- **Status:** **this change**
+- **Files:** `docs/remote-ipc-inventory.md` §11, `exports/remote.js`, `src/application-delegate.js`, `src/renderer-ipc.js`, `src/main-process/register-renderer-ipc.js`, `src/atom-environment.js`, `src/title-bar.js`
 - **Depends on:** none (parallel with 2–5)
-- **Description:** Do not migrate “all non-boot sendSync.” Point at §11 rows. Keep worker `sendSync` until PR 9. Keep `atom-fs-*-sync` until a dedicated later PR. github `electron.remote` survives until the github epic.
+- **Description:** Display getters (`chevron:get-primary-display-work-area-size`, `chevron:get-user-default`) via `invoke`. Sync `confirm` and `remote-compat` `*-sync` twins stay. Not FS. Not worker create. github `electron.remote` survives until the github epic.
 
 #### PR 9 — Delete emergency git BrowserWindow worker path
 

@@ -356,20 +356,21 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 
 ## 11. Remaining `sendSync` channels (Electron BP P2.2 — follow-on)
 
-**Status:** inventory only for the BP plan; wholesale migration is **Phase S prep**, not a release gate.
+**Status (PR 8 / S4):** first-party **display** getters use `invoke` on `chevron:*`. Sync `confirm` / `remote-compat` / boot / workers / FS stay `sendSync`.
 
-Most boot and `remote-compat` paths still use `ipcMain.on` + `event.returnValue` (sync). Prefer `ipcMain.handle` / `invoke` only where the call site can become async without breaking Atom package API.
+Most boot and `remote-compat` paths still use `ipcMain.on` + `event.returnValue` (sync). Prefer `ipcMain.handle` / `invoke` only where the call site can become async without breaking the package API.
 
-| Area | Representative channels | Why still sync |
-|------|-------------------------|----------------|
-| Boot | `atom-window-load-settings-sync`, `atom-window-startup-markers-sync` | Must complete before first paint |
-| Window / webContents proxy | `atom-browser-window-call-sync`, `atom-web-contents-call-sync`, `atom-bw-id-call-sync`, `atom-wc-is-destroyed-sync`, `atom-get-current-window-id-sync`, `atom-get-web-contents-id-sync` | `remote-compat` live proxy |
-| Dialogs / display | `atom-show-message-box-sync`, `atom-get-primary-display-work-area-size-sync`, `atom-get-user-default-sync` | Sync Atom APIs |
-| App / clipboard / shell | `atom-app-get-*-sync`, `atom-clipboard-*-sync`, `atom-shell-beep-sync` | remote-compat |
-| Workers | `atom-create-browser-window-sync`, `atom-destroy-own-window-sync` | github package host |
-| FS IPC | `atom-fs-*-sync` family in `register-fs-ipc.js` | tree-view / fuzzy-finder path probes (strict roots since P2.1) |
+| Area | Representative channels | Status |
+|------|-------------------------|--------|
+| Boot | `atom-window-load-settings-sync`, `atom-window-startup-markers-sync` | **Stay sync** until inject-at-preload exists |
+| Window / webContents proxy | `atom-browser-window-call-sync`, `atom-web-contents-call-sync`, `atom-bw-id-call-sync`, `atom-wc-is-destroyed-sync`, `atom-get-current-window-id-sync`, `atom-get-web-contents-id-sync` | **Stay** while `remote-compat` is the github/worker proxy |
+| Dialogs | `atom-show-message-box` (**invoke**, callback `confirm`), `atom-show-message-box-sync` (legacy `atom.confirm` / `remote.dialog.showMessageBoxSync`) | Async path already invoke. **Sync confirm stays** (hard public API) |
+| Display | `chevron:get-primary-display-work-area-size`, `chevron:get-user-default` | **First-party invoke (PR 8)**. `atom-*-sync` twins stay for `remote-compat` |
+| App / clipboard / shell | `atom-app-get-*-sync`, `atom-clipboard-*-sync`, `atom-shell-beep-sync` | **Later slice** where callers can be async |
+| Workers | `atom-create-browser-window-sync`, `atom-destroy-own-window-sync` | **Keep until PR 9** |
+| FS IPC | `atom-fs-*-sync` family in `register-fs-ipc.js` | **Separate** later PR. Not this merge |
 
-**Migration hints:** async dialogs first; non-boot clipboard/app getters next; never break `get-window-load-settings` without an inject-at-preload alternative.
+**Migration hints:** first-party display done (PR 8). Clipboard/app getters next. Never break load-settings without an inject-at-preload alternative. New channels are `chevron:*`.
 
 ---
 
