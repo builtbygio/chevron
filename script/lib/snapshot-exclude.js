@@ -252,7 +252,7 @@ function shouldExcludeModule({
     requiredModuleRelativePath ===
       path.join('..', 'node_modules', '@atom', 'fuzzy-native', 'lib', 'main.js') ||
     requiredModuleRelativePath ===
-      path.join('..', 'node_modules', 'vscode-ripgrep', 'lib', 'index.js') ||
+      path.join('..', 'node_modules', '@vscode', 'ripgrep', 'lib', 'index.js') ||
     requiredModuleRelativePath === path.join('..', 'src', 'startup-time.js')
   );
 }

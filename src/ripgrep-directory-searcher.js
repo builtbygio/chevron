@@ -6,7 +6,7 @@ function getIpcRenderer() {
 }
 
 function resolveRgPath(rgPath, existsFn = p => fs.existsSync(p)) {
-  const raw = rgPath || require('vscode-ripgrep').rgPath;
+  const raw = rgPath || require('@vscode/ripgrep').rgPath;
   const unpacked = String(raw).replace(/\bapp\.asar\b/, 'app.asar.unpacked');
   for (const candidate of [unpacked, raw]) {
     if (candidate && existsFn(candidate)) return candidate;
@@ -232,7 +232,7 @@ module.exports = class RipgrepDirectorySearcher {
   }
 
   searchInDirectory(directory, regexp, options, numPathsFound) {
-    // Delay the require of vscode-ripgrep to not mess with the snapshot creation.
+    // Delay the require of @vscode/ripgrep to not mess with the snapshot creation.
     if (!this.rgPath) {
       this.rgPath = resolveRgPath();
     }

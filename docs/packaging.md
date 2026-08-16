@@ -10,7 +10,7 @@ The product is assembled with **`@electron/packager` 18.4.4** (script-tree dep).
 | Topic | Policy |
 |-------|--------|
 | Identity | `dev.builtbygio.chevron` / helper `dev.builtbygio.chevron.helper` |
-| Unpack asar | `packaging-policy.js` `asarUnpackExpression()` (`*.node`, dugite, github `lib/**`, vscode-ripgrep). `include-path-in-packaged-app.js` is the **copy** filter, not unpack |
+| Unpack asar | `packaging-policy.js` `asarUnpackExpression()` (`*.node`, dugite, github `lib/**`, `@vscode/ripgrep`). `include-path-in-packaged-app.js` is the **copy** filter, not unpack |
 | Fuses | `@electron/fuses` after pack (`flip-electron-fuses.js`); soft-fail if missing |
 | Linux layout | `<Name>-linux-<arch>/` (smoke + docs) |
 | apm | **Not shipped.** `apm` paths are **cpm shims** |

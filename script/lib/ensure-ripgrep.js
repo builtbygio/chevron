@@ -1,13 +1,16 @@
 'use strict';
 
 /**
- * vscode-ripgrep's postinstall downloads bin/rg. App npm install uses
+ * @vscode/ripgrep's postinstall downloads bin/rg. App npm install uses
  * --ignore-scripts, so find-in-project gets ENOENT under app.asar.unpacked
  * unless we fetch the binary explicitly.
  *
- * vscode-ripgrep@1.9.0 talks to api.github.com (microsoft/ripgrep-prebuilt
- * v12.1.1). Unauthenticated GETs 403 on shared CI IPs. Pass GITHUB_TOKEN
+ * @vscode/ripgrep@1.15.14 talks to api.github.com (microsoft/ripgrep-prebuilt
+ * v13.0.0-13). Unauthenticated GETs 403 on shared CI IPs. Pass GITHUB_TOKEN
  * and fall back to the public release asset URL if postinstall still fails.
+ *
+ * Do not jump to @vscode/ripgrep@1.18 — that package is ESM + per-platform
+ * optionalDependencies and is not a drop-in for require() / bin/rg.
  */
 
 const { execFileSync, spawnSync } = require('child_process');
@@ -17,8 +20,10 @@ const os = require('os');
 const path = require('path');
 const CONFIG = require('../config');
 
-const RG_VERSION = 'v12.1.1';
+const RG_VERSION = 'v13.0.0-13';
+const RG_MULTI_ARCH_LINUX_VERSION = 'v13.0.0-4';
 const RG_REPO = 'microsoft/ripgrep-prebuilt';
+const RG_PACKAGE = path.join('@vscode', 'ripgrep');
 
 function rgBinName(platform = process.platform) {
   return platform === 'win32' ? 'rg.exe' : 'rg';
@@ -28,18 +33,33 @@ function rgBinPath(pkgDir, platform = process.platform) {
   return path.join(pkgDir, 'bin', rgBinName(platform));
 }
 
-/** Same target map as vscode-ripgrep@1.9.0 lib/postinstall.js (v12.1.1 assets). */
+/** Same target map as @vscode/ripgrep@1.15.14 lib/postinstall.js. */
 function rgTarget(platform = process.platform, arch = process.arch) {
-  if (platform === 'darwin') return 'x86_64-apple-darwin';
+  if (platform === 'darwin') {
+    return arch === 'arm64' ? 'aarch64-apple-darwin' : 'x86_64-apple-darwin';
+  }
   if (platform === 'win32') {
     if (arch === 'x64') return 'x86_64-pc-windows-msvc';
     if (arch === 'arm64' || arch === 'arm') return 'aarch64-pc-windows-msvc';
     return 'i686-pc-windows-msvc';
   }
   if (arch === 'x64') return 'x86_64-unknown-linux-musl';
-  if (arch === 'arm64') return 'aarch64-unknown-linux-gnu';
+  if (arch === 'arm64') return 'aarch64-unknown-linux-musl';
   if (arch === 'arm' || arch === 'armv7l') return 'arm-unknown-linux-gnueabihf';
+  if (arch === 'ppc64') return 'powerpc64le-unknown-linux-gnu';
+  if (arch === 'riscv64') return 'riscv64gc-unknown-linux-gnu';
+  if (arch === 's390x') return 's390x-unknown-linux-gnu';
   return 'x86_64-unknown-linux-musl';
+}
+
+function rgFallbackVersion(target) {
+  if (
+    target === 'arm-unknown-linux-gnueabihf' ||
+    target === 'powerpc64le-unknown-linux-gnu'
+  ) {
+    return RG_MULTI_ARCH_LINUX_VERSION;
+  }
+  return RG_VERSION;
 }
 
 function githubToken() {
@@ -165,9 +185,10 @@ async function downloadRipgrepFallback(pkgDir) {
   const binDir = path.join(pkgDir, 'bin');
   const binPath = rgBinPath(pkgDir);
   const target = rgTarget();
+  const version = rgFallbackVersion(target);
   const ext = process.platform === 'win32' ? 'zip' : 'tar.gz';
-  const asset = `ripgrep-${RG_VERSION}-${target}.${ext}`;
-  const url = `https://github.com/${RG_REPO}/releases/download/${RG_VERSION}/${asset}`;
+  const asset = `ripgrep-${version}-${target}.${ext}`;
+  const url = `https://github.com/${RG_REPO}/releases/download/${version}/${asset}`;
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-rg-'));
   const archive = path.join(tmpDir, asset);
   console.log(`Downloading ripgrep fallback ${url}`);
@@ -188,7 +209,7 @@ async function downloadRipgrepFallback(pkgDir) {
 function runPostinstall(pkgDir) {
   const postinstall = path.join(pkgDir, 'lib', 'postinstall.js');
   if (!fs.existsSync(postinstall)) {
-    throw new Error(`vscode-ripgrep postinstall missing at ${postinstall}`);
+    throw new Error(`@vscode/ripgrep postinstall missing at ${postinstall}`);
   }
   // postinstall treats an empty bin/ as success. Force when rg is missing
   // so a failed API call cannot leave a poison-empty bin/.
@@ -227,7 +248,7 @@ function ensureRipgrepAt(pkgDir) {
     runPostinstall(pkgDir);
   } catch (err) {
     console.error(
-      `vscode-ripgrep postinstall failed (${err.message || err}); trying release asset`
+      `@vscode/ripgrep postinstall failed (${err.message || err}); trying release asset`
     );
     // downloadRipgrepFallback is async; run it sync via deasync-less
     // spawn of this same file would recurse. Use execFileSync of node -e? 
@@ -259,8 +280,8 @@ function syncFallback(pkgDir) {
 
 function ensureRipgrep() {
   const dirs = [
-    path.join(CONFIG.repositoryRootPath, 'node_modules', 'vscode-ripgrep'),
-    path.join(CONFIG.intermediateAppPath, 'node_modules', 'vscode-ripgrep')
+    path.join(CONFIG.repositoryRootPath, 'node_modules', RG_PACKAGE),
+    path.join(CONFIG.intermediateAppPath, 'node_modules', RG_PACKAGE)
   ];
   let last = null;
   for (const dir of dirs) {
@@ -269,7 +290,7 @@ function ensureRipgrep() {
   }
   if (!last) {
     throw new Error(
-      'vscode-ripgrep is not installed; run script/bootstrap-modern'
+      '@vscode/ripgrep is not installed; run script/bootstrap-modern'
     );
   }
   return last;
@@ -279,6 +300,7 @@ module.exports = {
   rgBinName,
   rgBinPath,
   rgTarget,
+  rgFallbackVersion,
   githubToken,
   downloadRipgrepFallback,
   ensureRipgrepAt,
