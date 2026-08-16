@@ -253,7 +253,7 @@ GrammarRegistry
 
 **Today (coverage, not slogan)**
 
-Authoritative catalog: [language-stack.md](./language-stack.md). 12 packages ship a tree-sitter grammar (11 also keep TextMate; rust is tree-sitter only). 21 are TextMate-only; `language-source` is settings only. First 13b ports: yaml, xml, php, toml, sql. “keep TextMate” is a valid owner decision — that list is why first-mate stays.
+Authoritative catalog: [language-stack.md](./language-stack.md). 13 packages ship a tree-sitter grammar (12 also keep TextMate; rust is tree-sitter only). 20 are TextMate-only; `language-source` is settings only. 13b YAML landed. Remaining first tranche: xml, php, toml, sql. “keep TextMate” is a valid owner decision — that list is why first-mate stays.
 
 **Target**
 
@@ -1132,7 +1132,7 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 13 — Tree-sitter coverage audit + TextMate exception list
 
 - **Title:** `grammars: catalog tree-sitter coverage and TextMate exception list`
-- **Status:** **this change**
+- **Status:** landed (#146)
 - **Files:** new `docs/language-stack.md`, `src/grammar-registry.js` (comments/metrics), `script/ci/language-stack.test.js`
 - **Depends on:** PR 1
 - **Description:** List every `packageDependencies` language: tree-sitter, TextMate-only, or both. Name an **owner** per TextMate-only language (“port” or “keep TextMate”). This is the exception list, not a promise that first-mate dies.
@@ -1140,6 +1140,7 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 13b — Grammar-port stream (one PR per language)
 
 - **Title:** `grammars: add tree-sitter-{yaml,xml,php,toml,sql,…}` (repeat)
+- **Status:** **this change** (YAML). Remaining first tranche: xml, php, toml, sql
 - **Files:** the relevant `builtbygio/language-*` repo (JSON grammar + `tree-sitter-*` dep + load path), Chevron pin bump
 - **Depends on:** PR 13
 - **Description:** First tranche: yaml, xml, php, toml, sql (high-traffic). Then less/sass, perl, clojure, csharp as time allows. Each language is its own reviewable PR. Languages left on the exception list stay TextMate. **This stream is how G4 is earned.** Without it, “then gone” is a slogan.

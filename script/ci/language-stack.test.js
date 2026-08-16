@@ -25,7 +25,6 @@ function languagePins() {
 }
 
 const FIRST_TRANCHE = [
-  'language-yaml',
   'language-xml',
   'language-php',
   'language-toml',
@@ -91,5 +90,10 @@ describe('language stack catalog (H2 PR 13)', () => {
 
   it('counts 34 bundled language packages', () => {
     assert.strictEqual(pins.length, 34);
+  });
+
+  it('language-yaml is catalogued as both after the 13b port', () => {
+    assert.match(doc, /`language-yaml` \| both/);
+    assert.match(doc, /@tree-sitter-grammars\/tree-sitter-yaml/);
   });
 });
