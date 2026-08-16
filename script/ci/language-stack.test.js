@@ -24,9 +24,7 @@ function languagePins() {
     .sort();
 }
 
-const FIRST_TRANCHE = [
-  'language-sql'
-];
+const FIRST_TRANCHE = [];
 
 const KEEP_TEXTMATE = [
   'language-coffee-script',
@@ -66,7 +64,7 @@ describe('language stack catalog (H2 PR 13)', () => {
     for (const name of FIRST_TRANCHE) {
       assert.ok(doc.includes('`' + name + '`'), name);
     }
-    assert.match(doc, /port.*13b first/i);
+    assert.match(doc, /first tranche/i);
     for (const name of KEEP_TEXTMATE) {
       assert.ok(doc.includes('`' + name + '`'), name);
     }
@@ -107,5 +105,10 @@ describe('language stack catalog (H2 PR 13)', () => {
   it('language-toml is catalogued as both after the 13b port', () => {
     assert.match(doc, /`language-toml` \| both/);
     assert.match(doc, /@tree-sitter-grammars\/tree-sitter-toml/);
+  });
+
+  it('language-sql is catalogued as both after the 13b port', () => {
+    assert.match(doc, /`language-sql` \| both/);
+    assert.match(doc, /@derekstride\/tree-sitter-sql/);
   });
 });

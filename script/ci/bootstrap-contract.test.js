@@ -145,6 +145,10 @@ describe('critical-natives', () => {
     assert.ok(CRITICAL_REBUILD_PACKAGES.includes('superstring'));
     assert.ok(CRITICAL_REBUILD_PACKAGES.includes('keytar'));
     assert.ok(CRITICAL_REBUILD_PACKAGES.includes('keyboard-layout'));
+    assert.ok(
+      CRITICAL_REBUILD_PACKAGES.includes('@derekstride/tree-sitter-sql'),
+      'SQL tree-sitter addon has no npm prebuilds'
+    );
   });
 
   it('findArtifact reports missing package', () => {
