@@ -1178,6 +1178,7 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 16 — `src/` TypeScript-on-touch + optional CI rule
 
 - **Title:** `tooling: TypeScript-first for new src files`
+- **Status:** **this change**. Policy + loose `src/tsconfig.json` + CI grandfather of existing `src/**/*.js`. No mass rename.
 - **Files:** `src/tsconfig` (if missing/loose), CONTRIBUTING, optional `script/ci` check for new `.js` under `src/`
 - **Depends on:** PR 11
 - **Description:** Policy PR. Convert files only when they are already being edited. No 159-file rename.

@@ -44,6 +44,14 @@ Chevron uses a **branch → PR → merge** workflow, no direct commits to `maste
 - Do not add Jasmine / `spec/*-spec.js` for new work. `script/test` (Jasmine in Electron) stays as a compatibility harness — nightly and the `jasmine` PR label — not the merge gate. See [docs/jasmine-ci.md](docs/jasmine-ci.md).
 - Do not treat CSON pack-time transpile (`script/lib/transpile-cson-paths.js`) as leftover Coffee tooling.
 
+## TypeScript in `src/`
+
+New files under `src/` are TypeScript (`.ts` / `.tsx`). Existing `.js` files stay until they are already being edited — convert on touch. Do not mass-rename the grandfathered list.
+
+Runtime emit is still `src/typescript.js` (`transpileModule`, CommonJS, ES2018, no typecheck). `src/tsconfig.json` is editor / `tsc --noEmit` only and is intentionally loose.
+
+CI (`script/ci/src-typescript-first.test.js`) fails if a new `src/**/*.js` file is added. After converting a grandfathered file, remove it from `script/ci/src-js-grandfather.json`.
+
 ## Code style
 
 - Match the existing surrounding code style rather than introducing a new one, even if you'd personally do it differently
