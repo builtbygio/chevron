@@ -16,6 +16,14 @@ const PATH_SPLIT_REGEX = new RegExp('[/.]');
 // Extended: This class holds the grammars used for tokenizing.
 //
 // An instance of this class is always available as the `atom.grammars` global.
+//
+// Two engines share this facade:
+//   - first-mate + oniguruma (TextMate) — supported fallback
+//   - official tree-sitter@0.25 (N-API) — default when
+//     `core.useTreeSitterParsers` is on and a `type: tree-sitter` grammar exists
+//
+// Catalog + TextMate exception list: docs/language-stack.md.
+// first-mate is not deleted by H2. Optional H3 only if that list is empty.
 module.exports = class GrammarRegistry {
   constructor({ config } = {}) {
     this.config = config;
@@ -600,6 +608,9 @@ module.exports = class GrammarRegistry {
   }
 
   createGrammar(grammarPath, params) {
+    // `type: tree-sitter` comes from language-* `grammars/tree-sitter-*.json`.
+    // Everything else is TextMate and goes through first-mate. See
+    // docs/language-stack.md for which bundled packages ship which kind.
     if (params.type === 'tree-sitter') {
       return new TreeSitterGrammar(this, grammarPath, params);
     } else {
@@ -630,6 +641,19 @@ module.exports = class GrammarRegistry {
       g => g.scopeName
     );
     return tmGrammars.concat(tsGrammars); // NullGrammar is expected to be first
+  }
+
+  // Runtime counts for the language-stack catalog. NullGrammar is omitted
+  // from the TextMate side. Tree-sitter entries without a scopeName (stubs
+  // registered before the real grammar loads) are omitted too.
+  getParserKindCounts() {
+    const textMate = this.textmateRegistry
+      .getGrammars()
+      .filter(g => g && g !== this.nullGrammar && g.scopeName).length;
+    const treeSitter = Object.values(this.treeSitterGrammarsById).filter(
+      g => g && g.scopeName
+    ).length;
+    return { textMate, treeSitter };
   }
 
   scopeForId(id) {

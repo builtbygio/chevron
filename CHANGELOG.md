@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Catalog of every bundled `language-*`: tree-sitter, TextMate-only, or both, with a named owner and **port** / **keep TextMate** decision. See [docs/language-stack.md](docs/language-stack.md). This is the H2 exception list — first-mate stays. `GrammarRegistry.getParserKindCounts()` reports live TextMate vs tree-sitter grammar counts.
+
 - Windows x64 cold start (GHA `windows-2022`, custom snapshot): median wall **2,734 ms**; workspace-ready **1,585 ms**; require interval **15 ms**. Darwin stock snapshot is **frozen** (no constructor bisection). Linux/Windows keep the custom snapshot. `measure-startup.js` finds `Chevron x64/chevron.exe` via `find-packaged-app`. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md) §4.9–§4.10.
 
 - Compile-cache no longer registers Coffee or Babel-prefix compilers. TypeScript and CSON stay. `src/babel.js` and `src/coffee-script.js` are deleted.
