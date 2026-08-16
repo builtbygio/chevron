@@ -1156,13 +1156,15 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 14 — Lazy-load first-mate/oniguruma
 
 - **Title:** `grammars: do not boot first-mate until a TextMate grammar is assigned`
-- **Files:** `src/grammar-registry.js`, `src/text-mate-language-mode.js`, `src/preload-natives.js`, snapshot exclude list
+- **Status:** **this change**. TM CSON/JSON register as pending stubs. first-mate + oniguruma load when a buffer is assigned TM mode. Does **not** delete first-mate.
+- **Files:** `src/grammar-registry.js`, `src/pending-text-mate-grammar.js`, `src/load-first-mate.js`, `src/text-mate-language-mode.js`, `src/text-editor.js`, `src/preload-natives.js`, snapshot exclude list
 - **Depends on:** PR 13
 - **Description:** If a session only opens tree-sitter languages, oniguruma should not load. Does **not** delete first-mate.
 
 #### PR 14a — Migrate `Task` callers (owned pins)
 
 - **Title:** `fuzzy-finder / symbols-view: stop calling Task` (may be two PRs)
+- **Status:** **this change** (same delivery as PR 14). fuzzy-finder path crawl and symbols-view `getAllTags` run in-process. `Workspace.replace` still uses `Task`. Do **not** delete `Task`.
 - **Files:** `builtbygio/fuzzy-finder` `lib/path-loader.js`, `builtbygio/symbols-view` `lib/tag-reader.js`, then Chevron pin bumps. Optional: wrap remaining `Task` around `utilityProcess` (A7) if a pin stalls
 - **Depends on:** PR 3 (replace already off scandal). Not H1
 - **Description:** These are the inventory callers. Not a Grim.deprecate in core. After both pins and replace no longer `require('chevron').Task`, a follow-on may delete `src/task.ts` / `task-bootstrap.js` / the export.

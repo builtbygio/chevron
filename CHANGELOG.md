@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- First-mate / oniguruma boot when a TextMate grammar is **assigned** to a buffer, not at GrammarRegistry construct (H2 PR 14). Tree-sitter-only sessions do not load the NAN addon. first-mate is not deleted.
+
+- fuzzy-finder 1.15.1 and symbols-view 0.118.6 no longer call `Task` (H2 PR 14a). Path crawl and project tags run in-process. `Workspace.replace` still uses `Task`. `Task` is not deleted.
+
 - Default UI/syntax themes are `chevron-dark-ui` / `chevron-dark-syntax`. Theme-manager fallback matches. `one-dark-*` stays bundled. Config-schema and settings-view product copy say Chevron (H2 PR 17). `Package.getType()` is `'chevron'`. Does not change Windows userData name.
 
 - New `src/` files are TypeScript. Existing `src/**/*.js` is grandfathered and converted only when already being edited (H2 PR 16). CI bans new `.js` under `src/`. No mass rename.

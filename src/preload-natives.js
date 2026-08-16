@@ -65,10 +65,11 @@ const editorNatives = [
   },
   {
     name: 'oniguruma',
-    usedBy: 'TextMate grammar regex engine',
+    usedBy:
+      'TextMate grammar regex engine (PR 14: loaded when a TM grammar is assigned, not at boot)',
     migrationClass: 'renderer-hot',
     processAffinity: 'editor-preload',
-    loadSites: ['src/text-mate-language-mode.js']
+    loadSites: ['src/text-mate-language-mode.js', 'node_modules/first-mate']
   },
   {
     name: 'scrollbar-style',

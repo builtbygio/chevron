@@ -1,13 +1,15 @@
 const _ = require('underscore-plus');
 const Grim = require('grim');
 const CSON = require('season');
-const FirstMate = require('first-mate');
-const { Disposable, CompositeDisposable } = require('event-kit');
+const { Disposable, CompositeDisposable, Emitter } = require('event-kit');
 const TextMateLanguageMode = require('./text-mate-language-mode');
 const TreeSitterLanguageMode = require('./tree-sitter-language-mode');
 const TreeSitterGrammar = require('./tree-sitter-grammar');
 const ScopeDescriptor = require('./scope-descriptor');
 const Token = require('./token');
+const NullGrammar = require('./null-grammar');
+const { loadFirstMate } = require('./load-first-mate');
+const { PendingTextMateGrammar } = require('./pending-text-mate-grammar');
 const fs = require('fs-plus');
 const { Point, Range } = require('text-buffer');
 
@@ -28,15 +30,39 @@ module.exports = class GrammarRegistry {
   constructor({ config } = {}) {
     this.config = config;
     this.subscriptions = new CompositeDisposable();
-    this.textmateRegistry = new FirstMate.GrammarRegistry({
-      maxTokensPerLine: 100,
-      maxLineLength: 1000
-    });
+    this.emitter = new Emitter();
+    this._textmateRegistry = null;
+    this.pendingTextMateByScope = new Map();
     this.clear();
   }
 
+  // PR 14: first-mate + oniguruma boot on first TM assignment, not at
+  // GrammarRegistry construct. first-mate is not deleted by H2.
+  ensureTextMateRegistry() {
+    if (this._textmateRegistry) return this._textmateRegistry;
+    const FirstMate = loadFirstMate();
+    this._textmateRegistry = new FirstMate.GrammarRegistry({
+      maxTokensPerLine: 100,
+      maxLineLength: 1000
+    });
+    const grammarAddedOrUpdated = this.grammarAddedOrUpdated.bind(this);
+    this._textmateRegistry.onDidAddGrammar(grammar => {
+      this.emitter.emit('did-add-grammar', grammar);
+      grammarAddedOrUpdated(grammar);
+    });
+    this._textmateRegistry.onDidUpdateGrammar(grammar => {
+      this.emitter.emit('did-update-grammar', grammar);
+      grammarAddedOrUpdated(grammar);
+    });
+    for (const stub of this.pendingTextMateByScope.values()) {
+      if (!stub.liveGrammar) stub.materialize();
+    }
+    return this._textmateRegistry;
+  }
+
   clear() {
-    this.textmateRegistry.clear();
+    this._textmateRegistry = null;
+    this.pendingTextMateByScope = new Map();
     this.treeSitterGrammarsById = {};
     if (this.subscriptions) this.subscriptions.dispose();
     this.subscriptions = new CompositeDisposable();
@@ -44,10 +70,6 @@ module.exports = class GrammarRegistry {
     this.grammarScoresByBuffer = new Map();
     this.textMateScopeNamesByTreeSitterLanguageId = new Map();
     this.treeSitterLanguageIdsByTextMateScopeName = new Map();
-
-    const grammarAddedOrUpdated = this.grammarAddedOrUpdated.bind(this);
-    this.textmateRegistry.onDidAddGrammar(grammarAddedOrUpdated);
-    this.textmateRegistry.onDidUpdateGrammar(grammarAddedOrUpdated);
 
     this.subscriptions.add(
       this.config.onDidChange('core.useTreeSitterParsers', () => {
@@ -143,7 +165,7 @@ module.exports = class GrammarRegistry {
       this.languageOverridesByBufferId.set(buffer.id, languageId);
     } else {
       this.languageOverridesByBufferId.set(buffer.id, null);
-      grammar = this.textmateRegistry.nullGrammar;
+      grammar = this.nullGrammar;
     }
 
     this.grammarScoresByBuffer.set(buffer, null);
@@ -211,9 +233,11 @@ module.exports = class GrammarRegistry {
         config: this.config,
         grammars: this
       });
-    } else {
-      return new TextMateLanguageMode({ grammar, buffer, config: this.config });
     }
+    if (grammar instanceof PendingTextMateGrammar) {
+      grammar = grammar.materialize();
+    }
+    return new TextMateLanguageMode({ grammar, buffer, config: this.config });
   }
 
   // Extended: Select a grammar for the given file path and file contents.
@@ -366,11 +390,11 @@ module.exports = class GrammarRegistry {
     if (this.shouldUseTreeSitterParser(languageId)) {
       return (
         this.treeSitterGrammarsById[languageId] ||
-        this.textmateRegistry.grammarForScopeName(languageId)
+        this.textMateGrammarForScopeName(languageId)
       );
     } else {
       return (
-        this.textmateRegistry.grammarForScopeName(languageId) ||
+        this.textMateGrammarForScopeName(languageId) ||
         this.treeSitterGrammarsById[languageId]
       );
     }
@@ -458,7 +482,7 @@ module.exports = class GrammarRegistry {
   //
   // Returns a {Disposable} on which `.dispose()` can be called to unsubscribe.
   onDidAddGrammar(callback) {
-    return this.textmateRegistry.onDidAddGrammar(callback);
+    return this.emitter.on('did-add-grammar', callback);
   }
 
   // Extended: Invoke the given callback when a grammar is updated due to a grammar
@@ -469,7 +493,7 @@ module.exports = class GrammarRegistry {
   //
   // Returns a {Disposable} on which `.dispose()` can be called to unsubscribe.
   onDidUpdateGrammar(callback) {
-    return this.textmateRegistry.onDidUpdateGrammar(callback);
+    return this.emitter.on('did-update-grammar', callback);
   }
 
   // Experimental: Specify a type of syntax node that may embed other languages.
@@ -502,18 +526,26 @@ module.exports = class GrammarRegistry {
   }
 
   get nullGrammar() {
-    return this.textmateRegistry.nullGrammar;
+    if (this._textmateRegistry) return this._textmateRegistry.nullGrammar;
+    return NullGrammar;
   }
 
   get grammars() {
     return this.getGrammars();
   }
 
+  textMateGrammarForScopeName(scopeName) {
+    const pending = this.pendingTextMateByScope.get(scopeName);
+    if (pending) return pending.liveGrammar || pending;
+    if (this._textmateRegistry) {
+      return this._textmateRegistry.grammarForScopeName(scopeName);
+    }
+    return null;
+  }
+
   decodeTokens() {
-    return this.textmateRegistry.decodeTokens.apply(
-      this.textmateRegistry,
-      arguments
-    );
+    const registry = this.ensureTextMateRegistry();
+    return registry.decodeTokens.apply(registry, arguments);
   }
 
   grammarForScopeName(scopeName) {
@@ -531,23 +563,40 @@ module.exports = class GrammarRegistry {
           grammar.addInjectionPoint(injectionPoint);
         }
       }
+      this.emitter.emit('did-add-grammar', grammar);
+      this.grammarAddedOrUpdated(grammar);
+      return new Disposable(() => this.removeGrammar(grammar));
+    } else if (grammar instanceof PendingTextMateGrammar) {
+      if (grammar.scopeName) {
+        this.pendingTextMateByScope.set(grammar.scopeName, grammar);
+      }
+      this.emitter.emit('did-add-grammar', grammar);
       this.grammarAddedOrUpdated(grammar);
       return new Disposable(() => this.removeGrammar(grammar));
     } else {
-      return this.textmateRegistry.addGrammar(grammar);
+      return this.ensureTextMateRegistry().addGrammar(grammar);
     }
   }
 
   removeGrammar(grammar) {
     if (grammar instanceof TreeSitterGrammar) {
       delete this.treeSitterGrammarsById[grammar.scopeName];
-    } else {
-      return this.textmateRegistry.removeGrammar(grammar);
+    } else if (grammar instanceof PendingTextMateGrammar) {
+      this.pendingTextMateByScope.delete(grammar.scopeName);
+      if (grammar.liveGrammar && this._textmateRegistry) {
+        this._textmateRegistry.removeGrammar(grammar.liveGrammar);
+      }
+    } else if (this._textmateRegistry) {
+      return this._textmateRegistry.removeGrammar(grammar);
     }
   }
 
   removeGrammarForScopeName(scopeName) {
-    return this.textmateRegistry.removeGrammarForScopeName(scopeName);
+    const pending = this.pendingTextMateByScope.get(scopeName);
+    if (pending) this.removeGrammar(pending);
+    if (this._textmateRegistry) {
+      return this._textmateRegistry.removeGrammarForScopeName(scopeName);
+    }
   }
 
   // Extended: Read a grammar asynchronously and add it to the registry.
@@ -622,7 +671,9 @@ module.exports = class GrammarRegistry {
           `Grammar missing required scopeName property: ${grammarPath}`
         );
       }
-      return this.textmateRegistry.createGrammar(grammarPath, params);
+      const stub = new PendingTextMateGrammar(this, grammarPath, params);
+      this.pendingTextMateByScope.set(params.scopeName, stub);
+      return stub;
     }
   }
 
@@ -634,7 +685,12 @@ module.exports = class GrammarRegistry {
   //
   // Returns a non-empty {Array} of {Grammar} instances.
   getGrammars(params) {
-    let tmGrammars = this.textmateRegistry.getGrammars();
+    let tmGrammars;
+    if (this._textmateRegistry) {
+      tmGrammars = this._textmateRegistry.getGrammars();
+    } else {
+      tmGrammars = [this.nullGrammar, ...this.pendingTextMateByScope.values()];
+    }
     if (!(params && params.includeTreeSitter)) return tmGrammars;
 
     const tsGrammars = Object.values(this.treeSitterGrammarsById).filter(
@@ -647,9 +703,9 @@ module.exports = class GrammarRegistry {
   // from the TextMate side. Tree-sitter entries without a scopeName (stubs
   // registered before the real grammar loads) are omitted too.
   getParserKindCounts() {
-    const textMate = this.textmateRegistry
-      .getGrammars()
-      .filter(g => g && g !== this.nullGrammar && g.scopeName).length;
+    const textMate = this.getGrammars().filter(
+      g => g && g !== this.nullGrammar && g.scopeName
+    ).length;
     const treeSitter = Object.values(this.treeSitterGrammarsById).filter(
       g => g && g.scopeName
     ).length;
@@ -657,7 +713,8 @@ module.exports = class GrammarRegistry {
   }
 
   scopeForId(id) {
-    return this.textmateRegistry.scopeForId(id);
+    if (!this._textmateRegistry) return undefined;
+    return this._textmateRegistry.scopeForId(id);
   }
 
   treeSitterGrammarForLanguageString(languageString) {

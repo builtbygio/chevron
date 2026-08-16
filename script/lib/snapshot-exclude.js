@@ -181,6 +181,11 @@ function shouldExcludeModule({
     requiredModuleRelativePath ===
       path.join('..', 'node_modules', 'oniguruma', 'src', 'oniguruma.js') ||
     requiredModuleRelativePath ===
+      path.join('..', 'node_modules', 'first-mate', 'lib', 'first-mate.js') ||
+    requiredModuleRelativePath.startsWith(
+      path.join('..', 'node_modules', 'first-mate', path.sep)
+    ) ||
+    requiredModuleRelativePath ===
       path.join('..', 'node_modules', 'resolve', 'index.js') ||
     requiredModuleRelativePath ===
       path.join('..', 'node_modules', 'resolve', 'lib', 'core.js') ||
