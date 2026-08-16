@@ -8,6 +8,7 @@
  */
 let OverlayManager;
 const ElementResizeDetector = require('element-resize-detector');
+const { createOverlayElement } = require('./overlay-element');
 let elementResizeDetector = null;
 
 module.exports =
@@ -61,7 +62,7 @@ module.exports =
     const itemView = this.views.getView(item);
     let cachedOverlay = this.overlaysById[decorationId];
     if (!(overlayNode = cachedOverlay != null ? cachedOverlay.overlayNode : undefined)) {
-      overlayNode = document.createElement('atom-overlay');
+      overlayNode = createOverlayElement();
       if (klass != null) { overlayNode.classList.add(klass); }
       if (elementResizeDetector == null) { elementResizeDetector = ElementResizeDetector({strategy: 'scroll'}); }
       elementResizeDetector.listenTo(overlayNode, () => {

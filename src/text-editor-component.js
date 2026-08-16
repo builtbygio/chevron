@@ -8,6 +8,7 @@ const { isPairedCharacter } = require('./text-utils');
 const electron = require('electron');
 const clipboard = electron.clipboard;
 const $ = etch.dom;
+const { createOverlayElement } = require('./overlay-element');
 
 let TextEditorElement;
 
@@ -4961,7 +4962,7 @@ class HighlightComponent {
 class OverlayComponent {
   constructor(props) {
     this.props = props;
-    this.element = document.createElement('atom-overlay');
+    this.element = createOverlayElement();
     if (this.props.className != null)
       this.element.classList.add(this.props.className);
     this.element.appendChild(this.props.element);

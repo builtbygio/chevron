@@ -416,7 +416,7 @@ Risk (**high** if we delete early): landing “delete Task + scandal after a dog
 - That is why `document-register-element@1.14.10` is still required (`static/index.js` 171–184; GROK.md landmine: “Skip `document-register-element` → breaks `document.createElement('atom-*')`”).
 - `src/create-custom-element.js` already constructs via `new ElementClass()` to force the preload constructor.
 - Parser-inserted tags are gone (`static/index.html` is an empty shell). **Package-constructed** tags are why the polyfill still exists.
-- First-party `document.createElement('atom-*')` still lives in `src/panel.js`, `src/overlay-manager.ts`, `src/pane-axis-element.js`, `src/text-editor-component.js` (`atom-overlay`), `src/workspace-element.js`, `src/menu-manager.ts`, `packages/lsp-ui/lib/rename-view.js`.
+- First-party construction uses `createCustomElement` / factories (PR 7). `menu-manager.ts` still builds a **test document** via `testDocument.createElement` for selector matching — not a live host tag.
 - Owned pins still construct host tags the same way (`notifications` `atom-notification` / `atom-notifications`, `markdown-preview` `atom-styles`, github React `createElement("atom-text-editor")`). **Etch and React go through `document.createElement`**, so a CI grep of `src/` + monorepo packages is not the full set.
 - Core tags still use the `atom-*` prefix. That is a name, not an architecture.
 
@@ -434,7 +434,7 @@ Risk (**high** if we delete early): landing “delete Task + scandal after a dog
 
 | Piece | Verdict |
 |-------|---------|
-| `create-custom-element.js` | **Keep** |
+| `create-custom-element.js` | **Keep**; first-party sites converted (PR 7) |
 | `document-register-element` | **Wrap** through H1; **delete** only after catalog + etch/React host tags are covered |
 | etch + `TextEditorComponent` | **Keep** (wrap) |
 | `atom-*` tag names | **Migrate later** (branding) |
@@ -1074,9 +1074,10 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 7 — Factory-only custom elements (**do not** delete the polyfill)
 
 - **Title:** `dom: construct first-party atom-* elements via factory`
-- **Files:** `src/create-custom-element.js`, `src/panel.js`, `src/overlay-manager.ts`, `src/pane-axis-element.js`, `src/text-editor-component.js`, `src/workspace-element.js`, `src/menu-manager.ts`, `packages/lsp-ui/lib/rename-view.js`, CI grep for `src/` + monorepo `packages/`
+- **Status:** **this change**
+- **Files:** `src/create-custom-element.js`, `src/panel.js`, `src/panel-element.js`, `src/overlay-element.js`, `src/overlay-manager.ts`, `src/pane-axis-element.js`, `src/text-editor-component.js`, `src/workspace-element.js`, `packages/lsp-ui/lib/rename-view.js`, CI grep for `src/` + monorepo `packages/`
 - **Depends on:** none. H1-late is fine
-- **Description:** Ban `document.createElement('atom-')` in first-party code. **Leave** `document-register-element` and `static/index.js` polyfill require. Do **not** rename tags. Delete is PR 7b.
+- **Description:** Ban `document.createElement('atom-')` in first-party product code. **Leave** `document-register-element` and `static/index.js` polyfill require. Do **not** rename tags. Delete is PR 7b.
 
 #### PR 7b — (H2) Delete `document-register-element`
 

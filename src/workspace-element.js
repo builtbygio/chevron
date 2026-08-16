@@ -6,6 +6,13 @@ const fs = require('fs-plus');
 const { CompositeDisposable, Disposable } = require('event-kit');
 const scrollbarStyle = require('scrollbar-style');
 const _ = require('underscore-plus');
+const createCustomElement = require('./create-custom-element');
+
+class WorkspaceAxisElement extends HTMLElement {}
+
+function createWorkspaceAxisElement() {
+  return createCustomElement('atom-workspace-axis', WorkspaceAxisElement);
+}
 
 class WorkspaceElement extends HTMLElement {
   connectedCallback() {
@@ -23,10 +30,10 @@ class WorkspaceElement extends HTMLElement {
     this.classList.add('workspace');
     this.setAttribute('tabindex', -1);
 
-    this.verticalAxis = document.createElement('atom-workspace-axis');
+    this.verticalAxis = createWorkspaceAxisElement();
     this.verticalAxis.classList.add('vertical');
 
-    this.horizontalAxis = document.createElement('atom-workspace-axis');
+    this.horizontalAxis = createWorkspaceAxisElement();
     this.horizontalAxis.classList.add('horizontal');
     this.horizontalAxis.appendChild(this.verticalAxis);
 
@@ -475,9 +482,8 @@ function isTab(element) {
   return false;
 }
 
+window.customElements.define('atom-workspace-axis', WorkspaceAxisElement);
 window.customElements.define('atom-workspace', WorkspaceElement);
-
-const createCustomElement = require('./create-custom-element');
 
 function createWorkspaceElement() {
   return createCustomElement('atom-workspace', WorkspaceElement);
