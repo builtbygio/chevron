@@ -47,7 +47,8 @@ const CRITICAL_NATIVE_PACKAGES = [
   'oniguruma',
   '@derekstride/tree-sitter-sql',
   'tree-sitter-less',
-  'tree-sitter-perl'
+  'tree-sitter-perl',
+  'tree-sitter-clojure-orchard'
 ];
 
 const CRITICAL_NODE_FILES = [

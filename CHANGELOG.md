@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Clojure highlighting defaults to tree-sitter (`tree-sitter-clojure-orchard@0.2.8` via `builtbygio/language-clojure` 0.23.0). No official `tree-sitter/tree-sitter-clojure`; oakmac `0.4.0` is 2019/`nan` and is not used. TextMate `clojure.cson` stays as the fallback. Bootstrap rebuilds the N-API addon (no npm prebuilds). See [docs/language-stack.md](docs/language-stack.md).
+
 - Perl highlighting defaults to tree-sitter (`tree-sitter-perl@1.2.1` via `builtbygio/language-perl` 0.39.0). Perl 6 / Raku stays TextMate. TextMate `perl.cson` stays as the fallback. Bootstrap rebuilds the N-API addon (no npm prebuilds). See [docs/language-stack.md](docs/language-stack.md).
 
 - SCSS highlighting defaults to tree-sitter (`tree-sitter-scss@1.0.0` via `builtbygio/language-sass` 0.63.0). Indented Sass and SassDoc stay TextMate. TextMate `scss.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
