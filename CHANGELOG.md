@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `language-hyperlink` 0.18.0 ships the `text.hyperlink` injection grammar as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+
 - `language-source` 0.10.0 ships `.source` editor settings as JSON (H2 PR 13c). `season` stays — other language pins still ship CSON. See [docs/language-stack.md](docs/language-stack.md).
 
 - C# highlighting defaults to tree-sitter (`tree-sitter-c-sharp@0.23.5` via `builtbygio/language-csharp` 1.2.0). Official grammar with npm prebuilds. `source.csx` and `source.cake` stay TextMate. TextMate `csharp.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
