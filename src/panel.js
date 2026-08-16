@@ -1,4 +1,5 @@
 const { Emitter } = require('event-kit');
+const { createPanelElement } = require('./panel-element');
 
 // Extended: A container representing a panel on the edges of the editor window.
 // You should not create a `Panel` directly, instead use {Workspace::addTopPanel}
@@ -35,7 +36,7 @@ module.exports = class Panel {
 
   getElement() {
     if (!this.element) {
-      this.element = document.createElement('atom-panel');
+      this.element = createPanelElement();
       if (!this.visible) this.element.style.display = 'none';
       if (this.className)
         this.element.classList.add(...this.className.split(' '));

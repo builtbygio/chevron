@@ -1,5 +1,7 @@
 const { CompositeDisposable } = require('event-kit');
-require('./pane-resize-handle-element');
+const {
+  createPaneResizeHandleElement
+} = require('./pane-resize-handle-element');
 
 class PaneAxisElement extends HTMLElement {
   connectedCallback() {
@@ -76,14 +78,14 @@ class PaneAxisElement extends HTMLElement {
     const prevElement = view.previousSibling;
     // if previous element is not pane resize element, then insert new resize element
     if (prevElement != null && !this.isPaneResizeHandleElement(prevElement)) {
-      resizeHandle = document.createElement('atom-pane-resize-handle');
+      resizeHandle = createPaneResizeHandleElement();
       this.insertBefore(resizeHandle, view);
     }
 
     const nextElement = view.nextSibling;
     // if next element isnot resize element, then insert new resize element
     if (nextElement != null && !this.isPaneResizeHandleElement(nextElement)) {
-      resizeHandle = document.createElement('atom-pane-resize-handle');
+      resizeHandle = createPaneResizeHandleElement();
       return this.insertBefore(resizeHandle, nextElement);
     }
   }

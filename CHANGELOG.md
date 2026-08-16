@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- First-party `atom-*` elements are constructed via `createCustomElement` / factories. `document-register-element` stays for owned pins and etch/React host tags.
+
 - Packaging uses `@electron/packager` 18.4.4 instead of `electron-packager` 15. Output names, asar unpack globs, fuses, and Linux `Chevron-linux-<arch>` layout are unchanged. `electron-link` / custom snapshot stay.
 
 - User `~/.chevron` config, keymap, and snippets default to JSON. Existing `*.cson` still load; the first boot copies them to `*.json` and leaves the CSON in place. Escape: `CHEVRON_CONFIG_CSON=1`. `season` stays for pin CSON.

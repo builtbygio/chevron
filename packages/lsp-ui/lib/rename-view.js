@@ -4,6 +4,8 @@
  * Mini-editor modal for rename (Phase 4).
  */
 
+const TextEditorElement = require('../../../src/text-editor-element');
+
 class RenameView {
   constructor() {
     this.element = document.createElement('div');
@@ -13,7 +15,7 @@ class RenameView {
     this.label.classList.add('lsp-ui-rename-label');
     this.label.textContent = 'Rename to:';
 
-    this.input = document.createElement('atom-text-editor');
+    this.input = TextEditorElement.createTextEditorElement();
     this.input.setAttribute('mini', true);
 
     this.element.appendChild(this.label);
