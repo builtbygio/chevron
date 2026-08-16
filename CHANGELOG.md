@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Load `tree-sitter-perl` (ESM syntax, no `"type":"module"`) through `node-gyp-build` instead of `require()`. Electron treated that file as a SyntaxError and smoke treated the fatal grammar notification as a hard fail.
+
 ### Changed
 
 - Perl highlighting defaults to tree-sitter (`tree-sitter-perl@1.2.1` via `builtbygio/language-perl` 0.39.0). Perl 6 / Raku stays TextMate. TextMate `perl.cson` stays as the fallback. Bootstrap rebuilds the N-API addon (no npm prebuilds). See [docs/language-stack.md](docs/language-stack.md).
