@@ -46,7 +46,8 @@ const CRITICAL_NATIVE_PACKAGES = [
   'fs-admin',
   'oniguruma',
   '@derekstride/tree-sitter-sql',
-  'tree-sitter-less'
+  'tree-sitter-less',
+  'tree-sitter-perl'
 ];
 
 const CRITICAL_NODE_FILES = [

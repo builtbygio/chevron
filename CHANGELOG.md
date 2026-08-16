@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Perl highlighting defaults to tree-sitter (`tree-sitter-perl@1.2.1` via `builtbygio/language-perl` 0.39.0). Perl 6 / Raku stays TextMate. TextMate `perl.cson` stays as the fallback. Bootstrap rebuilds the N-API addon (no npm prebuilds). See [docs/language-stack.md](docs/language-stack.md).
+
 - SCSS highlighting defaults to tree-sitter (`tree-sitter-scss@1.0.0` via `builtbygio/language-sass` 0.63.0). Indented Sass and SassDoc stay TextMate. TextMate `scss.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
 
 - Less highlighting defaults to tree-sitter (`mdovale/tree-sitter-less` via `builtbygio/language-less` 0.35.0). No published npm package; bootstrap rebuilds the N-API addon. TextMate `less.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
