@@ -40,7 +40,8 @@ describe('S4 display invoke slice', () => {
     assert.ok(ipc.includes("sendSync('atom-show-message-box-sync'"));
     const main = read('src/main-process/register-renderer-ipc.js');
     assert.ok(main.includes("on('atom-show-message-box-sync'"));
-    assert.ok(main.includes("on('atom-create-browser-window-sync'") || main.includes('atom-create-browser-window'));
+    assert.ok(main.includes("on('atom-create-browser-window-sync'"));
+    assert.ok(main.includes('refused'));
     const fsIpc = read('src/main-process/register-fs-ipc.js');
     assert.ok(/atom-fs-.*-sync/.test(fsIpc));
   });

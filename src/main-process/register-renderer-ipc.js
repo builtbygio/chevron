@@ -22,106 +22,15 @@ const {
 
 let registered = false;
 
-// Hidden windows created for packages (e.g. github git workers).
-// Electron BP P0.2–P0.3: track ownership so IPC cannot drive arbitrary windows
-// or relay messages to arbitrary webContents.
-// windowId -> { win, managerWcId, workerWcId }
-const packageWorkers = new Map();
-
 // Phase N2.1: settings-view avatar cache lives only under userData/Cache/settings-view.
 const SETTINGS_VIEW_CACHE_MAX_BYTES = 5 * 1024 * 1024;
 const SAFE_CACHE_BASENAME = /^[A-Za-z0-9._-]+$/;
-
-/**
- * Phase N5: package secondary BrowserWindows (github git workers).
- * They still need Node (dugite / worker.js) — that is intentional and
- * hackable — but prefs are fixed, navigation is file:-only, and they
- * cannot open child windows or grant Chromium permissions.
- */
-const WORKER_SESSION_PARTITION = 'chevron-package-worker';
-
-function isAllowedWorkerNavigationUrl(navigationUrl) {
-  if (typeof navigationUrl !== 'string' || navigationUrl.length === 0) {
-    return false;
-  }
-  // Reject path-traversal sequences in the raw URL (URL() may normalize them away).
-  if (navigationUrl.includes('..')) return false;
-  try {
-    const parsed = new URL(navigationUrl);
-    // Workers load renderer.html + worker assets via file:// only.
-    // about:blank is used briefly by Electron before loadURL.
-    if (parsed.protocol === 'about:') {
-      return parsed.pathname === 'blank' || parsed.href === 'about:blank';
-    }
-    if (parsed.protocol !== 'file:') return false;
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
-function configurePackageWorkerWindow(win) {
-  if (!win || win.isDestroyed()) return;
-  const wc = win.webContents;
-
-  wc.setWindowOpenHandler(({ url }) => {
-    console.warn(
-      `AtomApplication: blocked window.open from package worker (${String(url)})`
-    );
-    return { action: 'deny' };
-  });
-
-  wc.on('will-navigate', (event, navigationUrl) => {
-    if (!isAllowedWorkerNavigationUrl(navigationUrl)) {
-      console.warn(
-        `AtomApplication: blocked package worker navigation to ${String(
-          navigationUrl
-        )}`
-      );
-      event.preventDefault();
-    }
-  });
-
-  wc.on('will-redirect', (event, navigationUrl) => {
-    if (!isAllowedWorkerNavigationUrl(navigationUrl)) {
-      console.warn(
-        `AtomApplication: blocked package worker redirect to ${String(
-          navigationUrl
-        )}`
-      );
-      event.preventDefault();
-    }
-  });
-
-  const session = wc.session;
-  session.setPermissionRequestHandler((_wc, permission, callback) => {
-    console.warn(
-      `AtomApplication: denied package worker permission "${permission}"`
-    );
-    callback(false);
-  });
-  session.setPermissionCheckHandler(() => false);
-}
 
 function browserWindowFromEvent(event) {
   return BrowserWindow.fromWebContents(event.sender);
 }
 
-function resolvePackageWorker(windowId) {
-  const meta = packageWorkers.get(windowId);
-  if (!meta) return null;
-  if (!meta.win || meta.win.isDestroyed()) return null;
-  return meta;
-}
-
-function packageWorkerByWorkerWcId(webContentsId) {
-  for (const meta of packageWorkers.values()) {
-    if (meta.workerWcId === webContentsId) return meta;
-  }
-  return null;
-}
-
-// Methods remote-compat may invoke on package worker BrowserWindows only.
+// Methods remote-compat may invoke on utilityProcess git workers only.
 const PACKAGE_WORKER_WINDOW_METHODS = new Set([
   'loadURL',
   'destroy',
@@ -177,7 +86,7 @@ module.exports = function registerRendererIpc(atomApplication) {
   // H1 PR 2b — ripgrep spawn lives in main, not the preload searcher.
   require('./register-rg-ipc')(atomApplication);
 
-  // Phase S3 / #61 — github git workers via utilityProcess (feature-flagged).
+  // Phase S3 / PR 9 — github git workers via utilityProcess only.
   const packageUtilityWorker = require('./package-utility-worker');
 
   // --- Boot / load settings (P0) ---------------------------------------------
@@ -646,26 +555,11 @@ module.exports = function registerRendererIpc(atomApplication) {
   // (No change to allowlist logic below; utility workers never call atom-wc-send.)
 
   ipcMain.on('atom-wc-send', (event, webContentsId, channel, ...args) => {
-    // P0.3: not an open relay — only:
-    //  - send to self (same webContents),
-    //  - manager → its package worker,
-    //  - package worker → its manager.
+    // Git workers use atom-utility-worker-send. This channel is send-to-self only.
     try {
       const senderId = event.sender.id;
       const targetId = webContentsId;
-      let allowed = senderId === targetId;
-
-      if (!allowed) {
-        const asWorkerTarget = packageWorkerByWorkerWcId(targetId);
-        if (asWorkerTarget && asWorkerTarget.managerWcId === senderId) {
-          allowed = true; // Manager → its worker
-        } else {
-          const asWorkerSender = packageWorkerByWorkerWcId(senderId);
-          if (asWorkerSender && asWorkerSender.managerWcId === targetId) {
-            allowed = true; // Worker → its manager
-          }
-        }
-      }
+      const allowed = senderId === targetId;
 
       if (!allowed) {
         console.warn(
@@ -685,22 +579,9 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   ipcMain.on('atom-wc-is-destroyed-sync', (event, webContentsId) => {
     try {
-      // Own webContents always allowed; package workers by either peer.
-      const senderId = event.sender.id;
-      if (webContentsId !== senderId) {
-        const meta =
-          packageWorkerByWorkerWcId(webContentsId) ||
-          packageWorkerByWorkerWcId(senderId);
-        const related =
-          meta &&
-          (meta.workerWcId === webContentsId ||
-            meta.managerWcId === webContentsId ||
-            meta.workerWcId === senderId ||
-            meta.managerWcId === senderId);
-        if (!related) {
-          event.returnValue = true;
-          return;
-        }
+      if (webContentsId !== event.sender.id) {
+        event.returnValue = true;
+        return;
       }
       const wc = webContents.fromId(webContentsId);
       event.returnValue = !wc || wc.isDestroyed();
@@ -781,97 +662,12 @@ module.exports = function registerRendererIpc(atomApplication) {
     event.returnValue = !packageUtilityWorker.isUtilityWorker(workerId);
   });
 
-  // --- Create BrowserWindow from renderer (emergency package workers only) --
-  // Phase S3 complete: product path is utilityProcess (remote-compat).
-  // This handler remains for CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1.
-
-  ipcMain.on('atom-create-browser-window-sync', (event, options = {}) => {
-    try {
-      if (packageUtilityWorker.isEnabled()) {
-        console.warn(
-          'atom-create-browser-window-sync: refused — package workers use utilityProcess (Phase S3). ' +
-            'Set CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1 only for emergency debugging.'
-        );
-        event.returnValue = null;
-        return;
-      }
-      // Emergency: package secondary windows (github git workers) as Node BW.
-      // Hardened prefs only — see docs/security-phase-n5.md / S3 utility docs.
-      const webPreferences = {
-        nodeIntegration: true,
-        nodeIntegrationInWorker: false,
-        nodeIntegrationInSubFrames: false,
-        contextIsolation: false,
-        sandbox: false,
-        webSecurity: true,
-        allowRunningInsecureContent: false,
-        experimentalFeatures: false,
-        // Isolate cookies/storage from the editor session.
-        partition: WORKER_SESSION_PARTITION
-      };
-
-      // Drop any caller webPreferences; keep other top-level window options
-      // (show, width, height, …) that WorkerManager may pass.
-      const windowOptions = Object.assign({}, options);
-      delete windowOptions.webPreferences;
-
-      const win = new BrowserWindow(
-        Object.assign({}, windowOptions, { webPreferences })
-      );
-      // Capture ids now: BrowserWindow getters throw once the window is
-      // destroyed, and the closed/destroyed handlers below run exactly then.
-      const winId = win.id;
-      const wcId = win.webContents.id;
-      const managerWc = event.sender;
-      packageWorkers.set(winId, {
-        win,
-        managerWcId: managerWc.id,
-        workerWcId: wcId
-      });
-
-      configurePackageWorkerWindow(win);
-
-      const destroyWorker = () => {
-        if (!win.isDestroyed()) win.destroy();
-      };
-      // If the manager renderer dies, tear down its worker windows
-      managerWc.once('destroyed', destroyWorker);
-      managerWc.once('render-process-gone', destroyWorker);
-      managerWc.once('crashed', destroyWorker);
-
-      win.on('closed', () => {
-        packageWorkers.delete(winId);
-        try {
-          managerWc.removeListener('destroyed', destroyWorker);
-          managerWc.removeListener('render-process-gone', destroyWorker);
-          managerWc.removeListener('crashed', destroyWorker);
-        } catch (e) {
-          /* ignore */
-        }
-      });
-
-      // Forward worker crash to manager renderer
-      const forward = name => {
-        if (!managerWc.isDestroyed()) {
-          managerWc.send('atom-worker-window-event', {
-            windowId: winId,
-            webContentsId: wcId,
-            event: name
-          });
-        }
-      };
-      win.webContents.on('crashed', () => forward('crashed'));
-      win.webContents.on('render-process-gone', () => forward('crashed'));
-      win.webContents.on('destroyed', () => forward('destroyed'));
-
-      event.returnValue = {
-        id: winId,
-        webContentsId: wcId
-      };
-    } catch (error) {
-      console.error('atom-create-browser-window-sync', error);
-      event.returnValue = null;
-    }
+  // Node BrowserWindow git workers are gone (PR 9). Always refuse.
+  ipcMain.on('atom-create-browser-window-sync', event => {
+    console.warn(
+      'atom-create-browser-window-sync: refused — git workers use utilityProcess only'
+    );
+    event.returnValue = null;
   });
 
   ipcMain.on('atom-bw-id-call-sync', (event, windowId, method, ...args) => {
@@ -911,55 +707,8 @@ module.exports = function registerRendererIpc(atomApplication) {
       return;
     }
 
-    const meta = resolvePackageWorker(windowId);
-    if (!meta) {
-      event.returnValue =
-        method === 'isDestroyed' ? true : method === 'destroy' ? true : null;
-      return;
-    }
-
-    // Only the creating manager renderer may control the worker window.
-    if (meta.managerWcId !== event.sender.id) {
-      console.warn(
-        `atom-bw-id-call-sync: blocked ${String(method)} — not worker owner`
-      );
-      event.returnValue =
-        method === 'isDestroyed' ? true : method === 'destroy' ? true : null;
-      return;
-    }
-
-    const win = meta.win;
-    try {
-      if (method === 'isDestroyed') {
-        event.returnValue = win.isDestroyed();
-        return;
-      }
-      if (method === 'destroy') {
-        win.destroy();
-        event.returnValue = true;
-        return;
-      }
-      if (method === 'loadURL') {
-        const targetUrl = args[0];
-        // Phase N5: package workers may only load local file:// worker assets.
-        if (!isAllowedWorkerNavigationUrl(targetUrl)) {
-          console.warn(
-            `AtomApplication: blocked package worker loadURL to ${String(
-              targetUrl
-            )}`
-          );
-          event.returnValue = false;
-          return;
-        }
-        win.loadURL(targetUrl);
-        event.returnValue = true;
-        return;
-      }
-      event.returnValue = null;
-    } catch (error) {
-      console.error(`atom-bw-id-call-sync ${method}:`, error);
-      event.returnValue = null;
-    }
+    event.returnValue =
+      method === 'isDestroyed' ? true : method === 'destroy' ? true : null;
   });
 
   ipcMain.on('atom-destroy-own-window-sync', event => {

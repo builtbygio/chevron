@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Git workers are **utilityProcess only**. The emergency Node BrowserWindow path (`CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW`) is gone. `atom-create-browser-window-sync` always refuses.
+
 - First-party display IPC uses `invoke` (`chevron:get-primary-display-work-area-size`, `chevron:get-user-default`). Sync `atom.confirm` and `remote-compat` `sendSync` twins stay. `require("remote")` is deprecated as unsupported.
 
 - First-party `atom-*` elements are constructed via `createCustomElement` / factories. `document-register-element` stays for owned pins and etch/React host tags.

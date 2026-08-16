@@ -135,14 +135,6 @@ function createWebContentsProxy(webContentsId, windowId) {
   };
 }
 
-function utilityWorkersEnabled() {
-  try {
-    return !!ipcRenderer.sendSync('atom-utility-worker-enabled-sync');
-  } catch (error) {
-    return false;
-  }
-}
-
 function createUtilityWorkerWindow() {
   const created = ipcRenderer.sendSync('atom-utility-worker-create-sync');
   if (!created) {
@@ -216,35 +208,14 @@ function BrowserWindow(options) {
   if (!(this instanceof BrowserWindow)) {
     return new BrowserWindow(options);
   }
-  // Phase S3 complete: github WorkerManager always gets a utilityProcess proxy
-  // (same BrowserWindow surface — no package pin bump). Node BrowserWindow
-  // workers only if CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1 (emergency).
-  if (utilityWorkersEnabled()) {
-    const utilWin = createUtilityWorkerWindow();
-    this.id = utilWin.id;
-    this.webContents = utilWin.webContents;
-    this.loadURL = utilWin.loadURL.bind(utilWin);
-    this.destroy = utilWin.destroy.bind(utilWin);
-    this.isDestroyed = utilWin.isDestroyed.bind(utilWin);
-    this.__chevronUtilityWorker = true;
-    return;
-  }
-  console.warn(
-    '[chevron] Creating package worker via Node BrowserWindow (emergency path). ' +
-      'Phase S product path is utilityProcess.'
-  );
-  const created = ipcRenderer.sendSync(
-    'atom-create-browser-window-sync',
-    options || {}
-  );
-  if (!created) {
-    throw new Error('Failed to create BrowserWindow via IPC');
-  }
-  this.id = created.id;
-  this.webContents = createWebContentsProxy(
-    created.webContentsId,
-    created.id
-  );
+  // Git workers are utilityProcess only (architecture H1 PR 9).
+  const utilWin = createUtilityWorkerWindow();
+  this.id = utilWin.id;
+  this.webContents = utilWin.webContents;
+  this.loadURL = utilWin.loadURL.bind(utilWin);
+  this.destroy = utilWin.destroy.bind(utilWin);
+  this.isDestroyed = utilWin.isDestroyed.bind(utilWin);
+  this.__chevronUtilityWorker = true;
 }
 
 BrowserWindow.prototype.loadURL = function(url) {

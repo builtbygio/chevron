@@ -158,7 +158,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Primary next tracks
 
 1. **Dogfood week (#106)** — Days 1–3 done. Day 2 OK. Day 3 markdown-preview close hid panes; Day 6 Welcome installer/theme picker dead; crash dialog said Atom. Days 4–7 still open. Smoke is not dogfood.  
-2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1 PR 1–7 and PR 2b landed. PR 8 is S4 IPC (this change: display `invoke`). Next: emergency BW worker delete (PR 9, dogfood-gated). Do **not** delete `Task` / `season` / `document-register-element` in H1. github epic waits on Q1 after dogfood.  
+2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1 PR 1–8 and PR 2b landed. PR 9 removes Node BrowserWindow git workers (this change). Next: test policy (PR 10). Do **not** delete `Task` / `season` / `document-register-element` in H1. github epic waits on Q1 after dogfood.  
 
 3. **#57 / #127** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
 4. **#79 done** — all bundled `language-*` are `builtbygio` pins. No `atom/*` app git pins.
@@ -177,8 +177,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 - `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` — opt **out** of community privileged/native restrict (default is on)  
 - `CHEVRON_FS_IPC_STRICT=0` — opt out of strict FS IPC roots  
 - `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` — re-enable experimental Chromium features  
-- `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` — refuse legacy Coffee/Babel compile-cache (both already removed at runtime)  
-- `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1` — **emergency** Node BW git workers only  
+- `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` — refuse legacy Coffee/Babel compile-cache (both already removed at runtime)
 
 
 ### Optional hygiene
@@ -239,7 +238,7 @@ git status
 | Non-context-aware natives | Folded into owned `builtbygio` native forks; bootstrap rebuilds for Electron |
 | Probing `atom` from CDP | Eval in **Electron Isolated Context**, not page world |
 | Nested superstring without `.node` | Re-sync nested natives after rebuild. Force-copy **excludes** `build/` and is skipped on warm cache. |
-| GitHub workers | **utilityProcess** by default; Node BW only via `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1` |
+| GitHub workers | **utilityProcess only**. Node BrowserWindow workers are gone. |
 | Packaged github `renderer.html` | Unpack `github/lib/**` in `package-application.js` |
 | Custom mksnapshot on E43 | Linux/Windows custom; Darwin stock (`darwin-boot-crash`) |
 | Windows ASAR integrity fuse | Leave off — FATAL without packager-embedded resources |

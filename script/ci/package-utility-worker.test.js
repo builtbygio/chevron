@@ -7,6 +7,7 @@
 
 const { describe, it, before, after } = require('node:test');
 const assert = require('assert');
+const fs = require('fs');
 const path = require('path');
 const Module = require('module');
 
@@ -97,6 +98,7 @@ describe('package-utility-worker', () => {
     delete process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW;
   });
 
+
   it('parseWorkerLoadUrl extracts github worker query', () => {
     const html = path.join(ROOT, 'node_modules/github/lib/renderer.html');
     const url =
@@ -116,15 +118,15 @@ describe('package-utility-worker', () => {
     );
   });
 
-  it('isEnabled on by default; emergency BW path disables utility', () => {
+  it('isEnabled is always on; emergency BW env is ignored', () => {
     delete process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
     delete process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW;
     assert.strictEqual(util.isEnabled(), true);
     process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW = '1';
-    assert.strictEqual(util.isEnabled(), false);
+    assert.strictEqual(util.isEnabled(), true);
     delete process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW;
     process.env.CHEVRON_GITHUB_UTILITY_WORKERS = '0';
-    assert.strictEqual(util.isEnabled(), false);
+    assert.strictEqual(util.isEnabled(), true);
     process.env.CHEVRON_GITHUB_UTILITY_WORKERS = '1';
     assert.strictEqual(util.isEnabled(), true);
   });
@@ -202,6 +204,23 @@ describe('package-utility-worker', () => {
     );
     assert.ok(child.posted.some(m => m.type === 'git-exec'));
     util.destroy(created.id);
+  });
+});
+
+describe('Node BrowserWindow git workers are gone', () => {
+  it('does not construct a package-worker BrowserWindow', () => {
+    const ipc = fs.readFileSync(
+      path.join(ROOT, 'src/main-process/register-renderer-ipc.js'),
+      'utf8'
+    );
+    assert.ok(ipc.includes("on('atom-create-browser-window-sync'"));
+    assert.ok(!ipc.includes("partition: WORKER_SESSION_PARTITION"));
+    assert.ok(!ipc.includes('CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW'));
+    const compat = fs.readFileSync(
+      path.join(ROOT, 'src/remote-compat.js'),
+      'utf8'
+    );
+    assert.ok(!compat.includes('atom-create-browser-window-sync'));
   });
 });
 

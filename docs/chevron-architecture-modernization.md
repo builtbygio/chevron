@@ -464,7 +464,7 @@ Risk (**high** if we delete early): landing “delete Task + scandal after a dog
    | Window / webContents proxy | `atom-bw-id-call-sync`, `atom-wc-is-destroyed-sync`, … | **Stay** while `remote-compat` is the github/worker proxy |
    | Dialogs / display | `atom-show-message-box-sync`, … | **First slice** if callers can go async (`confirm` is the hard one) |
    | App / clipboard / shell | `atom-app-get-*-sync`, `atom-clipboard-*-sync` | **Second slice** where callers are already async |
-   | Workers | `atom-create-browser-window-sync`, … | **Keep until PR 9** (emergency BW delete) |
+   | Workers | `atom-create-browser-window-sync`, … | **Deleted** (PR 9). utilityProcess only |
    | FS IPC | `atom-fs-*-sync` family | **Do not** migrate in the same merge as remote-compat shrink. #108 is a measured footgun |
 
 3. **H1 S4 PR** = refresh §11 + deprecate `exports/remote.js` + **one** slice (dialogs *or* clipboard that already have async callers). Do not promise remote-compat shrinkage **and** FS migration in one PR. github still uses `electron.remote` (`git-timings-view.js`, `directory-select.js`) until the github epic.
@@ -895,7 +895,7 @@ No product telemetry. Observability is **local + CI**.
 | Core `Workspace.scan` ripgrep | **only engine** | `CHEVRON_SEARCH_ENGINE=scandal` is ignored |
 | Config JSON writer | **default on** (PR 5) | `CHEVRON_CONFIG_CSON=1` forces CSON writer one release. Does **not** remove season |
 | `CHEVRON_SKIP_MKSNAPSHOT` | Darwin implicit skip | Unchanged |
-| `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW` | off | Delete after dogfood |
+| `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW` | **removed** | PR 9; utilityProcess only |
 | `CHEVRON_RESTRICT_PACKAGE_REQUIRES` | on | Unchanged |
 | `CHEVRON_DISABLE_LEGACY_TRANSPILE` | optional | Becomes unused when Coffee/Babel stubs die |
 
@@ -1097,9 +1097,10 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 9 — Delete emergency git BrowserWindow worker path
 
 - **Title:** `security: remove Node BrowserWindow git workers`
-- **Files:** `src/main-process/package-utility-worker.js`, `src/main-process/register-renderer-ipc.js`, `src/remote-compat.js` (BW constructor if unused), `src/config-schema.js` (`core.githubUtilityWorkers`), docs, tests
+- **Status:** **this change**
+- **Files:** `src/main-process/package-utility-worker.js`, `src/main-process/register-renderer-ipc.js`, `src/remote-compat.js`, `src/config-schema.js` (`core.githubUtilityWorkers`), docs, tests
 - **Depends on:** dogfood #106 confirmation that utilityProcess git workers are enough
-- **Description:** Delete `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW` product path.
+- **Description:** Delete `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW` product path. utilityProcess remains.
 
 #### PR 10 — Test policy + script-tree fossil hunt (not CSON transpile)
 
