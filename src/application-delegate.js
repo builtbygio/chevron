@@ -190,11 +190,11 @@ module.exports = class ApplicationDelegate {
   }
 
   getPrimaryDisplayWorkAreaSize() {
-    return rendererIpc.getPrimaryDisplayWorkAreaSize();
+    return rendererIpc.getPrimaryDisplayWorkAreaSizeAsync();
   }
 
   getUserDefault(key, type) {
-    return rendererIpc.getUserDefault(key, type);
+    return rendererIpc.getUserDefaultAsync(key, type);
   }
 
   async setUserSettings(config, configFilePath) {

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- First-party display IPC uses `invoke` (`chevron:get-primary-display-work-area-size`, `chevron:get-user-default`). Sync `atom.confirm` and `remote-compat` `sendSync` twins stay. `require("remote")` is deprecated as unsupported.
+
 - First-party `atom-*` elements are constructed via `createCustomElement` / factories. `document-register-element` stays for owned pins and etch/React host tags.
 
 - Packaging uses `@electron/packager` 18.4.4 instead of `electron-packager` 15. Output names, asar unpack globs, fuses, and Linux `Chevron-linux-<arch>` layout are unchanged. `electron-link` / custom snapshot stay.

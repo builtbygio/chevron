@@ -353,6 +353,14 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
+  ipcMain.handle('chevron:get-primary-display-work-area-size', () => {
+    try {
+      return screen.getPrimaryDisplay().workAreaSize;
+    } catch (error) {
+      return { width: 0, height: 0 };
+    }
+  });
+
   ipcMain.on('atom-get-user-default-sync', (event, key, type) => {
     try {
       if (process.platform === 'darwin' && systemPreferences) {
@@ -362,6 +370,17 @@ module.exports = function registerRendererIpc(atomApplication) {
       }
     } catch (error) {
       event.returnValue = undefined;
+    }
+  });
+
+  ipcMain.handle('chevron:get-user-default', (_event, key, type) => {
+    try {
+      if (process.platform === 'darwin' && systemPreferences) {
+        return systemPreferences.getUserDefault(key, type);
+      }
+      return undefined;
+    } catch (error) {
+      return undefined;
     }
   });
 

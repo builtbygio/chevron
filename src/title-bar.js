@@ -21,24 +21,25 @@ module.exports = class TitleBar {
   }
 
   dblclickHandler() {
-    // User preference deciding which action to take on a title bar double-click
-    switch (
+    Promise.resolve(
       this.applicationDelegate.getUserDefault(
         'AppleActionOnDoubleClick',
         'string'
       )
-    ) {
-      case 'Minimize':
-        this.applicationDelegate.minimizeWindow();
-        break;
-      case 'Maximize':
-        if (this.applicationDelegate.isWindowMaximized()) {
-          this.applicationDelegate.unmaximizeWindow();
-        } else {
-          this.applicationDelegate.maximizeWindow();
-        }
-        break;
-    }
+    ).then(action => {
+      switch (action) {
+        case 'Minimize':
+          this.applicationDelegate.minimizeWindow();
+          break;
+        case 'Maximize':
+          if (this.applicationDelegate.isWindowMaximized()) {
+            this.applicationDelegate.unmaximizeWindow();
+          } else {
+            this.applicationDelegate.maximizeWindow();
+          }
+          break;
+      }
+    });
   }
 
   updateTitle() {

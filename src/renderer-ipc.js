@@ -172,8 +172,16 @@ module.exports = {
     return ipcRenderer.sendSync('atom-get-primary-display-work-area-size-sync');
   },
 
+  getPrimaryDisplayWorkAreaSizeAsync() {
+    return ipcRenderer.invoke('chevron:get-primary-display-work-area-size');
+  },
+
   getUserDefault(key, type) {
     return ipcRenderer.sendSync('atom-get-user-default-sync', key, type);
+  },
+
+  getUserDefaultAsync(key, type) {
+    return ipcRenderer.invoke('chevron:get-user-default', key, type);
   },
 
   openExternal(url) {

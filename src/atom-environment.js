@@ -836,7 +836,7 @@ class AtomEnvironment {
     }
   }
 
-  getDefaultWindowDimensions() {
+  async getDefaultWindowDimensions() {
     const { windowDimensions } = this.getLoadSettings();
     if (windowDimensions) return windowDimensions;
 
@@ -850,13 +850,12 @@ class AtomEnvironment {
 
     if (dimensions && this.isValidDimensions(dimensions)) {
       return dimensions;
-    } else {
-      const {
-        width,
-        height
-      } = this.applicationDelegate.getPrimaryDisplayWorkAreaSize();
-      return { x: 0, y: 0, width: Math.min(1024, width), height };
     }
+    const {
+      width,
+      height
+    } = await this.applicationDelegate.getPrimaryDisplayWorkAreaSize();
+    return { x: 0, y: 0, width: Math.min(1024, width), height };
   }
 
   async restoreWindowDimensions() {
@@ -864,7 +863,7 @@ class AtomEnvironment {
       !this.windowDimensions ||
       !this.isValidDimensions(this.windowDimensions)
     ) {
-      this.windowDimensions = this.getDefaultWindowDimensions();
+      this.windowDimensions = await this.getDefaultWindowDimensions();
     }
     await this.setWindowDimensions(this.windowDimensions);
     return this.windowDimensions;
