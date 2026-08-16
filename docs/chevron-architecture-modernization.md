@@ -1148,7 +1148,7 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 13c — Pin CSON → JSON stream (one PR per pin)
 
 - **Title:** `language-*: ship grammars/settings/snippets as JSON` (repeat)
-- **Status:** started. Done: `language-source`, `language-hyperlink` (**this change**). Remaining inventory in [language-stack.md](./language-stack.md) §13c. Next: `language-text`.
+- **Status:** started. Done: `language-source`, `language-hyperlink`, `language-text` (**this change**). Remaining inventory in [language-stack.md](./language-stack.md) §13c. Next: `language-todo`.
 - **Files:** each remaining CSON pin; Chevron pin bump
 - **Depends on:** none (can start in parallel with 13b)
 - **Description:** Implements the existing owned-package checklist. Prerequisite for PR 5b (`season` delete). Do **not** delete `season` in this stream.
