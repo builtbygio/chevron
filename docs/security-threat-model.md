@@ -47,7 +47,7 @@
 | `CHEVRON_FS_IPC_STRICT=0` / `core.fsIpcStrict: false` | Allow FS IPC outside project/home/temp roots |
 | `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` / `core.enableExperimentalWebFeatures` | Re-enable experimental Chromium features |
 | `CHEVRON_FORCE_MKSNAPSHOT=1` | Retry custom V8 startup snapshot on Electron ≥43 |
-| `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1` | Emergency Node BrowserWindow git workers (not product path) |
+| `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1` | **Ignored.** Node BrowserWindow git workers were removed. |
 
 ## Residual risk
 

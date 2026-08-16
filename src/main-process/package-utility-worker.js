@@ -1,12 +1,10 @@
 'use strict';
 
 /**
- * Main-process manager for package utility workers (Phase S3 complete / #61).
+ * Main-process manager for package utility workers (Phase S3 / PR 9).
  *
- * GitHub package git workers always run in Electron utilityProcess (no Node
- * BrowserWindow fallback). Emergency only:
- *   CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1
- * restores the old path for debugging — not a supported product mode.
+ * GitHub package git workers always run in Electron utilityProcess.
+ * The Node BrowserWindow emergency path is gone.
  *
  * See docs/security-phase-s-utilityprocess.md.
  */
@@ -21,32 +19,25 @@ let nextSyntheticId = -1;
 // workerId (synthetic window id) -> meta
 const workers = new Map();
 
-function emergencyBrowserWindowWorkers() {
-  const v = process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW;
-  return v === '1' || v === 'true' || v === 'yes' || v === 'on';
-}
-
-/**
- * Utility workers are always on for Phase S3 completion.
- * Only an explicit emergency env restores Node BrowserWindow workers.
- */
-function envEnabled() {
-  if (emergencyBrowserWindowWorkers()) return false;
-  // Legacy opt-out names still disable utility path (maps to emergency BW).
-  const v = process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
-  if (v === '0' || v === 'false' || v === 'no' || v === 'off') {
+function warnRemovedEmergencyEnv() {
+  const bw = process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW;
+  const legacy = process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
+  if (bw === '1' || bw === 'true' || bw === 'yes' || bw === 'on') {
     console.warn(
-      '[chevron] CHEVRON_GITHUB_UTILITY_WORKERS=0 is deprecated; ' +
-        'prefer CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1 for emergency only. ' +
-        'Node BrowserWindow git workers are not the Phase S product path.'
+      '[chevron] CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW is ignored; ' +
+        'Node BrowserWindow git workers were removed. utilityProcess is the only path.'
     );
-    return false;
   }
-  return true;
+  if (legacy === '0' || legacy === 'false' || legacy === 'no' || legacy === 'off') {
+    console.warn(
+      '[chevron] CHEVRON_GITHUB_UTILITY_WORKERS=0 is ignored; ' +
+        'git workers always use utilityProcess.'
+    );
+  }
 }
 
 function isEnabled() {
-  return envEnabled();
+  return true;
 }
 
 function allocateIds() {
@@ -128,9 +119,7 @@ function destroyWorker(workerId, reason) {
 }
 
 function createWorker(managerWc) {
-  if (!isEnabled()) {
-    return null;
-  }
+  warnRemovedEmergencyEnv();
   if (!utilityProcess || typeof utilityProcess.fork !== 'function') {
     console.error(
       'package-utility-worker: utilityProcess.fork unavailable in this Electron'
@@ -264,7 +253,6 @@ function destroy(workerId) {
 
 module.exports = {
   isEnabled,
-  envEnabled,
   createWorker,
   loadWorkerUrl,
   sendToWorker,

@@ -84,7 +84,7 @@ Created in `atom-window.js` with roughly:
 ### 3. Guests and workers
 
 - **Guest `<webview>`s:** no Node; sandboxed prefs forced on attach.
-- **Git:** `utilityProcess` (`package-utility-worker.js`). Node BrowserWindow workers are emergency-only (`CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW`).
+- **Git:** `utilityProcess` (`package-utility-worker.js`). Node BrowserWindow workers are gone.
 - **LSP:** `utilityProcess` (`src/main-process/workers/lsp-host.js`).
 - **`Task`:** still a renderer `child_process.fork` + fake DOM (`src/task.ts`, `task-bootstrap.js`). Callers: fuzzy-finder, symbols-view, `Workspace.replace`. Wrap-then-delete — not a public API to grow.
 

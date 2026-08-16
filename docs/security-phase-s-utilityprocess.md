@@ -22,9 +22,7 @@ utilityProcess (Node, no DOM) — dugite GitProcess
 ```
 
 Node **BrowserWindow** workers are **not** the product path.  
-Emergency only: `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1` (or deprecated `CHEVRON_GITHUB_UTILITY_WORKERS=0`).
-
-When utility is enabled (default), `atom-create-browser-window-sync` **refuses** package-worker creation.
+The Node BrowserWindow emergency path is **gone** (architecture H1 PR 9). `atom-create-browser-window-sync` **always refuses**.
 
 ## Why utilityProcess
 

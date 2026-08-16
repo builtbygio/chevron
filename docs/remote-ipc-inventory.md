@@ -367,7 +367,7 @@ Most boot and `remote-compat` paths still use `ipcMain.on` + `event.returnValue`
 | Dialogs | `atom-show-message-box` (**invoke**, callback `confirm`), `atom-show-message-box-sync` (legacy `atom.confirm` / `remote.dialog.showMessageBoxSync`) | Async path already invoke. **Sync confirm stays** (hard public API) |
 | Display | `chevron:get-primary-display-work-area-size`, `chevron:get-user-default` | **First-party invoke (PR 8)**. `atom-*-sync` twins stay for `remote-compat` |
 | App / clipboard / shell | `atom-app-get-*-sync`, `atom-clipboard-*-sync`, `atom-shell-beep-sync` | **Later slice** where callers can be async |
-| Workers | `atom-create-browser-window-sync`, `atom-destroy-own-window-sync` | **Keep until PR 9** |
+| Workers | `atom-create-browser-window-sync` (always refuses), `atom-utility-worker-*-sync` | **PR 9:** Node BW path gone. utilityProcess only |
 | FS IPC | `atom-fs-*-sync` family in `register-fs-ipc.js` | **Separate** later PR. Not this merge |
 
 **Migration hints:** first-party display done (PR 8). Clipboard/app getters next. Never break load-settings without an inject-at-preload alternative. New channels are `chevron:*`.
