@@ -686,6 +686,19 @@ jobs:
       - name: Launch smoke test
         run: node script/ci/smoke-test.js
 
+      # Architecture H1 PR 12: publish Windows cold-start numbers.
+      # Same harness as docs/startup-snapshot-plan.md (§4). Five cold homes.
+      - name: Measure cold start
+        run: node script/ci/measure-startup.js --runs 5 --json out/startup-windows.json
+
+      - name: Upload startup measurement
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: startup-windows-x64
+          path: out/startup-windows.json
+          if-no-files-found: warn
+
       - name: Upload Windows packages
         if: success()
         uses: actions/upload-artifact@v6

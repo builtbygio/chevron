@@ -57,6 +57,10 @@ describe('packaging policy (Stream D)', () => {
 
     const linux = shouldSkipCustomSnapshot('43.1.0', { platform: 'linux' });
     assert.strictEqual(linux.skip, false);
+
+    const win32 = shouldSkipCustomSnapshot('43.1.0', { platform: 'win32' });
+    assert.strictEqual(win32.skip, false);
+    assert.strictEqual(win32.reason, 'generate');
   });
 
   it('note mentions CHEVRON_SKIP_MKSNAPSHOT', () => {

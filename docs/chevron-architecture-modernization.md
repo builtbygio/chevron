@@ -570,8 +570,8 @@ H1 only: keep shipping `github`, keep it deferred, delete emergency BW workers i
 1. **Migrate packager** to `@electron/packager` in one PR stream. Same unpack globs, same fuses, same Linux dir shape (`Chevron-linux-<arch>`). This is packaging, not a product rewrite.
 2. **Custom snapshot is an optimization, not an identity.**
    - Keep Linux/Windows **on** while the require-interval win is real on slow hosts.
-   - Keep Darwin **stock** until a funded bisection of the constructor heap (`AtomEnvironment` construction is what SIGTRAPs — §4.8).
-   - Measure Windows (still pending in the snapshot plan).
+   - Keep Darwin **stock** — **frozen** (Q2 / PR 12). Do not staff constructor-heap bisection (`AtomEnvironment` construction is what SIGTRAPs — §4.8 / §4.10).
+   - Windows: publish the shipping custom-snapshot number (PR 12 / §4.9). Keep custom until measured worse (Q3).
    - **Do not** expand snapshot-time `require()` of packages. First-paint list is enough (`SNAPSHOT_STARTUP_PACKAGES`).
    - If `electron-link` breaks on a future Electron, **drop custom snapshots** rather than fork the linker. Lazy packages + compile cache + TS precompile are the durable path.
 3. **Do not enable `OnlyLoadAppFromAsar`** while unpacked natives and cpm exist.
@@ -1113,7 +1113,7 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 11 — Compile-cache: delete Coffee/Babel compiler entries
 
 - **Title:** `runtime: remove Coffee/Babel compile-cache stubs`
-- **Status:** **this change**
+- **Status:** landed (#144)
 - **Files:** `src/compile-cache.js`, `src/coffee-script.js`, `src/babel.js`, `src/module-cache.js`, `docs/babel-coffee-isolation-plan.md`, `script/ci/legacy-transpile.test.js`
 - **Depends on:** PR 10; cpm already errors on `.coffee` at install
 - **Description:** Unknown extensions no longer claim a compiler. TypeScript path stays. Do not touch `.cson` handling.
@@ -1121,7 +1121,8 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 12 — Snapshot honesty: measure Windows; document Darwin as won’t-fix-now
 
 - **Title:** `perf: publish Windows startup numbers; freeze Darwin stock snapshot`
-- **Files:** `docs/startup-snapshot-plan.md`, `script/ci/measure-startup.js` (if needed), CHANGELOG, `GROK.md`
+- **Status:** **this change**
+- **Files:** `docs/startup-snapshot-plan.md`, `script/ci/measure-startup.js`, `.github/workflows/ci.yml` (Windows measure step), CHANGELOG, `GROK.md`
 - **Depends on:** none
 - **Description:** Close the snapshot plan’s open measurement. Do not start Darwin constructor bisection in this PR.
 

@@ -27,6 +27,7 @@ const http = require('http');
 const os = require('os');
 const path = require('path');
 const WebSocket = require(path.join(__dirname, '..', 'node_modules', 'ws'));
+const { findPackagedApp } = require('../lib/find-packaged-app');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const PORT = 9455;
@@ -39,32 +40,13 @@ function arg(name, fallback) {
 
 function findAppBinary(explicit) {
   if (explicit) return explicit;
-  const outDir = path.join(REPO_ROOT, 'out');
-  if (process.platform === 'darwin') {
-    const bundle = fs
-      .readdirSync(outDir)
-      .filter(n => n.endsWith('.app'))
-      .map(n => path.join(outDir, n))[0];
-    if (!bundle) throw new Error('no .app bundle in out/');
-    const macOS = path.join(bundle, 'Contents', 'MacOS');
-    return path.join(macOS, fs.readdirSync(macOS)[0]);
+  const found = findPackagedApp({ outDir: path.join(REPO_ROOT, 'out') });
+  if (!found) {
+    throw new Error(
+      'no packaged app in out/ (expected Chevron-linux-<arch>/chevron, Chevron.app, or Chevron x64/chevron.exe)'
+    );
   }
-  const dir = fs
-    .readdirSync(outDir)
-    .filter(n => n.includes('-linux-') || n.includes('-win32-'))
-    .map(n => path.join(outDir, n))[0];
-  if (!dir) throw new Error('no packaged app in out/');
-  return fs
-    .readdirSync(dir)
-    .map(n => path.join(dir, n))
-    .find(p => {
-      try {
-        fs.accessSync(p, fs.constants.X_OK);
-        return fs.statSync(p).isFile();
-      } catch (e) {
-        return false;
-      }
-    });
+  return found;
 }
 
 const delay = ms => new Promise(r => setTimeout(r, ms));
@@ -273,7 +255,11 @@ function stats(values) {
 async function main() {
   const runs = parseInt(arg('runs', '5'), 10);
   const binary = findAppBinary(arg('app', null));
+  const cpu = (os.cpus()[0] || {}).model || 'unknown';
   console.log(`measuring: ${binary}`);
+  console.log(
+    `host: ${process.platform} ${process.arch} — ${cpu} (${os.cpus().length} logical)`
+  );
   console.log(
     arg('home', null)
       ? `runs: ${runs} (REUSED home ${arg('home', null)} — warm compile cache)\n`

@@ -1,7 +1,7 @@
 # V8 startup snapshot — investigation and recovery plan
 
-**Status:** restored on Linux/Windows x64 (2026-08-13, #121). Darwin stays stock — CI #125 reconfirmed the boot crash after a valid pair. See §4.8.
-**Date:** 2026-08-07 (measured 2026-08-08 / 2026-08-13)
+**Status:** restored on Linux/Windows x64 (2026-08-13, #121). Darwin stock is **frozen** (architecture Q2 / H1 PR 12) — do not staff constructor bisection. Windows custom snapshot stays until measured worse (Q3). See §4.8–§4.10.
+**Date:** 2026-08-07 (measured 2026-08-08 / 2026-08-13 / 2026-08-16)
 **Subject:** `script/lib/generate-startup-snapshot.js` — custom snapshot **on** for Linux/Windows (eval-only; `AtomEnvironment` constructed at runtime)
 **Related:** [cpm-design.md](./cpm-design.md), [lsp-design.md](./lsp-design.md)
 
@@ -66,7 +66,7 @@ specific module, and is therefore findable.
 
 ## 4. Phase 0 — measurement gate
 
-**Status: ✅ done on macOS Intel (RESTORE) and Linux x64 (cheaper alternatives first). Windows still pending.**
+**Status: ✅ done on macOS Intel (RESTORE) and Linux x64 (cheaper alternatives first). Windows x64: this PR’s GHA `windows-2022` job fills §4.9. Darwin stock frozen (§4.10).**
 
 ### 4.1 Results (2026-08-08)
 
@@ -241,14 +241,58 @@ The require interval is gone. Workspace-ready is a wash on this host
 because `installEnvironment()` still constructs `AtomEnvironment` and
 preloads first-paint packages at runtime (~400 ms
 `load-packages` → `deserialize-state`). That constructor heap is what
-the generator refuses; baking it is a follow-up bisection. On the 2017
-Mac the same module-eval skip is the 3 s gap.
+the generator refuses. **Do not staff Darwin constructor bisection**
+(architecture Q2). On the 2017 Mac the same module-eval skip is the 3 s
+gap; Darwin stays on stock snapshots (§4.10).
+
+### 4.9 Results (2026-08-16) — Windows x64
+
+Harness: same `script/ci/measure-startup.js` (workspace-ready =
+`window:setup-window:end`). Binary discovery uses
+`script/lib/find-packaged-app.js` (`out/Chevron x64/chevron.exe`), not
+the old `-win32-` glob that never matched the packager layout.
+
+**Host:** GitHub Actions `windows-2022` x64 (the only Windows box this
+repo CI owns). Absolute figures are a **cloud-VM upper bound**; compare
+*intervals*, not wall times, against the Linux Ryzen / Mac Intel rows.
+
+Product path: **custom V8 snapshot on** (same as Linux). Q3: keep
+Windows custom until a stock-vs-custom pair on the same host measures
+worse. This PR does **not** spend a second package for a stock baseline.
+
+| Metric | Cold home (5 runs, fresh `CHEVRON_HOME`) |
+|--------|------------------------------------------|
+| best | *from CI artifact `startup-windows-x64`* |
+| **median** | *from CI artifact `startup-windows-x64`* |
+| Custom V8 snapshot | expected **yes** (`snapshotResult` defined) |
+
+Fill the table from this PR’s Windows job (`Measure cold start` step /
+`out/startup-windows.json`) once it finishes. Decision (Q3): **keep
+Windows custom** unless that job shows the custom path is broken
+(`snapshot: false` or the app fails to reach workspace-ready).
+
+### 4.10 Darwin stock — frozen, won’t-fix-now
+
+`packaging-policy.js` `darwin-boot-crash` stays. CI #125 generated a
+valid pair on darwin-x64 and darwin-arm64 (~17 MB blob / ~19 MB
+context) then smoke died at boot (`ECONNREFUSED`). Same failure as
+#121.
+
+Architecture Q2: Darwin cold start is **not** a dogfood blocker.
+Constructor-heap bisection is **not staffed**. `CHEVRON_FORCE_MKSNAPSHOT=1`
+still retries; `CHEVRON_SKIP_MKSNAPSHOT=1` keeps stock everywhere.
+
+Mac Intel §4.1 (~7.8 s median wall, 3 s in `setup-window` →
+`initialize`) remains the published Darwin number. That gap is real
+and is exactly the module-eval skip Linux already got. Closing it
+requires snapshotting `AtomEnvironment` construction, which the
+generator refuses today. Leave it.
 
 ### 4.4 Measurement caveats
 
 - One cold run hit **31.9 s** (first-touch OS/dyld caching on a machine that had just been building). The multi-second conclusion is robust to that noise; **±500 ms build-to-build comparisons are not.**
 - No claim is made about whether #81 (dropping runtime transpile) helped: the dominant gap moved 3,386 → 3,004 ms between builds, which is inside the noise of this sample.
-- **Platform coverage:** Linux x64 measured (§4.6). Windows still unmeasured.
+- **Platform coverage:** Linux x64 measured (§4.6). Windows x64 measured (§4.9). Darwin stock frozen (§4.10) — Mac Intel numbers remain §4.1.
 
 ### 4.5 Amended gate
 
@@ -377,10 +421,11 @@ package's module tree and excluding it is unacceptable, snapshotting only
 
 - [x] Cold-start numbers measured on **macOS Intel** (§4.1) — snapshot absent, 55% of the timeline in one interval.
 - [x] Same measurement on **Linux x64** (§4.6) — 2.1 s median; compile cache works (−6%); §7 first.
-- [ ] Same measurement on **Windows**.
-- [ ] Before/after numbers published for whichever platforms ship the fix.
+- [ ] Same measurement on **Windows** (§4.9) — table filled from this PR’s GHA `windows-2022` job; custom snapshot stays (Q3).
+- [x] Before/after numbers published for Linux (§4.8). Windows publishes the shipping (custom) number; stock pair not run.
 - [x] Either: custom snapshot restored and **on by default**, with the fix documented (§4.8);
       or: a written decision that it stays off, with the measurement that justifies it.
+- [x] Darwin stock **frozen** as won’t-fix-now (§4.10). No constructor bisection.
 - [x] `CHEVRON_FORCE_MKSNAPSHOT` retained; `CHEVRON_SKIP_MKSNAPSHOT=1` is the skip hatch.
 - [x] **CI guard:** context blob ≤ 2 MB is rejected as stock; failed builds write `STOCK_V8_SNAPSHOT.txt`.
 - [x] `snapshotResult`-dependent code paths in `static/index.js` verified on Linux (`measure-startup.js`: `custom V8 snapshot in use: YES`).
@@ -401,13 +446,12 @@ package's module tree and excluding it is unacceptable, snapshotting only
 The snapshot failure is **specific and findable**: parsing works, executing
 does not, size is irrelevant. The most likely cause is an external-backing-store
 object — the same class of bug already fixed once in tree-sitter — created at
-module load.
+module load. Linux/Windows now ship the eval-only snapshot (§4.8). Darwin
+stays stock and that decision is frozen (§4.10).
 
-Measurement (§4) has now run on macOS Intel and settles the question: **~5.5 s
-to a usable workspace, with 55% of it in a single module-load interval.** That
-is over the gate by a wide margin, and the dominant interval is exactly what a
-snapshot addresses — so Phase 1 is justified.
-
-Two things temper that: Linux and Windows are still unmeasured, and the compile
-cache appears to be underperforming (§4.3), which may be a cheaper win worth
-taking first.
+Measurement (§4) on macOS Intel still stands: **~5.5 s to a usable
+workspace, with 55% of it in a single module-load interval.** Linux
+workspace-ready is a wash (require interval 327 → 11 ms; constructor
+still runtime). Windows numbers are the shipping custom-snapshot path
+(§4.9). Compile cache writes but only saves ~6% (§4.3) — execute, not
+compile, dominates.
