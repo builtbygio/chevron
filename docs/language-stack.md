@@ -1,6 +1,6 @@
 # Language stack — tree-sitter coverage and TextMate exception list
 
-**Status:** H2 PR 13 catalog + PR 13b stream. First tranche done; later tranche done (less, scss, perl, clojure, csharp). This is the exception list, not a promise that first-mate dies.  
+**Status:** H2 PR 13 catalog + PR 13b stream. First tranche done; later tranche done (less, scss, perl, clojure, csharp). PR 13c started (`language-source`). This is the exception list, not a promise that first-mate dies.  
 **Owner:** `builtbygio`  
 **Code:** `src/grammar-registry.js` (`getParserKindCounts()`). Runtime: official `tree-sitter@0.25.1` + first-mate / oniguruma.
 
@@ -62,7 +62,7 @@ A package is **both** when it ships at least one `type: tree-sitter` grammar *an
 | `language-hyperlink` | TextMate (injection) | — | `text.hyperlink` | CSON | **keep TextMate** |
 | `language-todo` | TextMate (injection) | — | `text.todo` | CSON | **keep TextMate** |
 | `language-text` | TextMate | — | `text.plain` | CSON | **keep TextMate** |
-| `language-source` | none | — | settings only (`.source` indent/comments) | CSON settings | **keep TextMate** |
+| `language-source` | none | — | settings only (`.source` indent/comments) | JSON settings | **keep TextMate** |
 
 ---
 
@@ -97,15 +97,34 @@ Not a programming-language port, or nobody will staff one. Revisit only if an ow
 | `language-hyperlink` | builtbygio | Injection grammar (`text.hyperlink`). Snippets / gfm / comments depend on it. |
 | `language-todo` | builtbygio | Injection grammar (`text.todo`). Load-bearing for TODO/FIXME scopes. |
 | `language-text` | builtbygio | Plain text. |
-| `language-source` | builtbygio | No grammar — shared `.source` editor settings. |
+| `language-source` | builtbygio | No grammar — shared `.source` editor settings. **13c:** settings JSON. |
 
 ---
+
+### PR 13c — CSON → JSON (one PR per pin)
+
+Convert shipped `grammars/` / `settings/` / `snippets/` CSON to JSON. Delete the `.cson`. Runtime already loads both extensions. **`season` stays** until this list is empty (or pack-time transpile + a documented dev-only reader). Do not convert `spec/**/*.cson`.
+
+**Done:** `language-source` (settings JSON).
+
+**Remaining** (21 pins, 68 files; next is `language-hyperlink`):
+
+| Pin | `.cson` files |
+|-----|--------------:|
+| `language-ruby-on-rails` | 6 |
+| `language-csharp`, `language-git`, `language-objective-c`, `language-sass` | 5 each |
+| `language-coffee-script`, `language-perl`, `language-php`, `language-property-list`, `language-xml` | 4 each |
+| `language-clojure` | 3 |
+| `language-gfm`, `language-less`, `language-make`, `language-mustache`, `language-sql`, `language-text`, `language-todo`, `language-toml`, `language-yaml` | 2 each |
+| `language-hyperlink` | 1 |
+
+Already JSON (no 13c work): `language-c`, `language-css`, `language-go`, `language-html`, `language-java`, `language-javascript`, `language-json`, `language-python`, `language-ruby`, `language-rust-bundled`, `language-shellscript`, `language-typescript`.
 
 ## 4. What this document is not
 
 - **Not** a delete plan for first-mate or oniguruma. H2 PR 14 lazy-loads them. H3 PR 22 deletes them **only if** this exception list is empty (or the owner accepts dropping the remaining TextMate-only langs).
 - **Not** PR 13b. Do not add `tree-sitter-*` to a pin in this PR.
-- **Not** PR 13c. CSON → JSON for pin grammars/settings/snippets is a separate stream. The “Grammar on disk” column is only so 13c has an inventory.
+- **Not** a `season` delete. 13c converts pins; PR 5b drops season only after the remaining list is empty.
 - **Not** an LSP list. Semantics stay in `src/lsp/` (utilityProcess). ctags / `symbols-view` stay the no-server fallback.
 
 Public language ids stay the TextMate scope name (`source.js`) even when the highlighter is tree-sitter. `GrammarRegistry` already maps `textMateScopeNamesByTreeSitterLanguageId`.
