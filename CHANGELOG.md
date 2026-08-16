@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- PHP highlighting defaults to tree-sitter (`tree-sitter-php@0.24.2` via `builtbygio/language-php` 0.49.0). `text.html.php` uses the HTML+PHP grammar; `source.php` uses `php_only`. TextMate `html.cson` / `php.cson` stay as fallbacks. See [docs/language-stack.md](docs/language-stack.md).
+
 - XML highlighting defaults to tree-sitter (`@tree-sitter-grammars/tree-sitter-xml@0.7.0` via `builtbygio/language-xml` 0.36.0). `text.xml.xsl` and the TextMate `xml.cson` stay as fallbacks. See [docs/language-stack.md](docs/language-stack.md).
 
 - YAML highlighting defaults to tree-sitter (`@tree-sitter-grammars/tree-sitter-yaml@0.7.1` via `builtbygio/language-yaml` 0.33.0). TextMate `yaml.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).

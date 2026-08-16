@@ -253,7 +253,7 @@ GrammarRegistry
 
 **Today (coverage, not slogan)**
 
-Authoritative catalog: [language-stack.md](./language-stack.md). 14 packages ship a tree-sitter grammar (13 also keep TextMate; rust is tree-sitter only). 19 are TextMate-only; `language-source` is settings only. 13b YAML and XML landed. Remaining first tranche: php, toml, sql. “keep TextMate” is a valid owner decision — that list is why first-mate stays.
+Authoritative catalog: [language-stack.md](./language-stack.md). 15 packages ship a tree-sitter grammar (14 also keep TextMate; rust is tree-sitter only). 18 are TextMate-only; `language-source` is settings only. 13b YAML, XML, and PHP landed. Remaining first tranche: toml, sql. “keep TextMate” is a valid owner decision — that list is why first-mate stays.
 
 **Target**
 
@@ -1140,7 +1140,7 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 13b — Grammar-port stream (one PR per language)
 
 - **Title:** `grammars: add tree-sitter-{yaml,xml,php,toml,sql,…}` (repeat)
-- **Status:** YAML + XML landed. **this change** (XML). Remaining first tranche: php, toml, sql
+- **Status:** YAML + XML + PHP landed. **this change** (PHP). Remaining first tranche: toml, sql
 - **Files:** the relevant `builtbygio/language-*` repo (JSON grammar + `tree-sitter-*` dep + load path), Chevron pin bump
 - **Depends on:** PR 13
 - **Description:** First tranche: yaml, xml, php, toml, sql (high-traffic). Then less/sass, perl, clojure, csharp as time allows. Each language is its own reviewable PR. Languages left on the exception list stay TextMate. **This stream is how G4 is earned.** Without it, “then gone” is a slogan.
