@@ -1,6 +1,6 @@
 # Language stack — tree-sitter coverage and TextMate exception list
 
-**Status:** H2 PR 13 catalog + PR 13b stream. YAML ported. This is the exception list, not a promise that first-mate dies.  
+**Status:** H2 PR 13 catalog + PR 13b stream. YAML and XML ported. This is the exception list, not a promise that first-mate dies.  
 **Owner:** `builtbygio`  
 **Code:** `src/grammar-registry.js` (`getParserKindCounts()`). Runtime: official `tree-sitter@0.25.1` + first-mate / oniguruma.
 
@@ -16,9 +16,9 @@ Do **not** treat a “port” decision as work started. Ports are PR 13b (one la
 
 | Kind | Packages |
 |------|----------|
-| Tree-sitter + TextMate (both) | 12 |
+| Tree-sitter + TextMate (both) | 13 |
 | Tree-sitter only | 1 (`language-rust-bundled`) |
-| TextMate only | 20 |
+| TextMate only | 19 |
 | No grammar (settings only) | 1 (`language-source`) |
 
 A package is **both** when it ships at least one `type: tree-sitter` grammar *and* at least one TextMate grammar. Sibling scopes in a “both” package can still be TextMate-only (e.g. `source.go` is tree-sitter; `source.mod` is not).
@@ -42,7 +42,7 @@ A package is **both** when it ships at least one `type: tree-sitter` grammar *an
 | `language-shellscript` | both | `tree-sitter-bash` | `source.shell` (TS). TM-only sibling: `text.shell-session` | JSON | — |
 | `language-typescript` | both | `tree-sitter-typescript` (ts / tsx / flow) | `source.ts`, `source.tsx`, `source.flow` | JSON | — |
 | `language-yaml` | both | `@tree-sitter-grammars/tree-sitter-yaml` | `source.yaml` | JSON + CSON fallback | **ported** (13b) |
-| `language-xml` | TextMate | — | `text.xml`, `text.xml.xsl` | CSON | **port** (13b first) |
+| `language-xml` | both | `@tree-sitter-grammars/tree-sitter-xml` (`text.xml`). TM-only sibling: `text.xml.xsl` | `text.xml`, `text.xml.xsl` | JSON + CSON fallback | **ported** (13b) |
 | `language-php` | TextMate | — | `source.php`, `text.html.php` | CSON | **port** (13b first) |
 | `language-toml` | TextMate | — | `source.toml` | CSON | **port** (13b first) |
 | `language-sql` | TextMate | — | `source.sql` | CSON | **port** (13b first) |
@@ -76,8 +76,7 @@ High-traffic file types. Official `tree-sitter-*` grammars exist on npm; the wor
 
 | Package | Owner | Why port |
 |---------|-------|----------|
-| `language-xml` | builtbygio | Markup sibling of already-ported HTML. Next 13b. |
-| `language-php` | builtbygio | High-traffic. |
+| `language-php` | builtbygio | High-traffic. Next 13b. |
 | `language-toml` | builtbygio | Cargo / pyproject / config. |
 | `language-sql` | builtbygio | High-traffic. Pick one maintained `tree-sitter-sql` and pin it. |
 

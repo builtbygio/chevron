@@ -25,7 +25,6 @@ function languagePins() {
 }
 
 const FIRST_TRANCHE = [
-  'language-xml',
   'language-php',
   'language-toml',
   'language-sql'
@@ -95,5 +94,10 @@ describe('language stack catalog (H2 PR 13)', () => {
   it('language-yaml is catalogued as both after the 13b port', () => {
     assert.match(doc, /`language-yaml` \| both/);
     assert.match(doc, /@tree-sitter-grammars\/tree-sitter-yaml/);
+  });
+
+  it('language-xml is catalogued as both after the 13b port', () => {
+    assert.match(doc, /`language-xml` \| both/);
+    assert.match(doc, /@tree-sitter-grammars\/tree-sitter-xml/);
   });
 });
