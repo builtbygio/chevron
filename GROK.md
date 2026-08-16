@@ -163,7 +163,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 3. **#57 / #127** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
 4. **#79 done** — all bundled `language-*` are `builtbygio` pins. No `atom/*` app git pins.
 5. Residual `@atom/*` **names** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — owned repos, old npm scope.
-6. **Startup perf** — custom V8 snapshot on Linux/Windows; Darwin stock **frozen** (Q2; do not staff constructor bisection). Windows stays custom until measured worse (Q3). See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md) §4.8–§4.10.  
+6. **Startup perf** — custom V8 snapshot on Linux/Windows; Darwin stock **frozen** (Q2; do not staff constructor bisection). Windows GHA median wall **2,734 ms** / workspace-ready **1,585 ms** / require **15 ms** — keep custom (Q3). See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md) §4.8–§4.10.  
 7. **Later:** sandboxed community packages (package host v2); signing
 8. **Build:** `./script/bootstrap-modern` then `./script/with-modern-env ./script/build --no-bootstrap`. Bare `./script/build` now packages if the tree is already bootstrapped (does not call the dead stub).
 

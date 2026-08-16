@@ -66,7 +66,7 @@ specific module, and is therefore findable.
 
 ## 4. Phase 0 — measurement gate
 
-**Status: ✅ done on macOS Intel (RESTORE) and Linux x64 (cheaper alternatives first). Windows x64: this PR’s GHA `windows-2022` job fills §4.9. Darwin stock frozen (§4.10).**
+**Status: ✅ done on macOS Intel (RESTORE), Linux x64 (cheaper alternatives first), and Windows x64 (custom snapshot; GHA `windows-2022`). Darwin stock frozen (§4.10).**
 
 ### 4.1 Results (2026-08-08)
 
@@ -252,24 +252,46 @@ Harness: same `script/ci/measure-startup.js` (workspace-ready =
 `script/lib/find-packaged-app.js` (`out/Chevron x64/chevron.exe`), not
 the old `-win32-` glob that never matched the packager layout.
 
-**Host:** GitHub Actions `windows-2022` x64 (the only Windows box this
-repo CI owns). Absolute figures are a **cloud-VM upper bound**; compare
-*intervals*, not wall times, against the Linux Ryzen / Mac Intel rows.
+**Host:** GitHub Actions `windows-2022` x64 — AMD EPYC 7763, 4 logical
+CPUs (the only Windows box this repo CI owns). Absolute figures are a
+**cloud-VM upper bound**; compare *intervals*, not wall times, against
+the Linux Ryzen / Mac Intel rows. Artifact: `startup-windows-x64`.
 
-Product path: **custom V8 snapshot on** (same as Linux). Q3: keep
-Windows custom until a stock-vs-custom pair on the same host measures
-worse. This PR does **not** spend a second package for a stock baseline.
+Product path: **custom V8 snapshot on** (same as Linux). Five cold
+homes, all `snapshot: true`.
 
 | Metric | Cold home (5 runs, fresh `CHEVRON_HOME`) |
 |--------|------------------------------------------|
-| best | *from CI artifact `startup-windows-x64`* |
-| **median** | *from CI artifact `startup-windows-x64`* |
-| Custom V8 snapshot | expected **yes** (`snapshotResult` defined) |
+| best | 2,685 ms |
+| **median** | **2,734 ms** |
+| worst | 2,876 ms |
+| Custom V8 snapshot | **yes** |
 
-Fill the table from this PR’s Windows job (`Measure cold start` step /
-`out/startup-windows.json`) once it finishes. Decision (Q3): **keep
-Windows custom** unless that job shows the custom path is broken
-(`snapshot: false` or the app fails to reach workspace-ready).
+Marker timeline (best cold run, ms since process start):
+
+```text
+    78 ms  main-process:start
+   268 ms  main-process:atom-application:initialize:end
+   618 ms  window:start
+   632 ms  window:setup-window:start
+   647 ms  window:initialize:start     ← +15 ms  require init (snapshot)
+   714 ms  start-editor-window:start
+   764 ms  load-packages
+  1286 ms  deserialize-state          ← +522 ms constructor / first-paint
+  1585 ms  setup-window:end
+```
+
+Wall includes ~1.1 s harness attach/poll (2,685 − 1,585). Treat **1,585
+ms** as workspace-ready. The require interval is gone (15 ms vs Linux
+custom 11 ms / Linux stock 327 ms). Leftover time is
+`AtomEnvironment` construction + first-paint preload — same wash as
+§4.8.
+
+**Verdict (Windows):** keep the custom snapshot (Q3). The shipping path
+is not broken. A stock-vs-custom pair on the same host was not run
+(second full package). 2,734 ms median wall is a GHA VM upper bound
+just over the old 2.5 s wall gate; the amended §4.5 gate looks at the
+dominant *interval*, and that interval is already 15 ms.
 
 ### 4.10 Darwin stock — frozen, won’t-fix-now
 
@@ -421,7 +443,7 @@ package's module tree and excluding it is unacceptable, snapshotting only
 
 - [x] Cold-start numbers measured on **macOS Intel** (§4.1) — snapshot absent, 55% of the timeline in one interval.
 - [x] Same measurement on **Linux x64** (§4.6) — 2.1 s median; compile cache works (−6%); §7 first.
-- [ ] Same measurement on **Windows** (§4.9) — table filled from this PR’s GHA `windows-2022` job; custom snapshot stays (Q3).
+- [x] Same measurement on **Windows** (§4.9) — GHA `windows-2022` median wall **2,734 ms**; workspace-ready **1,585 ms**; require interval **15 ms**; custom snapshot stays (Q3).
 - [x] Before/after numbers published for Linux (§4.8). Windows publishes the shipping (custom) number; stock pair not run.
 - [x] Either: custom snapshot restored and **on by default**, with the fix documented (§4.8);
       or: a written decision that it stays off, with the measurement that justifies it.

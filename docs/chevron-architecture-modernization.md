@@ -571,7 +571,7 @@ H1 only: keep shipping `github`, keep it deferred, delete emergency BW workers i
 2. **Custom snapshot is an optimization, not an identity.**
    - Keep Linux/Windows **on** while the require-interval win is real on slow hosts.
    - Keep Darwin **stock** — **frozen** (Q2 / PR 12). Do not staff constructor-heap bisection (`AtomEnvironment` construction is what SIGTRAPs — §4.8 / §4.10).
-   - Windows: publish the shipping custom-snapshot number (PR 12 / §4.9). Keep custom until measured worse (Q3).
+   - Windows: shipping custom-snapshot number published (PR 12 / §4.9): GHA median wall 2,734 ms; workspace-ready 1,585 ms; require interval 15 ms. Keep custom (Q3).
    - **Do not** expand snapshot-time `require()` of packages. First-paint list is enough (`SNAPSHOT_STARTUP_PACKAGES`).
    - If `electron-link` breaks on a future Electron, **drop custom snapshots** rather than fork the linker. Lazy packages + compile cache + TS precompile are the durable path.
 3. **Do not enable `OnlyLoadAppFromAsar`** while unpacked natives and cpm exist.
