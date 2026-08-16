@@ -41,7 +41,7 @@ The 2025–2026 work already purged the worst Atom-era *runtime* debts. Treat th
 | Owned catalog only until host v2 | `docs/package-ecosystem-strategy.md` |
 | Official `tree-sitter@0.25.1` (N-API); DeeDeeG 0.17 deleted | CHANGELOG / #125 |
 | First-party Coffee/CSON **gone from the monorepo tree** | `find` over `src/`, in-repo `packages/`, `keymaps/`, `menus/` (excluding `node_modules`) is empty. **Owned git pins still ship ~70 `.cson` files** (mostly `language-*` grammars/settings/snippets) — see Pillar 3 |
-| Runtime Coffee/Babel compilers **throw** | `src/coffee-script.js`, `src/babel.js` (#62) |
+| Runtime Coffee/Babel compilers **gone** | stubs deleted (PR 11); TypeScript + CSON remain |
 | LSP phases 0–5 shipped (utilityProcess host + workspace trust) | `docs/lsp-design.md`; `src/lsp/`; `src/main-process/workers/lsp-host.js` |
 | Custom V8 snapshot on Linux/Windows; Darwin stock | `script/lib/packaging-policy.js` `darwin-boot-crash`; #121/#125 |
 | 0 `atom/*` app git pins | #79; `docs/package-ownership-inventory.md` |
@@ -98,7 +98,7 @@ Every leftover named here has a delete / wrap / migrate verdict. Items missed in
 | Preload `spawn(rg)` | `src/ripgrep-directory-searcher.js` 1, 285 | **Migrate** to allowlisted main spawn + `invoke` in H1 (PR 2b). No new utilityProcess. No `sandbox: true` |
 | season / pin CSON (~70 files) | `language-*` git pins; `transpile-cson-paths.js` is **live** | **Wrap** JSON+CSON reader until pins convert; **do not** delete season after a user-config window |
 | User `config.cson` | `src/config-file.js` | **Migrated** (PR 5: JSON default, dual-read CSON) |
-| Coffee/Babel compile-cache stubs | `src/coffee-script.js`, `src/babel.js` | **Delete** after error-window (not bundled with CSON transpile) |
+| Coffee/Babel compile-cache stubs | `src/coffee-script.js`, `src/babel.js` | **Deleted** (PR 11) |
 | `transpileCsonPaths()` | `script/build` 108 | **Keep** until pins are JSON |
 | `transpileCoffeeScriptPaths` / `transpileBabelPaths` | `script/build` | **Deleted** (PR 10; were quiet no-ops) |
 | script `babel-core@5`, coffeelint, donna/joanna/tello, npm@6 | `script/package.json` | **Delete only if** a CI-invocation grep shows unused. donna/tello still required by `script/lib/generate-api-docs.js`; coffeelint by `script/lib/lint-coffee-script-paths.js` |
@@ -1113,7 +1113,8 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 11 — Compile-cache: delete Coffee/Babel compiler entries
 
 - **Title:** `runtime: remove Coffee/Babel compile-cache stubs`
-- **Files:** `src/compile-cache.js`, `src/coffee-script.js`, `src/babel.js`, `docs/babel-coffee-isolation-plan.md`, `script/ci/legacy-transpile.test.js`
+- **Status:** **this change**
+- **Files:** `src/compile-cache.js`, `src/coffee-script.js`, `src/babel.js`, `src/module-cache.js`, `docs/babel-coffee-isolation-plan.md`, `script/ci/legacy-transpile.test.js`
 - **Depends on:** PR 10; cpm already errors on `.coffee` at install
 - **Description:** Unknown extensions no longer claim a compiler. TypeScript path stays. Do not touch `.cson` handling.
 

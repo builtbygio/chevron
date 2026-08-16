@@ -13,12 +13,8 @@ let CSON = null;
 const packageTranspilationRegistry = new PackageTranspilationRegistry();
 
 const COMPILERS = {
-  '.js': packageTranspilationRegistry.wrapTranspiler(require('./babel')),
   '.ts': packageTranspilationRegistry.wrapTranspiler(require('./typescript')),
-  '.tsx': packageTranspilationRegistry.wrapTranspiler(require('./typescript')),
-  '.coffee': packageTranspilationRegistry.wrapTranspiler(
-    require('./coffee-script')
-  )
+  '.tsx': packageTranspilationRegistry.wrapTranspiler(require('./typescript'))
 };
 
 exports.addTranspilerConfigForPath = function(
@@ -164,8 +160,10 @@ exports.install = function(resourcesPath, nodeRequire) {
         return null;
       }
 
-      let compiler = COMPILERS[path.extname(filePath)];
-      if (!compiler) compiler = COMPILERS['.js'];
+      const compiler = COMPILERS[path.extname(filePath)];
+      if (!compiler) {
+        return null;
+      }
 
       try {
         var fileData = readCachedJavaScript(

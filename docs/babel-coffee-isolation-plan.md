@@ -1,74 +1,50 @@
 # Babel 5 / CoffeeScript compile-cache isolation plan
 
-**Status:** Option 1 · 2 · **3 shipped** (audit P2 / issue #62)  
-**Code:** `src/babel.js`, `src/coffee-script.js`, `src/compile-cache.js`, `src/typescript.js`  
-**Context:** First-party Coffee/Babel runtime transpile removed. Bundled packages precompiled; community packages must ship plain JS or TypeScript.
+**Status:** Option 1 · 2 · 3 shipped; **stubs deleted (H1 PR 11)**  
+**Code:** `src/compile-cache.js` (TypeScript + CSON only), `src/typescript.js`  
+**Context:** First-party Coffee/Babel runtime transpile is gone. Compile-cache no longer registers `.coffee` or a Babel-prefix `.js` compiler. Community packages must ship plain JS or TypeScript.
 
 ## Problem (historical)
 
 | Stack | Version | Status |
 |-------|---------|--------|
-| `babel-core` | ~~5.8.38~~ | **Removed** from app dependencies (Option 3) |
-| `coffee-script` | ~~1.12.7~~ | **Removed** from app dependencies (Option 2) |
+| `babel-core` | ~~5.8.38~~ | **Removed** from app dependencies (Option 3). `src/babel.js` **deleted** (PR 11) |
+| `coffee-script` | ~~1.12.7~~ | **Removed** from app dependencies (Option 2). `src/coffee-script.js` **deleted** (PR 11) |
 | TypeScript | **6.x** | Modern path for owned packages — **keep** |
+
+`.coffee` and Babel-prefix `.js` are now unknown to compile-cache (Node’s default loaders). CSON still goes through `season` in `addPathToCache`.
 
 ## Options
 
-### Option 1 — Hard isolate — **shipped**
+### Option 1 — Hard isolate — **shipped, then superseded**
 
-`CHEVRON_DISABLE_LEGACY_TRANSPILE=1` refuses Coffee/Babel-prefix compile-cache early. Still honored as a hardened-profile no-op (both compilers already error).
+`CHEVRON_DISABLE_LEGACY_TRANSPILE=1` used to refuse Coffee/Babel-prefix compile-cache early. The stubs are gone, so the env is unused.
 
 ### Option 2 — Drop Coffee — **shipped**
 
-- Owned pins ship precompiled JS (`autocomplete-chevron-api`, `autocomplete-css`, `bookmarks`, `wrap-guide`). Class C bootstrap patches **deleted**.
-- `src/coffee-script.js` always errors on compile.
-- cpm warns on install if runtime `.coffee` is present.
+Owned pins ship precompiled JS. cpm warns on install if runtime `.coffee` is present.
 
-### Option 3 — Drop Babel runtime (precompile + drop) — **shipped**
+### Option 3 — Drop Babel runtime — **shipped**
 
-Mirror Coffee: **no runtime `babel-core`**. Sources that used Atom opt-in prefixes were precompiled offline:
-
-| Layer | How |
-|-------|-----|
-| **Monorepo `packages/*`** | esbuild precompile in tree (dalek, git-diff, welcome, …) |
-| **Owned builtbygio forks** | Commits on `chevron/drop-runtime-babel` pinned from Chevron `package.json` (settings-view, find-and-replace, autocomplete-plus, command-palette, tree-view) |
-| **Owned babel-prefix leftovers** | Folded into pins (`archive-view`, `bookmarks`, `keybinding-resolver`, `open-on-github`, `styleguide`, `symbols-view`, `timecop`). Class C patch **deleted**. |
-
-Prefixes no longer supported at runtime:
-
-- `/** @babel */`
-- `'use babel'` / `"use babel"`
-- `/* @flow */` / `// @flow`
-
-`src/babel.js` detects prefixes and **throws** a migration error (never loads raw ESM/JSX as plain JS).
-
-**Tooling:** `script/lib/precompile-babel-prefix-files.js` (esbuild preferred; babel-core@5 fallback if present) for re-running when pins change.
+No runtime `babel-core`. Prefixes (`/** @babel */`, `'use babel'`, Flow) are not compiled.
 
 ### Option 4 — Modern runtime transpile — **not needed**
 
-Deferred permanently unless product policy reverses. Prefer precompile + TypeScript.
+Prefer precompile + TypeScript.
 
 ## Author guidance
 
-- Write packages in **plain JS or TypeScript** (`engines.chevron` / `engines.atom`).
-- **Do not** ship `/** @babel */`, `'use babel'`, or Flow opt-in for runtime load.
-- Precompile Coffee and Babel-era sources **before publish**.
+- Write packages in **plain JS or TypeScript** (`engines.chevron`).
+- **Do not** ship `.coffee`, `/** @babel */`, `'use babel'`, or Flow opt-in for runtime load.
 - TypeScript still transpiles via compile-cache (`src/typescript.js`).
 
 ## Verification
 
 ```bash
-# App deps must not list babel-core / coffee-script
-node -e "const p=require('./package.json'); if (p.dependencies['babel-core']||p.dependencies['coffee-script']) process.exit(1)"
-
-# Compilers refuse
 node --test script/ci/legacy-transpile.test.js
-
-# Hardened env still short-circuits
-CHEVRON_DISABLE_LEGACY_TRANSPILE=1
 ```
 
 ## Related
 
-- Class C bootstrap patches retired; re-run `script/lib/precompile-babel-prefix-files.js` only if a new pin still ships a babel prefix
+- Class C bootstrap patches retired; `script/lib/precompile-babel-prefix-files.js` only if a new pin still ships a babel prefix
 - cpm install warnings for residual `.coffee` / babel-prefix under `lib/` / `src/`

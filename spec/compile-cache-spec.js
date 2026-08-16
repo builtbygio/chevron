@@ -7,8 +7,6 @@
 const path = require('path');
 const fs = require('fs');
 const temp = require('temp').track();
-const BabelCompiler = require('../src/babel');
-const CoffeeScriptCompiler = require('../src/coffee-script');
 const TypeScriptTranspiler = require('../src/typescript');
 const CSON = require('season');
 const CompileCache = require('../src/compile-cache');
@@ -23,8 +21,6 @@ describe('CompileCache', function() {
     CSON.setCacheDir(null);
     CompileCache.resetCacheStats();
 
-    spyOn(BabelCompiler, 'compile').andCallThrough();
-    spyOn(CoffeeScriptCompiler, 'compile').andCallThrough();
     return spyOn(TypeScriptTranspiler, 'compile').andReturn('the-typescript-code');
   });
 
@@ -39,23 +35,8 @@ describe('CompileCache', function() {
   describe('addPathToCache(filePath, atomHome)', function() {
     describe('when the given file is plain javascript', () => it('does not compile or cache the file', function() {
       CompileCache.addPathToCache(path.join(fixtures, 'sample.js'), atomHome);
-      return expect(CompileCache.getCacheStats()['.js']).toEqual({hits: 0, misses: 0});
+      return expect(CompileCache.getCacheStats()['.js']).toBeUndefined();
   }));
-
-    describe('when the given file uses babel', () => it('refuses after babel runtime removal', function() {
-      const babelPath = path.join(fixtures, 'babel', 'babel-comment.js');
-      expect(() => CompileCache.addPathToCache(babelPath, atomHome)).toThrow();
-      expect(BabelCompiler.compile.callCount).toBe(1);
-    }));
-
-    // Option 2 (#62): coffee-script runtime removed; .coffee must fail clearly.
-    describe('when the given file is coffee-script', () => it('refuses to compile after coffee runtime removal', function() {
-      const coffeePath = path.join(atomHome, 'sample.coffee');
-      fs.writeFileSync(coffeePath, 'module.exports = -> 1\n');
-      expect(() => CompileCache.addPathToCache(coffeePath, atomHome)).toThrow();
-      expect(CoffeeScriptCompiler.compile.callCount).toBe(1);
-      expect(CoffeeScriptCompiler.compile.calls[0].args[1]).toBe(coffeePath);
-    }));
 
     describe('when the given file is typescript', () => it('compiles the file with typescript and caches it', function() {
       CompileCache.addPathToCache(path.join(fixtures, 'typescript', 'valid.ts'), atomHome);

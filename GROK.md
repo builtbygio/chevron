@@ -158,7 +158,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Primary next tracks
 
 1. **Dogfood week (#106)** — Days 1–3 done. Day 2 OK. Day 3 markdown-preview close hid panes; Day 6 Welcome installer/theme picker dead; crash dialog said Atom. Days 4–7 still open. Smoke is not dogfood.  
-2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1 PR 1–9 and PR 2b landed. PR 10 is node:test-first + script fossils (this change). Next: compile-cache Coffee/Babel stubs (PR 11). Do **not** delete `Task` / `season` / `document-register-element` in H1. github epic waits on Q1 after dogfood.  
+2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1 PR 1–10 and PR 2b landed. PR 11 deletes Coffee/Babel compile-cache stubs (this change). Next: snapshot measure (PR 12). Do **not** delete `Task` / `season` / `document-register-element` in H1. github epic waits on Q1 after dogfood.  
 
 3. **#57 / #127** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
 4. **#79 done** — all bundled `language-*` are `builtbygio` pins. No `atom/*` app git pins.
@@ -177,7 +177,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 - `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` — opt **out** of community privileged/native restrict (default is on)  
 - `CHEVRON_FS_IPC_STRICT=0` — opt out of strict FS IPC roots  
 - `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` — re-enable experimental Chromium features  
-- `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` — refuse legacy Coffee/Babel compile-cache (both already removed at runtime)
+- `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` — unused (Coffee/Babel compile-cache stubs deleted)
 
 
 ### Optional hygiene

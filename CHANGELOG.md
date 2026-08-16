@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Compile-cache no longer registers Coffee or Babel-prefix compilers. TypeScript and CSON stay. `src/babel.js` and `src/coffee-script.js` are deleted.
+
 - New tests are `node:test` under `script/ci/`. Dropped Coffee/Babel no-op transpile from `script/build` and unused script `babel-core@5`. Kept CSON pack-time transpile, `script/test`, and donna/coffeelint (still invoked).
 
 - Git workers are **utilityProcess only**. The emergency Node BrowserWindow path (`CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW`) is gone. `atom-create-browser-window-sync` always refuses.
