@@ -1,5 +1,8 @@
 'use strict';
 
+// donna's main is Coffee (`src/donna`). Register before require().
+require('coffee-script/register');
+
 const donna = require('donna');
 const tello = require('tello');
 const joanna = require('joanna');

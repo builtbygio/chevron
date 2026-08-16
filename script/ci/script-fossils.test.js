@@ -69,6 +69,7 @@ describe('script-tree fossils (PR 10)', () => {
     const build = read('script/build');
     assert.ok(build.includes("require('./lib/generate-api-docs')"));
     const docs = read('script/lib/generate-api-docs.js');
+    assert.ok(docs.includes("require('coffee-script/register')"));
     assert.ok(docs.includes("require('donna')"));
     assert.ok(docs.includes("require('joanna')"));
     assert.ok(docs.includes("require('tello')"));
