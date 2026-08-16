@@ -13,7 +13,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 
-const CONVERTED = ['language-source'];
+const CONVERTED = ['language-source', 'language-hyperlink'];
 
 const STILL_CSON = [
   'language-clojure',
@@ -21,7 +21,6 @@ const STILL_CSON = [
   'language-csharp',
   'language-gfm',
   'language-git',
-  'language-hyperlink',
   'language-less',
   'language-make',
   'language-mustache',
@@ -90,6 +89,19 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(parsed['.source'], 'settings keyed on .source');
   });
 
+  it('language-hyperlink ships JSON grammar and no shipped CSON', () => {
+    const cson = shippedCson('language-hyperlink');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const json = path.join(
+      packageRoot('language-hyperlink'),
+      'grammars',
+      'hyperlink.json'
+    );
+    assert.ok(fs.existsSync(json), 'grammars/hyperlink.json');
+    const parsed = JSON.parse(fs.readFileSync(json, 'utf8'));
+    assert.strictEqual(parsed.scopeName, 'text.hyperlink');
+  });
+
   it('converted pins have no shipped CSON', () => {
     for (const name of CONVERTED) {
       assert.deepStrictEqual(
@@ -101,7 +113,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 21);
+    assert.strictEqual(STILL_CSON.length, 20);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
@@ -109,6 +121,6 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
         `${name} has no shipped CSON — move it to CONVERTED`
       );
     }
-    assert.match(doc, /language-hyperlink/);
+    assert.match(doc, /language-text/);
   });
 });

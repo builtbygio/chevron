@@ -1,6 +1,6 @@
 # Language stack — tree-sitter coverage and TextMate exception list
 
-**Status:** H2 PR 13 catalog + PR 13b stream. First tranche done; later tranche done (less, scss, perl, clojure, csharp). PR 13c started (`language-source`). This is the exception list, not a promise that first-mate dies.  
+**Status:** H2 PR 13 catalog + PR 13b stream. First tranche done; later tranche done (less, scss, perl, clojure, csharp). PR 13c: `language-source`, `language-hyperlink`. This is the exception list, not a promise that first-mate dies.  
 **Owner:** `builtbygio`  
 **Code:** `src/grammar-registry.js` (`getParserKindCounts()`). Runtime: official `tree-sitter@0.25.1` + first-mate / oniguruma.
 
@@ -59,7 +59,7 @@ A package is **both** when it ships at least one `type: tree-sitter` grammar *an
 | `language-mustache` | TextMate | — | `text.html.mustache`, `source.sql.mustache` | CSON | **keep TextMate** |
 | `language-make` | TextMate | — | `source.makefile` | CSON | **keep TextMate** |
 | `language-property-list` | TextMate | — | `source.plist`, `text.xml.plist` | CSON | **keep TextMate** |
-| `language-hyperlink` | TextMate (injection) | — | `text.hyperlink` | CSON | **keep TextMate** |
+| `language-hyperlink` | TextMate (injection) | — | `text.hyperlink` | JSON | **keep TextMate** |
 | `language-todo` | TextMate (injection) | — | `text.todo` | CSON | **keep TextMate** |
 | `language-text` | TextMate | — | `text.plain` | CSON | **keep TextMate** |
 | `language-source` | none | — | settings only (`.source` indent/comments) | JSON settings | **keep TextMate** |
@@ -94,7 +94,7 @@ Not a programming-language port, or nobody will staff one. Revisit only if an ow
 | `language-mustache` | builtbygio | Template injection. |
 | `language-make` | builtbygio | Small surface. |
 | `language-property-list` | builtbygio | macOS plist; xml port may cover the XML flavour later. |
-| `language-hyperlink` | builtbygio | Injection grammar (`text.hyperlink`). Snippets / gfm / comments depend on it. |
+| `language-hyperlink` | builtbygio | Injection grammar (`text.hyperlink`). Snippets / gfm / comments depend on it. **13c:** grammar JSON. |
 | `language-todo` | builtbygio | Injection grammar (`text.todo`). Load-bearing for TODO/FIXME scopes. |
 | `language-text` | builtbygio | Plain text. |
 | `language-source` | builtbygio | No grammar — shared `.source` editor settings. **13c:** settings JSON. |
@@ -105,9 +105,9 @@ Not a programming-language port, or nobody will staff one. Revisit only if an ow
 
 Convert shipped `grammars/` / `settings/` / `snippets/` CSON to JSON. Delete the `.cson`. Runtime already loads both extensions. **`season` stays** until this list is empty (or pack-time transpile + a documented dev-only reader). Do not convert `spec/**/*.cson`.
 
-**Done:** `language-source` (settings JSON).
+**Done:** `language-source` (settings JSON), `language-hyperlink` (grammar JSON).
 
-**Remaining** (21 pins, 68 files; next is `language-hyperlink`):
+**Remaining** (20 pins, 67 files; next is `language-text`):
 
 | Pin | `.cson` files |
 |-----|--------------:|
@@ -116,7 +116,6 @@ Convert shipped `grammars/` / `settings/` / `snippets/` CSON to JSON. Delete the
 | `language-coffee-script`, `language-perl`, `language-php`, `language-property-list`, `language-xml` | 4 each |
 | `language-clojure` | 3 |
 | `language-gfm`, `language-less`, `language-make`, `language-mustache`, `language-sql`, `language-text`, `language-todo`, `language-toml`, `language-yaml` | 2 each |
-| `language-hyperlink` | 1 |
 
 Already JSON (no 13c work): `language-c`, `language-css`, `language-go`, `language-html`, `language-java`, `language-javascript`, `language-json`, `language-python`, `language-ruby`, `language-rust-bundled`, `language-shellscript`, `language-typescript`.
 

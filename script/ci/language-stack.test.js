@@ -142,4 +142,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /JSON settings/);
     assert.match(doc, /PR 13c/);
   });
+
+  it('language-hyperlink 13c ships JSON grammar', () => {
+    assert.match(doc, /`language-hyperlink` \| TextMate/);
+    assert.match(doc, /`text.hyperlink` \| JSON/);
+  });
 });
