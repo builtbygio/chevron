@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `language-perl` 0.40.0 ships the TextMate `source.perl` and `source.perl6` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for Perl 5. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+
 - `language-coffee-script` 0.51.0 ships the `source.coffee` and `source.litcoffee` grammars, settings, and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
 
 - `language-clojure` 0.24.0 ships the TextMate `source.clojure` grammar, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
