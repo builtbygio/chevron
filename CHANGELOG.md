@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `github` 0.37.9: GitHub App device-flow login (classic PAT fallback); `electron.remote` gone from the github package (8B). Inbox stays.
+
 - `github` 0.37.7: mutations and paging use `graphql-client`; `react-relay` / `relay-runtime` dropped (8B). Inbox stays.
 
 - `github` 0.37.4: issue/PR detail, reviews pane, comment decorations, and create-repo dialog use `graphql-client` instead of Relay `QueryRenderer` (8B). First-page reviews only; load-more/refetch/reaction mutations are stubs. Inbox stays.
