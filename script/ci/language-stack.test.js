@@ -157,4 +157,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-todo` \| TextMate/);
     assert.match(doc, /`text.todo` \| JSON/);
   });
+
+  it('language-gfm 13c ships JSON grammar settings and snippets', () => {
+    assert.match(doc, /`language-gfm` \| TextMate/);
+    assert.match(doc, /`source.gfm` \| JSON/);
+  });
 });

@@ -17,14 +17,14 @@ const CONVERTED = [
   'language-source',
   'language-hyperlink',
   'language-text',
-  'language-todo'
+  'language-todo',
+  'language-gfm'
 ];
 
 const STILL_CSON = [
   'language-clojure',
   'language-coffee-script',
   'language-csharp',
-  'language-gfm',
   'language-git',
   'language-less',
   'language-make',
@@ -111,6 +111,31 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.strictEqual(parsed.scopeName, 'text.plain');
   });
 
+  it('language-gfm ships JSON settings and snippets and no shipped CSON', () => {
+    const cson = shippedCson('language-gfm');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const settings = path.join(
+      packageRoot('language-gfm'),
+      'settings',
+      'gfm.json'
+    );
+    const snippets = path.join(
+      packageRoot('language-gfm'),
+      'snippets',
+      'gfm.json'
+    );
+    const grammar = path.join(
+      packageRoot('language-gfm'),
+      'grammars',
+      'gfm.json'
+    );
+    assert.ok(fs.existsSync(grammar), 'grammars/gfm.json');
+    assert.ok(fs.existsSync(settings), 'settings/gfm.json');
+    assert.ok(fs.existsSync(snippets), 'snippets/gfm.json');
+    const parsed = JSON.parse(fs.readFileSync(settings, 'utf8'));
+    assert.ok(parsed['.source.gfm:not(.markup.code)']);
+  });
+
   it('language-todo ships JSON grammar and snippets and no shipped CSON', () => {
     const cson = shippedCson('language-todo');
     assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
@@ -155,7 +180,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 18);
+    assert.strictEqual(STILL_CSON.length, 17);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
