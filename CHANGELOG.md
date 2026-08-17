@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `github` 0.37.1: recovered GraphQL operations from Relay artifacts; issue/PR and @mention hover tooltips use `graphql-client` instead of Relay `QueryRenderer` (8B). Inbox stays.
+
 - `github` 0.37.0: React 18.3 and `createRoot` (8B first slice). Inbox stays. Relay 5 / graphql@14 stay (compiled artifacts). Login pane uses a classic GitHub PAT, not `github.atom.io`.
 
 - First-mate / oniguruma boot when a TextMate grammar is **assigned** to a buffer, not at GrammarRegistry construct (H2 PR 14). Tree-sitter-only sessions do not load the NAN addon. first-mate is not deleted.

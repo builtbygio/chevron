@@ -22,10 +22,10 @@ describe('github 8B React 18 (inbox stays)', () => {
     const app = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     );
-    assert.strictEqual(app.packageDependencies.github, '0.37.0');
-    assert.match(app.dependencies.github, /ebc07441ecf09799cd28d6f753e4311889ba1a51/);
+    assert.strictEqual(app.packageDependencies.github, '0.37.1');
+    assert.match(app.dependencies.github, /f51ae9513e792ffffd6a57be08fe0e1b9540d9c8/);
     const pkg = JSON.parse(read('package.json'));
-    assert.strictEqual(pkg.version, '0.37.0');
+    assert.strictEqual(pkg.version, '0.37.1');
     assert.strictEqual(pkg.dependencies.react, '18.3.1');
     assert.strictEqual(pkg.dependencies['react-dom'], '18.3.1');
     assert.strictEqual(pkg.dependencies['react-relay'], '5.0.0');
@@ -41,6 +41,21 @@ describe('github 8B React 18 (inbox stays)', () => {
     assert.match(main, /react-root/);
     assert.doesNotMatch(main, /unmountComponentAtNode/);
     assert.doesNotMatch(main, /ReactDOM\.render|_reactDom\.default\.render/);
+  });
+
+  it('markdown tooltips use graphql-client, not QueryRenderer', () => {
+    const issueish = read('lib/items/issueish-tooltip-item.js');
+    const mention = read('lib/items/user-mention-tooltip-item.js');
+    assert.match(issueish, /graphql-query/);
+    assert.match(mention, /graphql-query/);
+    assert.doesNotMatch(issueish, /QueryRenderer/);
+    assert.doesNotMatch(mention, /QueryRenderer/);
+    assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'graphql-client.js')));
+    const recovered = path.join(GITHUB, 'graphql', 'recovered');
+    const docs = fs
+      .readdirSync(recovered)
+      .filter(n => n.endsWith('.graphql'));
+    assert.ok(docs.length >= 30, `expected recovered operations, got ${docs.length}`);
   });
 
   it('login copy points at a classic PAT, not github.atom.io', () => {
