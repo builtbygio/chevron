@@ -197,4 +197,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-clojure` \| both/);
     assert.match(doc, /`source.clojure` \| JSON/);
   });
+
+  it('language-coffee-script 13c ships JSON grammars', () => {
+    assert.match(doc, /`language-coffee-script` \| TextMate/);
+    assert.match(doc, /`source.coffee`, `source.litcoffee` \| JSON/);
+  });
 });
