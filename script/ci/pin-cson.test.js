@@ -26,14 +26,14 @@ const CONVERTED = [
   'language-toml',
   'language-yaml',
   'language-clojure',
-  'language-coffee-script'
+  'language-coffee-script',
+  'language-perl'
 ];
 
 const STILL_CSON = [
   'language-csharp',
   'language-git',
   'language-objective-c',
-  'language-perl',
   'language-php',
   'language-property-list',
   'language-ruby-on-rails',
@@ -109,6 +109,45 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-perl ships JSON TextMate grammars settings and snippets and no shipped CSON', () => {
+    const cson = shippedCson('language-perl');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const perl = path.join(
+      packageRoot('language-perl'),
+      'grammars',
+      'perl.json'
+    );
+    const perl6 = path.join(
+      packageRoot('language-perl'),
+      'grammars',
+      'perl 6.json'
+    );
+    const settings = path.join(
+      packageRoot('language-perl'),
+      'settings',
+      'language-perl.json'
+    );
+    const snippets = path.join(
+      packageRoot('language-perl'),
+      'snippets',
+      'language-perl.json'
+    );
+    const ts = path.join(
+      packageRoot('language-perl'),
+      'grammars',
+      'tree-sitter-perl.json'
+    );
+    assert.ok(fs.existsSync(perl), 'grammars/perl.json');
+    assert.ok(fs.existsSync(perl6), 'grammars/perl 6.json');
+    assert.ok(fs.existsSync(settings), 'settings/language-perl.json');
+    assert.ok(fs.existsSync(snippets), 'snippets/language-perl.json');
+    assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-perl.json');
+    const parsed = JSON.parse(fs.readFileSync(perl, 'utf8'));
+    assert.strictEqual(parsed.scopeName, 'source.perl');
+    const p6 = JSON.parse(fs.readFileSync(perl6, 'utf8'));
+    assert.strictEqual(p6.scopeName, 'source.perl6');
   });
 
   it('language-coffee-script ships JSON grammars settings and snippets and no shipped CSON', () => {
@@ -384,7 +423,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 9);
+    assert.strictEqual(STILL_CSON.length, 8);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
