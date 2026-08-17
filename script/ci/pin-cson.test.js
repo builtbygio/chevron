@@ -25,11 +25,11 @@ const CONVERTED = [
   'language-sql',
   'language-toml',
   'language-yaml',
-  'language-clojure'
+  'language-clojure',
+  'language-coffee-script'
 ];
 
 const STILL_CSON = [
-  'language-coffee-script',
   'language-csharp',
   'language-git',
   'language-objective-c',
@@ -109,6 +109,39 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-coffee-script ships JSON grammars settings and snippets and no shipped CSON', () => {
+    const cson = shippedCson('language-coffee-script');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const coffee = path.join(
+      packageRoot('language-coffee-script'),
+      'grammars',
+      'coffeescript.json'
+    );
+    const lit = path.join(
+      packageRoot('language-coffee-script'),
+      'grammars',
+      'coffeescript (literate).json'
+    );
+    const settings = path.join(
+      packageRoot('language-coffee-script'),
+      'settings',
+      'language-coffee-script.json'
+    );
+    const snippets = path.join(
+      packageRoot('language-coffee-script'),
+      'snippets',
+      'language-coffee-script.json'
+    );
+    assert.ok(fs.existsSync(coffee), 'grammars/coffeescript.json');
+    assert.ok(fs.existsSync(lit), 'grammars/coffeescript (literate).json');
+    assert.ok(fs.existsSync(settings), 'settings/language-coffee-script.json');
+    assert.ok(fs.existsSync(snippets), 'snippets/language-coffee-script.json');
+    const parsed = JSON.parse(fs.readFileSync(coffee, 'utf8'));
+    assert.strictEqual(parsed.scopeName, 'source.coffee');
+    const litParsed = JSON.parse(fs.readFileSync(lit, 'utf8'));
+    assert.strictEqual(litParsed.scopeName, 'source.litcoffee');
   });
 
   it('language-clojure ships JSON TextMate grammar settings and snippets and no shipped CSON', () => {
@@ -351,7 +384,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 10);
+    assert.strictEqual(STILL_CSON.length, 9);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
