@@ -520,7 +520,7 @@ The package system **is** Chevron’s product. Do not replace it with VS Code ex
 
 **Today** (`node_modules/github/package.json`):
 
-- `react@18.3.1` + `react-dom@18.3.1` (`createRoot`) + `graphql-client` for inbox queries, mutations, and paging (tooltips, tab header, remote lookup, PR lists, issue/PR detail, reviews, comment decorations, create-dialog). `react-relay` / `relay-runtime` dropped. `graphql@14.5.8` leftover unused. 34 operations recovered under `graphql/recovered/`.
+- `react@18.3.1` + `react-dom@18.3.1` (`createRoot`) + `graphql-client` for inbox queries, mutations, and paging. GitHub App device-flow login (`github.oauthClientId`); classic PAT fallback. No `electron.remote` in the package. `react-relay` / `relay-runtime` dropped. 34 operations recovered under `graphql/recovered/`.
 - `dugite@1.110.0` (git) — workers already on utilityProcess
 - `keytar@4.13.0` (listed; app hoists owned keytar)
 - Pre-transpiled CJS as of #125 (`atomTranspilers` gone)

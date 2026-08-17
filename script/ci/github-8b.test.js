@@ -22,10 +22,10 @@ describe('github 8B React 18 (inbox stays)', () => {
     const app = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     );
-    assert.strictEqual(app.packageDependencies.github, '0.37.7');
-    assert.match(app.dependencies.github, /f759708fae215ad9dc97d71e7f65f480140eb315/);
+    assert.strictEqual(app.packageDependencies.github, '0.37.9');
+    assert.match(app.dependencies.github, /50f4ba0d5a1a84dfe1d5d36d2d9a8908aef46a6e/);
     const pkg = JSON.parse(read('package.json'));
-    assert.strictEqual(pkg.version, '0.37.7');
+    assert.strictEqual(pkg.version, '0.37.9');
     assert.strictEqual(pkg.dependencies.react, '18.3.1');
     assert.strictEqual(pkg.dependencies['react-dom'], '18.3.1');
     assert.ok(!pkg.dependencies['react-relay']);
@@ -114,5 +114,13 @@ describe('github 8B React 18 (inbox stays)', () => {
     assert.match(src, /settings\/tokens/);
     assert.match(src, /classic/);
     assert.match(src, /user:email/);
+    assert.match(src, /oauthClientId|Login with GitHub/);
+    const auth = read('lib/github-app-auth.js');
+    assert.match(auth, /device\/code/);
+    assert.match(auth, /ghu_/);
+    const dir = read('lib/views/directory-select.js');
+    const timings = read('lib/views/git-timings-view.js');
+    assert.doesNotMatch(dir, /electron\.remote|_electron\.remote/);
+    assert.doesNotMatch(timings, /electron\.remote|_electron\.remote/);
   });
 });
