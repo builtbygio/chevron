@@ -29,7 +29,8 @@ const CONVERTED = [
   'language-coffee-script',
   'language-perl',
   'language-php',
-  'language-property-list'
+  'language-property-list',
+  'language-xml'
 ];
 
 const STILL_CSON = [
@@ -37,8 +38,7 @@ const STILL_CSON = [
   'language-git',
   'language-objective-c',
   'language-ruby-on-rails',
-  'language-sass',
-  'language-xml'
+  'language-sass'
 ];
 
 function packageRoot(name) {
@@ -109,6 +109,45 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-xml ships JSON TextMate grammars settings and snippets and no shipped CSON', () => {
+    const cson = shippedCson('language-xml');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const xml = path.join(
+      packageRoot('language-xml'),
+      'grammars',
+      'xml.json'
+    );
+    const xsl = path.join(
+      packageRoot('language-xml'),
+      'grammars',
+      'xsl.json'
+    );
+    const settings = path.join(
+      packageRoot('language-xml'),
+      'settings',
+      'language-xml.json'
+    );
+    const snippets = path.join(
+      packageRoot('language-xml'),
+      'snippets',
+      'language-xml.json'
+    );
+    const ts = path.join(
+      packageRoot('language-xml'),
+      'grammars',
+      'tree-sitter-xml.json'
+    );
+    assert.ok(fs.existsSync(xml), 'grammars/xml.json');
+    assert.ok(fs.existsSync(xsl), 'grammars/xsl.json');
+    assert.ok(fs.existsSync(settings), 'settings/language-xml.json');
+    assert.ok(fs.existsSync(snippets), 'snippets/language-xml.json');
+    assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-xml.json');
+    const parsed = JSON.parse(fs.readFileSync(xml, 'utf8'));
+    assert.strictEqual(parsed.scopeName, 'text.xml');
+    const xslParsed = JSON.parse(fs.readFileSync(xsl, 'utf8'));
+    assert.strictEqual(xslParsed.scopeName, 'text.xml.xsl');
   });
 
   it('language-property-list ships JSON grammars settings and snippets and no shipped CSON', () => {
@@ -501,7 +540,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 6);
+    assert.strictEqual(STILL_CSON.length, 5);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
