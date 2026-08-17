@@ -182,7 +182,7 @@ class AtomNativeWatcher extends NativeWatcher {
     };
 
     this.subs.add(
-      atom.workspace.observeTextEditors(async editor => {
+      chevron.workspace.observeTextEditors(async editor => {
         let realPath = await getRealPath(editor.getPath());
         if (!realPath || !realPath.startsWith(this.normalizedPath)) {
           return;
@@ -225,7 +225,7 @@ class AtomNativeWatcher extends NativeWatcher {
     );
 
     // Giant-ass brittle hack to hook files (and eventually directories) created from the TreeView.
-    const treeViewPackage = await atom.packages.getLoadedPackage('tree-view');
+    const treeViewPackage = await chevron.packages.getLoadedPackage('tree-view');
     if (!treeViewPackage) return;
     await treeViewPackage.activationPromise;
     const treeViewModule = treeViewPackage.mainModule;
@@ -234,7 +234,7 @@ class AtomNativeWatcher extends NativeWatcher {
 
     const isOpenInEditor = async eventPath => {
       const openPaths = await Promise.all(
-        atom.workspace
+        chevron.workspace
           .getTextEditors()
           .map(editor => getRealPath(editor.getPath()))
       );
@@ -599,7 +599,7 @@ class PathWatcherManager {
       // The main process (ConfigFile.watch) has no `atom` global; fall back
       // to the default native backend there instead of throwing.
       const atomConfig =
-        typeof atom !== 'undefined' && atom.config ? atom.config : null;
+        typeof atom !== 'undefined' && chevron.config ? chevron.config : null;
       this.activeManager = new PathWatcherManager(
         atomConfig ? atomConfig.get('core.fileSystemWatcher') : undefined
       );

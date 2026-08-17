@@ -51,7 +51,7 @@ module.exports = class ReopenProjectListView {
   attach() {
     this.previouslyFocusedElement = document.activeElement;
     if (this.panel == null) {
-      this.panel = atom.workspace.addModalPanel({ item: this });
+      this.panel = chevron.workspace.addModalPanel({ item: this });
     }
     this.selectListView.focus();
     this.selectListView.reset();
@@ -62,8 +62,8 @@ module.exports = class ReopenProjectListView {
       this.cancel();
     } else {
       this.currentProjectName =
-        atom.project != null ? this.makeName(atom.project.getPaths()) : null;
-      const projects = atom.history
+        chevron.project != null ? this.makeName(chevron.project.getPaths()) : null;
+      const projects = chevron.history
         .getProjects()
         .map(p => ({ name: this.makeName(p.paths), value: p.paths }));
       await this.selectListView.update({ items: projects });

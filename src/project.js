@@ -90,7 +90,7 @@ module.exports = class Project extends Model {
   // on top of the current global config.
   replace(projectSpecification) {
     if (projectSpecification == null) {
-      atom.config.clearProjectSettings();
+      chevron.config.clearProjectSettings();
       this.setPaths([]);
     } else {
       if (projectSpecification.originPath == null) {
@@ -103,7 +103,7 @@ module.exports = class Project extends Model {
           path.dirname(projectSpecification.originPath)
         ];
       }
-      atom.config.resetProjectSettings(
+      chevron.config.resetProjectSettings(
         projectSpecification.config,
         projectSpecification.originPath
       );
@@ -127,7 +127,7 @@ module.exports = class Project extends Model {
     const handleBufferState = bufferState => {
       if (bufferState.shouldDestroyOnFileDelete == null) {
         bufferState.shouldDestroyOnFileDelete = () =>
-          atom.config.get('core.closeDeletedFileTabs');
+          chevron.config.get('core.closeDeletedFileTabs');
       }
 
       // Use a little guilty knowledge of the way TextBuffers are serialized.
@@ -353,7 +353,7 @@ module.exports = class Project extends Model {
     try {
       return this.rootDirectories.map(rootDirectory => rootDirectory.getPath());
     } catch (e) {
-      atom.notifications.addError(
+      chevron.notifications.addError(
         "Please clear Atom's window state with: atom --clear-window-state"
       );
     }
@@ -769,7 +769,7 @@ module.exports = class Project extends Model {
   }
 
   shouldDestroyBufferOnFileDelete() {
-    return atom.config.get('core.closeDeletedFileTabs');
+    return chevron.config.get('core.closeDeletedFileTabs');
   }
 
   // Still needed when deserializing a tokenized buffer

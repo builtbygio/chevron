@@ -407,7 +407,7 @@ module.exports = class GrammarRegistry {
   // Returns a {String} such as `"source.js"`.
   grammarOverrideForPath(filePath) {
     Grim.deprecate('Use buffer.getLanguageMode().getLanguageId() instead');
-    const buffer = atom.project.findBufferForPath(filePath);
+    const buffer = chevron.project.findBufferForPath(filePath);
     if (buffer) return this.getAssignedLanguageId(buffer);
   }
 
@@ -421,7 +421,7 @@ module.exports = class GrammarRegistry {
     Grim.deprecate(
       'Use atom.grammars.assignLanguageMode(buffer, languageId) instead'
     );
-    const buffer = atom.project.findBufferForPath(filePath);
+    const buffer = chevron.project.findBufferForPath(filePath);
     if (buffer) {
       const grammar = this.grammarForScopeName(languageId);
       if (grammar)
@@ -436,7 +436,7 @@ module.exports = class GrammarRegistry {
   // Returns undefined.
   clearGrammarOverrideForPath(filePath) {
     Grim.deprecate('Use atom.grammars.autoAssignLanguageMode(buffer) instead');
-    const buffer = atom.project.findBufferForPath(filePath);
+    const buffer = chevron.project.findBufferForPath(filePath);
     if (buffer) this.languageOverridesByBufferId.delete(buffer.id);
   }
 
