@@ -27,14 +27,14 @@ const CONVERTED = [
   'language-yaml',
   'language-clojure',
   'language-coffee-script',
-  'language-perl'
+  'language-perl',
+  'language-php'
 ];
 
 const STILL_CSON = [
   'language-csharp',
   'language-git',
   'language-objective-c',
-  'language-php',
   'language-property-list',
   'language-ruby-on-rails',
   'language-sass',
@@ -109,6 +109,51 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-php ships JSON TextMate grammars settings and snippets and no shipped CSON', () => {
+    const cson = shippedCson('language-php');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const html = path.join(
+      packageRoot('language-php'),
+      'grammars',
+      'html.json'
+    );
+    const php = path.join(
+      packageRoot('language-php'),
+      'grammars',
+      'php.json'
+    );
+    const settings = path.join(
+      packageRoot('language-php'),
+      'settings',
+      'language-php.json'
+    );
+    const snippets = path.join(
+      packageRoot('language-php'),
+      'snippets',
+      'language-php.json'
+    );
+    const ts = path.join(
+      packageRoot('language-php'),
+      'grammars',
+      'tree-sitter-php.json'
+    );
+    const tsOnly = path.join(
+      packageRoot('language-php'),
+      'grammars',
+      'tree-sitter-php-only.json'
+    );
+    assert.ok(fs.existsSync(html), 'grammars/html.json');
+    assert.ok(fs.existsSync(php), 'grammars/php.json');
+    assert.ok(fs.existsSync(settings), 'settings/language-php.json');
+    assert.ok(fs.existsSync(snippets), 'snippets/language-php.json');
+    assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-php.json');
+    assert.ok(fs.existsSync(tsOnly), 'grammars/tree-sitter-php-only.json');
+    const parsed = JSON.parse(fs.readFileSync(html, 'utf8'));
+    assert.strictEqual(parsed.scopeName, 'text.html.php');
+    const phpParsed = JSON.parse(fs.readFileSync(php, 'utf8'));
+    assert.strictEqual(phpParsed.scopeName, 'source.php');
   });
 
   it('language-perl ships JSON TextMate grammars settings and snippets and no shipped CSON', () => {
@@ -423,7 +468,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 8);
+    assert.strictEqual(STILL_CSON.length, 7);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
