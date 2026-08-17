@@ -20,7 +20,8 @@ const CONVERTED = [
   'language-todo',
   'language-gfm',
   'language-less',
-  'language-make'
+  'language-make',
+  'language-mustache'
 ];
 
 const STILL_CSON = [
@@ -28,7 +29,6 @@ const STILL_CSON = [
   'language-coffee-script',
   'language-csharp',
   'language-git',
-  'language-mustache',
   'language-objective-c',
   'language-perl',
   'language-php',
@@ -109,6 +109,27 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-mustache ships JSON grammars and no shipped CSON', () => {
+    const cson = shippedCson('language-mustache');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const html = path.join(
+      packageRoot('language-mustache'),
+      'grammars',
+      'mustache.json'
+    );
+    const sql = path.join(
+      packageRoot('language-mustache'),
+      'grammars',
+      'sql with mustaches.json'
+    );
+    assert.ok(fs.existsSync(html), 'grammars/mustache.json');
+    assert.ok(fs.existsSync(sql), 'grammars/sql with mustaches.json');
+    const parsed = JSON.parse(fs.readFileSync(html, 'utf8'));
+    assert.strictEqual(parsed.scopeName, 'text.html.mustache');
+    const sqlParsed = JSON.parse(fs.readFileSync(sql, 'utf8'));
+    assert.strictEqual(sqlParsed.scopeName, 'source.sql.mustache');
   });
 
   it('language-make ships JSON grammar and settings and no shipped CSON', () => {
@@ -224,7 +245,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 15);
+    assert.strictEqual(STILL_CSON.length, 14);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
