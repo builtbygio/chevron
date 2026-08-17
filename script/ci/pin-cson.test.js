@@ -34,12 +34,11 @@ const CONVERTED = [
   'language-csharp',
   'language-git',
   'language-objective-c',
-  'language-sass'
-];
-
-const STILL_CSON = [
+  'language-sass',
   'language-ruby-on-rails'
 ];
+
+const STILL_CSON = [];
 
 function packageRoot(name) {
   if (name === 'language-rust-bundled') {
@@ -109,6 +108,24 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-ruby-on-rails ships JSON grammars and snippets and no shipped CSON', () => {
+    const cson = shippedCson('language-ruby-on-rails');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const ruby = path.join(packageRoot('language-ruby-on-rails'), 'grammars', 'ruby on rails.json');
+    const html = path.join(packageRoot('language-ruby-on-rails'), 'grammars', 'html (rails).json');
+    const js = path.join(packageRoot('language-ruby-on-rails'), 'grammars', 'javascript (rails).json');
+    const sql = path.join(packageRoot('language-ruby-on-rails'), 'grammars', 'sql (rails).json');
+    const rjs = path.join(packageRoot('language-ruby-on-rails'), 'grammars', 'rjs.json');
+    const snippets = path.join(packageRoot('language-ruby-on-rails'), 'snippets', 'language-ruby-on-rails.json');
+    assert.ok(fs.existsSync(ruby), 'grammars/ruby on rails.json');
+    assert.ok(fs.existsSync(html), 'grammars/html (rails).json');
+    assert.ok(fs.existsSync(js), 'grammars/javascript (rails).json');
+    assert.ok(fs.existsSync(sql), 'grammars/sql (rails).json');
+    assert.ok(fs.existsSync(rjs), 'grammars/rjs.json');
+    assert.ok(fs.existsSync(snippets), 'snippets/language-ruby-on-rails.json');
+    assert.strictEqual(JSON.parse(fs.readFileSync(ruby, 'utf8')).scopeName, 'source.ruby.rails');
   });
 
   it('language-sass ships JSON TextMate grammars settings and snippets and no shipped CSON', () => {
@@ -600,7 +617,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 1);
+    assert.strictEqual(STILL_CSON.length, 0);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
