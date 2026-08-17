@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `language-yaml` 0.34.0 ships the TextMate `source.yaml` grammar and settings as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+
 - `language-toml` 0.22.0 ships the TextMate `source.toml` grammar and settings as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
 
 - `language-sql` 0.27.0 ships the TextMate `source.sql` grammar and settings as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/language-stack.md](docs/language-stack.md).

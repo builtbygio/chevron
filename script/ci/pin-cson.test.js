@@ -23,7 +23,8 @@ const CONVERTED = [
   'language-make',
   'language-mustache',
   'language-sql',
-  'language-toml'
+  'language-toml',
+  'language-yaml'
 ];
 
 const STILL_CSON = [
@@ -37,8 +38,7 @@ const STILL_CSON = [
   'language-property-list',
   'language-ruby-on-rails',
   'language-sass',
-  'language-xml',
-  'language-yaml'
+  'language-xml'
 ];
 
 function packageRoot(name) {
@@ -109,6 +109,31 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-yaml ships JSON TextMate grammar and settings and no shipped CSON', () => {
+    const cson = shippedCson('language-yaml');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const grammar = path.join(
+      packageRoot('language-yaml'),
+      'grammars',
+      'yaml.json'
+    );
+    const settings = path.join(
+      packageRoot('language-yaml'),
+      'settings',
+      'language-yaml.json'
+    );
+    const ts = path.join(
+      packageRoot('language-yaml'),
+      'grammars',
+      'tree-sitter-yaml.json'
+    );
+    assert.ok(fs.existsSync(grammar), 'grammars/yaml.json');
+    assert.ok(fs.existsSync(settings), 'settings/language-yaml.json');
+    assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-yaml.json');
+    const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
+    assert.strictEqual(parsed.scopeName, 'source.yaml');
   });
 
   it('language-toml ships JSON TextMate grammar and settings and no shipped CSON', () => {
@@ -295,7 +320,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 12);
+    assert.strictEqual(STILL_CSON.length, 11);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
