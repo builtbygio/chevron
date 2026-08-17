@@ -2,7 +2,7 @@
 
 /**
  * 8B first slice: github package is React 18 + createRoot.
- * Inbox / Relay 5 stay. Run: node --test script/ci/github-8b.test.js
+ * Inbox stays. Run: node --test script/ci/github-8b.test.js
  */
 
 const { describe, it } = require('node:test');
@@ -22,14 +22,14 @@ describe('github 8B React 18 (inbox stays)', () => {
     const app = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     );
-    assert.strictEqual(app.packageDependencies.github, '0.37.4');
-    assert.match(app.dependencies.github, /8daf9d7992427fbcb78bd4f064abb6f94550cb50/);
+    assert.strictEqual(app.packageDependencies.github, '0.37.7');
+    assert.match(app.dependencies.github, /f759708fae215ad9dc97d71e7f65f480140eb315/);
     const pkg = JSON.parse(read('package.json'));
-    assert.strictEqual(pkg.version, '0.37.4');
+    assert.strictEqual(pkg.version, '0.37.7');
     assert.strictEqual(pkg.dependencies.react, '18.3.1');
     assert.strictEqual(pkg.dependencies['react-dom'], '18.3.1');
-    assert.strictEqual(pkg.dependencies['react-relay'], '5.0.0');
-    assert.strictEqual(pkg.dependencies.graphql, '14.5.8');
+    assert.ok(!pkg.dependencies['react-relay']);
+    assert.ok(!pkg.dependencies['relay-runtime']);
   });
 
   it('mounts with createRoot, not ReactDOM.render', () => {
@@ -77,8 +77,30 @@ describe('github 8B React 18 (inbox stays)', () => {
     assert.match(decorations, /BareCommentDecorationsController/);
     assert.match(createDialog, /BareCreateDialogController/);
     assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'relay-stub.js')));
+    assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'graphql-pager.js')));
     assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'containers', 'aggregated-reviews-json.js')));
     assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'graphql-client.js')));
+    const client = read('lib/graphql-client.js');
+    assert.match(client, /graphqlMutate/);
+    const addReaction = read('lib/mutations/add-reaction.js');
+    assert.match(addReaction, /graphqlMutate/);
+    assert.doesNotMatch(addReaction, /commitMutation/);
+    const libJs = [];
+    function walk(dir) {
+      for (const ent of fs.readdirSync(dir, {withFileTypes: true})) {
+        const p = path.join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name === '__generated__') continue;
+          walk(p);
+        } else if (ent.name.endsWith('.js')) libJs.push(p);
+      }
+    }
+    walk(path.join(GITHUB, 'lib'));
+    for (const p of libJs) {
+      if (p.endsWith('relay-network-layer-manager.js')) continue;
+      const src = fs.readFileSync(p, 'utf8');
+      assert.doesNotMatch(src, /require\(['\"]react-relay['\"]\)/, p);
+    }
     const recovered = path.join(GITHUB, 'graphql', 'recovered');
     const docs = fs
       .readdirSync(recovered)
