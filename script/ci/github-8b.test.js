@@ -22,10 +22,10 @@ describe('github 8B React 18 (inbox stays)', () => {
     const app = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     );
-    assert.strictEqual(app.packageDependencies.github, '0.37.3');
-    assert.match(app.dependencies.github, /b828392fceb570959faadee96a8304ea9b39a741/);
+    assert.strictEqual(app.packageDependencies.github, '0.37.4');
+    assert.match(app.dependencies.github, /8daf9d7992427fbcb78bd4f064abb6f94550cb50/);
     const pkg = JSON.parse(read('package.json'));
-    assert.strictEqual(pkg.version, '0.37.3');
+    assert.strictEqual(pkg.version, '0.37.4');
     assert.strictEqual(pkg.dependencies.react, '18.3.1');
     assert.strictEqual(pkg.dependencies['react-dom'], '18.3.1');
     assert.strictEqual(pkg.dependencies['react-relay'], '5.0.0');
@@ -64,6 +64,20 @@ describe('github 8B React 18 (inbox stays)', () => {
     assert.doesNotMatch(current, /QueryRenderer/);
     assert.match(search, /BareIssueishListController/);
     assert.match(current, /BareIssueishListController/);
+    const detail = read('lib/containers/issueish-detail-container.js');
+    const reviews = read('lib/containers/reviews-container.js');
+    const decorations = read('lib/containers/comment-decorations-container.js');
+    const createDialog = read('lib/containers/create-dialog-container.js');
+    for (const src of [detail, reviews, decorations, createDialog]) {
+      assert.match(src, /graphql-query/);
+      assert.doesNotMatch(src, /QueryRenderer/);
+    }
+    assert.match(detail, /BareIssueishDetailController/);
+    assert.match(reviews, /BareReviewsController/);
+    assert.match(decorations, /BareCommentDecorationsController/);
+    assert.match(createDialog, /BareCreateDialogController/);
+    assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'relay-stub.js')));
+    assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'containers', 'aggregated-reviews-json.js')));
     assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'graphql-client.js')));
     const recovered = path.join(GITHUB, 'graphql', 'recovered');
     const docs = fs
