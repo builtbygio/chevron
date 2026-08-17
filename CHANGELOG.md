@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `language-csharp` 1.3.0 ships the TextMate `source.cs`, `source.csx`, and `source.cake` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for C#. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+
 - `language-xml` 0.37.0 ships the TextMate `text.xml` and `text.xml.xsl` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for XML. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
 
 - `language-property-list` 0.10.0 ships the `source.plist` and `text.xml.plist` grammars, settings, and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
