@@ -81,7 +81,6 @@ module.exports = async function() {
     };
     const atomEnvironment = new AtomEnvironment(environmentParams);
     global.chevron = atomEnvironment;
-    global.atom = atomEnvironment; // unsupported legacy alias
     global.chevron.initialize(environmentParams);
 
     // Prevent benchmarks from modifying application menus

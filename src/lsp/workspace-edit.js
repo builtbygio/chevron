@@ -146,7 +146,7 @@ async function resolveBuffer(filePath, env) {
  * @returns {Promise<{ ok: boolean, files: number, edits: number, error?: string }>}
  */
 async function applyWorkspaceEdit(edit, opts = {}) {
-  const env = opts.env || global.chevron || global.atom;
+  const env = opts.env || global.chevron;
   const docs = normalizeWorkspaceEdit(edit);
   if (docs.length === 0) {
     return { ok: true, files: 0, edits: 0 };

@@ -95,7 +95,7 @@ function registerServer(spec) {
  * @returns {ServerRegistration[]}
  */
 function loadUserRegistrations() {
-  const env = global.chevron || global.atom;
+  const env = global.chevron;
   if (!env || !env.config || typeof env.config.get !== 'function') return [];
   let servers;
   try {

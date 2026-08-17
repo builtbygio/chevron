@@ -125,8 +125,8 @@
   };
 
   function setLoadTime(loadTime) {
-    if (global.atom) {
-      global.atom.loadTime = loadTime;
+    if (global.chevron) {
+      global.chevron.loadTime = loadTime;
     }
   }
 

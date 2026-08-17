@@ -2,7 +2,7 @@
 
 /**
  * Owned package lib/src must require('chevron'), not require('atom').
- * The host exports/atom.js shim stays for community packages and specs.
+ * exports/atom.js was removed in PR 23; require('atom') is unsupported.
  * Run: node --test script/ci/owned-require-chevron.test.js
  */
 

@@ -39,14 +39,13 @@ function installEnvironment() {
   TextEditor.setClipboard(clipboard);
   TextEditor.viewForItem = item => chevron.views.getView(item);
 
-  // Chevron-only product global. global.atom is an unsupported legacy alias.
+  // Chevron-only product global.
   const atomEnvironment = new AtomEnvironment({
     clipboard,
     applicationDelegate: new ApplicationDelegate(),
     enablePersistence: true
   });
   global.chevron = atomEnvironment;
-  global.atom = atomEnvironment;
 
   TextEditor.setScheduler(global.chevron.views);
   global.chevron.preloadPackages();

@@ -207,7 +207,7 @@ function createAutocompleteProvider(client) {
       }
 
       // Need an editor context for serverId — resolve via last active editor
-      const env = global.chevron || global.atom;
+      const env = global.chevron;
       const editor =
         env && env.workspace && env.workspace.getActiveTextEditor
           ? env.workspace.getActiveTextEditor()
