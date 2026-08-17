@@ -237,4 +237,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-objective-c` \| TextMate/);
     assert.match(doc, /`source.objc`, `source.objcpp`, `source.strings` \| JSON/);
   });
+
+  it('language-sass 13c ships JSON TextMate fallback', () => {
+    assert.match(doc, /`language-sass` \| both/);
+    assert.match(doc, /`source.css.scss`, `source.sass`, `source.sassdoc` \| JSON/);
+  });
 });

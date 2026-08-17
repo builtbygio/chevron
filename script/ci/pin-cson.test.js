@@ -33,12 +33,12 @@ const CONVERTED = [
   'language-xml',
   'language-csharp',
   'language-git',
-  'language-objective-c'
+  'language-objective-c',
+  'language-sass'
 ];
 
 const STILL_CSON = [
-  'language-ruby-on-rails',
-  'language-sass'
+  'language-ruby-on-rails'
 ];
 
 function packageRoot(name) {
@@ -109,6 +109,22 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-sass ships JSON TextMate grammars settings and snippets and no shipped CSON', () => {
+    const cson = shippedCson('language-sass');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const scss = path.join(packageRoot('language-sass'), 'grammars', 'scss.json');
+    const sass = path.join(packageRoot('language-sass'), 'grammars', 'sass.json');
+    const sassdoc = path.join(packageRoot('language-sass'), 'grammars', 'sassdoc.json');
+    const ts = path.join(packageRoot('language-sass'), 'grammars', 'tree-sitter-scss.json');
+    assert.ok(fs.existsSync(scss), 'grammars/scss.json');
+    assert.ok(fs.existsSync(sass), 'grammars/sass.json');
+    assert.ok(fs.existsSync(sassdoc), 'grammars/sassdoc.json');
+    assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-scss.json');
+    assert.strictEqual(JSON.parse(fs.readFileSync(scss, 'utf8')).scopeName, 'source.css.scss');
+    assert.strictEqual(JSON.parse(fs.readFileSync(sass, 'utf8')).scopeName, 'source.sass');
+    assert.strictEqual(JSON.parse(fs.readFileSync(sassdoc, 'utf8')).scopeName, 'source.sassdoc');
   });
 
   it('language-objective-c ships JSON grammars settings and snippets and no shipped CSON', () => {
@@ -584,7 +600,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 2);
+    assert.strictEqual(STILL_CSON.length, 1);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
