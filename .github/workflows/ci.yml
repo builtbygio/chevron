@@ -197,6 +197,7 @@ jobs:
           node --test script/ci/ensure-ripgrep.test.js
           node --test script/ci/deferred-startup-packages.test.js
           node --test script/ci/language-stack.test.js
+          node --test script/ci/package-host-bootstrap.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64

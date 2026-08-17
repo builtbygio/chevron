@@ -828,4 +828,40 @@ module.exports = function registerRendererIpc(atomApplication) {
   ipcMain.handle('lsp:list-servers', async () => {
     return lspManager.listServers();
   });
+
+  // --- Package host v2 (Epic 21) -------------------------------------------
+  // New channels use the `chevron:` prefix (architecture doc, "IPC").
+  // 21.1 exposes lifecycle only; activation channels land in 21.2.
+  const packageHostManager = require('./package-host-manager');
+
+  ipcMain.handle('chevron:package-host-subscribe', event => {
+    packageHostManager.subscribe(event.sender);
+    return { ok: true };
+  });
+
+  ipcMain.handle('chevron:package-host-unsubscribe', event => {
+    packageHostManager.unsubscribe(event.sender);
+    return { ok: true };
+  });
+
+  ipcMain.handle('chevron:package-host-start', async () => {
+    await packageHostManager.ensureHost();
+    return { ok: true, running: packageHostManager.isRunning() };
+  });
+
+  ipcMain.handle('chevron:package-host-status', async () => {
+    return { running: packageHostManager.isRunning() };
+  });
+
+  ipcMain.handle('chevron:package-host-ping', async () => {
+    return packageHostManager.ping();
+  });
+
+  ipcMain.handle('chevron:package-host-describe', async () => {
+    return packageHostManager.describe();
+  });
+
+  ipcMain.handle('chevron:package-host-shutdown', async () => {
+    return packageHostManager.shutdownHost();
+  });
 };
