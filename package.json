@@ -98,7 +98,7 @@
     "language-json": "git+https://github.com/builtbygio/language-json.git#8952fc9f3f616a3ebf9bd498e5475fd28d63ca1a",
     "language-less": "git+https://github.com/builtbygio/language-less.git#35c9c117f44ce9c8bc77c5992e5284b60bb101b1",
     "language-make": "git+https://github.com/builtbygio/language-make.git#8d85da8f0de173743f6a0d72c3a8faf5c603ebfb",
-    "language-mustache": "git+https://github.com/builtbygio/language-mustache.git#c9ad346a3a22f03d7d2545e3f26aa2f0ed68df46",
+    "language-mustache": "git+https://github.com/builtbygio/language-mustache.git#1e8916ea00e626e0fca1f97c00267fb2ab6b4240",
     "language-objective-c": "git+https://github.com/builtbygio/language-objective-c.git#cbf6fcad30c9279f313fd16790ee0c2563fbd5d6",
     "language-perl": "git+https://github.com/builtbygio/language-perl.git#239f1e1d759f116428ec152c67b272656fede9f7",
     "language-php": "git+https://github.com/builtbygio/language-php.git#d6625626408e82f465e6718050dad6ba1142dd7e",
