@@ -31,11 +31,11 @@ const CONVERTED = [
   'language-php',
   'language-property-list',
   'language-xml',
-  'language-csharp'
+  'language-csharp',
+  'language-git'
 ];
 
 const STILL_CSON = [
-  'language-git',
   'language-objective-c',
   'language-ruby-on-rails',
   'language-sass'
@@ -109,6 +109,20 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-git ships JSON grammars settings and snippets and no shipped CSON', () => {
+    const cson = shippedCson('language-git');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const commit = path.join(packageRoot('language-git'), 'grammars', 'git commit message.json');
+    const config = path.join(packageRoot('language-git'), 'grammars', 'git config.json');
+    const rebase = path.join(packageRoot('language-git'), 'grammars', 'git rebase message.json');
+    assert.ok(fs.existsSync(commit), 'grammars/git commit message.json');
+    assert.ok(fs.existsSync(config), 'grammars/git config.json');
+    assert.ok(fs.existsSync(rebase), 'grammars/git rebase message.json');
+    assert.strictEqual(JSON.parse(fs.readFileSync(commit, 'utf8')).scopeName, 'text.git-commit');
+    assert.strictEqual(JSON.parse(fs.readFileSync(config, 'utf8')).scopeName, 'source.git-config');
+    assert.strictEqual(JSON.parse(fs.readFileSync(rebase, 'utf8')).scopeName, 'text.git-rebase');
   });
 
   it('language-csharp ships JSON TextMate grammars settings and snippets and no shipped CSON', () => {
@@ -556,7 +570,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 4);
+    assert.strictEqual(STILL_CSON.length, 3);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
