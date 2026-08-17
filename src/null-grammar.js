@@ -3,6 +3,9 @@ const { Disposable } = require('event-kit');
 module.exports = {
   name: 'Null Grammar',
   scopeName: 'text.plain.null-grammar',
+  fileTypes: [],
+  firstLineRegex: null,
+  contentRegex: null,
   scopeForId(id) {
     if (id === -1 || id === -2) {
       return this.scopeName;

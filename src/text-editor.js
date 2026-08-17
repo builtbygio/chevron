@@ -13,7 +13,7 @@ const NullGrammar = require('./null-grammar');
 const TextMateLanguageMode = require('./text-mate-language-mode');
 const ScopeDescriptor = require('./scope-descriptor');
 
-const TextMateScopeSelector = require('first-mate').ScopeSelector;
+
 const GutterContainer = require('./gutter-container');
 let TextEditorComponent = null;
 let TextEditorElement = null;
@@ -4598,11 +4598,11 @@ module.exports = class TextEditor {
   isBufferRowCommented(bufferRow) {
     const match = this.lineTextForBufferRow(bufferRow).match(/\S/);
     if (match) {
-      if (!this.commentScopeSelector)
-        this.commentScopeSelector = new TextMateScopeSelector('comment.*');
-      return this.commentScopeSelector.matches(
-        this.scopeDescriptorForBufferPosition([bufferRow, match.index]).scopes
-      );
+      const scopes = this.scopeDescriptorForBufferPosition([
+        bufferRow,
+        match.index
+      ]).scopes;
+      return scopes.some(scope => /(^|\.)comment(\.|$)/.test(scope));
     }
   }
 

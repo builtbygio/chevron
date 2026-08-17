@@ -5,7 +5,11 @@ const TokenizedLine = require('./tokenized-line');
 const TokenIterator = require('./token-iterator');
 const ScopeDescriptor = require('./scope-descriptor');
 const NullGrammar = require('./null-grammar');
-const { OnigRegExp } = require('oniguruma');
+let OnigRegExp = null;
+function getOnigRegExp() {
+  if (!OnigRegExp) OnigRegExp = require('oniguruma').OnigRegExp;
+  return OnigRegExp;
+}
 const {
   toFirstMateScopeId,
   fromFirstMateScopeId
@@ -848,7 +852,7 @@ class TextMateLanguageMode {
   regexForPattern(pattern) {
     if (pattern) {
       if (!this.regexesByPattern[pattern]) {
-        this.regexesByPattern[pattern] = new OnigRegExp(pattern);
+        this.regexesByPattern[pattern] = new (getOnigRegExp())(pattern);
       }
       return this.regexesByPattern[pattern];
     }
