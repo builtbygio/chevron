@@ -1157,7 +1157,7 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 
 - **Title:** `grammars: do not boot first-mate until a TextMate grammar is assigned`
 - **Status:** **this change**. TM CSON/JSON register as pending stubs. first-mate + oniguruma load when a buffer is assigned TM mode. Does **not** delete first-mate.
-- **Files:** `src/grammar-registry.js`, `src/pending-text-mate-grammar.js`, `src/load-first-mate.js`, `src/text-mate-language-mode.js`, `src/text-editor.js`, `src/preload-natives.js`, snapshot exclude list
+- **Files:** `src/grammar-registry.js`, `src/pending-text-mate-grammar.ts`, `src/load-first-mate.ts`, `src/text-mate-language-mode.js`, `src/text-editor.js`, `src/preload-natives.js`, snapshot exclude list
 - **Depends on:** PR 13
 - **Description:** If a session only opens tree-sitter languages, oniguruma should not load. Does **not** delete first-mate.
 

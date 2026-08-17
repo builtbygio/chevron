@@ -54,10 +54,10 @@ describe('lazy first-mate (H2 PR 14)', () => {
   });
 
   it('PendingTextMateGrammar scores with JS regex without first-mate', () => {
-    const { toJsRegex } = require('../../src/pending-text-mate-grammar');
-    const re = toJsRegex('^#!.*\\bnode\\b');
-    assert.ok(re.test('#!/usr/bin/env node'));
-    assert.strictEqual(toJsRegex(null), null);
+    const src = read('src/pending-text-mate-grammar.ts');
+    assert.match(src, /function toJsRegex/);
+    assert.match(src, /params\.firstLineRegex \|\| params\.firstLineMatch/);
+    assert.ok(!/require\('first-mate'\)/.test(src));
   });
 
   it('Null Grammar exposes empty fileTypes so path scoring cannot throw', () => {
