@@ -6,6 +6,7 @@
   "license": "MIT",
   "repository": "https://github.com/atom/atom",
   "engines": {
+    "chevron": "*",
     "atom": "^1.0.0"
   },
   "dependencies": {
