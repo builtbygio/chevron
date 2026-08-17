@@ -207,4 +207,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-perl` \| both/);
     assert.match(doc, /`source.perl`, `source.perl6` \| JSON/);
   });
+
+  it('language-php 13c ships JSON TextMate fallback', () => {
+    assert.match(doc, /`language-php` \| both/);
+    assert.match(doc, /`text.html.php`, `source.php` \| JSON/);
+  });
 });
