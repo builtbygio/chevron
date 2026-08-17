@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `language-ruby-on-rails` 0.26.0 ships the Rails dialect grammars and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+
 - `language-sass` 0.64.0 ships the TextMate `source.css.scss`, `source.sass`, and `source.sassdoc` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for SCSS. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
 
 - `language-objective-c` 0.17.0 ships the `source.objc`, `source.objcpp`, and `source.strings` grammars, settings, and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).

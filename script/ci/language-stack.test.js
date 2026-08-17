@@ -242,4 +242,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-sass` \| both/);
     assert.match(doc, /`source.css.scss`, `source.sass`, `source.sassdoc` \| JSON/);
   });
+
+  it('language-ruby-on-rails 13c ships JSON grammars', () => {
+    assert.match(doc, /`language-ruby-on-rails` \| TextMate/);
+    assert.match(doc, /`source.ruby.rails` \+ html\/js\/sql\/rjs overlays \| JSON/);
+  });
 });
