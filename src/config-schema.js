@@ -42,6 +42,13 @@ const configSchema = {
         description:
           'When enabled (default), community packages under `~/.atom/packages` / `~/.chevron/packages` cannot `require` privileged Node modules (`fs`, `child_process`, `electron`, …). Core and bundled packages are exempt. Override with env `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0`. See [package-node-policy](docs/package-node-policy.md).'
       },
+      packageHostV2: {
+        type: 'boolean',
+        default: false,
+        title: 'Package host v2 (experimental)',
+        description:
+          'When enabled, Chevron boots a restricted `utilityProcess` package host for community (T2) packages instead of activating them in the editor preload. Off by default while the host is being built out (Epic 21). Env `CHEVRON_PACKAGE_HOST_V2=1` also enables. See [package host design](docs/security-phase-s-package-host.md).'
+      },
       fsIpcStrict: {
         type: 'boolean',
         default: true,

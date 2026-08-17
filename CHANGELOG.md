@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Package host v2 bootstrap (H3 Epic 21, slice 21.1): `src/main-process/package-host-manager.js` supervises a `chevron-package-host` `utilityProcess` defined by `src/main-process/workers/package-host.js`, reachable over allowlisted `chevron:package-host-*` IPC. The host boots, answers `ping`/`describe`/`shutdown`, and **loads no packages yet** — activation lands in 21.2. Gated by `core.packageHostV2` (default `false`). See [docs/security-phase-s-package-host.md](docs/security-phase-s-package-host.md).
+
 ### Fixed
 
 - Load `tree-sitter-perl` (ESM syntax, no `"type":"module"`) through `node-gyp-build` instead of `require()`. Electron treated that file as a SyntaxError and smoke treated the fatal grammar notification as a hard fail.
