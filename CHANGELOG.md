@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `github` 0.37.0: React 18.3 and `createRoot` (8B first slice). Inbox stays. Relay 5 / graphql@14 stay (compiled artifacts). Login pane uses a classic GitHub PAT, not `github.atom.io`.
+
 - First-mate / oniguruma boot when a TextMate grammar is **assigned** to a buffer, not at GrammarRegistry construct (H2 PR 14). Tree-sitter-only sessions do not load the NAN addon. first-mate is not deleted.
 
 - fuzzy-finder 1.15.1 and symbols-view 0.118.6 no longer call `Task` (H2 PR 14a). Path crawl and project tags run in-process. `Workspace.replace` still uses `Task`. `Task` is not deleted.
