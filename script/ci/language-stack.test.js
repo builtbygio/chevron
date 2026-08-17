@@ -217,4 +217,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-property-list` \| TextMate/);
     assert.match(doc, /`source.plist`, `text.xml.plist` \| JSON/);
   });
+
+  it('language-xml 13c ships JSON TextMate fallback', () => {
+    assert.match(doc, /`language-xml` \| both/);
+    assert.match(doc, /`text.xml`, `text.xml.xsl` \| JSON/);
+  });
 });
