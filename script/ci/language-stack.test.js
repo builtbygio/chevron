@@ -212,4 +212,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-php` \| both/);
     assert.match(doc, /`text.html.php`, `source.php` \| JSON/);
   });
+
+  it('language-property-list 13c ships JSON grammars', () => {
+    assert.match(doc, /`language-property-list` \| TextMate/);
+    assert.match(doc, /`source.plist`, `text.xml.plist` \| JSON/);
+  });
 });

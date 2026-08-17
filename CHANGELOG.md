@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `language-property-list` 0.10.0 ships the `source.plist` and `text.xml.plist` grammars, settings, and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+
 - `language-php` 0.50.0 ships the TextMate `text.html.php` and `source.php` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
 
 - `language-perl` 0.40.0 ships the TextMate `source.perl` and `source.perl6` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for Perl 5. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
