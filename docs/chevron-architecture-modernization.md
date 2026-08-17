@@ -467,7 +467,7 @@ Risk (**high** if we delete early): landing “delete Task + scandal after a dog
    | Workers | `atom-create-browser-window-sync`, … | **Deleted** (PR 9). utilityProcess only |
    | FS IPC | `atom-fs-*-sync` family | **Do not** migrate in the same merge as remote-compat shrink. #108 is a measured footgun |
 
-3. **H1 S4 PR** = refresh §11 + deprecate `exports/remote.js` + **one** slice (dialogs *or* clipboard that already have async callers). Do not promise remote-compat shrinkage **and** FS migration in one PR. github still uses `electron.remote` (`git-timings-view.js`, `directory-select.js`) until the github epic.
+3. **H1 S4 PR** = refresh §11 + deprecate `exports/remote.js` + **one** slice (dialogs *or* clipboard that already have async callers). Do not promise remote-compat shrinkage **and** FS migration in one PR. github still uses `electron.remote` until the github epic: `Menu`/`MenuItem` in `actionable-review-view.js`, `staging-view.js`, `conflict-controller.js`, `issueish-list-controller.js`; `BrowserWindow` in `worker-manager.js`; `getCurrentWindow()` in `event-logger.js`, `git-shell-out-strategy.js`. (`git-timings-view.js` and `directory-select.js` were cleaned in 0.37.9 — those two are what `github-8b.test.js` guards.)
 4. **Worker BrowserWindow constructor** stays until dogfood confirms utilityProcess (PR 9).
 5. New channels are named `chevron:*` and documented in §11.
 
@@ -520,7 +520,7 @@ The package system **is** Chevron’s product. Do not replace it with VS Code ex
 
 **Today** (`node_modules/github/package.json`):
 
-- `react@18.3.1` + `react-dom@18.3.1` (`createRoot`) + `graphql-client` for inbox queries, mutations, and paging. GitHub App device-flow login (`github.oauthClientId`); classic PAT fallback. No `electron.remote` in the package. `react-relay` / `relay-runtime` dropped. 34 operations recovered under `graphql/recovered/`.
+- `react@18.3.1` + `react-dom@18.3.1` (`createRoot`) + `graphql-client` for inbox queries, mutations, and paging. GitHub App device-flow login (`github.oauthClientId`); classic PAT fallback. `electron.remote` dropped from `directory-select.js` / `git-timings-view.js` only — **7 files still use it** (`Menu`/`MenuItem` ×4, worker `BrowserWindow`, `getCurrentWindow()` ×2). `react-relay` / `relay-runtime` dropped. 34 operations recovered under `graphql/recovered/`.
 - `dugite@1.110.0` (git) — workers already on utilityProcess
 - `keytar@4.13.0` (listed; app hoists owned keytar)
 - Pre-transpiled CJS as of #125 (`atomTranspilers` gone)

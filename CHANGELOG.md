@@ -53,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `language-todo` 0.30.0 ships the `text.todo` injection grammar and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
 
-- `github` 0.37.9: GitHub App device-flow login (classic PAT fallback); `electron.remote` gone from the github package (8B). Inbox stays.
+- `github` 0.37.9: GitHub App device-flow login (classic PAT fallback); `electron.remote` dropped from `directory-select.js` and `git-timings-view.js` (8B). Inbox stays. **Not** gone from the package: 7 files still use `require('electron').remote` — `Menu`/`MenuItem` in `actionable-review-view.js`, `staging-view.js`, `conflict-controller.js`, `issueish-list-controller.js`; `BrowserWindow` in `worker-manager.js`; `getCurrentWindow()` in `event-logger.js` and `git-shell-out-strategy.js`. These block PR 20 (`exports/remote.js` delete) until the github epic.
 
 - `github` 0.37.7: mutations and paging use `graphql-client`; `react-relay` / `relay-runtime` dropped (8B). Inbox stays.
 
