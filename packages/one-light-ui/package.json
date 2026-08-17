@@ -12,6 +12,7 @@
   "repository": "https://github.com/atom/atom",
   "main": "lib/main",
   "engines": {
+    "chevron": "*",
     "atom": ">0.40.0"
   },
   "devDependencies": {
