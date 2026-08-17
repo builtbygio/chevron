@@ -225,7 +225,7 @@ Work is ordered so each horizon is a product that still boots.
 | Horizon | Name | Product outcome | Calendar (indicative) |
 |---------|------|-----------------|------------------------|
 | **H1** | Purge what is actually dead | Docs match the tree; **product** find-in-project is ripgrep (find-and-replace pin); **`rg` spawned from main** (not preload); `Workspace.replace` off scandal; user config writes JSON; packager is `@electron/packager`; Coffee/Babel stubs gone; snapshot numbers published | After dogfood week (#106 Days 2–7) unless the owner OKs earlier. Independent tracks (packager, snapshot measure, docs, config writer) can land in parallel. **Do not** delete `Task`, `season`, or `document-register-element` in H1. **Do not** start Epic 18 / PR 19 until Days 2–7 answer Q1 |
-| **H2** | Language-first + catalog hygiene | Tree-sitter ports for named TextMate-only languages **or** a written exception list with owners; first-mate lazy; pin CSON conversion stream; `github` work **only after Q1**; factory/catalog CE work; `Task` callers migrated then public `Task` removable | After H1 search/replace; Epic 18/19 blocked until dogfood says 8A/8C vs 8B |
+| **H2** | Language-first + catalog hygiene | Tree-sitter ports for named TextMate-only languages **or** a written exception list with owners; first-mate lazy; pin CSON conversion stream; `github` is **8B** (upgrade, do not slim); factory/catalog CE work; `Task` callers migrated then public `Task` removable | After H1 search/replace; Epic 18/19 **skipped** (Q1 = 8B) |
 | **H3** | Platform reopen | Package host v2 **epic** (owner-gated); first-mate removable **only if** exception list is empty; Atom name shims; Windows userData name; signing | After base Chevron is “done enough” (owner call) |
 
 Avalonia / in-app AI stay **after H3** unless a separate funded spike says otherwise. AI already has a design (`docs/ai-design.md`) that correctly waits on LSP + Phase S invariants.
@@ -529,7 +529,7 @@ The package system **is** Chevron’s product. Do not replace it with VS Code ex
 
 This package is why `process.env.NODE_ENV = 'production'` exists in `initialize-application-window.js` 75–78 (“Make React faster”). It is why asar unpack includes `github/lib/**`. It is the main remaining reason remote-compat still constructs BrowserWindows.
 
-**Target (owner Q1 — decide after more dogfood):**
+**Target (owner Q1 — 8B, 2026-08-17):** inbox is load-bearing. Do **not** slim it. Upgrade the existing package. Long-term login is a Chevron GitHub App (replace dead `github.atom.io/login` / classic PAT paste).
 
 | Option | What | When it wins |
 |--------|------|----------------|
@@ -537,7 +537,7 @@ This package is why `process.env.NODE_ENV = 'production'` exists in `initialize-
 | **8B Upgrade** | React 18 + modern GraphQL client, still a bundled package | Dogfood says the inbox UI is **load-bearing** — do **not** start 8A/8C slimming that would delete it |
 | **8C Split** | `chevron-git` (dugite + gutters, in-repo) + optional `chevron-github` (hosted API) | Follows 8A if dogfood chose git-in-the-editor |
 
-**Do not start Epic 18 or PR 19 until #106 Days 2–7 answer Q1.** If the answer is 8A/8C, decompose 8A as an epic (not two master PRs):
+**Q1 is 8B. Skip Epic 18 and PR 19.** Do not delete inbox views. If 8A had won, it would have been an epic (not two master PRs):
 
 1. Inventory remaining Relay routes + `electron.remote` sites (read-only PR).
 2. Delete unused Relay routes / dead views.
@@ -681,7 +681,7 @@ That set survives every pillar above.
 | D9 | **Migrate `@electron/packager`. Keep asar unpack + current fuse set.** | Packager 15 is the actual leftover packaging architecture. Fuses/unpack are correct for natives + cpm. |
 | D10 | **H1 converts first-party `atom-*` construction to the factory. The polyfill stays until owned pins and etch/React host tags are covered (or A8 patches `createElement`).** | Isolation is why the polyfill exists (`static/index.js` 171–184). A `src/` grep is not the full set. Do not combine factory conversion with polyfill delete. |
 | D11 | **`remote-compat` shrinks one slice at a time. New IPC is `invoke` on allowlisted channels.** S4 H1 is inventory + one slice (not FS, not workers). | S4 was deferred from Phase S; it is now a modernization item, not a security gate. `docs/remote-ipc-inventory.md` §11 is the row list. |
-| D12 | **`github` work waits on #106 Days 2–7 (Q1).** If dogfood says git-in-the-editor is enough, do 8A then 8C as an **epic** (inventory → one surface → drop Relay → pin bump). If dogfood says the inbox UI is load-bearing, do **not** start 8A/8C slimming that would delete it (8B is then in play). | React 16 + Relay 5 is still the largest leftover app architecture. We do **not** already choose 8A/8C. One master PR still cannot rewrite that package. |
+| D12 | **Q1 is 8B.** Inbox is load-bearing. Do **not** start Epic 18 / PR 19. Path is upgrade React + GraphQL client in the existing `github` package; keep dugite + utilityProcess. Long-term login: Chevron GitHub App (user-to-server), not `github.atom.io` and not “paste a classic PAT” as the product UX. | React 16 + Relay 5 is still the largest leftover app architecture. One master PR still cannot rewrite that package. |
 | D13 | **Tests: `node:test` + smoke is the architecture. Jasmine/Mocha-in-Electron is a compatibility harness.** | #127 repaired the runner; that is not a reason to make it the design. |
 | D14 | **Package host v2 stays H3, and is an epic** implementing the already-written host design in several PRs after owner sign-off. | Already locked (`docs/package-ecosystem-strategy.md`). Do not count “host v2 spine” as one mergeable PR. |
 | D15 | **Implementation is PR-sized on `master`. No force-push. No rewrite branch.** Epics are labeled as streams. Independently mergeable PRs are the H1 singles plus each epic slice. | Owner constraint. Do not claim a 24-PR count where two items are rewrites. |
@@ -878,7 +878,7 @@ No product telemetry. Observability is **local + CI**.
 | Search engine | One log line at first `Workspace.scan`: `searcher=ripgrep`. Scandal path is gone (PR 4). |
 | Config format | One-shot notification if a `.cson` was migrated to JSON. |
 | Tests | `unit-and-cpm` duration; Jasmine nightly JUnit artifact (`docs/jasmine-ci.md`). Treat nightly redness as a dashboard, not a page. |
-| Dogfood | #106 Days 2–7 remain human. Architecture PRs should not land over an unfinished dogfood week without owner OK. **Epic 18 / PR 19 are blocked until Days 2–7 answer Q1** (inbox load-bearing vs git-in-the-editor). |
+| Dogfood | #106 Days 2–7 remain human. **Q1 is 8B** (inbox load-bearing). Do not start Epic 18 / PR 19. |
 
 **Alerting:** there is no ops org. CI red on `package-pin-policy`, smoke, and `unit-and-cpm` is the page.
 
@@ -946,7 +946,7 @@ Owner answers 2026-08-15. These are **final**.
 
 | # | Question | Resolution | Implication |
 |---|----------|------------|-------------|
-| Q1 | After dogfood, is the GitHub inbox UI load-bearing (8B) or is git-in-the-editor enough (8A/8C)? | **Resolved: decide after more dogfood.** Do not start Epic 18 / PR 19 until #106 Days 2–7 say whether that UI is used. | D12 is a **gate**, not a pre-chosen 8A/8C. If Days 2–7 say the inbox is load-bearing, do not slim it away. |
+| Q1 | After dogfood, is the GitHub inbox UI load-bearing (8B) or is git-in-the-editor enough (8A/8C)? | **Resolved 2026-08-17: 8B.** Inbox is used. Skip Epic 18 / PR 19. Long-term: GitHub App login (not `github.atom.io`). | Do not slim or delete inbox views. 8B is an upgrade epic when staffed, not one master PR. Classic PAT is the interim login. |
 | Q2 | Is Darwin cold start a dogfood blocker? | **Resolved: leave Darwin on stock snapshot.** Do not staff constructor bisection. | PR 12 publishes numbers only. `packaging-policy.js` `darwin-boot-crash` stays. |
 | Q3 | Does Windows keep the custom snapshot? | **Resolved: keep Windows custom snapshot until measured worse.** PR 12 still publishes the number. | Same as D8. Measure; do not pre-disable. |
 | Q4 | When do we hard-delete `require('atom')` / `global.atom`? | **Resolved: dedicated H3 PR 23** after H1 docs + owned packages are clean. | N8 unchanged. |
@@ -968,7 +968,7 @@ Owner answers 2026-08-15. These are **final**.
 | find-and-replace context-line drift vs scandal | **Med** | Adapter already exists; keep a fixture test from `ripgrep-directory-searcher.js` comments |
 | `@electron/packager` layout drift breaks smoke/`script/test` | **Med** | Golden-path assert in `find-packaged-app` + packaging-policy tests |
 | `electron-link` dies on Electron 44+ | **Med** | Pre-committed fallback: stock snapshots everywhere |
-| Slimming `github` regresses git workflow | **Med** | **Do not start Epic 18/PR 19 until Days 2–7 answer Q1.** If inbox is load-bearing, do not slim it. If 8A proceeds, keep the old package installable for one release |
+| Slimming `github` regresses git workflow | **Med** | **Q1 is 8B — do not start Epic 18/PR 19.** Keep the inbox. Upgrade in place. |
 | Main-side `rg` spawn breaks find-in-project / cancel | **Med** | Keep the existing JSON-line adapter in the renderer; fixture that `cancel()` kills the main child; do not change event semantics |
 | Jasmine nightly stays red; people treat it as the suite | **Low** | Docs already say measurement; do not add Jasmine specs |
 | Scope creep into host v2 / Avalonia / sandbox:true | **High (process)** | This document’s non-goals; reject those PRs as out of plan |
@@ -1193,9 +1193,9 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 - **Depends on:** none
 - **Description:** Product copy and defaults match Chevron-only. Mechanical, user-visible. Does **not** change Windows intermediate `package.json` `name` (that is PR 23b).
 
-#### Epic 18 — Slim `github` (8A) — **not one PR**; **blocked on Q1**
+#### Epic 18 — Slim `github` (8A) — **skipped (Q1 = 8B)**
 
-**Do not start until #106 Days 2–7 answer Q1.** If dogfood says the inbox UI is load-bearing, **skip this epic** (8B is then the path; do not delete inbox views). If dogfood says git-in-the-editor is enough, D12’s 8A direction applies. Suggested slices (each mergeable):
+**Do not start.** Inbox is load-bearing. 8B is the path (upgrade React + GraphQL client; keep views). Suggested 8A slices are retained only as the discarded alternative:
 
 | Slice | Title | Files / outcome |
 |-------|-------|-----------------|
@@ -1206,15 +1206,16 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 | 18.5 | `github: drop react-relay / graphql@14 when unused` | Dep delete |
 | 18.6 | Chevron pin bump | `package.json` + lockfile only |
 
-- **Depends on:** **#106 Days 2–7 must choose 8A/8C** (not 8B). PRs 8–9 preferred before 18.3
-- **Description:** Do not open a single “slim Git UI off React 16 / Relay 5” PR against `master`. Keep dugite + utilityProcess throughout. If Q1 is 8B, this epic does not start.
+- **Depends on:** Q1 chose 8A/8C. **Q1 chose 8B — do not start.**
+- **Description:** Do not open a single “slim Git UI off React 16 / Relay 5” PR against `master`. Keep dugite + utilityProcess throughout.
 
 #### PR 19 — Split git core vs GitHub host (8C)
 
 - **Title:** `git: move status/blame into chevron-git; github package optional`
+- **Status:** **skipped with Epic 18** (Q1 = 8B)
 - **Files:** new in-repo package or core modules; `git-diff`; pin policy; `packageDependencies`
 - **Depends on:** Q1 chose 8A/8C **and** Epic 18 far enough that status/blame no longer need Relay
-- **Description:** Catalog diet. GitHub.com features become an optional owned package. **Blocked with Epic 18** until Days 2–7.
+- **Description:** Catalog diet. GitHub.com features become an optional owned package. Not the 8B path.
 
 #### PR 20 — Delete `exports/remote.js` (not path Grim-wraps)
 
@@ -1279,7 +1280,7 @@ Not one PR. Implement `docs/security-phase-s-package-host.md` after owner sign-o
 - Custom snapshot Darwin bisection (**Q2: do not staff**)
 - AI integration (`docs/ai-design.md` stays a separate design)
 - Deleting `Task`, `season`, or `document-register-element` in H1
-- Epic 18 / PR 19 before #106 Days 2–7 answer Q1
+- Epic 18 / PR 19 (**skipped**: Q1 is 8B)
 - A new `utilityProcess` host **for `rg`** (PR 2b is main-process spawn)
 - Flipping editor `sandbox: true` as part of PR 2b
 
