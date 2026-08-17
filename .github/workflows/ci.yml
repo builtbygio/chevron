@@ -197,6 +197,7 @@ jobs:
           node --test script/ci/ensure-ripgrep.test.js
           node --test script/ci/deferred-startup-packages.test.js
           node --test script/ci/language-stack.test.js
+          node --test script/ci/windows-userdata-migrate.test.js
           node --test script/ci/package-host-bootstrap.test.js
           node --test script/ci/package-host-activate.test.js
           node --test script/ci/package-host-services.test.js

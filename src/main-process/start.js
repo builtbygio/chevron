@@ -149,6 +149,23 @@ module.exports = function start(resourcePath, devResourcePath, startTime) {
     app.setPath('userData', temp.mkdirSync('atom-test-data'));
   }
 
+  // Windows userData migration (H3 PR 23b, step 2 of the rollout in
+  // docs/windows-userdata-migrate.md). Inert unless CHEVRON_USERDATA_MIGRATE=1.
+  // Runs here, before the first BrowserWindow, so it cannot race StateStore
+  // opening IndexedDB. Failures are logged, never fatal.
+  try {
+    const {
+      migrateWindowsUserData
+    } = require('./migrate-windows-userdata');
+    migrateWindowsUserData({
+      userDataPath: app.getPath('userData'),
+      channel: releaseChannel,
+      log: message => console.log(message)
+    });
+  } catch (error) {
+    console.warn(`[chevron] userData migration skipped: ${error.message}`);
+  }
+
   StartupTime.addMarker('main-process:electron-onready:start');
   app.on('ready', function() {
     StartupTime.addMarker('main-process:electron-onready:end');
