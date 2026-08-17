@@ -1148,7 +1148,7 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 #### PR 13c — Pin CSON → JSON stream (one PR per pin)
 
 - **Title:** `language-*: ship grammars/settings/snippets as JSON` (repeat)
-- **Status:** started. Done: `language-source`, `language-hyperlink`, `language-text`, `language-todo`, `language-gfm`, `language-less`, `language-make`, `language-mustache`, `language-sql`, `language-toml`, `language-yaml`, `language-clojure`, `language-coffee-script`, `language-perl`, `language-php`, `language-property-list`, `language-xml`, `language-csharp`, `language-git`. Remaining inventory in [language-stack.md](./language-stack.md) §13c. Next: `language-objective-c`.
+- **Status:** started. Done: `language-source`, `language-hyperlink`, `language-text`, `language-todo`, `language-gfm`, `language-less`, `language-make`, `language-mustache`, `language-sql`, `language-toml`, `language-yaml`, `language-clojure`, `language-coffee-script`, `language-perl`, `language-php`, `language-property-list`, `language-xml`, `language-csharp`, `language-git`, `language-objective-c`. Remaining inventory in [language-stack.md](./language-stack.md) §13c. Next: `language-sass`.
 - **Files:** each remaining CSON pin; Chevron pin bump
 - **Depends on:** none (can start in parallel with 13b)
 - **Description:** Implements the existing owned-package checklist. Prerequisite for PR 5b (`season` delete). Do **not** delete `season` in this stream.
