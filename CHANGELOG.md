@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `language-make` 0.24.0 ships the `source.makefile` grammar and settings as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+
 - `language-less` 0.36.0 ships the TextMate `source.css.less` grammar and settings as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
 
 - `language-gfm` 0.91.0 ships GFM settings and snippets as JSON (H2 PR 13c). Grammar was already JSON. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
