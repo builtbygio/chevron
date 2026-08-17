@@ -1273,8 +1273,8 @@ So TextMate is a **permanent supported fallback**, exactly as G4 and D4 already 
 
 - **Title:** `win32: stop writing intermediate package.json name 'atom'`
 - **Files:** `script/lib/generate-metadata.js` 12–20, Windows install/migrate notes, `docs/releases.md`
-- **Status:** migrate plan written — [windows-userdata-migrate.md](./windows-userdata-migrate.md). The name flip itself is still **not** done.
-- **Depends on:** explicit migrate plan for existing `AppData\Local\atom` trees (**done**). **Not** H1 packaging (PR 6)
+- **Status:** **done (2026-08-18).** `generate-metadata.js` writes `chevron` / `chevron-<channel>`. **No migration was built** — the owner confirmed there is no Windows install base, so there is no userData to orphan. See [windows-userdata-migrate.md](./windows-userdata-migrate.md).
+- **Depends on:** ~~explicit migrate plan for existing `AppData\Local\atom` trees~~ — resolved: no Windows users, nothing to migrate. **Not** H1 packaging (PR 6)
 - **Description:** Today the comment says “dual-support installs.” That is leftover worldview, not a product goal. Do not fork userData without a migrate.
 
 #### PR 24 — Signing / notarization (release engineering)
