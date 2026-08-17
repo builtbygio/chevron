@@ -37,7 +37,7 @@ function installEnvironment() {
   if (global.chevron) return global.chevron;
   const clipboard = new Clipboard();
   TextEditor.setClipboard(clipboard);
-  TextEditor.viewForItem = item => atom.views.getView(item);
+  TextEditor.viewForItem = item => chevron.views.getView(item);
 
   // Chevron-only product global. global.atom is an unsupported legacy alias.
   const atomEnvironment = new AtomEnvironment({

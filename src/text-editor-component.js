@@ -1965,7 +1965,7 @@ module.exports = class TextEditorComponent {
       if (
         platform === 'linux' &&
         this.isInputEnabled() &&
-        atom.config.get('editor.selectionClipboard')
+        chevron.config.get('editor.selectionClipboard')
       )
         model.insertText(clipboard.readText('selection'));
       return;
@@ -1984,7 +1984,7 @@ module.exports = class TextEditorComponent {
       return;
     }
 
-    const allowMultiCursor = atom.config.get('editor.multiCursorOnClick');
+    const allowMultiCursor = chevron.config.get('editor.multiCursorOnClick');
     const addOrRemoveSelection =
       allowMultiCursor && (metaKey || (ctrlKey && platform !== 'darwin'));
 

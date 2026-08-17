@@ -681,7 +681,7 @@ module.exports = class Workspace extends Model {
   // open.
   updateWindowTitle() {
     let itemPath, itemTitle, projectPath, representedPath;
-    const appName = atom.getAppName();
+    const appName = chevron.getAppName();
     const left = this.project.getPaths();
     const projectPaths = left != null ? left : [];
     const item = this.getActivePaneItem();
@@ -1101,7 +1101,7 @@ module.exports = class Workspace extends Model {
     }
 
     try {
-      if (!atom.config.get('core.allowPendingPaneItems')) {
+      if (!chevron.config.get('core.allowPendingPaneItems')) {
         options.pending = false;
       }
 
@@ -1730,7 +1730,7 @@ module.exports = class Workspace extends Model {
     } else if (this.getCenter().getPanes().length > 1) {
       this.getCenter().destroyActivePane();
     } else if (this.config.get('core.closeEmptyWindows')) {
-      atom.close();
+      chevron.close();
     }
   }
 
@@ -1831,7 +1831,7 @@ module.exports = class Workspace extends Model {
 
   getVisiblePaneContainers() {
     const center = this.getCenter();
-    return atom.workspace
+    return chevron.workspace
       .getPaneContainers()
       .filter(container => container === center || container.isVisible());
   }

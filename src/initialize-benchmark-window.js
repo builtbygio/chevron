@@ -68,7 +68,7 @@ module.exports = async function() {
 
     const clipboard = new Clipboard();
     TextEditor.setClipboard(clipboard);
-    TextEditor.viewForItem = item => atom.views.getView(item);
+    TextEditor.viewForItem = item => chevron.views.getView(item);
 
     const applicationDelegate = new ApplicationDelegate();
     const environmentParams = {

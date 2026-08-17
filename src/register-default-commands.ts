@@ -44,22 +44,22 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
       'application:new-file'() { return ipcRenderer.send('command', 'application:new-file'); },
       'application:open'() {
         let left;
-        const defaultPath = (left = __guard__(atom.workspace.getActiveTextEditor(), x => x.getPath())) != null ? left : __guard__(atom.project.getPaths(), x1 => x1[0]);
+        const defaultPath = (left = __guard__(chevron.workspace.getActiveTextEditor(), x => x.getPath())) != null ? left : __guard__(chevron.project.getPaths(), x1 => x1[0]);
         return ipcRenderer.send('open-chosen-any', defaultPath);
       },
       'application:open-file'() {
         let left;
-        const defaultPath = (left = __guard__(atom.workspace.getActiveTextEditor(), x => x.getPath())) != null ? left : __guard__(atom.project.getPaths(), x1 => x1[0]);
+        const defaultPath = (left = __guard__(chevron.workspace.getActiveTextEditor(), x => x.getPath())) != null ? left : __guard__(chevron.project.getPaths(), x1 => x1[0]);
         return ipcRenderer.send('open-chosen-file', defaultPath);
       },
       'application:open-folder'() {
         let left;
-        const defaultPath = (left = __guard__(atom.workspace.getActiveTextEditor(), x => x.getPath())) != null ? left : __guard__(atom.project.getPaths(), x1 => x1[0]);
+        const defaultPath = (left = __guard__(chevron.workspace.getActiveTextEditor(), x => x.getPath())) != null ? left : __guard__(chevron.project.getPaths(), x1 => x1[0]);
         return ipcRenderer.send('open-chosen-folder', defaultPath);
       },
       'application:open-dev'() { return ipcRenderer.send('command', 'application:open-dev'); },
       'application:open-safe'() { return ipcRenderer.send('command', 'application:open-safe'); },
-      'application:add-project-folder'() { return atom.addProjectFolder(); },
+      'application:add-project-folder'() { return chevron.addProjectFolder(); },
       'application:minimize'() { return ipcRenderer.send('command', 'application:minimize'); },
       'application:zoom'() { return ipcRenderer.send('command', 'application:zoom'); },
       'application:bring-all-windows-to-front'() { return ipcRenderer.send('command', 'application:bring-all-windows-to-front'); },
@@ -322,7 +322,7 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
         'editor:newline-below'() { return this.insertNewlineBelow(); },
         'editor:newline-above'() { return this.insertNewlineAbove(); },
         'editor:toggle-line-comments'() { return this.toggleLineCommentsInSelection(); },
-        'editor:checkout-head-revision'() { return atom.workspace.checkoutHeadRevision(this); },
+        'editor:checkout-head-revision'() { return chevron.workspace.checkoutHeadRevision(this); },
         'editor:move-line-up'() { return this.moveLineUp(); },
         'editor:move-line-down'() { return this.moveLineDown(); },
         'editor:move-selection-left'() { return this.moveSelectionLeft(); },

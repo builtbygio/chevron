@@ -221,11 +221,11 @@ module.exports = class TextEditor {
     } else {
       this.buffer = new TextBuffer({
         shouldDestroyOnFileDelete() {
-          return atom.config.get('core.closeDeletedFileTabs');
+          return chevron.config.get('core.closeDeletedFileTabs');
         }
       });
       this.buffer.setLanguageMode(
-        new TextMateLanguageMode({ buffer: this.buffer, config: atom.config })
+        new TextMateLanguageMode({ buffer: this.buffer, config: chevron.config })
       );
     }
 
@@ -1395,7 +1395,7 @@ module.exports = class TextEditor {
 
       let myPathSegments;
       const openEditorPathSegmentsWithSameFilename = [];
-      for (const textEditor of atom.workspace.getTextEditors()) {
+      for (const textEditor of chevron.workspace.getTextEditors()) {
         if (textEditor.getFileName() === fileName) {
           const pathSegments = fs
             .tildify(textEditor.getDirectoryPath())
@@ -1498,7 +1498,7 @@ module.exports = class TextEditor {
     if (
       windowCloseRequested &&
       projectHasPaths &&
-      atom.stateStore.isConnected()
+      chevron.stateStore.isConnected()
     ) {
       return this.buffer.isInConflict();
     } else {
@@ -2390,7 +2390,7 @@ module.exports = class TextEditor {
   // the editor is read-only, require an explicit opt-in option to proceed (`bypassReadOnly`) or throw an Error.
   ensureWritable(methodName, opts) {
     if (!opts.bypassReadOnly && this.isReadOnly()) {
-      if (atom.inDevMode() || atom.inSpecMode()) {
+      if (chevron.inDevMode() || chevron.inSpecMode()) {
         const e = new Error('Attempt to mutate a read-only TextEditor');
         e.detail =
           `Your package is attempting to call ${methodName} on an editor that has been marked read-only. ` +
@@ -4502,7 +4502,7 @@ module.exports = class TextEditor {
   setGrammar(grammar) {
     const buffer = this.getBuffer();
     buffer.setLanguageMode(
-      atom.grammars.languageModeForGrammarAndBuffer(grammar, buffer)
+      chevron.grammars.languageModeForGrammarAndBuffer(grammar, buffer)
     );
   }
 

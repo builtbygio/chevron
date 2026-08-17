@@ -1455,7 +1455,7 @@ class AtomEnvironment {
   }
 
   showSaveDialogSync(options = {}) {
-    deprecate(`atom.showSaveDialogSync is deprecated and will be removed soon.
+    deprecate(`chevron.showSaveDialogSync is deprecated and will be removed soon.
 Please, implement ::saveAs and ::getSaveDialogOptions instead for pane items
 or use Pane::saveItemAs for programmatic saving.`);
     return this.applicationDelegate.showSaveDialog(options);

@@ -81,7 +81,7 @@ module.exports = async function({ blobStore }) {
 
       // Copy: cmd-c / ctrl-c
       if ((event.metaKey || event.ctrlKey) && event.keyCode === 67) {
-        atom.clipboard.write(window.getSelection().toString());
+        chevron.clipboard.write(window.getSelection().toString());
       }
     };
 
@@ -116,7 +116,7 @@ module.exports = async function({ blobStore }) {
 
     const clipboard = new Clipboard();
     TextEditor.setClipboard(clipboard);
-    TextEditor.viewForItem = item => atom.views.getView(item);
+    TextEditor.viewForItem = item => chevron.views.getView(item);
 
     const testRunner = requireModule(testRunnerPath);
     const legacyTestRunner = require(legacyTestRunnerPath);

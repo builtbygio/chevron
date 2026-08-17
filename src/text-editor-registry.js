@@ -201,7 +201,7 @@ module.exports = class TextEditorRegistry {
   // Returns a {Disposable} that can be used to stop updating the editor's
   // grammar.
   maintainGrammar(editor) {
-    atom.grammars.maintainLanguageMode(editor.getBuffer());
+    chevron.grammars.maintainLanguageMode(editor.getBuffer());
   }
 
   // Deprecated: Force a {TextEditor} to use a different grammar than the
@@ -210,7 +210,7 @@ module.exports = class TextEditorRegistry {
   // * `editor` The editor whose gramamr will be set.
   // * `languageId` The {String} language ID for the desired {Grammar}.
   setGrammarOverride(editor, languageId) {
-    atom.grammars.assignLanguageMode(editor.getBuffer(), languageId);
+    chevron.grammars.assignLanguageMode(editor.getBuffer(), languageId);
   }
 
   // Deprecated: Retrieve the grammar scope name that has been set as a
@@ -221,14 +221,14 @@ module.exports = class TextEditorRegistry {
   // Returns a {String} scope name, or `null` if no override has been set
   // for the given editor.
   getGrammarOverride(editor) {
-    return atom.grammars.getAssignedLanguageId(editor.getBuffer());
+    return chevron.grammars.getAssignedLanguageId(editor.getBuffer());
   }
 
   // Deprecated: Remove any grammar override that has been set for the given {TextEditor}.
   //
   // * `editor` The editor.
   clearGrammarOverride(editor) {
-    atom.grammars.autoAssignLanguageMode(editor.getBuffer());
+    chevron.grammars.autoAssignLanguageMode(editor.getBuffer());
   }
 
   async updateAndMonitorEditorSettings(editor, oldLanguageMode) {
