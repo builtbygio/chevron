@@ -201,7 +201,6 @@ jobs:
           node --test script/ci/package-host-activate.test.js
           node --test script/ci/package-host-services.test.js
           node --test script/ci/package-host-eligibility.test.js
-          node --test script/ci/owned-require-chevron.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64
@@ -396,6 +395,11 @@ jobs:
 
       - name: Bootstrap
         run: ./script/bootstrap-modern --ci
+
+      # Needs a real node_modules: it walks the installed builtbygio pins.
+      # Cannot live in unit-and-cpm, which never runs a root `npm ci`.
+      - name: Owned packages require chevron, not atom
+        run: node --test script/ci/owned-require-chevron.test.js
 
       - name: Build + package (deb, tar, rpm)
         run: |
