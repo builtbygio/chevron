@@ -1,6 +1,6 @@
 # Language stack — tree-sitter coverage and TextMate exception list
 
-**Status:** H2 PR 13 catalog + PR 13b stream. First tranche done; later tranche done (less, scss, perl, clojure, csharp). PR 13c: `language-source`, `language-hyperlink`, `language-text`, `language-todo`, `language-gfm`, `language-less`, `language-make`, `language-mustache`, `language-sql`, `language-toml`, `language-yaml`, `language-clojure`, `language-coffee-script`, `language-perl`, `language-php`. This is the exception list, not a promise that first-mate dies.  
+**Status:** H2 PR 13 catalog + PR 13b stream. First tranche done; later tranche done (less, scss, perl, clojure, csharp). PR 13c: `language-source`, `language-hyperlink`, `language-text`, `language-todo`, `language-gfm`, `language-less`, `language-make`, `language-mustache`, `language-sql`, `language-toml`, `language-yaml`, `language-clojure`, `language-coffee-script`, `language-perl`, `language-php`, `language-property-list`. This is the exception list, not a promise that first-mate dies.  
 **Owner:** `builtbygio`  
 **Code:** `src/grammar-registry.js` (`getParserKindCounts()`). Runtime: official `tree-sitter@0.25.1` + first-mate / oniguruma.
 
@@ -58,7 +58,7 @@ A package is **both** when it ships at least one `type: tree-sitter` grammar *an
 | `language-ruby-on-rails` | TextMate | — | `source.ruby.rails` + html/js/sql/rjs overlays | CSON | **keep TextMate** |
 | `language-mustache` | TextMate | — | `text.html.mustache`, `source.sql.mustache` | JSON | **keep TextMate** |
 | `language-make` | TextMate | — | `source.makefile` | JSON | **keep TextMate** |
-| `language-property-list` | TextMate | — | `source.plist`, `text.xml.plist` | CSON | **keep TextMate** |
+| `language-property-list` | TextMate | — | `source.plist`, `text.xml.plist` | JSON | **keep TextMate** |
 | `language-hyperlink` | TextMate (injection) | — | `text.hyperlink` | JSON | **keep TextMate** |
 | `language-todo` | TextMate (injection) | — | `text.todo` | JSON | **keep TextMate** |
 | `language-text` | TextMate | — | `text.plain` | JSON | **keep TextMate** |
@@ -93,7 +93,7 @@ Not a programming-language port, or nobody will staff one. Revisit only if an ow
 | `language-ruby-on-rails` | builtbygio | Dialect overlays on ruby/html/js/sql. Port ruby (done) covers the file types that matter. |
 | `language-mustache` | builtbygio | Template injection. **13c:** grammars JSON. |
 | `language-make` | builtbygio | Small surface. **13c:** grammar + settings JSON. |
-| `language-property-list` | builtbygio | macOS plist; xml port may cover the XML flavour later. |
+| `language-property-list` | builtbygio | macOS plist; xml port may cover the XML flavour later. **13c:** grammars + settings + snippets JSON. |
 | `language-hyperlink` | builtbygio | Injection grammar (`text.hyperlink`). Snippets / gfm / comments depend on it. **13c:** grammar JSON. |
 | `language-todo` | builtbygio | Injection grammar (`text.todo`). Load-bearing for TODO/FIXME scopes. **13c:** grammar + snippets JSON. |
 | `language-text` | builtbygio | Plain text. **13c:** grammar + snippets JSON. |
@@ -105,15 +105,15 @@ Not a programming-language port, or nobody will staff one. Revisit only if an ow
 
 Convert shipped `grammars/` / `settings/` / `snippets/` CSON to JSON. Delete the `.cson`. Runtime already loads both extensions. **`season` stays** until this list is empty (or pack-time transpile + a documented dev-only reader). Do not convert `spec/**/*.cson`.
 
-**Done:** `language-source` (settings JSON), `language-hyperlink` (grammar JSON), `language-text` (grammar + snippets JSON), `language-todo` (grammar + snippets JSON), `language-gfm` (settings + snippets JSON), `language-less` (TM grammar + settings JSON), `language-make` (grammar + settings JSON), `language-mustache` (grammars JSON), `language-sql` (TM grammar + settings JSON), `language-toml` (TM grammar + settings JSON), `language-yaml` (TM grammar + settings JSON), `language-clojure` (TM grammar + settings + snippets JSON), `language-coffee-script` (grammars + settings + snippets JSON), `language-perl` (TM grammars + settings + snippets JSON), `language-php` (TM grammars + settings + snippets JSON).
+**Done:** `language-source` (settings JSON), `language-hyperlink` (grammar JSON), `language-text` (grammar + snippets JSON), `language-todo` (grammar + snippets JSON), `language-gfm` (settings + snippets JSON), `language-less` (TM grammar + settings JSON), `language-make` (grammar + settings JSON), `language-mustache` (grammars JSON), `language-sql` (TM grammar + settings JSON), `language-toml` (TM grammar + settings JSON), `language-yaml` (TM grammar + settings JSON), `language-clojure` (TM grammar + settings + snippets JSON), `language-coffee-script` (grammars + settings + snippets JSON), `language-perl` (TM grammars + settings + snippets JSON), `language-php` (TM grammars + settings + snippets JSON), `language-property-list` (grammars + settings + snippets JSON).
 
-**Remaining** (7 pins, 34 files; next is `language-property-list`):
+**Remaining** (6 pins, 30 files; next is `language-xml`):
 
 | Pin | `.cson` files |
 |-----|--------------:|
 | `language-ruby-on-rails` | 6 |
 | `language-csharp`, `language-git`, `language-objective-c`, `language-sass` | 5 each |
-| `language-property-list`, `language-xml` | 4 each |
+| `language-xml` | 4 |
 
 Already JSON (no 13c work): `language-c`, `language-css`, `language-go`, `language-html`, `language-java`, `language-javascript`, `language-json`, `language-python`, `language-ruby`, `language-rust-bundled`, `language-shellscript`, `language-typescript`.
 
