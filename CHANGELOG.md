@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `language-gfm` 0.91.0 ships GFM settings and snippets as JSON (H2 PR 13c). Grammar was already JSON. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+
 - `language-todo` 0.30.0 ships the `text.todo` injection grammar and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
 
 - `github` 0.37.9: GitHub App device-flow login (classic PAT fallback); `electron.remote` gone from the github package (8B). Inbox stays.
