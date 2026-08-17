@@ -864,4 +864,33 @@ module.exports = function registerRendererIpc(atomApplication) {
   ipcMain.handle('chevron:package-host-shutdown', async () => {
     return packageHostManager.shutdownHost();
   });
+
+  ipcMain.handle(
+    'chevron:package-host-activate',
+    async (_event, { name, root, configSnapshot, state } = {}) => {
+      return packageHostManager.activatePackage({ name, root, configSnapshot, state });
+    }
+  );
+
+  ipcMain.handle('chevron:package-host-deactivate', async (_event, { name } = {}) => {
+    return packageHostManager.deactivatePackage(name);
+  });
+
+  ipcMain.handle('chevron:package-host-list', async () => {
+    return packageHostManager.listPackages();
+  });
+
+  ipcMain.handle(
+    'chevron:package-host-dispatch',
+    async (_event, { name, command, detail } = {}) => {
+      return packageHostManager.dispatchCommand(name, command, detail);
+    }
+  );
+
+  ipcMain.handle(
+    'chevron:package-host-config-changed',
+    async (_event, { keyPath, value } = {}) => {
+      return packageHostManager.notifyConfigChanged(keyPath, value);
+    }
+  );
 };

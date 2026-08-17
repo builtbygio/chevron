@@ -1,9 +1,12 @@
 'use strict';
 
 /**
- * utilityProcess entry: package host v2 (Epic 21, slice 21.1).
- * Pure Node — no DOM. This slice boots and answers control messages only;
- * it deliberately does **not** load or activate any package yet (21.2).
+ * utilityProcess entry: package host v2 (Epic 21, slices 21.1–21.2).
+ * Pure Node — no DOM.
+ *
+ * 21.1 booted the process. 21.2 activates **logic-only** packages here, behind
+ * a restricted loader and a stub `chevron` proxy: package code in this process
+ * cannot reach privileged Node, native addons, or the real editor API.
  *
  * See docs/security-phase-s-package-host.md "Host v2 (target)".
  *
@@ -11,7 +14,18 @@
  * outbound: { type, requestId?, ... }
  */
 
+const path = require('path');
+const fs = require('fs');
+
+const restrictedRequire = require('./package-host-require');
+const { createStub } = require('./package-host-stub');
+
 const BOOTED_AT = Date.now();
+
+/** package name -> { root, main, stub, control, module } */
+const activePackages = new Map();
+
+restrictedRequire.install();
 
 function post(msg) {
   if (process.parentPort && typeof process.parentPort.postMessage === 'function') {
@@ -51,8 +65,109 @@ function describeHost() {
     hasDocument: typeof document !== 'undefined',
     hasWindow: typeof window !== 'undefined',
     uptimeMs: Date.now() - BOOTED_AT,
-    packagesLoaded: 0
+    packagesLoaded: activePackages.size,
+    packages: [...activePackages.keys()]
   };
+}
+
+/** Resolve a package's main entry the way Atom's Package.getMainModulePath does. */
+function resolveMain(root, metadata) {
+  const candidates = [];
+  if (metadata && typeof metadata.main === 'string') {
+    candidates.push(path.resolve(root, metadata.main));
+    candidates.push(path.resolve(root, metadata.main + '.js'));
+  }
+  candidates.push(path.join(root, 'index.js'));
+  candidates.push(path.join(root, 'lib', 'main.js'));
+  for (const candidate of candidates) {
+    try {
+      if (fs.statSync(candidate).isFile()) return candidate;
+    } catch (_) {
+      /* try next */
+    }
+  }
+  throw new Error(`Cannot resolve main module for package at ${root}`);
+}
+
+function readMetadata(root) {
+  const file = path.join(root, 'package.json');
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function activatePackage({ name, root, configSnapshot, state }) {
+  if (!root) throw new Error('activate-package requires a root');
+  if (activePackages.has(name)) {
+    return { alreadyActive: true, name };
+  }
+
+  const metadata = readMetadata(root);
+  const packageName = name || metadata.name;
+  const emitted = [];
+
+  const control = createStub({
+    packageName,
+    configSnapshot,
+    emit: descriptor => {
+      emitted.push(descriptor);
+      // Contributions are streamed to the editor as they happen; the editor
+      // applies them to the real environment.
+      post({ type: 'package-contribution', name: packageName, descriptor });
+    }
+  });
+
+  const registeredRoot = restrictedRequire.registerPackage(
+    root,
+    packageName,
+    control.stub
+  );
+  restrictedRequire.purgeModuleCache(registeredRoot);
+
+  let mainModule;
+  try {
+    mainModule = require(resolveMain(root, metadata));
+  } catch (err) {
+    restrictedRequire.unregisterPackage(registeredRoot);
+    throw err;
+  }
+
+  if (mainModule && typeof mainModule.activate === 'function') {
+    mainModule.activate(state);
+  }
+
+  activePackages.set(packageName, {
+    root: registeredRoot,
+    stub: control.stub,
+    control,
+    module: mainModule
+  });
+
+  return {
+    name: packageName,
+    activated: true,
+    commands: control.commandNames(),
+    contributions: emitted
+  };
+}
+
+function deactivatePackage({ name }) {
+  const entry = activePackages.get(name);
+  if (!entry) return { name, deactivated: false, reason: 'not-active' };
+
+  let serialized;
+  try {
+    if (entry.module && typeof entry.module.serialize === 'function') {
+      serialized = entry.module.serialize();
+    }
+    if (entry.module && typeof entry.module.deactivate === 'function') {
+      entry.module.deactivate();
+    }
+  } finally {
+    restrictedRequire.unregisterPackage(entry.root);
+    restrictedRequire.purgeModuleCache(entry.root);
+    activePackages.delete(name);
+  }
+
+  return { name, deactivated: true, state: serialized };
 }
 
 function onMessage(raw) {
@@ -69,6 +184,42 @@ function onMessage(raw) {
       case 'describe':
         respond(requestId, { host: describeHost() });
         return;
+
+      case 'activate-package':
+        respond(requestId, activatePackage(msg));
+        return;
+
+      case 'deactivate-package':
+        respond(requestId, deactivatePackage(msg));
+        return;
+
+      case 'list-packages':
+        respond(requestId, {
+          packages: [...activePackages.entries()].map(([name, entry]) => ({
+            name,
+            root: entry.root,
+            commands: entry.control.commandNames()
+          }))
+        });
+        return;
+
+      case 'dispatch-command': {
+        const entry = activePackages.get(msg.name);
+        if (!entry) {
+          respondError(requestId, new Error(`Package not active: ${msg.name}`));
+          return;
+        }
+        respond(requestId, entry.control.dispatchCommand(msg.command, msg.detail));
+        return;
+      }
+
+      case 'config-changed': {
+        for (const [, entry] of activePackages) {
+          entry.control.applyConfigChange(msg.keyPath, msg.value);
+        }
+        respond(requestId, { ok: true });
+        return;
+      }
 
       case 'shutdown':
         post({ type: 'host-shutdown' });
