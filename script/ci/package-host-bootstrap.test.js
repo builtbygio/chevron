@@ -126,13 +126,27 @@ describe('package host v2 — bootstrap (21.1)', () => {
     assert.strictEqual(code, 0);
   });
 
-  it('loads no package in this slice', () => {
+  it('loads no package until asked to', async () => {
+    // 21.1 invariant, still true after 21.2 added activation: a freshly booted
+    // host holds nothing until the editor sends activate-package.
+    const h = forkHost();
+    await h.waitFor(m => m.type === 'host-booted');
+    h.send({ type: 'describe', requestId: 1 });
+    const res = await h.waitFor(m => m.type === 'response' && m.requestId === 1);
+    assert.strictEqual(res.host.packagesLoaded, 0);
+    h.kill();
+  });
+
+  it('installs the restricted loader before any package can load', () => {
     const source = fs.readFileSync(HOST, 'utf8');
-    // 21.1 is bootstrap only. Guard against a future edit quietly adding
-    // package loading here without the 21.2 stub proxy.
+    // Guard against a future edit calling require() on package code without
+    // the sandbox in place. The install() call must precede activation.
+    const installAt = source.indexOf('restrictedRequire.install()');
+    const activateAt = source.indexOf('function activatePackage');
+    assert.ok(installAt !== -1, 'host must install the restricted loader');
     assert.ok(
-      !/require\(\s*packagePath|loadPackage|activatePackage/.test(source),
-      'package-host.js must not load packages in slice 21.1'
+      activateAt === -1 || installAt < activateAt,
+      'restricted loader must be installed before activation is defined'
     );
   });
 });

@@ -1,0 +1,16 @@
+{
+  "name": "package-host-logic-only",
+  "version": "1.0.0",
+  "main": "./lib/main",
+  "description": "Logic-only fixture package activated inside the package host v2 (Epic 21.2).",
+  "engines": {
+    "chevron": ">=1.0.0"
+  },
+  "chevronPackageHost": "eligible",
+  "configSchema": {
+    "greeting": {
+      "type": "string",
+      "default": "hello"
+    }
+  }
+}

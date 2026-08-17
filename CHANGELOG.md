@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Package host v2 activation (H3 Epic 21, slice 21.2): the host can now activate **logic-only** packages. `workers/package-host-require.js` is a restricted loader — package code gets the stub proxy for `require('chevron')`/`require('atom')`, and privileged ids, native addons and `.node` bindings throw unconditionally (no `CHEVRON_RESTRICT_PACKAGE_REQUIRES` escape, unlike the in-process v1 policy). `workers/package-host-stub.js` implements the RPC-friendly `chevron.*` surface: `config` served from a snapshot pushed at activate time, `commands` (selector-string targets only), `notifications`, `workspace.open` by URI, plus `Disposable`/`CompositeDisposable`. Contributions stream to the editor as descriptors. Fixtures in `spec/fixtures/packages/package-host-{logic-only,privileged}`.
 - Package host v2 bootstrap (H3 Epic 21, slice 21.1): `src/main-process/package-host-manager.js` supervises a `chevron-package-host` `utilityProcess` defined by `src/main-process/workers/package-host.js`, reachable over allowlisted `chevron:package-host-*` IPC. The host boots, answers `ping`/`describe`/`shutdown`, and **loads no packages yet** — activation lands in 21.2. Gated by `core.packageHostV2` (default `false`). See [docs/security-phase-s-package-host.md](docs/security-phase-s-package-host.md).
 
 ### Fixed

@@ -180,6 +180,57 @@ async function describe() {
   return msg.host;
 }
 
+/**
+ * Activate a package inside the host (slice 21.2).
+ *
+ * The caller supplies a **config snapshot** because packages read config
+ * synchronously during `activate()` and the real config lives in the editor.
+ * See docs/security-phase-s-package-host.md "Activation flow (v2)".
+ */
+async function activatePackage({ name, root, configSnapshot, state }) {
+  if (!root) throw new Error('activatePackage requires a package root');
+  const msg = await hostRequest(
+    {
+      type: 'activate-package',
+      name,
+      root,
+      configSnapshot: configSnapshot || {},
+      state
+    },
+    30000
+  );
+  return {
+    name: msg.name,
+    activated: Boolean(msg.activated),
+    alreadyActive: Boolean(msg.alreadyActive),
+    commands: msg.commands || [],
+    contributions: msg.contributions || []
+  };
+}
+
+async function deactivatePackage(name) {
+  if (!isRunning()) return { name, deactivated: false, reason: 'host-not-running' };
+  const msg = await hostRequest({ type: 'deactivate-package', name }, 15000);
+  return { name: msg.name, deactivated: Boolean(msg.deactivated), state: msg.state };
+}
+
+async function listPackages() {
+  if (!isRunning()) return [];
+  const msg = await hostRequest({ type: 'list-packages' }, 5000);
+  return msg.packages || [];
+}
+
+async function dispatchCommand(name, command, detail) {
+  const msg = await hostRequest({ type: 'dispatch-command', name, command, detail }, 15000);
+  return { dispatched: Boolean(msg.dispatched) };
+}
+
+async function notifyConfigChanged(keyPath, value) {
+  if (!isRunning()) return { ok: false };
+  await hostRequest({ type: 'config-changed', keyPath, value }, 5000);
+  return { ok: true };
+}
+
 async function shutdownHost() {
   if (!host) return { ok: true };
   try {
@@ -206,6 +257,11 @@ module.exports = {
   unsubscribe,
   ping,
   describe,
+  activatePackage,
+  deactivatePackage,
+  listPackages,
+  dispatchCommand,
+  notifyConfigChanged,
   shutdownHost,
   // exported for tests
   HOST_SCRIPT
