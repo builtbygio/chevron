@@ -1,0 +1,10 @@
+{
+  "name": "package-host-service-provider",
+  "version": "1.0.0",
+  "main": "./lib/main",
+  "description": "Provides a logic-only service from inside the package host (Epic 21.3).",
+  "engines": { "chevron": ">=1.0.0" },
+  "providedServices": {
+    "host-math": { "versions": { "1.2.0": "provideMath" } }
+  }
+}

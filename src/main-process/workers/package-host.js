@@ -19,13 +19,114 @@ const fs = require('fs');
 
 const restrictedRequire = require('./package-host-require');
 const { createStub } = require('./package-host-stub');
+const services = require('./package-host-services');
 
 const BOOTED_AT = Date.now();
 
 /** package name -> { root, main, stub, control, module } */
 const activePackages = new Map();
 
+/** "name@version" -> { name, version, packageName, service, methods } */
+const hostProvidedServices = new Map();
+
+/** name -> Array<{ name, version, methods }> offered by the editor side */
+const editorServices = new Map();
+
 restrictedRequire.install();
+
+// --- reverse RPC: host -> editor ------------------------------------------
+// Needed so a host package consuming an *editor-side* service can call it.
+let nextHostRequestId = 1;
+const pendingHostRequests = new Map();
+
+function hostRequest(payload, timeoutMs = 15000) {
+  const hostRequestId = nextHostRequestId++;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      pendingHostRequests.delete(hostRequestId);
+      reject(new Error(`Host request timeout (${payload.type})`));
+    }, timeoutMs);
+    pendingHostRequests.set(hostRequestId, {
+      resolve: v => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      reject: e => {
+        clearTimeout(timer);
+        reject(e);
+      }
+    });
+    // Envelope fields last: the payload carries its own `type`, which would
+    // otherwise clobber the `host-request` label the manager dispatches on.
+    post(
+      Object.assign({}, payload, {
+        type: 'host-request',
+        subtype: payload.type,
+        hostRequestId
+      })
+    );
+  });
+}
+
+/** Register whatever this package declares in providedServices. */
+function registerProvidedServices(packageName, metadata, mainModule) {
+  const descriptors = [];
+  for (const entry of services.parseProvidedServices(metadata)) {
+    const method = mainModule && mainModule[entry.methodName];
+    if (typeof method !== 'function') continue;
+    const service = method.call(mainModule);
+    const methods = services.describeService(service);
+    const key = services.serviceKey(entry.name, entry.version);
+    hostProvidedServices.set(key, {
+      name: entry.name,
+      version: entry.version,
+      packageName,
+      service,
+      methods
+    });
+    descriptors.push({ name: entry.name, version: entry.version, methods });
+  }
+  return descriptors;
+}
+
+/**
+ * Hand this package every already-known editor-side service that matches one
+ * of its consumedServices ranges.
+ */
+function applyConsumedServices(packageName, metadata, mainModule, wired) {
+  const consumed = [];
+  for (const entry of services.parseConsumedServices(metadata)) {
+    const offers = editorServices.get(entry.name) || [];
+    for (const offer of offers) {
+      if (!services.satisfies(offer.version, entry.range)) continue;
+      const key = services.serviceKey(offer.name, offer.version);
+      // A service offered after activation must reach existing consumers, but
+      // each consumer method may only be called once per service version.
+      if (wired && wired.has(key)) continue;
+      const method = mainModule && mainModule[entry.methodName];
+      if (typeof method !== 'function') continue;
+      if (wired) wired.add(key);
+      const proxy = services.buildServiceProxy(offer.methods, (m, args) =>
+        hostRequest({
+          type: 'call-editor-service',
+          name: offer.name,
+          version: offer.version,
+          method: m,
+          args
+        }).then(res => res.result)
+      );
+      method.call(mainModule, proxy);
+      consumed.push({ name: offer.name, version: offer.version });
+    }
+  }
+  return consumed;
+}
+
+function unregisterServicesFor(packageName) {
+  for (const [key, entry] of [...hostProvidedServices]) {
+    if (entry.packageName === packageName) hostProvidedServices.delete(key);
+  }
+}
 
 function post(msg) {
   if (process.parentPort && typeof process.parentPort.postMessage === 'function') {
@@ -134,18 +235,32 @@ function activatePackage({ name, root, configSnapshot, state }) {
     mainModule.activate(state);
   }
 
+  // Services are registered after activate(), matching the in-process order.
+  const provided = registerProvidedServices(packageName, metadata, mainModule);
+  const wiredServices = new Set();
+  const consumed = applyConsumedServices(
+    packageName,
+    metadata,
+    mainModule,
+    wiredServices
+  );
+
   activePackages.set(packageName, {
     root: registeredRoot,
     stub: control.stub,
     control,
-    module: mainModule
+    module: mainModule,
+    metadata,
+    wiredServices
   });
 
   return {
     name: packageName,
     activated: true,
     commands: control.commandNames(),
-    contributions: emitted
+    contributions: emitted,
+    providedServices: provided,
+    consumedServices: consumed
   };
 }
 
@@ -162,6 +277,7 @@ function deactivatePackage({ name }) {
       entry.module.deactivate();
     }
   } finally {
+    unregisterServicesFor(name);
     restrictedRequire.unregisterPackage(entry.root);
     restrictedRequire.purgeModuleCache(entry.root);
     activePackages.delete(name);
@@ -210,6 +326,75 @@ function onMessage(raw) {
           return;
         }
         respond(requestId, entry.control.dispatchCommand(msg.command, msg.detail));
+        return;
+      }
+
+      case 'host-response': {
+        const p = pendingHostRequests.get(msg.hostRequestId);
+        if (!p) return;
+        pendingHostRequests.delete(msg.hostRequestId);
+        if (msg.error) p.reject(new Error(msg.error.message || String(msg.error)));
+        else p.resolve(msg);
+        return;
+      }
+
+      case 'list-services':
+        respond(requestId, {
+          services: [...hostProvidedServices.values()].map(s => ({
+            name: s.name,
+            version: s.version,
+            packageName: s.packageName,
+            methods: s.methods
+          }))
+        });
+        return;
+
+      case 'call-service': {
+        // The editor calling a service a host package provides.
+        const entry = hostProvidedServices.get(
+          services.serviceKey(msg.name, msg.version)
+        );
+        if (!entry) {
+          respondError(
+            requestId,
+            new Error(`No such host service: ${msg.name}@${msg.version}`)
+          );
+          return;
+        }
+        const fn = entry.service && entry.service[msg.method];
+        if (typeof fn !== 'function') {
+          respondError(
+            requestId,
+            new Error(`Service ${msg.name}@${msg.version} has no method ${msg.method}`)
+          );
+          return;
+        }
+        Promise.resolve(fn.apply(entry.service, msg.args || []))
+          .then(result => respond(requestId, { result }))
+          .catch(err => respondError(requestId, err));
+        return;
+      }
+
+      case 'offer-editor-service': {
+        // The editor advertising one of its services to host packages.
+        const { name, version, methods } = msg;
+        if (!editorServices.has(name)) editorServices.set(name, []);
+        const offers = editorServices.get(name);
+        if (!offers.some(o => o.version === version)) {
+          offers.push({ name, version, methods: methods || [] });
+        }
+        // Late-arriving services still reach already-active consumers.
+        const wired = [];
+        for (const [packageName, entry] of activePackages) {
+          const consumed = applyConsumedServices(
+            packageName,
+            entry.metadata,
+            entry.module,
+            entry.wiredServices
+          );
+          if (consumed.length) wired.push({ packageName, consumed });
+        }
+        respond(requestId, { ok: true, wired });
         return;
       }
 

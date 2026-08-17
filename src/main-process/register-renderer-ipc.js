@@ -893,4 +893,15 @@ module.exports = function registerRendererIpc(atomApplication) {
       return packageHostManager.notifyConfigChanged(keyPath, value);
     }
   );
+
+  ipcMain.handle('chevron:package-host-list-services', async () => {
+    return packageHostManager.listHostServices();
+  });
+
+  ipcMain.handle(
+    'chevron:package-host-call-service',
+    async (_event, { name, version, method, args } = {}) => {
+      return packageHostManager.callHostService(name, version, method, args);
+    }
+  );
 };
