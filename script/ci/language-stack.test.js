@@ -192,4 +192,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-yaml` \| both/);
     assert.match(doc, /`source.yaml` \| JSON/);
   });
+
+  it('language-clojure 13c ships JSON TextMate fallback', () => {
+    assert.match(doc, /`language-clojure` \| both/);
+    assert.match(doc, /`source.clojure` \| JSON/);
+  });
 });

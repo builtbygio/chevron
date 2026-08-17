@@ -24,11 +24,11 @@ const CONVERTED = [
   'language-mustache',
   'language-sql',
   'language-toml',
-  'language-yaml'
+  'language-yaml',
+  'language-clojure'
 ];
 
 const STILL_CSON = [
-  'language-clojure',
   'language-coffee-script',
   'language-csharp',
   'language-git',
@@ -109,6 +109,37 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-clojure ships JSON TextMate grammar settings and snippets and no shipped CSON', () => {
+    const cson = shippedCson('language-clojure');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const grammar = path.join(
+      packageRoot('language-clojure'),
+      'grammars',
+      'clojure.json'
+    );
+    const settings = path.join(
+      packageRoot('language-clojure'),
+      'settings',
+      'language-clojure.json'
+    );
+    const snippets = path.join(
+      packageRoot('language-clojure'),
+      'snippets',
+      'language-clojure.json'
+    );
+    const ts = path.join(
+      packageRoot('language-clojure'),
+      'grammars',
+      'tree-sitter-clojure.json'
+    );
+    assert.ok(fs.existsSync(grammar), 'grammars/clojure.json');
+    assert.ok(fs.existsSync(settings), 'settings/language-clojure.json');
+    assert.ok(fs.existsSync(snippets), 'snippets/language-clojure.json');
+    assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-clojure.json');
+    const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
+    assert.strictEqual(parsed.scopeName, 'source.clojure');
   });
 
   it('language-yaml ships JSON TextMate grammar and settings and no shipped CSON', () => {
@@ -320,7 +351,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 11);
+    assert.strictEqual(STILL_CSON.length, 10);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
