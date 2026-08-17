@@ -232,4 +232,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-git` \| TextMate/);
     assert.match(doc, /`text.git-commit`, `source.git-config`, `text.git-rebase` \| JSON/);
   });
+
+  it('language-objective-c 13c ships JSON grammars', () => {
+    assert.match(doc, /`language-objective-c` \| TextMate/);
+    assert.match(doc, /`source.objc`, `source.objcpp`, `source.strings` \| JSON/);
+  });
 });

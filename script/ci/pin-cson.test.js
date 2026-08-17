@@ -32,11 +32,11 @@ const CONVERTED = [
   'language-property-list',
   'language-xml',
   'language-csharp',
-  'language-git'
+  'language-git',
+  'language-objective-c'
 ];
 
 const STILL_CSON = [
-  'language-objective-c',
   'language-ruby-on-rails',
   'language-sass'
 ];
@@ -109,6 +109,20 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-objective-c ships JSON grammars settings and snippets and no shipped CSON', () => {
+    const cson = shippedCson('language-objective-c');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const objc = path.join(packageRoot('language-objective-c'), 'grammars', 'objective-c.json');
+    const objcpp = path.join(packageRoot('language-objective-c'), 'grammars', 'objective-c++.json');
+    const strings = path.join(packageRoot('language-objective-c'), 'grammars', 'strings file.json');
+    assert.ok(fs.existsSync(objc), 'grammars/objective-c.json');
+    assert.ok(fs.existsSync(objcpp), 'grammars/objective-c++.json');
+    assert.ok(fs.existsSync(strings), 'grammars/strings file.json');
+    assert.strictEqual(JSON.parse(fs.readFileSync(objc, 'utf8')).scopeName, 'source.objc');
+    assert.strictEqual(JSON.parse(fs.readFileSync(objcpp, 'utf8')).scopeName, 'source.objcpp');
+    assert.strictEqual(JSON.parse(fs.readFileSync(strings, 'utf8')).scopeName, 'source.strings');
   });
 
   it('language-git ships JSON grammars settings and snippets and no shipped CSON', () => {
@@ -570,7 +584,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 3);
+    assert.strictEqual(STILL_CSON.length, 2);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
