@@ -187,4 +187,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-toml` \| both/);
     assert.match(doc, /`source.toml` \| JSON/);
   });
+
+  it('language-yaml 13c ships JSON TextMate fallback', () => {
+    assert.match(doc, /`language-yaml` \| both/);
+    assert.match(doc, /`source.yaml` \| JSON/);
+  });
 });
