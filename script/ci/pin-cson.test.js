@@ -30,11 +30,11 @@ const CONVERTED = [
   'language-perl',
   'language-php',
   'language-property-list',
-  'language-xml'
+  'language-xml',
+  'language-csharp'
 ];
 
 const STILL_CSON = [
-  'language-csharp',
   'language-git',
   'language-objective-c',
   'language-ruby-on-rails',
@@ -109,6 +109,22 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-csharp ships JSON TextMate grammars settings and snippets and no shipped CSON', () => {
+    const cson = shippedCson('language-csharp');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const csharp = path.join(packageRoot('language-csharp'), 'grammars', 'csharp.json');
+    const csx = path.join(packageRoot('language-csharp'), 'grammars', 'csx.json');
+    const cake = path.join(packageRoot('language-csharp'), 'grammars', 'cake.json');
+    const ts = path.join(packageRoot('language-csharp'), 'grammars', 'tree-sitter-c-sharp.json');
+    assert.ok(fs.existsSync(csharp), 'grammars/csharp.json');
+    assert.ok(fs.existsSync(csx), 'grammars/csx.json');
+    assert.ok(fs.existsSync(cake), 'grammars/cake.json');
+    assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-c-sharp.json');
+    assert.strictEqual(JSON.parse(fs.readFileSync(csharp, 'utf8')).scopeName, 'source.cs');
+    assert.strictEqual(JSON.parse(fs.readFileSync(csx, 'utf8')).scopeName, 'source.csx');
+    assert.strictEqual(JSON.parse(fs.readFileSync(cake, 'utf8')).scopeName, 'source.cake');
   });
 
   it('language-xml ships JSON TextMate grammars settings and snippets and no shipped CSON', () => {
@@ -540,7 +556,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 5);
+    assert.strictEqual(STILL_CSON.length, 4);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
