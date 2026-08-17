@@ -918,10 +918,10 @@ class AtomEnvironment {
         );
         await this.displayWindow();
       }
-      this.commandInstaller.installAtomCommand(false, error => {
+      this.commandInstaller.installChevronCommand(false, error => {
         if (error) console.warn(error.message);
       });
-      this.commandInstaller.installApmCommand(false, error => {
+      this.commandInstaller.installCpmCommand(false, error => {
         if (error) console.warn(error.message);
       });
 

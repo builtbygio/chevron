@@ -29,24 +29,19 @@ module.exports = class CommandInstaller {
       );
     };
 
-    // Primary: chevron; compatibility: atom + apm; package manager: cpm (+ apm shim).
+    // Chevron-only: `chevron` and `cpm`. The `atom` / `apm` command shims were
+    // removed in H3 PR 23 (docs/chevron-architecture-modernization.md).
     this.installChevronCommand(true, (error, chevronCommandName) => {
       if (error) return showErrorDialog(error);
-      this.installAtomCommand(true, (error, atomCommandName) => {
+      this.installCpmCommand(true, (error, cpmCommandName) => {
         if (error) return showErrorDialog(error);
-        this.installCpmCommand(true, (error, cpmCommandName) => {
-          if (error) return showErrorDialog(error);
-          this.installApmCommand(true, (error, apmCommandName) => {
-            if (error) return showErrorDialog(error);
-            this.applicationDelegate.confirm(
-              {
-                message: 'Commands installed.',
-                detail: `The shell commands \`${chevronCommandName}\`, \`${atomCommandName}\`, \`${cpmCommandName}\`, and \`${apmCommandName}\` are installed.`
-              },
-              () => {}
-            );
-          });
-        });
+        this.applicationDelegate.confirm(
+          {
+            message: 'Commands installed.',
+            detail: `The shell commands \`${chevronCommandName}\` and \`${cpmCommandName}\` are installed.`
+          },
+          () => {}
+        );
       });
     });
   }
@@ -74,16 +69,6 @@ module.exports = class CommandInstaller {
     );
   }
 
-  installAtomCommand(askForPrivilege, callback) {
-    // Compatibility shim: same launcher, Atom-era command name.
-    this.installCommand(
-      path.join(this.getResourcesDirectory(), 'app', 'atom.sh'),
-      this.getCommandNameForChannel('atom'),
-      askForPrivilege,
-      callback
-    );
-  }
-
   installCpmCommand(askForPrivilege, callback) {
     const cpmBin = path.join(
       this.getResourcesDirectory(),
@@ -98,28 +83,6 @@ module.exports = class CommandInstaller {
     this.installCommand(
       cpmBin,
       this.getCommandNameForChannel('cpm'),
-      askForPrivilege,
-      callback
-    );
-  }
-
-  installApmCommand(askForPrivilege, callback) {
-    // Phase 4: apm is always the cpm compatibility shim.
-    const cpmApm = path.join(
-      this.getResourcesDirectory(),
-      'app',
-      'cpm',
-      'bin',
-      'apm'
-    );
-    if (!fs.isFileSync(cpmApm)) {
-      return callback(
-        new Error('cpm apm shim missing from app resources (Phase 4)')
-      );
-    }
-    this.installCommand(
-      cpmApm,
-      this.getCommandNameForChannel('apm'),
       askForPrivilege,
       callback
     );
