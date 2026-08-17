@@ -201,6 +201,7 @@ jobs:
           node --test script/ci/package-host-activate.test.js
           node --test script/ci/package-host-services.test.js
           node --test script/ci/package-host-eligibility.test.js
+          node --test script/ci/owned-require-chevron.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64
