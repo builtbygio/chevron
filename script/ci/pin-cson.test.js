@@ -18,7 +18,8 @@ const CONVERTED = [
   'language-hyperlink',
   'language-text',
   'language-todo',
-  'language-gfm'
+  'language-gfm',
+  'language-less'
 ];
 
 const STILL_CSON = [
@@ -26,7 +27,6 @@ const STILL_CSON = [
   'language-coffee-script',
   'language-csharp',
   'language-git',
-  'language-less',
   'language-make',
   'language-mustache',
   'language-objective-c',
@@ -111,6 +111,31 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.strictEqual(parsed.scopeName, 'text.plain');
   });
 
+  it('language-less ships JSON TextMate grammar and settings and no shipped CSON', () => {
+    const cson = shippedCson('language-less');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const grammar = path.join(
+      packageRoot('language-less'),
+      'grammars',
+      'less.json'
+    );
+    const settings = path.join(
+      packageRoot('language-less'),
+      'settings',
+      'language-less.json'
+    );
+    const ts = path.join(
+      packageRoot('language-less'),
+      'grammars',
+      'tree-sitter-less.json'
+    );
+    assert.ok(fs.existsSync(grammar), 'grammars/less.json');
+    assert.ok(fs.existsSync(settings), 'settings/language-less.json');
+    assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-less.json');
+    const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
+    assert.strictEqual(parsed.scopeName, 'source.css.less');
+  });
+
   it('language-gfm ships JSON settings and snippets and no shipped CSON', () => {
     const cson = shippedCson('language-gfm');
     assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
@@ -180,7 +205,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 17);
+    assert.strictEqual(STILL_CSON.length, 16);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(

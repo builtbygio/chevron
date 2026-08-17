@@ -158,7 +158,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Primary next tracks
 
 1. **Dogfood week (#106)** — Days 1–3 done. Day 2 OK. Day 3 markdown-preview close hid panes; Day 6 Welcome installer/theme picker dead; crash dialog said Atom. Days 4–7 still open. Smoke is not dogfood.  
-2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1–H2 through PR 17 + 14/14a landed. Next 13c is `language-less`. `Workspace.replace` still uses `Task`. Do **not** delete `Task` / `season` / `document-register-element` / first-mate. **Q1 is 8B.** Keep the inbox; skip Epic 18 / PR 19. `github` 0.37.9: React 18.3; graphql-client; GitHub App device-flow login (set `github.oauthClientId`); classic PAT fallback. Register the App once (`docs/github-app.md` in the package).  
+2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1–H2 through PR 17 + 14/14a landed. Next 13c is `language-make`. `Workspace.replace` still uses `Task`. Do **not** delete `Task` / `season` / `document-register-element` / first-mate. **Q1 is 8B.** Keep the inbox; skip Epic 18 / PR 19. `github` 0.37.9: React 18.3; graphql-client; GitHub App device-flow login (set `github.oauthClientId`); classic PAT fallback. Register the App once (`docs/github-app.md` in the package).  
 
 3. **#57 / #127** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
 4. **#79 done** — all bundled `language-*` are `builtbygio` pins. No `atom/*` app git pins.
