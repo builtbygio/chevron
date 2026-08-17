@@ -177,4 +177,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-mustache` \| TextMate/);
     assert.match(doc, /`text.html.mustache`, `source.sql.mustache` \| JSON/);
   });
+
+  it('language-sql 13c ships JSON TextMate fallback', () => {
+    assert.match(doc, /`language-sql` \| both/);
+    assert.match(doc, /`source.sql` \| JSON/);
+  });
 });
