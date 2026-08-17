@@ -227,4 +227,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-csharp` \| both/);
     assert.match(doc, /`source.cs`, `source.csx`, `source.cake` \| JSON/);
   });
+
+  it('language-git 13c ships JSON grammars', () => {
+    assert.match(doc, /`language-git` \| TextMate/);
+    assert.match(doc, /`text.git-commit`, `source.git-config`, `text.git-rebase` \| JSON/);
+  });
 });
