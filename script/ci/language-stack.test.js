@@ -162,4 +162,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-gfm` \| TextMate/);
     assert.match(doc, /`source.gfm` \| JSON/);
   });
+
+  it('language-less 13c ships JSON TextMate fallback', () => {
+    assert.match(doc, /`language-less` \| both/);
+    assert.match(doc, /`source.css.less` \| JSON/);
+  });
 });

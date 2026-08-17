@@ -1,6 +1,6 @@
 # Language stack — tree-sitter coverage and TextMate exception list
 
-**Status:** H2 PR 13 catalog + PR 13b stream. First tranche done; later tranche done (less, scss, perl, clojure, csharp). PR 13c: `language-source`, `language-hyperlink`, `language-text`, `language-todo`, `language-gfm`. This is the exception list, not a promise that first-mate dies.  
+**Status:** H2 PR 13 catalog + PR 13b stream. First tranche done; later tranche done (less, scss, perl, clojure, csharp). PR 13c: `language-source`, `language-hyperlink`, `language-text`, `language-todo`, `language-gfm`, `language-less`. This is the exception list, not a promise that first-mate dies.  
 **Owner:** `builtbygio`  
 **Code:** `src/grammar-registry.js` (`getParserKindCounts()`). Runtime: official `tree-sitter@0.25.1` + first-mate / oniguruma.
 
@@ -46,7 +46,7 @@ A package is **both** when it ships at least one `type: tree-sitter` grammar *an
 | `language-php` | both | `tree-sitter-php` (`text.html.php`) + `tree-sitter-php/php_only` (`source.php`) | `text.html.php`, `source.php` | JSON + CSON fallback | **ported** (13b) |
 | `language-toml` | both | `@tree-sitter-grammars/tree-sitter-toml` | `source.toml` | JSON + CSON fallback | **ported** (13b) |
 | `language-sql` | both | `@derekstride/tree-sitter-sql` | `source.sql` | JSON + CSON fallback | **ported** (13b) |
-| `language-less` | both | `tree-sitter-less` (`mdovale/tree-sitter-less`) | `source.css.less` | JSON + CSON fallback | **ported** (13b) |
+| `language-less` | both | `tree-sitter-less` (`mdovale/tree-sitter-less`) | `source.css.less` | JSON | **ported** (13b) |
 | `language-sass` | both | `tree-sitter-scss` (`source.css.scss`). TM-only siblings: `source.sass`, `source.sassdoc` | `source.css.scss`, `source.sass`, `source.sassdoc` | JSON + CSON fallback | **ported** (13b) |
 | `language-perl` | both | `tree-sitter-perl` (`source.perl`). TM-only sibling: `source.perl6` | `source.perl`, `source.perl6` | JSON + CSON fallback | **ported** (13b) |
 | `language-clojure` | both | `tree-sitter-clojure-orchard` (`source.clojure`) | `source.clojure` | JSON + CSON fallback | **ported** (13b) |
@@ -105,9 +105,9 @@ Not a programming-language port, or nobody will staff one. Revisit only if an ow
 
 Convert shipped `grammars/` / `settings/` / `snippets/` CSON to JSON. Delete the `.cson`. Runtime already loads both extensions. **`season` stays** until this list is empty (or pack-time transpile + a documented dev-only reader). Do not convert `spec/**/*.cson`.
 
-**Done:** `language-source` (settings JSON), `language-hyperlink` (grammar JSON), `language-text` (grammar + snippets JSON), `language-todo` (grammar + snippets JSON), `language-gfm` (settings + snippets JSON).
+**Done:** `language-source` (settings JSON), `language-hyperlink` (grammar JSON), `language-text` (grammar + snippets JSON), `language-todo` (grammar + snippets JSON), `language-gfm` (settings + snippets JSON), `language-less` (TM grammar + settings JSON).
 
-**Remaining** (17 pins, 61 files; next is `language-less`):
+**Remaining** (16 pins, 59 files; next is `language-make`):
 
 | Pin | `.cson` files |
 |-----|--------------:|
@@ -115,7 +115,7 @@ Convert shipped `grammars/` / `settings/` / `snippets/` CSON to JSON. Delete the
 | `language-csharp`, `language-git`, `language-objective-c`, `language-sass` | 5 each |
 | `language-coffee-script`, `language-perl`, `language-php`, `language-property-list`, `language-xml` | 4 each |
 | `language-clojure` | 3 |
-| `language-less`, `language-make`, `language-mustache`, `language-sql`, `language-toml`, `language-yaml` | 2 each |
+| `language-make`, `language-mustache`, `language-sql`, `language-toml`, `language-yaml` | 2 each |
 
 Already JSON (no 13c work): `language-c`, `language-css`, `language-go`, `language-html`, `language-java`, `language-javascript`, `language-json`, `language-python`, `language-ruby`, `language-rust-bundled`, `language-shellscript`, `language-typescript`.
 
