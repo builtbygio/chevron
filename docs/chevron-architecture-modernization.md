@@ -1245,9 +1245,22 @@ Not one PR. Implements `docs/security-phase-s-package-host.md`. **Owner sign-off
 #### PR 22 — Remove first-mate/oniguruma **if** exception list is empty
 
 - **Title:** `grammars: drop TextMate engine from the product`
+- **Status:** **not applicable (owner decision 2026-08-17).** The gate is not met and is not expected to be met. first-mate + oniguruma **stay**, wrapped and lazy-loaded (PR 14).
 - **Files:** `first-mate` / `oniguruma` deps, `src/text-mate-language-mode.js`, `src/first-mate-helpers.js`, `src/preload-natives.js`, snapshot
 - **Depends on:** PR 13 + PR 13b stream actually emptied the list (or owner accepted dropping remaining TextMate-only langs)
 - **Description:** Optional. If the exception list still has owners, **keep the wrap.** This plan does not imply first-mate dies.
+
+**Why the gate will not be met.** The 13b port stream is finished — there are no remaining portable languages queued. What is left is the 12-row keep-TextMate list in [language-stack.md](./language-stack.md) §3, every row owned by `builtbygio`. Three of those are not "a language nobody ported", they are structural:
+
+| Package | Why it cannot be ported away |
+|---------|------------------------------|
+| `language-hyperlink` | Injection grammar (`text.hyperlink`); snippets, gfm and comment scopes depend on it |
+| `language-todo` | Injection grammar (`text.todo`); load-bearing for TODO/FIXME scopes |
+| `language-text` | Plain text — the fallback, not a grammar anyone writes a tree-sitter parser for |
+
+`language-source` ships settings and no grammar at all. The rest (`git`, `property-list`, `mustache`, `ruby-on-rails`, `make`, `objective-c`, `gfm`, `coffee-script`) are buffer types and dialect overlays, not language engines.
+
+So TextMate is a **permanent supported fallback**, exactly as G4 and D4 already say. Treat this PR as closed, not pending. Reopen only if an owner accepts dropping those languages outright — a user-visible regression covering plain text, TODO scopes and hyperlink injection, not a cleanup.
 
 #### PR 23 — Hard-delete Atom name shims
 

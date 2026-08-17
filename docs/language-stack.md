@@ -84,6 +84,10 @@ No remaining later-tranche ports. What is left is the keep-TextMate list.
 
 Not a programming-language port, or nobody will staff one. Revisit only if an owner says so.
 
+> **Owner decision 2026-08-17: this list is stable, and H3 PR 22 is not applicable.** first-mate + oniguruma stay in the product, wrapped behind `GrammarRegistry` and lazy-loaded (PR 14) so a tree-sitter-only session never boots the NAN addon. TextMate is a **permanent supported fallback**, not a shame state — G4/D4 already say so.
+>
+> The 13b port stream is finished; nothing portable is queued. `language-hyperlink` and `language-todo` are **injection** grammars other packages' scopes depend on, `language-text` is plain text, and `language-source` has no grammar — none of these have a tree-sitter equivalent to port to. Deleting first-mate would regress plain-text highlighting, TODO/FIXME scopes and hyperlink injection.
+
 | Package | Owner | Why keep |
 |---------|-------|----------|
 | `language-coffee-script` | builtbygio | Architecture: exception until someone cares. **13c:** grammars + settings + snippets JSON. |
@@ -113,7 +117,7 @@ Already JSON (no 13c work): `language-c`, `language-css`, `language-go`, `langua
 
 ## 4. What this document is not
 
-- **Not** a delete plan for first-mate or oniguruma. H2 PR 14 lazy-loads them. H3 PR 22 deletes them **only if** this exception list is empty (or the owner accepts dropping the remaining TextMate-only langs).
+- **Not** a delete plan for first-mate or oniguruma. H2 PR 14 lazy-loads them. H3 PR 22 deletes them **only if** this exception list is empty (or the owner accepts dropping the remaining TextMate-only langs) — **owner decided 2026-08-17 that it is not, and PR 22 is closed as not applicable.**
 - **Not** PR 13b. Do not add `tree-sitter-*` to a pin in this PR.
 - **Not** a `season` delete. 13c converts pins; PR 5b drops season only after the remaining list is empty.
 - **Not** an LSP list. Semantics stay in `src/lsp/` (utilityProcess). ctags / `symbols-view` stay the no-server fallback.
