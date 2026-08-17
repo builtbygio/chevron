@@ -104,6 +104,12 @@ function ensureHost() {
         return;
       }
 
+      // Reverse RPC: a host package calling an editor-side service (21.3).
+      if (msg.type === 'host-request') {
+        handleHostRequest(msg);
+        return;
+      }
+
       if (msg.type === 'response' && msg.requestId != null) {
         const p = pending.get(msg.requestId);
         if (!p) return;
@@ -178,6 +184,79 @@ async function ping() {
 async function describe() {
   const msg = await hostRequest({ type: 'describe' }, 5000);
   return msg.host;
+}
+
+// --- editor-side services offered to host packages (21.3) -----------------
+/** "name@version" -> { name, version, methods, handler } */
+const editorServices = new Map();
+
+function serviceKey(name, version) {
+  return `${name}@${version}`;
+}
+
+/**
+ * Publish an editor-owned service to host packages.
+ *
+ * `handler(method, args)` performs the real call. The host receives only the
+ * method-name list and turns calls back into RPC, so no live object crosses
+ * the boundary.
+ */
+async function offerEditorService({ name, version, methods, handler }) {
+  if (!name || !version) throw new Error('offerEditorService requires name and version');
+  editorServices.set(serviceKey(name, version), {
+    name,
+    version,
+    methods: methods || [],
+    handler
+  });
+  if (!isRunning()) return { ok: true, deferred: true };
+  const msg = await hostRequest(
+    { type: 'offer-editor-service', name, version, methods: methods || [] },
+    15000
+  );
+  return { ok: true, wired: msg.wired || [] };
+}
+
+function revokeEditorService(name, version) {
+  return editorServices.delete(serviceKey(name, version));
+}
+
+function handleHostRequest(msg) {
+  const reply = payload =>
+    postToHost(Object.assign({ type: 'host-response', hostRequestId: msg.hostRequestId }, payload));
+
+  if (msg.type !== 'host-request') return;
+
+  if (msg.subtype === 'call-editor-service' || msg.method != null) {
+    const entry = editorServices.get(serviceKey(msg.name, msg.version));
+    if (!entry || typeof entry.handler !== 'function') {
+      reply({ error: { message: `No such editor service: ${msg.name}@${msg.version}` } });
+      return;
+    }
+    Promise.resolve()
+      .then(() => entry.handler(msg.method, msg.args || []))
+      .then(result => reply({ result }))
+      .catch(err => reply({ error: { message: err && err.message ? err.message : String(err) } }));
+    return;
+  }
+
+  reply({ error: { message: `Unhandled host request: ${msg.type}` } });
+}
+
+/** Services provided by packages running inside the host. */
+async function listHostServices() {
+  if (!isRunning()) return [];
+  const msg = await hostRequest({ type: 'list-services' }, 5000);
+  return msg.services || [];
+}
+
+/** Call a service a host package provides. */
+async function callHostService(name, version, method, args) {
+  const msg = await hostRequest(
+    { type: 'call-service', name, version, method, args: args || [] },
+    15000
+  );
+  return msg.result;
 }
 
 /**
@@ -259,6 +338,10 @@ module.exports = {
   describe,
   activatePackage,
   deactivatePackage,
+  offerEditorService,
+  revokeEditorService,
+  listHostServices,
+  callHostService,
   listPackages,
   dispatchCommand,
   notifyConfigChanged,
