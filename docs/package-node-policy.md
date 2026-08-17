@@ -26,7 +26,7 @@ That is **not** a promise that packages get unrestricted Node forever.
 |------|-----|----------------------|
 | **T0 Core** | Editor preload + `src/` | Allowed; new privileged ops should use main IPC |
 | **T1 Bundled** | Ship-in packages (github, tree-view, …) | Prefer `chevron.*` / applicationDelegate IPC; no new `electron.remote` |
-| **T2 Community** | User-installed packages | **No guaranteed Node** long-term; published editor APIs only. Catalog is **owned-only** until package host v2 |
+| **T2 Community** | User-installed packages | **No guaranteed Node** long-term; published editor APIs only. Catalog is **owned-only** until package host v2. The host is where T2 runs — not a store ([package host design](./security-phase-s-package-host.md)) |
 
 Today (0.6.x): T1/T2 still share the **preload Node world** for compatibility. Community (T2) privileged requires and **native addon** loads are **blocked by default**. Phase S Option C keeps editor Chromium `sandbox` false; isolation is utilityProcess + restrict, not a full guest sandbox.
 
@@ -48,6 +48,36 @@ Today (0.6.x): T1/T2 still share the **preload Node world** for compatibility. C
 - Use the editor preload as a webview preload or enable Node for guest content
 - Assume `~/.atom` is the config or package home
 - Add new `Task` callers or treat `require('atom')` as a supported API
+
+## Writing a host-eligible package (T2 authors)
+
+Package host v2 (Epic 21) runs **logic-only** community packages in a restricted `utilityProcess` instead of the editor preload. It is built and gated behind `core.packageHostV2`, **default off**; nothing is routed there yet.
+
+"T2 is the host" is the direction of travel. It is **not** "install anything from Pulsar" — the catalog stays owned-only ([package-ecosystem-strategy.md](./package-ecosystem-strategy.md)). The host is the isolation model that has to exist *before* community install can reopen.
+
+**Your package can run in the host if it:**
+
+- uses only `chevron.*` APIs — config, commands (selector-string targets), notifications, `workspace.open` by URI
+- provides/consumes services through `providedServices` / `consumedServices`
+- never touches `document`, `window`, `createElement`, `customElements`, etch, React, `add*Panel`, or the view registry
+- never requires privileged Node, native addons, or `.node` bindings
+
+**It cannot if it builds UI.** That is fine and supported — DOM packages keep activating in the editor preload under the v1 require policy. Hybrid is the design, not a transition state.
+
+**Declaring intent.** `chevronPackageHost` in `package.json` overrides the heuristics in both directions:
+
+```json
+{ "chevronPackageHost": "eligible" }
+```
+
+```json
+{ "chevronPackageHost": "editor" }
+```
+
+**Two behaviour differences to design for:**
+
+- `chevron.config.get()` inside the host reads a **snapshot** taken at activate time, refreshed as the editor pushes changes. It is not a live read of the editor's config.
+- Privileged requires throw **unconditionally** in the host. The `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` escape applies only to the in-process policy, which guards an already-privileged process.
 
 ## Auditing / restricting privileged requires (developers)
 
@@ -114,4 +144,5 @@ See `GROK.md` § Owned package CI.
 - Packages use Chevron services and main IPC only
 - Guest content never has Node
 - Community cannot load natives or privileged Node (S1 — default on)
+- Logic-only community packages activate in the **package host**, not the editor preload; UI packages stay in-process under the v1 policy (Epic 21)
 - Editor Chromium `sandbox` stays **false** under Phase S **Option C** until a later host/natives design says otherwise ([security-phase-s-decision.md](./security-phase-s-decision.md))
