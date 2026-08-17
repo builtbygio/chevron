@@ -683,7 +683,7 @@ That set survives every pillar above.
 | D11 | **`remote-compat` shrinks one slice at a time. New IPC is `invoke` on allowlisted channels.** S4 H1 is inventory + one slice (not FS, not workers). | S4 was deferred from Phase S; it is now a modernization item, not a security gate. `docs/remote-ipc-inventory.md` §11 is the row list. |
 | D12 | **Q1 is 8B.** Inbox is load-bearing. Do **not** start Epic 18 / PR 19. Path is upgrade React + GraphQL client in the existing `github` package; keep dugite + utilityProcess. Long-term login: Chevron GitHub App (user-to-server), not `github.atom.io` and not “paste a classic PAT” as the product UX. | React 16 + Relay 5 is still the largest leftover app architecture. One master PR still cannot rewrite that package. |
 | D13 | **Tests: `node:test` + smoke is the architecture. Jasmine/Mocha-in-Electron is a compatibility harness.** | #127 repaired the runner; that is not a reason to make it the design. |
-| D14 | **Package host v2 stays H3, and is an epic** implementing the already-written host design in several PRs after owner sign-off. | Already locked (`docs/package-ecosystem-strategy.md`). Do not count “host v2 spine” as one mergeable PR. |
+| D14 | **Package host v2 stays H3, and is an epic** implementing the already-written host design in several PRs after owner sign-off. Sign-off given 2026-08-17; 21.1–21.5 built. The mechanism ships **off** — routing packages to the host is a later PR. | Already locked (`docs/package-ecosystem-strategy.md`). Do not count “host v2 spine” as one mergeable PR. |
 | D15 | **Implementation is PR-sized on `master`. No force-push. No rewrite branch.** Epics are labeled as streams. Independently mergeable PRs are the H1 singles plus each epic slice. | Owner constraint. Do not claim a 24-PR count where two items are rewrites. |
 
 ---
@@ -1228,18 +1228,19 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 
 #### Epic 21 — Package host v2 (implements existing design)
 
-Not one PR. Implement `docs/security-phase-s-package-host.md` after owner sign-off that base Chevron is ready. Suggested slices:
+Not one PR. Implements `docs/security-phase-s-package-host.md`. **Owner sign-off given 2026-08-17**; slices 21.1–21.5 built as a stack. Slices:
 
-| Slice | Outcome |
-|-------|---------|
-| 21.1 | `package-host-manager.js` + utilityProcess bootstrap, no package load |
-| 21.2 | Activate one logic-only fixture package via stub `chevron.*` proxy |
-| 21.3 | Services (`provide`/`consume`) across the process boundary |
-| 21.4 | Hybrid: UI packages stay in-process under v1 restrict |
-| 21.5 | Docs + cpm messaging that T2 is the host, not “install from Pulsar” |
+| Slice | Outcome | Status |
+|-------|---------|--------|
+| 21.1 | `package-host-manager.js` + utilityProcess bootstrap, no package load | **landed** |
+| 21.2 | Activate one logic-only fixture package via stub `chevron.*` proxy | **landed** |
+| 21.3 | Services (`provide`/`consume`) across the process boundary | **landed** |
+| 21.4 | Hybrid: UI packages stay in-process under v1 restrict | **landed** |
+| 21.5 | Docs + cpm messaging that T2 is the host, not “install from Pulsar” | **this change** |
 
 - **Depends on:** owner sign-off; H1 complete
 - **Description:** Chevron API proxy, not Atom dual-support. Do not count “host v2 spine” as an independently mergeable PR.
+- **Not done:** the editor-side `PackageManager` call site is **not** switched — nothing routes to the host at runtime. Gated by `core.packageHostV2` (default `false`). Turning routing on is a separate PR plus a dogfood window.
 
 #### PR 22 — Remove first-mate/oniguruma **if** exception list is empty
 
@@ -1276,7 +1277,7 @@ Not one PR. Implement `docs/security-phase-s-package-host.md` after owner sign-o
 - Avalonia / Rust rewrite
 - Mass `atom-*` custom-element rename (late branding, after PR 7b)
 - Mass `AtomEnvironment` class rename
-- Host v2 before owner sign-off
+- Host v2 before owner sign-off (**given 2026-08-17**; Epic 21 slices 21.1–21.5 built, routing still off)
 - Custom snapshot Darwin bisection (**Q2: do not staff**)
 - AI integration (`docs/ai-design.md` stays a separate design)
 - Deleting `Task`, `season`, or `document-register-element` in H1

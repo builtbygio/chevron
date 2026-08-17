@@ -1,6 +1,6 @@
 # Phase S1.2 — Package host design
 
-**Status:** design locked for implementation sequencing (audit P2 / Phase S)  
+**Status:** design locked; **host v2 slices 21.1–21.4 implemented** (see "Implementation status")  
 **Parent:** [security-phase-s.md](./security-phase-s.md)  
 **Related:** [package-node-policy.md](./package-node-policy.md), [security-threat-model.md](./security-threat-model.md)
 
@@ -12,7 +12,7 @@
 | Product timing | **Deferred:** closed **owned catalog only** until base Chevron is ready; then host v2 for sandboxed community — [package-ecosystem-strategy.md](./package-ecosystem-strategy.md) |
 | Editor Chromium `sandbox: true` | **Not** the near-term goal; likely **Option C** (sandbox stays false for editor hot-path natives) unless Option A spike succeeds |
 | Host model v1 (now) | **In-process policy** — `package-require-audit` (privileged + native + `.node` block, default on) |
-| Host model v2 (target) | **Restricted package host** process or utility for T2 activation (VS Code “extension host” intuition) |
+| Host model v2 (target) | **Restricted package host** utilityProcess for T2 activation (VS Code “extension host” intuition). **Built** — see "Implementation status" |
 | T1 bundled packages | Stay in editor preload until individually migrated; owned forks only |
 
 This note is the **S1.2 deliverable**. Host v2 implementation is **deferred** until base Chevron is ready ([package-ecosystem-strategy.md](./package-ecosystem-strategy.md)); product uses **owned catalog only** until then.
@@ -93,9 +93,43 @@ Preferred Electron primitive: **`utilityProcess`** (Node, no DOM) for package ho
 
 **Recommended first slice:** **(B) Hybrid** — host runs non-UI packages and “logic-only” services; UI packages remain v1 + require restrict. Document which `package.json` activations need DOM.
 
+### Implementation status (Epic 21)
+
+Landed behind `core.packageHostV2` / `CHEVRON_PACKAGE_HOST_V2`, **default off**.
+
+| Slice | What exists | Where |
+|-------|-------------|-------|
+| 21.1 | Supervised `chevron-package-host` utilityProcess: boot handshake, `requestId` correlation, exit broadcast, subscriber fan-out | `src/main-process/package-host-manager.js`, `workers/package-host.js` |
+| 21.2 | Activation of logic-only packages behind a restricted loader + stub `chevron` proxy | `workers/package-host-require.js`, `workers/package-host-stub.js` |
+| 21.3 | `providedServices` / `consumedServices` across the boundary as descriptors + RPC proxies, both directions | `workers/package-host-services.js` |
+| 21.4 | Hybrid routing: which packages may run in the host | `src/package-host-eligibility.js` |
+| 21.5 | This documentation pass + author guidance | docs |
+
+**Not yet done.** The editor-side `PackageManager` call site is *not* switched — nothing is routed to the host at runtime yet. That is a behaviour change wanting its own review and a dogfood window. Everything above is the mechanism plus its gate.
+
+Two properties the tests pin down, because they are the ones that would rot quietly:
+
+- The host has **no DOM** (`hasDocument` / `hasWindow` are false). Hybrid routing depends on it.
+- The restricted loader is installed **before** activation is even defined, so package code cannot load ahead of the sandbox.
+
+#### Require policy in the host vs in-process
+
+The in-process v1 policy can be disabled (`CHEVRON_RESTRICT_PACKAGE_REQUIRES=0`) because it guards a process that is privileged anyway. Inside the host the block is **unconditional** — the host exists precisely so T2 code cannot reach privileged Node, so there is no escape hatch.
+
+#### Which packages are host-eligible
+
+`src/package-host-eligibility.js`, in precedence order:
+
+1. `package.json` `chevronPackageHost: "eligible" | "editor"` — explicit author intent wins both ways.
+2. Community (T2) only. Core and bundled stay in-process, per "T1 bundled packages stay in editor preload until individually migrated".
+3. Any DOM signal in the package's own sources — `document`, `window`, `createElement`, `customElements`, etch, React, `add*Panel`, view registry — keeps it in-process.
+4. A privileged require keeps it in-process. The host would refuse it, and routing there would convert a policy error into an activation failure.
+
+Detection is deliberately conservative. A false "needs DOM" costs nothing — the package keeps working exactly as it does today. A false "host-eligible" blanks a UI at activation.
+
 ### `atom.*` proxy surface (minimum for host packages)
 
-Must be RPC-friendly (structured clone / JSON):
+Must be RPC-friendly (structured clone / JSON). Implemented surface is in `workers/package-host-stub.js`:
 
 | API area | Proxy notes |
 |----------|-------------|
@@ -137,7 +171,12 @@ Unless Option A proves buffer-class natives over IPC, **ship Option C permanentl
 
 - Policy: `script/ci/package-require-audit.test.js` + Jasmine specs.  
 - Dogfood: community packages that only use Atom APIs under default restrict.  
-- Host v2: separate acceptance checklist when spike lands.
+- Host v2 (Epic 21), all on bare Node via `node --test`:
+  - `script/ci/package-host-bootstrap.test.js` — process lifecycle, DOM-free sandbox, loader-before-activation
+  - `script/ci/package-host-activate.test.js` — activation, stub proxy, refused privileged require
+  - `script/ci/package-host-services.test.js` — services both directions, late offers, range matching
+  - `script/ci/package-host-eligibility.test.js` — hybrid routing decisions
+- Still owed before routing is switched on: a dogfood window with a real community package, and an acceptance pass on activation ordering against the in-process path.
 
 ## Related issues
 

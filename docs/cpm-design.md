@@ -85,6 +85,8 @@ Locked product policy ([REBRANDING.md](./REBRANDING.md), [chevron-architecture-m
 
 **Chevron after Phases 0–4:** A is **host npm** at bootstrap. B–F are **cpm** (Electron-as-Node), with Pulsar registry for D and **`apm` as a name shim** for E/F muscle memory.
 
+> **The Pulsar registry is a client implementation, not a product store.** cpm can resolve a name against it; that is not a promise that community install is open. The catalog stays **owned-only** until package host v2 ships as the T2 isolation model ([package-ecosystem-strategy.md](./package-ecosystem-strategy.md), [package host design](./security-phase-s-package-host.md)). When T2 reopens, community packages run **in the host** — that is what makes reopening defensible, not a registry URL. Do not write product copy that implies a store.
+
 ### 3.2 Pulsar — `ppm`
 
 **Model:** **Maintained fork of apm** ([pulsar-edit/ppm](https://github.com/pulsar-edit/ppm)).
