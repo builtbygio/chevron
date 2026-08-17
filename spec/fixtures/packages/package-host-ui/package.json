@@ -1,0 +1,7 @@
+{
+  "name": "package-host-ui",
+  "version": "1.0.0",
+  "main": "./lib/main",
+  "description": "UI package fixture: must stay editor-side under v1 (Epic 21.4).",
+  "engines": { "chevron": ">=1.0.0" }
+}
