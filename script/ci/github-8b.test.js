@@ -22,10 +22,10 @@ describe('github 8B React 18 (inbox stays)', () => {
     const app = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     );
-    assert.strictEqual(app.packageDependencies.github, '0.37.2');
-    assert.match(app.dependencies.github, /80a32a1ddb80b6e8deb8884c94c5b89cd37b896e/);
+    assert.strictEqual(app.packageDependencies.github, '0.37.3');
+    assert.match(app.dependencies.github, /b828392fceb570959faadee96a8304ea9b39a741/);
     const pkg = JSON.parse(read('package.json'));
-    assert.strictEqual(pkg.version, '0.37.2');
+    assert.strictEqual(pkg.version, '0.37.3');
     assert.strictEqual(pkg.dependencies.react, '18.3.1');
     assert.strictEqual(pkg.dependencies['react-dom'], '18.3.1');
     assert.strictEqual(pkg.dependencies['react-relay'], '5.0.0');
@@ -56,6 +56,14 @@ describe('github 8B React 18 (inbox stays)', () => {
     assert.match(remote, /graphql-query/);
     assert.doesNotMatch(header, /QueryRenderer/);
     assert.doesNotMatch(remote, /QueryRenderer/);
+    const search = read('lib/containers/issueish-search-container.js');
+    const current = read('lib/containers/current-pull-request-container.js');
+    assert.match(search, /graphql-query/);
+    assert.match(current, /graphql-query/);
+    assert.doesNotMatch(search, /QueryRenderer/);
+    assert.doesNotMatch(current, /QueryRenderer/);
+    assert.match(search, /BareIssueishListController/);
+    assert.match(current, /BareIssueishListController/);
     assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'graphql-client.js')));
     const recovered = path.join(GITHUB, 'graphql', 'recovered');
     const docs = fs
