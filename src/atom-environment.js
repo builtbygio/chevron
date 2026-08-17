@@ -397,16 +397,21 @@ class AtomEnvironment {
 
   registerDefaultOpeners() {
     this.workspace.addOpener(uri => {
-      switch (uri) {
-        case 'atom://.atom/stylesheet':
+      // chevron://.chevron/* is the product form; the atom:// spellings stay
+      // until bundled packages converge (H3 PR 23.3 gate).
+      const normalized = String(uri || '')
+        .replace(/^atom:\/\//, 'chevron://')
+        .replace(/^chevron:\/\/\.atom\//, 'chevron://.chevron/');
+      switch (normalized) {
+        case 'chevron://.chevron/stylesheet':
           return this.workspace.openTextFile(
             this.styles.getUserStyleSheetPath()
           );
-        case 'atom://.atom/keymap':
+        case 'chevron://.chevron/keymap':
           return this.workspace.openTextFile(this.keymaps.getUserKeymapPath());
-        case 'atom://.atom/config':
+        case 'chevron://.chevron/config':
           return this.workspace.openTextFile(this.config.getUserConfigPath());
-        case 'atom://.atom/init-script':
+        case 'chevron://.chevron/init-script':
           return this.workspace.openTextFile(this.getUserInitScriptPath());
       }
     });

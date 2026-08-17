@@ -115,21 +115,21 @@ const configSchema = {
         type: 'string',
         default: 'prompt',
         description:
-          'When should Chevron register itself as the default handler for atom:// URIs (package compatibility)',
+          'When should Chevron register itself as the default handler for chevron:// URIs (atom:// stays a deprecated alias)',
         enum: [
           {
             value: 'prompt',
             description:
-              'Prompt to register Chevron as the default atom:// URI handler'
+              'Prompt to register Chevron as the default chevron:// URI handler'
           },
           {
             value: 'always',
             description:
-              'Always become the default atom:// URI handler automatically'
+              'Always become the default chevron:// URI handler automatically'
           },
           {
             value: 'never',
-            description: 'Never become the default atom:// URI handler'
+            description: 'Never become the default chevron:// URI handler'
           }
         ]
       },

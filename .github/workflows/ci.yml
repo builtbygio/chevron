@@ -202,6 +202,7 @@ jobs:
           node --test script/ci/package-host-services.test.js
           node --test script/ci/package-host-eligibility.test.js
           node --test script/ci/src-typescript-first.test.js
+          node --test script/ci/uri-scheme.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64

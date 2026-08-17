@@ -4,7 +4,8 @@ const { Emitter, Disposable } = require('event-kit');
 // Private: Associates listener functions with URIs from outside the application.
 //
 // The global URI handler registry maps URIs to listener functions. URIs are mapped
-// based on the hostname of the URI; the format is atom://package/command?args.
+// based on the hostname of the URI; the format is chevron://package/command?args.
+// atom://package/command is a deprecated alias.
 // The "core" package name is reserved for URIs handled by Atom core (it is not possible
 // to register a package with the name "core").
 //
@@ -95,9 +96,26 @@ module.exports = class URIHandlerRegistry {
   async handleURI(uri) {
     const parsed = url.parse(uri, true);
     const { protocol, slashes, auth, port, host } = parsed;
-    if (protocol !== 'atom:' || slashes !== true || auth || port) {
+    // chevron: is the product scheme; atom: is the deprecated alias kept
+    // until the bundled packages that still publish atom:// URIs convert
+    // (H3 PR 23.3 gate). Both are registered with the OS, so refusing
+    // chevron: here left a scheme that resolved and then failed.
+    if (
+      (protocol !== 'chevron:' && protocol !== 'atom:') ||
+      slashes !== true ||
+      auth ||
+      port
+    ) {
       throw new Error(
         `URIHandlerRegistry#handleURI asked to handle an invalid URI: ${uri}`
+      );
+    }
+
+    if (protocol === 'atom:' && !URIHandlerRegistry._warnedAtomScheme) {
+      URIHandlerRegistry._warnedAtomScheme = true;
+      console.warn(
+        '[chevron] atom:// URIs are a deprecated alias for chevron://. ' +
+          'See docs/REBRANDING.md.'
       );
     }
 
