@@ -1,7 +1,7 @@
 'use strict';
 
-// Chevron package API surface (preferred). require('atom') is an unsupported
-// legacy alias that re-exports this module — not a community-compat promise.
+// Chevron package API surface. This is the only package API: the exports/atom.js
+// alias was removed in H3 PR 23, so require('atom') fails with MODULE_NOT_FOUND.
 // See docs/REBRANDING.md and docs/chevron-architecture-modernization.md.
 
 const TextBuffer = require('text-buffer');

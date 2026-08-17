@@ -333,7 +333,7 @@ class NSFWNativeWatcher extends NativeWatcher {
 // subscriptions.
 //
 // ```js
-// const {watchPath} = require('atom')
+// const {watchPath} = require('chevron')
 //
 // const disposable = await watchPath('/var/log', {}, events => {
 //   console.log(`Received batch of ${events.length} events.`)
@@ -425,7 +425,7 @@ class PathWatcher {
   // PathWatchers acquired through `watchPath` are already started.
   //
   // ```js
-  // const {watchPath} = require('atom')
+  // const {watchPath} = require('chevron')
   // const ROOT = path.join(__dirname, 'fixtures')
   // const FILE = path.join(ROOT, 'filename.txt')
   //
@@ -771,7 +771,7 @@ class PathWatcherManager {
 // is a {Disposable}, so they can be managed by a {CompositeDisposable} if desired.
 //
 // ```js
-// const {watchPath} = require('atom')
+// const {watchPath} = require('chevron')
 //
 // const disposable = await watchPath('/var/log', {}, events => {
 //   console.log(`Received batch of ${events.length} events.`)

@@ -22,7 +22,7 @@ let Tooltip = null;
 // CompositeDisposable
 //
 // ```js
-// const {CompositeDisposable} = require('atom')
+// const {CompositeDisposable} = require('chevron')
 // const subscriptions = new CompositeDisposable()
 //
 // const div1 = document.createElement('div')
