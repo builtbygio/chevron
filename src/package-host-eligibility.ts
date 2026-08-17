@@ -19,6 +19,26 @@ const path = require('path');
 
 const { classifyCallerPath, classifyRequireId } = require('./package-require-audit');
 
+interface ClassifyOptions {
+  packagePath: string;
+  metadata?: any;
+  readSources?: (root: string) => string[];
+}
+
+interface Classification {
+  eligible: boolean;
+  reason: string;
+  tier: string;
+  signals: string[];
+  explicit: boolean;
+}
+
+interface RoutingDecision {
+  inHost: boolean;
+  reason: string;
+  classification: Classification | null;
+}
+
 /**
  * Source patterns that mean "this package needs a DOM or an editor-side
  * object". Each is a disqualifying signal.
@@ -48,9 +68,9 @@ const REQUIRE_RE = /require\(\s*['"]([^'"]+)['"]\s*\)/g;
 const SKIP_DIRS = new Set(['node_modules', '.git', 'spec', 'test', 'benchmarks']);
 
 /** Collect the package's own JS/TS sources (not its dependencies). */
-function collectSources(root, limit = 200) {
-  const files = [];
-  const walk = dir => {
+function collectSources(root: string, limit = 200): string[] {
+  const files: string[] = [];
+  const walk = (dir: string): void => {
     if (files.length >= limit) return;
     let entries;
     try {
@@ -72,7 +92,7 @@ function collectSources(root, limit = 200) {
   return files;
 }
 
-function readSafe(file) {
+function readSafe(file: string): string {
   try {
     return fs.readFileSync(file, 'utf8');
   } catch (_) {
@@ -80,7 +100,7 @@ function readSafe(file) {
   }
 }
 
-function readMetadata(packagePath) {
+function readMetadata(packagePath: string): any {
   try {
     return JSON.parse(readSafe(path.join(packagePath, 'package.json')) || '{}');
   } catch (_) {
@@ -97,7 +117,7 @@ function readMetadata(packagePath) {
  * @param {(root: string) => string[]} [options.readSources]  test seam
  * @returns {{eligible: boolean, reason: string, tier: string, signals: string[], explicit: boolean}}
  */
-function classifyPackage({ packagePath, metadata, readSources }) {
+function classifyPackage({ packagePath, metadata, readSources }: ClassifyOptions): Classification {
   // Callers that already parsed package.json pass it; otherwise read it, since
   // an author's explicit opt-in/opt-out must be honoured either way.
   const meta = metadata || readMetadata(packagePath);
@@ -133,8 +153,8 @@ function classifyPackage({ packagePath, metadata, readSources }) {
       ? readSources(packagePath)
       : collectSources(packagePath);
 
-  const signals = new Set();
-  let privileged = null;
+  const signals = new Set<string>();
+  let privileged: { id: string; kind: string } | null = null;
 
   for (const file of files) {
     const source = readSafe(file);
@@ -200,7 +220,7 @@ function classifyPackage({ packagePath, metadata, readSources }) {
  * @param {object} options
  * @param {boolean} options.hostEnabled  core.packageHostV2 / CHEVRON_PACKAGE_HOST_V2
  */
-function shouldActivateInHost(options) {
+function shouldActivateInHost(options: ClassifyOptions & { hostEnabled: boolean }): RoutingDecision {
   if (!options.hostEnabled) {
     return { inHost: false, reason: 'package host v2 disabled', classification: null };
   }
@@ -213,7 +233,7 @@ function shouldActivateInHost(options) {
 }
 
 /** Is host v2 turned on? Env wins, then config, then the schema default (off). */
-function isHostEnabled(config) {
+function isHostEnabled(config?: { get?: (k: string) => unknown } | null): boolean {
   const env = process.env.CHEVRON_PACKAGE_HOST_V2;
   if (env === '1' || env === 'true') return true;
   if (env === '0' || env === 'false') return false;
