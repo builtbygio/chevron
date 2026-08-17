@@ -167,4 +167,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`language-less` \| both/);
     assert.match(doc, /`source.css.less` \| JSON/);
   });
+
+  it('language-make 13c ships JSON grammar', () => {
+    assert.match(doc, /`language-make` \| TextMate/);
+    assert.match(doc, /`source.makefile` \| JSON/);
+  });
 });

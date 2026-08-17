@@ -19,7 +19,8 @@ const CONVERTED = [
   'language-text',
   'language-todo',
   'language-gfm',
-  'language-less'
+  'language-less',
+  'language-make'
 ];
 
 const STILL_CSON = [
@@ -27,7 +28,6 @@ const STILL_CSON = [
   'language-coffee-script',
   'language-csharp',
   'language-git',
-  'language-make',
   'language-mustache',
   'language-objective-c',
   'language-perl',
@@ -109,6 +109,25 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(fs.existsSync(snippets), 'snippets/language-text.json');
     const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.plain');
+  });
+
+  it('language-make ships JSON grammar and settings and no shipped CSON', () => {
+    const cson = shippedCson('language-make');
+    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
+    const grammar = path.join(
+      packageRoot('language-make'),
+      'grammars',
+      'makefile.json'
+    );
+    const settings = path.join(
+      packageRoot('language-make'),
+      'settings',
+      'language-make.json'
+    );
+    assert.ok(fs.existsSync(grammar), 'grammars/makefile.json');
+    assert.ok(fs.existsSync(settings), 'settings/language-make.json');
+    const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
+    assert.strictEqual(parsed.scopeName, 'source.makefile');
   });
 
   it('language-less ships JSON TextMate grammar and settings and no shipped CSON', () => {
@@ -205,7 +224,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   });
 
   it('remaining 13c pins still ship CSON (update this list when converting)', () => {
-    assert.strictEqual(STILL_CSON.length, 16);
+    assert.strictEqual(STILL_CSON.length, 15);
     for (const name of STILL_CSON) {
       const files = shippedCson(name);
       assert.ok(
