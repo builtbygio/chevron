@@ -15,7 +15,7 @@ const {
   classifyPackage,
   shouldActivateInHost,
   isHostEnabled
-} = require('../../src/package-host-eligibility');
+} = require('../../src/package-host-eligibility.ts');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const FIXTURES = path.join(ROOT, 'spec/fixtures/packages');

@@ -15,6 +15,28 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const SRC = path.join(ROOT, 'src');
 const GRANDFATHER_PATH = path.join(__dirname, 'src-js-grandfather.json');
 
+/**
+ * Directories where the TypeScript-first rule does not apply.
+ *
+ * `src/main-process/**` must stay JavaScript:
+ *
+ *  - The main process never registers the TypeScript compile-cache
+ *    (`src/compile-cache.js` is set up from the renderer boot), so main-side
+ *    `require` cannot load `.ts` at all.
+ *  - utilityProcess / child_process entry scripts are forked by **literal
+ *    path** (e.g. `workers/package-host.js`). `script/build` transpiles
+ *    `src/**\/*.ts` to `.js` and deletes the `.ts`, so a `.ts` worker entry
+ *    would need one path in dev and another when packaged.
+ *
+ * This is a property of how those processes boot, not a backlog item. Nothing
+ * under `src/main-process/` is `.ts` today.
+ */
+const EXEMPT_DIRS = ['src/main-process/'];
+
+function isExempt(relPath) {
+  return EXEMPT_DIRS.some(dir => relPath.startsWith(dir));
+}
+
 function walkJs(dir, acc) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
@@ -58,12 +80,38 @@ describe('src/ TypeScript-on-touch (PR 16)', () => {
   });
 
   it('does not add new src/**/*.js files', () => {
-    const extras = current.filter(f => !allowed.has(f));
+    const extras = current.filter(f => !allowed.has(f) && !isExempt(f));
     assert.deepStrictEqual(
       extras,
       [],
       'New src/**/*.js files are banned (PR 16). Add TypeScript instead.\n' +
         extras.map(f => `  + ${f}`).join('\n')
+    );
+  });
+
+  it('exempt dirs contain no TypeScript (the exemption is real)', () => {
+    // If someone lands .ts under an exempt dir, the exemption is wrong and
+    // this rule should be revisited rather than silently widened.
+    const stray = [];
+    for (const dir of EXEMPT_DIRS) {
+      const abs = path.join(ROOT, dir);
+      if (!fs.existsSync(abs)) continue;
+      const walk = d => {
+        for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+          const full = path.join(d, e.name);
+          if (e.isDirectory()) walk(full);
+          else if (/\.tsx?$/.test(e.name)) {
+            stray.push(path.relative(ROOT, full).split(path.sep).join('/'));
+          }
+        }
+      };
+      walk(abs);
+    }
+    assert.deepStrictEqual(
+      stray,
+      [],
+      'TypeScript under an EXEMPT_DIR — main-process cannot load .ts:\n' +
+        stray.map(f => `  + ${f}`).join('\n')
     );
   });
 
