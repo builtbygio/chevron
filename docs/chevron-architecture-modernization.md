@@ -520,7 +520,7 @@ The package system **is** Chevron’s product. Do not replace it with VS Code ex
 
 **Today** (`node_modules/github/package.json`):
 
-- `react@18.3.1` + `react-dom@18.3.1` (`createRoot`) + `graphql-client` for markdown hover tooltips + `react-relay@5.0.0` / `graphql@14.5.8` on remaining inbox surfaces (34 operations recovered under `graphql/recovered/`)
+- `react@18.3.1` + `react-dom@18.3.1` (`createRoot`) + `graphql-client` for markdown hover tooltips, GitHub tab header, and remote repo lookup + `react-relay@5.0.0` / `graphql@14.5.8` on remaining inbox surfaces (34 operations recovered under `graphql/recovered/`)
 - `dugite@1.110.0` (git) — workers already on utilityProcess
 - `keytar@4.13.0` (listed; app hoists owned keytar)
 - Pre-transpiled CJS as of #125 (`atomTranspilers` gone)
