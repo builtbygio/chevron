@@ -10,13 +10,15 @@ const semver = require('semver');
 const CONFIG = require('../config');
 
 // Intermediate package.json "name" drives Electron userData on some platforms
-// (e.g. AppData\Local\<name> on Windows). Keep the legacy Atom-era folder names
-// so dual-support installs do not fork userData away from existing Atom trees
-// until an explicit migrate lands. productName remains CONFIG.appName (Chevron).
+// (e.g. AppData\Local\<name> on Windows). This used to be pinned to the
+// Atom-era folder names so an existing install's userData would not be
+// orphaned. There are no Windows users to orphan (owner, 2026-08-18), so no
+// migration is needed and the name is simply Chevron's.
+// See docs/windows-userdata-migrate.md.
 let intermediatePackageName = CONFIG.appMetadata.name;
 if (process.platform === 'win32') {
   intermediatePackageName =
-    CONFIG.channel === 'stable' ? 'atom' : `atom-${CONFIG.channel}`;
+    CONFIG.channel === 'stable' ? 'chevron' : `chevron-${CONFIG.channel}`;
 }
 
 module.exports = function() {
