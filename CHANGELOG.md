@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The Jasmine harness defines `window.chevron` as well as `window.atom` (H3 PR 23 follow-up). Bundled package code calls `chevron.*` after the conversion, but the harness builds its own environment and defined only `atom`, so every package spec threw `ReferenceError: chevron is not defined` on its first `activatePackage`. Nightly run 32140370725 failed **37 of 37 suites**, most of them 100% of their tests, for this one reason.
+
 - **Removed the `global.atomApplication` alias** (H3 PR 23 branding pass). The main-process application singleton is `global.chevronApplication` only; the 7 readers across `auto-update-manager`, `application-menu`, `context-menu` and `squirrel-update` were converted. No Atom-named global remains in the product. Local variables and parameters named `atomApplication` are deliberately untouched — they are not the global, and renaming them is churn with no behaviour change.
 
 - All 10 remaining owned pins publish `chevron://` URIs (H3 PR 23.3): `settings-view` (12 refs), `github` (3), `keybinding-resolver` (2), `timecop` (2), and one each in `find-and-replace`, `notifications`, `snippets`, `spell-check`, `styleguide`, `tree-view`. With the 4 in-repo packages converted earlier, **no bundled package emits an `atom://` URI**. Core still accepts `atom://` — the workspace scheme fallback and the protocol handler both keep it — so deep links users already have continue to work. `script/ci/no-atom-uri.test.js` guards it.
