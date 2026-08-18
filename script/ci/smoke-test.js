@@ -208,11 +208,11 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 // Evaluated inside the app (isolated world). Returns JSON with status:
 //   pending | no-atom | no-workspace | waiting-editors | ready
 const PROBE_EXPR = `(function() {
-  if (typeof atom === 'undefined') return JSON.stringify({status:'no-atom'});
-  if (!atom.workspace) return JSON.stringify({status:'no-workspace'});
-  const editors = atom.workspace.getTextEditors();
+  if (typeof chevron === 'undefined') return JSON.stringify({status:'no-chevron'});
+  if (!chevron.workspace) return JSON.stringify({status:'no-workspace'});
+  const editors = chevron.workspace.getTextEditors();
   const paths = editors.map(e => e.getPath() || '(untitled)');
-  const packagesActive = atom.packages.getActivePackages().length;
+  const packagesActive = chevron.packages.getActivePackages().length;
   if (editors.length < 3) {
     return JSON.stringify({
       status: 'waiting-editors',
@@ -234,7 +234,7 @@ const PROBE_EXPR = `(function() {
   return JSON.stringify({
     status: 'ready',
     packagesActive: packagesActive,
-    notifications: atom.notifications
+    notifications: chevron.notifications
       .getNotifications()
       .filter(n => ['error', 'fatal'].includes(n.getType()))
       .map(n => n.getType() + ': ' + n.getMessage()),
@@ -363,7 +363,7 @@ async function probeWindow(probePaths) {
           return 3;
         case 'no-workspace':
           return 2;
-        case 'no-atom':
+        case 'no-chevron':
           return 1;
         default:
           return 0;
