@@ -47,7 +47,7 @@ function activate() {
   let selectorDisposable;
   let selector;
   disposables.add(
-    atom.commands.add("atom-text-editor", {
+    chevron.commands.add("atom-text-editor", {
       "line-ending-selector:show": () => {
         if (!selectorDisposable) {
           selector = new import_selector.Selector([
@@ -88,7 +88,7 @@ function consumeStatusBar(statusBar) {
     });
   }, 0);
   disposables.add(
-    atom.workspace.observeActiveTextEditor((editor) => {
+    chevron.workspace.observeActiveTextEditor((editor) => {
       if (currentBufferDisposable) currentBufferDisposable.dispose();
       if (editor && editor.getBuffer) {
         let buffer = editor.getBuffer();
@@ -114,7 +114,7 @@ function consumeStatusBar(statusBar) {
         disposables.remove(tooltipDisposable);
         tooltipDisposable.dispose();
       }
-      tooltipDisposable = atom.tooltips.add(statusBarItem.element, {
+      tooltipDisposable = chevron.tooltips.add(statusBarItem.element, {
         title() {
           return `File uses ${statusBarItem.description()} line endings`;
         }
@@ -128,9 +128,9 @@ function consumeStatusBar(statusBar) {
     })
   );
   statusBarItem.onClick(() => {
-    const editor = atom.workspace.getActiveTextEditor();
-    atom.commands.dispatch(
-      atom.views.getView(editor),
+    const editor = chevron.workspace.getActiveTextEditor();
+    chevron.commands.dispatch(
+      chevron.views.getView(editor),
       "line-ending-selector:show"
     );
   });
@@ -138,7 +138,7 @@ function consumeStatusBar(statusBar) {
   disposables.add(new import_atom.Disposable(() => tile.destroy()));
 }
 function getDefaultLineEnding() {
-  switch (atom.config.get("line-ending-selector.defaultLineEnding")) {
+  switch (chevron.config.get("line-ending-selector.defaultLineEnding")) {
     case "LF":
       return "\n";
     case "CRLF":

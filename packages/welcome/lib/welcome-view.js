@@ -51,25 +51,25 @@ class WelcomeView {
     });
   }
   didChangeShowOnStartup(event) {
-    atom.config.set("welcome.showOnStartup", event.target.checked);
+    chevron.config.set("welcome.showOnStartup", event.target.checked);
   }
   didClickOpenProject() {
     this.props.reporterProxy.sendEvent("clicked-welcome-open-project");
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
+    chevron.commands.dispatch(
+      chevron.views.getView(chevron.workspace),
       "application:add-project-folder"
     );
   }
   didClickInstallShellCommands() {
     this.props.reporterProxy.sendEvent("clicked-welcome-shell-commands");
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
+    chevron.commands.dispatch(
+      chevron.views.getView(chevron.workspace),
       "window:install-shell-commands"
     );
   }
   didClickShowGuide() {
     this.props.reporterProxy.sendEvent("clicked-welcome-show-guide");
-    atom.workspace.open("atom://welcome/guide", { searchAllPanes: true });
+    chevron.workspace.open("atom://welcome/guide", { searchAllPanes: true });
   }
   update() {
   }
@@ -151,7 +151,7 @@ class WelcomeView {
       {
         className: "input-checkbox",
         type: "checkbox",
-        checked: atom.config.get("welcome.showOnStartup"),
+        checked: chevron.config.get("welcome.showOnStartup"),
         onchange: this.didChangeShowOnStartup
       }
     ), "Show Welcome and Guide when opening Chevron"), /* @__PURE__ */ import_etch.default.dom("p", { className: "welcome-note" }, "When checked, every new window opens these panes until you uncheck this box.")), /* @__PURE__ */ import_etch.default.dom("footer", { className: "welcome-footer" }, /* @__PURE__ */ import_etch.default.dom(

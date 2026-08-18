@@ -2,7 +2,7 @@ const dalek = require("./dalek");
 const Grim = require("grim");
 module.exports = {
   activate() {
-    atom.packages.onDidActivateInitialPackages(async () => {
+    chevron.packages.onDidActivateInitialPackages(async () => {
       const duplicates = await dalek.enumerate();
       for (let i = 0; i < duplicates.length; i++) {
         const duplicate = duplicates[i];

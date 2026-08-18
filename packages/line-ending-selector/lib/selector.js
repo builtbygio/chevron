@@ -56,7 +56,7 @@ class Selector {
       },
       // called when the user clicks or presses Enter on an item. // use `=>` for `this`
       didConfirmSelection: (lineEnding) => {
-        const editor = atom.workspace.getActiveTextEditor();
+        const editor = chevron.workspace.getActiveTextEditor();
         if (editor instanceof import_atom.TextEditor) {
           (0, import_main.setLineEnding)(editor, lineEnding.value);
         }
@@ -67,13 +67,13 @@ class Selector {
         this.hide();
       }
     });
-    this.modalPanel = atom.workspace.addModalPanel({
+    this.modalPanel = chevron.workspace.addModalPanel({
       item: this.lineEndingListView
     });
   }
   // Show a selector object
   show() {
-    this.previousActivePane = atom.workspace.getActivePane();
+    this.previousActivePane = chevron.workspace.getActivePane();
     this.lineEndingListView.reset();
     this.modalPanel.show();
     this.lineEndingListView.focus();

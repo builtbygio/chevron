@@ -64,7 +64,7 @@ class DiffListView {
       }
     });
     this.selectListView.element.classList.add("diff-list-view");
-    this.panel = atom.workspace.addModalPanel({
+    this.panel = chevron.workspace.addModalPanel({
       item: this.selectListView,
       visible: false
     });
@@ -88,7 +88,7 @@ class DiffListView {
     return this.selectListView.destroy();
   }
   async toggle() {
-    const editor = atom.workspace.getActiveTextEditor();
+    const editor = chevron.workspace.getActiveTextEditor();
     if (this.panel.isVisible()) {
       this.cancel();
     } else if (editor) {

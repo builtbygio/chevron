@@ -42,38 +42,38 @@ class WelcomePackage {
   async activate() {
     this.subscriptions = new import_atom.CompositeDisposable();
     this.subscriptions.add(
-      atom.workspace.addOpener((filePath) => {
+      chevron.workspace.addOpener((filePath) => {
         if (filePath === WELCOME_URI) {
           return this.createWelcomeView({ uri: WELCOME_URI });
         }
       })
     );
     this.subscriptions.add(
-      atom.workspace.addOpener((filePath) => {
+      chevron.workspace.addOpener((filePath) => {
         if (filePath === GUIDE_URI) {
           return this.createGuideView({ uri: GUIDE_URI });
         }
       })
     );
     this.subscriptions.add(
-      atom.commands.add(
+      chevron.commands.add(
         "atom-workspace",
         "welcome:show",
         () => this.showWelcome()
       )
     );
-    if (atom.config.get("core.telemetryConsent") !== "no") {
-      atom.config.set("core.telemetryConsent", "no");
+    if (chevron.config.get("core.telemetryConsent") !== "no") {
+      chevron.config.set("core.telemetryConsent", "no");
     }
-    if (atom.config.get("welcome.showOnStartup")) {
+    if (chevron.config.get("welcome.showOnStartup")) {
       await this.showWelcome();
       this.reporterProxy.sendEvent("show-on-initial-load");
     }
   }
   showWelcome() {
     return Promise.all([
-      atom.workspace.open(WELCOME_URI, { searchAllPanes: true }),
-      atom.workspace.open(GUIDE_URI, { searchAllPanes: true })
+      chevron.workspace.open(WELCOME_URI, { searchAllPanes: true }),
+      chevron.workspace.open(GUIDE_URI, { searchAllPanes: true })
     ]);
   }
   consumeReporter(reporter) {

@@ -40,13 +40,13 @@ var main_default = {
   activate(state) {
     subscriptions = new import_atom.CompositeDisposable();
     subscriptions.add(
-      atom.workspace.observeTextEditors((editor) => {
-        const editorElement = atom.views.getView(editor);
+      chevron.workspace.observeTextEditors((editor) => {
+        const editorElement = chevron.views.getView(editor);
         const diffView = new import_git_diff_view.default(editor, editorElement);
         diffViews.add(diffView);
         const listViewCommand = "git-diff:toggle-diff-list";
         const editorSubs = new import_atom.CompositeDisposable(
-          atom.commands.add(editorElement, listViewCommand, () => {
+          chevron.commands.add(editorElement, listViewCommand, () => {
             if (diffListView == null) diffListView = new import_diff_list_view.default();
             diffListView.toggle();
           }),

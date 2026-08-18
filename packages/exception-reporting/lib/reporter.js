@@ -107,10 +107,10 @@ class Reporter {
   }
   getDefaultNotificationParams() {
     return {
-      userId: atom.config.get("exception-reporting.userId"),
-      appVersion: atom.getVersion(),
-      releaseStage: this.getReleaseChannel(atom.getVersion()),
-      projectRoot: atom.getLoadSettings().resourcePath,
+      userId: chevron.config.get("exception-reporting.userId"),
+      appVersion: chevron.getVersion(),
+      releaseStage: this.getReleaseChannel(chevron.getVersion()),
+      projectRoot: chevron.getLoadSettings().resourcePath,
       osVersion: `${import_os.default.platform()}-${import_os.default.arch()}-${import_os.default.release()}`
     };
   }
@@ -126,8 +126,8 @@ class Reporter {
   }
   shouldReport(error) {
     if (this.alwaysReport) return true;
-    if (atom.config.get("core.telemetryConsent") !== "limited") return false;
-    if (atom.inDevMode()) return false;
+    if (chevron.config.get("core.telemetryConsent") !== "limited") return false;
+    if (chevron.inDevMode()) return false;
     const topFrame = this.parseStackTrace(error)[0];
     const fileName = topFrame ? topFrame.getFileName() : null;
     return fileName && (this.isBundledFile(fileName) || this.isTeletypeFile(fileName));
@@ -173,7 +173,7 @@ class Reporter {
         localStorage.setItem(`private-metadata-request:${name}`, true);
       }
     }
-    notification = atom.notifications.addInfo(message, {
+    notification = chevron.notifications.addInfo(message, {
       detail: error.privateMetadataDescription,
       description: "Are you willing to submit this information to a private server for debugging purposes?",
       dismissable: true,
@@ -193,12 +193,12 @@ class Reporter {
     );
   }
   addPackageMetadata(error) {
-    let activePackages = atom.packages.getActivePackages();
-    const availablePackagePaths = atom.packages.getPackageDirPaths();
+    let activePackages = chevron.packages.getActivePackages();
+    const availablePackagePaths = chevron.packages.getPackageDirPaths();
     if (activePackages.length > 0) {
       let userPackages = {};
       let bundledPackages = {};
-      for (let pack of atom.packages.getActivePackages()) {
+      for (let pack of chevron.packages.getActivePackages()) {
         if (availablePackagePaths.includes(import_path.default.dirname(pack.path))) {
           userPackages[pack.name] = pack.metadata.version;
         } else {
@@ -264,7 +264,7 @@ class Reporter {
     return this.normalizePath(fileName).indexOf(this.resourcePath) === 0;
   }
   isTeletypeFile(fileName) {
-    const teletypePath = atom.packages.resolvePackagePath("teletype");
+    const teletypePath = chevron.packages.resolvePackagePath("teletype");
     return teletypePath && this.normalizePath(fileName).indexOf(teletypePath) === 0;
   }
 }

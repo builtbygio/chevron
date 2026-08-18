@@ -23,7 +23,7 @@ module.exports = __toCommonJS(helpers_exports);
 var import_atom = require("chevron");
 async function helpers_default(goalPath) {
   if (goalPath) {
-    return atom.project.repositoryForDirectory(new import_atom.Directory(goalPath));
+    return chevron.project.repositoryForDirectory(new import_atom.Directory(goalPath));
   }
   return null;
 }

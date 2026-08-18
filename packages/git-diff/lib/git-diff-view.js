@@ -46,7 +46,7 @@ class GitDiffView {
     this.updateDiffs = this.updateDiffs.bind(this);
     subscribeToRepository();
     this.subscriptions.add(
-      atom.project.onDidChangePaths(subscribeToRepository)
+      chevron.project.onDidChangePaths(subscribeToRepository)
     );
   }
   /**
@@ -129,21 +129,21 @@ class GitDiffView {
           this.buffer = this.editor.getBuffer();
           scheduleUpdate();
         }),
-        atom.commands.add(
+        chevron.commands.add(
           this.editorElement,
           "git-diff:move-to-next-diff",
           this.moveToNextDiff.bind(this)
         ),
-        atom.commands.add(
+        chevron.commands.add(
           this.editorElement,
           "git-diff:move-to-previous-diff",
           this.moveToPreviousDiff.bind(this)
         ),
-        atom.config.onDidChange(
+        chevron.config.onDidChange(
           "git-diff.showIconsInEditorGutter",
           updateIconDecoration
         ),
-        atom.config.onDidChange("editor.showLineNumbers", updateIconDecoration),
+        chevron.config.onDidChange("editor.showLineNumbers", updateIconDecoration),
         this.editorElement.onDidAttach(updateIconDecoration)
       );
       this.subscriptions.add(this._repoSubs);
@@ -167,7 +167,7 @@ class GitDiffView {
       if (firstDiffLineNumber == null) firstDiffLineNumber = newStart - 1;
       firstDiffLineNumber = Math.min(newStart - 1, firstDiffLineNumber);
     }
-    if (atom.config.get("git-diff.wrapAroundOnMoveToDiff") && nextDiffLineNumber == null) {
+    if (chevron.config.get("git-diff.wrapAroundOnMoveToDiff") && nextDiffLineNumber == null) {
       nextDiffLineNumber = firstDiffLineNumber;
     }
     this.moveToLineNumber(nextDiffLineNumber);
@@ -183,7 +183,7 @@ class GitDiffView {
       }
       lastDiffLineNumber = Math.max(newStart - 1, lastDiffLineNumber);
     }
-    if (atom.config.get("git-diff.wrapAroundOnMoveToDiff") && previousDiffLineNumber === null) {
+    if (chevron.config.get("git-diff.wrapAroundOnMoveToDiff") && previousDiffLineNumber === null) {
       previousDiffLineNumber = lastDiffLineNumber;
     }
     this.moveToLineNumber(previousDiffLineNumber);
@@ -192,7 +192,7 @@ class GitDiffView {
     if (!this.isEditorAlive()) return;
     const gutter = this.editorElement.querySelector(".gutter");
     if (gutter) {
-      if (atom.config.get("editor.showLineNumbers") && atom.config.get("git-diff.showIconsInEditorGutter")) {
+      if (chevron.config.get("editor.showLineNumbers") && chevron.config.get("git-diff.showIconsInEditorGutter")) {
         gutter.classList.add("git-diff-icon");
       } else {
         gutter.classList.remove("git-diff-icon");
