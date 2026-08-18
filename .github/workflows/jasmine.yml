@@ -30,9 +30,19 @@ env:
 
 jobs:
   jasmine-linux:
-    name: Linux x64 full script/test
+    name: Linux x64 ${{ matrix.shard }}
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 120
+
+    # Sharded because the single job never finished: every recent nightly ran
+    # the full 240 minutes and was cancelled, so the suite produced no result
+    # at all. `core` runs the src/ specs; the package specs are split three
+    # ways by ATOM_PACKAGES_TO_TEST. A shard that times out now costs one
+    # shard's signal, not the whole run.
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [core, packages-1, packages-2, packages-3]
 
     steps:
       - uses: actions/checkout@v5
@@ -120,14 +130,27 @@ jobs:
       - name: Build (no distro packages)
         run: ./script/with-modern-env ./script/build --no-bootstrap
 
+      # Split packageDependencies across the package shards. Deterministic
+      # (sorted, strided) so a given package lands in the same shard run to run
+      # and a failure is attributable.
+      - name: Compute shard package list
+        if: matrix.shard != 'core'
+        run: |
+          node -e "
+            const pd = Object.keys(require('./package.json').packageDependencies || {}).sort();
+            const idx = Number('${{ matrix.shard }}'.split('-')[1]) - 1;
+            const mine = pd.filter((_, i) => i % 3 === idx);
+            console.log('shard ${{ matrix.shard }}: ' + mine.length + ' of ' + pd.length + ' packages');
+            require('fs').appendFileSync(process.env.GITHUB_ENV, 'SHARD_PACKAGES=' + mine.join(',') + '\n');
+          "
+
       - name: Full Jasmine (Xvfb)
         env:
           CI: 'true'
-          ATOM_RUN_CORE_TESTS: 'true'
-          ATOM_RUN_PACKAGE_TESTS: 'true'
-          # Empty = every package, which has not finished inside the 240-minute
-          # cap on any recent nightly. Set it to scope a dispatch run.
-          ATOM_PACKAGES_TO_TEST: ${{ inputs.packages }}
+          ATOM_RUN_CORE_TESTS: ${{ matrix.shard == 'core' && 'true' || 'false' }}
+          ATOM_RUN_PACKAGE_TESTS: ${{ matrix.shard == 'core' && 'false' || 'true' }}
+          # A dispatch `packages` input overrides the shard split entirely.
+          ATOM_PACKAGES_TO_TEST: ${{ inputs.packages || env.SHARD_PACKAGES }}
           TEST_JUNIT_XML_ROOT: ${{ runner.temp }}/jasmine-junit
         run: |
           mkdir -p "$TEST_JUNIT_XML_ROOT"
@@ -137,6 +160,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: jasmine-junit-linux-x64
+          # Per-shard: four jobs uploading one name collides on upload-artifact v4+.
+          name: jasmine-junit-linux-x64-${{ matrix.shard }}
           path: ${{ runner.temp }}/jasmine-junit
           if-no-files-found: warn
