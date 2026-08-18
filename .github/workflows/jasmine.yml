@@ -7,6 +7,15 @@ on:
     # 04:00 UTC
     - cron: '0 4 * * *'
   workflow_dispatch:
+    inputs:
+      packages:
+        description: >-
+          Comma-separated packageDependencies to test (ATOM_PACKAGES_TO_TEST).
+          Empty runs everything, which has not completed inside the 240-minute
+          cap on any recent nightly.
+        type: string
+        required: false
+        default: ''
 
 concurrency:
   group: jasmine-${{ github.ref }}
@@ -116,6 +125,9 @@ jobs:
           CI: 'true'
           ATOM_RUN_CORE_TESTS: 'true'
           ATOM_RUN_PACKAGE_TESTS: 'true'
+          # Empty = every package, which has not finished inside the 240-minute
+          # cap on any recent nightly. Set it to scope a dispatch run.
+          ATOM_PACKAGES_TO_TEST: ${{ inputs.packages }}
           TEST_JUNIT_XML_ROOT: ${{ runner.temp }}/jasmine-junit
         run: |
           mkdir -p "$TEST_JUNIT_XML_ROOT"
