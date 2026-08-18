@@ -194,7 +194,7 @@ function patchInitForMode(source, snapshotMode) {
     enablePersistence: true
   });
   global.chevron = atomEnvironment;
-  global.atom = atomEnvironment;
+  global.chevron = atomEnvironment;
   TextEditor.setScheduler(global.chevron.views);
   global.chevron.preloadPackages();
   return atomEnvironment;
@@ -241,7 +241,7 @@ if (!global.isGeneratingSnapshot) {
     enablePersistence: true
   });
   global.chevron = atomEnvironment;
-  global.atom = atomEnvironment;
+  global.chevron = atomEnvironment;
   TextEditor.setScheduler(global.chevron.views);
   global.chevron.preloadPackages();
   return atomEnvironment;

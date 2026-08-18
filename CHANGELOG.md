@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Removed `global.atom`** (H3 PR 23 slice 5). The editor sets `global.chevron` only; `global.atom` is undefined and `require('atom')` is `MODULE_NOT_FOUND`. This is the deletion slice 2 attempted and had to walk back — it is safe now that the conversion stream moved 1347 references across 54 bundled packages. The Jasmine harness sets its own `window.atom` (`spec/jasmine-test-runner.js`), so the ~7500 `atom.` references in spec files are unaffected. `global.atomApplication` is a different object and is unchanged.
+
 - All 37 owned `builtbygio` package pins use the `chevron` global instead of `atom` (H3 PR 23 stream, batch). 1136 references converted across the pins, on top of 211 in-repo in the previous slice — 1347 in total. `script/ci/no-atom-global.test.js` now covers the pins as well as `packages/`. Also rescued the `github` pin: it referenced commit `50f4ba0d`, which was reachable from **no branch** — fetchable by SHA so installs worked, but one GC away from breaking permanently. It now lives on `chevron/atom-global`.
 
 - In-repo bundled packages use the `chevron` global instead of `atom` (H3 PR 23 stream, slice 1 of ~39). 211 references across 17 packages. `script/ci/no-atom-global.test.js` guards `packages/*/lib` and `packages/*/src` against regression; it masks string literals and skips comments, so selectors like `"atom-text-editor"` and paths like `'../static/atom.less'` are untouched. The 38 owned `builtbygio` pins (1147 references) follow one repo at a time; `global.atom` can only be dropped once they are done.
