@@ -152,7 +152,11 @@ var requireSpecs = function(testPath, specType) {
     return (() => {
       const result = [];
       for (var testFilePath of Array.from(fs.listTreeSync(testPath))) {
-        if (/-spec\.(coffee|js)$/.test(testFilePath)) {
+        // .ts is collected because the owned grammar specs were converted
+        // from CoffeeScript (H3 PR 23); the compile-cache transpiles them.
+        // .coffee stays matched only so a stale spec fails loudly rather than
+        // being silently skipped — nothing compiles it since PR 11.
+        if (/-spec\.(coffee|js|ts)$/.test(testFilePath)) {
           require(testFilePath);
           // Set spec directory on spec for setting up the project in spec-helper
           result.push(setSpecDirectory(testPath));
