@@ -22,6 +22,26 @@ const SOURCE_EXT = /\.(js|jsx|ts|tsx)$/;
 const BARE_ATOM = /(?<![.\w$-])atom\.(?=[a-zA-Z_$])/;
 
 /**
+ * `atom` used as a **value** rather than a namespace. The bulk conversion only
+ * rewrote `atom.x`, so these survived and threw ReferenceError once
+ * global.atom was deleted — github and autocomplete-chevron-api failed to
+ * activate in smoke because of exactly these forms.
+ *
+ * Deliberately a short list of unambiguous shapes rather than "bare atom
+ * anywhere": `atom-text-editor` in a template, `declare const atom` in a
+ * .d.ts, and github.com/atom/... URLs are all legitimate.
+ */
+const ATOM_AS_VALUE = [
+  /typeof\s+atom\b/,
+  /\.bind\(\s*atom\s*\)/,
+  /(?<![.\w$-])atom\s*\[/,
+  /(?<![.\w$-])atom\s*(?:&&|\|\||\?\?)/,
+  /!\s*atom(?![\w$.-])/,
+  /[(,]\s*atom\s*[,)]/,
+  /=\s*atom\s*[;,)\]]/
+];
+
+/**
  * Blank out string literals so selectors and filenames don't false-positive.
  *
  * `${...}` inside a template literal is **live code**, not string content, and
@@ -63,7 +83,12 @@ describe('bundled packages use the chevron global (PR 23 stream)', () => {
           const text = fs.readFileSync(file, 'utf8');
           text.split('\n').forEach((line, i) => {
             if (isComment(line)) return;
-            if (BARE_ATOM.test(maskStrings(line))) {
+            if (/\.d\.ts$/.test(file) || line.trimStart().startsWith('declare ')) return;
+            const masked = maskStrings(line);
+            if (
+              BARE_ATOM.test(masked) ||
+              ATOM_AS_VALUE.some(rx => rx.test(masked))
+            ) {
               hits.push(`${label} ${path.relative(ROOT, file)}:${i + 1}`);
             }
           });
@@ -112,5 +137,14 @@ describe('bundled packages use the chevron global (PR 23 stream)', () => {
     // conversion originally missed
     assert.ok(BARE_ATOM.test(maskStrings('  const v = `v ${atom.getVersion()}`')));
     assert.ok(!BARE_ATOM.test(maskStrings('  const s = `see atom.foo for info`')));
+    // `atom` as a value — the forms that broke activation
+    const asValue = src => ATOM_AS_VALUE.some(rx => rx.test(maskStrings(src)));
+    assert.ok(asValue("  if (typeof atom !== 'undefined') {"));
+    assert.ok(asValue('  confirm: chevron.confirm.bind(atom),'));
+    assert.ok(asValue('  return chevron[name] != null ? atom[name] : null'));
+    assert.ok(asValue('  atom && chevron.inDevMode()'));
+    // …but not a custom element tag or a project URL
+    assert.ok(!asValue('  <atom-text-editor mini></atom-text-editor>'));
+    assert.ok(!asValue('  // see github.com/atom/autocomplete-plus/wiki'));
   });
 });
