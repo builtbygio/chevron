@@ -33,8 +33,8 @@ module.exports = __toCommonJS(welcome_package_exports);
 var import_atom = require("chevron");
 var import_reporter_proxy = __toESM(require("./reporter-proxy"));
 let WelcomeView, GuideView;
-const WELCOME_URI = "atom://welcome/welcome";
-const GUIDE_URI = "atom://welcome/guide";
+const WELCOME_URI = "chevron://welcome/welcome";
+const GUIDE_URI = "chevron://welcome/guide";
 class WelcomePackage {
   constructor() {
     this.reporterProxy = new import_reporter_proxy.default();

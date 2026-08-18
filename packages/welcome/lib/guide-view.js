@@ -61,7 +61,7 @@ class GuideView {
         "img",
         {
           className: "welcome-img",
-          src: "atom://welcome/assets/project.svg"
+          src: "chevron://welcome/assets/project.svg"
         }
       )), /* @__PURE__ */ import_etch.default.dom("p", null, "In Chevron you can open individual files or a whole folder as a project. Opening a folder adds a tree view so you can browse files."), /* @__PURE__ */ import_etch.default.dom("p", null, /* @__PURE__ */ import_etch.default.dom(
         "button",
@@ -76,7 +76,7 @@ class GuideView {
       "img",
       {
         className: "welcome-img",
-        src: "atom://welcome/assets/package.svg"
+        src: "chevron://welcome/assets/package.svg"
       }
     )), /* @__PURE__ */ import_etch.default.dom("p", null, "Track changes as you work. Branch, commit, push, and pull without leaving the editor. The GitHub panel talks to GitHub.com when you sign in."), /* @__PURE__ */ import_etch.default.dom("p", null, /* @__PURE__ */ import_etch.default.dom(
       "button",
@@ -103,7 +103,7 @@ class GuideView {
         "img",
         {
           className: "welcome-img",
-          src: "atom://welcome/assets/package.svg"
+          src: "chevron://welcome/assets/package.svg"
         }
       )), /* @__PURE__ */ import_etch.default.dom("p", null, "Packages extend Chevron with ", /* @__PURE__ */ import_etch.default.dom("code", null, "require('chevron')"), " and ", /* @__PURE__ */ import_etch.default.dom("code", null, "engines.chevron"), ". Install with ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), " (or ", /* @__PURE__ */ import_etch.default.dom("code", null, "apm"), ", a shim to cpm)."), /* @__PURE__ */ import_etch.default.dom("p", { className: "welcome-note" }, /* @__PURE__ */ import_etch.default.dom("strong", null, "Package manager:"), " Settings and the CLI use", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), " (Electron-as-Node). Registry search defaults to the Pulsar package API; override with", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "CPM_REGISTRY_URL"), ". You can also install from a local path or git URL. See", " ", /* @__PURE__ */ import_etch.default.dom("a", { href: "https://github.com/builtbygio/chevron" }, "builtbygio/chevron"), " ", "docs for ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), " guidance."), /* @__PURE__ */ import_etch.default.dom("p", null, /* @__PURE__ */ import_etch.default.dom(
         "button",
@@ -125,7 +125,7 @@ class GuideView {
         "img",
         {
           className: "welcome-img",
-          src: "atom://welcome/assets/theme.svg"
+          src: "chevron://welcome/assets/theme.svg"
         }
       )), /* @__PURE__ */ import_etch.default.dom("p", null, "Chevron ships with preinstalled themes. Try a few."), /* @__PURE__ */ import_etch.default.dom("p", null, /* @__PURE__ */ import_etch.default.dom(
         "button",
@@ -147,7 +147,7 @@ class GuideView {
         "img",
         {
           className: "welcome-img",
-          src: "atom://welcome/assets/code.svg"
+          src: "chevron://welcome/assets/code.svg"
         }
       )), /* @__PURE__ */ import_etch.default.dom("p", null, "Customize almost anything by adding your own CSS/LESS in your user stylesheet (under your config home —", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "~/.atom"), " by default, or", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "CHEVRON_HOME"), " / ", /* @__PURE__ */ import_etch.default.dom("code", null, "~/.chevron"), " when set)."), /* @__PURE__ */ import_etch.default.dom("p", null, /* @__PURE__ */ import_etch.default.dom(
         "button",
@@ -169,7 +169,7 @@ class GuideView {
         "img",
         {
           className: "welcome-img",
-          src: "atom://welcome/assets/code.svg"
+          src: "chevron://welcome/assets/code.svg"
         }
       )), /* @__PURE__ */ import_etch.default.dom("p", null, "The init script is JavaScript or CoffeeScript run at startup. Use it to quickly change Chevron’s behaviour. It lives in the same config home as your stylesheet (", /* @__PURE__ */ import_etch.default.dom("code", null, "~/.atom"), " by default)."), /* @__PURE__ */ import_etch.default.dom("p", null, /* @__PURE__ */ import_etch.default.dom(
         "button",
@@ -191,7 +191,7 @@ class GuideView {
         "img",
         {
           className: "welcome-img",
-          src: "atom://welcome/assets/code.svg"
+          src: "chevron://welcome/assets/code.svg"
         }
       )), /* @__PURE__ */ import_etch.default.dom("p", null, "Snippets expand a short prefix into a larger code block with templated values (stored under your config home)."), /* @__PURE__ */ import_etch.default.dom("p", null, /* @__PURE__ */ import_etch.default.dom(
         "button",
@@ -213,7 +213,7 @@ class GuideView {
         "img",
         {
           className: "welcome-img",
-          src: "atom://welcome/assets/shortcut.svg"
+          src: "chevron://welcome/assets/shortcut.svg"
         }
       )), /* @__PURE__ */ import_etch.default.dom("p", null, "If you only remember one shortcut, make it", " ", /* @__PURE__ */ import_etch.default.dom("kbd", { className: "welcome-key" }, this.getCommandPaletteKeyBinding()), ". That toggles the command palette, which lists every Chevron command."), /* @__PURE__ */ import_etch.default.dom("p", null, "To reopen these guides, open the command palette and search for", " ", /* @__PURE__ */ import_etch.default.dom("span", { className: "text-highlight" }, "Welcome"), "."))
     ))));
@@ -300,23 +300,23 @@ class GuideView {
   }
   didClickPackagesButton() {
     this.props.reporterProxy.sendEvent("clicked-packages-cta");
-    return this.openSettings("atom://config/install");
+    return this.openSettings("chevron://config/install");
   }
   didClickThemesButton() {
     this.props.reporterProxy.sendEvent("clicked-themes-cta");
-    return this.openSettings("atom://config/themes");
+    return this.openSettings("chevron://config/themes");
   }
   didClickStylingButton() {
     this.props.reporterProxy.sendEvent("clicked-styling-cta");
-    chevron.workspace.open("atom://.atom/stylesheet", { split: "left" });
+    chevron.workspace.open("chevron://.atom/stylesheet", { split: "left" });
   }
   didClickInitScriptButton() {
     this.props.reporterProxy.sendEvent("clicked-init-script-cta");
-    chevron.workspace.open("atom://.atom/init-script", { split: "left" });
+    chevron.workspace.open("chevron://.atom/init-script", { split: "left" });
   }
   didClickSnippetsButton() {
     this.props.reporterProxy.sendEvent("clicked-snippets-cta");
-    chevron.workspace.open("atom://.atom/snippets", { split: "left" });
+    chevron.workspace.open("chevron://.atom/snippets", { split: "left" });
   }
   didExpandOrCollapseSection(event) {
     const sectionName = event.currentTarget.closest("details").dataset.section;

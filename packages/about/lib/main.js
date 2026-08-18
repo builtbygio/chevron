@@ -7,7 +7,7 @@ let updateManager;
 
 // The local storage key for the available update version.
 const AvailableUpdateVersion = 'about:version-available';
-const AboutURI = 'atom://about';
+const AboutURI = 'chevron://about';
 
 module.exports = {
   activate() {

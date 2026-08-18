@@ -451,7 +451,7 @@ ${stacktrace}
     }
   }
   checkForUpdates() {
-    chevron.workspace.open("atom://config/updates");
+    chevron.workspace.open("chevron://config/updates");
   }
   disablePackage(packageName) {
     if (packageName) {
