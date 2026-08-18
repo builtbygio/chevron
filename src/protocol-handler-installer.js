@@ -11,9 +11,9 @@ module.exports = class ProtocolHandlerInstaller {
   }
 
   async isDefaultProtocolClient() {
-    // Require atom:// (package API). chevron:// is registered as an alias.
+    // chevron:// is the product scheme; atom:// is a deprecated alias.
     return ipcRenderer.invoke('isDefaultProtocolClient', {
-      protocol: 'atom',
+      protocol: 'chevron',
       path: process.execPath,
       args: ['--uri-handler', '--']
     });
@@ -24,18 +24,19 @@ module.exports = class ProtocolHandlerInstaller {
     // hacks to make it work on Linux; see https://github.com/electron/electron/issues/6440
     if (!this.isSupported()) return false;
     const args = ['--uri-handler', '--'];
-    const atomOk = await ipcRenderer.invoke('setAsDefaultProtocolClient', {
-      protocol: 'atom',
-      path: process.execPath,
-      args
-    });
-    // Best-effort alias for Chevron branding (dual-support forever).
-    await ipcRenderer.invoke('setAsDefaultProtocolClient', {
+    const chevronOk = await ipcRenderer.invoke('setAsDefaultProtocolClient', {
       protocol: 'chevron',
       path: process.execPath,
       args
     });
-    return atomOk;
+    // Deprecated alias, kept until bundled packages stop publishing atom://
+    // URIs (H3 PR 23.3 gate). Best effort: its failure must not fail setup.
+    await ipcRenderer.invoke('setAsDefaultProtocolClient', {
+      protocol: 'atom',
+      path: process.execPath,
+      args
+    });
+    return chevronOk;
   }
 
   async initialize(config, notifications) {
@@ -91,13 +92,13 @@ module.exports = class ProtocolHandlerInstaller {
     };
 
     notification = notifications.addInfo(
-      'Register as default atom:// URI handler?',
+      'Register as default chevron:// URI handler?',
       {
         dismissable: true,
         icon: 'link',
         description:
-          'Chevron is not currently set as the default handler for atom:// URIs (Atom package compatibility). Would you like Chevron to handle ' +
-          'atom:// URIs?',
+          'Chevron is not currently set as the default handler for chevron:// URIs. Would you like Chevron to handle ' +
+          'chevron:// URIs?',
         buttons: [
           {
             text: 'Yes',
