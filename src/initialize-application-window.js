@@ -39,13 +39,17 @@ function installEnvironment() {
   TextEditor.setClipboard(clipboard);
   TextEditor.viewForItem = item => chevron.views.getView(item);
 
-  // Chevron-only product global.
+  // Chevron-only product global. `global.atom` remains as an alias because
+  // 1360 bare `atom.` references survive across 57 bundled packages (40 of
+  // them external pins); removing it is a catalog conversion stream, not a
+  // core edit. See H3 PR 23 in docs/chevron-architecture-modernization.md.
   const atomEnvironment = new AtomEnvironment({
     clipboard,
     applicationDelegate: new ApplicationDelegate(),
     enablePersistence: true
   });
   global.chevron = atomEnvironment;
+  global.atom = atomEnvironment;
 
   TextEditor.setScheduler(global.chevron.views);
   global.chevron.preloadPackages();

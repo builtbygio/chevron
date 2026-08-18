@@ -34,21 +34,21 @@ describe('chevron package API exports', () => {
     );
   });
 
-  it('initialize-application-window sets global.chevron and no atom alias', () => {
+  it('initialize-application-window sets global.chevron, and atom as an alias', () => {
     const src = fs.readFileSync(
       path.join(ROOT, 'src/initialize-application-window.js'),
       'utf8'
     );
     assert.ok(src.includes('global.chevron'), 'must set global.chevron');
-    assert.ok(
-      !/global\.atom\s*=/.test(src),
-      'global.atom alias was removed in PR 23'
-    );
+    // The global alias stays: 1360 bare `atom.` references survive across 57
+    // bundled packages. Removing it is a catalog stream, not a core edit.
+    assert.ok(/global\.atom\s*=/.test(src), 'global.atom alias still required');
   });
 
-  it('no core source reads the global.atom alias', () => {
-    // main-process global.atomApplication is a different object and is not
-    // covered by PR 23; that rename is the branding pass.
+  it('no core source READS the global.atom alias', () => {
+    // Assigning it is required (bundled packages depend on the global);
+    // reading it from core is not. main-process global.atomApplication is a
+    // different object and out of scope for PR 23.
     const roots = ['src', 'static', 'exports'];
     const hits = [];
     const walk = dir => {
@@ -59,7 +59,9 @@ describe('chevron package API exports', () => {
         else if (/\.(js|ts)$/.test(e.name)) {
           const text = fs.readFileSync(full, 'utf8');
           for (const line of text.split('\n')) {
-            if (line.trimStart().startsWith('//')) continue;
+            const t = line.trimStart();
+            if (t.startsWith('//') || t.startsWith('*')) continue;
+            if (/global\.atom\s*=/.test(line)) continue; // the assignment
             if (/global\.atom\b(?!Application)/.test(line)) {
               hits.push(path.relative(ROOT, full));
               break;

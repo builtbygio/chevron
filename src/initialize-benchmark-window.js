@@ -81,6 +81,7 @@ module.exports = async function() {
     };
     const atomEnvironment = new AtomEnvironment(environmentParams);
     global.chevron = atomEnvironment;
+    global.atom = atomEnvironment; // alias; see initialize-application-window
     global.chevron.initialize(environmentParams);
 
     // Prevent benchmarks from modifying application menus
