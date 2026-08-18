@@ -263,7 +263,6 @@ module.exports = class AtomApplication extends EventEmitter {
     StartupTime.addMarker('main-process:atom-application:initialize:start');
 
     global.chevronApplication = this;
-    global.atomApplication = this; // unsupported legacy alias
     this.applicationMenu = new ApplicationMenu(
       this.version,
       this.autoUpdateManager

@@ -336,6 +336,6 @@ module.exports = class AutoUpdateManager extends EventEmitter {
   }
 
   getWindows() {
-    return global.atomApplication.getAllWindows();
+    return global.chevronApplication.getAllWindows();
   }
 };

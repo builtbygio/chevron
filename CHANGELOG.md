@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Removed the `global.atomApplication` alias** (H3 PR 23 branding pass). The main-process application singleton is `global.chevronApplication` only; the 7 readers across `auto-update-manager`, `application-menu`, `context-menu` and `squirrel-update` were converted. No Atom-named global remains in the product. Local variables and parameters named `atomApplication` are deliberately untouched — they are not the global, and renaming them is churn with no behaviour change.
+
 - All 10 remaining owned pins publish `chevron://` URIs (H3 PR 23.3): `settings-view` (12 refs), `github` (3), `keybinding-resolver` (2), `timecop` (2), and one each in `find-and-replace`, `notifications`, `snippets`, `spell-check`, `styleguide`, `tree-view`. With the 4 in-repo packages converted earlier, **no bundled package emits an `atom://` URI**. Core still accepts `atom://` — the workspace scheme fallback and the protocol handler both keep it — so deep links users already have continue to work. `script/ci/no-atom-uri.test.js` guards it.
 - **Retired the `apm` shim** (H3 PR 23). cpm 0.2.0 publishes only the `cpm` bin; `cpm/bin/apm`, `cpm/bin/apm.cmd` and the Windows `resources/win/apm.*` launchers are gone. Nothing installs an `apm` name any more: the deb/rpm packages, `install-application`, and the legacy `app/apm/...` launcher shims all stop creating one. `PackageManager#getApmPath()` keeps its name — it is public API that packages call, `settings-view` spawns it to list installed packages — but resolves `cpm/bin/cpm` directly. Dead `script/lib/install-apm.js` and the `vendor/apm` packaging exclusion removed. `script/ci/no-apm.test.js` guards it.
 

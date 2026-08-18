@@ -74,13 +74,38 @@ describe('chevron package API exports', () => {
     assert.deepStrictEqual(hits, [], `global.atom still read in:\n${hits.join('\n')}`);
   });
 
-  it('main process sets chevronApplication + atomApplication alias', () => {
+  it('main process sets chevronApplication and no atomApplication alias', () => {
     const src = fs.readFileSync(
       path.join(ROOT, 'src/main-process/atom-application.js'),
       'utf8'
     );
     assert.ok(src.includes('global.chevronApplication'));
-    assert.ok(src.includes('global.atomApplication'));
+    assert.ok(
+      !/global\.atomApplication/.test(src),
+      'the atomApplication alias was removed in the PR 23 branding pass'
+    );
+  });
+
+  it('no main-process source reads global.atomApplication', () => {
+    // Local variables and parameters named atomApplication are untouched:
+    // they are not the global, and renaming them is churn with no behaviour
+    // change. Only the global had to go.
+    const dir = path.join(ROOT, 'src');
+    const hits = [];
+    const walk = d => {
+      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+        const full = path.join(d, e.name);
+        if (e.isDirectory()) walk(full);
+        else if (/\.(js|ts)$/.test(e.name)) {
+          const text = fs.readFileSync(full, 'utf8');
+          if (/global\.atomApplication/.test(text)) {
+            hits.push(path.relative(ROOT, full));
+          }
+        }
+      }
+    };
+    walk(dir);
+    assert.deepStrictEqual(hits, [], `global.atomApplication still read in:\n${hits.join('\n')}`);
   });
 
   it('module-cache registers chevron and no atom builtin', () => {

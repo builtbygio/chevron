@@ -251,8 +251,8 @@ exports.restartAtom = () => {
   let args;
   const atomCmdName = execName.replace('.exe', '.cmd');
 
-  if (global.atomApplication && global.atomApplication.lastFocusedWindow) {
-    const { projectPath } = global.atomApplication.lastFocusedWindow;
+  if (global.chevronApplication && global.chevronApplication.lastFocusedWindow) {
+    const { projectPath } = global.chevronApplication.lastFocusedWindow;
     if (projectPath) args = [projectPath];
   }
   Spawner.spawn(path.join(binFolder, atomCmdName), args);
