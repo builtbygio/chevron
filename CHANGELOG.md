@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Removed** `exports/atom.js` and the `atom` module-cache builtin (H3 PR 23 slice 2). `require('atom')` now fails with `MODULE_NOT_FOUND` instead of resolving to a deprecated shim. Core no longer *reads* `global.atom` anywhere — the `global.chevron || global.atom` fallbacks in `src/lsp/**` are gone. **`global.atom` itself stays**: 1360 bare `atom.` references survive across 57 bundled packages (40 of them external pins), so removing the global is a catalog conversion stream, not a core edit. `global.atomApplication` in the main process is a **different** object and is unchanged.
+
 - Core reads `chevron.*`, not the legacy `atom` global (H3 PR 23 slice 1). 59 bare `atom.` references across 21 files in `src/` now use `chevron.`. Behaviour-neutral while `global.atom` still exists; it is the prerequisite for deleting the alias, since the shim cannot go while core still reads it. Comments and message strings referencing `atom.*` are untouched.
 - `src/package-host-eligibility.ts` is TypeScript, and `script/ci/src-typescript-first.test.js` now runs in CI. The guard existed but was never invoked, so Epic 21 landed six new `src/**/*.js` files against PR 16's TypeScript-first policy without CI noticing. `src/main-process/**` is now an explicit, documented exemption: main registers no TypeScript compile-cache, and utilityProcess entries are forked by literal path whose extension differs between dev and packaged builds. A companion assertion fails if any `.ts` appears under an exempt directory, so the exemption cannot quietly widen.
 

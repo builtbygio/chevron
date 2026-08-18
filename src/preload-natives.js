@@ -39,7 +39,7 @@ const editorNatives = [
       'src/default-directory-provider.ts',
       'src/theme-manager.js',
       'src/workspace.js',
-      'exports/atom.js'
+      'exports/chevron.js'
     ]
   },
   {

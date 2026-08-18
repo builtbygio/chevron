@@ -314,7 +314,7 @@ async function handleServerRequest(msg) {
   if (msg.method === 'workspace/applyEdit') {
     const edit = msg.params && msg.params.edit;
     const result = await applyWorkspaceEdit(edit, {
-      env: global.chevron || global.atom,
+      env: global.chevron,
       getEncodingForUri: () => encodingByServerId.get(msg.serverId) || 'utf-16'
     });
     await ipcRenderer.invoke('lsp:respond', {
@@ -337,7 +337,7 @@ async function handleServerRequest(msg) {
 
 async function applyEdit(edit, serverId) {
   return applyWorkspaceEdit(edit, {
-    env: global.chevron || global.atom,
+    env: global.chevron,
     getEncodingForUri: () =>
       (serverId && encodingByServerId.get(serverId)) || 'utf-16'
   });
@@ -425,7 +425,7 @@ function getDiagnosticsService() {
 }
 
 function isFormatOnSaveEnabled() {
-  const env = global.chevron || global.atom;
+  const env = global.chevron;
   if (!env || !env.config) return false;
   try {
     return Boolean(env.config.get('lsp.formatOnSave'));
@@ -465,7 +465,7 @@ function activate() {
     getServerIdForEditor
   });
 
-  const env = global.chevron || global.atom;
+  const env = global.chevron;
   if (env && env.workspace) {
     disposables.add(
       env.workspace.observeTextEditors(async editor => {
@@ -673,7 +673,7 @@ async function recordTrustDecision(projectRoot, trusted) {
 }
 
 async function startServersForOpenEditors() {
-  const env = global.chevron || global.atom;
+  const env = global.chevron;
   if (!env || !env.workspace || !documentSync) return;
   for (const editor of env.workspace.getTextEditors()) {
     const serverId = await ensureServerForEditor(editor);

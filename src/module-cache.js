@@ -272,8 +272,6 @@ function resolveModulePath(relativePath, parentModule) {
 
 function registerBuiltins(devMode) {
   const chevronJsPath = path.join(cache.resourcePath, 'exports', 'chevron.js');
-  const atomJsPath = path.join(cache.resourcePath, 'exports', 'atom.js');
-
   if (
     devMode ||
     !cache.resourcePath.startsWith(`${process.resourcesPath}${path.sep}`)
@@ -282,16 +280,12 @@ function registerBuiltins(devMode) {
     if (fs.isFileSync(chevronJsPath)) {
       cache.builtins.chevron = chevronJsPath;
     }
-    if (fs.isFileSync(atomJsPath)) {
-      cache.builtins.atom = atomJsPath;
-    }
   }
-  // Chevron-primary package API; atom remains an alias file (exports/atom.js).
+  // Chevron-only package API. The exports/atom.js alias was removed in PR 23,
+  // so `atom` is no longer a registered builtin — require('atom') now fails
+  // with MODULE_NOT_FOUND rather than resolving to a shim.
   if (cache.builtins.chevron == null) {
     cache.builtins.chevron = chevronJsPath;
-  }
-  if (cache.builtins.atom == null) {
-    cache.builtins.atom = atomJsPath;
   }
 }
 

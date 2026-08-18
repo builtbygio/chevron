@@ -48,7 +48,7 @@ async function formatDocument(client, editor) {
   const uri = pathToUri(filePath);
   if (!uri) return { ok: false, edits: 0, error: 'no uri' };
 
-  const env = global.chevron || global.atom;
+  const env = global.chevron;
   const { result, error } = await client.request(
     serverId,
     'textDocument/formatting',
@@ -84,7 +84,7 @@ async function formatRange(client, editor, range) {
   const r = range || (editor.getSelectedBufferRange && editor.getSelectedBufferRange());
   if (!r) return formatDocument(client, editor);
 
-  const env = global.chevron || global.atom;
+  const env = global.chevron;
   const { result, error } = await client.request(
     serverId,
     'textDocument/rangeFormatting',

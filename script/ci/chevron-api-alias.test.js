@@ -14,24 +14,18 @@ const fs = require('fs');
 const ROOT = path.resolve(__dirname, '..', '..');
 const exportsPath = path.join(ROOT, 'exports');
 
-describe('chevron / atom package API exports', () => {
-  it('exports/atom.js re-exports exports/chevron.js with deprecation', () => {
-    const atomSrc = fs.readFileSync(path.join(exportsPath, 'atom.js'), 'utf8');
+describe('chevron package API exports', () => {
+  it('exports/atom.js is gone; exports/chevron.js is the only package API', () => {
+    assert.ok(
+      !fs.existsSync(path.join(exportsPath, 'atom.js')),
+      'exports/atom.js was removed in PR 23; require("atom") is unsupported'
+    );
     const chevronSrc = fs.readFileSync(
       path.join(exportsPath, 'chevron.js'),
       'utf8'
     );
     assert.ok(
-      /require\(\s*['"]\.\/chevron['"]\s*\)/.test(atomSrc),
-      'atom.js must re-export ./chevron'
-    );
-    assert.ok(
-      /legacy alias|require\(["']chevron["']\)/.test(atomSrc),
-      'atom.js should document/require chevron migration'
-    );
-    assert.ok(
-      /module\.exports\s*=\s*chevronExport/.test(chevronSrc) ||
-        /module\.exports\s*=/.test(chevronSrc),
+      /module\.exports\s*=/.test(chevronSrc),
       'chevron.js must export the API object'
     );
     assert.ok(
@@ -40,13 +34,44 @@ describe('chevron / atom package API exports', () => {
     );
   });
 
-  it('initialize-application-window sets global.chevron and global.atom', () => {
+  it('initialize-application-window sets global.chevron, and atom as an alias', () => {
     const src = fs.readFileSync(
       path.join(ROOT, 'src/initialize-application-window.js'),
       'utf8'
     );
     assert.ok(src.includes('global.chevron'), 'must set global.chevron');
-    assert.ok(src.includes('global.atom'), 'must keep global.atom alias');
+    // The global alias stays: 1360 bare `atom.` references survive across 57
+    // bundled packages. Removing it is a catalog stream, not a core edit.
+    assert.ok(/global\.atom\s*=/.test(src), 'global.atom alias still required');
+  });
+
+  it('no core source READS the global.atom alias', () => {
+    // Assigning it is required (bundled packages depend on the global);
+    // reading it from core is not. main-process global.atomApplication is a
+    // different object and out of scope for PR 23.
+    const roots = ['src', 'static', 'exports'];
+    const hits = [];
+    const walk = dir => {
+      if (!fs.existsSync(dir)) return;
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) walk(full);
+        else if (/\.(js|ts)$/.test(e.name)) {
+          const text = fs.readFileSync(full, 'utf8');
+          for (const line of text.split('\n')) {
+            const t = line.trimStart();
+            if (t.startsWith('//') || t.startsWith('*')) continue;
+            if (/global\.atom\s*=/.test(line)) continue; // the assignment
+            if (/global\.atom\b(?!Application)/.test(line)) {
+              hits.push(path.relative(ROOT, full));
+              break;
+            }
+          }
+        }
+      }
+    };
+    for (const r of roots) walk(path.join(ROOT, r));
+    assert.deepStrictEqual(hits, [], `global.atom still read in:\n${hits.join('\n')}`);
   });
 
   it('main process sets chevronApplication + atomApplication alias', () => {
@@ -58,18 +83,15 @@ describe('chevron / atom package API exports', () => {
     assert.ok(src.includes('global.atomApplication'));
   });
 
-  it('module-cache registers chevron and atom builtins', () => {
-    const src = fs.readFileSync(
-      path.join(ROOT, 'src/module-cache.js'),
-      'utf8'
-    );
+  it('module-cache registers chevron and no atom builtin', () => {
+    const src = fs.readFileSync(path.join(ROOT, 'src/module-cache.js'), 'utf8');
     assert.ok(
       /cache\.builtins\.chevron\s*=/.test(src),
       'must register builtins.chevron'
     );
     assert.ok(
-      /cache\.builtins\.atom\s*=/.test(src),
-      'must register builtins.atom'
+      !/cache\.builtins\.atom\s*=/.test(src),
+      'builtins.atom was removed in PR 23; it pointed at a deleted file'
     );
   });
 });
