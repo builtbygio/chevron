@@ -9,7 +9,7 @@
  * an adjective.
  *
  * Launches the packaged app with a throwaway CHEVRON_HOME, attaches over CDP,
- * and reads `atom.getStartupMarkers()` — the internal timeline, relative to
+ * and reads `chevron.getStartupMarkers()` — the internal timeline, relative to
  * process start (`StartupTime.setStartTime()` in main.js). Repeats N times and
  * reports best / median / spread.
  *
@@ -69,8 +69,9 @@ function jsonList() {
   });
 }
 
-// Read markers from the isolated world — with contextIsolation, `atom` lives in
-// the preload context, so a main-world evaluate silently sees nothing.
+// Read markers from the isolated world — with contextIsolation, `chevron` lives
+// in the preload context, so a main-world evaluate silently sees nothing.
+// (`atom` was the name here until H3 PR 23 deleted the alias.)
 // `window:setup-window:end` is after startEditorWindow() — workspace ready.
 // Do not stop at `window:onload:end`: that marker is written when the onload
 // handler returns, before the async setupWindow() work finishes. On a fast
@@ -78,8 +79,8 @@ function jsonList() {
 const TERMINAL_MARKER = /window:setup-window:end|window:environment:start-editor-window:end/;
 
 const MARKERS_EXPR = `(function () {
-  if (typeof atom === 'undefined' || !atom.getStartupMarkers) return 'nope:no-atom';
-  const m = atom.getStartupMarkers();
+  if (typeof chevron === 'undefined' || !chevron.getStartupMarkers) return 'nope:no-chevron';
+  const m = chevron.getStartupMarkers();
   if (!m || !m.length) return 'nope:no-markers';
   const done = m.some(x => ${TERMINAL_MARKER}.test(x.label));
   if (!done) return 'nope:' + m.map(x => x.label).join(',');
@@ -167,7 +168,7 @@ async function gracefulQuit(app) {
           method: 'Runtime.evaluate',
           params: {
             expression:
-              '(function(){ try { if (typeof atom !== "undefined") { if (atom.saveBlobStoreSync) atom.saveBlobStoreSync(); if (atom.close) atom.close(); } } catch (e) {} try { window.close(); } catch (e) {} })()',
+              '(function(){ try { if (typeof chevron !== "undefined") { if (chevron.saveBlobStoreSync) chevron.saveBlobStoreSync(); if (chevron.close) chevron.close(); } } catch (e) {} try { window.close(); } catch (e) {} })()',
             returnByValue: true
           }
         })
