@@ -211,7 +211,7 @@ module.exports = class ApplicationMenu {
   }
 
   focusedWindow() {
-    return global.atomApplication
+    return global.chevronApplication
       .getAllWindows()
       .find(window => window.isFocused());
   }
@@ -241,7 +241,7 @@ module.exports = class ApplicationMenu {
           }
         }
         item.click = () =>
-          global.atomApplication.sendCommand(item.command, item.commandDetail);
+          global.chevronApplication.sendCommand(item.command, item.commandDetail);
         if (!/^application:/.test(item.command)) {
           item.metadata.windowSpecific = true;
         }
