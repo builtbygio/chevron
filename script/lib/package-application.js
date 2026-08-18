@@ -133,45 +133,12 @@ function copyNonASARResources(packagedAppPath, bundledResourcesPath) {
     filter: includePathInPackagedApp
   });
 
-  // Legacy app/apm/... paths → real launcher scripts (not symlinks: broken
-  // relative links break fs.copySync when creating deb/rpm).
-  // From app/apm/bin → ../../cpm/bin/apm; from app/apm/node_modules/.bin → ../../../cpm/bin/apm
-  const legacyApmBin = path.join(
-    bundledResourcesPath,
-    'app',
-    'apm',
-    'node_modules',
-    '.bin'
-  );
-  fs.mkdirSync(legacyApmBin, { recursive: true });
-  const legacyApmTop = path.join(bundledResourcesPath, 'app', 'apm', 'bin');
-  fs.mkdirSync(legacyApmTop, { recursive: true });
-
-  const writeUnixShim = (filePath, relToCpmApm) => {
-    fs.writeFileSync(
-      filePath,
-      `#!/bin/bash\nexec "$(dirname "$0")/${relToCpmApm}" "$@"\n`,
-      { mode: 0o755 }
-    );
-  };
-  const writeWinShim = (filePath, relToCpmApmCmd) => {
-    fs.writeFileSync(
-      filePath,
-      `@echo off\r\n"%~dp0${relToCpmApmCmd}" %*\r\n`
-    );
-  };
-
-  if (process.platform === 'win32') {
-    writeWinShim(path.join(legacyApmBin, 'apm.cmd'), '..\\..\\..\\cpm\\bin\\apm.cmd');
-    writeWinShim(path.join(legacyApmTop, 'apm.cmd'), '..\\..\\cpm\\bin\\apm.cmd');
-  } else {
-    writeUnixShim(path.join(legacyApmBin, 'apm'), '../../../cpm/bin/apm');
-    writeUnixShim(path.join(legacyApmTop, 'apm'), '../../cpm/bin/apm');
-  }
-
+  // The legacy app/apm/... launcher shims were removed in H3 PR 23 along
+  // with cpm/bin/apm. Nothing resolves those paths any more:
+  // PackageManager#getApmPath now returns cpm/bin/cpm directly.
   // Ensure cpm launchers are executable after filter copy
   const cpmBinDir = path.join(bundledResourcesPath, 'app', 'cpm', 'bin');
-  for (const name of ['cpm', 'apm']) {
+  for (const name of ['cpm']) {
     const p = path.join(cpmBinDir, name);
     if (fs.existsSync(p)) {
       try {
@@ -228,8 +195,6 @@ function copyNonASARResources(packagedAppPath, bundledResourcesPath) {
     [
       'atom.sh',
       'atom.js',
-      'apm.cmd',
-      'apm.sh',
       'cpm.cmd',
       'cpm.sh',
       'file.ico',

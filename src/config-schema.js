@@ -364,7 +364,7 @@ const configSchema = {
       useProxySettingsWhenCallingApm: {
         title: 'Use Proxy Settings When Calling Package Manager',
         description:
-          'Use detected proxy settings when calling the package manager (`cpm`, or the `apm` shim).',
+          'Use detected proxy settings when calling the package manager (`cpm`).',
         type: 'boolean',
         default: true
       },

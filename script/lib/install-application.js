@@ -77,8 +77,6 @@ module.exports = function(packagedAppPath, installDir) {
   } else {
     // Linux install-from-source: use Chevron channel ids (chevron / chevron-beta).
     const atomExecutableName = CONFIG.channelName;
-    const apmExecutableName =
-      CONFIG.channel === 'stable' ? 'apm' : 'apm-' + CONFIG.channel;
     const appName = CONFIG.appName;
     const appDescription = CONFIG.appMetadata.description;
     const prefixDirPath =
@@ -196,54 +194,7 @@ module.exports = function(packagedAppPath, installDir) {
       );
     }
 
-    {
-      // Link apm executable to the PATH
-      const apmBinDestinationPath = path.join(binDirPath, apmExecutableName);
-      try {
-        fs.lstatSync(apmBinDestinationPath);
-        console.log(
-          `Removing existing executable at "${apmBinDestinationPath}"`
-        );
-        fs.removeSync(apmBinDestinationPath);
-      } catch (e) {}
-      console.log(`Symlinking apm → cpm shim at "${apmBinDestinationPath}"`);
-      fs.symlinkSync(
-        path.join(
-          '..',
-          'share',
-          atomExecutableName,
-          'resources',
-          'app',
-          'cpm',
-          'bin',
-          'apm'
-        ),
-        apmBinDestinationPath
-      );
-
-      // Also install cpm on PATH
-      const cpmExecutableName =
-        CONFIG.channel === 'stable' ? 'cpm' : 'cpm-' + CONFIG.channel;
-      const cpmBinDestinationPath = path.join(binDirPath, cpmExecutableName);
-      try {
-        fs.lstatSync(cpmBinDestinationPath);
-        fs.removeSync(cpmBinDestinationPath);
-      } catch (e) {}
-      console.log(`Symlinking cpm to "${cpmBinDestinationPath}"`);
-      fs.symlinkSync(
-        path.join(
-          '..',
-          'share',
-          atomExecutableName,
-          'resources',
-          'app',
-          'cpm',
-          'bin',
-          'cpm'
-        ),
-        cpmBinDestinationPath
-      );
-    }
+    // The apm name was retired in H3 PR 23; only chevron and cpm are linked.
 
     console.log(`Changing permissions to 755 for "${installationDirPath}"`);
     fs.chmodSync(installationDirPath, '755');
