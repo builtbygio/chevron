@@ -1,11 +1,10 @@
 {
   "name": "@chevron/cpm",
-  "version": "0.1.0",
-  "description": "Chevron Package Manager — Electron-as-Node installer for Atom-compatible packages",
+  "version": "0.2.0",
+  "description": "Chevron Package Manager \u2014 Electron-as-Node installer for Atom-compatible packages",
   "main": "lib/cli.js",
   "bin": {
-    "cpm": "bin/cpm",
-    "apm": "bin/apm"
+    "cpm": "bin/cpm"
   },
   "engines": {
     "node": ">=18"

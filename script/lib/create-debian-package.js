@@ -11,8 +11,6 @@ const CONFIG = require('../config');
 module.exports = function(packagedAppPath) {
   console.log(`Creating Debian package for "${packagedAppPath}"`);
   const atomExecutableName = CONFIG.channelName; // chevron / chevron-beta
-  const apmExecutableName =
-    CONFIG.channel === 'stable' ? 'apm' : `apm-${CONFIG.channel}`;
   const appDescription = CONFIG.appMetadata.description;
   const appVersion = CONFIG.appMetadata.version;
   let arch;
@@ -101,20 +99,7 @@ module.exports = function(packagedAppPath) {
     path.join(CONFIG.repositoryRootPath, 'atom.sh'),
     path.join(debianPackageBinDirPath, atomExecutableName)
   );
-  // Phase 4: apm name → cpm apm shim (classic apm tree retired)
-  fs.symlinkSync(
-    path.join(
-      '..',
-      'share',
-      atomExecutableName,
-      'resources',
-      'app',
-      'cpm',
-      'bin',
-      'apm'
-    ),
-    path.join(debianPackageBinDirPath, apmExecutableName)
-  );
+  // The apm name was retired in H3 PR 23; only cpm is installed.
   const cpmExecutableName =
     CONFIG.channel === 'stable' ? 'cpm' : `cpm-${CONFIG.channel}`;
   fs.symlinkSync(

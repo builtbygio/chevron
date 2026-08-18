@@ -11,8 +11,6 @@ const CONFIG = require('../config');
 module.exports = function(packagedAppPath) {
   console.log(`Creating rpm package for "${packagedAppPath}"`);
   const atomExecutableName = CONFIG.channelName; // chevron / chevron-beta
-  const apmExecutableName =
-    CONFIG.channel === 'stable' ? 'apm' : `apm-${CONFIG.channel}`;
   const cpmExecutableName =
     CONFIG.channel === 'stable' ? 'cpm' : `cpm-${CONFIG.channel}`;
   const appName = CONFIG.appName;
@@ -79,7 +77,6 @@ module.exports = function(packagedAppPath) {
   const rpmPackageSpecsContents = template(rpmPackageSpecsTemplate)({
     appName: appName,
     appFileName: atomExecutableName,
-    apmFileName: apmExecutableName,
     cpmFileName: cpmExecutableName,
     description: appDescription,
     installDir: '/usr',

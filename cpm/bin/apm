@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-# apm compatibility shim → cpm
-set -euo pipefail
-DIR="$(cd "$(dirname "$0")" && pwd)"
-exec "$DIR/cpm" "$@"

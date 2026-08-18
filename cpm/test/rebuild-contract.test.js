@@ -57,16 +57,15 @@ describe('§5.5.1 rebuild contract (BufferedProcess shape)', () => {
     );
   });
 
-  it('apm shim invokes the same rebuild entry', () => {
-    const apmShim = path.join(__dirname, '..', 'bin', 'apm');
-    assert.ok(fs.existsSync(apmShim));
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cpm-contract-apm-'));
-    fs.writeFileSync(
-      path.join(tmp, 'package.json'),
-      JSON.stringify({ name: 'cpm-contract-apm', version: '1.0.0' })
+  it('no apm shim ships: cpm is the only published bin', () => {
+    // Retired in H3 PR 23. Nothing installs an `apm` name any more, and
+    // PackageManager#getApmPath falls back to bin/cpm when the shim is
+    // absent, so removing it degrades rather than breaks.
+    assert.ok(!fs.existsSync(path.join(__dirname, '..', 'bin', 'apm')));
+    assert.ok(!fs.existsSync(path.join(__dirname, '..', 'bin', 'apm.cmd')));
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')
     );
-    // Invoke via node + cli with same args the shim would forward
-    const out = runRebuildLikeEditor(tmp);
-    assert.strictEqual(out.code, 0, out.stderr);
+    assert.deepStrictEqual(Object.keys(pkg.bin), ['cpm']);
   });
 });

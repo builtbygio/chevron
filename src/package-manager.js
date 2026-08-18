@@ -197,32 +197,21 @@ module.exports = class PackageManager {
       return configPath || this.apmPath;
     }
 
-    // Phase 4: package manager is cpm; apm name is a long-lived shim.
-    const commandName = process.platform === 'win32' ? 'apm.cmd' : 'apm';
+    // The package manager is cpm. The apm shim was retired in H3 PR 23; this
+    // method keeps its name because it is public API that packages call
+    // (settings-view spawns it to list installed packages).
     const cpmCommand = process.platform === 'win32' ? 'cpm.cmd' : 'cpm';
     const cpmRoot = path.join(process.resourcesPath, 'app', 'cpm');
-    const cpmApmShim = path.join(cpmRoot, 'bin', commandName);
     const cpmBin = path.join(cpmRoot, 'bin', cpmCommand);
-    if (fs.isFileSync(cpmApmShim)) {
-      this.apmPath = cpmApmShim;
-      return this.apmPath;
-    }
     if (fs.isFileSync(cpmBin)) {
       this.apmPath = cpmBin;
       return this.apmPath;
     }
 
-    // Legacy layout only (pre–Phase 4 installs / dev trees).
-    const apmRoot = path.join(process.resourcesPath, 'app', 'apm');
-    this.apmPath = path.join(apmRoot, 'bin', commandName);
-    if (!fs.isFileSync(this.apmPath)) {
-      this.apmPath = path.join(
-        apmRoot,
-        'node_modules',
-        '.bin',
-        commandName
-      );
-    }
+    // Dev trees and unpackaged runs have no bundled cpm. Returning the
+    // expected path (rather than the old app/apm/... fallback, which no
+    // longer exists) keeps callers spawning something they can report on.
+    this.apmPath = cpmBin;
     return this.apmPath;
   }
 

@@ -198,6 +198,7 @@ jobs:
           node --test script/ci/deferred-startup-packages.test.js
           node --test script/ci/language-stack.test.js
           node --test script/ci/no-atom-global.test.js
+          node --test script/ci/no-apm.test.js
           node --test script/ci/no-coffee.test.js
           node --test script/ci/win32-userdata-name.test.js
           node --test script/ci/package-host-bootstrap.test.js
