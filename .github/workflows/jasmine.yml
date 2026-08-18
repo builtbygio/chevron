@@ -34,15 +34,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
-    # Sharded because the single job never finished: every recent nightly ran
-    # the full 240 minutes and was cancelled, so the suite produced no result
-    # at all. `core` runs the src/ specs; the package specs are split three
-    # ways by ATOM_PACKAGES_TO_TEST. A shard that times out now costs one
-    # shard's signal, not the whole run.
+    # Sharded because the single job never finished: every nightly before this
+    # ran the full 240 minutes and was cancelled, so the suite produced no
+    # result at all.
+    #
+    # Three package shards was still too coarse — run 32124370522 had three of
+    # four jobs hit the 120-minute cap with 31 packages each, leaving most of
+    # the catalog unmeasured. Eight shards puts it at ~12 packages per job.
     strategy:
       fail-fast: false
       matrix:
-        shard: [core, packages-1, packages-2, packages-3]
+        shard:
+          - core
+          - packages-1
+          - packages-2
+          - packages-3
+          - packages-4
+          - packages-5
+          - packages-6
+          - packages-7
+          - packages-8
 
     steps:
       - uses: actions/checkout@v5
@@ -137,12 +148,21 @@ jobs:
         if: matrix.shard != 'core'
         run: |
           node -e "
+            const SHARDS = Number(process.env.PACKAGE_SHARDS);
             const pd = Object.keys(require('./package.json').packageDependencies || {}).sort();
             const idx = Number('${{ matrix.shard }}'.split('-')[1]) - 1;
-            const mine = pd.filter((_, i) => i % 3 === idx);
+            if (!Number.isInteger(idx) || idx < 0 || idx >= SHARDS) {
+              throw new Error('shard index ' + idx + ' outside PACKAGE_SHARDS=' + SHARDS);
+            }
+            const mine = pd.filter((_, i) => i % SHARDS === idx);
             console.log('shard ${{ matrix.shard }}: ' + mine.length + ' of ' + pd.length + ' packages');
             require('fs').appendFileSync(process.env.GITHUB_ENV, 'SHARD_PACKAGES=' + mine.join(',') + '\n');
           "
+        env:
+          # Must equal the number of packages-N entries in the matrix above.
+          # The step throws if a shard index falls outside it, so the two
+          # cannot drift apart silently.
+          PACKAGE_SHARDS: '8'
 
       - name: Full Jasmine (Xvfb)
         env:
