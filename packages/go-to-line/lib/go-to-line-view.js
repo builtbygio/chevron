@@ -31,18 +31,18 @@ class GoToLineView {
     this.element.classList.add("go-to-line");
     this.element.appendChild(this.miniEditor.element);
     this.element.appendChild(this.message);
-    this.panel = atom.workspace.addModalPanel({
+    this.panel = chevron.workspace.addModalPanel({
       item: this,
       visible: false
     });
-    atom.commands.add("atom-text-editor", "go-to-line:toggle", () => {
+    chevron.commands.add("atom-text-editor", "go-to-line:toggle", () => {
       this.toggle();
       return false;
     });
-    atom.commands.add(this.miniEditor.element, "core:confirm", () => {
+    chevron.commands.add(this.miniEditor.element, "core:confirm", () => {
       this.navigate();
     });
-    atom.commands.add(this.miniEditor.element, "core:cancel", () => {
+    chevron.commands.add(this.miniEditor.element, "core:cancel", () => {
       this.close();
     });
     this.miniEditor.onWillInsertText((arg) => {
@@ -67,7 +67,7 @@ class GoToLineView {
   }
   navigate(options = {}) {
     const lineNumber = this.miniEditor.getText();
-    const editor = atom.workspace.getActiveTextEditor();
+    const editor = chevron.workspace.getActiveTextEditor();
     if (!options.keepOpen) {
       this.close();
     }
@@ -95,10 +95,10 @@ class GoToLineView {
     if (this.previouslyFocusedElement && this.previouslyFocusedElement.parentElement) {
       return this.previouslyFocusedElement.focus();
     }
-    atom.views.getView(atom.workspace).focus();
+    chevron.views.getView(chevron.workspace).focus();
   }
   open() {
-    if (this.panel.isVisible() || !atom.workspace.getActiveTextEditor()) return;
+    if (this.panel.isVisible() || !chevron.workspace.getActiveTextEditor()) return;
     this.storeFocusedElement();
     this.panel.show();
     this.message.textContent = 'Enter a <row> or <row>:<column> to go there. Examples: "3" for row 3 or "2:7" for row 2 and column 7';

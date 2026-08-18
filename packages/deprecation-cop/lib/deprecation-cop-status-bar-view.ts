@@ -36,8 +36,8 @@ module.exports =
       this.element.appendChild(this.deprecationNumber);
 
       const clickHandler = function() {
-        const workspaceElement = atom.views.getView(atom.workspace);
-        return atom.commands.dispatch(workspaceElement, 'deprecation-cop:view');
+        const workspaceElement = chevron.views.getView(chevron.workspace);
+        return chevron.commands.dispatch(workspaceElement, 'deprecation-cop:view');
       };
       this.element.addEventListener('click', clickHandler);
       this.subscriptions.add(new Disposable(() => this.element.removeEventListener('click', clickHandler)));
@@ -48,8 +48,8 @@ module.exports =
 
       this.subscriptions.add(Grim.on('updated', this.update));
       // TODO: Remove conditional when the new StyleManager deprecation APIs reach stable.
-      if (atom.styles.onDidUpdateDeprecations != null) {
-        this.subscriptions.add(atom.styles.onDidUpdateDeprecations(debouncedUpdateDeprecatedSelectorCount));
+      if (chevron.styles.onDidUpdateDeprecations != null) {
+        this.subscriptions.add(chevron.styles.onDidUpdateDeprecations(debouncedUpdateDeprecatedSelectorCount));
       }
     }
 
@@ -64,8 +64,8 @@ module.exports =
 
     getDeprecatedStyleSheetsCount() {
       // TODO: Remove conditional when the new StyleManager deprecation APIs reach stable.
-      if (atom.styles.getDeprecations != null) {
-        return Object.keys(atom.styles.getDeprecations()).length;
+      if (chevron.styles.getDeprecations != null) {
+        return Object.keys(chevron.styles.getDeprecations()).length;
       } else {
         return 0;
       }
@@ -81,7 +81,7 @@ module.exports =
       if (this.toolTipDisposable != null) {
         this.toolTipDisposable.dispose();
       }
-      this.toolTipDisposable = atom.tooltips.add(this.element, {title: `${_.pluralize(length, 'call')} to deprecated methods`});
+      this.toolTipDisposable = chevron.tooltips.add(this.element, {title: `${_.pluralize(length, 'call')} to deprecated methods`});
 
       if (length === 0) {
         return this.element.style.display = 'none';

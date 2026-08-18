@@ -267,36 +267,36 @@ class GuideView {
   }
   didClickProjectButton() {
     this.props.reporterProxy.sendEvent("clicked-project-cta");
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
+    chevron.commands.dispatch(
+      chevron.views.getView(chevron.workspace),
       "application:add-project-folder"
     );
   }
   didClickGitButton() {
     this.props.reporterProxy.sendEvent("clicked-git-cta");
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
+    chevron.commands.dispatch(
+      chevron.views.getView(chevron.workspace),
       "github:toggle-git-tab"
     );
   }
   didClickGitHubButton() {
     this.props.reporterProxy.sendEvent("clicked-github-cta");
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
+    chevron.commands.dispatch(
+      chevron.views.getView(chevron.workspace),
       "github:toggle-github-tab"
     );
   }
   async openSettings(uri) {
     try {
-      await atom.packages.activatePackage("settings-view");
+      await chevron.packages.activatePackage("settings-view");
     } catch (error) {
-      atom.notifications.addError("Could not open Settings", {
+      chevron.notifications.addError("Could not open Settings", {
         detail: error && error.message ? error.message : String(error),
         dismissable: true
       });
       return;
     }
-    return atom.workspace.open(uri, { split: "left" });
+    return chevron.workspace.open(uri, { split: "left" });
   }
   didClickPackagesButton() {
     this.props.reporterProxy.sendEvent("clicked-packages-cta");
@@ -308,15 +308,15 @@ class GuideView {
   }
   didClickStylingButton() {
     this.props.reporterProxy.sendEvent("clicked-styling-cta");
-    atom.workspace.open("atom://.atom/stylesheet", { split: "left" });
+    chevron.workspace.open("atom://.atom/stylesheet", { split: "left" });
   }
   didClickInitScriptButton() {
     this.props.reporterProxy.sendEvent("clicked-init-script-cta");
-    atom.workspace.open("atom://.atom/init-script", { split: "left" });
+    chevron.workspace.open("atom://.atom/init-script", { split: "left" });
   }
   didClickSnippetsButton() {
     this.props.reporterProxy.sendEvent("clicked-snippets-cta");
-    atom.workspace.open("atom://.atom/snippets", { split: "left" });
+    chevron.workspace.open("atom://.atom/snippets", { split: "left" });
   }
   didExpandOrCollapseSection(event) {
     const sectionName = event.currentTarget.closest("details").dataset.section;

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- In-repo bundled packages use the `chevron` global instead of `atom` (H3 PR 23 stream, slice 1 of ~39). 211 references across 17 packages. `script/ci/no-atom-global.test.js` guards `packages/*/lib` and `packages/*/src` against regression; it masks string literals and skips comments, so selectors like `"atom-text-editor"` and paths like `'../static/atom.less'` are untouched. The 38 owned `builtbygio` pins (1147 references) follow one repo at a time; `global.atom` can only be dropped once they are done.
+
 - **Removed** `exports/atom.js` and the `atom` module-cache builtin (H3 PR 23 slice 2). `require('atom')` now fails with `MODULE_NOT_FOUND` instead of resolving to a deprecated shim. Core no longer *reads* `global.atom` anywhere — the `global.chevron || global.atom` fallbacks in `src/lsp/**` are gone. **`global.atom` itself stays**: 1360 bare `atom.` references survive across 57 bundled packages (40 of them external pins), so removing the global is a catalog conversion stream, not a core edit. `global.atomApplication` in the main process is a **different** object and is unchanged.
 - **Removed** the `atom` and `apm` shell-command shims (H3 PR 23 slice 4). `Install Shell Commands` now installs `chevron` and `cpm` only, and startup auto-install does the same — it previously installed `atom` and `apm` and never `chevron`. `cpm/bin/apm` still ships: cpm declares it as a published bin and has a contract test for it, so retiring it belongs to a cpm release.
 

@@ -16,7 +16,7 @@ const CharacterPattern = new RegExp(`\
 
 module.exports = {
   activate() {
-    return this.commandDisposable = atom.commands.add('atom-text-editor', {
+    return this.commandDisposable = chevron.commands.add('atom-text-editor', {
       'autoflow:reflow-selection': event => {
         return this.reflowSelection(event.currentTarget.getModel());
       }
@@ -156,11 +156,11 @@ module.exports = {
 
   getTabLength(editor) {
     let left;
-    return (left = atom.config.get('editor.tabLength', {scope: editor.getRootScopeDescriptor()})) != null ? left : 2;
+    return (left = chevron.config.get('editor.tabLength', {scope: editor.getRootScopeDescriptor()})) != null ? left : 2;
   },
 
   getPreferredLineLength(editor) {
-    return atom.config.get('editor.preferredLineLength', {scope: editor.getRootScopeDescriptor()});
+    return chevron.config.get('editor.preferredLineLength', {scope: editor.getRootScopeDescriptor()});
   },
 
   wrapSegment(segment, currentLineLength, wrapColumn) {

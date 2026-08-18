@@ -2,13 +2,13 @@ const fs = require("fs");
 const path = require("path");
 module.exports = {
   async enumerate() {
-    if (atom.inDevMode()) {
+    if (chevron.inDevMode()) {
       return [];
     }
     const duplicatePackages = [];
-    const names = atom.packages.getAvailablePackageNames();
+    const names = chevron.packages.getAvailablePackageNames();
     for (let name of names) {
-      if (atom.packages.isBundledPackage(name)) {
+      if (chevron.packages.isBundledPackage(name)) {
         const isDuplicatedPackage = await this.isInstalledAsCommunityPackage(
           name
         );
@@ -20,7 +20,7 @@ module.exports = {
     return duplicatePackages;
   },
   async isInstalledAsCommunityPackage(name) {
-    const availablePackagePaths = atom.packages.getPackageDirPaths();
+    const availablePackagePaths = chevron.packages.getPackageDirPaths();
     for (let packagePath of availablePackagePaths) {
       const candidate = path.join(packagePath, name);
       if (fs.existsSync(candidate)) {

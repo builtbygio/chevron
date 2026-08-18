@@ -47,9 +47,9 @@ module.exports = class GrammarListView {
       didConfirmSelection: grammar => {
         this.cancel();
         if (grammar === this.autoDetect) {
-          atom.textEditors.clearGrammarOverride(this.editor);
+          chevron.textEditors.clearGrammarOverride(this.editor);
         } else {
-          atom.grammars.assignGrammar(this.editor, grammar);
+          chevron.grammars.assignGrammar(this.editor, grammar);
         }
       },
       didCancelSelection: () => {
@@ -79,7 +79,7 @@ module.exports = class GrammarListView {
   attach() {
     this.previouslyFocusedElement = document.activeElement;
     if (this.panel == null) {
-      this.panel = atom.workspace.addModalPanel({ item: this.selectListView });
+      this.panel = chevron.workspace.addModalPanel({ item: this.selectListView });
     }
     this.selectListView.focus();
     this.selectListView.reset();
@@ -91,21 +91,21 @@ module.exports = class GrammarListView {
       return;
     }
 
-    const editor = atom.workspace.getActiveTextEditor();
+    const editor = chevron.workspace.getActiveTextEditor();
     if (editor) {
       this.editor = editor;
       this.currentGrammar = this.editor.getGrammar();
-      if (this.currentGrammar === atom.grammars.nullGrammar) {
+      if (this.currentGrammar === chevron.grammars.nullGrammar) {
         this.currentGrammar = this.autoDetect;
       }
 
-      let grammars = atom.grammars
+      let grammars = chevron.grammars
         .getGrammars({ includeTreeSitter: true })
         .filter(grammar => {
-          return grammar !== atom.grammars.nullGrammar && grammar.name;
+          return grammar !== chevron.grammars.nullGrammar && grammar.name;
         });
 
-      if (atom.config.get('grammar-selector.hideDuplicateTextMateGrammars')) {
+      if (chevron.config.get('grammar-selector.hideDuplicateTextMateGrammars')) {
         const blacklist = new Set();
         grammars.forEach(grammar => {
           if (isTreeSitter(grammar)) {

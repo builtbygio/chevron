@@ -39,16 +39,16 @@ let disposables = null;
 function activate() {
   disposables = new import_atom.CompositeDisposable();
   disposables.add(
-    atom.workspace.addOpener((uri) => {
+    chevron.workspace.addOpener((uri) => {
       if (uri === import_view_uri.default) {
         return deserializeIncompatiblePackagesComponent();
       }
     })
   );
   disposables.add(
-    atom.commands.add("atom-workspace", {
+    chevron.commands.add("atom-workspace", {
       "incompatible-packages:view": () => {
-        atom.workspace.open(import_view_uri.default);
+        chevron.workspace.open(import_view_uri.default);
       }
     })
   );
@@ -58,21 +58,21 @@ function deactivate() {
 }
 function consumeStatusBar(statusBar) {
   let incompatibleCount = 0;
-  for (let pack of atom.packages.getLoadedPackages()) {
+  for (let pack of chevron.packages.getLoadedPackages()) {
     if (!pack.isCompatible()) incompatibleCount++;
   }
   if (incompatibleCount > 0) {
     let icon = createIcon(incompatibleCount);
     let tile = statusBar.addRightTile({ item: icon, priority: 200 });
     icon.element.addEventListener("click", () => {
-      atom.commands.dispatch(icon.element, "incompatible-packages:view");
+      chevron.commands.dispatch(icon.element, "incompatible-packages:view");
     });
     disposables.add(new import_atom.Disposable(() => tile.destroy()));
   }
 }
 function deserializeIncompatiblePackagesComponent() {
   const IncompatiblePackagesComponent = require("./incompatible-packages-component");
-  return new IncompatiblePackagesComponent(atom.packages);
+  return new IncompatiblePackagesComponent(chevron.packages);
 }
 function createIcon(count) {
   const StatusIconComponent = require("./status-icon-component");

@@ -53,16 +53,16 @@ class DeprecationCopView {
         import_etch.default.update(this);
       })
     );
-    if (atom.styles.onDidUpdateDeprecations) {
+    if (chevron.styles.onDidUpdateDeprecations) {
       this.subscriptions.add(
-        atom.styles.onDidUpdateDeprecations(() => {
+        chevron.styles.onDidUpdateDeprecations(() => {
           import_etch.default.update(this);
         })
       );
     }
     import_etch.default.initialize(this);
     this.subscriptions.add(
-      atom.commands.add(this.element, {
+      chevron.commands.add(this.element, {
         "core:move-up": () => {
           this.scrollUp();
         },
@@ -211,7 +211,7 @@ ${deprecation.message}`;
     }
   }
   renderPackageActionsIfNeeded(packageName) {
-    if (packageName && atom.packages.getLoadedPackage(packageName)) {
+    if (packageName && chevron.packages.getLoadedPackage(packageName)) {
       return /* @__PURE__ */ import_etch.default.dom("div", { className: "padded" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "btn-group" }, /* @__PURE__ */ import_etch.default.dom(
         "button",
         {
@@ -357,7 +357,7 @@ ${stacktrace}
     return result.text();
   }
   getRepoURL(packageName) {
-    const loadedPackage = atom.packages.getLoadedPackage(packageName);
+    const loadedPackage = chevron.packages.getLoadedPackage(packageName);
     if (loadedPackage && loadedPackage.metadata && loadedPackage.metadata.repository) {
       const url = loadedPackage.metadata.repository.url || loadedPackage.metadata.repository;
       return url.replace(/\.git$/, "");
@@ -387,8 +387,8 @@ ${stacktrace}
   }
   getDeprecatedSelectorsByPackageName() {
     const deprecatedSelectorsByPackageName = {};
-    if (atom.styles.getDeprecations) {
-      const deprecatedSelectorsBySourcePath = atom.styles.getDeprecations();
+    if (chevron.styles.getDeprecations) {
+      const deprecatedSelectorsBySourcePath = chevron.styles.getDeprecations();
       for (const sourcePath of Object.keys(deprecatedSelectorsBySourcePath)) {
         const deprecation = deprecatedSelectorsBySourcePath[sourcePath];
         const components = sourcePath.split(import_path.default.sep);
@@ -433,7 +433,7 @@ ${stacktrace}
           return packageName;
         }
       }
-      if (atom.getUserInitScriptPath() === fileName) {
+      if (chevron.getUserInitScriptPath() === fileName) {
         return `Your local ${import_path.default.basename(fileName)} file`;
       }
     }
@@ -444,18 +444,18 @@ ${stacktrace}
       return this.packagePathsByPackageName;
     } else {
       this.packagePathsByPackageName = /* @__PURE__ */ new Map();
-      for (const pack of atom.packages.getLoadedPackages()) {
+      for (const pack of chevron.packages.getLoadedPackages()) {
         this.packagePathsByPackageName.set(pack.name, pack.path);
       }
       return this.packagePathsByPackageName;
     }
   }
   checkForUpdates() {
-    atom.workspace.open("atom://config/updates");
+    chevron.workspace.open("atom://config/updates");
   }
   disablePackage(packageName) {
     if (packageName) {
-      atom.packages.disablePackage(packageName);
+      chevron.packages.disablePackage(packageName);
     }
   }
   openLocation(location) {
@@ -463,7 +463,7 @@ ${stacktrace}
     if (process.platform === "win32") {
       pathToOpen = pathToOpen.replace(/^\//, "");
     }
-    atom.open({ pathsToOpen: [pathToOpen] });
+    chevron.open({ pathsToOpen: [pathToOpen] });
   }
   getURI() {
     return this.uri;

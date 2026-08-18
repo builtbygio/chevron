@@ -14,7 +14,7 @@ declare const atom: {
 
 export function activate(): void {
   for (const nodeType of ['macro_invocation', 'macro_rule']) {
-    atom.grammars.addInjectionPoint('source.rust', {
+    chevron.grammars.addInjectionPoint('source.rust', {
       type: nodeType,
       language() {
         return 'rust';

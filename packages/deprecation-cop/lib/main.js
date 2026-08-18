@@ -7,22 +7,22 @@ class DeprecationCopPackage {
   activate() {
     this.disposables = new CompositeDisposable();
     this.disposables.add(
-      atom.workspace.addOpener(uri => {
+      chevron.workspace.addOpener(uri => {
         if (uri === ViewURI) {
           return this.deserializeDeprecationCopView({ uri });
         }
       })
     );
     this.disposables.add(
-      atom.commands.add('atom-workspace', 'deprecation-cop:view', () => {
-        atom.workspace.open(ViewURI);
+      chevron.commands.add('atom-workspace', 'deprecation-cop:view', () => {
+        chevron.workspace.open(ViewURI);
       })
     );
   }
 
   deactivate() {
     this.disposables.dispose();
-    const pane = atom.workspace.paneForURI(ViewURI);
+    const pane = chevron.workspace.paneForURI(ViewURI);
     if (pane) {
       pane.destroyItem(pane.itemForURI(ViewURI));
     }

@@ -32,11 +32,11 @@ function getReporter() {
 var main_default = {
   activate() {
     this.subscriptions = new import_atom.CompositeDisposable();
-    if (!atom.config.get("exception-reporting.userId")) {
-      atom.config.set("exception-reporting.userId", require("node-uuid").v4());
+    if (!chevron.config.get("exception-reporting.userId")) {
+      chevron.config.set("exception-reporting.userId", require("node-uuid").v4());
     }
     this.subscriptions.add(
-      atom.onDidThrowError(({ message, url, line, column, originalError }) => {
+      chevron.onDidThrowError(({ message, url, line, column, originalError }) => {
         try {
           getReporter().reportUncaughtException(originalError);
         } catch (secondaryException) {
@@ -51,9 +51,9 @@ var main_default = {
         }
       })
     );
-    if (atom.onDidFailAssertion != null) {
+    if (chevron.onDidFailAssertion != null) {
       this.subscriptions.add(
-        atom.onDidFailAssertion((error) => {
+        chevron.onDidFailAssertion((error) => {
           try {
             getReporter().reportFailedAssertion(error);
           } catch (secondaryException) {
