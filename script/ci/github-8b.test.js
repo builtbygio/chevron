@@ -22,10 +22,13 @@ describe('github 8B React 18 (inbox stays)', () => {
     const app = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     );
-    assert.strictEqual(app.packageDependencies.github, '0.37.9');
-    assert.match(app.dependencies.github, /50f4ba0d5a1a84dfe1d5d36d2d9a8908aef46a6e/);
+    // 0.37.x, not an exact pin: the package takes patch bumps (e.g. the PR 23
+    // chevron-global conversion) and this guard is about the 8B shape —
+    // React 18, no Relay — not about a frozen version number.
+    assert.match(app.packageDependencies.github, /^0\.37\.\d+$/);
+    assert.match(app.dependencies.github, /github\.git#[a-f0-9]{40}$/);
     const pkg = JSON.parse(read('package.json'));
-    assert.strictEqual(pkg.version, '0.37.9');
+    assert.match(pkg.version, /^0\.37\.\d+$/);
     assert.strictEqual(pkg.dependencies.react, '18.3.1');
     assert.strictEqual(pkg.dependencies['react-dom'], '18.3.1');
     assert.ok(!pkg.dependencies['react-relay']);

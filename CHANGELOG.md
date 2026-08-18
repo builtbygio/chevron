@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- All 37 owned `builtbygio` package pins use the `chevron` global instead of `atom` (H3 PR 23 stream, batch). 1136 references converted across the pins, on top of 211 in-repo in the previous slice — 1347 in total. `script/ci/no-atom-global.test.js` now covers the pins as well as `packages/`. Also rescued the `github` pin: it referenced commit `50f4ba0d`, which was reachable from **no branch** — fetchable by SHA so installs worked, but one GC away from breaking permanently. It now lives on `chevron/atom-global`.
+
 - In-repo bundled packages use the `chevron` global instead of `atom` (H3 PR 23 stream, slice 1 of ~39). 211 references across 17 packages. `script/ci/no-atom-global.test.js` guards `packages/*/lib` and `packages/*/src` against regression; it masks string literals and skips comments, so selectors like `"atom-text-editor"` and paths like `'../static/atom.less'` are untouched. The 38 owned `builtbygio` pins (1147 references) follow one repo at a time; `global.atom` can only be dropped once they are done.
 
 - **Removed** `exports/atom.js` and the `atom` module-cache builtin (H3 PR 23 slice 2). `require('atom')` now fails with `MODULE_NOT_FOUND` instead of resolving to a deprecated shim. Core no longer *reads* `global.atom` anywhere — the `global.chevron || global.atom` fallbacks in `src/lsp/**` are gone. **`global.atom` itself stays**: 1360 bare `atom.` references survive across 57 bundled packages (40 of them external pins), so removing the global is a catalog conversion stream, not a core edit. `global.atomApplication` in the main process is a **different** object and is unchanged.
