@@ -172,3 +172,31 @@ describe('packaging policy (Stream D)', () => {
     assert.strictEqual(notPrebuild, false);
   });
 });
+
+describe('rpm spec template', () => {
+  // A placeholder with no matching key makes lodash.template throw at render
+  // and fails the whole deb/rpm packaging step. The template is data, so
+  // nothing else in the repo type-checks or lints it. This caught a real
+  // break: apmFileName was dropped from the data and left in the spec.
+  it('every <%= placeholder %> has data passed to it', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const ROOT = path.resolve(__dirname, '..', '..');
+    const spec = fs.readFileSync(
+      path.join(ROOT, 'resources/linux/redhat/atom.spec.in'),
+      'utf8'
+    );
+    const src = fs.readFileSync(
+      path.join(ROOT, 'script/lib/create-rpm-package.js'),
+      'utf8'
+    );
+    const used = new Set([...spec.matchAll(/<%=\s*(\w+)\s*%>/g)].map(m => m[1]));
+    // Keys appear as `name: value`, `name,`, or bare shorthand on the last
+    // entry with no trailing comma.
+    const provided = new Set(
+      [...src.matchAll(/^\s*(\w+)\s*(?::|,|$)/gm)].map(m => m[1])
+    );
+    const missing = [...used].filter(k => !provided.has(k));
+    assert.deepStrictEqual(missing, [], `spec placeholders with no data: ${missing}`);
+  });
+});
