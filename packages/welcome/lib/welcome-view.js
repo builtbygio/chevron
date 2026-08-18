@@ -69,7 +69,7 @@ class WelcomeView {
   }
   didClickShowGuide() {
     this.props.reporterProxy.sendEvent("clicked-welcome-show-guide");
-    chevron.workspace.open("atom://welcome/guide", { searchAllPanes: true });
+    chevron.workspace.open("chevron://welcome/guide", { searchAllPanes: true });
   }
   update() {
   }

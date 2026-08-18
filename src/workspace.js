@@ -176,6 +176,21 @@ const ALL_LOCATIONS = ['center', 'left', 'right', 'bottom'];
 //
 // This method indicates whether Atom should prompt the user to save this item
 // when the user closes or reloads the window. Returns a boolean.
+// Product URI schemes. `chevron://` is primary; `atom://` is the deprecated
+// alias kept while bundled packages still publish it (H3 PR 23.3).
+//
+// Openers match the URI themselves — settings-view does
+// `uri.startsWith('atom://config')` — so a package that has migrated to
+// chevron:// would silently stop matching a caller that has not, and the pane
+// would just never open. Trying the alternate spelling lets packages migrate
+// one at a time, and keeps deep links users already have working.
+function alternateSchemeURI(uri) {
+  if (typeof uri !== 'string') return null;
+  if (uri.startsWith('chevron://')) return 'atom://' + uri.slice('chevron://'.length);
+  if (uri.startsWith('atom://')) return 'chevron://' + uri.slice('atom://'.length);
+  return null;
+}
+
 module.exports = class Workspace extends Model {
   constructor(params) {
     super(...arguments);
@@ -1334,6 +1349,15 @@ module.exports = class Workspace extends Model {
         item = opener(uri, options);
         if (item) break;
       }
+      if (item == null) {
+        const alternate = alternateSchemeURI(uri);
+        if (alternate) {
+          for (const opener of this.getOpeners()) {
+            item = opener(alternate, options);
+            if (item) break;
+          }
+        }
+      }
     }
     if (item == null) {
       item = this.project.openSync(uri, { initialLine, initialColumn });
@@ -1366,6 +1390,13 @@ module.exports = class Workspace extends Model {
       for (const opener of this.getOpeners()) {
         const item = opener(uri, options);
         if (item != null) return item;
+      }
+      const alternate = alternateSchemeURI(uri);
+      if (alternate) {
+        for (const opener of this.getOpeners()) {
+          const item = opener(alternate, options);
+          if (item != null) return item;
+        }
       }
     }
 

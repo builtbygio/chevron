@@ -18,7 +18,7 @@ module.exports = class AboutStatusBar extends EtchComponent {
   }
 
   handleClick() {
-    chevron.workspace.open('atom://about');
+    chevron.workspace.open('chevron://about');
   }
 
   render() {

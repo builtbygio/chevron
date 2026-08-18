@@ -56,7 +56,7 @@ class IncompatiblePackagesComponent {
         chevron.reload();
       } else if (event.target.classList.contains("view-settings")) {
         chevron.workspace.open(
-          `atom://config/packages/${event.target.package.name}`
+          `chevron://config/packages/${event.target.package.name}`
         );
       }
     });

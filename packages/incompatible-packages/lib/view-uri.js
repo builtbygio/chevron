@@ -20,7 +20,7 @@ __export(view_uri_exports, {
   default: () => view_uri_default
 });
 module.exports = __toCommonJS(view_uri_exports);
-var view_uri_default = "atom://incompatible-packages";
+var view_uri_default = "chevron://incompatible-packages";
 
 // Chevron: Node require() interop for default-only esbuild ESM modules
 if (module.exports && module.exports.__esModule && module.exports.default != null) {
