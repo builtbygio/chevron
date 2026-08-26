@@ -121,12 +121,6 @@ function shouldExcludeModule({
       path.join('node_modules', 'minimatch', 'minimatch.js')
     ) ||
     requiredModuleRelativePath.endsWith(
-      path.join('node_modules', 'request', 'index.js')
-    ) ||
-    requiredModuleRelativePath.endsWith(
-      path.join('node_modules', 'request', 'request.js')
-    ) ||
-    requiredModuleRelativePath.endsWith(
       path.join('node_modules', 'superstring', 'index.js')
     ) ||
     requiredModuleRelativePath.includes(
@@ -258,7 +252,21 @@ function shouldExcludeModule({
       path.join('..', 'node_modules', '@atom', 'fuzzy-native', 'lib', 'main.js') ||
     requiredModuleRelativePath ===
       path.join('..', 'node_modules', '@vscode', 'ripgrep', 'lib', 'index.js') ||
-    requiredModuleRelativePath === path.join('..', 'src', 'startup-time.js')
+    requiredModuleRelativePath === path.join('..', 'src', 'startup-time.js') ||
+    requiredModuleRelativePath.endsWith(
+      path.join('src', 'package-host-client.js')
+    ) ||
+    requiredModuleRelativePath.endsWith(
+      path.join('src', 'package-host-eligibility.js')
+    ) ||
+    // pnpm hoists minimatch; snapshot must not bake
+    // tree-view/node_modules/minimatch (that path does not exist).
+    requiredModuleRelativePath.startsWith(
+      path.join('..', 'node_modules', 'tree-view')
+    ) ||
+    requiringModuleRelativePath.includes(
+      path.join('node_modules', 'tree-view')
+    )
   );
 }
 

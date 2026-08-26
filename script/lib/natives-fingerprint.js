@@ -10,7 +10,7 @@
  * Inputs:
  *  - full Electron version
  *  - host Node version, platform, arch
- *  - package-lock.json (any dep change may affect natives)
+ *  - pnpm-lock.yaml (any dep change may affect natives; falls back to package-lock.json)
  *  - script package-lock (node-gyp / rebuild tooling)
  *  - bootstrap native rebuild list identity
  *
@@ -83,7 +83,11 @@ module.exports = {
       process.platform,
       process.arch,
       process.version,
-      fileSha1(path.join(root, 'package-lock.json')),
+      fileSha1(
+        fs.existsSync(path.join(root, 'pnpm-lock.yaml'))
+          ? path.join(root, 'pnpm-lock.yaml')
+          : path.join(root, 'package-lock.json')
+      ),
       fileSha1(path.join(root, 'script', 'package-lock.json')),
       CRITICAL_NATIVE_PACKAGES.join(',')
     ];

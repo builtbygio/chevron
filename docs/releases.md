@@ -1,7 +1,7 @@
 # Chevron unsigned preview releases
 
-**Status:** 1.0.1 product contract  
-**Current tag:** [v1.0.1](https://github.com/builtbygio/chevron/releases/tag/v1.0.1)  
+**Status:** 1.1.0 product contract  
+**Current tag:** [v1.1.0](https://github.com/builtbygio/chevron/releases/tag/v1.1.0)  
 **Update URL:** https://github.com/builtbygio/chevron/releases
 
 This is a **modernization 1.0**, published as an **unsigned preview**. It is not a signed, notarized daily-driver store build.
@@ -59,8 +59,8 @@ Env overrides (advanced):
 ```bash
 git checkout master
 git pull
-git tag -a v1.0.1 -m "Chevron 1.0.1 unsigned preview"
-git push origin v1.0.1
+git tag -a v1.1.0 -m "Chevron 1.1.0 unsigned preview"
+git push origin v1.1.0
 ```
 
 The `publish-unsigned-preview` CI job waits for the five-platform matrix, then creates the GitHub Release.

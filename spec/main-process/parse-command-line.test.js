@@ -55,6 +55,22 @@ describe('parseCommandLine', () => {
       });
     });
 
+    describe('and Electron/Chromium flags precede a project path', () => {
+      it('does not swallow the path as an unknown-option value', () => {
+        const args = parseCommandLine([
+          '--remote-debugging-port=9451',
+          '--ozone-platform=x11',
+          '--disable-gpu',
+          '--disable-dev-shm-usage',
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '/tmp/my-project'
+        ]);
+        assert.deepEqual(args.pathsToOpen, ['/tmp/my-project']);
+        assert.deepEqual(args.urlsToOpen, []);
+      });
+    });
+
     describe('and a non-flag number is passed as an argument', () => {
       it('does not attempt to parse numbers as paths or URIs', () => {
         const args = parseCommandLine([

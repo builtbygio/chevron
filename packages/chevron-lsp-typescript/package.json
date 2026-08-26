@@ -1,5 +1,5 @@
 {
-  "name": "chevron-lsp-typescript",
+  "name": "@builtbygio/chevron-lsp-typescript",
   "version": "0.1.0",
   "description": "Optional TypeScript language server for Chevron via cpm (npm deps; not bundled in the app)",
   "main": "./lib/main",
@@ -24,7 +24,9 @@
         "source.flow"
       ],
       "command": "node_modules/.bin/typescript-language-server",
-      "args": ["--stdio"],
+      "args": [
+        "--stdio"
+      ],
       "initializationOptions": {}
     }
   },

@@ -1,7 +1,8 @@
 'use strict';
 
 /**
- * H2 PR 17: product default themes are chevron-dark-*; config copy is Chevron.
+ * Product chrome is One Dark (the pre-migration look). chevron-dark-* stays
+ * bundled. Config copy is Chevron.
  * Does not change Windows userData name (PR 23b). Run:
  *   node --test script/ci/chevron-dark-themes.test.js
  */
@@ -17,25 +18,20 @@ function read(rel) {
   return fs.readFileSync(path.join(ROOT, rel), 'utf8');
 }
 
-describe('chevron-dark default themes (PR 17)', () => {
-  it('core.themes default is chevron-dark-ui + chevron-dark-syntax', () => {
+describe('default themes', () => {
+  it('core.themes default is one-dark-ui + one-dark-syntax', () => {
     const src = read('src/config-schema.js');
-    assert.match(src, /default:\s*\['chevron-dark-ui',\s*'chevron-dark-syntax'\]/);
-    assert.doesNotMatch(src, /default:\s*\['one-dark-ui',\s*'one-dark-syntax'\]/);
+    assert.match(src, /default:\s*\['one-dark-ui',\s*'one-dark-syntax'\]/);
   });
 
-  it('theme-manager fallback is chevron-dark, not one-dark', () => {
+  it('theme-manager fallback is one-dark', () => {
     const src = read('src/theme-manager.js');
     assert.match(
       src,
-      /themeNames = \['chevron-dark-syntax', 'chevron-dark-ui'\]/
-    );
-    assert.doesNotMatch(
-      src,
       /themeNames = \['one-dark-syntax', 'one-dark-ui'\]/
     );
-    assert.match(src, /unshift\('chevron-dark-syntax'\)/);
-    assert.match(src, /push\('chevron-dark-ui'\)/);
+    assert.match(src, /unshift\('one-dark-syntax'\)/);
+    assert.match(src, /push\('one-dark-ui'\)/);
   });
 
   it('Package.getType returns chevron and activators match', () => {

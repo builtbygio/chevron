@@ -14,6 +14,17 @@ const packageJSON = require('../package.json');
 const {
   isDeferredStartupPackage
 } = require('./deferred-startup-packages');
+const {
+  packageIdFromName,
+  applyPackageId
+} = require('./main-process/package-id');
+function hostEligibility() {
+  return require('./package-host-eligibility');
+}
+
+function defaultPackageHostClient() {
+  return require('./package-host-client');
+}
 
 // Extended: Package manager for coordinating the lifecycle of Atom packages.
 //
@@ -68,6 +79,8 @@ module.exports = class PackageManager {
 
     this.packageActivators = [];
     this.registerPackageActivator(this, ['chevron', 'textmate']);
+    this.packageHostClient = params.packageHostClient || defaultPackageHostClient();
+    this.hostContributionDisposable = null;
   }
 
   initialize(params) {
@@ -236,14 +249,20 @@ module.exports = class PackageManager {
       return name;
     }
 
-    let packagePath = fs.resolve(...this.packageDirPaths, name);
-    if (fs.isDirectorySync(packagePath)) {
-      return packagePath;
-    }
+    const candidates = [name];
+    const id = packageIdFromName(name);
+    if (id && id !== name) candidates.push(id);
 
-    packagePath = path.join(this.resourcePath, 'node_modules', name);
-    if (this.hasAtomEngine(packagePath)) {
-      return packagePath;
+    for (const candidate of candidates) {
+      let packagePath = fs.resolve(...this.packageDirPaths, candidate);
+      if (fs.isDirectorySync(packagePath)) {
+        return packagePath;
+      }
+
+      packagePath = path.join(this.resourcePath, 'node_modules', candidate);
+      if (this.hasAtomEngine(packagePath)) {
+        return packagePath;
+      }
     }
 
     return null;
@@ -255,7 +274,11 @@ module.exports = class PackageManager {
   //
   // Returns a {Boolean}.
   isBundledPackage(name) {
-    return this.getPackageDependencies().hasOwnProperty(name);
+    const deps = this.getPackageDependencies();
+    return (
+      deps.hasOwnProperty(name) ||
+      deps.hasOwnProperty(packageIdFromName(name))
+    );
   }
 
   isDeprecatedPackage(name, version) {
@@ -438,10 +461,36 @@ module.exports = class PackageManager {
           .map(dirent => dirent.name);
 
         for (const packageName of packageNames) {
-          if (
-            !packageName.startsWith('.') &&
-            !packagesByName.has(packageName)
-          ) {
+          if (packageName.startsWith('.')) continue;
+          if (packageName === '@builtbygio') {
+            const scopeDir = path.join(packageDirPath, packageName);
+            let children = [];
+            try {
+              children = fs.readdirSync(scopeDir, { withFileTypes: true });
+            } catch (_) {
+              continue;
+            }
+            for (const child of children) {
+              const childPath = path.join(scopeDir, child.name);
+              const isDir =
+                child.isDirectory() ||
+                (child.isSymbolicLink() && fs.isDirectorySync(childPath));
+              if (
+                isDir &&
+                !child.name.startsWith('.') &&
+                !packagesByName.has(child.name)
+              ) {
+                packages.push({
+                  name: child.name,
+                  path: childPath,
+                  isBundled: false
+                });
+                packagesByName.add(child.name);
+              }
+            }
+            continue;
+          }
+          if (!packagesByName.has(packageName)) {
             const packagePath = path.join(packageDirPath, packageName);
             packages.push({
               name: packageName,
@@ -586,9 +635,7 @@ module.exports = class PackageManager {
 
   preloadPackage(packageName, pack) {
     const metadata = pack.metadata || {};
-    if (typeof metadata.name !== 'string' || metadata.name.length < 1) {
-      metadata.name = packageName;
-    }
+    applyPackageId(metadata, packageName);
 
     if (
       metadata.repository != null &&
@@ -657,7 +704,7 @@ module.exports = class PackageManager {
 
     const packagePath = this.resolvePackagePath(nameOrPath);
     if (packagePath) {
-      const name = path.basename(nameOrPath);
+      const name = packageIdFromName(path.basename(packagePath));
       return this.loadAvailablePackage({
         name,
         path: packagePath,
@@ -838,6 +885,71 @@ module.exports = class PackageManager {
     return promises;
   }
 
+  packageShouldActivateInHost(pack) {
+    if (!pack || !this.packageHostClient || !this.packageHostClient.available()) {
+      return false;
+    }
+    const { isHostEnabled, shouldActivateInHost } = hostEligibility();
+    if (!isHostEnabled(this.config)) return false;
+    const decision = shouldActivateInHost({
+      packagePath: pack.path,
+      metadata: pack.metadata,
+      hostEnabled: true
+    });
+    return Boolean(decision && decision.inHost);
+  }
+
+  hostConfigSnapshot() {
+    const projectPaths =
+      global.atom && atom.project && typeof atom.project.getPaths === 'function'
+        ? atom.project.getPaths()
+        : [];
+    return this.packageHostClient.configSnapshot(this.config, projectPaths);
+  }
+
+  applyHostContribution(pack, descriptor) {
+    this.packageHostClient.applyContribution(
+      {
+        commandRegistry: this.commandRegistry,
+        notificationManager: this.notificationManager,
+        config: this.config,
+        workspace:
+          global.atom && atom.workspace ? atom.workspace : null
+      },
+      pack,
+      descriptor
+    );
+  }
+
+  ensureHostContributionListener() {
+    if (this.hostContributionDisposable || !this.packageHostClient.onHostEvent) {
+      return;
+    }
+    this.hostContributionDisposable = this.packageHostClient.onHostEvent(msg => {
+      if (!msg || msg.type !== 'package-contribution') return;
+      const pack =
+        this.getActivePackage(msg.name) || this.activatingPackages[msg.name];
+      if (!pack) return;
+      this.applyHostContribution(pack, msg.descriptor);
+    });
+  }
+
+  async completeHostActivation(pack) {
+    this.ensureHostContributionListener();
+    const result = await this.packageHostClient.activatePackage({
+      name: pack.name,
+      root: pack.path,
+      configSnapshot: this.hostConfigSnapshot(),
+      state: this.getPackageState(pack.name) || {}
+    });
+    pack.hostActivation = true;
+    pack.hostCommandNames = (result && result.commands) || [];
+    for (const descriptor of (result && result.contributions) || []) {
+      this.applyHostContribution(pack, descriptor);
+    }
+    return pack;
+  }
+
   // Activate a single package by name
   activatePackage(name) {
     let pack = this.getActivePackage(name);
@@ -850,8 +962,15 @@ module.exports = class PackageManager {
       return Promise.reject(new Error(`Failed to load package '${name}'`));
     }
 
+    if (this.packageShouldActivateInHost(pack)) {
+      pack.hostActivation = true;
+    }
+
     this.activatingPackages[pack.name] = pack;
-    const activationPromise = pack.activate().then(() => {
+    const activationPromise = pack.activate().then(async () => {
+      if (pack.hostActivation) {
+        await this.completeHostActivation(pack);
+      }
       if (this.activatingPackages[pack.name] != null) {
         delete this.activatingPackages[pack.name];
         this.activePackages[pack.name] = pack;
@@ -936,6 +1055,17 @@ module.exports = class PackageManager {
 
     if (!suppressSerialization && this.isPackageActive(pack.name)) {
       this.serializePackage(pack);
+    }
+
+    if (pack.hostActivation && this.packageHostClient) {
+      try {
+        await this.packageHostClient.deactivatePackage(pack.name);
+      } catch (error) {
+        console.error(
+          `Error deactivating hosted package '${pack.name}'`,
+          error
+        );
+      }
     }
 
     const deactivationResult = pack.deactivate();
@@ -1042,9 +1172,7 @@ module.exports = class PackageManager {
       metadata = {};
     }
 
-    if (typeof metadata.name !== 'string' || metadata.name.length <= 0) {
-      metadata.name = packageName;
-    }
+    applyPackageId(metadata, packageName);
 
     if (
       metadata.repository &&

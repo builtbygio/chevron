@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-08-26
+
+**Unsigned preview.** pnpm workspace + `@builtbygio` catalog on npmjs; One Dark default; project folders open again.
+
+### Changed
+
+- App tree is a **pnpm 11** hoisted workspace. In-repo catalog packages install as `workspace:@builtbygio/<id>@*` so `packages/*` is what the editor runs. Published name remains `@builtbygio/<id>`; editor id stays unscoped.
+- **31** in-repo packages are on npmjs as `@builtbygio/<id>` at the versions in `packageDependencies`. 83 `builtbygio` git SHA pins remain (65 bundled catalog + 18 libraries/natives).
+- Default UI/syntax themes are **One Dark** (`one-dark-ui` / `one-dark-syntax`). `chevron-dark-*` stays bundled. `one-dark-ui` **1.12.6** sets `color-scheme: dark` for Electron 43 native widgets.
+- mocha **11.8.0**, script ESLint **9** with `ESLINT_USE_FLAT_CONFIG=false`, dugite no longer uses `got`. Package host v2 routing is wired and **default off**.
+- `keytar` and `fs-admin` always register with `NODE_MODULE_CONTEXT_AWARE` (Electron 43 renderer).
+
+### Fixed
+
+- File → Add Project Folder / `chevron /path` crashed tree-view (`minimatch` missing under asar; Chromium flags swallowed the folder path). Nested `atom-select-list@0.7.2` `require('atom')` is skipped at copy time.
+- CSS tree-sitter grammar failed (`tree_sitter_css_binding`); language-css now nests `tree-sitter-css` **0.23.2** with host prebuilds.
+
 ### Added
 
 - The Jasmine harness defines `window.chevron` as well as `window.atom` (H3 PR 23 follow-up). Bundled package code calls `chevron.*` after the conversion, but the harness builds its own environment and defined only `atom`, so every package spec threw `ReferenceError: chevron is not defined` on its first `activatePackage`. Nightly run 32140370725 failed **37 of 37 suites**, most of them 100% of their tests, for this one reason.
@@ -421,7 +438,8 @@ Initial Chevron tree: Electron modernization, modern host bootstrap (`bootstrap-
 
 ---
 
-[Unreleased]: https://github.com/builtbygio/chevron/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/builtbygio/chevron/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/builtbygio/chevron/releases/tag/v1.1.0
 [1.0.1]: https://github.com/builtbygio/chevron/releases/tag/v1.0.1
 [1.0.0]: https://github.com/builtbygio/chevron/releases/tag/v1.0.0
 [0.6.0]: https://github.com/builtbygio/chevron/releases/tag/v0.6.0

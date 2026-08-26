@@ -1,6 +1,17 @@
 const fs = require('fs');
 const path = require('path');
-const request = require('request-promise-native');
+
+async function jsonFetch(url, options = {}) {
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    const err = new Error(`HTTP ${res.status} for ${url}`);
+    err.statusCode = res.status;
+    throw err;
+  }
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('json')) return res.json();
+  return res.text();
+}
 
 module.exports = async function(packageRepoName, apiToken, version, artifacts) {
   for (let artifact of artifacts) {
@@ -59,35 +70,37 @@ module.exports = async function(packageRepoName, apiToken, version, artifacts) {
     await uploadToPackageCloud(packageDetails);
   }
 
-  function uploadToPackageCloud(packageDetails) {
-    return new Promise(async (resolve, reject) => {
-      console.log(
-        `Uploading ${
-          packageDetails.fileName
-        } to https://packagecloud.io/AtomEditor/${packageRepoName}`
-      );
-      var uploadOptions = {
-        url: `https://${apiToken}:@packagecloud.io/api/v1/repos/AtomEditor/${packageRepoName}/packages.json`,
-        formData: {
-          'package[distro_version_id]': packageDetails.distroId,
-          'package[package_file]': fs.createReadStream(packageDetails.filePath)
-        }
-      };
+  async function uploadToPackageCloud(packageDetails) {
+    console.log(
+      `Uploading ${
+        packageDetails.fileName
+      } to https://packagecloud.io/AtomEditor/${packageRepoName}`
+    );
+    const form = new FormData();
+    form.append(
+      'package[distro_version_id]',
+      String(packageDetails.distroId)
+    );
+    form.append(
+      'package[package_file]',
+      new Blob([fs.readFileSync(packageDetails.filePath)]),
+      packageDetails.fileName
+    );
 
-      request.post(uploadOptions, (error, uploadResponse, body) => {
-        if (error || uploadResponse.statusCode !== 201) {
-          console.log(
-            `Error while uploading '${packageDetails.fileName}' v${
-              packageDetails.version
-            }: ${uploadResponse}`
-          );
-          reject(uploadResponse);
-        } else {
-          console.log(`Successfully uploaded ${packageDetails.fileName}!`);
-          resolve(uploadResponse);
-        }
-      });
-    });
+    const uploadResponse = await fetch(
+      `https://${apiToken}:@packagecloud.io/api/v1/repos/AtomEditor/${packageRepoName}/packages.json`,
+      { method: 'POST', body: form }
+    );
+    if (uploadResponse.status !== 201) {
+      console.log(
+        `Error while uploading '${packageDetails.fileName}' v${
+          packageDetails.version
+        }: ${uploadResponse.status}`
+      );
+      throw uploadResponse;
+    }
+    console.log(`Successfully uploaded ${packageDetails.fileName}!`);
+    return uploadResponse;
   }
 
   async function removePackageIfExists({
@@ -104,23 +117,26 @@ module.exports = async function(packageRepoName, apiToken, version, artifacts) {
       type === 'rpm' ? `${version.replace('-', '.')}/0.1` : version;
 
     try {
-      const existingPackageDetails = await request({
-        uri: `https://${apiToken}:@packagecloud.io/api/v1/repos/AtomEditor/${packageRepoName}/package/${type}/${distroName}/${distroVersion}/atom${releaseSuffix ||
-          ''}/${arch}/${versionJsonPath}.json`,
-        method: 'get',
-        json: true
-      });
+      const existingPackageDetails = await jsonFetch(
+        `https://${apiToken}:@packagecloud.io/api/v1/repos/AtomEditor/${packageRepoName}/package/${type}/${distroName}/${distroVersion}/atom${releaseSuffix ||
+          ''}/${arch}/${versionJsonPath}.json`
+      );
 
       if (existingPackageDetails && existingPackageDetails.destroy_url) {
         console.log(
           `Deleting pre-existing package ${fileName} in ${packageRepoName}`
         );
-        await request({
-          uri: `https://${apiToken}:@packagecloud.io/${
+        const destroyRes = await fetch(
+          `https://${apiToken}:@packagecloud.io/${
             existingPackageDetails.destroy_url
           }`,
-          method: 'delete'
-        });
+          { method: 'DELETE' }
+        );
+        if (!destroyRes.ok && destroyRes.status !== 404) {
+          throw new Error(
+            `Destroy failed HTTP ${destroyRes.status} for ${fileName}`
+          );
+        }
       }
     } catch (err) {
       if (err.statusCode !== 404) {

@@ -4,7 +4,7 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-module.exports = function(filesToSign) {
+module.exports = async function(filesToSign) {
   if (
     !process.env.ATOM_WIN_CODE_SIGNING_CERT_DOWNLOAD_URL &&
     !process.env.ATOM_WIN_CODE_SIGNING_CERT_PATH
@@ -19,7 +19,7 @@ module.exports = function(filesToSign) {
   let certPath = process.env.ATOM_WIN_CODE_SIGNING_CERT_PATH;
   if (!certPath) {
     certPath = path.join(os.tmpdir(), 'win.p12');
-    downloadFileFromGithub(
+    await downloadFileFromGithub(
       process.env.ATOM_WIN_CODE_SIGNING_CERT_DOWNLOAD_URL,
       certPath
     );

@@ -1,8 +1,8 @@
 {
-  "name": "about",
-  "author": "Machist\u00e9 N. Quintana <mnquintana@users.noreply.github.com>",
+  "name": "@builtbygio/about",
+  "author": "Machisté N. Quintana <mnquintana@users.noreply.github.com>",
   "main": "./lib/main",
-  "version": "1.9.1",
+  "version": "1.9.3",
   "description": "View useful information about your Chevron installation.",
   "keywords": [],
   "repository": "https://github.com/builtbygio/chevron",
@@ -17,9 +17,6 @@
   "dependencies": {
     "etch": "0.9.0",
     "semver": "^5.7.2"
-  },
-  "devDependencies": {
-    "standard": "^11.0.0"
   },
   "consumedServices": {
     "status-bar": {

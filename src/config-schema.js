@@ -47,7 +47,7 @@ const configSchema = {
         default: false,
         title: 'Package host v2 (experimental)',
         description:
-          'When enabled, Chevron boots a restricted `utilityProcess` package host for community (T2) packages instead of activating them in the editor preload. Off by default while the host is being built out (Epic 21). Env `CHEVRON_PACKAGE_HOST_V2=1` also enables. See [package host design](docs/security-phase-s-package-host.md).'
+          'When enabled, Chevron boots a restricted `utilityProcess` package host and activates eligible community (T2) packages there instead of in the editor preload. Off by default. Env `CHEVRON_PACKAGE_HOST_V2=1` also enables. See [package host design](docs/security-phase-s-package-host.md).'
       },
       fsIpcStrict: {
         type: 'boolean',
@@ -135,7 +135,7 @@ const configSchema = {
       },
       themes: {
         type: 'array',
-        default: ['chevron-dark-ui', 'chevron-dark-syntax'],
+        default: ['one-dark-ui', 'one-dark-syntax'],
         items: {
           type: 'string'
         },

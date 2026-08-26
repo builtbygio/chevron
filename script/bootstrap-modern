@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Chevron bootstrap for modern host toolchains (macOS 13+ / Linux / Windows via Git Bash).
 #
-# Phase 0: root app dependencies use **host npm** (not apm/Node 12).
+# Phase 0: root app dependencies use **pnpm workspaces** (not apm/Node 12).
 # Phase 4: product ships cpm only; --with-apm is deprecated (debug only).
 # Electron natives are still patched and rebuilt with modern node-gyp.
+# script/ and cpm/ still install with host npm (their own lockfiles).
 #
 # Usage:
 #   ./script/bootstrap-modern
@@ -36,7 +37,7 @@ if [ "$WITH_APM" = true ]; then
 fi
 
 echo ""
-echo "==> Chevron modern bootstrap (host npm for app deps)"
+echo "==> Chevron modern bootstrap (pnpm for app deps)"
 echo "    repo: $REPO_ROOT"
 echo ""
 
@@ -75,24 +76,24 @@ NODE
 echo "Patching node-gyp (script) for Python 3.11+ (rU->r)..."
 chevron_patch_node_gyp "$REPO_ROOT/script"
 
-# --- Step 2: root app dependencies via host npm (Phase 0) --------------------
+# --- Step 2: root app dependencies via pnpm workspaces -----------------------
 unset npm_config_target npm_config_runtime npm_config_disturl npm_config_build_from_source || true
 export ATOM_ELECTRON_URL="${ATOM_ELECTRON_URL:-https://www.electronjs.org/headers}"
 export ATOM_RESOURCE_PATH="$REPO_ROOT"
 
 # Warm-cache path: if CI restored node_modules and the deps fingerprint still
-# matches, skip `npm ci` (which would delete node_modules and wipe .node builds).
-SKIP_APP_NPM=false
+# matches, skip `pnpm install` (which would rewrite node_modules and wipe .node builds).
+SKIP_APP_PNPM=false
 if [ -d "$REPO_ROOT/node_modules" ] \
   && [ -f "$REPO_ROOT/node_modules/.dependencies-fingerprint" ] \
   && [ -f "$REPO_ROOT/node_modules/superstring/package.json" ]; then
   if node -e 'const d=require("./script/lib/dependencies-fingerprint"); process.exit(d.isOutdated()?1:0)'; then
-    SKIP_APP_NPM=true
-    echo "Skipping app npm ci (node_modules present, dependencies fingerprint current)."
+    SKIP_APP_PNPM=true
+    echo "Skipping app pnpm install (node_modules present, dependencies fingerprint current)."
   fi
 fi
 
-if [ "$SKIP_APP_NPM" = false ]; then
+if [ "$SKIP_APP_PNPM" = false ]; then
   node <<'NODE'
 'use strict';
 const installAppDependencies = require('./script/lib/install-app-dependencies');
@@ -101,7 +102,7 @@ process.on('unhandledRejection', e => {
   console.error(e.stack || e);
   process.exit(1);
 });
-installAppDependencies(ci, { ignoreScripts: true, legacyPeerDeps: true });
+installAppDependencies(ci, { ignoreScripts: true });
 NODE
 fi
 

@@ -8,6 +8,7 @@ const path = require('path');
 const semver = require('semver');
 
 const CONFIG = require('../config');
+const { applyPackageId } = require('../../src/main-process/package-id');
 
 // Intermediate package.json "name" drives Electron userData on some platforms
 // (e.g. AppData\Local\<name> on Windows). This used to be pinned to the
@@ -211,7 +212,8 @@ function buildBundledPackagesMetadata() {
       path.relative(packagePath, styleSheetPath)
     );
 
-    packages[packageMetadata.name] = packageNewMetadata;
+    applyPackageId(packageMetadata, packageName);
+    packages[packageName] = packageNewMetadata;
     if (packageModuleCache.extensions) {
       for (let extension of Object.keys(packageModuleCache.extensions)) {
         const paths = packageModuleCache.extensions[extension];

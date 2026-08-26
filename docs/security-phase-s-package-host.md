@@ -102,10 +102,11 @@ Landed behind `core.packageHostV2` / `CHEVRON_PACKAGE_HOST_V2`, **default off**.
 | 21.1 | Supervised `chevron-package-host` utilityProcess: boot handshake, `requestId` correlation, exit broadcast, subscriber fan-out | `src/main-process/package-host-manager.js`, `workers/package-host.js` |
 | 21.2 | Activation of logic-only packages behind a restricted loader + stub `chevron` proxy | `workers/package-host-require.js`, `workers/package-host-stub.js` |
 | 21.3 | `providedServices` / `consumedServices` across the boundary as descriptors + RPC proxies, both directions | `workers/package-host-services.js` |
-| 21.4 | Hybrid routing: which packages may run in the host | `src/package-host-eligibility.js` |
+| 21.4 | Hybrid routing: which packages may run in the host | `src/package-host-eligibility.ts` |
 | 21.5 | This documentation pass + author guidance | docs |
+| 21.6 | PackageManager call site — eligible T2 packages activate in the host when the flag is on | `src/package-manager.js`, `src/package-host-client.js` |
 
-**Not yet done.** The editor-side `PackageManager` call site is *not* switched — nothing is routed to the host at runtime yet. That is a behaviour change wanting its own review and a dogfood window. Everything above is the mechanism plus its gate.
+**Routing (21.6).** `PackageManager.activatePackage` now sends eligible community packages to the host when `core.packageHostV2` / `CHEVRON_PACKAGE_HOST_V2` is on (`src/package-host-client.js`). Bundled/core packages stay in-process. Default remains **off**.
 
 Two properties the tests pin down, because they are the ones that would rot quietly:
 

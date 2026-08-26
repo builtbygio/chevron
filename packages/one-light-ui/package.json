@@ -1,5 +1,5 @@
 {
-  "name": "one-light-ui",
+  "name": "@builtbygio/one-light-ui",
   "theme": "ui",
   "version": "1.12.5",
   "description": "Atom One light UI theme",
@@ -9,14 +9,11 @@
     "ui"
   ],
   "license": "MIT",
-  "repository": "https://github.com/atom/atom",
+  "repository": "https://github.com/builtbygio/chevron",
   "main": "lib/main",
   "engines": {
     "chevron": "*",
     "atom": ">0.40.0"
-  },
-  "devDependencies": {
-    "standard": "^11.0.0"
   },
   "configSchema": {
     "fontSize": {

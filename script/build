@@ -129,14 +129,14 @@ if (!argv.generateApiDocs) {
             if (argv.createWindowsInstaller) {
               executablesToSign.push(path.join(__dirname, 'node_modules', '@atom', 'electron-winstaller', 'vendor', 'Squirrel.exe'))
             }
-            codeSignOnWindows(executablesToSign)
+            await codeSignOnWindows(executablesToSign)
           } else {
             console.log('Skipping code-signing. Specify the --code-sign option to perform code-signing'.gray)
           }
           if (argv.createWindowsInstaller) {
             return createWindowsInstaller(packagedAppPath)
-              .then((installerPath) => {
-                argv.codeSign && codeSignOnWindows([installerPath])
+              .then(async (installerPath) => {
+                if (argv.codeSign) await codeSignOnWindows([installerPath])
                 return packagedAppPath
               })
           } else {

@@ -1,5 +1,4 @@
 const path = require('path');
-const request = require('request-promise-native');
 
 const repositoryRootPath = path.resolve(__dirname, '..', '..');
 const appMetadata = require(path.join(repositoryRootPath, 'package.json'));
@@ -25,14 +24,19 @@ function getAppName(version) {
 async function getReleaseVersion() {
   let releaseVersion = process.env.ATOM_RELEASE_VERSION || appMetadata.version;
   if (argv.nightly) {
-    const releases = await request({
-      url: 'https://api.github.com/repos/atom/atom-nightly-releases/releases',
-      headers: {
-        Accept: 'application/vnd.github.v3+json',
-        'User-Agent': 'Atom Release Build'
-      },
-      json: true
-    });
+    const res = await fetch(
+      'https://api.github.com/repos/atom/atom-nightly-releases/releases',
+      {
+        headers: {
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'Atom Release Build'
+        }
+      }
+    );
+    if (!res.ok) {
+      throw new Error(`GitHub releases API HTTP ${res.status}`);
+    }
+    const releases = await res.json();
 
     let releaseNumber = 0;
     const baseVersion = appMetadata.version.split('-')[0];

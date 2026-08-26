@@ -1,5 +1,5 @@
 {
-  "name": "@atom/watcher",
+  "name": "@builtbygio/watcher",
   "version": "1.3.5",
   "description": "Atom filesystem watcher (Chevron: V8 GetBackingStore for Electron 14+)",
   "main": "lib/index.js",
@@ -15,11 +15,11 @@
     "format:cpp": "script/c++-format",
     "format:js": "standard --fix",
     "build:debug": "node --harmony script/helper/gen-compilation-db.js rebuild --debug",
-    "build:atom": "electron-rebuild --version 6.1.12",
+    "build:atom": "echo 'Use repo bootstrap-modern / @electron/rebuild; electron-rebuild@1 is retired'",
     "test": "mocha",
     "test:lldb": "lldb -- node --harmony ./node_modules/.bin/_mocha --require test/global.js --require mocha-stress --recursive",
     "test:gdb": "gdb --args node --harmony ./node_modules/.bin/_mocha --require test/global.js --require mocha-stress --recursive",
-    "ci:appveyor": "npm run test -- --fgrep ^windows --invert --reporter mocha-appveyor-reporter --reporter-options appveyorBatchSize=5 --timeout 30000",
+    "ci:appveyor": "npm run test -- --fgrep ^windows --invert --timeout 30000",
     "ci:circle": "npm run test -- --fgrep '^mac' --invert --reporter mocha-junit-reporter --reporter-options mochaFile=test-results/mocha/test-results.xml",
     "ci:travis": "npm run test -- --fgrep '^linux' --invert --reporter list",
     "aw:test": "npm run clean:fixture && clear && npm run build:debug && clear && npm run test",
@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/atom/watcher.git"
+    "url": "https://github.com/builtbygio/chevron"
   },
   "bugs": "https://github.com/atom/watcher/issues",
   "keywords": [
@@ -44,12 +44,10 @@
   "devDependencies": {
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
-    "electron-rebuild": "1.11.0",
     "eslint-plugin-import": "2.16.0",
     "eslint-plugin-promise": "4.0.1",
     "eslint-plugin-react": "7.12.4",
-    "mocha": "6.0.2",
-    "mocha-appveyor-reporter": "0.4.2",
+    "mocha": "10.8.2",
     "mocha-junit-reporter": "1.18.0",
     "mocha-stress": "1.0.0",
     "prebuildify": "^6.0.1",

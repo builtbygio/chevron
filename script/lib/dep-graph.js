@@ -6,6 +6,8 @@
 
 function classifySpec(spec) {
   if (typeof spec !== 'string') return 'other';
+  if (spec.startsWith('workspace:')) return 'workspace';
+  if (spec.startsWith('npm:@builtbygio/')) return 'npm-builtbygio';
   if (spec.startsWith('file:')) return 'file';
   if (spec.includes('git+') || spec.startsWith('github:')) {
     if (spec.includes('github.com/atom/')) return 'git-atom';
@@ -19,6 +21,8 @@ function summarizeDependencies(pkg) {
   const deps = pkg.dependencies || {};
   const counts = {
     file: 0,
+    workspace: 0,
+    'npm-builtbygio': 0,
     semver: 0,
     'git-atom': 0,
     'git-builtbygio': 0,
@@ -27,6 +31,9 @@ function summarizeDependencies(pkg) {
     total: 0
   };
   const lists = {
+    file: [],
+    workspace: [],
+    'npm-builtbygio': [],
     'git-atom': [],
     'git-builtbygio': [],
     'git-other': []

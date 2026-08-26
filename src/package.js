@@ -9,6 +9,7 @@ const CompileCache = require('./compile-cache');
 const ModuleCache = require('./module-cache');
 const BufferedProcess = require('./buffered-process');
 const { requireModule } = require('./module-utils');
+const { packageIdFromName } = require('./main-process/package-id');
 
 // Extended: Loads and activates a package's main module and resources such as
 // stylesheets, keymaps, grammar, editor properties, and menus.
@@ -41,10 +42,11 @@ module.exports = class Package {
       params.bundledPackage != null
         ? params.bundledPackage
         : this.packageManager.isBundledPackagePath(this.path);
-    this.name =
+    this.name = packageIdFromName(
       (this.metadata && this.metadata.name) ||
-      params.name ||
-      path.basename(this.path);
+        params.name ||
+        path.basename(this.path)
+    );
     this.reset();
   }
 
@@ -151,7 +153,16 @@ module.exports = class Package {
     this.unregisterTranspilerConfig();
   }
 
+  isHostedActivation() {
+    if (this.hostActivation) return true;
+    if (!this.packageManager || typeof this.packageManager.packageShouldActivateInHost !== 'function') {
+      return false;
+    }
+    return this.packageManager.packageShouldActivateInHost(this);
+  }
+
   shouldRequireMainModuleOnLoad() {
+    if (this.isHostedActivation()) return false;
     if (
       this.packageManager &&
       this.packageManager.isDeferredStartupPackage(this.name)
@@ -211,7 +222,10 @@ module.exports = class Package {
         this.measure('activateTime', () => {
           try {
             this.activateResources();
-            if (this.activationShouldBeDeferred()) {
+            if (this.isHostedActivation()) {
+              this.hostActivation = true;
+              return this.activateNow();
+            } else if (this.activationShouldBeDeferred()) {
               return this.subscribeToDeferredActivation();
             } else {
               return this.activateNow();
@@ -235,6 +249,14 @@ module.exports = class Package {
 
   activateNow() {
     try {
+      if (this.isHostedActivation()) {
+        this.hostActivation = true;
+        this.activateStylesheets();
+        if (typeof this.resolveActivationPromise === 'function') {
+          this.resolveActivationPromise();
+        }
+        return;
+      }
       if (!this.mainModule) this.requireMainModule();
       this.configSchemaRegisteredOnActivate = this.registerConfigSchemaFromMainModule();
       this.registerViewProviders();
@@ -819,7 +841,8 @@ module.exports = class Package {
     this.deactivateResources();
     this.deactivateKeymaps();
 
-    if (!this.mainActivated) {
+    if (this.hostActivation || !this.mainActivated) {
+      this.hostActivation = false;
       this.emitter.emit('did-deactivate');
       return;
     }

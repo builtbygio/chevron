@@ -2,11 +2,10 @@
 
 const fs = require('fs-extra');
 const path = require('path');
-const syncRequest = require('sync-request');
 
-module.exports = function(downloadURL, destinationPath) {
+module.exports = async function(downloadURL, destinationPath) {
   console.log(`Downloading file from GitHub Repository to ${destinationPath}`);
-  const response = syncRequest('GET', downloadURL, {
+  const response = await fetch(downloadURL, {
     headers: {
       Accept: 'application/vnd.github.v3.raw',
       'User-Agent': 'Atom Build',
@@ -14,12 +13,15 @@ module.exports = function(downloadURL, destinationPath) {
     }
   });
 
-  if (response.statusCode === 200) {
+  if (response.status === 200) {
     fs.mkdirpSync(path.dirname(destinationPath));
-    fs.writeFileSync(destinationPath, response.body);
+    fs.writeFileSync(
+      destinationPath,
+      Buffer.from(await response.arrayBuffer())
+    );
   } else {
     throw new Error(
-      'Error downloading file. HTTP Status ' + response.statusCode + '.'
+      'Error downloading file. HTTP Status ' + response.status + '.'
     );
   }
 };

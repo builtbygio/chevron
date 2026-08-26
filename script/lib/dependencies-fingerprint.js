@@ -29,14 +29,17 @@ module.exports = {
     return fingerprint ? fingerprint !== this.compute() : false;
   },
   compute: function() {
-    // Electron minor + package-lock identity + host Node (Phase 0: host npm, not apm).
+    // Electron minor + lockfile identity + host Node (pnpm workspace).
     const electronVersion = CONFIG.appMetadata.electronVersion.replace(
       /\.\d+$/,
       ''
     );
-    const lockPath = path.join(CONFIG.repositoryRootPath, 'package-lock.json');
+    const lockPath = [
+      path.join(CONFIG.repositoryRootPath, 'pnpm-lock.yaml'),
+      path.join(CONFIG.repositoryRootPath, 'package-lock.json')
+    ].find(p => fs.existsSync(p));
     let lockPart = 'nolock';
-    if (fs.existsSync(lockPath)) {
+    if (lockPath) {
       lockPart = crypto
         .createHash('sha1')
         .update(fs.readFileSync(lockPath))
@@ -49,7 +52,7 @@ module.exports = {
       process.platform +
       process.version +
       process.arch +
-      'host-npm';
+      'host-pnpm';
     return crypto
       .createHash('sha1')
       .update(body)

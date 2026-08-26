@@ -1,7 +1,7 @@
 # Building and installing Chevron on Linux
 
 **Status:** L1–L3 support (bootstrap, CI smoke, deb/tar packages, arm64 CI)  
-**Host toolchain:** Node **24** + Python **3.12** (+ `setuptools`) via `script/bootstrap-modern`  
+**Host toolchain:** Node **24** + **pnpm 11** + Python **3.12** (+ `setuptools`) via `script/bootstrap-modern`  
 **Runtime:** Electron 43
 
 ---

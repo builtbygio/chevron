@@ -11,28 +11,20 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
+const {
+  entriesFor,
+  lockText,
+  parseVer: splitVer
+} = require('../lib/lockfile-packages');
 
 function readJson(rel) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
 }
 
-function lockEntries(lock, name) {
-  const packages = lock.packages || {};
-  const hits = [];
-  for (const [key, value] of Object.entries(packages)) {
-    if (!value || typeof value.version !== 'string') continue;
-    const base = key.split('/').pop();
-    if (base === name || key === `node_modules/${name}`) {
-      hits.push({ key, version: value.version });
-    }
-  }
-  return hits;
-}
-
 function parseVer(version) {
-  const m = String(version || '').match(/^(\d+)\.(\d+)\.(\d+)/);
-  assert.ok(m, `unparseable version: ${version}`);
-  return { major: Number(m[1]), minor: Number(m[2]), patch: Number(m[3]) };
+  const v = splitVer(version);
+  assert.ok(v, `unparseable version: ${version}`);
+  return v;
 }
 
 describe('runtime SCA declarations', () => {
@@ -41,7 +33,7 @@ describe('runtime SCA declarations', () => {
   it('root overrides pin marked, DOMPurify, and dugite tar', () => {
     assert.strictEqual(pkg.overrides.dompurify, '3.4.13');
     assert.strictEqual(pkg.overrides.marked, '4.3.0');
-    assert.strictEqual(pkg.overrides.dugite.tar, '6.2.1');
+    assert.strictEqual(pkg.overrides.dugite.tar, '7.5.21');
   });
 
   it('deprecation-cop declares the same marked / DOMPurify', () => {
@@ -68,10 +60,8 @@ describe('runtime SCA declarations', () => {
 });
 
 describe('runtime SCA lockfile', () => {
-  const lock = readJson('package-lock.json');
-
   it('every resolved marked is 4.3.x', () => {
-    const hits = lockEntries(lock, 'marked');
+    const hits = entriesFor(ROOT, 'marked').filter(h => splitVer(h.version));
     assert.ok(hits.length > 0, 'no marked entries in lockfile');
     for (const hit of hits) {
       const v = parseVer(hit.version);
@@ -89,7 +79,7 @@ describe('runtime SCA lockfile', () => {
   });
 
   it('every resolved DOMPurify is 3.4.x+', () => {
-    const hits = lockEntries(lock, 'dompurify');
+    const hits = entriesFor(ROOT, 'dompurify').filter(h => splitVer(h.version));
     assert.ok(hits.length > 0, 'no dompurify entries in lockfile');
     for (const hit of hits) {
       const v = parseVer(hit.version);
@@ -100,52 +90,40 @@ describe('runtime SCA lockfile', () => {
     }
   });
 
-  it('dugite nested tar is 6.2.x', () => {
-    const packages = lock.packages || {};
-    const nested = packages['node_modules/dugite/node_modules/tar'];
-    const rootTar = packages['node_modules/tar'];
-    const dugiteTar = nested || (rootTar && rootTar.version.startsWith('6.') ? rootTar : null);
-    assert.ok(dugiteTar, 'dugite tar not in lockfile');
-    const v = parseVer(dugiteTar.version);
-    assert.strictEqual(v.major, 6, `dugite tar ${dugiteTar.version}`);
-    assert.ok(v.minor >= 2, `dugite tar ${dugiteTar.version}`);
+  it('dugite uses tar 7.5.21+ (CVE range <=7.5.18)', () => {
+    const tars = entriesFor(ROOT, 'tar').filter(h => splitVer(h.version));
+    assert.ok(tars.length > 0, 'no tar entries in lockfile');
+    for (const hit of tars) {
+      const v = parseVer(hit.version);
+      assert.ok(
+        v.major > 7 || (v.major === 7 && (v.minor > 5 || (v.minor === 5 && v.patch >= 21))),
+        `tar ${hit.key} ${hit.version} (want >= 7.5.21)`
+      );
+    }
+  });
+
+  it('does not resolve the deprecated request package', () => {
+    const { text } = lockText(ROOT);
+    assert.ok(
+      !/^ {2}request@/m.test(text),
+      'pnpm-lock.yaml still lists request@'
+    );
+  });
+
+  it('does not resolve got (dugite download uses Node https)', () => {
+    const { text } = lockText(ROOT);
+    assert.ok(!/^ {2}got@/m.test(text), 'pnpm-lock.yaml still lists got@');
   });
 
   it('ls-archive is the builtbygio fork on tar 7', () => {
-    const packages = lock.packages || {};
-    const hits = Object.entries(packages).filter(([key, value]) => {
-      if (!value) return false;
-      return key === 'node_modules/ls-archive' || key.endsWith('/node_modules/ls-archive');
-    });
-    assert.ok(hits.length > 0, 'no ls-archive entries in lockfile');
-    for (const [key, value] of hits) {
-      const resolved = String(value.resolved || value.from || '');
-      assert.ok(
-        resolved.includes('builtbygio/ls-archive') ||
-          (value.version && parseVer(value.version).major >= 2),
-        `${key} must be builtbygio/ls-archive (tar 7), got version=${value.version} resolved=${resolved}`
-      );
-    }
-
-    const lsaTars = Object.entries(packages).filter(([key, value]) => {
-      if (!value || typeof value.version !== 'string') return false;
-      if (!(key === 'node_modules/tar' || key.endsWith('/node_modules/tar'))) return false;
-      return key.includes('ls-archive');
-    });
-    const tarsToCheck =
-      lsaTars.length > 0
-        ? lsaTars
-        : Object.entries(packages).filter(([key, value]) => {
-            return (
-              value &&
-              typeof value.version === 'string' &&
-              (key === 'node_modules/tar' || key.endsWith('/node_modules/tar')) &&
-              parseVer(value.version).major === 7
-            );
-          });
-    assert.ok(tarsToCheck.length > 0, 'no tar 7 for ls-archive in lockfile');
-    for (const [key, value] of tarsToCheck) {
-      assert.strictEqual(parseVer(value.version).major, 7, `${key} tar ${value.version}`);
-    }
+    const { text } = lockText(ROOT);
+    assert.ok(
+      text.includes('builtbygio/ls-archive') ||
+        /ls-archive@2\./.test(text),
+      'lockfile must pin builtbygio/ls-archive (tar 7)'
+    );
+    const tars = entriesFor(ROOT, 'tar').filter(h => splitVer(h.version));
+    const tar7 = tars.filter(h => parseVer(h.version).major === 7);
+    assert.ok(tar7.length > 0, 'no tar 7 for ls-archive in lockfile');
   });
 });

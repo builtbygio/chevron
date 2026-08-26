@@ -50,13 +50,14 @@ Custom snapshot is optional acceleration, not product identity. If `electron-lin
 |------|--------|
 | Classifier + CI | `script/lib/dep-graph.js` + `script/ci/dep-graph.test.js` |
 | `atom/*` git ceiling | **0** (#79 closed) |
-| `--legacy-peer-deps` | Still required; documented in [dependency-graph.md](./dependency-graph.md) |
+| `--legacy-peer-deps` | npm trees (`script/`, `cpm/`) still need it; app install is pnpm with `strict-peer-dependencies=false` |
 | SCA | [sca-runtime-inventory.md](./sca-runtime-inventory.md) — not a bootstrap gate |
 
 ## Daily commands
 
 ```bash
 nvm use                          # .nvmrc → 24
+corepack enable                  # pnpm 11 (see package.json packageManager)
 ./script/bootstrap-modern        # or --ci
 ./script/with-modern-env ./script/build --no-bootstrap
 ```

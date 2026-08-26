@@ -1,5 +1,5 @@
 {
-  "name": "chevron-light-syntax",
+  "name": "@builtbygio/chevron-light-syntax",
   "theme": "syntax",
   "version": "0.29.1",
   "description": "A light syntax theme",

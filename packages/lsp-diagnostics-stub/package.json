@@ -1,5 +1,5 @@
 {
-  "name": "lsp-diagnostics-stub",
+  "name": "@builtbygio/lsp-diagnostics-stub",
   "version": "0.1.0",
   "description": "Minimal alternate consumer of lsp.diagnostics — proves the service is replaceable (G6)",
   "main": "./lib/main",

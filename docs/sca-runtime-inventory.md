@@ -22,10 +22,10 @@ Exact numbers drift with registry data; re-run audit after lockfile changes.
 |---------|----------|--------|--------|
 | **dompurify** | critical | **Done** — 3.4.13 | Owned **markdown-preview**, **autocomplete-plus**, **github**, **notifications**, **settings-view**; in-repo **deprecation-cop**; root override |
 | **marked** | high | **Done** — 4.3.0 (last CJS) | Same packages. marked 5+ is ESM-only — do not jump without converting `require()` |
-| **tar** (dugite extract) | critical | **Done** — 6.2.1 via override | dugite 1.x still declares tar `^4.4.7`; stream extract API works on tar 6. archive-view uses owned **ls-archive** on tar 7 |
+| **tar** (dugite extract) | critical | **Done** — 7.5.21 via override | dugite 1.x still declares tar `^4.4.7`; `tar.extract({cwd})` is still a stream in 7.x. GHSA range `<=7.5.18` included tar 6 |
 | **dugite** | high | **Partial** — 1.110.0 | github pin. 2.x/3.x change git-embed layout — not this pass |
 | **async** | high | **Done** (≥3.2.6) | Audit P1 |
-| **request** | critical | **Done** for owned runtime | settings-view `atom-io-client` and autocomplete update scripts use `fetch`. Residual `request` only if an unowned/test tree still pulls it |
+| **request** | critical | **Done** | Owned source uses `fetch`. App tree: `pnpm why request` is empty (`less@3.13.1` override; watcher dropped `electron-rebuild@1`). Guard: `script/ci/no-request.test.js` |
 | **form-data** | critical | Open | Follows `request` removal |
 | **babel-core@5** | ~~high~~ | **Removed** (#62 Option 3) | Residual only if transitive |
 | **minimatch** / **brace-expansion** | high | Opportunistic | Bump when parent allows; watch DoS on untrusted globs |
@@ -39,13 +39,13 @@ Root overrides (also documented in [dependency-graph.md](./dependency-graph.md))
   "nan": "2.28.0",
   "dompurify": "3.4.13",
   "marked": "4.3.0",
-  "dugite": { "tar": "6.2.1" },
+  "dugite": { "tar": "7.5.21" },
   "minimatch@3": "3.1.4",
   "brace-expansion@1": "1.1.18",
   "js-yaml@3": "3.15.1",
   "lodash": "4.18.0",
   "form-data@2": "2.5.6",
-  "tar@6": "6.2.1",
+  "tar@6": "7.5.21",
   "tar@7": "7.5.21"
 }
 ```

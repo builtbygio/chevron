@@ -1,5 +1,5 @@
 {
-  "name": "one-light-syntax",
+  "name": "@builtbygio/one-light-syntax",
   "theme": "syntax",
   "version": "1.8.4",
   "description": "Atom One light syntax theme",
@@ -7,7 +7,7 @@
     "light",
     "syntax"
   ],
-  "repository": "https://github.com/atom/atom",
+  "repository": "https://github.com/builtbygio/chevron",
   "license": "MIT",
   "engines": {
     "chevron": "*",

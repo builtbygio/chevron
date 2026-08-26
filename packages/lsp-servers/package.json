@@ -1,5 +1,5 @@
 {
-  "name": "lsp-servers",
+  "name": "@builtbygio/lsp-servers",
   "version": "0.1.0",
   "description": "Owned-catalog language server registrations via chevron.lsp (rust-analyzer, pyright)",
   "main": "./lib/main",

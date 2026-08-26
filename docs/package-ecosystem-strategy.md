@@ -32,6 +32,7 @@ This pairs with **Chevron-only** API policy (no dual-support product goal). Comm
 - **cpm** and registry client code may remain in the tree for future host v2 / curated registry work; product UX and docs should not promise open community install.  
 - Privileged-require restrict for community paths remains useful if a user forces a package into `~/.chevron/packages` (defense in depth), but that is not a supported product path.  
 - Expanding the catalog = **fork → own → pin**, not “search Pulsar and install.”
+- Registry name for owned packages: **`@builtbygio/<id>`** on npmjs.com. Editor id remains unscoped `<id>` (see [owned-package-modernization-checklist.md](./owned-package-modernization-checklist.md) §D0). Git pins stay until each fork is published.
 
 ## Later: sandboxed community packages
 

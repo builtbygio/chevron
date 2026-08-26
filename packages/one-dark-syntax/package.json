@@ -1,5 +1,5 @@
 {
-  "name": "one-dark-syntax",
+  "name": "@builtbygio/one-dark-syntax",
   "theme": "syntax",
   "version": "1.8.4",
   "description": "A dark syntax theme",
@@ -8,7 +8,7 @@
     "blue",
     "syntax"
   ],
-  "repository": "https://github.com/atom/atom",
+  "repository": "https://github.com/builtbygio/chevron",
   "license": "MIT",
   "engines": {
     "chevron": "*",
