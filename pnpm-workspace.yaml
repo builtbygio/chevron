@@ -102,12 +102,10 @@ overrides:
 patchedDependencies:
   less@3.13.1: patches/less@3.13.1.patch
   dugite@1.110.0: patches/dugite@1.110.0.patch
-  settings-view@0.261.15: patches/settings-view@0.261.15.patch
-  tree-view@0.229.6: patches/tree-view@0.229.6.patch
-  keytar@4.13.0: patches/keytar@4.13.0.patch
-  fs-admin@0.15.0: patches/fs-admin@0.15.0.patch
 
-# Owned catalog packages are published from this repo. A just-published
-# version would otherwise fail pnpm's minimumReleaseAge gate.
+# Owned catalog is published from this repo and consumed immediately.
+# Default minimumReleaseAge (1 day) 404s just-published @builtbygio
+# packages even when they are public.
+minimumReleaseAge: 0
 minimumReleaseAgeExclude:
   - '@builtbygio/*'

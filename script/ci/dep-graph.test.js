@@ -45,6 +45,10 @@ describe('classifySpec', () => {
       classifySpec('git+https://github.com/builtbygio/foo.git#abc'),
       'git-builtbygio'
     );
+    assert.strictEqual(
+      classifySpec('npm:@builtbygio/tree-view@0.229.6'),
+      'npm-builtbygio'
+    );
     assert.strictEqual(classifySpec('1.2.3'), 'semver');
     assert.strictEqual(classifySpec('^4.0.0'), 'semver');
   });
@@ -80,8 +84,12 @@ describe('root dependency graph', () => {
     );
   });
 
-  it('reports a non-zero owned-pin set', () => {
-    assert.ok(counts['git-builtbygio'] >= 20);
+  it('has no remaining builtbygio git SHA pins', () => {
+    assert.strictEqual(
+      counts['git-builtbygio'],
+      0,
+      `git-builtbygio leftovers: ${(lists['git-builtbygio'] || []).join(', ')}`
+    );
   });
 
   it('installs app deps with pnpm and a frozen lockfile in CI', () => {
@@ -149,10 +157,9 @@ describe('root dependency graph', () => {
       pinned,
       `workspace count ${counts.workspace} != pinned ${pinned}`
     );
-    assert.strictEqual(
-      counts['npm-builtbygio'],
-      0,
-      `npm-builtbygio leftovers: ${(lists['npm-builtbygio'] || []).join(', ')}`
+    assert.ok(
+      counts['npm-builtbygio'] >= 80,
+      `npm-builtbygio count ${counts['npm-builtbygio']} (expected the former git catalog)`
     );
     assert.strictEqual(
       counts.file,

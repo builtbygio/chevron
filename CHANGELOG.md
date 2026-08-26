@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - App tree is a **pnpm 11** hoisted workspace. In-repo catalog packages install as `workspace:@builtbygio/<id>@*` so `packages/*` is what the editor runs. Published name remains `@builtbygio/<id>`; editor id stays unscoped.
-- **31** in-repo packages are on npmjs as `@builtbygio/<id>` at the versions in `packageDependencies`. 83 `builtbygio` git SHA pins remain (65 bundled catalog + 18 libraries/natives).
+- Owned catalog is on npmjs: in-repo packages via `workspace:`, bundled languages/UI and the 18 library/native pins via `npm:@builtbygio/<id>@ver`. No `builtbygio` git SHA pins remain in root `dependencies`.
 - Default UI/syntax themes are **One Dark** (`one-dark-ui` / `one-dark-syntax`). `chevron-dark-*` stays bundled. `one-dark-ui` **1.12.6** sets `color-scheme: dark` for Electron 43 native widgets.
 - mocha **11.8.0**, script ESLint **9** with `ESLINT_USE_FLAT_CONFIG=false`, dugite no longer uses `got`. Package host v2 routing is wired and **default off**.
 - `keytar` and `fs-admin` always register with `NODE_MODULE_CONTEXT_AWARE` (Electron 43 renderer).
