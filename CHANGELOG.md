@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Wave 0 modernization contract: `script/ci/baseline-1.1.0.test.js` locks One Dark, host v2 off, `season`, the `atom://` alias, and `Task` on replace. Architecture leftover table / GROK / ownership inventory match the 1.1.0 catalog (31 workspace + 83 npm, 0 git SHAs).
+
 ## [1.1.0] — 2026-08-26
 
 **Unsigned preview.** pnpm workspace + `@builtbygio` catalog on npmjs; One Dark default; project folders open again.

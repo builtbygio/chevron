@@ -10,7 +10,7 @@ Pins live in the monorepo root [`package.json`](../package.json). Integration ga
 ## Before you start
 
 1. Confirm the package is forked under `builtbygio/<name>` (or the rename, e.g. `autocomplete-chevron-api`).
-2. Note the **current pin SHA** in Chevron `package.json`.
+2. Note the **current npm version** (`npm:@builtbygio/<id>@ver`) in Chevron `package.json`.
 3. Open a short issue or use an existing one so the change has a tracking home.
 4. Work on a branch in the **package repo** first; only then bump the pin in Chevron.
 
@@ -66,15 +66,16 @@ Chevron strips `@builtbygio/` in `src/main-process/package-id.js`. Do not publis
 ### D. Land in Chevron monorepo
 
 - [ ] Push commit(s) to `builtbygio/<pkg>`.
-- [ ] Bump SHA in Chevron root `package.json` (+ lockfile via bootstrap/install).
-- [ ] Open Chevron PR: mention package name + old→new SHA.
-- [ ] CI: `unit-and-cpm` + platform smoke green.
+- [ ] `npm publish --access public --ignore-scripts` as `@builtbygio/<id>@x.y.z` (editor id stays unscoped).
+- [ ] Bump Chevron root `package.json` to `npm:@builtbygio/<id>@x.y.z` (+ `pnpm-lock.yaml` via bootstrap).
+- [ ] Open Chevron PR: mention package name + old→new **version** (not a git SHA).
+- [ ] CI: `unit-and-cpm` + platform smoke green. `package-pin-policy` must stay on `npm:@builtbygio/`.
 - [ ] Changelog note under Unreleased if user-visible.
 
 ```bash
 # In chevron monorepo
-# package.json: "archive-view": "git+https://github.com/builtbygio/archive-view.git#<newsha>"
-./script/bootstrap-modern   # or targeted lock update
+# package.json: "archive-view": "npm:@builtbygio/archive-view@0.66.2"
+./script/bootstrap-modern
 # PR against master
 ```
 

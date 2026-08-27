@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-08-15 (architecture target rev 3; dogfood Day 1 done)
+**Date of this handoff:** 2026-08-27 (1.1.0 unsigned preview shipped; Wave 0 contract tests)
 
 ---
 
@@ -36,10 +36,13 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | Community packages | Privileged `require` **restricted by default** |
 | FS IPC | Strict roots **on** by default (`core.fsIpcStrict`) |
 | Telemetry | Off — no metrics/exception-reporting; crash upload forced off |
-| Package manager | **cpm** (Electron-as-Node); **apm → cpm shim** |
+| Package manager | **cpm** (Electron-as-Node). The `apm` shim is retired. |
 | Registry | **Pulsar** (`https://api.pulsar-edit.dev`); `CPM_REGISTRY_URL` override |
 | Bootstrap | **pnpm workspaces** + `@electron/rebuild` via `./script/bootstrap-modern` |
 | CI | macOS x64/arm64, Linux x64/arm64 (packages + smoke), Windows x64 |
+| Catalog | **31** `workspace:@builtbygio/<id>@*` + **83** `npm:@builtbygio/<id>@ver`; **0** git SHA pins |
+| Default themes | **One Dark** (`one-dark-ui` / `one-dark-syntax`). `chevron-dark-*` stays bundled |
+| Package host v2 | Spine landed; `core.packageHostV2` **default false** |
 
 ---
 
@@ -157,20 +160,21 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 
 ### Primary next tracks
 
-1. **Dogfood week (#106)** — Days 1–3 done. Day 2 OK. Day 3 markdown-preview close hid panes; Day 6 Welcome installer/theme picker dead; crash dialog said Atom. Days 4–7 still open. Smoke is not dogfood.  
-2. **Architecture modernization** — target + plan: [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). H1–H2 through PR 17 + 14/14a landed. 13c CSON→JSON stream is done for all bundled `language-*` pins. `season` stays (PR 5b later). `Workspace.replace` still uses `Task`. Do **not** delete `Task` / `season` / `document-register-element` / first-mate. **Q1 is 8B.** Keep the inbox; skip Epic 18 / PR 19. `github` 0.37.9: React 18.3; graphql-client; GitHub App device-flow login (set `github.oauthClientId`); classic PAT fallback. Register the App once (`docs/github-app.md` in the package).  
+Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. **Wave 0 (this change):** `script/ci/baseline-1.1.0.test.js` locks One Dark, host v2 off, season, `atom://` alias, and `Task` on replace.
 
-3. **#57 / #127** — `cpm` + `script/ci` units already on every PR. Full `script/test` is Linux nightly + dispatch / PR label `jasmine` ([docs/jasmine-ci.md](docs/jasmine-ci.md)); first nightlies are measurement, not a merge gate.  
-4. **#79 done** — all bundled `language-*` are `builtbygio` pins. No `atom/*` app git pins.
-5. Residual `@atom/*` **names** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — owned repos, old npm scope.
-6. **Startup perf** — custom V8 snapshot on Linux/Windows; Darwin stock **frozen** (Q2; do not staff constructor bisection). Windows GHA median wall **2,734 ms** / workspace-ready **1,585 ms** / require **15 ms** — keep custom (Q3). See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md) §4.8–§4.10.  
-7. **Later:** sandboxed community packages (package host v2); signing
-8. **Build:** `./script/bootstrap-modern` then `./script/with-modern-env ./script/build --no-bootstrap`. Bare `./script/build` now packages if the tree is already bootstrapped (does not call the dead stub).
+1. **Wave 1** — `Workspace.replace` off `Task` (keep the export); one `sendSync`→`invoke` slice; inventory remaining pin `.cson` before touching `season`.  
+2. **Wave 2** — owned npm: github GraphQL **in place** (inbox stays; React is already 18.3; leftover is `graphql@14` / `relay-compiler@5`). Fold the `natural` log4js patch into the published spell-check stack.  
+3. **Wave 3** — delete `Task` / `season` / `document-register-element` / `atom://` only after greps and tests prove zero callers.  
+4. **Do not delete** `Task` / `season` / `document-register-element` / first-mate while callers remain. **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  
+5. Residual `@atom/*` **dependency keys** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — published as `@builtbygio/*`; renaming the editor key is branding, not a drive-by.  
+6. **Startup perf** — custom V8 snapshot on Linux/Windows with **stock fallback** if verify fails; Darwin stock **frozen** (Q2).  
+7. **Later:** package host v2 **routing on** (spine is off); signing. Jasmine nightly is measurement, not a merge gate ([docs/jasmine-ci.md](docs/jasmine-ci.md)).  
+8. **Build:** `./script/bootstrap-modern` then `./script/with-modern-env ./script/build --no-bootstrap`. `pnpm install` alone leaves Electron natives unbuilt.
 
 ### Known dogfood leftovers (found 2026-08-13)
 
 - **Fixed in #108:** empty tree-view — `collectDefaultRoots` used `atomApplication.windows` (never set); must use `getAllWindows()`. `/tmp` projects hid this. Keep `document-register-element` (contextIsolation); do not Grim-wrap `registerElement`.  
-- Owned packages still `require('atom')` in specs/comments (one-shot legacy warning; shim stays).
+- Jasmine harness still defines `window.atom` for ~7500 spec references. Product `require('atom')` is `MODULE_NOT_FOUND`.
 
 **Dev policy env:**  
 - `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log privileged + native requires  
@@ -197,7 +201,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 ### Explicitly out of scope unless asked
 
 - Pulsar rebase  
-- Hard-delete of remaining Atom shims before a dedicated removal PR  
+- Hard-delete of remaining Atom shims (`atom://` alias, `Task` export, `season`, `document-register-element`) before Wave 3 gates  
 
 ---
 
