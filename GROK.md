@@ -162,7 +162,7 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 
 Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. **Wave 0 (this change):** `script/ci/baseline-1.1.0.test.js` locks One Dark, host v2 off, season, `atom://` alias, and `Task` on replace.
 
-1. **Wave 1** — `Workspace.replace` off `Task` (keep the export); one `sendSync`→`invoke` slice; inventory remaining pin `.cson` before touching `season`.  
+1. **Wave 1** — `Workspace.replace` is off `Task` (this change; export stays). Next: one `sendSync`→`invoke` slice; inventory remaining pin `.cson` before touching `season`.  
 2. **Wave 2** — owned npm: github GraphQL **in place** (inbox stays; React is already 18.3; leftover is `graphql@14` / `relay-compiler@5`). Fold the `natural` log4js patch into the published spell-check stack.  
 3. **Wave 3** — delete `Task` / `season` / `document-register-element` / `atom://` only after greps and tests prove zero callers.  
 4. **Do not delete** `Task` / `season` / `document-register-element` / first-mate while callers remain. **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  

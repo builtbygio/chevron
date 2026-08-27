@@ -15,9 +15,9 @@ const Grim = require('grim');
 
 // Extended: Run a node script in a separate process.
 //
-// Used by fuzzy-finder (path crawl), symbols-view (ctags), and
-// Workspace.replace (`src/replace-handler.ts`). Find-in-project no longer
-// uses Task (ripgrep). Do not add new Task callers.
+// Public package API. fuzzy-finder, symbols-view, and Workspace.replace no
+// longer call Task. Find-in-project uses ripgrep. Do not add new Task callers.
+// Keep this module until a Wave 3 grep of owned pins is empty.
 //
 // ## Examples
 //
