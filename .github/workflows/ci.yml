@@ -170,6 +170,7 @@ jobs:
           node --test script/ci/package-require-audit.test.js
           node --test script/ci/legacy-transpile.test.js
           node --test script/ci/package-pin-policy.test.js
+          node --test script/ci/baseline-1.1.0.test.js
           node --test script/ci/user-config-path.test.js
           node --test script/ci/chevron-api-alias.test.js
           node --test script/ci/lsp-framing.test.js
@@ -433,6 +434,13 @@ jobs:
       # Cannot live in unit-and-cpm, which never runs a root `npm ci`.
       - name: Owned packages require chevron, not atom
         run: node --test script/ci/owned-require-chevron.test.js
+
+      # These walk installed pins / settings-view copy. unit-and-cpm has no root install.
+      - name: Task callers, pin CSON, One Dark settings-view copy
+        run: |
+          node --test script/ci/task-callers.test.js
+          node --test script/ci/pin-cson.test.js
+          node --test script/ci/chevron-dark-themes.test.js
 
       - name: Build + package (deb, tar, rpm)
         run: |

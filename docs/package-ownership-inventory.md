@@ -4,16 +4,16 @@
 **Source of truth for pins:** root [`package.json`](../package.json) `dependencies`  
 **Ecosystem strategy:** [package-ecosystem-strategy.md](./package-ecosystem-strategy.md) — **owned catalog only** until sandboxed community (host v2)  
 **Modernization process:** [owned-package-modernization-checklist.md](./owned-package-modernization-checklist.md)  
-**Pin guard:** `script/ci/package-pin-policy.test.js` (fails CI if owned packages regress to `atom/*`)
+**Pin guard:** `script/ci/package-pin-policy.test.js` (fails CI if owned packages regress to `atom/*` git or builtbygio git SHAs). 1.1.0 contract: `script/ci/baseline-1.1.0.test.js`.
 
 ## Summary (current)
 
 | Class | Count | Policy |
 |-------|------:|--------|
-| **Owned** (`builtbygio/*` git pins) | **84** | Primary maintenance + security patches |
+| **Workspace** (`workspace:@builtbygio/<id>@*`) | **31** | In-repo `packages/*`; editor runs this tree |
+| **npm catalog** (`npm:@builtbygio/<id>@ver`) | **83** | Published owned languages/UI/natives |
 | **Upstream Atom** (`atom/*` git pins) | **0** | #79 closed — TextMate `language-*` are owned |
-| **In-repo** (`file:packages/*`) | 29 | Monorepo packages (themes, about, welcome, natives, …) |
-| **npm registry** (semver / file natives) | rest | Host npm / Electron rebuild |
+| **builtbygio git SHA pins** | **0** | 1.1.0 retarget; pin-policy forbids regression |
 
 ## Owned forks (`builtbygio/*`)
 

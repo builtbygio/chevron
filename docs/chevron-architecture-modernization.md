@@ -3,10 +3,10 @@
 | Field | Value |
 |-------|-------|
 | **Author** | Grok (architecture audit) |
-| **Date** | 2026-08-15 |
-| **Status** | Draft (rev 3 — owner Q1–Q10 resolved 2026-08-15) |
-| **Product** | Chevron 1.0.1 unsigned preview (`builtbygio/chevron`) |
-| **Baseline** | Electron **43.1.0**, Node 24, Phase S Option C shipped, owned catalog only |
+| **Date** | 2026-08-15 (rev 4 contract 2026-08-27) |
+| **Status** | Draft (rev 3 — owner Q1–Q10 resolved 2026-08-15; **rev 4** = 1.1.0 leftover table) |
+| **Product** | Chevron **1.1.0** unsigned preview (`builtbygio/chevron`) |
+| **Baseline** | Electron **43.1.0**, Node 24, Phase S Option C, pnpm workspace, owned catalog on npmjs |
 | **Audience** | Senior engineers who know this tree |
 | **Type** | Strategy + target architecture + incremental PR plan — not a rewrite charter |
 
@@ -14,7 +14,7 @@
 
 ## Overview
 
-Chevron already survived the hard Electron ladder. It is not Atom 1.60 on Electron 11. It is a **hackable Electron 43 editor** with `contextIsolation`, no `@electron/remote`, cpm instead of Node-12 apm, official tree-sitter 0.25, a utilityProcess LSP host, and an owned package catalog. The remaining problem is not “we are behind Electron.” It is that **several load-bearing subsystems still implement 2015 Atom’s *way of building an editor***: CSON-as-config, `child_process.fork` Task workers, TextMate + NAN oniguruma as a first-class language engine, `electron-packager@15` + custom `mksnapshot` heroics, a compile-cache that still *names* Coffee/Babel, Jasmine-in-Electron as the product test, and a GitHub package frozen on React 16 / Relay 5.
+Chevron already survived the hard Electron ladder. It is not Atom 1.60 on Electron 11. It is a **hackable Electron 43 editor** with `contextIsolation`, no `@electron/remote`, cpm instead of Node-12 apm, official tree-sitter 0.25, a utilityProcess LSP host, and an owned package catalog on npmjs. The remaining problem is not “we are behind Electron.” It is that **several load-bearing subsystems still implement 2015 Atom’s *way of building an editor***: CSON dual-read via `season`, `Task` on `Workspace.replace`, TextMate as a supported fallback, custom `mksnapshot` (stock fallback), Jasmine-in-Electron as a nightly harness, and github still on `graphql@14` / Relay compiler (React is 18.3).
 
 This document proposes a **target architecture** that keeps the product thesis — packages, `require('chevron')`, inspectable runtime, editor Chromium `sandbox: false` (Phase S Option C) — and replaces the dead patterns with 2026-effective ones. The method is Chevron-shaped increments: delete what has a modern replacement, wrap what still earns its keep, migrate the rest over years. It is **not** a Pulsar rebase, **not** a Rust/Avalonia rewrite, and **not** flipping `sandbox: true` as modernization.
 
@@ -90,27 +90,27 @@ Every leftover named here has a delete / wrap / migrate verdict. Items missed in
 | `atom-*` custom element names | core + packages | **Migrate later** (branding, after polyfill strategy) |
 | first-mate + oniguruma NAN | `grammar-registry.js`, `text-mate-language-mode.js` | **Wrap** as supported fallback; lazy-load; delete only if exception list is empty (optional H3) |
 | `tree-sitter@0.25.1` | app dep | **Keep** |
-| TextMate-only catalog languages | yaml, xml, php, sql, toml, less/sass, perl, clojure, csharp, objective-c, gfm, git, todo, coffee-script, ruby-on-rails, … | **Migrate** via an H2 grammar-port **stream**; until then they **are** the exception list |
+| TextMate-only catalog languages | 12-row keep-TextMate list in [language-stack.md](./language-stack.md) | **Keep** — 13b/13c streams done; PR 22 closed. first-mate stays |
 | scandal search (`scan-handler.ts`) | `DefaultDirectorySearcher` | **Deleted** (PR 4) |
 | scandal replace (`replace-handler.ts`) | `Workspace.replace` | **Migrated** (PR 3; JS RegExp via Task) |
-| Public `Task` | `exports/chevron.js`; `src/task.ts` | **Wrap** until owned callers migrate; **not** a synonym for search (D16) |
+| Public `Task` | `exports/chevron.js`; `src/task.ts`; `Workspace.replace` | **Wrap** — fuzzy-finder / symbols-view migrated (PR 14a). Replace still `Task.once`. Do not delete the export yet |
 | `@vscode/ripgrep@1.15.14` | app + fuzzy-finder | **Done** (PR 15). CJS `rgPath` + `bin/rg`. Not 1.18 (ESM + optionalDeps). |
-| Preload `spawn(rg)` | `src/ripgrep-directory-searcher.js` 1, 285 | **Migrate** to allowlisted main spawn + `invoke` in H1 (PR 2b). No new utilityProcess. No `sandbox: true` |
-| season / pin CSON (~70 files) | `language-*` git pins; `transpile-cson-paths.js` is **live** | **Wrap** JSON+CSON reader until pins convert; **do not** delete season after a user-config window |
+| Preload `spawn(rg)` | `src/ripgrep-directory-searcher.js` | **Done** (PR 2b) — `ipcRenderer.invoke('chevron:rg-search-*')` |
+| season / pin CSON | `language-*` 13c JSON; user dual-read | **Wrap** — shipped pin CSON stream is empty; `season` stays for user `.cson` + compile-cache. Do **not** delete yet |
 | User `config.cson` | `src/config-file.js` | **Migrated** (PR 5: JSON default, dual-read CSON) |
 | Coffee/Babel compile-cache stubs | `src/coffee-script.js`, `src/babel.js` | **Deleted** (PR 11) |
 | `transpileCsonPaths()` | `script/build` 108 | **Keep** until pins are JSON |
 | `transpileCoffeeScriptPaths` / `transpileBabelPaths` | `script/build` | **Deleted** (PR 10; were quiet no-ops) |
 | script `babel-core@5`, coffeelint, donna/joanna/tello, npm@6 | `script/package.json` | **Delete only if** a CI-invocation grep shows unused. donna/tello still required by `script/lib/generate-api-docs.js`; coffeelint by `script/lib/lint-coffee-script-paths.js` |
 | Mocha + Jasmine-in-Electron | `script/test`, `vendor/jasmine.js` | **Wrap** as compatibility harness |
-| github React 16 + Relay 5 | `node_modules/github/package.json` | **Migrate** as an **epic** (inventory → one surface → drop Relay), not two PRs |
+| github GraphQL 14 / Relay compiler | `@builtbygio/github@0.37.12` | **Migrate in place** (8B). React is **18.3**. Do not slim inbox views |
 | `remote-compat` + `sendSync` | `src/remote-compat.js`; inventory §11 | **Wrap**; S4 is inventory + **one slice** per PR |
 | Package activate/services/keymaps | `src/package.js` | **Keep** |
 | Config schema / LESS / scoped keymaps | `config-schema.js`, `less-compile-cache.ts` | **Keep** the model |
-| `Package.getType()` returns `'atom'` | `src/package.js` 87–89 | **Migrate** in branding PR (H2) |
-| Windows intermediate `package.json` `name` = `atom` / `atom-<channel>` | `script/lib/generate-metadata.js` 12–20 (comment: “dual-support installs”) so userData stays on Atom trees | **Wrap** until an explicit H3 userData migrate. **Not** H1 packaging |
-| `src/electron-shims.js` | Grim-wraps `path.dirname`/`extname`/`basename` **and** `electron.remote.require` aliases | **Split**: path wraps ≠ remote shim deletion |
-| `exports/atom.js` / `global.atom` / `atom://` / `apm` | various | **Wrap** until dedicated H3 shim-removal PR (N8) |
+| `Package.getType()` returns `'atom'` | `src/package.js` | **Done** — returns `'chevron'` |
+| Windows intermediate `package.json` `name` | `script/lib/generate-metadata.js` | **Done** (PR 23b) — writes `chevron` / `chevron-<channel>`; no migrate (no Windows install base) |
+| `src/electron-shims.js` | Grim-wraps `path.dirname`/`extname`/`basename` | **Wrap** — path Grim stays; remote.require aliases already gone |
+| `exports/atom.js` / `global.atom` / `apm` | — | **Done** (PR 23). `require('atom')` is `MODULE_NOT_FOUND`. `atom://` **alias remains** |
 | `docs/atom-architecture.md`, `cpm-design.md` “dual-support forever” | docs | **Delete** the teaching — **PR 1 (this change)** |
 
 ---
@@ -351,7 +351,7 @@ Risk (**high** if we delete early): landing “delete Task + scandal after a dog
 2. **Default user files are JSON:** `~/.chevron/config.json`, `keymap.json`, `snippets.json`, `styles.less`.
 3. **Dual-read for one release:** if `config.cson` exists and `config.json` does not, read CSON and write JSON on next save. Then stop **writing** CSON. **Keep reading** CSON for package grammars/settings/snippets until pins convert.
 4. **`season` stays in the app runtime** (wrap) until the pin conversion stream is done **or** pack-time `transpile-cson-paths` + a **dev-only** season path is the remaining reader. Do **not** write “inventory says no.”
-5. `core.themes` default is `chevron-dark-ui` / `chevron-dark-syntax` (PR 17). `one-dark-*` stays shipped as an optional bundled theme.
+5. `core.themes` default is **One Dark** (`one-dark-ui` / `one-dark-syntax`) as of 1.1.0 (look regression vs PR 17’s `chevron-dark-*`). `chevron-dark-*` stays bundled. Do not flip the default without a product PR.
 
 **Delete / wrap / migrate**
 
@@ -949,9 +949,9 @@ Owner answers 2026-08-15. These are **final**.
 | Q1 | After dogfood, is the GitHub inbox UI load-bearing (8B) or is git-in-the-editor enough (8A/8C)? | **Resolved 2026-08-17: 8B.** Inbox is used. Skip Epic 18 / PR 19. Long-term: GitHub App login (not `github.atom.io`). | Do not slim or delete inbox views. 8B is an upgrade epic when staffed, not one master PR. Classic PAT is the interim login. |
 | Q2 | Is Darwin cold start a dogfood blocker? | **Resolved: leave Darwin on stock snapshot.** Do not staff constructor bisection. | PR 12 publishes numbers only. `packaging-policy.js` `darwin-boot-crash` stays. |
 | Q3 | Does Windows keep the custom snapshot? | **Resolved: keep Windows custom snapshot until measured worse.** PR 12 still publishes the number. | Same as D8. Measure; do not pre-disable. |
-| Q4 | When do we hard-delete `require('atom')` / `global.atom`? | **Resolved: dedicated H3 PR 23** after H1 docs + owned packages are clean. | N8 unchanged. |
+| Q4 | When do we hard-delete `require('atom')` / `global.atom`? | **PR 23 landed** (`require('atom')` is `MODULE_NOT_FOUND`; `global.atom` gone; `apm` retired). `atom://` alias remains until Wave 3. | Further name deletes wait on Wave 3 gates. |
 | Q5 | New `src/` files TS-only? | **Resolved: yes**, after H1 compile-cache cleanup (PR 16 after PR 11). | CI lint once PR 11 lands. |
-| Q6 | Default theme `one-dark-*` or `chevron-dark-*`? | **Resolved: prefer `chevron-dark-*`** (PR 17). | Branding PR, not architecture. |
+| Q6 | Default theme `one-dark-*` or `chevron-dark-*`? | **PR 17 shipped `chevron-dark-*`. 1.1.0 restored One Dark** (look regression). Product default is `one-dark-ui` / `one-dark-syntax`. | Do not flip without a product PR. `script/ci/baseline-1.1.0.test.js` guards it. |
 | Q7 | Move `rg` spawn from preload to main? | **Resolved: do it in H1** (PR 2b). | Not a later revisit. Allowlisted main spawn + `invoke`. No new utilityProcess host. No `sandbox: true`. |
 | Q8 | Keep `electron-link` after `@electron/packager`? | **Resolved: keep until it breaks, then drop snapshots** rather than fork. | D8 unchanged. |
 | Q9 | Remaining long jobs: A7 wrap, pin-local migrate, or leave `fork`? | **Resolved: pin-local migrate first; wrap `Task` (A7) only if a pin stalls.** | PR 14a first; A7 is the stall path. |
