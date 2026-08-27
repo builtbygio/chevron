@@ -16,7 +16,7 @@ const StateStore = require('./state-store');
 const TextEditor = require('./text-editor');
 const Panel = require('./panel');
 const PanelContainer = require('./panel-container');
-const Task = require('./task');
+const { replaceInFiles } = require('./replace-in-files');
 const WorkspaceCenter = require('./workspace-center');
 const { createWorkspaceElement } = require('./workspace-element');
 
@@ -2219,59 +2219,44 @@ module.exports = class Workspace extends Model {
   // Returns a {Promise}.
   replace(regex, replacementText, filePaths, iterator) {
     return new Promise((resolve, reject) => {
-      let buffer;
-      const openPaths = this.project
-        .getBuffers()
-        .map(buffer => buffer.getPath());
-      const outOfProcessPaths = _.difference(filePaths, openPaths);
+      try {
+        const openPaths = this.project
+          .getBuffers()
+          .map(buffer => buffer.getPath());
+        const closedPaths = _.difference(filePaths, openPaths);
 
-      let inProcessFinished = !openPaths.length;
-      let outOfProcessFinished = !outOfProcessPaths.length;
-      const checkFinished = () => {
-        if (outOfProcessFinished && inProcessFinished) {
-          resolve();
-        }
-      };
-
-      if (outOfProcessPaths.length) {
-        let flags = 'g';
-        if (regex.multiline) {
-          flags += 'm';
-        }
-        if (regex.ignoreCase) {
-          flags += 'i';
-        }
-
-        const task = Task.once(
-          require.resolve('./replace-handler'),
-          outOfProcessPaths,
-          regex.source,
-          flags,
-          replacementText,
-          () => {
-            outOfProcessFinished = true;
-            checkFinished();
+        // Open buffers first so iterator events match the previous order
+        // (in-window files before closed files on disk).
+        for (const buffer of this.project.getBuffers()) {
+          if (!filePaths.includes(buffer.getPath())) {
+            continue;
           }
-        );
-
-        task.on('replace:path-replaced', iterator);
-        task.on('replace:file-error', error => {
-          iterator(null, error);
-        });
-      }
-
-      for (buffer of this.project.getBuffers()) {
-        if (!filePaths.includes(buffer.getPath())) {
-          continue;
+          const replacements = buffer.replace(
+            regex,
+            replacementText,
+            iterator
+          );
+          if (replacements) {
+            iterator({ filePath: buffer.getPath(), replacements });
+          }
         }
-        const replacements = buffer.replace(regex, replacementText, iterator);
-        if (replacements) {
-          iterator({ filePath: buffer.getPath(), replacements });
-        }
-      }
 
-      inProcessFinished = true;
-      checkFinished();
+        if (closedPaths.length) {
+          replaceInFiles(
+            closedPaths,
+            regex,
+            replacementText,
+            (event, payload) => {
+              if (event === 'replace:file-error') iterator(null, payload);
+              else if (event === 'replace:path-replaced') iterator(payload);
+            }
+          );
+        }
+
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 

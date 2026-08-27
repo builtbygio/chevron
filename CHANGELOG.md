@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Wave 0 modernization contract: `script/ci/baseline-1.1.0.test.js` locks One Dark, host v2 off, `season`, the `atom://` alias, and `Task` on replace. Architecture leftover table / GROK / ownership inventory match the 1.1.0 catalog (31 workspace + 83 npm, 0 git SHAs).
+- Wave 1: `Workspace.replace` runs closed files through `replace-in-files` in-process (same JS RegExp events). Public `Task` export stays. `src/replace-handler.ts` removed.
+- Wave 0 modernization contract: `script/ci/baseline-1.1.0.test.js` locks One Dark, host v2 off, `season`, the `atom://` alias, and the `Task` export. Architecture leftover table / GROK / ownership inventory match the 1.1.0 catalog (31 workspace + 83 npm, 0 git SHAs).
 
 ## [1.1.0] — 2026-08-26
 

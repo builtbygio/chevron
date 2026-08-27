@@ -51,10 +51,12 @@ describe('1.1.0 product contract', () => {
     assert.match(registry, /protocol !== 'atom:'/);
   });
 
-  it('Task export stays; Workspace.replace still uses Task', () => {
+  it('Task export stays; Workspace.replace does not call Task', () => {
     assert.ok(fs.existsSync(path.join(ROOT, 'src', 'task.ts')));
     assert.match(read('exports/chevron.js'), /Task/);
-    assert.match(read('src/workspace.js'), /Task\.once/);
+    const ws = read('src/workspace.js');
+    assert.doesNotMatch(ws, /Task\.once/);
+    assert.match(ws, /replaceInFiles/);
   });
 
   it('first-mate and document-register-element stay', () => {

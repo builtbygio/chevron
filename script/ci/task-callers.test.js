@@ -1,8 +1,7 @@
 'use strict';
 
 /**
- * H2 PR 14a: owned fuzzy-finder / symbols-view must not require Task.
- * Workspace.replace still uses Task. Do not delete src/task.ts.
+ * Product code must not call Task. The public export stays until Wave 3.
  * Run: node --test script/ci/task-callers.test.js
  */
 
@@ -35,8 +34,14 @@ describe('Task callers (H2 PR 14a)', () => {
     assert.ok(!/Task\.once/.test(src));
   });
 
-  it('Workspace.replace still uses Task', () => {
+  it('Workspace.replace does not call Task', () => {
     const src = read('src/workspace.js');
-    assert.match(src, /Task/);
+    assert.doesNotMatch(src, /require\(['"]\.\/task['"]\)/);
+    assert.doesNotMatch(src, /Task\.once/);
+    assert.match(src, /replaceInFiles/);
+    assert.ok(
+      !fs.existsSync(path.join(ROOT, 'src', 'replace-handler.ts')),
+      'replace-handler.ts was the Task worker; replaceInFiles runs in-process'
+    );
   });
 });

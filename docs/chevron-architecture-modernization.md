@@ -71,7 +71,7 @@ That shape was brilliant in 2015. In 2026 the effective editors (VS Code, Zed, m
 | Compile cache writes, barely helps | 6.0 MB blob, 1395 keys, warm −6% — execute, not compile, dominates |
 | `github` is a 2019 SPA | `react@16.12.0`, `react-relay@5.0.0`, `graphql@14.5.8` (`node_modules/github/package.json`) |
 | Search has two engines, and the **UI default is scandal** | `Workspace.scan` uses ripgrep only if `options.ripgrep` is truthy (`src/workspace.js` 2060–2062). `find-and-replace` always passes `ripgrep: atom.config.get('find-and-replace.useRipgrep')`, and that schema **defaults to `false`** (`node_modules/find-and-replace/package.json`). Flipping the core default alone does not change product find-in-project |
-| `Task` still runs product features | Not a search leftover. Callers: fuzzy-finder path crawl (`node_modules/fuzzy-finder/lib/path-loader.js` `Task.once`), symbols-view ctags (`node_modules/symbols-view/lib/tag-reader.js`), `Workspace.replace` → `src/replace-handler.ts` → scandal `PathReplacer` (`src/workspace.js` ~2213) |
+| `Task` still runs product features | Public export remains. Product callers (fuzzy-finder, symbols-view, `Workspace.replace`) no longer `Task.once`. |
 | Packager is Atom-era | `electron-packager@^15.1.0` in `script/package.json`; `@electron/packager` explicitly deferred |
 | Test split is inverted | Fast `node --test script/ci/*` is the PR gate; `script/test` Jasmine+Mocha is nightly, not a merge gate, and first nightlies are measurement (`docs/jasmine-ci.md`) |
 | Docs still teach Atom | `cpm-design.md` still says “dual-support forever”; `package-node-policy.md` still tells authors to use `Task`; `atom-architecture.md` still lists apm Node 12; `exports/chevron.js` header still says `require('atom')` exists “so community packages keep working” |
@@ -93,7 +93,7 @@ Every leftover named here has a delete / wrap / migrate verdict. Items missed in
 | TextMate-only catalog languages | 12-row keep-TextMate list in [language-stack.md](./language-stack.md) | **Keep** — 13b/13c streams done; PR 22 closed. first-mate stays |
 | scandal search (`scan-handler.ts`) | `DefaultDirectorySearcher` | **Deleted** (PR 4) |
 | scandal replace (`replace-handler.ts`) | `Workspace.replace` | **Migrated** (PR 3; JS RegExp via Task) |
-| Public `Task` | `exports/chevron.js`; `src/task.ts`; `Workspace.replace` | **Wrap** — fuzzy-finder / symbols-view migrated (PR 14a). Replace still `Task.once`. Do not delete the export yet |
+| Public `Task` | `exports/chevron.js`; `src/task.ts` | **Wrap** — fuzzy-finder / symbols-view / `Workspace.replace` no longer call it. Export stays until Wave 3 |
 | `@vscode/ripgrep@1.15.14` | app + fuzzy-finder | **Done** (PR 15). CJS `rgPath` + `bin/rg`. Not 1.18 (ESM + optionalDeps). |
 | Preload `spawn(rg)` | `src/ripgrep-directory-searcher.js` | **Done** (PR 2b) — `ipcRenderer.invoke('chevron:rg-search-*')` |
 | season / pin CSON | `language-*` 13c JSON; user dual-read | **Wrap** — shipped pin CSON stream is empty; `season` stays for user `.cson` + compile-cache. Do **not** delete yet |
@@ -285,7 +285,7 @@ Risk (**medium**): some TextMate scopes are load-bearing for snippets, autocompl
 | Job | Path today | Engine |
 |-----|------------|--------|
 | **Find-in-project (UI)** | `find-and-replace` → `workspace.scan` → `RipgrepDirectorySearcher` | Ripgrep only (PR 2 + PR 4). `atom.directory-searcher` providers can still override a directory. `useRipgrep === false` / `CHEVRON_SEARCH_ENGINE=scandal` no longer select a second engine |
-| **Project replace** | `find-and-replace` → `workspace.replace` → `Task.once(replace-handler)` → `replace-in-files.js` | JS `RegExp` (PR 3). Open buffers in-process; other files via Task. No scandal |
+| **Project replace** | `find-and-replace` → `workspace.replace` → `replace-in-files.js` | JS `RegExp`. Open buffers via `TextBuffer.replace`; closed files in-process. No Task. No scandal |
 | **Quick-open crawl** | `fuzzy-finder/lib/path-loader.js` `const {Task} = require('chevron')` + `Task.once(load-paths-handler)` | Already has its own `fuzzy-finder.useRipGrep` (**default `true`**). Still **requires `Task`** to run either crawler |
 | **Go-to-symbol (no LSP)** | `symbols-view/lib/tag-reader.js` `Task.once(handlerPath, …)` | ctags in a `Task`. Pillar 1 **keeps** this fallback (LSP N3) |
 
