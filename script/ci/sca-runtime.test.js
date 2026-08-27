@@ -42,7 +42,7 @@ describe('runtime SCA declarations', () => {
     assert.strictEqual(cop.dependencies.marked, '4.3.0');
   });
 
-  it('owned sanitizer packages are builtbygio git pins', () => {
+  it('owned sanitizer packages are npm:@builtbygio pins', () => {
     for (const name of [
       'markdown-preview',
       'autocomplete-plus',
@@ -52,8 +52,9 @@ describe('runtime SCA declarations', () => {
     ]) {
       const spec = pkg.dependencies[name];
       assert.ok(
-        typeof spec === 'string' && spec.includes('github.com/builtbygio/'),
-        `${name} must stay a builtbygio git pin, got ${spec}`
+        typeof spec === 'string' &&
+          spec.startsWith(`npm:@builtbygio/${name}@`),
+        `${name} must stay npm:@builtbygio/${name}@ver, got ${spec}`
       );
     }
   });

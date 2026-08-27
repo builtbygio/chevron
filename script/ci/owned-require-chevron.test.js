@@ -18,9 +18,17 @@ const ATOM_REQUIRE = /require\((['"])atom\1\)/;
 const ATOM_FROM = /from\s+(['"])atom\1/;
 const SOURCE_EXT = new Set(['.js', '.ts', '.coffee', '.cjs', '.mjs']);
 
+function isOwnedBuiltbygioSpec(spec) {
+  const s = String(spec);
+  return (
+    s.startsWith('npm:@builtbygio/') ||
+    (s.includes('git+') && s.includes('github.com/builtbygio/'))
+  );
+}
+
 function ownedNames() {
   return Object.entries(pkg.dependencies)
-    .filter(([, spec]) => String(spec).includes('github.com/builtbygio/'))
+    .filter(([, spec]) => isOwnedBuiltbygioSpec(spec))
     .map(([name]) => name);
 }
 
@@ -47,7 +55,7 @@ describe('owned packages require chevron', () => {
   const names = ownedNames();
 
   it('scans at least one builtbygio pin', () => {
-    assert.ok(names.length > 0, 'no builtbygio pins in package.json');
+    assert.ok(names.length > 0, 'no npm/workspace/@builtbygio pins in package.json');
   });
 
   it("lib/ and src/ do not require('atom')", () => {

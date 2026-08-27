@@ -15,7 +15,7 @@ const pkg = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
 );
 
-/** Packages that must stay on builtbygio git pins (ownership + rename program). */
+/** Catalog packages that must stay on npm:@builtbygio/<id>@ver (not atom/* git). */
 const OWNED_BUILTBYGIO = [
   '@atom/fuzzy-native',
   '@atom/nsfw',
@@ -105,26 +105,28 @@ const OWNED_BUILTBYGIO = [
 /** Must not reappear as app dependencies (issue #62). */
 const FORBIDDEN_APP_DEPS = ['babel-core', 'coffee-script', 'scandal'];
 
-function isBuiltbygioGit(url) {
+function ownedNpmId(depKey) {
+  return depKey.includes('/') ? depKey.split('/').pop() : depKey;
+}
+
+function isBuiltbygioNpm(depKey, spec) {
+  const id = ownedNpmId(depKey);
   return (
-    typeof url === 'string' &&
-    url.includes('git+') &&
-    url.includes('github.com/builtbygio/')
+    typeof spec === 'string' &&
+    spec.startsWith(`npm:@builtbygio/${id}@`) &&
+    !spec.includes('git+') &&
+    !spec.includes('github.com/atom/')
   );
 }
 
 describe('package pin policy', () => {
-  it('owned packages pin to builtbygio git hosts', () => {
+  it('owned packages pin to npm:@builtbygio/<id>@ver', () => {
     for (const name of OWNED_BUILTBYGIO) {
       const url = pkg.dependencies[name];
       assert.ok(url, `missing dependency: ${name}`);
       assert.ok(
-        isBuiltbygioGit(url),
-        `${name} must be builtbygio git pin, got: ${url}`
-      );
-      assert.ok(
-        !url.includes('github.com/atom/'),
-        `${name} must not regress to atom/* host: ${url}`
+        isBuiltbygioNpm(name, url),
+        `${name} must be npm:@builtbygio/${ownedNpmId(name)}@ver, got: ${url}`
       );
     }
   });
@@ -156,8 +158,12 @@ describe('package pin policy', () => {
       `fs-admin override must follow the root pin, got: ${spec}`
     );
     assert.ok(
-      isBuiltbygioGit(pkg.dependencies['fs-admin']),
-      `fs-admin must be builtbygio git pin, got: ${pkg.dependencies['fs-admin']}`
+      isBuiltbygioNpm('fs-admin', pkg.dependencies['fs-admin']),
+      `fs-admin must be npm:@builtbygio/fs-admin@0.15.x, got: ${pkg.dependencies['fs-admin']}`
+    );
+    assert.ok(
+      pkg.dependencies['fs-admin'].startsWith('npm:@builtbygio/fs-admin@0.15.'),
+      `fs-admin must stay on 0.15 (not nested 0.19), got: ${pkg.dependencies['fs-admin']}`
     );
   });
 

@@ -900,9 +900,11 @@ module.exports = class PackageManager {
   }
 
   hostConfigSnapshot() {
+    const project =
+      global.chevron && global.chevron.project ? global.chevron.project : null;
     const projectPaths =
-      global.atom && atom.project && typeof atom.project.getPaths === 'function'
-        ? atom.project.getPaths()
+      project && typeof project.getPaths === 'function'
+        ? project.getPaths()
         : [];
     return this.packageHostClient.configSnapshot(this.config, projectPaths);
   }
@@ -914,7 +916,9 @@ module.exports = class PackageManager {
         notificationManager: this.notificationManager,
         config: this.config,
         workspace:
-          global.atom && atom.workspace ? atom.workspace : null
+          global.chevron && global.chevron.workspace
+            ? global.chevron.workspace
+            : null
       },
       pack,
       descriptor
