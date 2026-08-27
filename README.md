@@ -18,12 +18,12 @@ Rather than a from-scratch rewrite, Chevron takes the harder — and more educat
 
 ## Download
 
-**[1.0.1 unsigned preview](https://github.com/builtbygio/chevron/releases/tag/v1.0.1)** — installers are attached to that GitHub Release. Binaries are **not codesigned**; macOS Gatekeeper and Windows SmartScreen will warn.
+**[1.1.0 unsigned preview](https://github.com/builtbygio/chevron/releases/tag/v1.1.0)** — installers are attached to that GitHub Release. Binaries are **not codesigned**; macOS Gatekeeper and Windows SmartScreen will warn.
 
 | Platform | File |
 |----------|------|
-| Linux x64 | `chevron_1.0.1_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz` |
-| Linux arm64 | `chevron_1.0.1_arm64.deb`, `chevron.aarch64.rpm`, `chevron-arm64.tar.gz` |
+| Linux x64 | `chevron_1.1.0_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz` |
+| Linux arm64 | `chevron_1.1.0_arm64.deb`, `chevron.aarch64.rpm`, `chevron-arm64.tar.gz` |
 | macOS Intel | `chevron-mac-x64.zip` |
 | macOS Apple Silicon | `chevron-mac-arm64.zip` |
 | Windows x64 | `chevron-x64-windows.zip` |
@@ -32,7 +32,7 @@ All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtb
 
 ## Status
 
-**1.0.1 unsigned preview** — modernization 1.0 plus tree-view / archive / owned-package follow-ups. **Owned catalog only**, Phase S **Option C** (editor `sandbox: false` on purpose). This is a dogfoodable preview, not a signed store app.
+**1.1.0 unsigned preview** — pnpm 11 workspace, owned catalog on npmjs, One Dark default. **Owned catalog only**, Phase S **Option C** (editor `sandbox: false` on purpose). This is a dogfoodable preview, not a signed store app.
 
 | Track | Notes |
 |-------|--------|
@@ -40,7 +40,7 @@ All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtb
 | Bundle ID | `dev.builtbygio.chevron` |
 | Package API | **Chevron only** (`require('chevron')`, `global.chevron`, `engines.chevron`) |
 | Package catalog | **Owned core only**; sandboxed community is host v2 (later) — [docs/package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md) |
-| Package manager | **cpm** (Electron-as-Node); `apm` is a **shim → cpm** |
+| Package manager | **cpm** (Electron-as-Node). The `apm` shim is retired. |
 | Updates | **https://github.com/builtbygio/chevron/releases** (unsigned; Check for Update opens this page) |
 | Config home | **`~/.chevron`** (`CHEVRON_HOME`; `ATOM_HOME` only if set) |
 | Security | Phase S Option C — [docs/security-phase-s-decision.md](docs/security-phase-s-decision.md), [docs/security-threat-model.md](docs/security-threat-model.md) |
