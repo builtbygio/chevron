@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Wave 1: `Workspace.replace` runs closed files through `replace-in-files` in-process (same JS RegExp events). Public `Task` export stays. `src/replace-handler.ts` removed.
+- Wave 1 (complete): `Workspace.replace` runs closed files through `replace-in-files` in-process (same JS RegExp events), and forces a global regex the way the old Task worker did. Public `Task` export stays. `src/replace-handler.ts` removed.
+- Wave 1 `sendSync`→`invoke` slice: the Windows jump list and the beep sound move to `chevron:app-get-jump-list-settings` / `chevron:app-set-jump-list` / `chevron:shell-beep`. The `atom-*-sync` twins stay for `remote-compat`. Clipboard stays sync — `atom.clipboard.read()` is synchronous public API.
+- Wave 1 pin CSON inventory: all 94 catalog pins and the app tree ship **0** `.cson`. `season` is no longer a pin reader; it stays for user `.cson` dual-read, the compile cache, and third-party package data (`docs/language-stack.md`).
 - Wave 0 modernization contract: `script/ci/baseline-1.1.0.test.js` locks One Dark, host v2 off, `season`, the `atom://` alias, and the `Task` export. Architecture leftover table / GROK / ownership inventory match the 1.1.0 catalog (31 workspace + 83 npm, 0 git SHAs).
 
 ## [1.1.0] — 2026-08-26

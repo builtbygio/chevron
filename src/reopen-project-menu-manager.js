@@ -23,7 +23,9 @@ module.exports = class ReopenProjectMenuManager {
       })
     );
 
-    this.applyWindowsJumpListRemovals();
+    this.applyWindowsJumpListRemovals().catch(error => {
+      console.warn('applyWindowsJumpListRemovals failed', error);
+    });
   }
 
   reopenProjectCommand(e) {
@@ -68,7 +70,9 @@ module.exports = class ReopenProjectMenuManager {
   async applyWindowsJumpListRemovals() {
     if (process.platform !== 'win32') return;
     const rendererIpc = require('./renderer-ipc');
-    const settings = rendererIpc.getJumpListSettings() || { removedItems: [] };
+    const settings = (await rendererIpc.getJumpListSettingsAsync()) || {
+      removedItems: []
+    };
     const removed = (settings.removedItems || []).map(i => i.description);
     if (removed.length === 0) return;
     for (let project of this.historyManager.getProjects()) {
@@ -86,7 +90,7 @@ module.exports = class ReopenProjectMenuManager {
     if (process.platform !== 'win32') return;
     const rendererIpc = require('./renderer-ipc');
 
-    rendererIpc.setJumpList([
+    rendererIpc.setJumpListAsync([
       {
         type: 'custom',
         name: 'Recent Projects',
@@ -119,7 +123,9 @@ module.exports = class ReopenProjectMenuManager {
           }
         ]
       }
-    ]);
+    ]).catch(error => {
+      console.warn('setJumpList failed', error);
+    });
   }
 
   dispose() {

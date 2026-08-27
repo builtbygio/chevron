@@ -2224,6 +2224,12 @@ module.exports = class Workspace extends Model {
           .getBuffers()
           .map(buffer => buffer.getPath());
         const closedPaths = _.difference(filePaths, openPaths);
+        // The old Task worker rebuilt the regex with a forced `g`. Keep that
+        // guarantee for callers that pass a non-global RegExp, and keep the
+        // other flags (`u`/`s`/`y`) the worker used to drop.
+        const globalRegex = regex.global
+          ? regex
+          : new RegExp(regex.source, `${regex.flags}g`);
 
         // Open buffers first so iterator events match the previous order
         // (in-window files before closed files on disk).
@@ -2244,7 +2250,7 @@ module.exports = class Workspace extends Model {
         if (closedPaths.length) {
           replaceInFiles(
             closedPaths,
-            regex,
+            globalRegex,
             replacementText,
             (event, payload) => {
               if (event === 'replace:file-error') iterator(null, payload);

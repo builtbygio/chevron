@@ -356,7 +356,7 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 
 ## 11. Remaining `sendSync` channels (Electron BP P2.2 — follow-on)
 
-**Status (PR 8 / S4):** first-party **display** getters use `invoke` on `chevron:*`. Sync `confirm` / `remote-compat` / boot / workers / FS stay `sendSync`.
+**Status (Wave 1):** first-party **display** (PR 8 / S4) and **app jump list + shell beep** (Wave 1) getters use `invoke` on `chevron:*`. Sync `confirm` / clipboard / `remote-compat` / boot / workers / FS stay `sendSync`.
 
 Most boot and `remote-compat` paths still use `ipcMain.on` + `event.returnValue` (sync). Prefer `ipcMain.handle` / `invoke` only where the call site can become async without breaking the package API.
 
@@ -366,12 +366,14 @@ Most boot and `remote-compat` paths still use `ipcMain.on` + `event.returnValue`
 | Window / webContents proxy | `atom-browser-window-call-sync`, `atom-web-contents-call-sync`, `atom-bw-id-call-sync`, `atom-wc-is-destroyed-sync`, `atom-get-current-window-id-sync`, `atom-get-web-contents-id-sync` | **Stay** while `remote-compat` is the github/worker proxy |
 | Dialogs | `atom-show-message-box` (**invoke**, callback `confirm`), `atom-show-message-box-sync` (legacy `atom.confirm` / `remote.dialog.showMessageBoxSync`) | Async path already invoke. **Sync confirm stays** (hard public API) |
 | Display | `chevron:get-primary-display-work-area-size`, `chevron:get-user-default` | **First-party invoke (PR 8)**. `atom-*-sync` twins stay for `remote-compat` |
-| App / clipboard / shell | `atom-app-get-*-sync`, `atom-clipboard-*-sync`, `atom-shell-beep-sync` | **Later slice** where callers can be async |
+| App jump list / beep | `chevron:app-get-jump-list-settings`, `chevron:app-set-jump-list`, `chevron:shell-beep` | **First-party invoke (Wave 1)**. `atom-*-sync` twins stay for `remote-compat` |
+| Clipboard | `atom-clipboard-write-text-sync`, `atom-clipboard-read-text-sync`, `atom-clipboard-*-find-text-sync` | **Stay sync** — `atom.clipboard.read()` / `readWithMetadata()` are synchronous public API, and an async write would race a same-tick read |
+| App path / version | `atom-app-get-path-sync`, `atom-app-get-version-sync` | **Stay** — no first-party caller; `remote-compat` `app` proxy only |
 | Workers | `atom-create-browser-window-sync` (always refuses), `atom-utility-worker-*-sync` | **PR 9:** Node BW path gone. utilityProcess only |
 | FS IPC | `atom-fs-*-sync` family in `register-fs-ipc.js` | **Separate** later PR. Not this merge |
 
-**Migration hints:** first-party display done (PR 8). Clipboard/app getters next. Never break load-settings without an inject-at-preload alternative. New channels are `chevron:*`.
+**Migration hints:** first-party display (PR 8) and jump list + beep (Wave 1) are done. What is left is either sync-by-contract (clipboard read, `confirm`, boot settings) or `remote-compat`-only (`app` proxy, window/webContents proxy), so the next mover is `remote-compat` itself, not another getter slice. Never break load-settings without an inject-at-preload alternative. New channels are `chevron:*`.
 
 ---
 
-*Sections 1–8 are historical inventory. §9 reflects architecture as of 2026-07-13; §11 added for 0.6.0 BP close-out.*
+*Sections 1–8 are historical inventory. §9 reflects architecture as of 2026-07-13; §11 added for 0.6.0 BP close-out, last updated Wave 1 (2026-08-28).*
