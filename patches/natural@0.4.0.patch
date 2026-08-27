@@ -1,0 +1,38 @@
+diff --git a/lib/natural/brill_pos_tagger/lib/Brill_POS_Tagger.js b/lib/natural/brill_pos_tagger/lib/Brill_POS_Tagger.js
+--- a/lib/natural/brill_pos_tagger/lib/Brill_POS_Tagger.js
++++ b/lib/natural/brill_pos_tagger/lib/Brill_POS_Tagger.js
+@@ -23,7 +23,8 @@
+ 
+ var TF_Parser = require('./TF_Parser');
+ 
+-logger.setLevel('WARN');
++if (typeof logger.setLevel === 'function') logger.setLevel('WARN');
++else logger.level = 'WARN';
+ 
+ // Tags a sentence, sentence is an array of words
+ // Returns an array of tagged words; a tagged words is an array consisting of
+diff --git a/lib/natural/brill_pos_tagger/lib/Predicate.js b/lib/natural/brill_pos_tagger/lib/Predicate.js
+--- a/lib/natural/brill_pos_tagger/lib/Predicate.js
++++ b/lib/natural/brill_pos_tagger/lib/Predicate.js
+@@ -18,7 +18,8 @@
+ 
+ var log4js = require('log4js');
+ var logger = log4js.getLogger();
+-logger.setLevel('WARN');
++if (typeof logger.setLevel === 'function') logger.setLevel('WARN');
++else logger.level = 'WARN';
+ 
+ var predicates = {
+     // Predicates as used in the English rules in data/English/tr_from_posjs.txt
+diff --git a/lib/natural/brill_pos_tagger/lib/TransformationRule.js b/lib/natural/brill_pos_tagger/lib/TransformationRule.js
+--- a/lib/natural/brill_pos_tagger/lib/TransformationRule.js
++++ b/lib/natural/brill_pos_tagger/lib/TransformationRule.js
+@@ -21,7 +21,8 @@
+ 
+ var Predicate = require("./Predicate");
+ 
+-logger.setLevel('ERROR');
++if (typeof logger.setLevel === 'function') logger.setLevel('ERROR');
++else logger.level = 'ERROR';
+ 
+ var category_wild_card = "*";

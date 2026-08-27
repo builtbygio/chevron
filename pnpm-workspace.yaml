@@ -102,6 +102,8 @@ overrides:
 patchedDependencies:
   less@3.13.1: patches/less@3.13.1.patch
   dugite@1.110.0: patches/dugite@1.110.0.patch
+  # natural@0.4 (spell-check) calls log4js Logger#setLevel, removed in 6.x.
+  natural@0.4.0: patches/natural@0.4.0.patch
 
 # Owned catalog is published from this repo and consumed immediately.
 # Default minimumReleaseAge (1 day) 404s just-published @builtbygio
