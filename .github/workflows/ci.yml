@@ -119,6 +119,9 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: '24'
+          # This job never installs pnpm. setup-node otherwise sees
+          # package.json packageManager and fails looking up `pnpm` for cache.
+          package-manager-cache: false
 
       - name: Install cpm dependencies
         working-directory: cpm
@@ -201,9 +204,11 @@ jobs:
           node --test script/ci/spec-harness-globals.test.js
           node --test script/ci/no-apm.test.js
           node --test script/ci/no-coffee.test.js
+          node --test script/ci/no-request.test.js
           node --test script/ci/win32-userdata-name.test.js
           node --test script/ci/package-host-bootstrap.test.js
           node --test script/ci/package-host-activate.test.js
+          node --test script/ci/package-id.test.js
           node --test script/ci/package-host-services.test.js
           node --test script/ci/package-host-eligibility.test.js
           node --test script/ci/src-typescript-first.test.js
@@ -233,7 +238,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Use Node 24 (bootstrap host; app deps via host npm)
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # package.json packageManager (pnpm@11.22.0) is the pin. `version: 11`
+          # here fails action-setup with "Multiple versions of pnpm specified".
+          run_install: false
+
+      - name: Use Node 24 (bootstrap host; app deps via pnpm)
         uses: actions/setup-node@v5
         with:
           node-version: '24'
@@ -273,10 +285,12 @@ jobs:
         with:
           path: |
             ~/.npm
+            ~/.local/share/pnpm/store
+            ~/Library/pnpm/store
             node_modules
             script/node_modules
             cpm/node_modules
-          key: nm-${{ runner.os }}-${{ matrix.arch }}-node24-${{ hashFiles('package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          key: nm-${{ runner.os }}-${{ matrix.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
           restore-keys: |
             nm-${{ runner.os }}-${{ matrix.arch }}-node24-
 
@@ -356,7 +370,14 @@ jobs:
             dpkg-dev \
             rpm
 
-      - name: Use Node 24 (bootstrap host; app deps via host npm)
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # package.json packageManager (pnpm@11.22.0) is the pin. `version: 11`
+          # here fails action-setup with "Multiple versions of pnpm specified".
+          run_install: false
+
+      - name: Use Node 24 (bootstrap host; app deps via pnpm)
         uses: actions/setup-node@v5
         with:
           node-version: '24'
@@ -396,10 +417,12 @@ jobs:
         with:
           path: |
             ~/.npm
+            ~/.local/share/pnpm/store
+            ~/Library/pnpm/store
             node_modules
             script/node_modules
             cpm/node_modules
-          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
           restore-keys: |
             nm-${{ runner.os }}-${{ runner.arch }}-node24-
 
@@ -516,6 +539,13 @@ jobs:
             dpkg-dev \
             rpm
 
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # package.json packageManager (pnpm@11.22.0) is the pin. `version: 11`
+          # here fails action-setup with "Multiple versions of pnpm specified".
+          run_install: false
+
       - name: Use Node 24
         uses: actions/setup-node@v5
         with:
@@ -556,10 +586,12 @@ jobs:
         with:
           path: |
             ~/.npm
+            ~/.local/share/pnpm/store
+            ~/Library/pnpm/store
             node_modules
             script/node_modules
             cpm/node_modules
-          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
           restore-keys: |
             nm-${{ runner.os }}-${{ runner.arch }}-node24-
 
@@ -628,7 +660,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Use Node 24 (bootstrap host; app deps via host npm)
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # package.json packageManager (pnpm@11.22.0) is the pin. `version: 11`
+          # here fails action-setup with "Multiple versions of pnpm specified".
+          run_install: false
+
+      - name: Use Node 24 (bootstrap host; app deps via pnpm)
         uses: actions/setup-node@v5
         with:
           node-version: '24'
@@ -675,10 +714,13 @@ jobs:
         with:
           path: |
             ~/.npm
+            ~/.local/share/pnpm/store
+            ~/Library/pnpm/store
+            ~/AppData/Local/pnpm/store
             node_modules
             script/node_modules
             cpm/node_modules
-          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
           restore-keys: |
             nm-${{ runner.os }}-${{ runner.arch }}-node24-
 

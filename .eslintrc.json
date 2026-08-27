@@ -1,8 +1,7 @@
 {
   "extends": [
-    "./script/node_modules/eslint-config-standard/eslintrc.json",
-    "./script/node_modules/eslint-config-prettier/index.js",
-    "./script/node_modules/eslint-config-prettier/standard.js"
+    "./script/node_modules/eslint-config-standard/index.js",
+    "./script/node_modules/eslint-config-prettier/index.js"
   ],
   "plugins": [
     "prettier"
@@ -11,22 +10,31 @@
     "browser": true,
     "node": true
   },
-  "parser": "babel-eslint",
   "parserOptions": {
-    "ecmaVersion": 8,
+    "ecmaVersion": 2022,
     "ecmaFeatures": {
       "jsx": true
     }
   },
   "globals": {
     "atom": true,
+    "chevron": true,
     "snapshotResult": true
   },
   "rules": {
-    "standard/no-callback-literal": ["off"],
-    "node/no-deprecated-api": ["off"],
-    "prettier/prettier": ["error"]
+    "n/no-deprecated-api": ["off"],
+    "n/no-callback-literal": ["off"],
+    "prefer-const": ["off"],
+    "lines-between-class-members": ["off"],
+    "object-shorthand": ["off"],
+    "prettier/prettier": ["off"]
   },
+  "ignorePatterns": [
+    "node_modules/**",
+    "script/node_modules/**",
+    "out/**",
+    "**/*.ts"
+  ],
   "overrides": [
     {
       "files": ["spec/**", "**-spec.js", "**.test.js"],

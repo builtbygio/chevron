@@ -1,10 +1,9 @@
 {
-  "name": "update-package-dependencies",
+  "name": "@builtbygio/update-package-dependencies",
   "main": "./lib/update-package-dependencies",
   "version": "0.13.1",
-  "private": true,
   "description": "Runs package-manager install (cpm / apm shim) for the current project",
-  "repository": "https://github.com/atom/atom",
+  "repository": "https://github.com/builtbygio/chevron",
   "license": "MIT",
   "engines": {
     "chevron": "*",
@@ -23,9 +22,6 @@
     }
   },
   "dependencies": {},
-  "devDependencies": {
-    "standard": "^10.0.3"
-  },
   "standard": {
     "env": {
       "atomtest": true,

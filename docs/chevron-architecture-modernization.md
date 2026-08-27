@@ -1240,7 +1240,7 @@ Not one PR. Implements `docs/security-phase-s-package-host.md`. **Owner sign-off
 
 - **Depends on:** owner sign-off; H1 complete
 - **Description:** Chevron API proxy, not Atom dual-support. Do not count “host v2 spine” as an independently mergeable PR.
-- **Not done:** the editor-side `PackageManager` call site is **not** switched — nothing routes to the host at runtime. Gated by `core.packageHostV2` (default `false`). Turning routing on is a separate PR plus a dogfood window.
+- **Routing:** `PackageManager` sends eligible T2 packages to the host when `core.packageHostV2` is on (default `false`). Bundled packages stay in-process.
 
 #### PR 22 — Remove first-mate/oniguruma **if** exception list is empty
 

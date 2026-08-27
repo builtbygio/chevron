@@ -20,6 +20,7 @@ const fs = require('fs');
 const restrictedRequire = require('./package-host-require');
 const { createStub } = require('./package-host-stub');
 const services = require('./package-host-services');
+const { packageIdFromName } = require('../package-id');
 
 const BOOTED_AT = Date.now();
 
@@ -197,12 +198,11 @@ function readMetadata(root) {
 
 function activatePackage({ name, root, configSnapshot, state }) {
   if (!root) throw new Error('activate-package requires a root');
-  if (activePackages.has(name)) {
-    return { alreadyActive: true, name };
-  }
-
   const metadata = readMetadata(root);
-  const packageName = name || metadata.name;
+  const packageName = packageIdFromName(name || metadata.name);
+  if (activePackages.has(packageName)) {
+    return { alreadyActive: true, name: packageName };
+  }
   const emitted = [];
 
   const control = createStub({

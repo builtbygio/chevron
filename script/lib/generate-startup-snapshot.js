@@ -129,11 +129,23 @@ module.exports = function(packagedAppPath) {
         CONFIG.executableName
       );
     }
-    childProcess.execFileSync(
-      nodeBundledInElectronPath,
-      [verifySnapshotScriptPath, snapshotScriptPath],
-      { env: Object.assign({}, process.env, { ELECTRON_RUN_AS_NODE: 1 }) }
-    );
+    try {
+      childProcess.execFileSync(
+        nodeBundledInElectronPath,
+        [verifySnapshotScriptPath, snapshotScriptPath],
+        { env: Object.assign({}, process.env, { ELECTRON_RUN_AS_NODE: 1 }) }
+      );
+    } catch (error) {
+      // Verify runs the linked script under Electron-as-Node. A throw dumps
+      // the whole startup.js (tens of MB) into the child stderr — do not
+      // print that. Same stock-snapshot fallback as a failed mksnapshot pair.
+      console.log(
+        '\nNOTE: startup snapshot failed Electron-as-Node verify — ' +
+          "the packaged app will use Electron's stock V8 snapshots.\n"
+      );
+      writeStockSnapshotMarker('verify-failed');
+      return;
+    }
 
     console.log('Generating startup blob with mksnapshot');
     const mksnapshotBinDir = path.join(

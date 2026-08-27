@@ -51,7 +51,7 @@ Today (0.6.x): T1/T2 still share the **preload Node world** for compatibility. C
 
 ## Writing a host-eligible package (T2 authors)
 
-Package host v2 (Epic 21) runs **logic-only** community packages in a restricted `utilityProcess` instead of the editor preload. It is built and gated behind `core.packageHostV2`, **default off**; nothing is routed there yet.
+Package host v2 (Epic 21) runs **logic-only** community packages in a restricted `utilityProcess` instead of the editor preload. It is gated behind `core.packageHostV2`, **default off**. When the flag is on, `PackageManager` routes eligible T2 packages to the host.
 
 "T2 is the host" is the direction of travel. It is **not** "install anything from Pulsar" — the catalog stays owned-only ([package-ecosystem-strategy.md](./package-ecosystem-strategy.md)). The host is the isolation model that has to exist *before* community install can reopen.
 

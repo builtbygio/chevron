@@ -23,6 +23,10 @@ const PRIVILEGED = path.join(
   ROOT,
   'spec/fixtures/packages/package-host-privileged'
 );
+const SCOPED = path.join(
+  ROOT,
+  'spec/fixtures/packages/package-with-builtbygio-scope'
+);
 
 function forkHost() {
   const child = fork(HOST, [], { stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
@@ -153,6 +157,44 @@ describe('package host v2 — activation (21.2)', () => {
 
     const after = await host.request({ type: 'describe' });
     assert.strictEqual(after.host.packagesLoaded, 0);
+  });
+});
+
+describe('package host v2 — @builtbygio/ scope strip', () => {
+  let host;
+
+  before(async () => {
+    host = forkHost();
+    await host.waitFor(m => m.type === 'host-booted');
+  });
+
+  after(() => {
+    if (host) host.kill();
+  });
+
+  it('activates @builtbygio/whitespace-canary as whitespace-canary', async () => {
+    const res = await host.request({
+      type: 'activate-package',
+      name: '@builtbygio/whitespace-canary',
+      root: SCOPED,
+      configSnapshot: {}
+    });
+    assert.ok(!res.error, res.error && res.error.message);
+    assert.strictEqual(res.name, 'whitespace-canary');
+    const listed = await host.request({ type: 'list-packages' });
+    assert.ok(listed.packages.some(p => p.name === 'whitespace-canary'));
+    assert.ok(!listed.packages.some(p => p.name === '@builtbygio/whitespace-canary'));
+  });
+
+  it('strips the scope when only metadata.name is scoped', async () => {
+    const res = await host.request({
+      type: 'activate-package',
+      root: SCOPED,
+      configSnapshot: {}
+    });
+    assert.ok(!res.error, res.error && res.error.message);
+    assert.strictEqual(res.name, 'whitespace-canary');
+    assert.strictEqual(res.alreadyActive, true);
   });
 });
 

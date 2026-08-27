@@ -88,6 +88,13 @@ jobs:
             fakeroot \
             dpkg-dev
 
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # package.json packageManager (pnpm@11.22.0) is the pin. `version: 11`
+          # here fails action-setup with "Multiple versions of pnpm specified".
+          run_install: false
+
       - name: Use Node 24
         uses: actions/setup-node@v5
         with:
@@ -128,10 +135,11 @@ jobs:
         with:
           path: |
             ~/.npm
+            ~/.local/share/pnpm/store
             node_modules
             script/node_modules
             cpm/node_modules
-          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
           restore-keys: |
             nm-${{ runner.os }}-${{ runner.arch }}-node24-
 

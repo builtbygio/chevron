@@ -10,7 +10,14 @@ module.exports = function parseCommandLine(processArgs) {
   // We don't need this flag, and yargs interprets it as many short flags. So, we filter it out.
   const filteredArgs = processArgs.filter(arg => !arg.startsWith('-psn_'));
 
-  const options = yargs(filteredArgs).wrap(yargs.terminalWidth());
+  const options = yargs(filteredArgs)
+    .parserConfiguration({
+      // Electron/Chromium flags (--no-sandbox, --disable-gpu, …) are not
+      // declared here. Without this, yargs treats the next token as their
+      // value and swallows a project path: `chevron --no-sandbox /proj`.
+      'unknown-options-as-args': true
+    })
+    .wrap(yargs.terminalWidth());
   const version = app.getVersion();
   options.usage(
     dedent`Atom Editor v${version}
@@ -200,6 +207,11 @@ module.exports = function parseCommandLine(processArgs) {
     if (typeof path !== 'string') {
       // Sometimes non-strings (such as numbers or boolean true) get into args._
       // In the next block, .startsWith() only works on strings. So, skip non-string arguments.
+      continue;
+    }
+    if (path.startsWith('-')) {
+      // Unknown Electron/Chromium flags land in argv._ with
+      // unknown-options-as-args; they are not paths.
       continue;
     }
     if (path.startsWith('atom://') || path.startsWith('chevron://')) {

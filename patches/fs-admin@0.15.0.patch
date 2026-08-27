@@ -1,0 +1,22 @@
+diff --git a/src/main.cc b/src/main.cc
+--- a/src/main.cc
++++ b/src/main.cc
+@@ -88,10 +88,13 @@
+   Nan::SetMethod(target, "spawnAsAdmin", SpawnAsAdmin);
+ }
+ 
+-#if NODE_MAJOR_VERSION >= 10
+-NAN_MODULE_WORKER_ENABLED(fs_admin, Init)
+-#else
+-NODE_MODULE(fs_admin, Init)
+-#endif
++static void fs_admin_chevron_register(
++    v8::Local<v8::Object> exports,
++    v8::Local<v8::Value> module,
++    v8::Local<v8::Context> context,
++    void* priv) {
++  Init(exports);
++}
++NODE_MODULE_CONTEXT_AWARE(fs_admin, fs_admin_chevron_register)
+ 
+ }  // namespace spawn_as_admin

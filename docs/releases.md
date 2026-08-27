@@ -1,7 +1,7 @@
 # Chevron unsigned preview releases
 
-**Status:** 1.0.1 product contract  
-**Current tag:** [v1.0.1](https://github.com/builtbygio/chevron/releases/tag/v1.0.1)  
+**Status:** 1.1.0 product contract  
+**Current tag:** [v1.1.0](https://github.com/builtbygio/chevron/releases/tag/v1.1.0)  
 **Update URL:** https://github.com/builtbygio/chevron/releases
 
 This is a **modernization 1.0**, published as an **unsigned preview**. It is not a signed, notarized daily-driver store build.
@@ -34,12 +34,13 @@ A Squirrel-style feed (`CHEVRON_UPDATE_URL_PREFIX` / legacy `ATOM_UPDATE_URL_PRE
 
 CI on tag `v*` builds every platform and attaches artifacts to the GitHub Release (`prerelease: true`).
 
-**1.0.1:** https://github.com/builtbygio/chevron/releases/tag/v1.0.1
+**1.1.0:** https://github.com/builtbygio/chevron/releases/tag/v1.1.0  
+Previous: [v1.0.1](https://github.com/builtbygio/chevron/releases/tag/v1.0.1)
 
 | Platform | File |
 |----------|------|
-| Linux x64 | `chevron_1.0.1_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz` |
-| Linux arm64 | `chevron_1.0.1_arm64.deb`, `chevron.aarch64.rpm`, `chevron-arm64.tar.gz` |
+| Linux x64 | `chevron_1.1.0_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz` |
+| Linux arm64 | `chevron_1.1.0_arm64.deb`, `chevron.aarch64.rpm`, `chevron-arm64.tar.gz` |
 | macOS Intel | `chevron-mac-x64.zip` (unsigned `.app`) |
 | macOS Apple Silicon | `chevron-mac-arm64.zip` (unsigned `.app`) |
 | Windows x64 | `chevron-x64-windows.zip` |
@@ -59,11 +60,24 @@ Env overrides (advanced):
 ```bash
 git checkout master
 git pull
-git tag -a v1.0.1 -m "Chevron 1.0.1 unsigned preview"
-git push origin v1.0.1
+git tag -a v1.1.0 -m "Chevron 1.1.0 unsigned preview"
+git push origin v1.1.0
 ```
 
 The `publish-unsigned-preview` CI job waits for the five-platform matrix, then creates the GitHub Release.
+
+## From source
+
+A fresh clone must use **`./script/bootstrap-modern`**, not a bare `pnpm install`. Bootstrap installs with `--ignore-scripts` (no random registry postinstalls) and then rebuilds Electron 43 natives with modern `node-gyp`. `pnpm install` alone leaves `.node` addons unbuilt.
+
+```bash
+git clone https://github.com/builtbygio/chevron.git
+cd chevron
+./script/bootstrap-modern
+./script/with-modern-env ./script/build --no-bootstrap
+```
+
+Platform notes: [linux](build-instructions/linux.md), [macOS](build-instructions/macOS.md), [windows](build-instructions/windows.md).
 
 ## Dogfood
 

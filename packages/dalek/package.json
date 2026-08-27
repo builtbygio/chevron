@@ -1,10 +1,10 @@
 {
-  "name": "dalek",
+  "name": "@builtbygio/dalek",
   "main": "./lib/main",
   "version": "0.2.2",
   "description": "EXTERMINATEs built-in packages installed in ~/.atom/packages",
   "keywords": [],
-  "repository": "https://github.com/atom/atom",
+  "repository": "https://github.com/builtbygio/chevron",
   "license": "MIT",
   "atomTestRunner": "./test/runner",
   "engines": {
@@ -16,8 +16,7 @@
   },
   "devDependencies": {
     "atom-mocha-test-runner": "^1.0.0",
-    "sinon": "9.0.3",
-    "standard": "^8.6.0"
+    "sinon": "9.0.3"
   },
   "standard": {
     "env": {

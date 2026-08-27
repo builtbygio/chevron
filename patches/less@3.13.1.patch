@@ -1,0 +1,16 @@
+diff --git a/lib/less-node/image-size.js b/lib/less-node/image-size.js
+index 1111111..2222222 100644
+--- a/lib/less-node/image-size.js
++++ b/lib/less-node/image-size.js
+@@ -29,8 +29,9 @@
+         if (fileSync.error) {
+             throw fileSync.error;
+         }
+-        var sizeOf = require('image-size');
+-        return sizeOf(fileSync.filename);
++        var imageSizeMod = require('image-size');
++        var sizeOf = imageSizeMod.imageSize || imageSizeMod.default || imageSizeMod;
++        return sizeOf(fileSync.filename);
+     }
+     var imageFunctions = {
+         'image-size': function (filePathNode) {

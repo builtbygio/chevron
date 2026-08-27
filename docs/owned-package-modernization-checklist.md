@@ -52,6 +52,17 @@ git checkout -b modern/chevron-baseline <pin-sha>
 - [ ] Avoid reintroducing `request`, ancient Babel, or unmaintained native stacks without a plan.
 - [ ] Performance: profile only when there is a measured issue (startup, large trees, search).
 
+### D0. npm name (`@builtbygio/<id>`)
+
+Owned catalog **publishes** as `@builtbygio/<id>` (npm org `builtbygio`, user `giobuilds`). The **editor id** stays unscoped `<id>` (`require('tree-view')`, `packageDependencies`, `core.disabledPackages`).
+
+```json
+"tree-view": "npm:@builtbygio/tree-view@0.229.6",
+"@atom/watcher": "npm:@builtbygio/watcher@1.3.5"
+```
+
+Chevron strips `@builtbygio/` in `src/main-process/package-id.js`. Do not publish until that strip is in the build you pin. Do not use `@atom/` or `@giobuilds/` as the publish scope.
+
 ### D. Land in Chevron monorepo
 
 - [ ] Push commit(s) to `builtbygio/<pkg>`.

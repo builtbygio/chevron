@@ -14,7 +14,9 @@ module.exports = function(ci) {
   console.log('Installing script dependencies');
   const npmBin = CONFIG.getNpmBinPath(ci);
   // Default npm loglevel: keep deprecation/peer warnings visible.
-  const args = [ci ? 'ci' : 'install'];
+  // eslint-config-standard 17 still peers eslint 8; ESLint 9 is the engine.
+  // cwd is script/, so the repo-root .npmrc is not applied.
+  const args = [ci ? 'ci' : 'install', '--legacy-peer-deps'];
   const skipMksnapshot = !hostCanRunMksnapshot();
 
   if (skipMksnapshot) {

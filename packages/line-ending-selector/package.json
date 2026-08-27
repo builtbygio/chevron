@@ -1,10 +1,10 @@
 {
-  "name": "line-ending-selector",
+  "name": "@builtbygio/line-ending-selector",
   "version": "0.7.7",
   "main": "./lib/main",
   "description": "Select the line ending to use for the current editor.",
   "license": "MIT",
-  "repository": "https://github.com/atom/atom",
+  "repository": "https://github.com/builtbygio/chevron",
   "engines": {
     "chevron": "*",
     "atom": "^1.0.0"
@@ -19,9 +19,6 @@
         "^1.0.0": "consumeStatusBar"
       }
     }
-  },
-  "devDependencies": {
-    "standard": "^5.1.0"
   },
   "configSchema": {
     "defaultLineEnding": {

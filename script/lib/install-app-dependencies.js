@@ -1,13 +1,14 @@
 'use strict';
 
 /**
- * Install root application dependencies with **host npm** (Phase 0).
- * Replaces `runApmInstall(repositoryRoot)` for app node_modules.
+ * Install root application dependencies with **pnpm** (workspace cutover).
+ * Replaces `runApmInstall(repositoryRoot)` / host `npm ci` for app node_modules.
  *
- * - Uses package-lock.json (lockfileVersion 2/3) via `npm ci` in CI.
+ * - Uses pnpm-lock.yaml via `pnpm install --frozen-lockfile` in CI.
  * - Always --ignore-scripts so Electron natives are rebuilt by bootstrap-modern
  *   (patches + modern node-gyp), not random registry postinstalls.
- * - --legacy-peer-deps: Atom-era tree still has peer skew; match Phase 0 spike.
+ * - Peer skew is handled by `.npmrc` (`strict-peer-dependencies=false`,
+ *   plus `legacy-peer-deps=true` for the remaining npm trees in script/ and cpm).
  */
 
 const CONFIG = require('../config');
@@ -16,22 +17,20 @@ const execFileSync = require('./exec-file-sync');
 module.exports = function installAppDependencies(ci, options) {
   options = options || {};
   const ignoreScripts = options.ignoreScripts !== false;
-  const legacyPeerDeps = options.legacyPeerDeps !== false;
 
-  // Keep default npm loglevel so deprecations and peer warnings stay visible
+  // Keep default loglevel so deprecations and peer warnings stay visible
   // (fix or track them — do not hide with --loglevel=error).
-  const args = [];
+  const args = ['install'];
   if (ignoreScripts) args.push('--ignore-scripts');
-  if (legacyPeerDeps) args.push('--legacy-peer-deps');
-  args.push(ci ? 'ci' : 'install');
+  if (ci) args.push('--frozen-lockfile');
 
   console.log(
     ci
-      ? 'Installing application dependencies (host npm ci)…'
-      : 'Installing application dependencies (host npm install)…'
+      ? 'Installing application dependencies (pnpm install --frozen-lockfile)…'
+      : 'Installing application dependencies (pnpm install)…'
   );
 
-  execFileSync(CONFIG.getNpmBinPath(false), args, {
+  execFileSync(CONFIG.getPnpmBinPath(), args, {
     env: process.env,
     cwd: CONFIG.repositoryRootPath,
     stdio: 'inherit'

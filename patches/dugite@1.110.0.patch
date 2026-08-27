@@ -1,0 +1,186 @@
+diff --git a/package.json b/package.json
+index c159916..57039fb 100644
+--- a/package.json
++++ b/package.json
+@@ -34,7 +34,6 @@
+   "homepage": "https://github.com/desktop/dugite#readme",
+   "dependencies": {
+     "checksum": "^0.1.1",
+-    "got": "^9.6.0",
+     "mkdirp": "^0.5.1",
+     "progress": "^2.0.3",
+     "rimraf": "^2.5.4",
+diff --git a/script/download-git.js b/script/download-git.js
+index c7d6cb4..29edb23 100644
+--- a/script/download-git.js
++++ b/script/download-git.js
+@@ -1,6 +1,8 @@
+ const fs = require('fs')
++const http = require('http')
++const https = require('https')
++const { URL } = require('url')
+ 
+-const got = require('got')
+ const ProgressBar = require('progress')
+ const mkdirp = require('mkdirp')
+ const checksum = require('checksum')
+@@ -49,66 +51,111 @@ const unpackFile = function(file) {
+   })
+ }
+ 
+-const downloadAndUnpack = () => {
+-  console.log(`Downloading Git from: ${config.source}`)
++function getLib(url) {
++  return url.protocol === 'http:' ? http : https
++}
+ 
+-  const options = {
+-    headers: {
+-      Accept: 'application/octet-stream',
+-      'User-Agent': 'dugite'
+-    },
+-    secureProtocol: 'TLSv1_2_method'
++function downloadToFile(urlString, destPath, headers, redirectCount, callback) {
++  if (redirectCount > 10) {
++    callback(new Error('Too many redirects'))
++    return
+   }
+ 
+-  const client = got.stream(config.source, options)
++  let url
++  try {
++    url = new URL(urlString)
++  } catch (error) {
++    callback(error)
++    return
++  }
+ 
+-  client.pipe(fs.createWriteStream(config.tempFile))
++  const req = getLib(url).get(
++    url,
++    {
++      headers,
++      timeout: 60000
++    },
++    res => {
++      const status = res.statusCode || 0
++      if (status >= 300 && status < 400 && res.headers.location) {
++        res.resume()
++        const next = new URL(res.headers.location, url).toString()
++        downloadToFile(next, destPath, headers, redirectCount + 1, callback)
++        return
++      }
+ 
+-  client.on('error', function(error) {
+-    if (error.code === 'ETIMEDOUT') {
+-      console.log(
+-        `A timeout has occurred while downloading '${config.source}' - check ` +
+-          `your internet connection and try again. If you are using a proxy, ` +
+-          `make sure that the HTTP_PROXY and HTTPS_PROXY environment variables are set.`,
+-        error
+-      )
+-    } else {
+-      console.log(`Error raised while downloading ${config.source}`, error)
+-    }
+-    process.exit(1)
+-  })
++      if (status !== 200) {
++        res.resume()
++        callback(new Error(`Non-200 response returned from ${urlString} - (${status})`))
++        return
++      }
+ 
+-  client.on('response', function(res) {
+-    if (res.statusCode !== 200) {
+-      console.log(`Non-200 response returned from ${config.source} - (${res.statusCode})`)
+-      process.exit(1)
++      const len = parseInt(res.headers['content-length'], 10)
++      console.log()
++      const bar = Number.isFinite(len)
++        ? new ProgressBar('Downloading Git [:bar] :percent :etas', {
++            complete: '=',
++            incomplete: ' ',
++            width: 50,
++            total: len
++          })
++        : null
++
++      const out = fs.createWriteStream(destPath)
++      res.on('data', chunk => {
++        if (bar) bar.tick(chunk.length)
++      })
++      res.pipe(out)
++      out.on('finish', () => {
++        console.log('\n')
++        callback()
++      })
++      out.on('error', callback)
++      res.on('error', callback)
+     }
++  )
+ 
+-    const len = parseInt(res.headers['content-length'], 10)
++  req.on('timeout', () => {
++    req.destroy()
++    callback(
++      Object.assign(
++        new Error(
++          `A timeout has occurred while downloading '${urlString}' - check ` +
++            `your internet connection and try again. If you are using a proxy, ` +
++            `make sure that the HTTP_PROXY and HTTPS_PROXY environment variables are set.`
++        ),
++        { code: 'ETIMEDOUT' }
++      )
++    )
++  })
++  req.on('error', callback)
++}
+ 
+-    console.log()
+-    const bar = new ProgressBar('Downloading Git [:bar] :percent :etas', {
+-      complete: '=',
+-      incomplete: ' ',
+-      width: 50,
+-      total: len
+-    })
++const downloadAndUnpack = () => {
++  console.log(`Downloading Git from: ${config.source}`)
+ 
+-    res.on('data', function(chunk) {
+-      bar.tick(chunk.length)
+-    })
++  const headers = {
++    Accept: 'application/octet-stream',
++    'User-Agent': 'dugite'
++  }
+ 
+-    res.on('end', function() {
+-      console.log('\n')
++  downloadToFile(config.source, config.tempFile, headers, 0, error => {
++    if (error) {
++      if (error.code === 'ETIMEDOUT') {
++        console.log(error.message, error)
++      } else {
++        console.log(`Error raised while downloading ${config.source}`, error)
++      }
++      process.exit(1)
++    }
+ 
+-      verifyFile(config.tempFile, valid => {
+-        if (valid) {
+-          unpackFile(config.tempFile)
+-        } else {
+-          console.log(`checksum verification failed, refusing to unpack...`)
+-          process.exit(1)
+-        }
+-      })
++    verifyFile(config.tempFile, valid => {
++      if (valid) {
++        unpackFile(config.tempFile)
++      } else {
++        console.log(`checksum verification failed, refusing to unpack...`)
++        process.exit(1)
++      }
+     })
+   })
+ }

@@ -1,5 +1,5 @@
 {
-  "name": "language-rust-bundled",
+  "name": "@builtbygio/language-rust-bundled",
   "version": "0.1.0",
   "description": "Rust support for Atom",
   "keywords": [
@@ -8,7 +8,7 @@
     "rust"
   ],
   "main": "./lib/main",
-  "repository": "https://github.com/atom/atom",
+  "repository": "https://github.com/builtbygio/chevron",
   "license": "MIT",
   "dependencies": {
     "tree-sitter-rust": "0.24.0"

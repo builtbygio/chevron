@@ -174,12 +174,12 @@ module.exports = class ThemeManager {
       ];
       themeNames = _.intersection(themeNames, builtInThemeNames);
       if (themeNames.length === 0) {
-        themeNames = ['chevron-dark-syntax', 'chevron-dark-ui'];
+        themeNames = ['one-dark-syntax', 'one-dark-ui'];
       } else if (themeNames.length === 1) {
         if (themeNames[0].endsWith('-ui')) {
-          themeNames.unshift('chevron-dark-syntax');
+          themeNames.unshift('one-dark-syntax');
         } else {
-          themeNames.push('chevron-dark-ui');
+          themeNames.push('one-dark-ui');
         }
       }
     }

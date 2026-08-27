@@ -24,8 +24,19 @@ const {
 } = require('../lib/patch-bridge-inventory');
 
 describe('classifySpec', () => {
-  it('classifies file / git / semver', () => {
+  it('classifies file / workspace / git / semver', () => {
     assert.strictEqual(classifySpec('file:packages/about'), 'file');
+    assert.strictEqual(classifySpec('workspace:*'), 'workspace');
+    assert.strictEqual(
+      classifySpec('npm:@builtbygio/about@1.9.3'),
+      'npm-builtbygio'
+    );
+    assert.strictEqual(
+      classifySpec('workspace:@builtbygio/about@*'),
+      'workspace'
+    );
+    assert.strictEqual(classifySpec('workspace:*'), 'workspace');
+    assert.strictEqual(classifySpec('workspace:^1.0.0'), 'workspace');
     assert.strictEqual(
       classifySpec('git+https://github.com/atom/foo.git#abc'),
       'git-atom'
@@ -33,6 +44,10 @@ describe('classifySpec', () => {
     assert.strictEqual(
       classifySpec('git+https://github.com/builtbygio/foo.git#abc'),
       'git-builtbygio'
+    );
+    assert.strictEqual(
+      classifySpec('npm:@builtbygio/tree-view@0.229.6'),
+      'npm-builtbygio'
     );
     assert.strictEqual(classifySpec('1.2.3'), 'semver');
     assert.strictEqual(classifySpec('^4.0.0'), 'semver');
@@ -57,7 +72,7 @@ describe('root dependency graph', () => {
     assert.strictEqual(pkg.overrides.dompurify, '3.4.13');
     assert.strictEqual(pkg.overrides.marked, '4.3.0');
     assert.ok(pkg.overrides.dugite, 'dugite override missing');
-    assert.strictEqual(pkg.overrides.dugite.tar, '6.2.1');
+    assert.strictEqual(pkg.overrides.dugite.tar, '7.5.21');
   });
 
   it('keeps atom/* git pin count from growing past known ceiling', () => {
@@ -69,16 +84,88 @@ describe('root dependency graph', () => {
     );
   });
 
-  it('reports a non-zero owned-pin set', () => {
-    assert.ok(counts['git-builtbygio'] >= 20);
+  it('has no remaining builtbygio git SHA pins', () => {
+    assert.strictEqual(
+      counts['git-builtbygio'],
+      0,
+      `git-builtbygio leftovers: ${(lists['git-builtbygio'] || []).join(', ')}`
+    );
   });
 
-  it('install policy still documents legacy-peer-deps', () => {
+  it('installs app deps with pnpm and a frozen lockfile in CI', () => {
     const install = fs.readFileSync(
       path.join(ROOT, 'script', 'lib', 'install-app-dependencies.js'),
       'utf8'
     );
-    assert.ok(install.includes('legacyPeerDeps'));
+    assert.ok(install.includes('getPnpmBinPath'));
+    assert.ok(install.includes('--frozen-lockfile'));
+    const workspace = fs.readFileSync(
+      path.join(ROOT, 'pnpm-workspace.yaml'),
+      'utf8'
+    );
+    assert.ok(workspace.includes('strictPeerDependencies: false'));
+    assert.ok(workspace.includes('nodeLinker: hoisted'));
+    assert.ok(workspace.includes('blockExoticSubdeps: false'));
+  });
+
+  it('commits pnpm-lock.yaml as the app-tree lockfile', () => {
+    assert.ok(
+      fs.existsSync(path.join(ROOT, 'pnpm-workspace.yaml')),
+      'missing pnpm-workspace.yaml'
+    );
+    assert.ok(
+      fs.existsSync(path.join(ROOT, 'pnpm-lock.yaml')),
+      'missing pnpm-lock.yaml'
+    );
+  });
+
+  it('mocha is 11.x (still CJS; mocha 12 is the ESM rewrite)', () => {
+    assert.match(String(pkg.dependencies.mocha), /^11\./);
+  });
+
+  it('in-repo catalog packages install from the workspace as @builtbygio aliases', () => {
+    const packagesDir = path.join(ROOT, 'packages');
+    let pinned = 0;
+    for (const dir of fs.readdirSync(packagesDir)) {
+      const metaPath = path.join(packagesDir, dir, 'package.json');
+      if (!fs.existsSync(metaPath)) continue;
+      const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+      const npmName = meta.name;
+      if (!npmName || !npmName.startsWith('@builtbygio/')) continue;
+      const id = npmName.slice('@builtbygio/'.length);
+      const depKey = id === 'watcher' ? '@atom/watcher' : id;
+      const spec = pkg.dependencies[depKey];
+      if (!spec) continue;
+      assert.strictEqual(
+        spec,
+        `workspace:${npmName}@*`,
+        `${depKey} should pin workspace:${npmName}@*`
+      );
+      pinned += 1;
+      const bundled = pkg.packageDependencies[id];
+      if (bundled) {
+        assert.strictEqual(
+          bundled,
+          meta.version,
+          `packageDependencies.${id} should match ${meta.version}`
+        );
+      }
+    }
+    assert.ok(pinned >= 31, `pinned in-repo workspace aliases ${pinned}`);
+    assert.strictEqual(
+      counts.workspace,
+      pinned,
+      `workspace count ${counts.workspace} != pinned ${pinned}`
+    );
+    assert.ok(
+      counts['npm-builtbygio'] >= 80,
+      `npm-builtbygio count ${counts['npm-builtbygio']} (expected the former git catalog)`
+    );
+    assert.strictEqual(
+      counts.file,
+      0,
+      `file: app deps remain: ${(lists.file || []).join(', ')}`
+    );
   });
 });
 

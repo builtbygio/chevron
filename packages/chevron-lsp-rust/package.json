@@ -1,5 +1,5 @@
 {
-  "name": "chevron-lsp-rust",
+  "name": "@builtbygio/chevron-lsp-rust",
   "version": "0.1.0",
   "description": "Optional rust-analyzer language server for Chevron (cpm install; not bundled in the app)",
   "main": "./lib/main",
@@ -11,7 +11,9 @@
   "chevron": {
     "languageServer": {
       "id": "rust-analyzer",
-      "scopes": ["source.rust"],
+      "scopes": [
+        "source.rust"
+      ],
       "command": "bin/rust-analyzer",
       "args": [],
       "tag": "2025-01-20",

@@ -1,10 +1,10 @@
 {
-  "name": "link",
+  "name": "@builtbygio/link",
   "version": "0.31.6",
   "main": "./lib/link",
   "description": "Opens http(s) links under the cursor",
   "license": "MIT",
-  "repository": "https://github.com/atom/atom",
+  "repository": "https://github.com/builtbygio/chevron",
   "engines": {
     "chevron": "*",
     "atom": "*"
@@ -16,9 +16,6 @@
   },
   "dependencies": {
     "underscore-plus": "^1.7.0"
-  },
-  "devDependencies": {
-    "standard": "^10.0.3"
   },
   "standard": {
     "env": {

@@ -573,12 +573,12 @@ h2 {
       waitsForPromise(() => atom.themes.activateThemes());
     });
 
-    it('uses the default chevron-dark UI and syntax themes and logs a warning', function() {
+    it('uses the default one-dark UI and syntax themes and logs a warning', function() {
       const activeThemeNames = atom.themes.getActiveThemeNames();
       expect(console.warn.callCount).toBe(2);
       expect(activeThemeNames.length).toBe(2);
-      expect(activeThemeNames).toContain('chevron-dark-ui');
-      expect(activeThemeNames).toContain('chevron-dark-syntax');
+      expect(activeThemeNames).toContain('one-dark-ui');
+      expect(activeThemeNames).toContain('one-dark-syntax');
     });
   });
 
@@ -611,8 +611,8 @@ h2 {
       it('uses the default dark UI and syntax themes', function() {
         const activeThemeNames = atom.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
-        expect(activeThemeNames).toContain('chevron-dark-ui');
-        expect(activeThemeNames).toContain('chevron-dark-syntax');
+        expect(activeThemeNames).toContain('one-dark-ui');
+        expect(activeThemeNames).toContain('one-dark-syntax');
       });
     });
 
@@ -626,10 +626,10 @@ h2 {
         waitsForPromise(() => atom.themes.activateThemes());
       });
 
-      it('uses the default chevron-dark UI theme', function() {
+      it('uses the default one-dark UI theme', function() {
         const activeThemeNames = atom.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
-        expect(activeThemeNames).toContain('chevron-dark-ui');
+        expect(activeThemeNames).toContain('one-dark-ui');
         expect(activeThemeNames).toContain('chevron-light-syntax');
       });
     });
@@ -644,11 +644,11 @@ h2 {
         waitsForPromise(() => atom.themes.activateThemes());
       });
 
-      it('uses the default chevron-dark syntax theme', function() {
+      it('uses the default one-dark syntax theme', function() {
         const activeThemeNames = atom.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
         expect(activeThemeNames).toContain('chevron-light-ui');
-        expect(activeThemeNames).toContain('chevron-dark-syntax');
+        expect(activeThemeNames).toContain('one-dark-syntax');
       });
     });
   });

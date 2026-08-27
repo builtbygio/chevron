@@ -29,7 +29,9 @@ const FIRST_PAINT = [
   'whitespace',
   'wrap-guide',
   'chevron-dark-ui',
-  'chevron-dark-syntax'
+  'chevron-dark-syntax',
+  'one-dark-ui',
+  'one-dark-syntax'
 ];
 
 describe('deferred startup packages', () => {

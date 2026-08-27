@@ -66,6 +66,7 @@ module.exports = {
   getApmBinPath,
   getCpmBinPath,
   getNpmBinPath,
+  getPnpmBinPath,
   getLocalNpmBinPath,
   snapshotAuxiliaryData: {}
 };
@@ -149,6 +150,10 @@ function getCpmBinPath() {
 
 function getNpmBinPath() {
   return process.platform === 'win32' ? 'npm.cmd' : 'npm';
+}
+
+function getPnpmBinPath() {
+  return process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
 }
 
 function getLocalNpmBinPath() {

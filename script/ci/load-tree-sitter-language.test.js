@@ -233,15 +233,13 @@ describe('load-tree-sitter-language', () => {
   it('lockfile pins official tree-sitter, not the DeeDeeG 0.17 fork', () => {
     const declared = require('../../package.json').dependencies['tree-sitter'];
     assert.strictEqual(declared, '0.25.1');
-    const lock = JSON.parse(
-      fs.readFileSync(path.join(__dirname, '../../package-lock.json'), 'utf8')
-    );
-    const entry = lock.packages && lock.packages['node_modules/tree-sitter'];
-    assert.ok(entry, 'package-lock must list node_modules/tree-sitter');
-    assert.strictEqual(entry.version, '0.25.1');
+    const { entriesFor } = require('../lib/lockfile-packages');
+    const hits = entriesFor(path.join(__dirname, '../..'), 'tree-sitter');
+    const pinned = hits.find(h => h.version === '0.25.1' || h.key.includes('0.25.1'));
+    assert.ok(pinned, 'lockfile must list tree-sitter@0.25.1');
     assert.ok(
-      String(entry.resolved || '').includes('registry.npmjs.org/tree-sitter'),
-      `expected npm registry tree-sitter, got ${entry.resolved}`
+      !/DeeDeeG/i.test(pinned.resolved || pinned.key),
+      `expected npm registry tree-sitter, got ${pinned.resolved || pinned.key}`
     );
     const installedPath = path.join(
       __dirname,

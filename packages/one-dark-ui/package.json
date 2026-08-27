@@ -1,7 +1,7 @@
 {
-  "name": "one-dark-ui",
+  "name": "@builtbygio/one-dark-ui",
   "theme": "ui",
-  "version": "1.12.5",
+  "version": "1.12.6",
   "description": "Atom One dark UI theme",
   "keywords": [
     "dark",
@@ -9,14 +9,11 @@
     "ui"
   ],
   "license": "MIT",
-  "repository": "https://github.com/atom/atom",
+  "repository": "https://github.com/builtbygio/chevron",
   "main": "lib/main",
   "engines": {
     "chevron": "*",
     "atom": ">0.40.0"
-  },
-  "devDependencies": {
-    "standard": "^11.0.0"
   },
   "configSchema": {
     "fontSize": {

@@ -50,8 +50,15 @@ module.exports = function() {
         'node_modules',
         path.basename(modulePath)
       );
-      fs.copySync(modulePath, destPath, { filter: includePathInPackagedApp });
+      // fs-extra copySync stats through symlinks. pnpm's hoisted
+      // node_modules/.bin stubs are often dangling; skip them.
+      copyModuleTree(modulePath, destPath);
     });
+
+  nestHoistedDep('tree-view', 'minimatch');
+  // language-css wants tree-sitter-css 0.23.2 (prebuilds). pnpm may hoist
+  // 0.20.0 from tree-sitter-less/scss, which has no native binding.
+  nestPackageDep('language-css', 'tree-sitter-css');
 
   // Chevron: force-patched natives may leave nested absolute symlinks
   // (e.g. text-buffer/node_modules/superstring → repo root). asar cannot
@@ -151,6 +158,63 @@ function materializeExternalSymlinks(rootDir) {
       }
     }
   }
+}
+
+function nestHoistedDep(packageName, depName) {
+  nestPackageDep(packageName, depName);
+}
+
+function nestPackageDep(packageName, depName) {
+  const destRoot = path.join(CONFIG.intermediateAppPath, 'node_modules');
+  const nested = path.join(destRoot, packageName, 'node_modules', depName);
+  const srcNested = path.join(
+    CONFIG.repositoryRootPath,
+    'node_modules',
+    packageName,
+    'node_modules',
+    depName
+  );
+  const hoisted = path.join(destRoot, depName);
+  const src = fs.existsSync(srcNested) ? srcNested : hoisted;
+  if (!fs.existsSync(src) || fs.existsSync(nested)) return;
+  // Copy, do not symlink: asar stores a symlink as a single entry without
+  // child files, so require() from tree-view cannot load minimatch.js.
+  copyModuleTree(src, nested);
+}
+
+function copyModuleTree(src, dest) {
+  if (!includePathInPackagedApp(src)) return;
+  let srcStat;
+  try {
+    srcStat = fs.lstatSync(src);
+  } catch (_) {
+    return;
+  }
+  if (srcStat.isSymbolicLink()) {
+    let target;
+    try {
+      fs.statSync(src);
+      target = fs.readlinkSync(src);
+    } catch (_) {
+      return;
+    }
+    fs.mkdirpSync(path.dirname(dest));
+    fs.symlinkSync(target, dest);
+    return;
+  }
+  if (srcStat.isDirectory()) {
+    fs.mkdirpSync(dest);
+    for (const name of fs.readdirSync(src)) {
+      if (name === '.bin') continue;
+      // pnpm may nest a second copy of atom-select-list etc. Those copies
+      // cannot resolve require('atom') / require('chevron'). Use the hoisted
+      // tree instead. Native .node files live in <pkg>/build, not here.
+      if (name === 'node_modules') continue;
+      copyModuleTree(path.join(src, name), path.join(dest, name));
+    }
+    return;
+  }
+  fs.copySync(src, dest);
 }
 
 function computeDestinationPath(srcPath) {

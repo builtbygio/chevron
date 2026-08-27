@@ -1,0 +1,10 @@
+{
+  "name": "@builtbygio/whitespace-canary",
+  "version": "0.0.1",
+  "main": "./lib/main",
+  "description": "Scoped npm name; editor id must be whitespace-canary.",
+  "engines": {
+    "chevron": ">=1.0.0"
+  },
+  "chevronPackageHost": "eligible"
+}

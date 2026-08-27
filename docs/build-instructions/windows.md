@@ -1,7 +1,7 @@
 # Building and installing Chevron on Windows
 
 **Status:** CI bootstrap + build + smoke + zip (x64)  
-**Host toolchain:** Node **24** + Python **3.12** (+ `setuptools`) via `script/bootstrap-modern`  
+**Host toolchain:** Node **24** + **pnpm 11** + Python **3.12** (+ `setuptools`) via `script/bootstrap-modern`  
 **Runtime:** Electron 43  
 **Shell:** Git Bash (or WSL for the bash scripts; CI uses Git Bash)
 
@@ -13,6 +13,7 @@
 |------|--------|
 | **Git for Windows** | Provides Git Bash used by `bootstrap-modern` / `with-modern-env` |
 | **Node 24** | Host only; apm still uses bundled Node 12 |
+| **pnpm 11** | App deps via `corepack enable` (`packageManager` is `pnpm@11.22.0`) |
 | **Python 3.12** | + `pip install setuptools` (distutils for node-gyp) |
 | **Visual Studio 2022** | “Desktop development with C++” / Build Tools (node-gyp natives) |
 

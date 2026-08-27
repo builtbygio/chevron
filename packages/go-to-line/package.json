@@ -1,5 +1,5 @@
 {
-  "name": "go-to-line",
+  "name": "@builtbygio/go-to-line",
   "version": "0.33.0",
   "main": "./lib/go-to-line-view",
   "description": "Jump to a specific editor line number with `ctrl-g`.",
@@ -12,13 +12,10 @@
       "go-to-line:toggle"
     ]
   },
-  "repository": "https://github.com/atom/atom",
+  "repository": "https://github.com/builtbygio/chevron",
   "engines": {
     "chevron": "*",
     "atom": "*"
-  },
-  "devDependencies": {
-    "standard": "^8.6.0"
   },
   "standard": {
     "globals": [

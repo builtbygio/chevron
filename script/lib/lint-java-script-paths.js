@@ -8,7 +8,13 @@ const CONFIG = require('../config');
 
 module.exports = async function() {
   return new Promise((resolve, reject) => {
-    const eslintArgs = ['--cache', '--format', 'json'];
+    const eslintArgs = [
+      '--cache',
+      '--format',
+      'json',
+      '--resolve-plugins-relative-to',
+      path.join(CONFIG.repositoryRootPath, 'script', 'node_modules')
+    ];
 
     if (process.argv.includes('--fix')) {
       eslintArgs.push('--fix');
@@ -18,7 +24,15 @@ module.exports = async function() {
     const eslint = spawn(
       path.join('script', 'node_modules', '.bin', eslintBinary),
       [...eslintArgs, '.'],
-      { cwd: CONFIG.repositoryRootPath }
+      {
+        cwd: CONFIG.repositoryRootPath,
+        env: Object.assign({}, process.env, {
+          // Keep .eslintrc.json until a dedicated flat-config pass.
+          // eslint-config-standard 17 is still eslintrc; ESLint 9 honors
+          // it when this is false. ESLint 10 drops eslintrc entirely.
+          ESLINT_USE_FLAT_CONFIG: 'false'
+        })
+      }
     );
 
     let output = '';

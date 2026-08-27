@@ -1,9 +1,9 @@
 {
-  "name": "solarized-dark-syntax",
+  "name": "@builtbygio/solarized-dark-syntax",
   "theme": "syntax",
   "version": "1.3.0",
   "description": "A dark syntax theme using the solarized colors",
-  "repository": "https://github.com/atom/atom",
+  "repository": "https://github.com/builtbygio/chevron",
   "license": "MIT",
   "engines": {
     "chevron": "*",

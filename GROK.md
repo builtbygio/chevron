@@ -22,11 +22,11 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 ---
 
-## Current baseline (1.0.1 unsigned preview)
+## Current baseline (1.1.0 unsigned preview)
 
 | Item | Value |
 |------|--------|
-| Version | **1.0.1** (unsigned preview — [docs/releases.md](docs/releases.md)) |
+| Version | **1.1.0** (unsigned preview — [docs/releases.md](docs/releases.md)) |
 | Electron | **43.1.0** (ladder complete) |
 | Package / productName | `chevron` / **Chevron** |
 | Bundle ID | `dev.builtbygio.chevron` |
@@ -38,7 +38,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | Telemetry | Off — no metrics/exception-reporting; crash upload forced off |
 | Package manager | **cpm** (Electron-as-Node); **apm → cpm shim** |
 | Registry | **Pulsar** (`https://api.pulsar-edit.dev`); `CPM_REGISTRY_URL` override |
-| Bootstrap | **host npm** + `@electron/rebuild` via `./script/bootstrap-modern` |
+| Bootstrap | **pnpm workspaces** + `@electron/rebuild` via `./script/bootstrap-modern` |
 | CI | macOS x64/arm64, Linux x64/arm64 (packages + smoke), Windows x64 |
 
 ---
@@ -126,7 +126,7 @@ Workflow when changing a package:
 
 ### 1.0 unsigned preview — **published**
 
-Tag `v1.0.1` (after `v1.0.0`). Docs: [docs/releases.md](docs/releases.md), [docs/dogfood-1.0.md](docs/dogfood-1.0.md).  
+Tag `v1.1.0` (after `v1.0.1`). Docs: [docs/releases.md](docs/releases.md), [docs/dogfood-1.0.md](docs/dogfood-1.0.md).  
 Tracker: **#106**. 1.0.1 mac zips are per-arch (`chevron-mac-x64.zip` / `chevron-mac-arm64.zip`).
 
 Landed with 1.0 / immediately after:
