@@ -83,7 +83,7 @@ overrides:
 patchedDependencies:
   dugite@1.110.0: 65930157110b31cf6b61bddb57683724eceba071a6e47fbf806c3d875b6b4c2e
   less@3.13.1: 3240ea48c1693120b37cc19bcc745ee94ab6ed9455fd93dcfd344c2edf7bca49
-  natural@0.4.0: 1bc63551ef6d341a9b272c82d82c6150b453327c9dedafdf074de9dd365516ce
+  natural@0.4.0: 1ec17cc18b02b6b5ecc6e87642deafa226292192562d763e0a3ec796b5750b36
 
 importers:
 
@@ -2798,7 +2798,7 @@ packages:
     engines: {node: '>=10'}
 
   ls-archive@https://codeload.github.com/builtbygio/ls-archive/tar.gz/b0ff32ec3cc363b3a86a55a48ee02ec28b6a8ac5:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/builtbygio/ls-archive/tar.gz/b0ff32ec3cc363b3a86a55a48ee02ec28b6a8ac5}
+    resolution: {gitHosted: true, integrity: sha512-+PlfVOzzi/4Nm83OzuOIL1XdyRjbKXvcsesACPQW9eKXAh+U5hGi0h/DV8rmmhF80wril/HVUqEcYaeZdVtqpw==, tarball: https://codeload.github.com/builtbygio/ls-archive/tar.gz/b0ff32ec3cc363b3a86a55a48ee02ec28b6a8ac5}
     version: 2.0.0
     engines: {node: '>=18'}
     hasBin: true
@@ -3906,7 +3906,7 @@ packages:
         optional: true
 
   tree-sitter-less@https://codeload.github.com/mdovale/tree-sitter-less/tar.gz/02988c765d30adb0476657b5d220e8dfde1c07d3:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/mdovale/tree-sitter-less/tar.gz/02988c765d30adb0476657b5d220e8dfde1c07d3}
+    resolution: {gitHosted: true, integrity: sha512-SgmBuf++m9AzSQeEX55uh115unqqDZvzJXwpWqg4emqhuNRbWEmKyimVLfP2bzvYo/3iDvEjNhm/cuoKb06M3g==, tarball: https://codeload.github.com/mdovale/tree-sitter-less/tar.gz/02988c765d30adb0476657b5d220e8dfde1c07d3}
     version: 1.0.0
     peerDependencies:
       tree-sitter: ^0.21.0
@@ -4721,7 +4721,7 @@ snapshots:
       atom-select-list: '@builtbygio/atom-select-list@0.8.2'
       debug: 4.4.1(supports-color@8.1.1)
       multi-integer-range: 2.1.0
-      natural: 0.4.0(patch_hash=1bc63551ef6d341a9b272c82d82c6150b453327c9dedafdf074de9dd365516ce)(supports-color@8.1.1)
+      natural: 0.4.0(patch_hash=1ec17cc18b02b6b5ecc6e87642deafa226292192562d763e0a3ec796b5750b36)(supports-color@8.1.1)
       spellchecker: '@builtbygio/spellchecker@3.7.1'
       spelling-manager: 1.3.0
       underscore-plus: 1.7.0
@@ -6901,7 +6901,7 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  natural@0.4.0(patch_hash=1bc63551ef6d341a9b272c82d82c6150b453327c9dedafdf074de9dd365516ce)(supports-color@8.1.1):
+  natural@0.4.0(patch_hash=1ec17cc18b02b6b5ecc6e87642deafa226292192562d763e0a3ec796b5750b36)(supports-color@8.1.1):
     dependencies:
       apparatus: 0.0.10
       log4js: 6.9.1(supports-color@8.1.1)
