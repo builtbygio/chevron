@@ -1,0 +1,25 @@
+{
+  "name": "@builtbygio/language-sass",
+  "version": "0.64.1",
+  "description": "Sass/SCSS language support in Chevron",
+  "keywords": [
+    "tree-sitter"
+  ],
+  "license": "MIT",
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-sass",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-sass.git"
+  },
+  "bugs": {
+    "url": "https://github.com/builtbygio/chevron/issues"
+  },
+  "dependencies": {
+    "tree-sitter-scss": "1.0.0"
+  }
+}

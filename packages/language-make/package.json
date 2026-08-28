@@ -1,0 +1,19 @@
+{
+  "name": "@builtbygio/language-make",
+  "version": "0.24.1",
+  "description": "Make language support in Atom",
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-make",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-make.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atom/language-make/issues"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@builtbygio/language-todo",
+  "version": "0.30.1",
+  "description": "TODO/FIXME highlighting support in Atom",
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-todo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-todo.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atom/language-todo/issues"
+  }
+}

@@ -107,8 +107,8 @@ importers:
         specifier: workspace:@builtbygio/about@*
         version: link:packages/about
       archive-view:
-        specifier: npm:@builtbygio/archive-view@0.66.2
-        version: '@builtbygio/archive-view@0.66.2'
+        specifier: workspace:@builtbygio/archive-view@*
+        version: link:packages/archive-view
       async:
         specifier: 3.2.6
         version: 3.2.6
@@ -122,29 +122,29 @@ importers:
         specifier: npm:@builtbygio/atom-select-list@0.8.2
         version: '@builtbygio/atom-select-list@0.8.2'
       autocomplete-chevron-api:
-        specifier: npm:@builtbygio/autocomplete-chevron-api@0.10.10
-        version: '@builtbygio/autocomplete-chevron-api@0.10.10'
+        specifier: workspace:@builtbygio/autocomplete-chevron-api@*
+        version: link:packages/autocomplete-chevron-api
       autocomplete-css:
-        specifier: npm:@builtbygio/autocomplete-css@0.17.7
-        version: '@builtbygio/autocomplete-css@0.17.7'
+        specifier: workspace:@builtbygio/autocomplete-css@*
+        version: link:packages/autocomplete-css
       autocomplete-html:
-        specifier: npm:@builtbygio/autocomplete-html@0.8.10
-        version: '@builtbygio/autocomplete-html@0.8.10'
+        specifier: workspace:@builtbygio/autocomplete-html@*
+        version: link:packages/autocomplete-html
       autocomplete-plus:
-        specifier: npm:@builtbygio/autocomplete-plus@2.42.7
-        version: '@builtbygio/autocomplete-plus@2.42.7'
+        specifier: workspace:@builtbygio/autocomplete-plus@*
+        version: link:packages/autocomplete-plus
       autocomplete-snippets:
-        specifier: npm:@builtbygio/autocomplete-snippets@1.12.3
-        version: '@builtbygio/autocomplete-snippets@1.12.3'
+        specifier: workspace:@builtbygio/autocomplete-snippets@*
+        version: link:packages/autocomplete-snippets
       autoflow:
         specifier: workspace:@builtbygio/autoflow@*
         version: link:packages/autoflow
       autosave:
-        specifier: npm:@builtbygio/autosave@0.24.8
-        version: '@builtbygio/autosave@0.24.8'
+        specifier: workspace:@builtbygio/autosave@*
+        version: link:packages/autosave
       background-tips:
-        specifier: npm:@builtbygio/background-tips@0.28.2
-        version: '@builtbygio/background-tips@0.28.2'
+        specifier: workspace:@builtbygio/background-tips@*
+        version: link:packages/background-tips
       base16-tomorrow-dark-theme:
         specifier: workspace:@builtbygio/base16-tomorrow-dark-theme@*
         version: link:packages/base16-tomorrow-dark-theme
@@ -152,11 +152,11 @@ importers:
         specifier: workspace:@builtbygio/base16-tomorrow-light-theme@*
         version: link:packages/base16-tomorrow-light-theme
       bookmarks:
-        specifier: npm:@builtbygio/bookmarks@0.46.2
-        version: '@builtbygio/bookmarks@0.46.2'
+        specifier: workspace:@builtbygio/bookmarks@*
+        version: link:packages/bookmarks
       bracket-matcher:
-        specifier: npm:@builtbygio/bracket-matcher@0.92.2
-        version: '@builtbygio/bracket-matcher@0.92.2'
+        specifier: workspace:@builtbygio/bracket-matcher@*
+        version: link:packages/bracket-matcher
       chai:
         specifier: 4.3.4
         version: 4.3.4
@@ -182,8 +182,8 @@ importers:
         specifier: 3.1.3
         version: 3.1.3
       command-palette:
-        specifier: npm:@builtbygio/command-palette@0.43.8
-        version: '@builtbygio/command-palette@0.43.8'
+        specifier: workspace:@builtbygio/command-palette@*
+        version: link:packages/command-palette
       ctags:
         specifier: npm:@builtbygio/ctags@3.1.0
         version: '@builtbygio/ctags@3.1.0'
@@ -212,8 +212,8 @@ importers:
         specifier: 0.5.0
         version: 0.5.0(supports-color@8.1.1)
       encoding-selector:
-        specifier: npm:@builtbygio/encoding-selector@0.23.11
-        version: '@builtbygio/encoding-selector@0.23.11'
+        specifier: workspace:@builtbygio/encoding-selector@*
+        version: link:packages/encoding-selector
       etch:
         specifier: 0.14.1
         version: 0.14.1
@@ -221,8 +221,8 @@ importers:
         specifier: ^2.5.3
         version: 2.5.3
       find-and-replace:
-        specifier: npm:@builtbygio/find-and-replace@0.219.12
-        version: '@builtbygio/find-and-replace@0.219.12'
+        specifier: workspace:@builtbygio/find-and-replace@*
+        version: link:packages/find-and-replace
       find-parent-dir:
         specifier: ^0.3.0
         version: 0.3.1
@@ -245,8 +245,8 @@ importers:
         specifier: ^2.1
         version: 2.1.0
       fuzzy-finder:
-        specifier: npm:@builtbygio/fuzzy-finder@1.15.2
-        version: '@builtbygio/fuzzy-finder@1.15.2(supports-color@8.1.1)'
+        specifier: workspace:@builtbygio/fuzzy-finder@*
+        version: link:packages/fuzzy-finder
       git-diff:
         specifier: workspace:@builtbygio/git-diff@*
         version: link:packages/git-diff
@@ -254,8 +254,8 @@ importers:
         specifier: npm:@builtbygio/git-utils@5.7.1
         version: '@builtbygio/git-utils@5.7.1'
       github:
-        specifier: npm:@builtbygio/github@0.37.13
-        version: '@builtbygio/github@0.37.13'
+        specifier: workspace:@builtbygio/github@*
+        version: link:packages/github
       glob:
         specifier: ^7.1.1
         version: 7.2.3
@@ -269,8 +269,8 @@ importers:
         specifier: 2.0.3
         version: 2.0.3
       image-view:
-        specifier: npm:@builtbygio/image-view@0.64.3
-        version: '@builtbygio/image-view@0.64.3'
+        specifier: workspace:@builtbygio/image-view@*
+        version: link:packages/image-view
       incompatible-packages:
         specifier: workspace:@builtbygio/incompatible-packages@*
         version: link:packages/incompatible-packages
@@ -287,8 +287,8 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
       keybinding-resolver:
-        specifier: npm:@builtbygio/keybinding-resolver@0.39.4
-        version: '@builtbygio/keybinding-resolver@0.39.4'
+        specifier: workspace:@builtbygio/keybinding-resolver@*
+        version: link:packages/keybinding-resolver
       keyboard-layout:
         specifier: npm:@builtbygio/keyboard-layout@2.0.17
         version: '@builtbygio/keyboard-layout@2.0.17'
@@ -296,107 +296,107 @@ importers:
         specifier: npm:@builtbygio/keytar@4.13.0
         version: '@builtbygio/keytar@4.13.0'
       language-c:
-        specifier: npm:@builtbygio/language-c@0.60.22
-        version: '@builtbygio/language-c@0.60.22(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-c@*
+        version: link:packages/language-c
       language-clojure:
-        specifier: npm:@builtbygio/language-clojure@0.24.1
-        version: '@builtbygio/language-clojure@0.24.1(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-clojure@*
+        version: link:packages/language-clojure
       language-coffee-script:
-        specifier: npm:@builtbygio/language-coffee-script@0.51.1
-        version: '@builtbygio/language-coffee-script@0.51.1'
+        specifier: workspace:@builtbygio/language-coffee-script@*
+        version: link:packages/language-coffee-script
       language-csharp:
-        specifier: npm:@builtbygio/language-csharp@1.3.1
-        version: '@builtbygio/language-csharp@1.3.1(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-csharp@*
+        version: link:packages/language-csharp
       language-css:
-        specifier: npm:@builtbygio/language-css@0.45.6
-        version: '@builtbygio/language-css@0.45.6(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-css@*
+        version: link:packages/language-css
       language-gfm:
-        specifier: npm:@builtbygio/language-gfm@0.91.1
-        version: '@builtbygio/language-gfm@0.91.1'
+        specifier: workspace:@builtbygio/language-gfm@*
+        version: link:packages/language-gfm
       language-git:
-        specifier: npm:@builtbygio/language-git@0.20.1
-        version: '@builtbygio/language-git@0.20.1'
+        specifier: workspace:@builtbygio/language-git@*
+        version: link:packages/language-git
       language-go:
-        specifier: npm:@builtbygio/language-go@0.47.4
-        version: '@builtbygio/language-go@0.47.4(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-go@*
+        version: link:packages/language-go
       language-html:
-        specifier: npm:@builtbygio/language-html@0.53.3
-        version: '@builtbygio/language-html@0.53.3(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-html@*
+        version: link:packages/language-html
       language-hyperlink:
-        specifier: npm:@builtbygio/language-hyperlink@0.18.1
-        version: '@builtbygio/language-hyperlink@0.18.1'
+        specifier: workspace:@builtbygio/language-hyperlink@*
+        version: link:packages/language-hyperlink
       language-java:
-        specifier: npm:@builtbygio/language-java@0.32.2
-        version: '@builtbygio/language-java@0.32.2(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-java@*
+        version: link:packages/language-java
       language-javascript:
-        specifier: npm:@builtbygio/language-javascript@0.134.4
-        version: '@builtbygio/language-javascript@0.134.4(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-javascript@*
+        version: link:packages/language-javascript
       language-json:
-        specifier: npm:@builtbygio/language-json@1.0.6
-        version: '@builtbygio/language-json@1.0.6(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-json@*
+        version: link:packages/language-json
       language-less:
-        specifier: npm:@builtbygio/language-less@0.36.2
-        version: '@builtbygio/language-less@0.36.2(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-less@*
+        version: link:packages/language-less
       language-make:
-        specifier: npm:@builtbygio/language-make@0.24.1
-        version: '@builtbygio/language-make@0.24.1'
+        specifier: workspace:@builtbygio/language-make@*
+        version: link:packages/language-make
       language-mustache:
-        specifier: npm:@builtbygio/language-mustache@0.15.1
-        version: '@builtbygio/language-mustache@0.15.1'
+        specifier: workspace:@builtbygio/language-mustache@*
+        version: link:packages/language-mustache
       language-objective-c:
-        specifier: npm:@builtbygio/language-objective-c@0.17.1
-        version: '@builtbygio/language-objective-c@0.17.1'
+        specifier: workspace:@builtbygio/language-objective-c@*
+        version: link:packages/language-objective-c
       language-perl:
-        specifier: npm:@builtbygio/language-perl@0.40.1
-        version: '@builtbygio/language-perl@0.40.1(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-perl@*
+        version: link:packages/language-perl
       language-php:
-        specifier: npm:@builtbygio/language-php@0.50.1
-        version: '@builtbygio/language-php@0.50.1(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-php@*
+        version: link:packages/language-php
       language-property-list:
-        specifier: npm:@builtbygio/language-property-list@0.10.0
-        version: '@builtbygio/language-property-list@0.10.0'
+        specifier: workspace:@builtbygio/language-property-list@*
+        version: link:packages/language-property-list
       language-python:
-        specifier: npm:@builtbygio/language-python@0.53.7
-        version: '@builtbygio/language-python@0.53.7(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-python@*
+        version: link:packages/language-python
       language-ruby:
-        specifier: npm:@builtbygio/language-ruby@0.73.2
-        version: '@builtbygio/language-ruby@0.73.2(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-ruby@*
+        version: link:packages/language-ruby
       language-ruby-on-rails:
-        specifier: npm:@builtbygio/language-ruby-on-rails@0.26.1
-        version: '@builtbygio/language-ruby-on-rails@0.26.1'
+        specifier: workspace:@builtbygio/language-ruby-on-rails@*
+        version: link:packages/language-ruby-on-rails
       language-rust-bundled:
         specifier: workspace:@builtbygio/language-rust-bundled@*
         version: link:packages/language-rust-bundled
       language-sass:
-        specifier: npm:@builtbygio/language-sass@0.64.1
-        version: '@builtbygio/language-sass@0.64.1(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-sass@*
+        version: link:packages/language-sass
       language-shellscript:
-        specifier: npm:@builtbygio/language-shellscript@0.28.3
-        version: '@builtbygio/language-shellscript@0.28.3(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-shellscript@*
+        version: link:packages/language-shellscript
       language-source:
-        specifier: npm:@builtbygio/language-source@0.10.0
-        version: '@builtbygio/language-source@0.10.0'
+        specifier: workspace:@builtbygio/language-source@*
+        version: link:packages/language-source
       language-sql:
-        specifier: npm:@builtbygio/language-sql@0.27.1
-        version: '@builtbygio/language-sql@0.27.1(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-sql@*
+        version: link:packages/language-sql
       language-text:
-        specifier: npm:@builtbygio/language-text@0.8.1
-        version: '@builtbygio/language-text@0.8.1'
+        specifier: workspace:@builtbygio/language-text@*
+        version: link:packages/language-text
       language-todo:
-        specifier: npm:@builtbygio/language-todo@0.30.1
-        version: '@builtbygio/language-todo@0.30.1'
+        specifier: workspace:@builtbygio/language-todo@*
+        version: link:packages/language-todo
       language-toml:
-        specifier: npm:@builtbygio/language-toml@0.22.1
-        version: '@builtbygio/language-toml@0.22.1(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-toml@*
+        version: link:packages/language-toml
       language-typescript:
-        specifier: npm:@builtbygio/language-typescript@0.6.5
-        version: '@builtbygio/language-typescript@0.6.5(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-typescript@*
+        version: link:packages/language-typescript
       language-xml:
-        specifier: npm:@builtbygio/language-xml@0.37.1
-        version: '@builtbygio/language-xml@0.37.1(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-xml@*
+        version: link:packages/language-xml
       language-yaml:
-        specifier: npm:@builtbygio/language-yaml@0.34.1
-        version: '@builtbygio/language-yaml@0.34.1(tree-sitter@0.25.1)'
+        specifier: workspace:@builtbygio/language-yaml@*
+        version: link:packages/language-yaml
       less-cache:
         specifier: 1.1.0
         version: 1.1.0
@@ -419,8 +419,8 @@ importers:
         specifier: workspace:@builtbygio/lsp-ui@*
         version: link:packages/lsp-ui
       markdown-preview:
-        specifier: npm:@builtbygio/markdown-preview@0.160.5
-        version: '@builtbygio/markdown-preview@0.160.5'
+        specifier: workspace:@builtbygio/markdown-preview@*
+        version: link:packages/markdown-preview
       minimatch:
         specifier: 3.1.4
         version: 3.1.4
@@ -440,8 +440,8 @@ importers:
         specifier: 3.0.2
         version: 3.0.2
       notifications:
-        specifier: npm:@builtbygio/notifications@0.72.6
-        version: '@builtbygio/notifications@0.72.6'
+        specifier: workspace:@builtbygio/notifications@*
+        version: link:packages/notifications
       nslog:
         specifier: npm:@builtbygio/nslog@3.2.0
         version: '@builtbygio/nslog@3.2.0'
@@ -461,11 +461,11 @@ importers:
         specifier: npm:@builtbygio/oniguruma@7.2.3
         version: '@builtbygio/oniguruma@7.2.3'
       open-on-github:
-        specifier: npm:@builtbygio/open-on-github@1.3.4
-        version: '@builtbygio/open-on-github@1.3.4'
+        specifier: workspace:@builtbygio/open-on-github@*
+        version: link:packages/open-on-github
       package-generator:
-        specifier: npm:@builtbygio/package-generator@1.3.2
-        version: '@builtbygio/package-generator@1.3.2'
+        specifier: workspace:@builtbygio/package-generator@*
+        version: link:packages/package-generator
       pathwatcher:
         specifier: npm:@builtbygio/pathwatcher@8.1.2
         version: '@builtbygio/pathwatcher@8.1.2'
@@ -497,14 +497,14 @@ importers:
         specifier: ^0.7.4
         version: 0.7.4
       settings-view:
-        specifier: npm:@builtbygio/settings-view@0.261.15
-        version: '@builtbygio/settings-view@0.261.15'
+        specifier: workspace:@builtbygio/settings-view@*
+        version: link:packages/settings-view
       sinon:
         specifier: 9.2.1
         version: 9.2.1
       snippets:
-        specifier: npm:@builtbygio/snippets@1.5.6
-        version: '@builtbygio/snippets@1.5.6'
+        specifier: workspace:@builtbygio/snippets@*
+        version: link:packages/snippets
       solarized-dark-syntax:
         specifier: workspace:@builtbygio/solarized-dark-syntax@*
         version: link:packages/solarized-dark-syntax
@@ -512,26 +512,26 @@ importers:
         specifier: workspace:@builtbygio/solarized-light-syntax@*
         version: link:packages/solarized-light-syntax
       spell-check:
-        specifier: npm:@builtbygio/spell-check@0.77.6
-        version: '@builtbygio/spell-check@0.77.6(supports-color@8.1.1)'
+        specifier: workspace:@builtbygio/spell-check@*
+        version: link:packages/spell-check
       spellchecker:
         specifier: npm:@builtbygio/spellchecker@3.7.1
         version: '@builtbygio/spellchecker@3.7.1'
       status-bar:
-        specifier: npm:@builtbygio/status-bar@1.8.20
-        version: '@builtbygio/status-bar@1.8.20'
+        specifier: workspace:@builtbygio/status-bar@*
+        version: link:packages/status-bar
       styleguide:
-        specifier: npm:@builtbygio/styleguide@0.49.15
-        version: '@builtbygio/styleguide@0.49.15'
+        specifier: workspace:@builtbygio/styleguide@*
+        version: link:packages/styleguide
       superstring:
         specifier: workspace:@builtbygio/superstring@*
         version: link:packages/superstring
       symbols-view:
-        specifier: npm:@builtbygio/symbols-view@0.118.7
-        version: '@builtbygio/symbols-view@0.118.7'
+        specifier: workspace:@builtbygio/symbols-view@*
+        version: link:packages/symbols-view
       tabs:
-        specifier: npm:@builtbygio/tabs@0.110.5
-        version: '@builtbygio/tabs@0.110.5'
+        specifier: workspace:@builtbygio/tabs@*
+        version: link:packages/tabs
       temp:
         specifier: 0.9.2
         version: 0.9.2
@@ -539,14 +539,14 @@ importers:
         specifier: npm:@builtbygio/text-buffer@13.18.6
         version: '@builtbygio/text-buffer@13.18.6'
       timecop:
-        specifier: npm:@builtbygio/timecop@0.36.6
-        version: '@builtbygio/timecop@0.36.6'
+        specifier: workspace:@builtbygio/timecop@*
+        version: link:packages/timecop
       tree-sitter:
         specifier: 0.25.1
         version: 0.25.1
       tree-view:
-        specifier: npm:@builtbygio/tree-view@0.229.6
-        version: '@builtbygio/tree-view@0.229.6'
+        specifier: workspace:@builtbygio/tree-view@*
+        version: link:packages/tree-view
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -557,14 +557,14 @@ importers:
         specifier: workspace:@builtbygio/welcome@*
         version: link:packages/welcome
       whitespace:
-        specifier: npm:@builtbygio/whitespace@0.37.10
-        version: '@builtbygio/whitespace@0.37.10'
+        specifier: workspace:@builtbygio/whitespace@*
+        version: link:packages/whitespace
       winreg:
         specifier: ^1.2.1
         version: 1.2.5
       wrap-guide:
-        specifier: npm:@builtbygio/wrap-guide@0.41.2
-        version: '@builtbygio/wrap-guide@0.41.2'
+        specifier: workspace:@builtbygio/wrap-guide@*
+        version: link:packages/wrap-guide
       yargs:
         specifier: 16.1.0
         version: 16.1.0
@@ -578,15 +578,101 @@ importers:
         specifier: 5.7.2
         version: 5.7.2
 
+  packages/archive-view:
+    dependencies:
+      etch:
+        specifier: 0.9.0
+        version: 0.9.0
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+      humanize-plus:
+        specifier: ~1.8.2
+        version: 1.8.2
+      ls-archive:
+        specifier: git+https://github.com/builtbygio/ls-archive.git#b0ff32ec3cc363b3a86a55a48ee02ec28b6a8ac5
+        version: https://codeload.github.com/builtbygio/ls-archive/tar.gz/b0ff32ec3cc363b3a86a55a48ee02ec28b6a8ac5
+      temp:
+        specifier: ~0.8.1
+        version: 0.8.4
+
+  packages/autocomplete-chevron-api: {}
+
+  packages/autocomplete-css: {}
+
+  packages/autocomplete-html: {}
+
+  packages/autocomplete-plus:
+    dependencies:
+      atom-slick:
+        specifier: ^2.0.0
+        version: 2.0.0
+      dompurify:
+        specifier: 3.4.13
+        version: 3.4.13
+      fuzzaldrin:
+        specifier: ^2.1.0
+        version: 2.1.0
+      fuzzaldrin-plus:
+        specifier: ^0.6.0
+        version: 0.6.0
+      grim:
+        specifier: ^2.0.1
+        version: 2.0.3
+      marked:
+        specifier: 4.3.0
+        version: 4.3.0
+      minimatch:
+        specifier: 3.1.4
+        version: 3.1.4
+      selector-kit:
+        specifier: ^0.1
+        version: 0.1.0
+      stable:
+        specifier: ^0.1.5
+        version: 0.1.8
+      underscore-plus:
+        specifier: ^1.6.6
+        version: 1.7.0
+
+  packages/autocomplete-snippets: {}
+
   packages/autoflow:
     dependencies:
       underscore-plus:
         specifier: ^1.7.0
         version: 1.7.0
 
+  packages/autosave:
+    dependencies:
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+
+  packages/background-tips:
+    dependencies:
+      underscore-plus:
+        specifier: 1.x
+        version: 1.7.0
+
   packages/base16-tomorrow-dark-theme: {}
 
   packages/base16-tomorrow-light-theme: {}
+
+  packages/bookmarks:
+    dependencies:
+      atom-select-list:
+        specifier: npm:@builtbygio/atom-select-list@0.8.2
+        version: '@builtbygio/atom-select-list@0.8.2'
+
+  packages/bracket-matcher:
+    dependencies:
+      first-mate:
+        specifier: npm:@builtbygio/first-mate@7.4.3
+        version: '@builtbygio/first-mate@7.4.3'
+      underscore-plus:
+        specifier: 1.x
+        version: 1.7.0
 
   packages/chevron-dark-syntax: {}
 
@@ -612,6 +698,21 @@ importers:
       typescript-language-server:
         specifier: 4.3.4
         version: 4.3.4
+
+  packages/command-palette:
+    dependencies:
+      atom-select-list:
+        specifier: npm:@builtbygio/atom-select-list@0.8.2
+        version: '@builtbygio/atom-select-list@0.8.2'
+      fuzzaldrin:
+        specifier: ^2.1.0
+        version: 2.1.0
+      fuzzaldrin-plus:
+        specifier: ^0.6.0
+        version: 0.6.0
+      underscore-plus:
+        specifier: ^1.0.0
+        version: 1.7.0
 
   packages/dalek:
     dependencies:
@@ -653,6 +754,18 @@ importers:
         specifier: ^3.0.0
         version: 3.1.1
 
+  packages/encoding-selector:
+    dependencies:
+      atom-select-list:
+        specifier: npm:@builtbygio/atom-select-list@0.8.2
+        version: '@builtbygio/atom-select-list@0.8.2'
+      iconv-lite:
+        specifier: ^0.4.4
+        version: 0.4.24
+      jschardet:
+        specifier: ^1.1.0
+        version: 1.6.0
+
   packages/exception-reporting:
     dependencies:
       fs-plus:
@@ -672,6 +785,63 @@ importers:
         specifier: 5.7.2
         version: 5.7.2
 
+  packages/find-and-replace:
+    dependencies:
+      binary-search:
+        specifier: ^1.3.3
+        version: 1.3.6
+      etch:
+        specifier: 0.9.3
+        version: 0.9.3
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+      temp:
+        specifier: ^0.8.3
+        version: 0.8.4
+      underscore-plus:
+        specifier: 1.x
+        version: 1.7.0
+
+  packages/fuzzy-finder:
+    dependencies:
+      '@atom/fuzzy-native':
+        specifier: npm:@builtbygio/fuzzy-native@1.2.1
+        version: '@builtbygio/fuzzy-native@1.2.1'
+      '@vscode/ripgrep':
+        specifier: 1.15.14
+        version: 1.15.14(supports-color@8.1.1)
+      async:
+        specifier: 0.2.6
+        version: 0.2.6
+      atom-select-list:
+        specifier: npm:@builtbygio/atom-select-list@0.8.2
+        version: '@builtbygio/atom-select-list@0.8.2'
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+      fuzzaldrin:
+        specifier: ^2.0
+        version: 2.1.0
+      fuzzaldrin-plus:
+        specifier: ^0.6.0
+        version: 0.6.0
+      humanize-plus:
+        specifier: ~1.8.2
+        version: 1.8.2
+      minimatch:
+        specifier: 3.1.4
+        version: 3.1.4
+      temp:
+        specifier: ~0.8.1
+        version: 0.8.4
+      underscore-plus:
+        specifier: ^1.7.0
+        version: 1.7.0
+      wrench:
+        specifier: ^1.5
+        version: 1.5.9
+
   packages/git-diff:
     dependencies:
       atom-select-list:
@@ -685,6 +855,87 @@ importers:
         specifier: ~0.8.1
         version: 0.8.4
 
+  packages/github:
+    dependencies:
+      bintrees:
+        specifier: 1.0.2
+        version: 1.0.2
+      bytes:
+        specifier: 3.1.0
+        version: 3.1.0
+      classnames:
+        specifier: 2.2.6
+        version: 2.2.6
+      compare-sets:
+        specifier: 1.0.1
+        version: 1.0.1
+      dompurify:
+        specifier: 3.4.13
+        version: 3.4.13
+      dugite:
+        specifier: 1.110.0
+        version: 1.110.0(patch_hash=65930157110b31cf6b61bddb57683724eceba071a6e47fbf806c3d875b6b4c2e)
+      event-kit:
+        specifier: 2.5.3
+        version: 2.5.3
+      fs-extra:
+        specifier: 4.0.3
+        version: 4.0.3
+      keytar:
+        specifier: npm:@builtbygio/keytar@4.13.0
+        version: '@builtbygio/keytar@4.13.0'
+      lodash.memoize:
+        specifier: 4.1.2
+        version: 4.1.2
+      marked:
+        specifier: 4.3.0
+        version: 4.3.0
+      moment:
+        specifier: 2.30.1
+        version: 2.30.1
+      node-emoji:
+        specifier: 1.10.0
+        version: 1.10.0
+      prop-types:
+        specifier: 15.7.2
+        version: 15.7.2
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
+      react-select:
+        specifier: 1.2.1
+        version: 1.2.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-tabs:
+        specifier: ^3.0.0
+        version: 3.2.3(react@18.3.1)
+      temp:
+        specifier: 0.9.1
+        version: 0.9.1
+      tinycolor2:
+        specifier: 1.4.1
+        version: 1.4.1
+      tree-kill:
+        specifier: 1.2.2
+        version: 1.2.2
+      underscore-plus:
+        specifier: 1.7.0
+        version: 1.7.0
+      what-the-diff:
+        specifier: 0.6.0
+        version: 0.6.0
+      what-the-status:
+        specifier: 1.0.3
+        version: 1.0.3
+      whats-my-line:
+        specifier: ^0.1.4
+        version: 0.1.4
+      yubikiri:
+        specifier: 2.0.0
+        version: 2.0.0
+
   packages/go-to-line: {}
 
   packages/grammar-selector:
@@ -693,17 +944,209 @@ importers:
         specifier: npm:@builtbygio/atom-select-list@0.8.2
         version: '@builtbygio/atom-select-list@0.8.2'
 
+  packages/image-view:
+    dependencies:
+      bytes:
+        specifier: ^3.0.0
+        version: 3.1.0
+      etch:
+        specifier: 0.9.0
+        version: 0.9.0
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+
   packages/incompatible-packages:
     dependencies:
       etch:
         specifier: ^0.12.2
         version: 0.12.8
 
+  packages/keybinding-resolver:
+    dependencies:
+      etch:
+        specifier: 0.9.0
+        version: 0.9.0
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+      temp:
+        specifier: ^0.9.0
+        version: 0.9.2
+
+  packages/language-c:
+    dependencies:
+      tree-sitter-c:
+        specifier: 0.24.1
+        version: 0.24.1(tree-sitter@0.25.1)
+      tree-sitter-cpp:
+        specifier: 0.23.4
+        version: 0.23.4(tree-sitter@0.25.1)
+
+  packages/language-clojure:
+    dependencies:
+      tree-sitter-clojure-orchard:
+        specifier: 0.2.8
+        version: 0.2.8(tree-sitter@0.25.1)
+
+  packages/language-coffee-script: {}
+
+  packages/language-csharp:
+    dependencies:
+      tree-sitter-c-sharp:
+        specifier: 0.23.5
+        version: 0.23.5(tree-sitter@0.25.1)
+
+  packages/language-css:
+    dependencies:
+      tree-sitter-css:
+        specifier: 0.23.2
+        version: 0.23.2(tree-sitter@0.25.1)
+
+  packages/language-gfm: {}
+
+  packages/language-git: {}
+
+  packages/language-go:
+    dependencies:
+      tree-sitter-go:
+        specifier: 0.25.0
+        version: 0.25.0(tree-sitter@0.25.1)
+
+  packages/language-html:
+    dependencies:
+      atom-grammar-test:
+        specifier: ^0.6.3
+        version: 0.6.4
+      tree-sitter-embedded-template:
+        specifier: 0.25.0
+        version: 0.25.0(tree-sitter@0.25.1)
+      tree-sitter-html:
+        specifier: 0.23.2
+        version: 0.23.2(tree-sitter@0.25.1)
+
+  packages/language-hyperlink: {}
+
+  packages/language-java:
+    dependencies:
+      tree-sitter-java:
+        specifier: 0.23.5
+        version: 0.23.5(tree-sitter@0.25.1)
+
+  packages/language-javascript:
+    dependencies:
+      tree-sitter-javascript:
+        specifier: 0.25.0
+        version: 0.25.0(tree-sitter@0.25.1)
+      tree-sitter-jsdoc:
+        specifier: 0.25.0
+        version: 0.25.0(tree-sitter@0.25.1)
+      tree-sitter-regex:
+        specifier: 0.25.0
+        version: 0.25.0(tree-sitter@0.25.1)
+
+  packages/language-json:
+    dependencies:
+      tree-sitter-json:
+        specifier: 0.24.8
+        version: 0.24.8(tree-sitter@0.25.1)
+
+  packages/language-less:
+    dependencies:
+      tree-sitter-less:
+        specifier: git+https://github.com/mdovale/tree-sitter-less.git#02988c765d30adb0476657b5d220e8dfde1c07d3
+        version: https://codeload.github.com/mdovale/tree-sitter-less/tar.gz/02988c765d30adb0476657b5d220e8dfde1c07d3(tree-sitter@0.25.1)
+
+  packages/language-make: {}
+
+  packages/language-mustache: {}
+
+  packages/language-objective-c: {}
+
+  packages/language-perl:
+    dependencies:
+      tree-sitter-perl:
+        specifier: 1.2.1
+        version: 1.2.1(tree-sitter@0.25.1)
+
+  packages/language-php:
+    dependencies:
+      tree-sitter-php:
+        specifier: 0.24.2
+        version: 0.24.2(tree-sitter@0.25.1)
+
+  packages/language-property-list: {}
+
+  packages/language-python:
+    dependencies:
+      atom-grammar-test:
+        specifier: ^0.6.4
+        version: 0.6.4
+      tree-sitter-python:
+        specifier: 0.25.0
+        version: 0.25.0(tree-sitter@0.25.1)
+
+  packages/language-ruby:
+    dependencies:
+      tree-sitter-ruby:
+        specifier: 0.23.1
+        version: 0.23.1(tree-sitter@0.25.1)
+
+  packages/language-ruby-on-rails: {}
+
   packages/language-rust-bundled:
     dependencies:
       tree-sitter-rust:
         specifier: 0.24.0
         version: 0.24.0(tree-sitter@0.25.1)
+
+  packages/language-sass:
+    dependencies:
+      tree-sitter-scss:
+        specifier: 1.0.0
+        version: 1.0.0(tree-sitter@0.25.1)
+
+  packages/language-shellscript:
+    dependencies:
+      tree-sitter-bash:
+        specifier: 0.25.1
+        version: 0.25.1(tree-sitter@0.25.1)
+
+  packages/language-source: {}
+
+  packages/language-sql:
+    dependencies:
+      '@derekstride/tree-sitter-sql':
+        specifier: 0.3.11
+        version: 0.3.11(tree-sitter@0.25.1)
+
+  packages/language-text: {}
+
+  packages/language-todo: {}
+
+  packages/language-toml:
+    dependencies:
+      '@tree-sitter-grammars/tree-sitter-toml':
+        specifier: 0.7.0
+        version: 0.7.0(tree-sitter@0.25.1)
+
+  packages/language-typescript:
+    dependencies:
+      tree-sitter-typescript:
+        specifier: 0.23.2
+        version: 0.23.2(tree-sitter@0.25.1)
+
+  packages/language-xml:
+    dependencies:
+      '@tree-sitter-grammars/tree-sitter-xml':
+        specifier: 0.7.0
+        version: 0.7.0(tree-sitter@0.25.1)
+
+  packages/language-yaml:
+    dependencies:
+      '@tree-sitter-grammars/tree-sitter-yaml':
+        specifier: 0.7.1
+        version: 0.7.1(tree-sitter@0.25.1)
 
   packages/line-ending-selector:
     dependencies:
@@ -726,6 +1169,54 @@ importers:
 
   packages/lsp-ui: {}
 
+  packages/markdown-preview:
+    dependencies:
+      cheerio:
+        specifier: ^1.0.0-rc.3
+        version: 1.2.0
+      dompurify:
+        specifier: 3.4.13
+        version: 3.4.13
+      emoji-images:
+        specifier: ^0.1.1
+        version: 0.1.1
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+      marked:
+        specifier: 4.3.0
+        version: 4.3.0
+      underscore-plus:
+        specifier: ^1.0.0
+        version: 1.7.0
+      yaml-front-matter:
+        specifier: ^4.0.0
+        version: 4.1.1
+
+  packages/notifications:
+    dependencies:
+      dompurify:
+        specifier: 3.4.13
+        version: 3.4.13
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+      marked:
+        specifier: 4.3.0
+        version: 4.3.0
+      moment:
+        specifier: 2.30.1
+        version: 2.30.1
+      semver:
+        specifier: 5.7.2
+        version: 5.7.2
+      stacktrace-parser:
+        specifier: ^0.1.3
+        version: 0.1.11
+      temp:
+        specifier: ^0.8.1
+        version: 0.8.4
+
   packages/one-dark-syntax: {}
 
   packages/one-dark-ui: {}
@@ -734,9 +1225,137 @@ importers:
 
   packages/one-light-ui: {}
 
+  packages/open-on-github: {}
+
+  packages/package-generator:
+    dependencies:
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+      temp:
+        specifier: ^0.8.1
+        version: 0.8.4
+      underscore-plus:
+        specifier: ^1.0.0
+        version: 1.7.0
+
+  packages/settings-view:
+    dependencies:
+      async:
+        specifier: ^3.2.0
+        version: 3.2.6
+      dompurify:
+        specifier: 3.4.13
+        version: 3.4.13
+      etch:
+        specifier: 0.9.0
+        version: 0.9.0
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+      fuzzaldrin:
+        specifier: ^2.1
+        version: 2.1.0
+      glob:
+        specifier: 4.3.1
+        version: 4.3.1
+      hosted-git-info:
+        specifier: ^2.1.4
+        version: 2.8.9
+      marked:
+        specifier: 4.3.0
+        version: 4.3.0
+      season:
+        specifier: npm:@builtbygio/season@6.0.2
+        version: '@builtbygio/season@6.0.2'
+      semver:
+        specifier: 5.7.2
+        version: 5.7.2
+      underscore-plus:
+        specifier: ^1.0.6
+        version: 1.7.0
+
+  packages/snippets:
+    dependencies:
+      async:
+        specifier: ~0.2.6
+        version: 0.2.6
+      atom-select-list:
+        specifier: npm:@builtbygio/atom-select-list@0.8.2
+        version: '@builtbygio/atom-select-list@0.8.2'
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+      loophole:
+        specifier: ^1
+        version: 1.1.0
+      pegjs:
+        specifier: ~0.8.0
+        version: 0.8.0
+      scoped-property-store:
+        specifier: ^0.17.0
+        version: 0.17.0
+      season:
+        specifier: npm:@builtbygio/season@6.0.2
+        version: '@builtbygio/season@6.0.2'
+      temp:
+        specifier: ~0.8.0
+        version: 0.8.4
+      underscore-plus:
+        specifier: ^1.0.0
+        version: 1.7.0
+
   packages/solarized-dark-syntax: {}
 
   packages/solarized-light-syntax: {}
+
+  packages/spell-check:
+    dependencies:
+      atom-pathspec:
+        specifier: npm:@builtbygio/atom-pathspec@0.0.0
+        version: '@builtbygio/atom-pathspec@0.0.0'
+      atom-select-list:
+        specifier: npm:@builtbygio/atom-select-list@0.8.2
+        version: '@builtbygio/atom-select-list@0.8.2'
+      debug:
+        specifier: 4.4.1
+        version: 4.4.1(supports-color@8.1.1)
+      multi-integer-range:
+        specifier: ^2.0.0
+        version: 2.1.0
+      spellchecker:
+        specifier: npm:@builtbygio/spellchecker@3.7.1
+        version: '@builtbygio/spellchecker@3.7.1'
+      spelling-manager:
+        specifier: ^1.1.0
+        version: 1.3.0
+      underscore-plus:
+        specifier: ^1
+        version: 1.7.0
+
+  packages/status-bar:
+    dependencies:
+      fs-plus:
+        specifier: ^3.0.1
+        version: 3.1.1
+      grim:
+        specifier: ^2.0.1
+        version: 2.0.3
+      underscore-plus:
+        specifier: ^1.0.0
+        version: 1.7.0
+
+  packages/styleguide:
+    dependencies:
+      atom-select-list:
+        specifier: npm:@builtbygio/atom-select-list@0.8.2
+        version: '@builtbygio/atom-select-list@0.8.2'
+      dedent:
+        specifier: ^0.7.0
+        version: 0.7.0
+      etch:
+        specifier: 0.9.0
+        version: 0.9.0
 
   packages/superstring:
     dependencies:
@@ -756,6 +1375,75 @@ importers:
       temp:
         specifier: ^0.8.3
         version: 0.8.4
+
+  packages/symbols-view:
+    dependencies:
+      async:
+        specifier: ^0.2.6
+        version: 0.2.6
+      atom-select-list:
+        specifier: npm:@builtbygio/atom-select-list@0.8.2
+        version: '@builtbygio/atom-select-list@0.8.2'
+      ctags:
+        specifier: npm:@builtbygio/ctags@3.1.0
+        version: '@builtbygio/ctags@3.1.0'
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+      fuzzaldrin:
+        specifier: ^2.1.0
+        version: 2.1.0
+      humanize-plus:
+        specifier: ^1.8.2
+        version: 1.8.2
+      temp:
+        specifier: ^0.8.3
+        version: 0.8.4
+      underscore-plus:
+        specifier: ^1.6.6
+        version: 1.7.0
+
+  packages/tabs:
+    dependencies:
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+      temp:
+        specifier: ~0.8.1
+        version: 0.8.4
+      underscore-plus:
+        specifier: 1.x
+        version: 1.7.0
+
+  packages/timecop:
+    dependencies:
+      dedent:
+        specifier: ^0.7.0
+        version: 0.7.0
+      etch:
+        specifier: ^0.12.6
+        version: 0.12.8
+      underscore-plus:
+        specifier: ^1.0.0
+        version: 1.7.0
+
+  packages/tree-view:
+    dependencies:
+      fs-plus:
+        specifier: ^3.0.0
+        version: 3.1.1
+      minimatch:
+        specifier: 3.1.4
+        version: 3.1.4
+      pathwatcher:
+        specifier: npm:@builtbygio/pathwatcher@8.1.2
+        version: '@builtbygio/pathwatcher@8.1.2'
+      temp:
+        specifier: ~0.9.0
+        version: 0.9.2
+      underscore-plus:
+        specifier: ^1.0.0
+        version: 1.7.0
 
   packages/update-package-dependencies: {}
 
@@ -824,13 +1512,14 @@ importers:
         specifier: ^1.0.0
         version: 1.2.0
 
+  packages/whitespace: {}
+
+  packages/wrap-guide: {}
+
 packages:
 
   '@atom/source-map-support@0.3.4':
     resolution: {integrity: sha512-tKmv2GIeHGPCevOD5q+bsf0IHtWtUnDbGEDGKNR0xNp1X2dQv4hihc0HjnH/4QhlNaVT7FQ5akl/Wks0i+Anlg==}
-
-  '@builtbygio/archive-view@0.66.2':
-    resolution: {integrity: sha512-U1lvlI0Nsr0EffUpJszWBxsja2An+bvbTx8LNhzzhOE8WTvy3MP7/Rur+fp2i7wrSw28O2/4ycNuNuwT55+XYQ==}
 
   '@builtbygio/atom-keymap@8.2.15':
     resolution: {integrity: sha512-7aoy/lgVF+XPXGS33NDFkXtKpeV93IyWEZ+YSTDrv/D9Dl2kVk1HV5rf/dDAJLL14wYhcPU1ZQN3LhcVhkIT/Q==}
@@ -841,52 +1530,8 @@ packages:
   '@builtbygio/atom-select-list@0.8.2':
     resolution: {integrity: sha512-oVkq9Xgaw2VTnWmIkjuhsO3qpjEN1TyThkAdzswEtnC11Saf41jAQlFLopjQ1aFve8FUFoSyjV8jySr+wAA28A==}
 
-  '@builtbygio/autocomplete-chevron-api@0.10.10':
-    resolution: {integrity: sha512-NU4mZEEWkrRfksV0AcoLOUrK58qoLDUMrfr6ExK7ztHxd9VyhibXQULQs2cDjt6O+tHgtQ2/MgKVKi6MoK9nBg==}
-    engines: {atom: '>=0.174.0 <2.0.0'}
-
-  '@builtbygio/autocomplete-css@0.17.7':
-    resolution: {integrity: sha512-fHsXa9i5YS2/l78zJRlGHUDV/iMcGP/QG/tcogEeq0Z6ceB+KGW92KGrl2S5/dRCQJrw82A7ej2ruvaMZn5/eg==}
-    engines: {atom: '>=0.174.0 <2.0.0'}
-
-  '@builtbygio/autocomplete-html@0.8.10':
-    resolution: {integrity: sha512-5XA3AxYjJrj6IBEnwqkG6P2rjhZefw1E7AMPB5jOpCuYEFIkP+qx9w97TOd0aui92BR5CIgelmefu765OZ1P8w==}
-    engines: {atom: '>=0.174.0 <2.0.0'}
-
-  '@builtbygio/autocomplete-plus@2.42.7':
-    resolution: {integrity: sha512-FizFrxsjTCTUWfTXS+qXW0UQ4lYQdWWQTXjWTiBIpNLexsjdy0Ttb+n0n9olSN8KTV4t3BNIKKe/KrzLsZy6zg==}
-    engines: {atom: '>=0.189.0 <2.0.0'}
-
-  '@builtbygio/autocomplete-snippets@1.12.3':
-    resolution: {integrity: sha512-q9Mm+i7tH28ZVXig3y980DtuMtJZ2YgsSpCDqaio7AI8aQZwFBwPPEBRJFB7noJ14rRTckT5E821tl++eb1t2A==}
-    engines: {atom: '>=0.174.0 <2.0.0'}
-
-  '@builtbygio/autosave@0.24.8':
-    resolution: {integrity: sha512-5352IU/0zyZwNxvksP178uz2n4rvi1mfyRD9Bfe06u1tgsf1ahafzJ1LOTer7RdA0+uTh6zVekvcRL0z6y49ZA==}
-    engines: {atom: '>0.27.0'}
-
-  '@builtbygio/background-tips@0.28.2':
-    resolution: {integrity: sha512-aFTWOPPteSZGVRu+TPW9MRRJoK9C6qPumw2lWif3VzVNNYHzIx8w4YuVxfT+b9/vAZAYt9LcAww3jG28WrDbFw==}
-    engines: {atom: '>0.42.0'}
-
-  '@builtbygio/bookmarks@0.46.2':
-    resolution: {integrity: sha512-WdWgsHBOpDAzUxkKoywQP0g/Y8WWm2+Mpy/6f5v4NbscY7gF0Sy8Yve3InQ+S4ISVsVEfu1i5HML6m+AIdWKtw==}
-
-  '@builtbygio/bracket-matcher@0.92.2':
-    resolution: {integrity: sha512-EfYAuX8VEzzH3Z80f8Eqf5+a+JsbWPsc9KwcZeB+MIQ2ZozdHaFy2VcvRQSeTcFvzvYDuUADzRhPZ+gqIHyxeQ==}
-
-  '@builtbygio/command-palette@0.43.8':
-    resolution: {integrity: sha512-rd5W7SCtqFBOq/Gmpj3Jg5G3yvxmWaJebsGfsnHvZUQWu8wN6AO8ZWQA8Xxxn87fX6bpHim6XwFeAT7pTM1WMw==}
-
   '@builtbygio/ctags@3.1.0':
     resolution: {integrity: sha512-E75vEnn8C3yyl5vmIMidViTqwkN+WQ7QFYthyIKoK9QwyD/pB6mEJRYlgXs1v11Unt/SDHkgkN3eKxF1s5aUlg==}
-
-  '@builtbygio/encoding-selector@0.23.11':
-    resolution: {integrity: sha512-QW7uPe5gRLKuwd6fk6w981EiFVsidjI5UokAVGDCTrYW6IlusCNuIQuJabD44nUkRtIwwHwxbh0K1NHuKfX4mA==}
-    engines: {atom: '>=0.141.0'}
-
-  '@builtbygio/find-and-replace@0.219.12':
-    resolution: {integrity: sha512-26WTEbSc8kfBtyoFhYUgg6ETKvF99owPfhsJeG61X8+XoXVGm4Cft/x+hf9ia547NIvJl/54ishS0hsGb5bxGQ==}
 
   '@builtbygio/first-mate@7.4.3':
     resolution: {integrity: sha512-SEyaBicR7rT8xr51cjQ1pi0yx+oYE+sK02xp2k15RkDnTvKB0GF58A6qyPXPdMXBAKhHW46yCn3EW0O225KTTg==}
@@ -894,139 +1539,17 @@ packages:
   '@builtbygio/fs-admin@0.15.0':
     resolution: {integrity: sha512-n3m+WKXcRiHft1lExwfog4RwUWaAHIEmaSnzkiAYCdt7FtX/QdMVhT22b//tnFDWbtQqsgyGPqDKC1Q2QHPRGw==}
 
-  '@builtbygio/fuzzy-finder@1.15.2':
-    resolution: {integrity: sha512-niz1J8pSThKFUczc8V2z2LEAcode5J0EVwgCXt1LRKe/ybDypCDMenvRpHX9zhbYL2n4BtWB8cQZRS+eRt0MSg==}
-
   '@builtbygio/fuzzy-native@1.2.1':
     resolution: {integrity: sha512-ti+mazNJPi+EH0Cxq+Ni/x+486hAC+KfJSZ8OmKWJ5/9666IQ77A38d5MuqOFjhMUUH+2aZ4H2lVrBVCz3D1ag==}
 
   '@builtbygio/git-utils@5.7.1':
     resolution: {integrity: sha512-Z9YEwgJ642VB5Bm3uE0GafZqv21/R+mRwDEsmUUAjGwWN86mrmWnmnodjOg/uOckk5uGsf+POQU8hLHwAuEj+A==}
 
-  '@builtbygio/github@0.37.13':
-    resolution: {integrity: sha512-CKgZtdLtBPEfQj0ieFWL8T5y4uvKP4/y9X0FihfAR0tvaEuQb045cRso6UBoCuDEoveFZxIS5BvbA8GJWWiIJA==}
-    engines: {atom: '>=1.37.0'}
-
-  '@builtbygio/image-view@0.64.3':
-    resolution: {integrity: sha512-8zwnzJVzY/uBomhFIpZ8WCevRdnX41axRYrHZVKgS/SQozfjbl5n10EtC+G1e8GrexIW1PlWbi7uYweInOKQ/w==}
-
-  '@builtbygio/keybinding-resolver@0.39.4':
-    resolution: {integrity: sha512-pbADOsMbFZCLBBGV4h/0wvJNyq8dl0N2sz6O61Q657EfU6xpVa0T0kt/ToHNU7mz4QXjmoRI5AJV1CEEj6s47A==}
-    engines: {atom: '>=1.17.0'}
-
   '@builtbygio/keyboard-layout@2.0.17':
     resolution: {integrity: sha512-3Nb0wFcb/XdfySrg6wy5WMZVofKlJiyEKHeGsLWchhqQgEKtjsAfExbgBnVknh9ZlZu0egxAWdFpbsp798/Njg==}
 
   '@builtbygio/keytar@4.13.0':
     resolution: {integrity: sha512-GJvzIJrQJqP3K08PFNRRiJ6kfpg8M6innVfIuhoVPbML9Wv01qmXQMthYUwuiENYysryCQzLilStVXyXkEglWQ==}
-
-  '@builtbygio/language-c@0.60.22':
-    resolution: {integrity: sha512-hY66eKEK17nRV+RtDkDeBDQiqXQfQZgkw6PJWpPpBzdMjeID/9FcT/E4YBCHBlnLGPZ5KKo+12/S9rCrZCOVEA==}
-
-  '@builtbygio/language-clojure@0.24.1':
-    resolution: {integrity: sha512-pQEfevMnIb+C3hnybg7e6hwWjr6ZxFoU93I7AtACxnh+kef7gazgrMqe2lNVVMfUWdRJ1zSkYaxS8iYG9ZvX+Q==}
-
-  '@builtbygio/language-coffee-script@0.51.1':
-    resolution: {integrity: sha512-yTybC7LszcApAyzyXpAqJlwkN1ZScwyKKx7aNhKJrY+9UG6zBPwkkUwnsHZWV6YVXvUttt+aKBFexKXTy06taw==}
-
-  '@builtbygio/language-csharp@1.3.1':
-    resolution: {integrity: sha512-Ld+gyXb2TzuUuZUa8LZ8DcIstDnXToON+y59LOASChqMN+s8o1dzWY1rKk/ClBYRui47NLwrlhJdsHsJMNPBpg==}
-    engines: {atom: '>0.50.0'}
-
-  '@builtbygio/language-css@0.45.6':
-    resolution: {integrity: sha512-kqt9hRVW6aJIg5W6warulsGf3H26nqaUFTr0z3KGgTssheUqievZs7DCzhgh47E6jJE8MfmhXR/q7+RVEyxNew==}
-
-  '@builtbygio/language-gfm@0.91.1':
-    resolution: {integrity: sha512-IddT26ieQbew7Aytc8vpGxGNgh8ARsOLdouffJ8T+XrVXDQucceXVCB0kacw6fUozJXk0Ue0/jQOkrA+2Jyprg==}
-
-  '@builtbygio/language-git@0.20.1':
-    resolution: {integrity: sha512-I1LhzOKX8lsNVZyeXL+/Dsq9kdGbtpkU88CCFFSsH484/7sZjItm6Z5ccMoM14RjRUv7dChGWdg4xDsa6Kvkqw==}
-
-  '@builtbygio/language-go@0.47.4':
-    resolution: {integrity: sha512-mgLbkVxkPCfRIzH50YUYA65gZxn2O1SFSA/tIKJbSLCIipVxBWkupDHMLgDzgopGBLCewdwHM2bTmzcBpw69tQ==}
-
-  '@builtbygio/language-html@0.53.3':
-    resolution: {integrity: sha512-09LPush9nu8xRtgx/xMN0whSzTprfMbTPghqEkiJcBfDT/AS/3iYerTCoN7zg9XeeZkNb8OEevXQQWmgMDYKaw==}
-
-  '@builtbygio/language-hyperlink@0.18.1':
-    resolution: {integrity: sha512-gDC/ocFGeIhs1RdPZYI4ZYUgtVlHU8pc9MEO4vUO+LdObYZjTV2sE8nrfh18k9sMMHZAB7V81E6e+C98uUOwbQ==}
-
-  '@builtbygio/language-java@0.32.2':
-    resolution: {integrity: sha512-u+ZTaLAzU9FnlnIbHiStQcUsr8+5JYmBdQQAa3vsZJCem+p8K1Rlmkt5qVzVr6T1cs/Uq1dZ8pchE4PiBZCQfA==}
-
-  '@builtbygio/language-javascript@0.134.4':
-    resolution: {integrity: sha512-NrLLf3wFuZifhw81opPBvtzvsWPOJExR7sjSw2BOeJDl+RS82hWuWbNOgdIvy01Abo+K4cVLq6VwLx2E83FOXQ==}
-
-  '@builtbygio/language-json@1.0.6':
-    resolution: {integrity: sha512-Hf6x8iPFTqNWp9ef7R+0dPfwOoMLEizl0Rodf8qh2k6MBughUmmZV9BaTR9psRFys/Ie41YsCLwVJ8z8EJAPEA==}
-
-  '@builtbygio/language-less@0.36.2':
-    resolution: {integrity: sha512-G8Ht4ckPFcoTw24Klt01NvMRtadAF+iwzARFNjGEZOdF2Siyt+qVovDXBwWbvfR48R9RsjlsyVjRSX4iv5trMQ==}
-
-  '@builtbygio/language-make@0.24.1':
-    resolution: {integrity: sha512-Ava5FU/EtKudpykUhuGRHMEv55UTAsONVc/XuTnIOhBgxXzlgXL3FHi3/Mxf9h9zwusJWtQvT26MbU5IBC5hIw==}
-
-  '@builtbygio/language-mustache@0.15.1':
-    resolution: {integrity: sha512-KWMMKBGwyze47aSS6+pZZ2D8IT+Nkur+LKBeqzXvq8/TYNSSUxWMy0QJ7/Xb2+Em1eKup3F2NLe/bz3Uu2e49g==}
-
-  '@builtbygio/language-objective-c@0.17.1':
-    resolution: {integrity: sha512-kluSE2cCO5NIDunFF7X1NvsAm5ftb9YNG2Dh6VRUQPlG2DUCkM/40XgP6bTxsgbIL0DIEzpIO5NLr9lBvwRkKg==}
-
-  '@builtbygio/language-perl@0.40.1':
-    resolution: {integrity: sha512-k7qyprGCF8BKy+f+nOhQzRDvxcwBc2RgRfBOYirNMg55juPnt8ylGgusrVyTGhu8ovW2GFyzI7I5OKzDdFHXYA==}
-
-  '@builtbygio/language-php@0.50.1':
-    resolution: {integrity: sha512-qT7O5tD7tcsL2Trt00RT/sqh4fmQnhmTmF4uUQcAfcPv9fddQAzNlST6RE+XvYAKk+qg9vVNab5NSopDI7adzg==}
-
-  '@builtbygio/language-property-list@0.10.0':
-    resolution: {integrity: sha512-rxnFDCrYsUKhflDChU8Kg2Wo05sT6h2J7Al3AUjzShTR1xdGy6Mgo2tZRGmqk237AMGMO2UDa+5xE5DjWggCLw==}
-
-  '@builtbygio/language-python@0.53.7':
-    resolution: {integrity: sha512-mHFS3kw/cXt17u5jRKfr4wj88lFXCSpPYvFC1uAWr8/3mGDnw5cfh9lvgo2TbyyheoR0UHp3m1BD+JqBLRN6kw==}
-
-  '@builtbygio/language-ruby-on-rails@0.26.1':
-    resolution: {integrity: sha512-N/2qHL7JJcUUOIYdVD2KUhdyNbrPowZfSx6UEpUThND0RpuIJ0InBvBF8wCXMdHAi7ER+E/VsPerZng2B7Ewsg==}
-
-  '@builtbygio/language-ruby@0.73.2':
-    resolution: {integrity: sha512-vBSDwzS/z/KesC0budsgNvITnWl5ujv99tsjaqEyEWdgRdla8rGpWc1cSOyTW3hG9h4R6Q0LMQUFFJzQXgZl2Q==}
-
-  '@builtbygio/language-sass@0.64.1':
-    resolution: {integrity: sha512-vZ+nLVeTLEaOaPIJfV0IcYSDvSTI/PtVIVf6JoqYRKh8FYNtYuVGgeq5qaJzCu3JRQ7ktRlhxcGYspgYhUUucg==}
-
-  '@builtbygio/language-shellscript@0.28.3':
-    resolution: {integrity: sha512-wtCCZF/zhCXwXTiw1UmGBDnMY1G+82/6f1wk2ihDKmUdZLpKQSKgO8R/p4opd9y5IbdCeXvLzBLf9bcIoRhZXQ==}
-
-  '@builtbygio/language-source@0.10.0':
-    resolution: {integrity: sha512-ptkgUDWTJClkGzJAWkyJFPY9LrbaQAhnhI6oNAGK+zNsSej3pPAJ6mBTJK+941CLQGQlNzCKM+s4/OnhOQmWYg==}
-
-  '@builtbygio/language-sql@0.27.1':
-    resolution: {integrity: sha512-MBprj2MlrotDeJ/7VJ9/a7uiZi5OJbgwh6kq/vpsFifiB6OSOteBjdduefP9vZobK7FAX2Zbsttur7kv4Mh8dQ==}
-
-  '@builtbygio/language-text@0.8.1':
-    resolution: {integrity: sha512-TckiM1YLf6KCUOktqnhyWIN0P+egYq0MDXkqLBrNJN4tx8nMPW19NLeEVroGiOmLH2VyNz1fxhe0BwhSd5H5vg==}
-
-  '@builtbygio/language-todo@0.30.1':
-    resolution: {integrity: sha512-knpDwWZJ16s3lcSkZw4q69lx/epuSJp+APxoGutIFVRYLQjEoUUM3JhYeM7Gp9xuIj5vqnwSodccn89I5dc/dA==}
-
-  '@builtbygio/language-toml@0.22.1':
-    resolution: {integrity: sha512-MpGrO1b/1sJjKrC2sovjxF79v4AeQp52oQjxTS23HQI6yi2NX2sI6pqzcMt+yHjLe6v2F8DDjHPejMUq7ryhYA==}
-
-  '@builtbygio/language-typescript@0.6.5':
-    resolution: {integrity: sha512-cPZNrKVdhThrM6W60Nl5M5i8zgFNsFBAFSilurnBs9opETC/1QFplMKAkIGb1hrv4EvukGMugVAXt/66G4JH7A==}
-    engines: {atom: '>=1.19.1'}
-
-  '@builtbygio/language-xml@0.37.1':
-    resolution: {integrity: sha512-80c4rLHxEhTWTw9/FmppZ3UV1GSkcIHZXP1GipLwcTRYGxlXBtzBLe1hAOF1uMQd+KfDApqC7T5QT+FOAHdXyg==}
-
-  '@builtbygio/language-yaml@0.34.1':
-    resolution: {integrity: sha512-wj5A7eRXoW8EHO0YQTJFPEuKRYNMowKJNZICsdz7KZRB442NIQA7U7+BuW4Q+K1t4Ui3C9eB63ziTJozMCHUGw==}
-
-  '@builtbygio/markdown-preview@0.160.5':
-    resolution: {integrity: sha512-sbjLXo+dkWw+XjTmxZwyu6OGniG0Q5XAlJW0QaMrXo70yZbW9WHOaHZMcSsnr6g3T9iRskCEymG/+BgGENKB5g==}
-
-  '@builtbygio/notifications@0.72.6':
-    resolution: {integrity: sha512-eP7dvnqabQBCdJdxSglual9lM85nU/6QJU0hTY+MQI7BE+DeHRv/bYFMjsSV1n2M0RqfFKNxKJwSBc8qVQyYrA==}
-    engines: {atom: '>0.50.0'}
 
   '@builtbygio/nsfw@1.0.28':
     resolution: {integrity: sha512-C9DXMFqKDY1ho4yjUP6NxHzBz5RKyXcbIOmJne8olMEAeG/On+FFJLiLBG32oLfXdxbLVxjnevjosszVZ9jwpQ==}
@@ -1036,12 +1559,6 @@ packages:
 
   '@builtbygio/oniguruma@7.2.3':
     resolution: {integrity: sha512-BmHHkNgj+hh2a3hg5x8aCXWLN7/uIcn76jevFgk9S3U3VU10q3Mk49P//QY+75f4Y725lSWcayk8JWXzJ3uMkA==}
-
-  '@builtbygio/open-on-github@1.3.4':
-    resolution: {integrity: sha512-5JF8XhALgt+1MUawvZ7enR/5OOL7I4d6dDPDC2110dUJLXEBXHO64MHm02fzSwFLIcPUHXMofgh3Y2jngJnZfQ==}
-
-  '@builtbygio/package-generator@1.3.2':
-    resolution: {integrity: sha512-lsnFCfSPIavpHeLr08zeIgtUdtoeDb91Mg4Leu+QqtfyxGqtajyUpwhNNwBDaiQ5t5fUwY3ZLxw9ku+1cpGMvg==}
 
   '@builtbygio/pathwatcher@8.1.2':
     resolution: {integrity: sha512-bvPmxFzPA2TfdIjOXYG3MW9MJillQWhMs0Q5u9EyN11PWIveL2nnY8eUQ5kukc77jQqvCpmwEMe4cLYeMEck7g==}
@@ -1053,45 +1570,11 @@ packages:
     resolution: {integrity: sha512-CKEsfJUpGf06tMxFKSzrMdqmIPYgNk9T0gLp1mEPAiTWDRNminaYd88w/Qv5snmBiTp7Mhl1tdHQMIhXxQ48GQ==}
     hasBin: true
 
-  '@builtbygio/settings-view@0.261.15':
-    resolution: {integrity: sha512-QAdLAfe5BhVXiM6CwfBhOZJOSHtfAvd/NnQYt3lvwEl7JnIaloQNFBmnyi8Gpu16PNWgoKHxxVPl3mPgcmFucQ==}
-
-  '@builtbygio/snippets@1.5.6':
-    resolution: {integrity: sha512-fayt21A1qZrFiOH8UplDcDfnIB1+2K1fhZZ332OuSxNeT3g1GjcgfZk8OQpuCUyvI8Ii9zdYIzIno+raPHtDRQ==}
-
-  '@builtbygio/spell-check@0.77.6':
-    resolution: {integrity: sha512-TzNfBKWZnZMDrEKzm3YJwhWVjq+aeo632Mol5y4V5r0Qu6NzHXKDkwurXux37v/GdRRV27+86QH2o2lUDn+TwQ==}
-
   '@builtbygio/spellchecker@3.7.1':
     resolution: {integrity: sha512-/aMcqq8TNPHoM4bxbwwzHmkdA8GJgj2XbI7AMq+Hohn5zeUM9ANgLism/KYsY97/TnQTJPd5sitJBQUneMqPCw==}
 
-  '@builtbygio/status-bar@1.8.20':
-    resolution: {integrity: sha512-zXY7uT3rsbzDAVovyCVGykaNEUBv6z4A0ivgEwwfqE7KEaPqAB8ZgnG6Y2L7qJKdvYb17r4uVTWk3OGB5khylw==}
-
-  '@builtbygio/styleguide@0.49.15':
-    resolution: {integrity: sha512-mXihKtbdoaFFF0MRKUTulgZJVCm3ICo3BYs039FaBLFsMcJ/422a97mE7VsNSr1KXJKJX3baulr8Ev1Gg00TYQ==}
-
-  '@builtbygio/symbols-view@0.118.7':
-    resolution: {integrity: sha512-QAK/Fo6KI1tYsR3fel8EPa+wgSzY0+J4YdOx1Hqp5ZeDAoqJr+JD/Gj3GiqvqCSGiXytXxayv18cXDHMTyRhQQ==}
-
-  '@builtbygio/tabs@0.110.5':
-    resolution: {integrity: sha512-J1pmVYbNDBqOa0cjLjb4JrDu2c8ihXB+Qj4BWStEZ3wb3+e5E2zuKaL9LQBpq9fy9AVNgLgu5navM4BRSnlVZQ==}
-    engines: {atom: '>=1.17.0'}
-
   '@builtbygio/text-buffer@13.18.6':
     resolution: {integrity: sha512-56+nl6M7+b2l0QgK2wTEbqV1vmG3FIMW6Rn6XH6TNCwta43dHtmm6gNNe0/Ez4ljR2kvN9CpmOSlmr2/p1B3UA==}
-
-  '@builtbygio/timecop@0.36.6':
-    resolution: {integrity: sha512-biPKWzb2PluPfCFCaL5pTgdlimZzoh6jBE5ecxYN99/EwoSUGnAYFeNi6OzQLk98SpIZrelKh9n7CcOso8P3kA==}
-
-  '@builtbygio/tree-view@0.229.6':
-    resolution: {integrity: sha512-Uw3yg+Pjq0JD8WC+woyExKr3xwMy/RfRHrcoGEA+ZMvwhihMUKB/T/mNiWe1B7sS06PMCB89BgmfCmd0Mby3fw==}
-
-  '@builtbygio/whitespace@0.37.10':
-    resolution: {integrity: sha512-PWzTWS9ncQNv/TJT3SxbDmIfK2Ps3RKwtrbFJwIADpa4I/AJ99vJ+/KPHuZwdvf+IsDTSPSKsd6oHdMDqTOf4A==}
-
-  '@builtbygio/wrap-guide@0.41.2':
-    resolution: {integrity: sha512-RA+7Sadm6ENlBV+zTpj0DHmNbsFZQhMIFplNLBzFy/ZuxKusZsFnCTJvKoqYjVHObWwQhjz0kBxnnDr7rp2ZnA==}
 
   '@derekstride/tree-sitter-sql@0.3.11':
     resolution: {integrity: sha512-YRtTXVWK4n7/3BUGchhGcW/IF1u2ldR2fd0t3Uw7ymbGXcRfiG3v1T6N43jQKXz2LwN+Nx+Ab96T0HtusBVH9g==}
@@ -1387,10 +1870,6 @@ packages:
 
   bytes@3.1.0:
     resolution: {integrity: sha512-zauLjrfCG+xvoyaqLoV8bLVXXNGC4JqlxFCutSDWA6fJrTo2ZuvLYTqZ7aHBLZSMOopbzwv8f+wZcVzfVTI2Dg==}
-    engines: {node: '>= 0.8'}
-
-  bytes@3.1.2:
-    resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
     engines: {node: '>= 0.8'}
 
   call-bind-apply-helpers@1.0.2:
@@ -3226,9 +3705,6 @@ packages:
   prop-types@15.7.2:
     resolution: {integrity: sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==}
 
-  prop-types@15.8.1:
-    resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
-
   property-accessors@1.1.3:
     resolution: {integrity: sha512-WQTVW7rn+k6wq8FyYVM15afyoB2loEdeIzd/o7+HEA5hMZcxvRf4Khie0fBM9wLP3EJotKhiH15kY7Dd4gc57g==}
 
@@ -4250,14 +4726,6 @@ snapshots:
     dependencies:
       source-map: 0.1.32
 
-  '@builtbygio/archive-view@0.66.2':
-    dependencies:
-      etch: 0.9.0
-      fs-plus: 3.1.1
-      humanize-plus: 1.8.2
-      ls-archive: https://codeload.github.com/builtbygio/ls-archive/tar.gz/b0ff32ec3cc363b3a86a55a48ee02ec28b6a8ac5
-      temp: 0.8.4
-
   '@builtbygio/atom-keymap@8.2.15':
     dependencies:
       clear-cut: 2.0.2
@@ -4277,69 +4745,10 @@ snapshots:
       etch: 0.14.1
       fuzzaldrin: 2.1.0
 
-  '@builtbygio/autocomplete-chevron-api@0.10.10': {}
-
-  '@builtbygio/autocomplete-css@0.17.7': {}
-
-  '@builtbygio/autocomplete-html@0.8.10': {}
-
-  '@builtbygio/autocomplete-plus@2.42.7':
-    dependencies:
-      atom-slick: 2.0.0
-      dompurify: 3.4.13
-      fuzzaldrin: 2.1.0
-      fuzzaldrin-plus: 0.6.0
-      grim: 2.0.3
-      marked: 4.3.0
-      minimatch: 3.1.4
-      selector-kit: 0.1.0
-      stable: 0.1.8
-      underscore-plus: 1.7.0
-
-  '@builtbygio/autocomplete-snippets@1.12.3': {}
-
-  '@builtbygio/autosave@0.24.8':
-    dependencies:
-      fs-plus: 3.1.1
-
-  '@builtbygio/background-tips@0.28.2':
-    dependencies:
-      underscore-plus: 1.7.0
-
-  '@builtbygio/bookmarks@0.46.2':
-    dependencies:
-      atom-select-list: '@builtbygio/atom-select-list@0.8.2'
-
-  '@builtbygio/bracket-matcher@0.92.2':
-    dependencies:
-      first-mate: '@builtbygio/first-mate@7.4.3'
-      underscore-plus: 1.7.0
-
-  '@builtbygio/command-palette@0.43.8':
-    dependencies:
-      atom-select-list: '@builtbygio/atom-select-list@0.8.2'
-      fuzzaldrin: 2.1.0
-      fuzzaldrin-plus: 0.6.0
-      underscore-plus: 1.7.0
-
   '@builtbygio/ctags@3.1.0':
     dependencies:
       event-stream: 3.1.7
       nan: 2.28.0
-
-  '@builtbygio/encoding-selector@0.23.11':
-    dependencies:
-      atom-select-list: '@builtbygio/atom-select-list@0.8.2'
-      iconv-lite: 0.4.24
-      jschardet: 1.6.0
-
-  '@builtbygio/find-and-replace@0.219.12':
-    dependencies:
-      binary-search: 1.3.6
-      etch: 0.9.3
-      fs-plus: 3.1.1
-      temp: 0.8.4
-      underscore-plus: 1.7.0
 
   '@builtbygio/first-mate@7.4.3':
     dependencies:
@@ -4355,23 +4764,6 @@ snapshots:
     dependencies:
       nan: 2.28.0
 
-  '@builtbygio/fuzzy-finder@1.15.2(supports-color@8.1.1)':
-    dependencies:
-      '@atom/fuzzy-native': '@builtbygio/fuzzy-native@1.2.1'
-      '@vscode/ripgrep': 1.15.14(supports-color@8.1.1)
-      async: 0.2.6
-      atom-select-list: '@builtbygio/atom-select-list@0.8.2'
-      fs-plus: 3.1.1
-      fuzzaldrin: 2.1.0
-      fuzzaldrin-plus: 0.6.0
-      humanize-plus: 1.8.2
-      minimatch: 3.1.4
-      temp: 0.8.4
-      underscore-plus: 1.7.0
-      wrench: 1.5.9
-    transitivePeerDependencies:
-      - supports-color
-
   '@builtbygio/fuzzy-native@1.2.1':
     dependencies:
       nan: 2.28.0
@@ -4380,47 +4772,6 @@ snapshots:
     dependencies:
       fs-plus: 3.1.1
       nan: 2.28.0
-
-  '@builtbygio/github@0.37.13':
-    dependencies:
-      bintrees: 1.0.2
-      bytes: 3.1.0
-      classnames: 2.2.6
-      compare-sets: 1.0.1
-      dompurify: 3.4.13
-      dugite: 1.110.0(patch_hash=65930157110b31cf6b61bddb57683724eceba071a6e47fbf806c3d875b6b4c2e)
-      event-kit: 2.5.3
-      fs-extra: 4.0.3
-      keytar: '@builtbygio/keytar@4.13.0'
-      lodash.memoize: 4.1.2
-      marked: 4.3.0
-      moment: 2.30.1
-      node-emoji: 1.10.0
-      prop-types: 15.7.2
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      react-select: 1.2.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-tabs: 3.2.3(react@18.3.1)
-      temp: 0.9.1
-      tinycolor2: 1.4.1
-      tree-kill: 1.2.2
-      underscore-plus: 1.7.0
-      what-the-diff: 0.6.0
-      what-the-status: 1.0.3
-      whats-my-line: 0.1.4
-      yubikiri: 2.0.0
-
-  '@builtbygio/image-view@0.64.3':
-    dependencies:
-      bytes: 3.1.2
-      etch: 0.9.0
-      fs-plus: 3.1.1
-
-  '@builtbygio/keybinding-resolver@0.39.4':
-    dependencies:
-      etch: 0.9.0
-      fs-plus: 3.1.1
-      temp: 0.9.2
 
   '@builtbygio/keyboard-layout@2.0.17':
     dependencies:
@@ -4431,184 +4782,6 @@ snapshots:
     dependencies:
       nan: 2.28.0
       prebuild-install: 5.3.0
-
-  '@builtbygio/language-c@0.60.22(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-c: 0.24.1(tree-sitter@0.25.1)
-      tree-sitter-cpp: 0.23.4(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-clojure@0.24.1(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-clojure-orchard: 0.2.8(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-coffee-script@0.51.1': {}
-
-  '@builtbygio/language-csharp@1.3.1(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-c-sharp: 0.23.5(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-css@0.45.6(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-css: 0.23.2(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-gfm@0.91.1': {}
-
-  '@builtbygio/language-git@0.20.1': {}
-
-  '@builtbygio/language-go@0.47.4(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-go: 0.25.0(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-html@0.53.3(tree-sitter@0.25.1)':
-    dependencies:
-      atom-grammar-test: 0.6.4
-      tree-sitter-embedded-template: 0.25.0(tree-sitter@0.25.1)
-      tree-sitter-html: 0.23.2(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-hyperlink@0.18.1': {}
-
-  '@builtbygio/language-java@0.32.2(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-java: 0.23.5(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-javascript@0.134.4(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-javascript: 0.25.0(tree-sitter@0.25.1)
-      tree-sitter-jsdoc: 0.25.0(tree-sitter@0.25.1)
-      tree-sitter-regex: 0.25.0(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-json@1.0.6(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-json: 0.24.8(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-less@0.36.2(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-less: https://codeload.github.com/mdovale/tree-sitter-less/tar.gz/02988c765d30adb0476657b5d220e8dfde1c07d3(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-make@0.24.1': {}
-
-  '@builtbygio/language-mustache@0.15.1': {}
-
-  '@builtbygio/language-objective-c@0.17.1': {}
-
-  '@builtbygio/language-perl@0.40.1(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-perl: 1.2.1(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-php@0.50.1(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-php: 0.24.2(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-property-list@0.10.0': {}
-
-  '@builtbygio/language-python@0.53.7(tree-sitter@0.25.1)':
-    dependencies:
-      atom-grammar-test: 0.6.4
-      tree-sitter-python: 0.25.0(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-ruby-on-rails@0.26.1': {}
-
-  '@builtbygio/language-ruby@0.73.2(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-ruby: 0.23.1(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-sass@0.64.1(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-scss: 1.0.0(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-shellscript@0.28.3(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-bash: 0.25.1(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-source@0.10.0': {}
-
-  '@builtbygio/language-sql@0.27.1(tree-sitter@0.25.1)':
-    dependencies:
-      '@derekstride/tree-sitter-sql': 0.3.11(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-      - tree_sitter
-
-  '@builtbygio/language-text@0.8.1': {}
-
-  '@builtbygio/language-todo@0.30.1': {}
-
-  '@builtbygio/language-toml@0.22.1(tree-sitter@0.25.1)':
-    dependencies:
-      '@tree-sitter-grammars/tree-sitter-toml': 0.7.0(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-typescript@0.6.5(tree-sitter@0.25.1)':
-    dependencies:
-      tree-sitter-typescript: 0.23.2(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/language-xml@0.37.1(tree-sitter@0.25.1)':
-    dependencies:
-      '@tree-sitter-grammars/tree-sitter-xml': 0.7.0(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-      - tree_sitter
-
-  '@builtbygio/language-yaml@0.34.1(tree-sitter@0.25.1)':
-    dependencies:
-      '@tree-sitter-grammars/tree-sitter-yaml': 0.7.1(tree-sitter@0.25.1)
-    transitivePeerDependencies:
-      - tree-sitter
-
-  '@builtbygio/markdown-preview@0.160.5':
-    dependencies:
-      cheerio: 1.2.0
-      dompurify: 3.4.13
-      emoji-images: 0.1.1
-      fs-plus: 3.1.1
-      marked: 4.3.0
-      underscore-plus: 1.7.0
-      yaml-front-matter: 4.1.1
-
-  '@builtbygio/notifications@0.72.6':
-    dependencies:
-      dompurify: 3.4.13
-      fs-plus: 3.1.1
-      marked: 4.3.0
-      moment: 2.30.1
-      semver: 5.7.2
-      stacktrace-parser: 0.1.11
-      temp: 0.8.4
 
   '@builtbygio/nsfw@1.0.28':
     dependencies:
@@ -4622,14 +4795,6 @@ snapshots:
   '@builtbygio/oniguruma@7.2.3':
     dependencies:
       nan: 2.28.0
-
-  '@builtbygio/open-on-github@1.3.4': {}
-
-  '@builtbygio/package-generator@1.3.2':
-    dependencies:
-      fs-plus: 3.1.1
-      temp: 0.8.4
-      underscore-plus: 1.7.0
 
   '@builtbygio/pathwatcher@8.1.2':
     dependencies:
@@ -4653,77 +4818,10 @@ snapshots:
       fs-plus: 3.1.1
       yargs: 3.32.0
 
-  '@builtbygio/settings-view@0.261.15':
-    dependencies:
-      async: 3.2.6
-      dompurify: 3.4.13
-      etch: 0.9.0
-      fs-plus: 3.1.1
-      fuzzaldrin: 2.1.0
-      glob: 4.3.1
-      hosted-git-info: 2.8.9
-      marked: 4.3.0
-      season: '@builtbygio/season@6.0.2'
-      semver: 5.7.2
-      underscore-plus: 1.7.0
-
-  '@builtbygio/snippets@1.5.6':
-    dependencies:
-      async: 0.2.10
-      atom-select-list: '@builtbygio/atom-select-list@0.8.2'
-      fs-plus: 3.1.1
-      loophole: 1.1.0
-      pegjs: 0.8.0
-      scoped-property-store: 0.17.0
-      season: '@builtbygio/season@6.0.2'
-      temp: 0.8.4
-      underscore-plus: 1.7.0
-
-  '@builtbygio/spell-check@0.77.6(supports-color@8.1.1)':
-    dependencies:
-      atom-pathspec: '@builtbygio/atom-pathspec@0.0.0'
-      atom-select-list: '@builtbygio/atom-select-list@0.8.2'
-      debug: 4.4.1(supports-color@8.1.1)
-      multi-integer-range: 2.1.0
-      spellchecker: '@builtbygio/spellchecker@3.7.1'
-      spelling-manager: 1.3.0
-      underscore-plus: 1.7.0
-    transitivePeerDependencies:
-      - supports-color
-
   '@builtbygio/spellchecker@3.7.1':
     dependencies:
       any-promise: 1.3.0
       nan: 2.28.0
-
-  '@builtbygio/status-bar@1.8.20':
-    dependencies:
-      fs-plus: 3.1.1
-      grim: 2.0.3
-      underscore-plus: 1.7.0
-
-  '@builtbygio/styleguide@0.49.15':
-    dependencies:
-      atom-select-list: '@builtbygio/atom-select-list@0.8.2'
-      dedent: 0.7.0
-      etch: 0.9.0
-
-  '@builtbygio/symbols-view@0.118.7':
-    dependencies:
-      async: 0.2.10
-      atom-select-list: '@builtbygio/atom-select-list@0.8.2'
-      ctags: '@builtbygio/ctags@3.1.0'
-      fs-plus: 3.1.1
-      fuzzaldrin: 2.1.0
-      humanize-plus: 1.8.2
-      temp: 0.8.4
-      underscore-plus: 1.7.0
-
-  '@builtbygio/tabs@0.110.5':
-    dependencies:
-      fs-plus: 3.1.1
-      temp: 0.8.4
-      underscore-plus: 1.7.0
 
   '@builtbygio/text-buffer@13.18.6':
     dependencies:
@@ -4740,24 +4838,6 @@ snapshots:
       superstring: link:packages/superstring
       underscore-plus: 1.7.0
       winattr: 3.0.0
-
-  '@builtbygio/timecop@0.36.6':
-    dependencies:
-      dedent: 0.7.0
-      etch: 0.12.8
-      underscore-plus: 1.7.0
-
-  '@builtbygio/tree-view@0.229.6':
-    dependencies:
-      fs-plus: 3.1.1
-      minimatch: 3.1.4
-      pathwatcher: '@builtbygio/pathwatcher@8.1.2'
-      temp: 0.9.2
-      underscore-plus: 1.7.0
-
-  '@builtbygio/whitespace@0.37.10': {}
-
-  '@builtbygio/wrap-guide@0.41.2': {}
 
   '@derekstride/tree-sitter-sql@0.3.11(tree-sitter@0.25.1)':
     dependencies:
@@ -5043,8 +5123,6 @@ snapshots:
       ieee754: 1.2.1
 
   bytes@3.1.0: {}
-
-  bytes@3.1.2: {}
 
   call-bind-apply-helpers@1.0.2:
     dependencies:
@@ -5471,7 +5549,7 @@ snapshots:
   dugite@1.110.0(patch_hash=65930157110b31cf6b61bddb57683724eceba071a6e47fbf806c3d875b6b4c2e):
     dependencies:
       checksum: 0.1.1
-      mkdirp: 0.5.6
+      mkdirp: 0.5.1
       progress: 2.0.3
       rimraf: 2.7.1
       tar: 7.5.21
@@ -5772,7 +5850,7 @@ snapshots:
       eslint: 5.4.0(supports-color@8.1.1)
       has: 1.0.4
       jsx-ast-utils: 2.4.1
-      prop-types: 15.8.1
+      prop-types: 15.7.2
 
   eslint-plugin-react@7.12.4(eslint@5.4.0(supports-color@8.1.1)):
     dependencies:
@@ -5782,7 +5860,7 @@ snapshots:
       has: 1.0.4
       jsx-ast-utils: 2.4.1
       object.fromentries: 2.0.8
-      prop-types: 15.8.1
+      prop-types: 15.7.2
       resolve: 1.22.10
 
   eslint-plugin-standard@4.0.2(eslint@5.4.0(supports-color@8.1.1)):
@@ -6723,7 +6801,7 @@ snapshots:
     dependencies:
       debug: 2.6.9(supports-color@8.1.1)
       md5: 2.3.0
-      mkdirp: 0.5.6
+      mkdirp: 0.5.1
       mocha: 10.8.2
       strip-ansi: 4.0.0
       xml: 1.0.1
@@ -7117,7 +7195,7 @@ snapshots:
       expand-template: 2.0.3
       github-from-package: 0.0.0
       minimist: 1.2.8
-      mkdirp: 0.5.6
+      mkdirp: 0.5.1
       napi-build-utils: 1.0.2
       node-abi: 2.30.1
       noop-logger: 0.1.1
@@ -7148,12 +7226,6 @@ snapshots:
   progress@2.0.3: {}
 
   prop-types@15.7.2:
-    dependencies:
-      loose-envify: 1.4.0
-      object-assign: 4.1.1
-      react-is: 16.13.1
-
-  prop-types@15.8.1:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
@@ -7209,7 +7281,7 @@ snapshots:
 
   react-input-autosize@2.2.2(react@18.3.1):
     dependencies:
-      prop-types: 15.8.1
+      prop-types: 15.7.2
       react: 18.3.1
 
   react-is@16.13.1: {}
@@ -7217,7 +7289,7 @@ snapshots:
   react-select@1.2.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       classnames: 2.2.6
-      prop-types: 15.8.1
+      prop-types: 15.7.2
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-input-autosize: 2.2.2(react@18.3.1)
@@ -7225,7 +7297,7 @@ snapshots:
   react-tabs@3.2.3(react@18.3.1):
     dependencies:
       clsx: 1.2.1
-      prop-types: 15.8.1
+      prop-types: 15.7.2
       react: 18.3.1
 
   react@18.3.1:
@@ -7704,7 +7776,7 @@ snapshots:
   tar-fs@1.16.6:
     dependencies:
       chownr: 1.1.4
-      mkdirp: 0.5.6
+      mkdirp: 0.5.1
       pump: 1.0.3
       tar-stream: 1.6.2
 

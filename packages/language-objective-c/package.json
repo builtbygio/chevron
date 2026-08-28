@@ -1,0 +1,19 @@
+{
+  "name": "@builtbygio/language-objective-c",
+  "version": "0.17.1",
+  "description": "Objective-C language support in Atom",
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-objective-c",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-objective-c.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atom/language-objective-c/issues"
+  }
+}

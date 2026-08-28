@@ -1,0 +1,44 @@
+{
+  "name": "Less",
+  "scopeName": "source.css.less",
+  "type": "tree-sitter",
+  "parser": "tree-sitter-less",
+  "injectionRegex": "less",
+  "fileTypes": [
+    "less",
+    "less.erb"
+  ],
+  "comments": {
+    "start": "/*",
+    "end": "*/"
+  },
+  "folds": [
+    {
+      "type": "block"
+    },
+    {
+      "type": "comment"
+    }
+  ],
+  "scopes": {
+    "stylesheet": "source.css.less",
+    "comment, js_comment": "comment.block.css",
+    "tag_name": "entity.name.tag.css",
+    "class_name": "entity.other.attribute-name.class.css",
+    "id_name": "entity.other.attribute-name.id.css",
+    "property_name": "support.type.property-name.css",
+    "plain_value, property_value": "support.constant.property-value.css",
+    "string_value": "string.quoted.css",
+    "color_value": "constant.other.color.css",
+    "integer_value, float_value": "constant.numeric.css",
+    "unit": "keyword.other.unit.css",
+    "variable": "variable.other.less",
+    "function_name": "support.function.css",
+    "important": "keyword.other.important.css",
+    "at_keyword": "keyword.control.at-rule.css",
+    "\"{\"": "punctuation.section.property-list.begin.css",
+    "\"}\"": "punctuation.section.property-list.end.css",
+    "\":\"": "punctuation.separator.key-value.css",
+    "\";\"": "punctuation.terminator.rule.css"
+  }
+}

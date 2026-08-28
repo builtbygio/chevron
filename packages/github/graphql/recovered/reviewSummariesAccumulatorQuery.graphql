@@ -1,0 +1,67 @@
+query reviewSummariesAccumulatorQuery(
+  $url: URI!
+  $reviewCount: Int!
+  $reviewCursor: String
+) {
+  resource(url: $url) {
+    __typename
+    ... on PullRequest {
+      ...reviewSummariesAccumulator_pullRequest_2zzc96
+    }
+    ... on Node {
+      id
+    }
+  }
+}
+
+fragment emojiReactionsController_reactable on Reactable {
+  id
+  ...emojiReactionsView_reactable
+}
+
+fragment emojiReactionsView_reactable on Reactable {
+  id
+  reactionGroups {
+    content
+    viewerHasReacted
+    users {
+      totalCount
+    }
+  }
+  viewerCanReact
+}
+
+fragment reviewSummariesAccumulator_pullRequest_2zzc96 on PullRequest {
+  url
+  reviews(first: $reviewCount, after: $reviewCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        body
+        bodyHTML
+        state
+        submittedAt
+        lastEditedAt
+        url
+        author {
+          __typename
+          login
+          avatarUrl
+          url
+          ... on Node {
+            id
+          }
+        }
+        viewerCanUpdate
+        authorAssociation
+        ...emojiReactionsController_reactable
+        __typename
+      }
+    }
+  }
+}

@@ -1,0 +1,125 @@
+query currentPullRequestContainerQuery(
+  $headOwner: String!
+  $headName: String!
+  $headRef: String!
+  $first: Int!
+  $checkSuiteCount: Int!
+  $checkSuiteCursor: String
+  $checkRunCount: Int!
+  $checkRunCursor: String
+) {
+  repository(owner: $headOwner, name: $headName) {
+    ref(qualifiedName: $headRef) {
+      associatedPullRequests(first: $first, states: [OPEN]) {
+        totalCount
+        nodes {
+          ...issueishListController_results_1oGSNs
+          id
+        }
+      }
+      id
+    }
+    id
+  }
+}
+
+fragment checkRunView_checkRun on CheckRun {
+  name
+  status
+  conclusion
+  title
+  summary
+  permalink
+  detailsUrl
+}
+
+fragment checkRunsAccumulator_checkSuite_Rvfr1 on CheckSuite {
+  id
+  checkRuns(first: $checkRunCount, after: $checkRunCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        status
+        conclusion
+        ...checkRunView_checkRun
+        __typename
+      }
+    }
+  }
+}
+
+fragment checkSuiteView_checkSuite on CheckSuite {
+  app {
+    name
+    id
+  }
+  status
+  conclusion
+}
+
+fragment checkSuitesAccumulator_commit_1oGSNs on Commit {
+  id
+  checkSuites(first: $checkSuiteCount, after: $checkSuiteCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        status
+        conclusion
+        ...checkSuiteView_checkSuite
+        ...checkRunsAccumulator_checkSuite_Rvfr1
+        __typename
+      }
+    }
+  }
+}
+
+fragment issueishListController_results_1oGSNs on PullRequest {
+  number
+  title
+  url
+  author {
+    __typename
+    login
+    avatarUrl
+    ... on Node {
+      id
+    }
+  }
+  createdAt
+  headRefName
+  repository {
+    id
+    name
+    owner {
+      __typename
+      login
+      id
+    }
+  }
+  commits(last: 1) {
+    nodes {
+      commit {
+        status {
+          contexts {
+            id
+            state
+          }
+          id
+        }
+        ...checkSuitesAccumulator_commit_1oGSNs
+        id
+      }
+      id
+    }
+  }
+}

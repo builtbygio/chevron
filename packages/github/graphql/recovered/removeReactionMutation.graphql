@@ -1,0 +1,17 @@
+mutation removeReactionMutation(
+  $input: RemoveReactionInput!
+) {
+  removeReaction(input: $input) {
+    subject {
+      __typename
+      reactionGroups {
+        content
+        viewerHasReacted
+        users {
+          totalCount
+        }
+      }
+      id
+    }
+  }
+}

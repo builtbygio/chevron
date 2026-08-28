@@ -1,0 +1,9 @@
+mutation submitPrReviewMutation(
+  $input: SubmitPullRequestReviewInput!
+) {
+  submitPullRequestReview(input: $input) {
+    pullRequestReview {
+      id
+    }
+  }
+}

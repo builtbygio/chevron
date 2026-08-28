@@ -1,0 +1,26 @@
+{
+  "name": "@builtbygio/language-csharp",
+  "version": "1.3.1",
+  "description": "C# language support in Chevron",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-csharp.git"
+  },
+  "keywords": [
+    "C#",
+    "csharp",
+    ".Net",
+    "tree-sitter"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/builtbygio/chevron/issues"
+  },
+  "engines": {
+    "atom": ">0.50.0",
+    "chevron": "*"
+  },
+  "dependencies": {
+    "tree-sitter-c-sharp": "0.23.5"
+  }
+}

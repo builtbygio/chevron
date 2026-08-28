@@ -88,22 +88,27 @@ describe('patch inventory', () => {
     const pkg = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     );
-    assert.match(
+    // spell-check is an in-repo editor package now; assert the vendored copy
+    // is the one that dropped natural, rather than the pin string.
+    assert.strictEqual(
       pkg.dependencies['spell-check'],
-      /^npm:@builtbygio\/spell-check@0\.77\.(?:[6-9]|\d{2,})/,
-      'needs the release that dropped natural'
+      'workspace:@builtbygio/spell-check@*'
+    );
+    // spell-check is vendored now, so the source of truth is in-repo.
+    const vendored = JSON.parse(
+      fs.readFileSync(
+        path.join(ROOT, 'packages', 'spell-check', 'package.json'),
+        'utf8'
+      )
+    );
+    assert.ok(
+      !vendored.dependencies.natural,
+      'vendored spell-check must not depend on natural'
     );
 
     // Installed-tree facts: only run where the root package.json is installed.
     const modules = path.join(ROOT, 'node_modules');
     if (!fs.existsSync(path.join(modules, 'spell-check'))) return;
-    const sc = JSON.parse(
-      fs.readFileSync(path.join(modules, 'spell-check', 'package.json'), 'utf8')
-    );
-    assert.ok(
-      !sc.dependencies.natural,
-      'spell-check must not depend on natural'
-    );
     assert.ok(
       !fs.existsSync(path.join(modules, 'log4js')),
       'log4js entered the tree only through natural@0.4.0'

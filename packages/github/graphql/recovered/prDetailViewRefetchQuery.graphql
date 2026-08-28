@@ -1,0 +1,438 @@
+query prDetailViewRefetchQuery(
+  $repoId: ID!
+  $issueishId: ID!
+  $timelineCount: Int!
+  $timelineCursor: String
+  $commitCount: Int!
+  $commitCursor: String
+  $checkSuiteCount: Int!
+  $checkSuiteCursor: String
+  $checkRunCount: Int!
+  $checkRunCursor: String
+) {
+  repository: node(id: $repoId) {
+    __typename
+    ...prDetailView_repository
+    id
+  }
+  pullRequest: node(id: $issueishId) {
+    __typename
+    ...prDetailView_pullRequest_1UVrY8
+    id
+  }
+}
+
+fragment checkRunView_checkRun on CheckRun {
+  name
+  status
+  conclusion
+  title
+  summary
+  permalink
+  detailsUrl
+}
+
+fragment checkRunsAccumulator_checkSuite_Rvfr1 on CheckSuite {
+  id
+  checkRuns(first: $checkRunCount, after: $checkRunCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        status
+        conclusion
+        ...checkRunView_checkRun
+        __typename
+      }
+    }
+  }
+}
+
+fragment checkSuiteView_checkSuite on CheckSuite {
+  app {
+    name
+    id
+  }
+  status
+  conclusion
+}
+
+fragment checkSuitesAccumulator_commit_1oGSNs on Commit {
+  id
+  checkSuites(first: $checkSuiteCount, after: $checkSuiteCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        status
+        conclusion
+        ...checkSuiteView_checkSuite
+        ...checkRunsAccumulator_checkSuite_Rvfr1
+        __typename
+      }
+    }
+  }
+}
+
+fragment commitCommentThreadView_item on PullRequestCommitCommentThread {
+  commit {
+    oid
+    id
+  }
+  comments(first: 100) {
+    edges {
+      node {
+        id
+        ...commitCommentView_item
+      }
+    }
+  }
+}
+
+fragment commitCommentView_item on CommitComment {
+  author {
+    __typename
+    login
+    avatarUrl
+    ... on Node {
+      id
+    }
+  }
+  commit {
+    oid
+    id
+  }
+  bodyHTML
+  createdAt
+  path
+  position
+}
+
+fragment commitView_commit on Commit {
+  author {
+    name
+    avatarUrl
+    user {
+      login
+      id
+    }
+  }
+  committer {
+    name
+    avatarUrl
+    user {
+      login
+      id
+    }
+  }
+  authoredByCommitter
+  sha: oid
+  message
+  messageHeadlineHTML
+  commitUrl
+}
+
+fragment commitsView_nodes on PullRequestCommit {
+  commit {
+    id
+    author {
+      name
+      user {
+        login
+        id
+      }
+    }
+    ...commitView_commit
+  }
+}
+
+fragment crossReferencedEventView_item on CrossReferencedEvent {
+  id
+  isCrossRepository
+  source {
+    __typename
+    ... on Issue {
+      number
+      title
+      url
+      issueState: state
+    }
+    ... on PullRequest {
+      number
+      title
+      url
+      prState: state
+    }
+    ... on RepositoryNode {
+      repository {
+        name
+        isPrivate
+        owner {
+          __typename
+          login
+          id
+        }
+        id
+      }
+    }
+    ... on Node {
+      id
+    }
+  }
+}
+
+fragment crossReferencedEventsView_nodes on CrossReferencedEvent {
+  id
+  referencedAt
+  isCrossRepository
+  actor {
+    __typename
+    login
+    avatarUrl
+    ... on Node {
+      id
+    }
+  }
+  source {
+    __typename
+    ... on RepositoryNode {
+      repository {
+        name
+        owner {
+          __typename
+          login
+          id
+        }
+        id
+      }
+    }
+    ... on Node {
+      id
+    }
+  }
+  ...crossReferencedEventView_item
+}
+
+fragment emojiReactionsController_reactable on Reactable {
+  id
+  ...emojiReactionsView_reactable
+}
+
+fragment emojiReactionsView_reactable on Reactable {
+  id
+  reactionGroups {
+    content
+    viewerHasReacted
+    users {
+      totalCount
+    }
+  }
+  viewerCanReact
+}
+
+fragment headRefForcePushedEventView_issueish on PullRequest {
+  headRefName
+  headRepositoryOwner {
+    __typename
+    login
+    id
+  }
+  repository {
+    owner {
+      __typename
+      login
+      id
+    }
+    id
+  }
+}
+
+fragment headRefForcePushedEventView_item on HeadRefForcePushedEvent {
+  actor {
+    __typename
+    avatarUrl
+    login
+    ... on Node {
+      id
+    }
+  }
+  beforeCommit {
+    oid
+    id
+  }
+  afterCommit {
+    oid
+    id
+  }
+  createdAt
+}
+
+fragment issueCommentView_item on IssueComment {
+  author {
+    __typename
+    avatarUrl
+    login
+    ... on Node {
+      id
+    }
+  }
+  bodyHTML
+  createdAt
+  url
+}
+
+fragment mergedEventView_item on MergedEvent {
+  actor {
+    __typename
+    avatarUrl
+    login
+    ... on Node {
+      id
+    }
+  }
+  commit {
+    oid
+    id
+  }
+  mergeRefName
+  createdAt
+}
+
+fragment prCommitView_item on Commit {
+  committer {
+    avatarUrl
+    name
+    date
+  }
+  messageHeadline
+  messageBody
+  shortSha: abbreviatedOid
+  sha: oid
+  url
+}
+
+fragment prCommitsView_pullRequest_38TpXw on PullRequest {
+  url
+  commits(first: $commitCount, after: $commitCursor) {
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        commit {
+          id
+          ...prCommitView_item
+        }
+        id
+        __typename
+      }
+    }
+  }
+}
+
+fragment prDetailView_pullRequest_1UVrY8 on PullRequest {
+  id
+  __typename
+  url
+  isCrossRepository
+  changedFiles
+  state
+  number
+  title
+  bodyHTML
+  baseRefName
+  headRefName
+  countedCommits: commits {
+    totalCount
+  }
+  author {
+    __typename
+    login
+    avatarUrl
+    url
+    ... on Node {
+      id
+    }
+  }
+  ...prCommitsView_pullRequest_38TpXw
+  ...prStatusesView_pullRequest_1oGSNs
+  ...prTimelineController_pullRequest_3D8CP9
+  ...emojiReactionsController_reactable
+}
+
+fragment prDetailView_repository on Repository {
+  id
+  name
+  owner {
+    __typename
+    login
+    id
+  }
+}
+
+fragment prStatusContextView_context on StatusContext {
+  context
+  description
+  state
+  targetUrl
+}
+
+fragment prStatusesView_pullRequest_1oGSNs on PullRequest {
+  id
+  recentCommits: commits(last: 1) {
+    edges {
+      node {
+        commit {
+          status {
+            state
+            contexts {
+              id
+              state
+              ...prStatusContextView_context
+            }
+            id
+          }
+          ...checkSuitesAccumulator_commit_1oGSNs
+          id
+        }
+        id
+      }
+    }
+  }
+}
+
+fragment prTimelineController_pullRequest_3D8CP9 on PullRequest {
+  url
+  ...headRefForcePushedEventView_issueish
+  timelineItems(first: $timelineCount, after: $timelineCursor) {
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        __typename
+        ...commitsView_nodes
+        ...issueCommentView_item
+        ...mergedEventView_item
+        ...headRefForcePushedEventView_item
+        ...commitCommentThreadView_item
+        ...crossReferencedEventsView_nodes
+        ... on Node {
+          id
+        }
+      }
+    }
+  }
+}

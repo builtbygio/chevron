@@ -1,0 +1,27 @@
+{
+  "name": "@builtbygio/autocomplete-snippets",
+  "main": "./lib/autocomplete-snippets",
+  "version": "1.12.3",
+  "description": "Adds snippets to autocomplete+ suggestions",
+  "repository": "https://github.com/atom/autocomplete-snippets",
+  "license": "MIT",
+  "engines": {
+    "atom": ">=0.174.0 <2.0.0",
+    "chevron": "*"
+  },
+  "dependencies": {},
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "provide"
+      }
+    }
+  },
+  "consumedServices": {
+    "snippets": {
+      "versions": {
+        "0.1.0": "consumeSnippets"
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@builtbygio/language-json",
+  "version": "1.0.6",
+  "description": "JSON language support in Atom",
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-json",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-json.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atom/language-json/issues"
+  },
+  "dependencies": {
+    "tree-sitter-json": "0.24.8"
+  }
+}

@@ -1,0 +1,12 @@
+mutation updatePrReviewCommentMutation(
+  $input: UpdatePullRequestReviewCommentInput!
+) {
+  updatePullRequestReviewComment(input: $input) {
+    pullRequestReviewComment {
+      id
+      lastEditedAt
+      body
+      bodyHTML
+    }
+  }
+}

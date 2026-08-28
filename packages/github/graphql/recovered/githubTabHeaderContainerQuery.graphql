@@ -1,0 +1,9 @@
+query githubTabHeaderContainerQuery {
+  viewer {
+    name
+    email
+    avatarUrl
+    login
+    id
+  }
+}

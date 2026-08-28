@@ -1,0 +1,19 @@
+{
+  "name": "@builtbygio/autocomplete-chevron-api",
+  "version": "0.10.10",
+  "description": "Chevron API autocompletions",
+  "main": "./lib/main",
+  "license": "MIT",
+  "repository": "https://github.com/builtbygio/autocomplete-chevron-api",
+  "engines": {
+    "atom": ">=0.174.0 <2.0.0",
+    "chevron": "*"
+  },
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "getProvider"
+      }
+    }
+  }
+}

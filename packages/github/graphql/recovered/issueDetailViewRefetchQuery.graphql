@@ -1,0 +1,162 @@
+query issueDetailViewRefetchQuery(
+  $repoId: ID!
+  $issueishId: ID!
+  $timelineCount: Int!
+  $timelineCursor: String
+) {
+  repository: node(id: $repoId) {
+    __typename
+    ...issueDetailView_repository
+    id
+  }
+  issue: node(id: $issueishId) {
+    __typename
+    ...issueDetailView_issue_3D8CP9
+    id
+  }
+}
+
+fragment crossReferencedEventView_item on CrossReferencedEvent {
+  id
+  isCrossRepository
+  source {
+    __typename
+    ... on Issue {
+      number
+      title
+      url
+      issueState: state
+    }
+    ... on PullRequest {
+      number
+      title
+      url
+      prState: state
+    }
+    ... on RepositoryNode {
+      repository {
+        name
+        isPrivate
+        owner {
+          __typename
+          login
+          id
+        }
+        id
+      }
+    }
+    ... on Node {
+      id
+    }
+  }
+}
+
+fragment crossReferencedEventsView_nodes on CrossReferencedEvent {
+  id
+  referencedAt
+  isCrossRepository
+  actor {
+    __typename
+    login
+    avatarUrl
+    ... on Node {
+      id
+    }
+  }
+  source {
+    __typename
+    ... on RepositoryNode {
+      repository {
+        name
+        owner {
+          __typename
+          login
+          id
+        }
+        id
+      }
+    }
+    ... on Node {
+      id
+    }
+  }
+  ...crossReferencedEventView_item
+}
+
+fragment emojiReactionsView_reactable on Reactable {
+  id
+  reactionGroups {
+    content
+    viewerHasReacted
+    users {
+      totalCount
+    }
+  }
+  viewerCanReact
+}
+
+fragment issueCommentView_item on IssueComment {
+  author {
+    __typename
+    avatarUrl
+    login
+    ... on Node {
+      id
+    }
+  }
+  bodyHTML
+  createdAt
+  url
+}
+
+fragment issueDetailView_issue_3D8CP9 on Issue {
+  id
+  __typename
+  url
+  state
+  number
+  title
+  bodyHTML
+  author {
+    __typename
+    login
+    avatarUrl
+    url
+    ... on Node {
+      id
+    }
+  }
+  ...issueTimelineController_issue_3D8CP9
+  ...emojiReactionsView_reactable
+}
+
+fragment issueDetailView_repository on Repository {
+  id
+  name
+  owner {
+    __typename
+    login
+    id
+  }
+}
+
+fragment issueTimelineController_issue_3D8CP9 on Issue {
+  url
+  timelineItems(first: $timelineCount, after: $timelineCursor) {
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        __typename
+        ...issueCommentView_item
+        ...crossReferencedEventsView_nodes
+        ... on Node {
+          id
+        }
+      }
+    }
+  }
+}

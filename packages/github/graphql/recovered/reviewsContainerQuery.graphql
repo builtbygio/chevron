@@ -1,0 +1,188 @@
+query reviewsContainerQuery(
+  $repoOwner: String!
+  $repoName: String!
+  $prNumber: Int!
+  $reviewCount: Int!
+  $reviewCursor: String
+  $threadCount: Int!
+  $threadCursor: String
+  $commentCount: Int!
+  $commentCursor: String
+) {
+  repository(owner: $repoOwner, name: $repoName) {
+    ...reviewsController_repository
+    pullRequest(number: $prNumber) {
+      headRefOid
+      ...aggregatedReviewsContainer_pullRequest_qdneZ
+      ...reviewsController_pullRequest
+      id
+    }
+    id
+  }
+  viewer {
+    ...reviewsController_viewer
+    id
+  }
+}
+
+fragment aggregatedReviewsContainer_pullRequest_qdneZ on PullRequest {
+  id
+  ...reviewSummariesAccumulator_pullRequest_2zzc96
+  ...reviewThreadsAccumulator_pullRequest_CKDvj
+}
+
+fragment emojiReactionsController_reactable on Reactable {
+  id
+  ...emojiReactionsView_reactable
+}
+
+fragment emojiReactionsView_reactable on Reactable {
+  id
+  reactionGroups {
+    content
+    viewerHasReacted
+    users {
+      totalCount
+    }
+  }
+  viewerCanReact
+}
+
+fragment prCheckoutController_pullRequest on PullRequest {
+  number
+  headRefName
+  headRepository {
+    name
+    url
+    sshUrl
+    owner {
+      __typename
+      login
+      id
+    }
+    id
+  }
+}
+
+fragment prCheckoutController_repository on Repository {
+  name
+  owner {
+    __typename
+    login
+    id
+  }
+}
+
+fragment reviewCommentsAccumulator_reviewThread_1VbUmL on PullRequestReviewThread {
+  id
+  comments(first: $commentCount, after: $commentCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        author {
+          __typename
+          avatarUrl
+          login
+          url
+          ... on Node {
+            id
+          }
+        }
+        bodyHTML
+        body
+        isMinimized
+        state
+        viewerCanReact
+        viewerCanUpdate
+        path
+        position
+        createdAt
+        lastEditedAt
+        url
+        authorAssociation
+        ...emojiReactionsController_reactable
+        __typename
+      }
+    }
+  }
+}
+
+fragment reviewSummariesAccumulator_pullRequest_2zzc96 on PullRequest {
+  url
+  reviews(first: $reviewCount, after: $reviewCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        body
+        bodyHTML
+        state
+        submittedAt
+        lastEditedAt
+        url
+        author {
+          __typename
+          login
+          avatarUrl
+          url
+          ... on Node {
+            id
+          }
+        }
+        viewerCanUpdate
+        authorAssociation
+        ...emojiReactionsController_reactable
+        __typename
+      }
+    }
+  }
+}
+
+fragment reviewThreadsAccumulator_pullRequest_CKDvj on PullRequest {
+  url
+  reviewThreads(first: $threadCount, after: $threadCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        isResolved
+        resolvedBy {
+          login
+          id
+        }
+        viewerCanResolve
+        viewerCanUnresolve
+        ...reviewCommentsAccumulator_reviewThread_1VbUmL
+        __typename
+      }
+    }
+  }
+}
+
+fragment reviewsController_pullRequest on PullRequest {
+  id
+  ...prCheckoutController_pullRequest
+}
+
+fragment reviewsController_repository on Repository {
+  ...prCheckoutController_repository
+}
+
+fragment reviewsController_viewer on User {
+  id
+  login
+  avatarUrl
+}

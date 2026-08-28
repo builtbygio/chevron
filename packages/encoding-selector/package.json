@@ -1,0 +1,35 @@
+{
+  "name": "@builtbygio/encoding-selector",
+  "version": "0.23.11",
+  "main": "./lib/main",
+  "description": "Select the encoding to use for the current editor with `ctrl-shift-U`.",
+  "license": "MIT",
+  "repository": "https://github.com/atom/encoding-selector",
+  "engines": {
+    "atom": ">=0.141.0",
+    "chevron": "*"
+  },
+  "dependencies": {
+    "atom-select-list": "^0.7.0",
+    "iconv-lite": "^0.4.4",
+    "jschardet": "^1.1.0"
+  },
+  "consumedServices": {
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
+    }
+  },
+  "standard": {
+    "globals": [
+      "atom",
+      "beforeEach",
+      "describe",
+      "expect",
+      "it",
+      "jasmine",
+      "spyOn"
+    ]
+  }
+}

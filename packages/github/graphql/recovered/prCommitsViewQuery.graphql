@@ -1,0 +1,49 @@
+query prCommitsViewQuery(
+  $commitCount: Int!
+  $commitCursor: String
+  $url: URI!
+) {
+  resource(url: $url) {
+    __typename
+    ... on PullRequest {
+      ...prCommitsView_pullRequest_38TpXw
+    }
+    ... on Node {
+      id
+    }
+  }
+}
+
+fragment prCommitView_item on Commit {
+  committer {
+    avatarUrl
+    name
+    date
+  }
+  messageHeadline
+  messageBody
+  shortSha: abbreviatedOid
+  sha: oid
+  url
+}
+
+fragment prCommitsView_pullRequest_38TpXw on PullRequest {
+  url
+  commits(first: $commitCount, after: $commitCursor) {
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        commit {
+          id
+          ...prCommitView_item
+        }
+        id
+        __typename
+      }
+    }
+  }
+}

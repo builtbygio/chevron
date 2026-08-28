@@ -1,0 +1,97 @@
+query reviewThreadsAccumulatorQuery(
+  $url: URI!
+  $threadCount: Int!
+  $threadCursor: String
+  $commentCount: Int!
+) {
+  resource(url: $url) {
+    __typename
+    ... on PullRequest {
+      ...reviewThreadsAccumulator_pullRequest_3dVVow
+    }
+    ... on Node {
+      id
+    }
+  }
+}
+
+fragment emojiReactionsController_reactable on Reactable {
+  id
+  ...emojiReactionsView_reactable
+}
+
+fragment emojiReactionsView_reactable on Reactable {
+  id
+  reactionGroups {
+    content
+    viewerHasReacted
+    users {
+      totalCount
+    }
+  }
+  viewerCanReact
+}
+
+fragment reviewCommentsAccumulator_reviewThread_1UlnwR on PullRequestReviewThread {
+  id
+  comments(first: $commentCount) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        author {
+          __typename
+          avatarUrl
+          login
+          url
+          ... on Node {
+            id
+          }
+        }
+        bodyHTML
+        body
+        isMinimized
+        state
+        viewerCanReact
+        viewerCanUpdate
+        path
+        position
+        createdAt
+        lastEditedAt
+        url
+        authorAssociation
+        ...emojiReactionsController_reactable
+        __typename
+      }
+    }
+  }
+}
+
+fragment reviewThreadsAccumulator_pullRequest_3dVVow on PullRequest {
+  url
+  reviewThreads(first: $threadCount, after: $threadCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        isResolved
+        resolvedBy {
+          login
+          id
+        }
+        viewerCanResolve
+        viewerCanUnresolve
+        ...reviewCommentsAccumulator_reviewThread_1UlnwR
+        __typename
+      }
+    }
+  }
+}

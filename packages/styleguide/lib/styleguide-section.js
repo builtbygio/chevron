@@ -1,0 +1,93 @@
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var styleguide_section_exports = {};
+__export(styleguide_section_exports, {
+  default: () => StyleguideSection
+});
+module.exports = __toCommonJS(styleguide_section_exports);
+var import_etch = __toESM(require("etch"));
+class StyleguideSection {
+  constructor(props, children) {
+    this.collapsed = props.collapsed;
+    this.title = props.title;
+    this.name = props.name;
+    this.children = children;
+    import_etch.default.initialize(this);
+    if (props.onDidInitialize) {
+      props.onDidInitialize(this);
+    }
+  }
+  render() {
+    if (this.loaded) {
+      let className = "bordered";
+      if (this.collapsed) {
+        className += " collapsed";
+      }
+      return /* @__PURE__ */ import_etch.default.dom("section", { className, dataset: { name: this.name } }, /* @__PURE__ */ import_etch.default.dom("h1", { className: "section-heading", onclick: () => this.toggle() }, this.title), this.children);
+    } else {
+      return /* @__PURE__ */ import_etch.default.dom("section", { className: "bordered collapsed", dataset: { name: this.name } }, /* @__PURE__ */ import_etch.default.dom("h1", { className: "section-heading", onclick: () => this.toggle() }, this.title));
+    }
+  }
+  update(props, children) {
+    if (props.title) {
+      this.title = props.title;
+    }
+    if (props.name) {
+      this.name = props.name;
+    }
+    if (children) {
+      this.children = children;
+    }
+    if (props.didExpandOrCollapseSection) {
+      this.didExpandOrCollapseSection = props.onDidExpandOrCollapseSection;
+    }
+    return import_etch.default.update(this);
+  }
+  toggle() {
+    return this.collapsed ? this.expand() : this.collapse();
+  }
+  expand() {
+    this.collapsed = false;
+    this.loaded = true;
+    return import_etch.default.update(this);
+  }
+  collapse() {
+    this.collapsed = true;
+    return import_etch.default.update(this);
+  }
+}
+
+// Chevron: Node require() interop for default-only esbuild ESM modules
+if (module.exports && module.exports.__esModule && module.exports.default != null) {
+  var __keys = Object.keys(module.exports).filter(function (k) {
+    return k !== '__esModule' && k !== 'default';
+  });
+  if (__keys.length === 0) {
+    module.exports = module.exports.default;
+  }
+}

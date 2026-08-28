@@ -40,7 +40,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | Registry | **Pulsar** (`https://api.pulsar-edit.dev`); `CPM_REGISTRY_URL` override |
 | Bootstrap | **pnpm workspaces** + `@electron/rebuild` via `./script/bootstrap-modern` |
 | CI | macOS x64/arm64, Linux x64/arm64 (packages + smoke), Windows x64 |
-| Catalog | **31** `workspace:@builtbygio/<id>@*` + **83** `npm:@builtbygio/<id>@ver`; **0** git SHA pins |
+| Catalog | **94** editor packages, all `workspace:@builtbygio/<id>@*` in `packages/`. **18** owned libs/natives stay `npm:@builtbygio/<id>@ver`. **0** git SHA pins |
 | Default themes | **One Dark** (`one-dark-ui` / `one-dark-syntax`). `chevron-dark-*` stays bundled |
 | Package host v2 | Spine landed; `core.packageHostV2` **default false** |
 
@@ -201,6 +201,11 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
 
 - **Fixed in #108:** empty tree-view — `collectDefaultRoots` used `atomApplication.windows` (never set); must use `getAllWindows()`. `/tmp` projects hid this. Keep `document-register-element` (contextIsolation); do not Grim-wrap `registerElement`.  
 - Jasmine harness still defines `window.atom` for ~7500 spec references. Product `require('atom')` is `MODULE_NOT_FOUND`.
+
+**Catalog is vendored** (2026-08-28): all 94 editor packages live in `packages/` as
+`workspace:@builtbygio/<id>@*`. There is no publish step and no pin to drift. The 18 owned
+libs/natives (`first-mate`, `text-buffer`, `keytar`, …) stay npm pins — they are real libraries with
+native builds. The 30 `builtbygio/*` package repos are now dead; archive them.
 
 **Community packages: never** (owner, 2026-08-28). Not deferred — cancelled. See
 `docs/decisions/package-ecosystem-strategy.md`. This makes removable, none of it done yet: the 65

@@ -1,0 +1,25 @@
+{
+  "name": "@builtbygio/language-css",
+  "description": "CSS support in Atom",
+  "keywords": [
+    "tree-sitter"
+  ],
+  "version": "0.45.6",
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-css",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-css.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atom/language-css/issues"
+  },
+  "dependencies": {
+    "tree-sitter-css": "0.23.2"
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "name": "Java",
+  "scopeName": "source.java",
+  "type": "tree-sitter",
+  "parser": "tree-sitter-java",
+  "fileTypes": [
+    "java"
+  ],
+  "folds": [
+    {
+      "type": [
+        "comment",
+        "class_body",
+        "enum_body",
+        "interface_body",
+        "annotation_type_body",
+        "module_body",
+        "constructor_body",
+        "block",
+        "switch_block"
+      ]
+    }
+  ],
+  "comments": {
+    "start": "// "
+  },
+  "scopes": {
+    "program": "source.java",
+    "comment": "comment.block",
+    "\"assert\",\n\"break\",\n\"case\",\n\"catch\",\n\"continue\",\n\"default\",\n\"do\",\n\"else\",\n\"finally\",\n\"for\",\n\"if\",\n\"new\",\n\"return\",\n\"switch\",\n\"throw\",\n\"try\",\n\"while\"": "keyword.control",
+    "\"const\",\n\"goto\"": "keyword.reserved",
+    "ternary_expression > \"?\",\nternary_expression > \":\"": "keyword.control.ternary",
+    "\"instanceof\"": "keyword.operator.instanceof",
+    "\"=\"": "keyword.operator.assignment",
+    "\"==\",\n\"!=\",\n\"<=\",\n\">=\",\n\">\",\n\"<\"": "keyword.operator.comparison",
+    "\"!\",\n\"&&\",\n\"||\"": "keyword.operator.logical",
+    "\"-\",\n\"+\",\n\"*\",\n\"/\",\n\"%\",\n\"-=\",\n\"+=\",\n\"*=\",\n\"/=\",\n\"%=\",\n\"++\",\n\"--\"": "keyword.operator.arithmetic",
+    "\"&\",\n\"|\",\n\"^\",\n\"~\",\n\"&=\",\n\"|=\",\n\"^=\",\n\"<<\",\n\">>\",\n\">>>\",\n\"<<=\",\n\">>=\",\n\">>>=\"": "keyword.operator.bitwise",
+    "\".\"": "punctuation.separator.period",
+    "\",\"": "punctuation.separator.delimiter",
+    "\";\"": "punctuation.terminator.statement",
+    "\"[\"": "punctuation.bracket.square",
+    "\"]\"": "punctuation.bracket.square",
+    "\"{\"": "punctuation.bracket.curly",
+    "\"}\"": "punctuation.bracket.curly",
+    "\"(\"": "punctuation.bracket.round",
+    "\")\"": "punctuation.bracket.round",
+    "this,\nsuper": "variable.language",
+    "null_literal": "constant.language.null",
+    "true,\nfalse": "constant.boolean",
+    "decimal_integer_literal,\nhex_integer_literal,\noctal_integer_literal,\nbinary_integer_literal": "constant.numeric",
+    "decimal_floating_point_literal,\nhex_floating_point_literal": "constant.numeric",
+    "character_literal": "string.quoted.single",
+    "string_literal": "string.quoted.double",
+    "void_type,\nintegral_type,\nfloating_point_type,\nboolean_type,\ntype_identifier,\ntype_parameter > identifier": "storage.type",
+    "type_arguments > \"<\",\ntype_arguments > \">\",\ntype_parameters > \"<\",\ntype_parameters > \">\"": "punctuation.bracket.angle",
+    "type_arguments > wildcard > \"?\"": "storage.type.generic.wildcard",
+    "type_arguments > wildcard > \"extends\"": "storage.modifier.extends",
+    "type_arguments > wildcard > super": "storage.modifier.super",
+    "type_bound > \"extends\"": "storage.modifier.extends",
+    "type_bound > \"&\"": "punctuation.separator.types",
+    "\"public\",\n\"protected\",\n\"private\",\n\"abstract\",\n\"static\",\n\"final\",\n\"strictfp\",\n\"default\",\n\"synchronized\",\n\"native\",\n\"transient\",\n\"volatile\",\n\"threadsafe\"": "storage.modifier",
+    "superclass > \"extends\"": "storage.modifier.extends",
+    "extends_interfaces > \"extends\"": "storage.modifier.extends",
+    "super_interfaces > \"implements\"": "storage.modifier.implements",
+    "static_initializer > \"static\"": "storage.modifier",
+    "package_declaration": "meta.package",
+    "package_declaration > \"package\"": "keyword.other.package",
+    "import_declaration": "meta.import",
+    "import_declaration > \"import\"": "keyword.other.import",
+    "import_declaration > \"static\"": "keyword.other.static",
+    "import_declaration > asterisk > \"*\"": "variable.language.wildcard",
+    "lambda_expression > \"->\"": "storage.type.function.arrow",
+    "catch_type > \"|\"": "punctuation.catch.separator",
+    "class_declaration > \"class\"": "keyword.other.class",
+    "class_declaration > identifier": "entity.name.type.class",
+    "class_declaration > class_body": "meta.class.body",
+    "enum_declaration > \"enum\"": "keyword.other.enum",
+    "enum_declaration > identifier": "entity.name.type.enum",
+    "enum_declaration > enum_body": "meta.enum.body",
+    "enum_constant > identifier": "constant.other.enum",
+    "interface_declaration > \"interface\"": "keyword.other.interface",
+    "interface_declaration > identifier": "entity.name.type.interface",
+    "interface_declaration > interface_body": "meta.interface.body",
+    "annotation_type_declaration > \"@interface\"": "keyword.other.interface.annotated",
+    "annotation_type_declaration > identifier": "entity.name.type.interface.annotated",
+    "annotation_type_declaration > annotation_type_body": "meta.interface.annotated.body",
+    "annotation_type_element_declaration > identifier": "entity.name.function",
+    "marker_annotation": "meta.declaration.annotation",
+    "marker_annotation > \"@\"": "punctuation.definition.annotation",
+    "marker_annotation > identifier,\nmarker_annotation > scoped_identifier > identifier": "storage.type.annotation",
+    "annotation": "meta.declaration.annotation",
+    "annotation > \"@\"": "punctuation.definition.annotation",
+    "annotation > identifier,\nannotation > scoped_identifier > identifier": "storage.type.annotation",
+    "element_value_pair > identifier": "variable.other.annotation.element",
+    "method_declaration": "meta.method",
+    "method_declaration > identifier": "entity.name.function",
+    "method_declaration > block": "meta.method.body",
+    "constructor_declaration": "meta.constructor",
+    "constructor_declaration > identifier": "entity.name.function",
+    "constructor_body": "meta.constructor.body",
+    "throws > \"throws\"": "storage.modifier.throws",
+    "spread_parameter > \"...\"": "punctuation.definition.parameters.varargs",
+    "method_invocation > method_invocation_name > identifier": "entity.name.function",
+    "method_reference > \"::\"": "keyword.control.method",
+    "method_reference > \"new\",\nmethod_reference > identifier:nth-child(2)": "entity.name.function",
+    "field_access > identifier,\nmethod_reference > identifier,\nmethod_invocation > identifier": [
+      {
+        "match": "^[A-Z][A-Z0-9_\\$]+$",
+        "scopes": "constant.other"
+      },
+      {
+        "match": "^[A-Z]",
+        "scopes": "storage.type"
+      }
+    ],
+    "identifier": [
+      {
+        "match": "^[A-Z][A-Z0-9_\\$]+$",
+        "scopes": "constant.other"
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+mutation resolveReviewThreadMutation(
+  $input: ResolveReviewThreadInput!
+) {
+  resolveReviewThread(input: $input) {
+    thread {
+      id
+      isResolved
+      viewerCanResolve
+      viewerCanUnresolve
+      resolvedBy {
+        id
+        login
+      }
+    }
+  }
+}

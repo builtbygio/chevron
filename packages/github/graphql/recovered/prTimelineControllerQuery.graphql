@@ -1,0 +1,248 @@
+query prTimelineControllerQuery(
+  $timelineCount: Int!
+  $timelineCursor: String
+  $url: URI!
+) {
+  resource(url: $url) {
+    __typename
+    ... on PullRequest {
+      ...prTimelineController_pullRequest_3D8CP9
+    }
+    ... on Node {
+      id
+    }
+  }
+}
+
+fragment commitCommentThreadView_item on PullRequestCommitCommentThread {
+  commit {
+    oid
+    id
+  }
+  comments(first: 100) {
+    edges {
+      node {
+        id
+        ...commitCommentView_item
+      }
+    }
+  }
+}
+
+fragment commitCommentView_item on CommitComment {
+  author {
+    __typename
+    login
+    avatarUrl
+    ... on Node {
+      id
+    }
+  }
+  commit {
+    oid
+    id
+  }
+  bodyHTML
+  createdAt
+  path
+  position
+}
+
+fragment commitView_commit on Commit {
+  author {
+    name
+    avatarUrl
+    user {
+      login
+      id
+    }
+  }
+  committer {
+    name
+    avatarUrl
+    user {
+      login
+      id
+    }
+  }
+  authoredByCommitter
+  sha: oid
+  message
+  messageHeadlineHTML
+  commitUrl
+}
+
+fragment commitsView_nodes on PullRequestCommit {
+  commit {
+    id
+    author {
+      name
+      user {
+        login
+        id
+      }
+    }
+    ...commitView_commit
+  }
+}
+
+fragment crossReferencedEventView_item on CrossReferencedEvent {
+  id
+  isCrossRepository
+  source {
+    __typename
+    ... on Issue {
+      number
+      title
+      url
+      issueState: state
+    }
+    ... on PullRequest {
+      number
+      title
+      url
+      prState: state
+    }
+    ... on RepositoryNode {
+      repository {
+        name
+        isPrivate
+        owner {
+          __typename
+          login
+          id
+        }
+        id
+      }
+    }
+    ... on Node {
+      id
+    }
+  }
+}
+
+fragment crossReferencedEventsView_nodes on CrossReferencedEvent {
+  id
+  referencedAt
+  isCrossRepository
+  actor {
+    __typename
+    login
+    avatarUrl
+    ... on Node {
+      id
+    }
+  }
+  source {
+    __typename
+    ... on RepositoryNode {
+      repository {
+        name
+        owner {
+          __typename
+          login
+          id
+        }
+        id
+      }
+    }
+    ... on Node {
+      id
+    }
+  }
+  ...crossReferencedEventView_item
+}
+
+fragment headRefForcePushedEventView_issueish on PullRequest {
+  headRefName
+  headRepositoryOwner {
+    __typename
+    login
+    id
+  }
+  repository {
+    owner {
+      __typename
+      login
+      id
+    }
+    id
+  }
+}
+
+fragment headRefForcePushedEventView_item on HeadRefForcePushedEvent {
+  actor {
+    __typename
+    avatarUrl
+    login
+    ... on Node {
+      id
+    }
+  }
+  beforeCommit {
+    oid
+    id
+  }
+  afterCommit {
+    oid
+    id
+  }
+  createdAt
+}
+
+fragment issueCommentView_item on IssueComment {
+  author {
+    __typename
+    avatarUrl
+    login
+    ... on Node {
+      id
+    }
+  }
+  bodyHTML
+  createdAt
+  url
+}
+
+fragment mergedEventView_item on MergedEvent {
+  actor {
+    __typename
+    avatarUrl
+    login
+    ... on Node {
+      id
+    }
+  }
+  commit {
+    oid
+    id
+  }
+  mergeRefName
+  createdAt
+}
+
+fragment prTimelineController_pullRequest_3D8CP9 on PullRequest {
+  url
+  ...headRefForcePushedEventView_issueish
+  timelineItems(first: $timelineCount, after: $timelineCursor) {
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        __typename
+        ...commitsView_nodes
+        ...issueCommentView_item
+        ...mergedEventView_item
+        ...headRefForcePushedEventView_item
+        ...commitCommentThreadView_item
+        ...crossReferencedEventsView_nodes
+        ... on Node {
+          id
+        }
+      }
+    }
+  }
+}

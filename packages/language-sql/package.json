@@ -1,0 +1,25 @@
+{
+  "name": "@builtbygio/language-sql",
+  "version": "0.27.1",
+  "description": "SQL language support in Chevron",
+  "keywords": [
+    "tree-sitter"
+  ],
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-sql",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-sql.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/builtbygio/chevron/issues"
+  },
+  "dependencies": {
+    "@derekstride/tree-sitter-sql": "0.3.11"
+  }
+}

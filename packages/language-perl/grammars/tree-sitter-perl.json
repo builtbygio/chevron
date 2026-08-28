@@ -1,0 +1,52 @@
+{
+  "name": "Perl",
+  "scopeName": "source.perl",
+  "type": "tree-sitter",
+  "parser": "tree-sitter-perl",
+  "injectionRegex": "perl",
+  "firstLineRegex": [
+    "^#!.*\\bperl\\b",
+    "vim\\b.*\\bset\\b.*\\b(filetype|ft|syntax)=perl"
+  ],
+  "fileTypes": [
+    "pl",
+    "PL",
+    "pm",
+    "pod",
+    "psgi",
+    "t"
+  ],
+  "comments": {
+    "start": "# "
+  },
+  "folds": [
+    {
+      "type": "block"
+    },
+    {
+      "type": "subroutine_declaration_statement"
+    },
+    {
+      "type": "comment"
+    }
+  ],
+  "scopes": {
+    "source_file": "source.perl",
+    "comment, pod": "comment.line.number-sign.perl",
+    "string_literal, interpolated_string_literal, string_content, command_string, quoted_word_list, heredoc_content": "string.quoted.perl",
+    "escape_sequence": "constant.character.escape.perl",
+    "number": "constant.numeric.perl",
+    "boolean": "constant.language.perl",
+    "scalar, varname": "variable.other.scalar.perl",
+    "array": "variable.other.array.perl",
+    "hash": "variable.other.hash.perl",
+    "identifier, bareword": "variable.other.perl",
+    "function": "entity.name.function.perl",
+    "subroutine_declaration_statement": "meta.function.perl",
+    "package": "entity.name.type.namespace.perl",
+    "package_statement": "meta.namespace.perl",
+    "quoted_regexp, match_regexp, substitution_regexp, regexp_content": "string.regexp.perl",
+    "use_statement, require_expression": "keyword.control.import.perl",
+    "conditional_statement, else, elsif, loop_statement, for_statement, cstyle_for_statement, return_expression": "keyword.control.perl"
+  }
+}

@@ -1,0 +1,9 @@
+mutation deletePrReviewMutation(
+  $input: DeletePullRequestReviewInput!
+) {
+  deletePullRequestReview(input: $input) {
+    pullRequestReview {
+      id
+    }
+  }
+}

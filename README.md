@@ -40,7 +40,7 @@ All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtb
 | Bundle ID | `dev.builtbygio.chevron` |
 | Package API | **Chevron only** (`require('chevron')`, `global.chevron`, `engines.chevron`) |
 | URI scheme | **`chevron://`** only — the `atom://` alias and the `.atom` host were removed in Wave 4 |
-| Package catalog | **Owned core only**; sandboxed community is host v2 (later) — [docs/decisions/package-ecosystem-strategy.md](docs/decisions/package-ecosystem-strategy.md) |
+| Package catalog | **Owned core only, vendored in `packages/`**. Community packages are **cancelled**, not deferred — [docs/decisions/package-ecosystem-strategy.md](docs/decisions/package-ecosystem-strategy.md) |
 | Package manager | **cpm** (Electron-as-Node). The `apm` shim is retired. |
 | Updates | **https://github.com/builtbygio/chevron/releases** (unsigned; Check for Update opens this page) |
 | Config home | **`~/.chevron`** (`CHEVRON_HOME`; `ATOM_HOME` only if set) |
