@@ -200,6 +200,10 @@ module.exports = {
     return ipcRenderer.sendSync('atom-shell-beep-sync');
   },
 
+  beepAsync() {
+    return ipcRenderer.invoke('chevron:shell-beep');
+  },
+
   appGetPath(name) {
     return ipcRenderer.sendSync('atom-app-get-path-sync', name);
   },
@@ -216,6 +220,16 @@ module.exports = {
     return ipcRenderer.sendSync('atom-app-set-jump-list-sync', categories);
   },
 
+  getJumpListSettingsAsync() {
+    return ipcRenderer.invoke('chevron:app-get-jump-list-settings');
+  },
+
+  setJumpListAsync(categories) {
+    return ipcRenderer.invoke('chevron:app-set-jump-list', categories);
+  },
+
+  // Clipboard stays sendSync: `atom.clipboard.read()` / `readWithMetadata()`
+  // are synchronous public API, and an async write would race a same-tick read.
   clipboardWriteText(text, type) {
     return ipcRenderer.sendSync('atom-clipboard-write-text-sync', text, type);
   },

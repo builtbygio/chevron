@@ -92,11 +92,11 @@ Every leftover named here has a delete / wrap / migrate verdict. Items missed in
 | `tree-sitter@0.25.1` | app dep | **Keep** |
 | TextMate-only catalog languages | 12-row keep-TextMate list in [language-stack.md](./language-stack.md) | **Keep** — 13b/13c streams done; PR 22 closed. first-mate stays |
 | scandal search (`scan-handler.ts`) | `DefaultDirectorySearcher` | **Deleted** (PR 4) |
-| scandal replace (`replace-handler.ts`) | `Workspace.replace` | **Migrated** (PR 3; JS RegExp via Task) |
+| scandal replace (`replace-handler.ts`) | `Workspace.replace` | **Deleted** (PR 3 migrated to JS RegExp; Wave 1 dropped the Task worker and the file) |
 | Public `Task` | `exports/chevron.js`; `src/task.ts` | **Wrap** — fuzzy-finder / symbols-view / `Workspace.replace` no longer call it. Export stays until Wave 3 |
 | `@vscode/ripgrep@1.15.14` | app + fuzzy-finder | **Done** (PR 15). CJS `rgPath` + `bin/rg`. Not 1.18 (ESM + optionalDeps). |
 | Preload `spawn(rg)` | `src/ripgrep-directory-searcher.js` | **Done** (PR 2b) — `ipcRenderer.invoke('chevron:rg-search-*')` |
-| season / pin CSON | `language-*` 13c JSON; user dual-read | **Wrap** — shipped pin CSON stream is empty; `season` stays for user `.cson` + compile-cache. Do **not** delete yet |
+| season / pin CSON | `language-*` 13c JSON; user dual-read | **Wrap** — Wave 1 swept all 94 pins + the app tree: **0** shipped `.cson` ([language-stack.md](./language-stack.md) *Pin CSON inventory*). `season` stays for user `.cson`, compile-cache and third-party package data. Do **not** delete yet |
 | User `config.cson` | `src/config-file.js` | **Migrated** (PR 5: JSON default, dual-read CSON) |
 | Coffee/Babel compile-cache stubs | `src/coffee-script.js`, `src/babel.js` | **Deleted** (PR 11) |
 | `transpileCsonPaths()` | `script/build` 108 | **Keep** until pins are JSON |
@@ -312,9 +312,9 @@ Risk (**medium**): some TextMate scopes are load-bearing for snippets, autocompl
 | `src/ripgrep-directory-searcher.js` | **Keep** the adapter; **migrate** `spawn` to main (PR 2b) |
 | `find-and-replace.useRipgrep` default | **Migrate** to `true` (this is the product switch) |
 | `DefaultDirectorySearcher` + `scan-handler.ts` | **Deleted** (PR 4) |
-| `replace-handler.ts` + scandal `PathReplacer` | **Migrated** (PR 3) |
+| `replace-handler.ts` + scandal `PathReplacer` | **Deleted** (PR 3 migrated; Wave 1 removed the Task worker) |
 | `scandal` dep | **Deleted** (PR 4; scan and replace both off it) |
-| `Task` / `task-bootstrap.js` / `exports/chevron.js` `Task` | **Wrap** through H1; **delete** after owned callers migrate (H2) |
+| `Task` / `task-bootstrap.js` / `exports/chevron.js` `Task` | **Wrap** — no first-party caller left after Wave 1; **delete** at Wave 3 |
 | `vscode-ripgrep` | **Keep**; rename later with verification |
 
 Risk (**high** if we delete early): landing “delete Task + scandal after a dogfood day of ripgrep” breaks quick-open, go-to-symbol, and project replace. The owned catalog **is** the caller. Alternative A6 (“we can break `Task`”) is rejected.

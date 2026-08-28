@@ -274,7 +274,11 @@ module.exports = class ApplicationDelegate {
   }
 
   playBeepSound() {
-    return rendererIpc.beep();
+    // Callers (`atom.beep()`) ignore the result, so this does not have to be
+    // sync. `atom-shell-beep-sync` stays for remote-compat.
+    return rendererIpc.beepAsync().catch(error => {
+      console.warn('playBeepSound failed', error);
+    });
   }
 
   onDidOpenLocations(callback) {

@@ -115,6 +115,30 @@ Convert shipped `grammars/` / `settings/` / `snippets/` CSON to JSON. Delete the
 
 Already JSON (no 13c work): `language-c`, `language-css`, `language-go`, `language-html`, `language-java`, `language-javascript`, `language-json`, `language-python`, `language-ruby`, `language-rust-bundled`, `language-shellscript`, `language-typescript`.
 
+### Pin CSON inventory (Wave 1, 2026-08-28)
+
+13c only ever swept `language-*`. That is not enough evidence to touch `season`, so Wave 1 swept the **whole** catalog and the app tree. Gate: `script/ci/pin-cson.test.js` (`pin CSON inventory (Wave 1)`).
+
+| Surface | `.cson` files |
+|---------|---------------|
+| 94 `packageDependencies` pins (`node_modules/*` + in-repo `packages/*`) | **0** |
+| App tree (`src`, `static`, `keymaps`, `menus`, `dot-atom`) | **0** |
+| Tracked files in this repo (`git ls-files '*.cson'`) | **0** |
+
+`keymaps/` and `menus/` are already `.json`; `dot-atom/` templates ship `keymap.json` / `snippets.json`.
+
+**So `season` is no longer a pin reader.** What is left splits into user-authored files and third-party package data. Both must be empty before a Wave 3 delete:
+
+| Reader | Serves | Verdict |
+|--------|--------|---------|
+| `src/config-file.js`, `src/user-config-path.js`, `src/keymap-extensions.ts`, `src/main-process/lsp-command-policy.js` | User-authored `~/.chevron/*.cson` (dual-read; writer is JSON) | **Keep** — deleting these breaks existing user configs |
+| `src/compile-cache.js` | `require()` of a `.cson` file | **Keep** while user init/packages can require CSON |
+| `src/package.js`, `src/package-manager.js`, `src/grammar-registry.js`, `src/menu-manager.ts`, `src/context-menu-manager.ts`, `src/main-process/main.js` | Any installed package's `package.cson` / keymaps / menus / grammars / settings | **Keep** — third-party packages still ship CSON, even though no owned pin does |
+
+The Wave 3 gate for `season` is therefore **user `.cson` dual-read plus third-party package data**, not the pins. Converting more pins cannot move it.
+
+---
+
 ## 4. What this document is not
 
 - **Not** a delete plan for first-mate or oniguruma. H2 PR 14 lazy-loads them. H3 PR 22 deletes them **only if** this exception list is empty (or the owner accepts dropping the remaining TextMate-only langs) — **owner decided 2026-08-17 that it is not, and PR 22 is closed as not applicable.**

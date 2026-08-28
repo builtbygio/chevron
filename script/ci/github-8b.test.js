@@ -26,7 +26,8 @@ describe('github 8B React 18 (inbox stays)', () => {
     // chevron-global conversion) and this guard is about the 8B shape —
     // React 18, no Relay — not about a frozen version number.
     assert.match(app.packageDependencies.github, /^0\.37\.\d+$/);
-    assert.match(app.dependencies.github, /github\.git#[a-f0-9]{40}$/);
+    // 1.1.0 catalog: npm pins, 0 git SHAs (see baseline-1.1.0.test.js).
+    assert.match(app.dependencies.github, /^npm:@builtbygio\/github@0\.37\.\d+$/);
     const pkg = JSON.parse(read('package.json'));
     assert.match(pkg.version, /^0\.37\.\d+$/);
     assert.strictEqual(pkg.dependencies.react, '18.3.1');

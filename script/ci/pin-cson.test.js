@@ -628,3 +628,90 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.match(doc, /language-todo/);
   });
 });
+
+// Wave 1 inventory: 13c only ever swept `language-*`. `season` cannot be
+// deleted on that evidence alone, so sweep every catalog pin and the repo
+// itself. When this is empty, the only readers left are user `.cson` and
+// third-party packages — see docs/language-stack.md §3a.
+describe('pin CSON inventory (Wave 1)', () => {
+  const pkg = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
+  );
+  const catalog = Object.keys(pkg.packageDependencies || {}).sort();
+
+  it('every catalog pin resolves', () => {
+    const missing = catalog.filter(name => !fs.existsSync(packageRoot(name)));
+    assert.deepStrictEqual(
+      missing,
+      [],
+      `unresolved catalog pins: ${missing.join(', ')}`
+    );
+  });
+
+  it('no catalog pin ships CSON', () => {
+    assert.ok(catalog.length >= 90, `catalog shrank to ${catalog.length}`);
+    const offenders = [];
+    for (const name of catalog) {
+      for (const file of shippedCson(name)) {
+        offenders.push(`${name}/${file}`);
+      }
+    }
+    assert.deepStrictEqual(
+      offenders,
+      [],
+      `catalog pins still shipping CSON: ${offenders.join(', ')}`
+    );
+  });
+
+  it('the app itself ships no CSON (keymaps, menus, dot-atom templates)', () => {
+    const offenders = [];
+    for (const dir of ['keymaps', 'menus', 'dot-atom', 'src', 'static']) {
+      const root = path.join(ROOT, dir);
+      if (!fs.existsSync(root)) continue;
+      const walk = current => {
+        for (const ent of fs.readdirSync(current, { withFileTypes: true })) {
+          if (ent.name === 'node_modules') continue;
+          const p = path.join(current, ent.name);
+          if (ent.isDirectory()) walk(p);
+          else if (ent.name.endsWith('.cson')) {
+            offenders.push(path.relative(ROOT, p));
+          }
+        }
+      };
+      walk(root);
+    }
+    assert.deepStrictEqual(
+      offenders,
+      [],
+      `app still ships CSON: ${offenders.join(', ')}`
+    );
+  });
+
+  it('season stays for user .cson and third-party packages', () => {
+    const seasonDep = JSON.parse(
+      fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
+    ).dependencies.season;
+    assert.ok(seasonDep, 'season must stay while user .cson is dual-read');
+
+    // Readers that serve user-authored files. These are the Wave 3 gate,
+    // not the pins.
+    assert.match(
+      fs.readFileSync(path.join(ROOT, 'src', 'config-file.js'), 'utf8'),
+      /require\('season'\)/
+    );
+    assert.match(
+      fs.readFileSync(path.join(ROOT, 'src', 'user-config-path.js'), 'utf8'),
+      /require\('season'\)/
+    );
+    assert.match(
+      fs.readFileSync(path.join(ROOT, 'src', 'keymap-extensions.ts'), 'utf8'),
+      /require\('season'\)/
+    );
+
+    const langDoc = fs.readFileSync(
+      path.join(ROOT, 'docs', 'language-stack.md'),
+      'utf8'
+    );
+    assert.match(langDoc, /Pin CSON inventory/);
+  });
+});

@@ -172,6 +172,7 @@ jobs:
           node --test script/ci/package-pin-policy.test.js
           node --test script/ci/baseline-1.1.0.test.js
           node --test script/ci/replace-in-files.test.js
+          node --test script/ci/wave1-ipc-slice.test.js
           node --test script/ci/user-config-path.test.js
           node --test script/ci/chevron-api-alias.test.js
           node --test script/ci/lsp-framing.test.js
@@ -192,6 +193,10 @@ jobs:
           node --test script/ci/packaging-policy.test.js
           node --test script/ci/custom-element-factory.test.js
           node --test script/ci/s4-ipc-slice.test.js
+          node --test script/ci/rg-ipc.test.js
+          node --test script/ci/search-engine.test.js
+          node --test script/ci/package-host-routing.test.js
+          node --test script/ci/crash-branding.test.js
           node --test script/ci/script-fossils.test.js
           node --test script/ci/load-tree-sitter-language.test.js
           node --test script/ci/package-utility-worker.test.js
@@ -442,6 +447,17 @@ jobs:
           node --test script/ci/task-callers.test.js
           node --test script/ci/pin-cson.test.js
           node --test script/ci/chevron-dark-themes.test.js
+
+      # These need a real node_modules: github-8b reads node_modules/github,
+      # lsp-builtin-discover resolves servers out of it, lazy-first-mate
+      # requires event-kit and jasmine-node-coffee requires underscore /
+      # jasmine-node. unit-and-cpm never installs the root package.json.
+      - name: Installed pin contracts (github 8B, LSP discovery, first-mate)
+        run: |
+          node --test script/ci/github-8b.test.js
+          node --test script/ci/lsp-builtin-discover.test.js
+          node --test script/ci/lazy-first-mate.test.js
+          node --test script/ci/jasmine-node-coffee.test.js
 
       - name: Build + package (deb, tar, rpm)
         run: |

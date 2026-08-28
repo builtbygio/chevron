@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-08-27 (1.1.0 unsigned preview shipped; Wave 0 contract tests)
+**Date of this handoff:** 2026-08-28 (1.1.0 unsigned preview shipped; Wave 0 contract tests; **Wave 1 complete**)
 
 ---
 
@@ -160,10 +160,13 @@ Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require r
 
 ### Primary next tracks
 
-Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. **Wave 0 (this change):** `script/ci/baseline-1.1.0.test.js` locks One Dark, host v2 off, season, `atom://` alias, and `Task` on replace.
+Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. **Wave 0:** `script/ci/baseline-1.1.0.test.js` locks One Dark, host v2 off, season, `atom://` alias, and the `Task` export.
 
-1. **Wave 1** — `Workspace.replace` is off `Task` (this change; export stays). Next: one `sendSync`→`invoke` slice; inventory remaining pin `.cson` before touching `season`.  
-2. **Wave 2** — owned npm: github GraphQL **in place** (inbox stays; React is already 18.3; leftover is `graphql@14` / `relay-compiler@5`). Fold the `natural` log4js patch into the published spell-check stack.  
+1. **Wave 1 — done.** Three parts, all landed:  
+   - `Workspace.replace` is off `Task` (`replace-in-files` in-process; export stays). Forces a global regex the way the old worker did.  
+   - `sendSync`→`invoke` slice: app jump list + shell beep on `chevron:*` (`script/ci/wave1-ipc-slice.test.js`). `atom-*-sync` twins stay for `remote-compat`. **Clipboard deliberately stays sync** — `atom.clipboard.read()` is synchronous public API. Next mover is `remote-compat` itself, not another getter slice ([remote-ipc-inventory.md](docs/remote-ipc-inventory.md) §11).  
+   - Pin `.cson` inventory: **0** across all 94 catalog pins *and* the app tree (`script/ci/pin-cson.test.js` → `pin CSON inventory (Wave 1)`). `season` is no longer a pin reader; its Wave 3 gate is user `.cson` dual-read + third-party package data ([language-stack.md](docs/language-stack.md) *Pin CSON inventory*).  
+2. **Wave 2 (next)** — owned npm: github GraphQL **in place** (inbox stays; React is already 18.3; leftover is `graphql@14` / `relay-compiler@5`). Fold the `natural` log4js patch into the published spell-check stack.  
 3. **Wave 3** — delete `Task` / `season` / `document-register-element` / `atom://` only after greps and tests prove zero callers.  
 4. **Do not delete** `Task` / `season` / `document-register-element` / first-mate while callers remain. **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  
 5. Residual `@atom/*` **dependency keys** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — published as `@builtbygio/*`; renaming the editor key is branding, not a drive-by.  

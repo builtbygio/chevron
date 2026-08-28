@@ -416,6 +416,11 @@ module.exports = function registerRendererIpc(atomApplication) {
     event.returnValue = true;
   });
 
+  ipcMain.handle('chevron:shell-beep', () => {
+    shell.beep();
+    return true;
+  });
+
   ipcMain.on('atom-app-get-path-sync', (event, name) => {
     try {
       event.returnValue = app.getPath(name);
@@ -449,6 +454,28 @@ module.exports = function registerRendererIpc(atomApplication) {
     } catch (error) {
       console.error(error);
       event.returnValue = false;
+    }
+  });
+
+  ipcMain.handle('chevron:app-get-jump-list-settings', () => {
+    try {
+      return typeof app.getJumpListSettings === 'function'
+        ? app.getJumpListSettings()
+        : { removedItems: [] };
+    } catch (error) {
+      return { removedItems: [] };
+    }
+  });
+
+  ipcMain.handle('chevron:app-set-jump-list', (_event, categories) => {
+    try {
+      if (typeof app.setJumpList === 'function') {
+        app.setJumpList(categories);
+      }
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
     }
   });
 
