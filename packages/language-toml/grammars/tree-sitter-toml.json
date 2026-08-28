@@ -1,0 +1,50 @@
+{
+  "name": "TOML",
+  "scopeName": "source.toml",
+  "type": "tree-sitter",
+  "parser": "@tree-sitter-grammars/tree-sitter-toml",
+  "injectionRegex": "toml",
+  "fileTypes": [
+    "toml"
+  ],
+  "comments": {
+    "start": "# "
+  },
+  "folds": [
+    {
+      "type": "table"
+    },
+    {
+      "type": "table_array_element"
+    },
+    {
+      "type": "array"
+    },
+    {
+      "type": "inline_table"
+    }
+  ],
+  "scopes": {
+    "document": "source.toml",
+    "comment": "comment.line.number-sign.toml",
+    "string": "string.quoted.toml",
+    "escape_sequence": "constant.character.escape.toml",
+    "integer": "constant.numeric.toml",
+    "float": "constant.numeric.toml",
+    "boolean": "constant.language.boolean.toml",
+    "offset_date_time, local_date_time, local_date, local_time": "constant.other.date.toml",
+    "bare_key": "variable.other.key.toml",
+    "quoted_key": "string.quoted.toml",
+    "dotted_key": "variable.other.key.toml",
+    "pair > bare_key": "variable.other.key.toml",
+    "table": "entity.name.section.table.toml",
+    "table_array_element": "entity.name.section.table.array.toml",
+    "\"=\"": "keyword.operator.assignment.toml",
+    "\"[\"": "punctuation.definition.table.begin.toml",
+    "\"]\"": "punctuation.definition.table.end.toml",
+    "\"[[\"": "punctuation.definition.table.array.begin.toml",
+    "\"]]\"": "punctuation.definition.table.array.end.toml",
+    "\"{\"": "punctuation.definition.table.inline.begin.toml",
+    "\"}\"": "punctuation.definition.table.inline.end.toml"
+  }
+}

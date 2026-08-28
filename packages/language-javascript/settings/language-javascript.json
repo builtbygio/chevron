@@ -1,0 +1,11 @@
+{
+  ".source.js": {
+    "editor": {
+      "nonWordCharacters": "/\\()\"':,.;<>~!#@%^&*|+=[]{}`?-…",
+      "commentStart": "// ",
+      "foldEndPattern": "^\\s*\\}|^\\s*\\]|^\\s*\\)",
+      "increaseIndentPattern": "(?x) \\{ [^}\"']*(//.*)? $ | \\[ [^\\]\"']*(//.*)? $ | \\( [^)\"']*(//.*)? $",
+      "decreaseIndentPattern": "(?x) ^ \\s* (\\s* /[*] .* [*]/ \\s*)* [}\\])]"
+    }
+  }
+}

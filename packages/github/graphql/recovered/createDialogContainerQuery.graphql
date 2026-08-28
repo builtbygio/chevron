@@ -1,0 +1,36 @@
+query createDialogContainerQuery(
+  $organizationCount: Int!
+  $organizationCursor: String
+) {
+  viewer {
+    ...createDialogController_user_12CDS5
+    id
+  }
+}
+
+fragment createDialogController_user_12CDS5 on User {
+  id
+  ...repositoryHomeSelectionView_user_12CDS5
+}
+
+fragment repositoryHomeSelectionView_user_12CDS5 on User {
+  id
+  login
+  avatarUrl(size: 24)
+  organizations(first: $organizationCount, after: $organizationCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        login
+        avatarUrl(size: 24)
+        viewerCanCreateRepositories
+        __typename
+      }
+    }
+  }
+}

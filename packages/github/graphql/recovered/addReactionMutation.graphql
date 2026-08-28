@@ -1,0 +1,17 @@
+mutation addReactionMutation(
+  $input: AddReactionInput!
+) {
+  addReaction(input: $input) {
+    subject {
+      __typename
+      reactionGroups {
+        content
+        viewerHasReacted
+        users {
+          totalCount
+        }
+      }
+      id
+    }
+  }
+}

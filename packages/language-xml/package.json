@@ -1,0 +1,25 @@
+{
+  "name": "@builtbygio/language-xml",
+  "version": "0.37.1",
+  "description": "XML language support in Chevron",
+  "keywords": [
+    "tree-sitter"
+  ],
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-xml",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-xml.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/builtbygio/chevron/issues"
+  },
+  "dependencies": {
+    "@tree-sitter-grammars/tree-sitter-xml": "0.7.0"
+  }
+}

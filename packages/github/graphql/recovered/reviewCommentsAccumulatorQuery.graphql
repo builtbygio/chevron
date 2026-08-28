@@ -1,0 +1,69 @@
+query reviewCommentsAccumulatorQuery(
+  $id: ID!
+  $commentCount: Int!
+  $commentCursor: String
+) {
+  node(id: $id) {
+    __typename
+    ... on PullRequestReviewThread {
+      ...reviewCommentsAccumulator_reviewThread_1VbUmL
+    }
+    id
+  }
+}
+
+fragment emojiReactionsController_reactable on Reactable {
+  id
+  ...emojiReactionsView_reactable
+}
+
+fragment emojiReactionsView_reactable on Reactable {
+  id
+  reactionGroups {
+    content
+    viewerHasReacted
+    users {
+      totalCount
+    }
+  }
+  viewerCanReact
+}
+
+fragment reviewCommentsAccumulator_reviewThread_1VbUmL on PullRequestReviewThread {
+  id
+  comments(first: $commentCount, after: $commentCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        author {
+          __typename
+          avatarUrl
+          login
+          url
+          ... on Node {
+            id
+          }
+        }
+        bodyHTML
+        body
+        isMinimized
+        state
+        viewerCanReact
+        viewerCanUpdate
+        path
+        position
+        createdAt
+        lastEditedAt
+        url
+        authorAssociation
+        ...emojiReactionsController_reactable
+        __typename
+      }
+    }
+  }
+}

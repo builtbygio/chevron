@@ -1,0 +1,74 @@
+query checkSuitesAccumulatorQuery(
+  $id: ID!
+  $checkSuiteCount: Int!
+  $checkSuiteCursor: String
+  $checkRunCount: Int!
+) {
+  node(id: $id) {
+    __typename
+    ... on Commit {
+      ...checkSuitesAccumulator_commit_4ncEVO
+    }
+    id
+  }
+}
+
+fragment checkRunView_checkRun on CheckRun {
+  name
+  status
+  conclusion
+  title
+  summary
+  permalink
+  detailsUrl
+}
+
+fragment checkRunsAccumulator_checkSuite_2YXw6r on CheckSuite {
+  id
+  checkRuns(first: $checkRunCount) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        status
+        conclusion
+        ...checkRunView_checkRun
+        __typename
+      }
+    }
+  }
+}
+
+fragment checkSuiteView_checkSuite on CheckSuite {
+  app {
+    name
+    id
+  }
+  status
+  conclusion
+}
+
+fragment checkSuitesAccumulator_commit_4ncEVO on Commit {
+  id
+  checkSuites(first: $checkSuiteCount, after: $checkSuiteCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        status
+        conclusion
+        ...checkSuiteView_checkSuite
+        ...checkRunsAccumulator_checkSuite_2YXw6r
+        __typename
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@builtbygio/language-ruby",
+  "version": "0.73.2",
+  "description": "Ruby language support in Atom",
+  "keywords": [
+    "tree-sitter"
+  ],
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "main": "./lib/main",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-ruby.git"
+  },
+  "dependencies": {
+    "tree-sitter-ruby": "0.23.1"
+  }
+}

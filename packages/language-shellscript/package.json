@@ -1,0 +1,25 @@
+{
+  "name": "@builtbygio/language-shellscript",
+  "version": "0.28.3",
+  "description": "ShellScript language support in Atom",
+  "keywords": [
+    "tree-sitter"
+  ],
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-shellscript",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-shellscript.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atom/language-shellscript/issues"
+  },
+  "dependencies": {
+    "tree-sitter-bash": "0.25.1"
+  }
+}

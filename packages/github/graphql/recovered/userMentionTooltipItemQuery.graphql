@@ -1,0 +1,25 @@
+query userMentionTooltipItemQuery(
+  $username: String!
+) {
+  repositoryOwner(login: $username) {
+    __typename
+    ...userMentionTooltipContainer_repositoryOwner
+    id
+  }
+}
+
+fragment userMentionTooltipContainer_repositoryOwner on RepositoryOwner {
+  login
+  avatarUrl
+  repositories {
+    totalCount
+  }
+  ... on User {
+    company
+  }
+  ... on Organization {
+    membersWithRole {
+      totalCount
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "@builtbygio/archive-view",
+  "version": "0.66.2",
+  "description": "View the files and folders inside archive files",
+  "main": "./lib/archive-editor",
+  "dependencies": {
+    "etch": "0.9.0",
+    "fs-plus": "^3.0.0",
+    "humanize-plus": "~1.8.2",
+    "ls-archive": "git+https://github.com/builtbygio/ls-archive.git#b0ff32ec3cc363b3a86a55a48ee02ec28b6a8ac5",
+    "temp": "~0.8.1"
+  },
+  "standard": {
+    "env": {
+      "atomtest": true,
+      "browser": true,
+      "jasmine": true,
+      "node": true
+    },
+    "globals": [
+      "atom"
+    ]
+  },
+  "repository": "https://github.com/builtbygio/archive-view",
+  "license": "MIT",
+  "engines": {
+    "atom": "*",
+    "chevron": "*"
+  },
+  "deserializers": {
+    "ArchiveEditor": "deserialize",
+    "ArchiveEditorView": "deserialize"
+  },
+  "consumedServices": {
+    "atom.file-icons": {
+      "versions": {
+        "1.0.0": "consumeFileIcons"
+      }
+    },
+    "file-icons.element-icons": {
+      "versions": {
+        "1.0.0": "consumeElementIcons"
+      }
+    }
+  }
+}

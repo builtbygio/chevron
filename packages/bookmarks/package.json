@@ -1,0 +1,15 @@
+{
+  "name": "@builtbygio/bookmarks",
+  "version": "0.46.2",
+  "main": "./lib/main",
+  "description": "Can mark lines, then jump back to them",
+  "license": "MIT",
+  "repository": "https://github.com/builtbygio/bookmarks",
+  "engines": {
+    "atom": "*",
+    "chevron": "*"
+  },
+  "dependencies": {
+    "atom-select-list": "^0.7.0"
+  }
+}

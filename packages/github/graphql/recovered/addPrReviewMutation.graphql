@@ -1,0 +1,43 @@
+mutation addPrReviewMutation(
+  $input: AddPullRequestReviewInput!
+) {
+  addPullRequestReview(input: $input) {
+    reviewEdge {
+      node {
+        id
+        body
+        bodyHTML
+        state
+        submittedAt
+        viewerCanReact
+        viewerCanUpdate
+        author {
+          __typename
+          login
+          avatarUrl
+          ... on Node {
+            id
+          }
+        }
+        ...emojiReactionsController_reactable
+      }
+    }
+  }
+}
+
+fragment emojiReactionsController_reactable on Reactable {
+  id
+  ...emojiReactionsView_reactable
+}
+
+fragment emojiReactionsView_reactable on Reactable {
+  id
+  reactionGroups {
+    content
+    viewerHasReacted
+    users {
+      totalCount
+    }
+  }
+  viewerCanReact
+}

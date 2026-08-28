@@ -1,0 +1,25 @@
+{
+  "name": "@builtbygio/language-php",
+  "version": "0.50.1",
+  "description": "PHP language support in Chevron",
+  "keywords": [
+    "tree-sitter"
+  ],
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-php",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-php.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/builtbygio/chevron/issues"
+  },
+  "dependencies": {
+    "tree-sitter-php": "0.24.2"
+  }
+}

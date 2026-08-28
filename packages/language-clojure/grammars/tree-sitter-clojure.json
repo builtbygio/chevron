@@ -1,0 +1,66 @@
+{
+  "name": "Clojure",
+  "scopeName": "source.clojure",
+  "type": "tree-sitter",
+  "parser": "tree-sitter-clojure-orchard",
+  "injectionRegex": "clojure",
+  "firstLineRegex": [
+    "^#!.*\\b(bb|boot|clojure)\\b",
+    "vim\\b.*\\bset\\b.*\\b(filetype|ft|syntax)=clojure"
+  ],
+  "fileTypes": [
+    "clj",
+    "cljs",
+    "cljc",
+    "cljx",
+    "clojure",
+    "edn",
+    "boot",
+    "bb",
+    "joke",
+    "joker",
+    "clj.hl",
+    "cljs.hl"
+  ],
+  "comments": {
+    "start": "; "
+  },
+  "folds": [
+    {
+      "type": "list_lit"
+    },
+    {
+      "type": "vec_lit"
+    },
+    {
+      "type": "map_lit"
+    },
+    {
+      "type": "set_lit"
+    },
+    {
+      "type": "anon_fn_lit"
+    },
+    {
+      "type": "comment"
+    }
+  ],
+  "scopes": {
+    "source": "source.clojure",
+    "comment, dis_expr": "comment.line.semicolon.clojure",
+    "str_lit, char_lit": "string.quoted.double.clojure",
+    "num_lit": "constant.numeric.clojure",
+    "bool_lit, nil_lit": "constant.language.clojure",
+    "kwd_lit, kwd_name, kwd_ns": "constant.keyword.clojure",
+    "regex_lit": "string.regexp.clojure",
+    "sym_lit, sym_name": "variable.other.clojure",
+    "sym_ns": "entity.name.namespace.clojure",
+    "list_lit": "meta.sexp.clojure",
+    "vec_lit": "meta.vector.clojure",
+    "map_lit, ns_map_lit": "meta.map.clojure",
+    "set_lit": "meta.set.clojure",
+    "anon_fn_lit": "meta.function.anonymous.clojure",
+    "meta_lit, old_meta_lit": "storage.modifier.metadata.clojure",
+    "quoting_lit, syn_quoting_lit, unquoting_lit, unquote_splicing_lit, var_quoting_lit, derefing_lit": "keyword.operator.macro.clojure"
+  }
+}

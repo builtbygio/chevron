@@ -1,0 +1,70 @@
+{
+  "name": "PHP",
+  "scopeName": "text.html.php",
+  "type": "tree-sitter",
+  "parser": "tree-sitter-php/php",
+  "firstLineRegex": [
+    "^#!.*\\bphp\\d?\\b",
+    "^\\s*<\\?(php|=|\\s|$)",
+    "vim\\b.*\\bset\\b.*\\b(filetype|ft|syntax)=(php|phtml)"
+  ],
+  "fileTypes": [
+    "aw",
+    "ctp",
+    "inc",
+    "install",
+    "module",
+    "php",
+    "php_cs",
+    "php3",
+    "php4",
+    "php5",
+    "phpt",
+    "phtml",
+    "profile"
+  ],
+  "comments": {
+    "start": "// "
+  },
+  "folds": [
+    {
+      "type": "compound_statement"
+    },
+    {
+      "type": "declaration_list"
+    },
+    {
+      "type": "switch_block"
+    },
+    {
+      "type": "comment"
+    }
+  ],
+  "scopes": {
+    "program": "text.html.php",
+    "text": "text.html.php",
+    "php_tag": "punctuation.section.embedded.begin.php",
+    "php_end_tag": "punctuation.section.embedded.end.php",
+    "comment": "comment.line.php",
+    "string, string_content, encapsed_string, heredoc, heredoc_body, nowdoc_body": "string.quoted.php",
+    "escape_sequence": "constant.character.escape.php",
+    "integer, float": "constant.numeric.php",
+    "boolean, null": "constant.language.php",
+    "variable_name": "variable.other.php",
+    "name": "support.other.php",
+    "function_definition > name": "entity.name.function.php",
+    "method_declaration > name": "entity.name.function.php",
+    "function_call_expression > name": "entity.name.function.php",
+    "class_declaration > name": "entity.name.type.class.php",
+    "interface_declaration > name": "entity.name.type.interface.php",
+    "trait_declaration > name": "entity.name.type.trait.php",
+    "enum_declaration > name": "entity.name.type.enum.php",
+    "namespace_name": "entity.name.type.namespace.php",
+    "primitive_type, cast_type": "storage.type.php",
+    "visibility_modifier, abstract_modifier, final_modifier, static_modifier, readonly_modifier": "storage.modifier.php",
+    "\"function\", \"class\", \"interface\", \"trait\", \"enum\", \"namespace\", \"use\", \"extends\", \"implements\"": "storage.type.php",
+    "\"if\", \"else\", \"elseif\", \"endif\", \"for\", \"foreach\", \"endfor\", \"endforeach\", \"while\", \"endwhile\", \"do\", \"switch\", \"endswitch\", \"case\", \"default\", \"break\", \"continue\", \"return\", \"try\", \"catch\", \"finally\", \"throw\", \"match\"": "keyword.control.php",
+    "\"echo\", \"print\", \"include\", \"include_once\", \"require\", \"require_once\", \"yield\", \"yield from\"": "keyword.control.import.php",
+    "\"new\", \"clone\", \"instanceof\", \"as\"": "keyword.operator.php"
+  }
+}

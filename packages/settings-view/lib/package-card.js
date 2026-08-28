@@ -1,0 +1,641 @@
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var package_card_exports = {};
+__export(package_card_exports, {
+  default: () => PackageCard
+});
+module.exports = __toCommonJS(package_card_exports);
+var import_atom = require("chevron");
+var import_etch = __toESM(require("etch"));
+var import_utils = require("./utils");
+let marked = null;
+class PackageCard {
+  constructor(pack, settingsView, packageManager, options = {}) {
+    this.pack = pack;
+    this.settingsView = settingsView;
+    this.packageManager = packageManager;
+    this.disposables = new import_atom.CompositeDisposable();
+    this.client = this.packageManager.getClient();
+    this.type = this.pack.theme ? "theme" : "package";
+    this.name = this.pack.name;
+    this.onSettingsView = options.onSettingsView;
+    if (this.pack.latestVersion !== this.pack.version) {
+      this.newVersion = this.pack.latestVersion;
+    }
+    if (this.pack.apmInstallSource && this.pack.apmInstallSource.type === "git") {
+      if (this.pack.apmInstallSource.sha !== this.pack.latestSha) {
+        this.newSha = this.pack.latestSha;
+      }
+    }
+    if (!options.stats) {
+      options.stats = { downloads: true };
+    }
+    import_etch.default.initialize(this);
+    this.displayStats(options);
+    this.handlePackageEvents();
+    this.handleButtonEvents(options);
+    this.loadCachedMetadata();
+    if (this.type === "theme") {
+      this.refs.statusIndicator.remove();
+      this.refs.enablementButton.remove();
+    }
+    if (chevron.packages.isBundledPackage(this.pack.name)) {
+      this.refs.installButtonGroup.remove();
+      this.refs.uninstallButton.remove();
+    }
+    if (!this.newVersion && !this.newSha) {
+      this.refs.updateButtonGroup.style.display = "none";
+    }
+    this.hasCompatibleVersion = true;
+    this.updateInterfaceState();
+  }
+  render() {
+    const displayName = (this.pack.gitUrlInfo ? this.pack.gitUrlInfo.project : this.pack.name) || "";
+    const owner = (0, import_utils.ownerFromRepository)(this.pack.repository);
+    const description = this.pack.description || "";
+    return /* @__PURE__ */ import_etch.default.dom("div", { className: "package-card col-lg-8" }, /* @__PURE__ */ import_etch.default.dom("div", { ref: "statsContainer", className: "stats pull-right" }, /* @__PURE__ */ import_etch.default.dom("span", { ref: "packageStars", className: "stats-item" }, /* @__PURE__ */ import_etch.default.dom("span", { ref: "stargazerIcon", className: "icon icon-star" }), /* @__PURE__ */ import_etch.default.dom("span", { ref: "stargazerCount", className: "value" })), /* @__PURE__ */ import_etch.default.dom("span", { ref: "packageDownloads", className: "stats-item" }, /* @__PURE__ */ import_etch.default.dom("span", { ref: "downloadIcon", className: "icon icon-cloud-download" }), /* @__PURE__ */ import_etch.default.dom("span", { ref: "downloadCount", className: "value" }))), /* @__PURE__ */ import_etch.default.dom("div", { className: "body" }, /* @__PURE__ */ import_etch.default.dom("h4", { className: "card-name" }, /* @__PURE__ */ import_etch.default.dom("a", { className: "package-name", ref: "packageName" }, displayName), /* @__PURE__ */ import_etch.default.dom("span", { className: "package-version" }, /* @__PURE__ */ import_etch.default.dom("span", { ref: "versionValue", className: "value" }, String(this.pack.version))), /* @__PURE__ */ import_etch.default.dom("span", { className: "deprecation-badge highlight-warning inline-block" }, "Deprecated")), /* @__PURE__ */ import_etch.default.dom("span", { ref: "packageDescription", className: "package-description" }, description), /* @__PURE__ */ import_etch.default.dom("div", { ref: "packageMessage", className: "package-message" })), /* @__PURE__ */ import_etch.default.dom("div", { className: "meta" }, /* @__PURE__ */ import_etch.default.dom("div", { ref: "metaUserContainer", className: "meta-user" }, /* @__PURE__ */ import_etch.default.dom("a", { ref: "avatarLink", href: `https://github.com/${owner}` }, /* @__PURE__ */ import_etch.default.dom("img", { ref: "avatar", className: "avatar", src: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" })), /* @__PURE__ */ import_etch.default.dom("a", { ref: "loginLink", className: "author", href: `https://github.com/${owner}` }, owner)), /* @__PURE__ */ import_etch.default.dom("div", { className: "meta-controls" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "btn-toolbar" }, /* @__PURE__ */ import_etch.default.dom("div", { ref: "updateButtonGroup", className: "btn-group" }, /* @__PURE__ */ import_etch.default.dom("button", { type: "button", className: "btn btn-info icon icon-cloud-download install-button", ref: "updateButton" }, "Update")), /* @__PURE__ */ import_etch.default.dom("div", { ref: "installAlternativeButtonGroup", className: "btn-group" }, /* @__PURE__ */ import_etch.default.dom("button", { type: "button", className: "btn btn-info icon icon-cloud-download install-button", ref: "installAlternativeButton" }, "Install Alternative")), /* @__PURE__ */ import_etch.default.dom("div", { ref: "installButtonGroup", className: "btn-group" }, /* @__PURE__ */ import_etch.default.dom("button", { type: "button", className: "btn btn-info icon icon-cloud-download install-button", ref: "installButton" }, "Install")), /* @__PURE__ */ import_etch.default.dom("div", { ref: "packageActionButtonGroup", className: "btn-group" }, /* @__PURE__ */ import_etch.default.dom("button", { type: "button", className: "btn icon icon-gear settings", ref: "settingsButton" }, "Settings"), /* @__PURE__ */ import_etch.default.dom("button", { type: "button", className: "btn icon icon-trashcan uninstall-button", ref: "uninstallButton" }, "Uninstall"), /* @__PURE__ */ import_etch.default.dom("button", { type: "button", className: "btn icon icon-playback-pause enablement", ref: "enablementButton" }, /* @__PURE__ */ import_etch.default.dom("span", { className: "disable-text" }, "Disable")), /* @__PURE__ */ import_etch.default.dom("button", { type: "button", className: "btn status-indicator", tabIndex: "-1", ref: "statusIndicator" }))))));
+  }
+  locateCompatiblePackageVersion(callback) {
+    this.packageManager.loadCompatiblePackageVersion(this.pack.name, (err, pack) => {
+      if (err != null) {
+        console.error(err);
+      }
+      if (err != null || pack == null || typeof pack !== "object") {
+        this.hasCompatibleVersion = false;
+        if (this.refs.versionValue) {
+          this.refs.versionValue.classList.add("text-error");
+        }
+        if (this.refs.packageMessage) {
+          this.refs.packageMessage.classList.add("text-error");
+          this.refs.packageMessage.insertAdjacentText(
+            "beforeend",
+            " Could not determine a compatible package version for this editor."
+          );
+        }
+        callback();
+        return;
+      }
+      const packageVersion = pack.version;
+      if (packageVersion) {
+        this.refs.versionValue.textContent = packageVersion;
+        if (packageVersion !== this.pack.version) {
+          this.refs.versionValue.classList.add("text-warning");
+          this.refs.packageMessage.classList.add("text-warning");
+          this.refs.packageMessage.textContent = `Version ${packageVersion} is not the latest version available for this package, but it's the latest that is compatible with your version of Chevron.`;
+        }
+        this.installablePack = pack;
+        this.hasCompatibleVersion = true;
+      } else {
+        this.hasCompatibleVersion = false;
+        this.refs.versionValue.classList.add("text-error");
+        this.refs.packageMessage.classList.add("text-error");
+        this.refs.packageMessage.insertAdjacentText(
+          "beforeend",
+          `There's no version of this package that is compatible with your Chevron version. The version must satisfy ${this.pack.engines.atom}.`
+        );
+        console.error(`No available version compatible with the installed Chevron version: ${chevron.getVersion()}`);
+      }
+      callback();
+    });
+  }
+  handleButtonEvents(options) {
+    if (options && options.onSettingsView) {
+      this.refs.settingsButton.style.display = "none";
+    } else {
+      const clickHandler = (event) => {
+        event.stopPropagation();
+        this.settingsView.showPanel(this.pack.name, { back: options ? options.back : null, pack: this.pack });
+      };
+      this.element.addEventListener("click", clickHandler);
+      this.disposables.add(new import_atom.Disposable(() => {
+        this.element.removeEventListener("click", clickHandler);
+      }));
+      this.refs.settingsButton.addEventListener("click", clickHandler);
+      this.disposables.add(new import_atom.Disposable(() => {
+        this.refs.settingsButton.removeEventListener("click", clickHandler);
+      }));
+    }
+    const installButtonClickHandler = (event) => {
+      event.stopPropagation();
+      this.install();
+    };
+    this.refs.installButton.addEventListener("click", installButtonClickHandler);
+    this.disposables.add(new import_atom.Disposable(() => {
+      this.refs.installButton.removeEventListener("click", installButtonClickHandler);
+    }));
+    const uninstallButtonClickHandler = (event) => {
+      event.stopPropagation();
+      this.uninstall();
+    };
+    this.refs.uninstallButton.addEventListener("click", uninstallButtonClickHandler);
+    this.disposables.add(new import_atom.Disposable(() => {
+      this.refs.uninstallButton.removeEventListener("click", uninstallButtonClickHandler);
+    }));
+    const installAlternativeButtonClickHandler = (event) => {
+      event.stopPropagation();
+      this.installAlternative();
+    };
+    this.refs.installAlternativeButton.addEventListener("click", installAlternativeButtonClickHandler);
+    this.disposables.add(new import_atom.Disposable(() => {
+      this.refs.installAlternativeButton.removeEventListener("click", installAlternativeButtonClickHandler);
+    }));
+    const updateButtonClickHandler = (event) => {
+      event.stopPropagation();
+      this.update().then(() => {
+        let oldVersion = "";
+        let newVersion = "";
+        if (this.pack.apmInstallSource && this.pack.apmInstallSource.type === "git") {
+          oldVersion = this.pack.apmInstallSource.sha.substr(0, 8);
+          newVersion = `${this.pack.latestSha.substr(0, 8)}`;
+        } else if (this.pack.version && this.pack.latestVersion) {
+          oldVersion = this.pack.version;
+          newVersion = this.pack.latestVersion;
+        }
+        let detail = "";
+        if (oldVersion && newVersion) {
+          detail = `${oldVersion} -> ${newVersion}`;
+        }
+        const notification = chevron.notifications.addSuccess(`Restart Chevron to complete the update of \`${this.pack.name}\`.`, {
+          dismissable: true,
+          buttons: [
+            {
+              text: "Restart now",
+              onDidClick() {
+                return chevron.restartApplication();
+              }
+            },
+            {
+              text: "I'll do it later",
+              onDidClick() {
+                notification.dismiss();
+              }
+            }
+          ],
+          detail
+        });
+      });
+    };
+    this.refs.updateButton.addEventListener("click", updateButtonClickHandler);
+    this.disposables.add(new import_atom.Disposable(() => {
+      this.refs.updateButton.removeEventListener("click", updateButtonClickHandler);
+    }));
+    const packageNameClickHandler = (event) => {
+      event.stopPropagation();
+      const packageType = this.pack.theme ? "themes" : "packages";
+      chevron.applicationDelegate.openExternal(`https://packages.pulsar-edit.dev/${packageType}/${this.pack.name}`);
+    };
+    this.refs.packageName.addEventListener("click", packageNameClickHandler);
+    this.disposables.add(new import_atom.Disposable(() => {
+      this.refs.packageName.removeEventListener("click", packageNameClickHandler);
+    }));
+    const enablementButtonClickHandler = (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+      if (this.isDisabled()) {
+        chevron.packages.enablePackage(this.pack.name);
+      } else {
+        chevron.packages.disablePackage(this.pack.name);
+      }
+    };
+    this.refs.enablementButton.addEventListener("click", enablementButtonClickHandler);
+    this.disposables.add(new import_atom.Disposable(() => {
+      this.refs.enablementButton.removeEventListener("click", enablementButtonClickHandler);
+    }));
+    const packageMessageClickHandler = (event) => {
+      const target = event.target.closest("a");
+      if (target) {
+        event.stopPropagation();
+        event.preventDefault();
+        if (target.href && target.href.startsWith("atom:")) {
+          chevron.workspace.open(target.href);
+        }
+      }
+    };
+    this.refs.packageMessage.addEventListener("click", packageMessageClickHandler);
+    this.disposables.add(new import_atom.Disposable(() => {
+      this.refs.packageMessage.removeEventListener("click", packageMessageClickHandler);
+    }));
+  }
+  destroy() {
+    this.disposables.dispose();
+    return import_etch.default.destroy(this);
+  }
+  loadCachedMetadata() {
+    this.client.avatar((0, import_utils.ownerFromRepository)(this.pack.repository), (err, avatarPath) => {
+      if (!err && avatarPath) {
+        this.refs.avatar.src = `file://${avatarPath}`;
+      }
+    });
+    this.client.package(this.pack.name, (err, data) => {
+      if (!err) {
+        if (data == null) {
+          data = {};
+        }
+        if (this.pack.apmInstallSource && this.pack.apmInstallSource.type === "git") {
+          this.refs.downloadIcon.classList.remove("icon-cloud-download");
+          this.refs.downloadIcon.classList.add("icon-git-branch");
+          this.refs.downloadCount.textContent = this.pack.apmInstallSource.sha.substr(0, 8);
+        } else {
+          this.refs.stargazerCount.textContent = data.stargazers_count ? data.stargazers_count.toLocaleString() : "";
+          this.refs.downloadCount.textContent = data.downloads ? data.downloads.toLocaleString() : "";
+        }
+      }
+    });
+  }
+  updateInterfaceState() {
+    this.refs.versionValue.textContent = (this.installablePack ? this.installablePack.version : null) || this.pack.version;
+    if (this.pack.apmInstallSource && this.pack.apmInstallSource.type === "git") {
+      this.refs.downloadCount.textContent = this.pack.apmInstallSource.sha.substr(0, 8);
+    }
+    this.updateSettingsState();
+    this.updateInstalledState();
+    this.updateDisabledState();
+    this.updateDeprecatedState();
+  }
+  updateSettingsState() {
+    if (this.hasSettings() && !this.onSettingsView) {
+      this.refs.settingsButton.style.display = "";
+    } else {
+      this.refs.settingsButton.style.display = "none";
+    }
+  }
+  // Section: disabled state updates
+  updateDisabledState() {
+    if (this.isDisabled()) {
+      this.displayDisabledState();
+    } else if (this.element.classList.contains("disabled")) {
+      this.displayEnabledState();
+    }
+  }
+  displayEnabledState() {
+    this.element.classList.remove("disabled");
+    if (this.type === "theme") {
+      this.refs.enablementButton.style.display = "none";
+    }
+    this.refs.enablementButton.querySelector(".disable-text").textContent = "Disable";
+    this.refs.enablementButton.classList.add("icon-playback-pause");
+    this.refs.enablementButton.classList.remove("icon-playback-play");
+    this.refs.statusIndicator.classList.remove("is-disabled");
+  }
+  displayDisabledState() {
+    this.element.classList.add("disabled");
+    this.refs.enablementButton.querySelector(".disable-text").textContent = "Enable";
+    this.refs.enablementButton.classList.add("icon-playback-play");
+    this.refs.enablementButton.classList.remove("icon-playback-pause");
+    this.refs.statusIndicator.classList.add("is-disabled");
+    if (this.isDeprecated()) {
+      this.refs.enablementButton.disabled = true;
+    } else {
+      this.refs.enablementButton.disabled = false;
+    }
+  }
+  // Section: installed state updates
+  updateInstalledState() {
+    if (this.isInstalled()) {
+      this.displayInstalledState();
+    } else {
+      this.displayNotInstalledState();
+    }
+  }
+  displayInstalledState() {
+    if (this.newVersion || this.newSha) {
+      this.refs.updateButtonGroup.style.display = "";
+      if (this.newVersion) {
+        this.refs.updateButton.textContent = `Update to ${this.newVersion}`;
+      } else if (this.newSha) {
+        this.refs.updateButton.textContent = `Update to ${this.newSha.substr(0, 8)}`;
+      }
+    } else {
+      this.refs.updateButtonGroup.style.display = "none";
+    }
+    this.refs.installButtonGroup.style.display = "none";
+    this.refs.installAlternativeButtonGroup.style.display = "none";
+    this.refs.packageActionButtonGroup.style.display = "";
+    this.refs.uninstallButton.style.display = "";
+  }
+  displayNotInstalledState() {
+    this.refs.uninstallButton.style.display = "none";
+    const atomVersion = this.packageManager.normalizeVersion(chevron.getVersion());
+    if (!this.packageManager.satisfiesVersion(atomVersion, this.pack)) {
+      this.hasCompatibleVersion = false;
+      this.setNotInstalledStateButtons();
+      this.locateCompatiblePackageVersion(() => {
+        this.setNotInstalledStateButtons();
+      });
+    } else {
+      this.setNotInstalledStateButtons();
+    }
+  }
+  setNotInstalledStateButtons() {
+    if (!this.hasCompatibleVersion) {
+      this.refs.installButtonGroup.style.display = "none";
+      this.refs.updateButtonGroup.style.display = "none";
+    } else if (this.newVersion || this.newSha) {
+      this.refs.updateButtonGroup.style.display = "";
+      this.refs.installButtonGroup.style.display = "none";
+    } else {
+      this.refs.updateButtonGroup.style.display = "none";
+      this.refs.installButtonGroup.style.display = "";
+    }
+    this.refs.installAlternativeButtonGroup.style.display = "none";
+    this.refs.packageActionButtonGroup.style.display = "none";
+  }
+  // Section: deprecated state updates
+  updateDeprecatedState() {
+    if (this.isDeprecated()) {
+      this.displayDeprecatedState();
+    } else if (this.element.classList.contains("deprecated")) {
+      this.displayUndeprecatedState();
+    }
+  }
+  displayStats(options) {
+    if (options && options.stats && options.stats.downloads) {
+      this.refs.packageDownloads.style.display = "";
+    } else {
+      this.refs.packageDownloads.style.display = "none";
+    }
+    if (options && options.stats && options.stats.stars) {
+      this.refs.packageStars.style.display = "";
+    } else {
+      this.refs.packageStars.style.display = "none";
+    }
+  }
+  displayUndeprecatedState() {
+    this.element.classList.remove("deprecated");
+    this.refs.packageMessage.classList.remove("text-warning");
+    this.refs.packageMessage.textContent = "";
+  }
+  displayDeprecatedState() {
+    this.element.classList.add("deprecated");
+    this.refs.settingsButton.disabled = true;
+    const info = this.getDeprecatedPackageMetadata();
+    this.refs.packageMessage.classList.add("text-warning");
+    let message = null;
+    if (info && info.hasDeprecations) {
+      message = this.getDeprecationMessage(this.newVersion);
+    } else if (info && info.hasAlternative && info.alternative === "core") {
+      message = info.message != null ? info.message : `The features in \`${this.pack.name}\` have been added to core.`;
+      message += " Please uninstall this package.";
+      this.refs.settingsButton.remove();
+      this.refs.enablementButton.remove();
+    } else if (info && info.hasAlternative && info.alternative) {
+      const alt = info.alternative;
+      const isInstalled = this.isInstalled();
+      if (isInstalled && this.packageManager.isPackageInstalled(alt)) {
+        message = `\`${this.pack.name}\` has been replaced by \`${alt}\` which is already installed. Please uninstall this package.`;
+        this.refs.settingsButton.remove();
+        this.refs.enablementButton.remove();
+      } else if (isInstalled) {
+        message = `\`${this.pack.name}\` has been replaced by [\`${alt}\`](chevron://config/install/package:${alt}).`;
+        this.refs.installAlternativeButton.textContent = `Install ${alt}`;
+        this.refs.installAlternativeButtonGroup.style.display = "";
+        this.refs.packageActionButtonGroup.style.display = "";
+        this.refs.settingsButton.remove();
+        this.refs.enablementButton.remove();
+      } else {
+        message = `\`${this.pack.name}\` has been replaced by [\`${alt}\`](chevron://config/install/package:${alt}).`;
+        this.refs.installButtonGroup.style.display = "none";
+        this.refs.installAlternativeButtonGroup.style.display = "none";
+        this.refs.packageActionButtonGroup.style.display = "none";
+      }
+    }
+    if (message != null) {
+      if (marked == null) {
+        marked = require("marked");
+      }
+      const createDOMPurify = require("dompurify");
+      this.refs.packageMessage.innerHTML = createDOMPurify().sanitize(
+        marked.parse(message, { breaks: true })
+      );
+    }
+  }
+  displayGitPackageInstallInformation() {
+    this.refs.metaUserContainer.remove();
+    this.refs.statsContainer.remove();
+    const { gitUrlInfo } = this.pack;
+    if (gitUrlInfo.default === "shortcut") {
+      this.refs.packageDescription.textContent = gitUrlInfo.https();
+    } else {
+      this.refs.packageDescription.textContent = gitUrlInfo.toString();
+    }
+    this.refs.installButton.classList.remove("icon-cloud-download");
+    this.refs.installButton.classList.add("icon-git-commit");
+    this.refs.updateButton.classList.remove("icon-cloud-download");
+    this.refs.updateButton.classList.add("icon-git-commit");
+  }
+  displayAvailableUpdate(newVersion) {
+    this.newVersion = newVersion;
+    this.updateInterfaceState();
+  }
+  getDeprecationMessage(newVersion) {
+    const info = this.getDeprecatedPackageMetadata();
+    if (!info || !info.hasDeprecations) {
+      return;
+    }
+    if (newVersion) {
+      if (this.isDeprecated(newVersion)) {
+        return `An update to \`v${newVersion}\` is available but still contains deprecations.`;
+      } else {
+        return `An update to \`v${newVersion}\` is available without deprecations.`;
+      }
+    } else {
+      if (this.isInstalled()) {
+        return info.message != null ? info.message : "This package has not been loaded due to using deprecated APIs. There is no update available.";
+      } else {
+        return "This package has deprecations and is not installable.";
+      }
+    }
+  }
+  handlePackageEvents() {
+    this.disposables.add(chevron.packages.onDidDeactivatePackage((pack) => {
+      if (pack.name === this.pack.name) {
+        this.updateDisabledState();
+      }
+    }));
+    this.disposables.add(chevron.packages.onDidActivatePackage((pack) => {
+      if (pack.name === this.pack.name) {
+        this.updateDisabledState();
+      }
+    }));
+    this.disposables.add(chevron.config.onDidChange("core.disabledPackages", () => {
+      this.updateDisabledState();
+    }));
+    this.subscribeToPackageEvent("package-installing theme-installing", () => {
+      this.updateInterfaceState();
+      this.refs.installButton.disabled = true;
+      this.refs.installButton.classList.add("is-installing");
+    });
+    this.subscribeToPackageEvent("package-updating theme-updating", () => {
+      this.updateInterfaceState();
+      this.refs.updateButton.disabled = true;
+      this.refs.updateButton.classList.add("is-installing");
+    });
+    this.subscribeToPackageEvent("package-installing-alternative", () => {
+      this.updateInterfaceState();
+      this.refs.installAlternativeButton.disabled = true;
+      this.refs.installAlternativeButton.classList.add("is-installing");
+    });
+    this.subscribeToPackageEvent("package-uninstalling theme-uninstalling", () => {
+      this.updateInterfaceState();
+      this.refs.enablementButton.disabled = true;
+      this.refs.uninstallButton.disabled = true;
+      this.refs.uninstallButton.classList.add("is-uninstalling");
+    });
+    this.subscribeToPackageEvent("package-installed package-install-failed theme-installed theme-install-failed", () => {
+      const loadedPack = chevron.packages.getLoadedPackage(this.pack.name);
+      const version = loadedPack && loadedPack.metadata ? loadedPack.metadata.version : null;
+      if (version) {
+        this.pack.version = version;
+      }
+      this.refs.installButton.disabled = false;
+      this.refs.installButton.classList.remove("is-installing");
+      this.updateInterfaceState();
+    });
+    this.subscribeToPackageEvent("package-updated theme-updated", () => {
+      const loadedPack = chevron.packages.getLoadedPackage(this.pack.name);
+      const metadata = loadedPack ? loadedPack.metadata : null;
+      if (metadata && metadata.version) {
+        this.pack.version = metadata.version;
+      }
+      if (metadata && metadata.apmInstallSource) {
+        this.pack.apmInstallSource = metadata.apmInstallSource;
+      }
+      this.newVersion = null;
+      this.newSha = null;
+      this.refs.updateButton.disabled = false;
+      this.refs.updateButton.classList.remove("is-installing");
+      this.updateInterfaceState();
+    });
+    this.subscribeToPackageEvent("package-update-failed theme-update-failed", () => {
+      this.refs.updateButton.disabled = false;
+      this.refs.updateButton.classList.remove("is-installing");
+      this.updateInterfaceState();
+    });
+    this.subscribeToPackageEvent("package-uninstalled package-uninstall-failed theme-uninstalled theme-uninstall-failed", () => {
+      this.newVersion = null;
+      this.newSha = null;
+      this.refs.enablementButton.disabled = false;
+      this.refs.uninstallButton.disabled = false;
+      this.refs.uninstallButton.classList.remove("is-uninstalling");
+      this.updateInterfaceState();
+    });
+    this.subscribeToPackageEvent("package-installed-alternative package-install-alternative-failed", () => {
+      this.refs.installAlternativeButton.disabled = false;
+      this.refs.installAlternativeButton.classList.remove("is-installing");
+      this.updateInterfaceState();
+    });
+  }
+  isInstalled() {
+    return this.packageManager.isPackageInstalled(this.pack.name);
+  }
+  isDisabled() {
+    return chevron.packages.isPackageDisabled(this.pack.name);
+  }
+  isDeprecated(version) {
+    const packVersion = version != null ? version : this.pack.version;
+    return chevron.packages.isDeprecatedPackage(this.pack.name, packVersion);
+  }
+  getDeprecatedPackageMetadata() {
+    return chevron.packages.getDeprecatedPackageMetadata(this.pack.name);
+  }
+  hasSettings() {
+    return this.packageManager.packageHasSettings(this.pack.name);
+  }
+  subscribeToPackageEvent(event, callback) {
+    this.disposables.add(this.packageManager.on(event, ({ pack, error }) => {
+      if (pack.pack != null) {
+        pack = pack.pack;
+      }
+      const packageName = pack.name;
+      if (packageName === this.pack.name) {
+        callback(pack, error);
+      }
+    }));
+  }
+  /*
+  Section: Methods that should be on a Package model
+  */
+  install() {
+    this.packageManager.install(this.installablePack != null ? this.installablePack : this.pack, (error) => {
+      if (error != null) {
+        console.error(`Installing ${this.type} ${this.pack.name} failed`, error.stack != null ? error.stack : error, error.stderr);
+      } else {
+        if (this.isDisabled()) {
+          chevron.packages.enablePackage(this.pack.name);
+        }
+      }
+    });
+  }
+  update() {
+    if (!this.newVersion && !this.newSha) {
+      return Promise.resolve();
+    }
+    const pack = this.installablePack != null ? this.installablePack : this.pack;
+    const version = this.newVersion ? `v${this.newVersion}` : `#${this.newSha.substr(0, 8)}`;
+    return new Promise((resolve, reject) => {
+      this.packageManager.update(pack, this.newVersion, (error) => {
+        if (error != null) {
+          chevron.assert(false, "Package update failed", (assertionError) => {
+            assertionError.metadata = {
+              type: this.type,
+              name: pack.name,
+              version,
+              errorMessage: error.message,
+              errorStack: error.stack,
+              errorStderr: error.stderr
+            };
+          });
+          console.error(`Updating ${this.type} ${pack.name} to ${version} failed:
+`, error, error.stderr != null ? error.stderr : "");
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+  uninstall() {
+    this.packageManager.uninstall(this.pack, (error) => {
+      if (error != null) {
+        console.error(`Uninstalling ${this.type} ${this.pack.name} failed`, error.stack != null ? error.stack : error, error.stderr);
+      }
+    });
+  }
+  installAlternative() {
+    const metadata = this.getDeprecatedPackageMetadata();
+    const loadedPack = chevron.packages.getLoadedPackage(metadata ? metadata.alternative : null);
+    if (!metadata || !metadata.hasAlternative || metadata.alternative === "core" || loadedPack) {
+      return;
+    }
+    this.packageManager.installAlternative(this.pack, metadata.alternative, (error, { pack, alternative }) => {
+      if (error != null) {
+        console.error(`Installing alternative \`${alternative}\` ${this.type} for ${this.pack.name} failed`, error.stack != null ? error.stack : error, error.stderr);
+      }
+    });
+  }
+}

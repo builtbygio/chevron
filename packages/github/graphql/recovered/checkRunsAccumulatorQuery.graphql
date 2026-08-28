@@ -1,0 +1,43 @@
+query checkRunsAccumulatorQuery(
+  $id: ID!
+  $checkRunCount: Int!
+  $checkRunCursor: String
+) {
+  node(id: $id) {
+    __typename
+    ... on CheckSuite {
+      ...checkRunsAccumulator_checkSuite_Rvfr1
+    }
+    id
+  }
+}
+
+fragment checkRunView_checkRun on CheckRun {
+  name
+  status
+  conclusion
+  title
+  summary
+  permalink
+  detailsUrl
+}
+
+fragment checkRunsAccumulator_checkSuite_Rvfr1 on CheckSuite {
+  id
+  checkRuns(first: $checkRunCount, after: $checkRunCursor) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        status
+        conclusion
+        ...checkRunView_checkRun
+        __typename
+      }
+    }
+  }
+}

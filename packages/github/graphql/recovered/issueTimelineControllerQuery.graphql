@@ -1,0 +1,117 @@
+query issueTimelineControllerQuery(
+  $timelineCount: Int!
+  $timelineCursor: String
+  $url: URI!
+) {
+  resource(url: $url) {
+    __typename
+    ... on Issue {
+      ...issueTimelineController_issue_3D8CP9
+    }
+    ... on Node {
+      id
+    }
+  }
+}
+
+fragment crossReferencedEventView_item on CrossReferencedEvent {
+  id
+  isCrossRepository
+  source {
+    __typename
+    ... on Issue {
+      number
+      title
+      url
+      issueState: state
+    }
+    ... on PullRequest {
+      number
+      title
+      url
+      prState: state
+    }
+    ... on RepositoryNode {
+      repository {
+        name
+        isPrivate
+        owner {
+          __typename
+          login
+          id
+        }
+        id
+      }
+    }
+    ... on Node {
+      id
+    }
+  }
+}
+
+fragment crossReferencedEventsView_nodes on CrossReferencedEvent {
+  id
+  referencedAt
+  isCrossRepository
+  actor {
+    __typename
+    login
+    avatarUrl
+    ... on Node {
+      id
+    }
+  }
+  source {
+    __typename
+    ... on RepositoryNode {
+      repository {
+        name
+        owner {
+          __typename
+          login
+          id
+        }
+        id
+      }
+    }
+    ... on Node {
+      id
+    }
+  }
+  ...crossReferencedEventView_item
+}
+
+fragment issueCommentView_item on IssueComment {
+  author {
+    __typename
+    avatarUrl
+    login
+    ... on Node {
+      id
+    }
+  }
+  bodyHTML
+  createdAt
+  url
+}
+
+fragment issueTimelineController_issue_3D8CP9 on Issue {
+  url
+  timelineItems(first: $timelineCount, after: $timelineCursor) {
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        __typename
+        ...issueCommentView_item
+        ...crossReferencedEventsView_nodes
+        ... on Node {
+          id
+        }
+      }
+    }
+  }
+}

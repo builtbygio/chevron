@@ -1,0 +1,11 @@
+mutation createRepositoryMutation(
+  $input: CreateRepositoryInput!
+) {
+  createRepository(input: $input) {
+    repository {
+      sshUrl
+      url
+      id
+    }
+  }
+}

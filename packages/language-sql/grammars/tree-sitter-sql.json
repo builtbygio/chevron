@@ -1,0 +1,53 @@
+{
+  "name": "SQL",
+  "scopeName": "source.sql",
+  "type": "tree-sitter",
+  "parser": "@derekstride/tree-sitter-sql",
+  "injectionRegex": "sql",
+  "fileTypes": [
+    "ddl",
+    "dml",
+    "dsql",
+    "hql",
+    "pgsql",
+    "psql",
+    "q",
+    "sql"
+  ],
+  "comments": {
+    "start": "-- "
+  },
+  "folds": [
+    {
+      "type": "create_table"
+    },
+    {
+      "type": "create_view"
+    },
+    {
+      "type": "create_function"
+    },
+    {
+      "type": "select"
+    },
+    {
+      "type": "comment"
+    }
+  ],
+  "scopes": {
+    "program": "source.sql",
+    "comment, marginalia": "comment.line.double-dash.sql",
+    "literal": "string.quoted.sql",
+    "identifier": "variable.other.sql",
+    "field": "variable.other.field.sql",
+    "object_reference": "entity.name.type.sql",
+    "invocation": "support.function.sql",
+    "parameter": "variable.parameter.sql",
+    "keyword_select, keyword_from, keyword_where, keyword_insert, keyword_update, keyword_delete, keyword_create, keyword_drop, keyword_alter, keyword_join, keyword_inner, keyword_left, keyword_right, keyword_full, keyword_outer, keyword_cross, keyword_on, keyword_and, keyword_or, keyword_not, keyword_as, keyword_in, keyword_is, keyword_null, keyword_order, keyword_group, keyword_by, keyword_having, keyword_limit, keyword_offset, keyword_union, keyword_all, keyword_distinct, keyword_into, keyword_values, keyword_set, keyword_table, keyword_index, keyword_view, keyword_with, keyword_case, keyword_when, keyword_then, keyword_else, keyword_end, keyword_exists, keyword_between, keyword_like, keyword_returning": "keyword.other.sql",
+    "keyword_true, keyword_false": "constant.language.boolean.sql",
+    "\"(\"": "punctuation.definition.parameters.begin.sql",
+    "\")\"": "punctuation.definition.parameters.end.sql",
+    "\",\"": "punctuation.separator.sequence.sql",
+    "\"=\"": "keyword.operator.comparison.sql"
+  }
+}

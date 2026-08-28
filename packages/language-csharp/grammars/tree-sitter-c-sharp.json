@@ -1,0 +1,66 @@
+{
+  "name": "C#",
+  "scopeName": "source.cs",
+  "type": "tree-sitter",
+  "parser": "tree-sitter-c-sharp",
+  "injectionRegex": "csharp|c-sharp|c#",
+  "fileTypes": [
+    "cs"
+  ],
+  "comments": {
+    "start": "// "
+  },
+  "folds": [
+    {
+      "type": "block"
+    },
+    {
+      "type": "class_declaration"
+    },
+    {
+      "type": "struct_declaration"
+    },
+    {
+      "type": "interface_declaration"
+    },
+    {
+      "type": "enum_declaration"
+    },
+    {
+      "type": "record_declaration"
+    },
+    {
+      "type": "method_declaration"
+    },
+    {
+      "type": "namespace_declaration"
+    },
+    {
+      "type": "switch_body"
+    },
+    {
+      "type": "comment"
+    }
+  ],
+  "scopes": {
+    "compilation_unit": "source.cs",
+    "comment": "comment.line.double-slash.cs",
+    "string_literal, string_literal_content, verbatim_string_literal, raw_string_literal, raw_string_content, interpolated_string_expression, character_literal, character_literal_content": "string.quoted.double.cs",
+    "escape_sequence": "constant.character.escape.cs",
+    "integer_literal, real_literal": "constant.numeric.cs",
+    "boolean_literal, null_literal": "constant.language.cs",
+    "predefined_type": "storage.type.cs",
+    "modifier": "storage.modifier.cs",
+    "identifier": "variable.other.cs",
+    "class_declaration": "meta.class.cs",
+    "struct_declaration": "meta.struct.cs",
+    "interface_declaration": "meta.interface.cs",
+    "enum_declaration": "meta.enum.cs",
+    "record_declaration": "meta.record.cs",
+    "method_declaration": "meta.method.cs",
+    "namespace_declaration, file_scoped_namespace_declaration": "meta.namespace.cs",
+    "using_directive": "keyword.other.using.cs",
+    "if_statement, else, for_statement, foreach_statement, while_statement, do_statement, switch_statement, switch_expression, return_statement, break_statement, continue_statement, goto_statement, throw_statement, try_statement, catch_clause, finally_clause, yield_statement, lock_statement, using_statement, checked_statement, unchecked, unsafe_statement, fixed_statement": "keyword.control.cs",
+    "preproc_if, preproc_elif, preproc_else, preproc_endregion, preproc_region, preproc_define, preproc_undef, preproc_pragma, preproc_line, preproc_error, preproc_warning, preproc_nullable": "keyword.control.directive.cs"
+  }
+}

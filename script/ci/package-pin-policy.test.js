@@ -119,14 +119,44 @@ function isBuiltbygioNpm(depKey, spec) {
   );
 }
 
+function isBuiltbygioWorkspace(depKey, spec) {
+  const id = ownedNpmId(depKey);
+  return spec === `workspace:@builtbygio/${id}@*`;
+}
+
 describe('package pin policy', () => {
-  it('owned packages pin to npm:@builtbygio/<id>@ver', () => {
+  it('owned editor packages are workspace; owned libs stay npm', () => {
+    // Editor packages live in packages/ — community packages are cancelled, so
+    // publishing them to npm bought nothing and cost a 29-of-83 drift rate.
+    // Libraries and natives (first-mate, text-buffer, keytar …) stay npm pins:
+    // they are real libraries with native builds, not editor packages.
+    const editor = new Set(Object.keys(pkg.packageDependencies || {}));
     for (const name of OWNED_BUILTBYGIO) {
       const url = pkg.dependencies[name];
       assert.ok(url, `missing dependency: ${name}`);
+      if (editor.has(name)) {
+        assert.ok(
+          isBuiltbygioWorkspace(name, url),
+          `${name} is an editor package: expected workspace:@builtbygio/${ownedNpmId(
+            name
+          )}@*, got: ${url}`
+        );
+      } else {
+        assert.ok(
+          isBuiltbygioNpm(name, url),
+          `${name} is a library: expected npm:@builtbygio/${ownedNpmId(
+            name
+          )}@ver, got: ${url}`
+        );
+      }
+    }
+  });
+
+  it('every editor package has a directory in packages/', () => {
+    for (const name of Object.keys(pkg.packageDependencies || {})) {
       assert.ok(
-        isBuiltbygioNpm(name, url),
-        `${name} must be npm:@builtbygio/${ownedNpmId(name)}@ver, got: ${url}`
+        fs.existsSync(path.join(ROOT, 'packages', name, 'package.json')),
+        `packages/${name}/package.json missing`
       );
     }
   });

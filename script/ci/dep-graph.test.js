@@ -157,9 +157,11 @@ describe('root dependency graph', () => {
       pinned,
       `workspace count ${counts.workspace} != pinned ${pinned}`
     );
+    // Editor packages moved to packages/ (workspace:). What remains on npm is
+    // the owned library/native set — first-mate, text-buffer, keytar, …
     assert.ok(
-      counts['npm-builtbygio'] >= 80,
-      `npm-builtbygio count ${counts['npm-builtbygio']} (expected the former git catalog)`
+      counts['npm-builtbygio'] >= 15,
+      `npm-builtbygio count ${counts['npm-builtbygio']} (expected the owned libs)`
     );
     assert.strictEqual(
       counts.file,

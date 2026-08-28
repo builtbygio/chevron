@@ -1,0 +1,177 @@
+{
+  "name": "@builtbygio/github",
+  "main": "./lib/index",
+  "version": "0.37.13",
+  "description": "GitHub integration",
+  "repository": "https://github.com/builtbygio/github",
+  "license": "MIT",
+  "scripts": {
+    "test:coverage": "node script/test-coverage",
+    "test:coverage:text": "nyc --reporter=text npm run test:coverage",
+    "test:coverage:html": "nyc --reporter=html npm run test:coverage",
+    "test:coverage:lcov": "npm run test:coverage",
+    "test:snapshot": "node script/test-snapshot",
+    "report:coverage": "nyc report --reporter=cobertura --reporter=html --reporter=lcovonly",
+    "postinstall": "node script/redownload-electron-bins.js"
+  },
+  "engines": {
+    "atom": ">=1.37.0",
+    "chevron": "*"
+  },
+  "atomTestRunner": "./test/runner",
+  "dependencies": {
+    "bintrees": "1.0.2",
+    "bytes": "3.1.0",
+    "classnames": "2.2.6",
+    "compare-sets": "1.0.1",
+    "dompurify": "3.4.13",
+    "dugite": "1.110.0",
+    "event-kit": "2.5.3",
+    "fs-extra": "4.0.3",
+    "keytar": "4.13.0",
+    "lodash.memoize": "4.1.2",
+    "marked": "4.3.0",
+    "moment": "2.28.0",
+    "node-emoji": "1.10.0",
+    "prop-types": "15.7.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-select": "1.2.1",
+    "react-tabs": "^3.0.0",
+    "temp": "0.9.1",
+    "tinycolor2": "1.4.1",
+    "tree-kill": "1.2.2",
+    "underscore-plus": "1.7.0",
+    "what-the-diff": "0.6.0",
+    "what-the-status": "1.0.3",
+    "whats-my-line": "^0.1.4",
+    "yubikiri": "2.0.0"
+  },
+  "consumedServices": {
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
+    },
+    "metrics-reporter": {
+      "versions": {
+        "^1.1.0": "consumeReporter"
+      }
+    }
+  },
+  "configSchema": {
+    "keyboardNavigationDelay": {
+      "type": "number",
+      "default": 300,
+      "description": "How long to wait before showing a diff view after navigating to an entry with the keyboard"
+    },
+    "viewChangesForCurrentFileDiffPaneSplitDirection": {
+      "type": "string",
+      "default": "none",
+      "enum": [
+        "none",
+        "right",
+        "down"
+      ],
+      "title": "Direction to open diff pane",
+      "description": "Direction to split the active pane when showing diff associated with open file. If 'none', the results will be shown in the active pane."
+    },
+    "gitDiagnostics": {
+      "type": "boolean",
+      "default": false,
+      "description": "Write detailed diagnostic information about git operations to the console"
+    },
+    "filesystemEventDiagnostics": {
+      "type": "boolean",
+      "default": false,
+      "description": "Trace observed filesystem events to the console"
+    },
+    "performanceMask": {
+      "type": "array",
+      "default": [
+        ".*"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "description": "Performance event stream patterns to capture"
+    },
+    "performanceToConsole": {
+      "type": "boolean",
+      "default": false,
+      "description": "Log performance data to the console"
+    },
+    "performanceToDirectory": {
+      "type": "string",
+      "default": "",
+      "description": "Log performance data to JSON files in a directory"
+    },
+    "performanceToProfile": {
+      "type": "boolean",
+      "default": false,
+      "description": "Capture CPU profiles"
+    },
+    "automaticCommitMessageWrapping": {
+      "type": "boolean",
+      "default": true,
+      "description": "Hard wrap commit message body in commit box to 72 characters. Does not apply to expanded commit editors, where message formatting is preserved."
+    },
+    "graphicalConflictResolution": {
+      "type": "boolean",
+      "default": true,
+      "description": "Resolve merge conflicts with in-editor controls"
+    },
+    "showDiffIconGutter": {
+      "type": "boolean",
+      "default": false,
+      "description": "Show change regions within a file patch with icons in addition to color"
+    },
+    "excludedUsers": {
+      "type": "string",
+      "default": "",
+      "description": "Comma-separated list of email addresses to exclude from the co-author selection list"
+    },
+    "reportCannotLocateWorkspaceError": {
+      "type": "boolean",
+      "default": "false",
+      "description": "Log an error to the console if a git repository cannot be located for the opened file"
+    },
+    "sourceRemoteName": {
+      "type": "string",
+      "default": "origin",
+      "description": "Name of the git remote to create when creating a new repository"
+    },
+    "remoteFetchProtocol": {
+      "type": "string",
+      "default": "https",
+      "enum": [
+        "https",
+        "ssh"
+      ],
+      "description": "Transport protocol to prefer when creating a new git remote"
+    },
+    "oauthClientId": {
+      "type": "string",
+      "default": "",
+      "title": "GitHub App client ID",
+      "description": "Public client ID of the Chevron GitHub App. Used for device-flow login (no client secret). Create the App under the builtbygio org, enable Device Flow, and paste the client ID here. Or set CHEVRON_GITHUB_CLIENT_ID. Classic PAT login remains as a fallback."
+    }
+  },
+  "deserializers": {
+    "GitTimingsView": "createGitTimingsView",
+    "IssueishDetailItem": "createIssueishPaneItemStub",
+    "IssueishPaneItem": "createIssueishPaneItemStub",
+    "GitDockItem": "createDockItemStub",
+    "GithubDockItem": "createDockItemStub",
+    "FilePatchControllerStub": "createFilePatchControllerStub",
+    "CommitPreviewStub": "createCommitPreviewStub",
+    "CommitDetailStub": "createCommitDetailStub",
+    "ReviewsStub": "createReviewsStub"
+  },
+  "greenkeeper": {
+    "ignore": [
+      "electron-link",
+      "electron-mksnapshot"
+    ]
+  }
+}

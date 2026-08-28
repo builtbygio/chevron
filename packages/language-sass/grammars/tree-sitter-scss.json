@@ -1,0 +1,47 @@
+{
+  "name": "SCSS",
+  "scopeName": "source.css.scss",
+  "type": "tree-sitter",
+  "parser": "tree-sitter-scss",
+  "injectionRegex": "scss",
+  "fileTypes": [
+    "scss",
+    "css.scss",
+    "css.scss.erb",
+    "scss.erb",
+    "scss.liquid"
+  ],
+  "comments": {
+    "start": "/*",
+    "end": "*/"
+  },
+  "folds": [
+    {
+      "type": "block"
+    },
+    {
+      "type": "comment"
+    }
+  ],
+  "scopes": {
+    "stylesheet": "source.css.scss",
+    "comment, js_comment": "comment.block.css",
+    "tag_name": "entity.name.tag.css",
+    "class_name": "entity.other.attribute-name.class.css",
+    "id_name": "entity.other.attribute-name.id.css",
+    "property_name": "support.type.property-name.css",
+    "plain_value": "support.constant.property-value.css",
+    "string_value": "string.quoted.css",
+    "color_value": "constant.other.color.css",
+    "integer_value, float_value": "constant.numeric.css",
+    "unit": "keyword.other.unit.css",
+    "variable": "variable.scss",
+    "function_name": "support.function.css",
+    "important": "keyword.other.important.css",
+    "at_keyword": "keyword.control.at-rule.css",
+    "\"{\"": "punctuation.section.property-list.begin.css",
+    "\"}\"": "punctuation.section.property-list.end.css",
+    "\":\"": "punctuation.separator.key-value.css",
+    "\";\"": "punctuation.terminator.rule.css"
+  }
+}

@@ -86,7 +86,10 @@ jobs:
             echo "Changed files:"
             echo "$files"
             # Docs-only when no changed path falls outside docs/ or *.md.
-            if [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE '(^docs/|\.md$)'; then
+            # Logic lives in script/ci/docs-only-changed.sh so it can be tested:
+            # the previous inline `grep -qvE` under pipefail misread SIGPIPE as
+            # "docs-only" once the file list was long enough.
+            if [ "$(printf '%s\n' "$files" | ./script/ci/docs-only-changed.sh)" = "true" ]; then
               code=false
             fi
           else
@@ -190,6 +193,7 @@ jobs:
           node --test script/ci/lsp-diagnostics-service.test.js
           node --test script/ci/bootstrap-contract.test.js
           node --test script/ci/config-contract.test.js
+          node --test script/ci/docs-only-filter.test.js
           node --test script/ci/dep-graph.test.js
           node --test script/ci/github-release-check.test.js
           node --test script/ci/sca-runtime.test.js

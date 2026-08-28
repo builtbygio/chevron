@@ -1,0 +1,48 @@
+mutation addPrReviewCommentMutation(
+  $input: AddPullRequestReviewCommentInput!
+) {
+  addPullRequestReviewComment(input: $input) {
+    commentEdge {
+      node {
+        id
+        author {
+          __typename
+          avatarUrl
+          login
+          ... on Node {
+            id
+          }
+        }
+        body
+        bodyHTML
+        isMinimized
+        viewerCanReact
+        viewerCanUpdate
+        path
+        position
+        createdAt
+        lastEditedAt
+        url
+        authorAssociation
+        ...emojiReactionsController_reactable
+      }
+    }
+  }
+}
+
+fragment emojiReactionsController_reactable on Reactable {
+  id
+  ...emojiReactionsView_reactable
+}
+
+fragment emojiReactionsView_reactable on Reactable {
+  id
+  reactionGroups {
+    content
+    viewerHasReacted
+    users {
+      totalCount
+    }
+  }
+  viewerCanReact
+}

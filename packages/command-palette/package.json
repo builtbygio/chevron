@@ -1,0 +1,36 @@
+{
+  "name": "@builtbygio/command-palette",
+  "version": "0.43.8",
+  "main": "./lib/command-palette-package",
+  "description": "Find and run available commands using `cmd-shift-p` (macOS) or `ctrl-shift-p` (Linux/Windows).",
+  "activationCommands": {
+    "atom-workspace": [
+      "command-palette:toggle"
+    ]
+  },
+  "repository": "https://github.com/builtbygio/command-palette",
+  "license": "MIT",
+  "engines": {
+    "atom": "*",
+    "chevron": "*"
+  },
+  "atomTestRunner": "atom-mocha-test-runner",
+  "dependencies": {
+    "atom-select-list": "^0.7.1",
+    "fuzzaldrin": "^2.1.0",
+    "fuzzaldrin-plus": "^0.6.0",
+    "underscore-plus": "^1.0.0"
+  },
+  "configSchema": {
+    "useAlternateScoring": {
+      "type": "boolean",
+      "default": true,
+      "description": "Use an alternative scoring approach which prefers run of consecutive characters, acronyms and start of words."
+    },
+    "preserveLastSearch": {
+      "type": "boolean",
+      "default": false,
+      "description": "Preserve the last search when reopening the command palette."
+    }
+  }
+}

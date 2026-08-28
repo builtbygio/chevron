@@ -1,0 +1,19 @@
+{
+  "name": "@builtbygio/language-source",
+  "version": "0.10.0",
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "description": "Source code support in Chevron",
+  "homepage": "http://atom.github.io/language-source",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-source.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/builtbygio/chevron/issues"
+  }
+}

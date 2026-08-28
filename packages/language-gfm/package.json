@@ -1,0 +1,14 @@
+{
+  "name": "@builtbygio/language-gfm",
+  "version": "0.91.1",
+  "description": "Syntax highlighting and snippets for GitHub Flavored Markdown (GFM).",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-gfm.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "atom": "*",
+    "chevron": "*"
+  }
+}

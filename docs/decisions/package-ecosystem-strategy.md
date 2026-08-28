@@ -16,7 +16,7 @@ serve that deferred future, and they are now dead weight rather than groundwork.
 
 | Now removable | Reason it existed |
 |---|---|
-| The 65 npm-published owned packages | A distribution model for users installing packages individually. Measured cost: **29 of 83 pins had drifted** from what they ship (2026-08-28 audit). Collapsing them into `packages/*` retires that failure class |
+| ~~The 65 npm-published owned packages~~ **— done 2026-08-28** | A distribution model for users installing packages individually. Measured cost: **29 of 83 pins had drifted** from what they ship. All 94 editor packages are now `workspace:` in `packages/`; the 18 owned libs/natives stay npm pins. The drift class is retired |
 | Author-facing devtools — `dalek`, `deprecation-cop`, `incompatible-packages`, `timecop`, `package-generator`, `update-package-dependencies`, `styleguide`, `dev-live-reload` | Tools for *community package authors*. There is no community |
 | Package host v2 spine (`core.packageHostV2`, default off) | Sandboxing for untrusted third-party packages |
 | cpm's registry client (Pulsar search / install-by-name) | Installing packages the product does not ship |

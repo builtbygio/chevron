@@ -29,7 +29,7 @@ describe('github 8B React 18 (inbox stays)', () => {
     // 1.1.0 catalog: npm pins, 0 git SHAs (see baseline-1.1.0.test.js).
     assert.match(
       app.dependencies.github,
-      /^npm:@builtbygio\/github@0\.37\.\d+$/
+      /^workspace:@builtbygio\/github@\*$/
     );
     const pkg = JSON.parse(read('package.json'));
     assert.match(pkg.version, /^0\.37\.\d+$/);

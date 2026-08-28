@@ -1,0 +1,26 @@
+{
+  "name": "@builtbygio/background-tips",
+  "main": "./lib/background-tips",
+  "version": "0.28.2",
+  "description": "Displays tips about Atom in the background when there are no editors open.",
+  "repository": "https://github.com/atom/background-tips",
+  "license": "MIT",
+  "engines": {
+    "atom": ">0.42.0",
+    "chevron": "*"
+  },
+  "dependencies": {
+    "underscore-plus": "1.x"
+  },
+  "standard": {
+    "env": {
+      "atomtest": true,
+      "browser": true,
+      "jasmine": true,
+      "node": true
+    },
+    "globals": [
+      "atom"
+    ]
+  }
+}

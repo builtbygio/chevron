@@ -1,0 +1,25 @@
+{
+  "name": "@builtbygio/language-less",
+  "version": "0.36.2",
+  "description": "Less language support in Chevron",
+  "keywords": [
+    "tree-sitter"
+  ],
+  "license": "MIT",
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-less",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-less.git"
+  },
+  "bugs": {
+    "url": "https://github.com/builtbygio/chevron/issues"
+  },
+  "dependencies": {
+    "tree-sitter-less": "git+https://github.com/mdovale/tree-sitter-less.git#02988c765d30adb0476657b5d220e8dfde1c07d3"
+  }
+}

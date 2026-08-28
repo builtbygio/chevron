@@ -1,0 +1,97 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = _interopRequireDefault(require("react"));
+
+var _propTypes = _interopRequireDefault(require("prop-types"));
+
+var _helpers = require("../helpers");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectSpread2(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+
+function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+class DonutChart extends _react.default.Component {
+  constructor(props) {
+    super(props);
+    (0, _helpers.autobind)(this, 'renderArc');
+  }
+
+  render() {
+    const _this$props = this.props,
+          {
+      slices,
+      baseOffset
+    } = _this$props,
+          others = _objectWithoutProperties(_this$props, ["slices", "baseOffset"]); // eslint-disable-line no-unused-vars
+
+
+    const arcs = this.calculateArcs(slices);
+    return _react.default.createElement("svg", others, arcs.map(this.renderArc));
+  }
+
+  calculateArcs(slices) {
+    const total = slices.reduce((acc, item) => acc + item.count, 0);
+    let lengthSoFar = 0;
+    return slices.map((_ref) => {
+      let {
+        count
+      } = _ref,
+          others = _objectWithoutProperties(_ref, ["count"]);
+
+      const piece = _objectSpread2({
+        length: count / total * 100,
+        position: lengthSoFar
+      }, others);
+
+      lengthSoFar += piece.length;
+      return piece;
+    });
+  }
+
+  renderArc({
+    length,
+    position,
+    type,
+    className
+  }) {
+    return _react.default.createElement("circle", {
+      key: type,
+      cx: "21",
+      cy: "21",
+      r: "15.91549430918954",
+      fill: "transparent",
+      className: `donut-ring-${type}`,
+      pathLength: "100",
+      strokeWidth: "3",
+      strokeDasharray: `${length} ${100 - length}`,
+      strokeDashoffset: `${100 - position + this.props.baseOffset}`
+    });
+  }
+
+}
+
+exports.default = DonutChart;
+
+_defineProperty(DonutChart, "propTypes", {
+  baseOffset: _propTypes.default.number,
+  slices: _propTypes.default.arrayOf(_propTypes.default.shape({
+    type: _propTypes.default.string,
+    className: _propTypes.default.string,
+    count: _propTypes.default.number
+  }))
+});
+
+_defineProperty(DonutChart, "defaultProps", {
+  baseOffset: 25
+});

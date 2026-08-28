@@ -1,0 +1,19 @@
+{
+  "name": "@builtbygio/language-mustache",
+  "version": "0.15.1",
+  "description": "Mustache language support in Atom",
+  "license": "MIT",
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-mustache",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-mustache.git"
+  },
+  "bugs": {
+    "url": "https://github.com/atom/language-mustache/issues"
+  }
+}

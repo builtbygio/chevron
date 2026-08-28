@@ -74,8 +74,8 @@ describe('1.1.0 product contract', () => {
   it('github is an npm pin, not a git SHA', () => {
     const spec = pkg.dependencies.github;
     assert.ok(
-      String(spec).startsWith('npm:@builtbygio/github@'),
-      `github must be npm:@builtbygio/github@ver, got ${spec}`
+      String(spec) === 'workspace:@builtbygio/github@*',
+      `github is an in-repo editor package now, got ${spec}`
     );
   });
 });

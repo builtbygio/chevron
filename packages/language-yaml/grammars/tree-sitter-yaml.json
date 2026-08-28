@@ -1,0 +1,82 @@
+{
+  "name": "YAML",
+  "scopeName": "source.yaml",
+  "type": "tree-sitter",
+  "parser": "@tree-sitter-grammars/tree-sitter-yaml",
+  "injectionRegex": "yaml",
+  "firstLineRegex": "^(#cloud-config|---)",
+  "fileTypes": [
+    "clang-format",
+    "eslintrc",
+    "eyaml",
+    "eyml",
+    "yaml",
+    "yamllint",
+    "yaml.erb",
+    "yml",
+    "yml.erb",
+    "sls",
+    "stylelintrc",
+    "sublime-syntax",
+    "Boxfile",
+    "ksy"
+  ],
+  "comments": {
+    "start": "# "
+  },
+  "folds": [
+    {
+      "type": "block_mapping"
+    },
+    {
+      "type": "block_sequence"
+    },
+    {
+      "type": "flow_mapping"
+    },
+    {
+      "type": "flow_sequence"
+    },
+    {
+      "type": "block_scalar"
+    }
+  ],
+  "scopes": {
+    "stream": "source.yaml",
+    "document": "source.yaml",
+    "comment": "comment.line.number-sign.yaml",
+    "boolean_scalar": "constant.language.boolean.yaml",
+    "null_scalar": "constant.language.null.yaml",
+    "integer_scalar": "constant.numeric.yaml",
+    "float_scalar": "constant.numeric.yaml",
+    "timestamp_scalar": "constant.other.date.yaml",
+    "string_scalar": "string.unquoted.yaml",
+    "double_quote_scalar": "string.quoted.double.yaml",
+    "single_quote_scalar": "string.quoted.single.yaml",
+    "block_scalar": "string.unquoted.block.yaml",
+    "escape_sequence": "constant.character.escape.yaml",
+    "block_mapping_pair > key": "entity.name.tag.yaml",
+    "flow_pair > key": "entity.name.tag.yaml",
+    "anchor": "entity.name.type.anchor.yaml",
+    "anchor_name": "entity.name.type.anchor.yaml",
+    "alias": "variable.other.alias.yaml",
+    "alias_name": "variable.other.alias.yaml",
+    "tag": "keyword.other.tag.yaml",
+    "tag_handle": "keyword.other.tag.yaml",
+    "tag_prefix": "keyword.other.tag.yaml",
+    "yaml_directive, tag_directive, reserved_directive": "keyword.control.directive.yaml",
+    "directive_name": "keyword.control.directive.yaml",
+    "yaml_version": "constant.numeric.yaml",
+    "\":\"": "punctuation.separator.key-value.yaml",
+    "\"-\"": "punctuation.definition.entry.yaml",
+    "\"---\"": "punctuation.definition.directives.end.yaml",
+    "\"...\"": "punctuation.definition.document.end.yaml",
+    "\"&\", \"*\"": "punctuation.definition.anchor.yaml",
+    "\"{\"": "punctuation.definition.dictionary.begin.yaml",
+    "\"}\"": "punctuation.definition.dictionary.end.yaml",
+    "\"[\"": "punctuation.definition.array.begin.yaml",
+    "\"]\"": "punctuation.definition.array.end.yaml",
+    "\",\"": "punctuation.separator.sequence.yaml",
+    "\">\", \"|\"": "keyword.control.flow-indicator.yaml"
+  }
+}

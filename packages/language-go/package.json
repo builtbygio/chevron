@@ -1,0 +1,25 @@
+{
+  "name": "@builtbygio/language-go",
+  "description": "Go language support in Atom",
+  "keywords": [
+    "tree-sitter"
+  ],
+  "version": "0.47.4",
+  "license": "MIT",
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "homepage": "http://atom.github.io/language-go",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-go.git"
+  },
+  "bugs": {
+    "url": "https://github.com/atom/language-go/issues"
+  },
+  "dependencies": {
+    "tree-sitter-go": "0.25.0"
+  }
+}

@@ -1,0 +1,36 @@
+# Chevron-owned package: do not install Atom.
+# Integration / package behavior is validated by builtbygio/chevron CI
+# (bootstrap → build → smoke) when this package's pin is bumped there.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  metadata:
+    name: package metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate package.json
+        run: |
+          node -e "
+            const p = require('./package.json');
+            if (!p.name) throw new Error('missing name');
+            if (!p.main && !p.private) console.warn('warning: no main');
+            const repo = typeof p.repository === 'string' ? p.repository : (p.repository && p.repository.url) || '';
+            if (!repo.includes('builtbygio')) {
+              // allow missing during transition; warn only if engines.chevron present
+              if (p.engines && p.engines.chevron) throw new Error('repository must point at builtbygio');
+              console.warn('warning: repository not builtbygio yet:', repo);
+            }
+            if (!p.engines || !p.engines.chevron) {
+              console.warn('warning: engines.chevron not set yet (ok for N2-folded forks)');
+            }
+            console.log('ok', p.name, p.version, repo, p.engines);
+          "

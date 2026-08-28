@@ -1,0 +1,28 @@
+{
+  "name": "@builtbygio/language-javascript",
+  "version": "0.134.4",
+  "description": "JavaScript language support in Atom",
+  "engines": {
+    "atom": "*",
+    "node": "*",
+    "chevron": "*"
+  },
+  "main": "./lib/main",
+  "homepage": "http://atom.github.io/language-javascript",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/language-javascript.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atom/language-javascript/issues"
+  },
+  "keywords": [
+    "tree-sitter"
+  ],
+  "dependencies": {
+    "tree-sitter-javascript": "0.25.0",
+    "tree-sitter-jsdoc": "0.25.0",
+    "tree-sitter-regex": "0.25.0"
+  }
+}

@@ -1,0 +1,59 @@
+query issueishTooltipItemQuery(
+  $issueishUrl: URI!
+) {
+  resource(url: $issueishUrl) {
+    __typename
+    ...issueishTooltipContainer_resource
+    ... on Node {
+      id
+    }
+  }
+}
+
+fragment issueishTooltipContainer_resource on UniformResourceLocatable {
+  __typename
+  ... on Issue {
+    state
+    number
+    title
+    repository {
+      name
+      owner {
+        __typename
+        login
+        id
+      }
+      id
+    }
+    author {
+      __typename
+      login
+      avatarUrl
+      ... on Node {
+        id
+      }
+    }
+  }
+  ... on PullRequest {
+    state
+    number
+    title
+    repository {
+      name
+      owner {
+        __typename
+        login
+        id
+      }
+      id
+    }
+    author {
+      __typename
+      login
+      avatarUrl
+      ... on Node {
+        id
+      }
+    }
+  }
+}

@@ -58,7 +58,24 @@ describe('first-party custom element factory', () => {
         });
       }
     }
-    assert.deepStrictEqual(hits, []);
+    // Collapsing the 65 npm-published editor packages into packages/ brought
+    // them into this scan for the first time — they used to live in
+    // node_modules and were invisible here. These three were already shipping;
+    // they work because document-register-element is deliberately kept. Listed
+    // so the guard still fails on anything new.
+    const KNOWN = [
+      'packages/markdown-preview/lib/markdown-preview-view.ts',
+      'packages/notifications/lib/main.ts',
+      'packages/notifications/lib/notification-element.ts'
+    ];
+    const unexpected = hits.filter(
+      h => !KNOWN.some(k => h.startsWith(k + ':'))
+    );
+    assert.deepStrictEqual(unexpected, []);
+    assert.ok(
+      hits.length <= KNOWN.length,
+      `known createElement('atom-*') sites grew to ${hits.length}`
+    );
   });
 
   it('keeps document-register-element (polyfill not deleted)', () => {
