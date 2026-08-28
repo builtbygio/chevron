@@ -503,8 +503,8 @@ importers:
         specifier: 9.2.1
         version: 9.2.1
       snippets:
-        specifier: npm:@builtbygio/snippets@1.5.5
-        version: '@builtbygio/snippets@1.5.5'
+        specifier: npm:@builtbygio/snippets@1.5.6
+        version: '@builtbygio/snippets@1.5.6'
       solarized-dark-syntax:
         specifier: workspace:@builtbygio/solarized-dark-syntax@*
         version: link:packages/solarized-dark-syntax
@@ -1056,8 +1056,8 @@ packages:
   '@builtbygio/settings-view@0.261.15':
     resolution: {integrity: sha512-QAdLAfe5BhVXiM6CwfBhOZJOSHtfAvd/NnQYt3lvwEl7JnIaloQNFBmnyi8Gpu16PNWgoKHxxVPl3mPgcmFucQ==}
 
-  '@builtbygio/snippets@1.5.5':
-    resolution: {integrity: sha512-863MBio/ZrKI3hd1Kl60Tu9GMf5vDyiGFAaa9Hhkl5TQMuPAz98kvN1g5np9bXAeXJwaiHZDNfdFDZ22JqM17Q==}
+  '@builtbygio/snippets@1.5.6':
+    resolution: {integrity: sha512-fayt21A1qZrFiOH8UplDcDfnIB1+2K1fhZZ332OuSxNeT3g1GjcgfZk8OQpuCUyvI8Ii9zdYIzIno+raPHtDRQ==}
 
   '@builtbygio/spell-check@0.77.6':
     resolution: {integrity: sha512-TzNfBKWZnZMDrEKzm3YJwhWVjq+aeo632Mol5y4V5r0Qu6NzHXKDkwurXux37v/GdRRV27+86QH2o2lUDn+TwQ==}
@@ -4667,7 +4667,7 @@ snapshots:
       semver: 5.7.2
       underscore-plus: 1.7.0
 
-  '@builtbygio/snippets@1.5.5':
+  '@builtbygio/snippets@1.5.6':
     dependencies:
       async: 0.2.10
       atom-select-list: '@builtbygio/atom-select-list@0.8.2'

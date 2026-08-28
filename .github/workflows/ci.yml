@@ -461,6 +461,7 @@ jobs:
           node --test script/ci/jasmine-node-coffee.test.js
           node --test script/ci/patch-inventory.test.js
           node --test script/ci/wave3-gates.test.js
+          node --test script/ci/menu-uri-openers.test.js
 
       - name: Build + package (deb, tar, rpm)
         run: |

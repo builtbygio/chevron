@@ -214,6 +214,13 @@ module.exports = function parseCommandLine(processArgs) {
     }
     if (path.startsWith('chevron://')) {
       urlsToOpen.push(path);
+    } else if (path.startsWith('atom://')) {
+      // Wave 4 removed the alias. An OS association a user set earlier still
+      // hands us these, and treating one as a path would try to open a file
+      // literally named `atom://…`. Drop it with a diagnostic instead.
+      console.warn(
+        `Ignoring ${path}: atom:// was removed; use the chevron:// spelling.`
+      );
     } else {
       pathsToOpen.push(path);
     }

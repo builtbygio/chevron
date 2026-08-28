@@ -397,14 +397,10 @@ class AtomEnvironment {
 
   registerDefaultOpeners() {
     this.workspace.addOpener(uri => {
-      // chevron://.chevron/* is the product form. The `atom://` scheme alias
-      // went in Wave 4; the `.atom` *host* spelling is a separate legacy
-      // surface and still normalizes.
-      const normalized = String(uri || '').replace(
-        /^chevron:\/\/\.atom\//,
-        'chevron://.chevron/'
-      );
-      switch (normalized) {
+      // chevron://.chevron/* is the product form. Both the `atom://` scheme
+      // and the `.atom` host spelling went in Wave 4, once welcome and
+      // snippets@1.5.6 stopped using them.
+      switch (String(uri || '')) {
         case 'chevron://.chevron/stylesheet':
           return this.workspace.openTextFile(
             this.styles.getUserStyleSheetPath()

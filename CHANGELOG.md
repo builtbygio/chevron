@@ -25,7 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Wave 4: the app's own menu URIs are `chevron://` — `chevron://about`, `chevron://config` and five `chevron://.chevron/*` paths in `atom-application.js`, which were still `atom://`. With the alias removed these would have broken About and Settings.
 - Wave 4: `script/ci/no-atom-uri.test.js` now walks whole packages instead of only `lib/` and `src/`. That blind spot is why the one real emitter, `image-view/styles/image-view.less`, went unnoticed.
-- Wave 4: `image-view` pin → `@builtbygio/image-view@0.64.3`.
+- Wave 4: `image-view` pin → `@builtbygio/image-view@0.64.3`; `snippets` pin → `@builtbygio/snippets@1.5.6`.
+- Wave 4: the `chevron://.atom/*` **host** spelling is gone as well. `welcome` and `snippets@1.5.6` use `chevron://.chevron/*`, so core's normalization was removed. Fixes *Open Your Snippets*, which the alias removal had quietly broken — core's default opener has no snippets case and the package matched only the `.atom` form. New gate `script/ci/menu-uri-openers.test.js` keeps an explicit menu-URI → owner table so this cannot recur.
+- Wave 4: a stale `atom://` OS association is now withdrawn (`removeAsDefaultProtocolClient`) rather than left pointing at a scheme the app no longer handles, and an `atom://` command-line argument is dropped with a diagnostic instead of being treated as a file path.
 - Wave 3: `season`, `document-register-element` and the `atom://` alias all **stay** — each failed its zero-callers gate for a specific reason, now recorded in `script/ci/wave3-gates.test.js`. Notably `atom://` is load-bearing: `image-view` ships `atom://image-view/images/transparent-background.png` in its LESS, resolved by `atom-protocol-handler`.
 - Wave 3: clicking a `chevron://` link no longer warns that `atom://` is deprecated. `handleLinkClick` rewrote canonical `chevron://` URIs *to* `atom://` before handing them to `URIHandlerRegistry`, which then warned about the alias it had just been given. The scheme now passes through unchanged.
 

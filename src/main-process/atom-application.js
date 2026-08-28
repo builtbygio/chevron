@@ -144,6 +144,16 @@ ipcMain.handle('isDefaultProtocolClient', (_, { protocol, path, args }) => {
 ipcMain.handle('setAsDefaultProtocolClient', (_, { protocol, path, args }) => {
   return app.setAsDefaultProtocolClient(protocol, path, args);
 });
+
+// Wave 4: used to withdraw the stale atom:// registration that earlier
+// versions installed. Only the schemes this app knows about are accepted.
+ipcMain.handle(
+  'removeAsDefaultProtocolClient',
+  (_, { protocol, path, args }) => {
+    if (protocol !== 'atom' && protocol !== 'chevron') return false;
+    return app.removeAsDefaultProtocolClient(protocol, path, args);
+  }
+);
 // The application's singleton class.
 //
 // It's the entry point into the Atom application and maintains the global state

@@ -66,12 +66,18 @@ describe('nothing shipped emits atom:// (Wave 4)', () => {
     const hits = [];
     for (const dir of ['src', 'static', 'exports', 'menus', 'keymaps']) {
       for (const hit of emittersIn(path.join(ROOT, dir))) {
-        // Prose in a comment is fine; a URI in code is not.
-        const line = fs
+        for (const line of fs
           .readFileSync(path.join(ROOT, hit), 'utf8')
-          .split('\n')
-          .find(l => l.includes('atom://'));
-        if (!/^\s*(\/\/|\*|\/\*)/.test(line || '')) hits.push(hit);
+          .split('\n')) {
+          if (!line.includes('atom://')) continue;
+          // Prose in a comment is fine.
+          if (/^\s*(\/\/|\*|\/\*)/.test(line)) continue;
+          // Recognising an atom:// argument in order to reject it is fine;
+          // emitting one is not.
+          if (/startsWith\('atom:\/\/'\)/.test(line)) continue;
+          if (/Ignoring|was removed/.test(line)) continue;
+          hits.push(`${hit}: ${line.trim()}`);
+        }
       }
     }
     assert.deepStrictEqual(hits, [], 'core must open chevron:// URIs');

@@ -31,10 +31,27 @@ describe('URI scheme (Wave 4)', () => {
     assert.doesNotMatch(src, /_warnedAtomScheme/);
   });
 
-  it('only chevron is registered as a protocol client', () => {
+  it('registers chevron and withdraws the stale atom registration', () => {
     const src = read('src/protocol-handler-installer.js');
     assert.match(src, /protocol: 'chevron'/);
-    assert.doesNotMatch(src, /protocol: 'atom'/);
+    // `atom` may appear only in the removal call — earlier versions registered
+    // it, so leaving the OS pointed at a scheme we no longer handle would send
+    // links into a dead end.
+    assert.match(src, /removeAsDefaultProtocolClient/);
+    const setBlock = src.slice(src.indexOf('async setAsDefaultProtocolClient'));
+    const removeIdx = setBlock.indexOf('removeAsDefaultProtocolClient');
+    const setIdx = setBlock.indexOf("invoke('setAsDefaultProtocolClient'");
+    assert.ok(removeIdx !== -1 && setIdx > removeIdx, 'remove runs before set');
+    assert.doesNotMatch(
+      setBlock.slice(setIdx),
+      /protocol: 'atom'/,
+      'atom must not be re-registered'
+    );
+
+    // Main must actually handle the channel, and only for known schemes.
+    const main = read('src/main-process/atom-application.js');
+    assert.match(main, /ipcMain\.handle\(\s*'removeAsDefaultProtocolClient'/);
+    assert.match(main, /protocol !== 'atom' && protocol !== 'chevron'/);
   });
 
   it('the main-process protocol handler serves only chevron', () => {
@@ -90,20 +107,33 @@ describe('URI scheme (Wave 4)', () => {
     assert.doesNotMatch(block, /<string>atom<\/string>/);
   });
 
-  it('openers no longer try an alternate spelling', () => {
+  it('openers no longer try an alternate spelling or host', () => {
     const ws = read('src/workspace.js');
     assert.doesNotMatch(ws, /alternateSchemeURI/);
 
     const env = read('src/atom-environment.js');
     assert.match(env, /chevron:\/\/\.chevron\/config/);
     assert.doesNotMatch(env, /replace\(\/\^atom:/);
-    // The `.atom` *host* spelling is a separate legacy surface and stays.
-    assert.match(env, /\\\.atom\\\//);
+    // The `.atom` host normalization went too, once welcome and
+    // snippets@1.5.6 stopped using that spelling.
+    assert.doesNotMatch(env, /\\\.atom\\\//);
   });
 
-  it('the CLI treats only chevron:// as a URL', () => {
+  it('the CLI opens chevron:// and drops atom:// instead of pathing it', () => {
     const src = read('src/main-process/parse-command-line.js');
     assert.match(src, /startsWith\('chevron:\/\/'\)/);
-    assert.doesNotMatch(src, /startsWith\('atom:\/\/'\)/);
+    // A stale OS association still hands us atom:// args. Without an explicit
+    // branch these fall through to pathsToOpen and the app tries to open a
+    // file literally named `atom://…`.
+    assert.match(src, /startsWith\('atom:\/\/'\)/);
+    const from = src.indexOf("startsWith('atom://')");
+    const branch = src.slice(from, src.indexOf('} else {', from));
+    assert.ok(branch.length > 0, 'expected an else-if branch for atom://');
+    assert.doesNotMatch(
+      branch,
+      /pathsToOpen\.push/,
+      'an atom:// arg must not be treated as a path'
+    );
+    assert.match(branch, /console\.warn/, 'say why it was ignored');
   });
 });
