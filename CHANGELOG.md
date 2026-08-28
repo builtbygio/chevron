@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Four bundled syntax themes: `solarized-dark-syntax`, `solarized-light-syntax`, `base16-tomorrow-dark-theme` and `base16-tomorrow-light-theme`. They are untouched Atom-era third-party palettes — the only Chevron change in any of them is the `repository` and `engines` metadata — and they carry no product identity. `packageDependencies` 90 → 86.
+- The eight remaining themes are the two that matter: **One Dark / One Light** (the default and its light counterpart) and **Chevron Dark / Chevron Light** (product identity), each as a UI + syntax pair.
+
 - Four bundled devtools that a closed catalog makes meaningless: **`dalek`** (its only job is `isInstalledAsCommunityPackage()` — detecting a user-installed copy shadowing a bundled package, which can no longer happen), **`incompatible-packages`** (counts packages failing `isCompatible()`; the owned catalog is rebuilt against the shipped Electron, so the count is always 0 and its status-bar icon never appears), **`update-package-dependencies`** (runs `cpm install` in the current project — a package-author workflow), and **`package-generator`**.
 - `package-generator` was not a judgement call: it is **broken**. `initPackage()` shells out to `getApmPath()` with an `init` subcommand, and cpm has no `init` — its dispatch is list/outdated/doctor/rebuild/install/uninstall/link/unlink/search/view/featured. Generating a package has been exiting with an unknown-command error since cpm replaced apm, unnoticed because nothing uses it.
 
@@ -42,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Wave 2: `script/ci/patch-inventory.test.js` — `patches/` and pnpm `patchedDependencies` must agree in both directions, so a patch file cannot rot unapplied again. It also records why the `natural@0.4.0` patch was retired rather than folded into a fork: `natural` declared `log4js: "*"` (→ 6.9.1, where `logger.setLevel` is `undefined`), but `spell-check` never actually used `natural`.
 
 ### Changed
+
+- `ThemeManager` maps the removed theme names onto surviving ones rather than relying on the generic fallback. Without that, a config of `['one-light-ui', 'solarized-light-syntax']` would drop to one resolvable theme and get paired with `one-dark-syntax` — a light UI with dark syntax. The map (which already handled the `atom-*` → `chevron-*` rename) now sends solarized/base16 dark to `one-dark-syntax` and light to `one-light-syntax`.
+- Three catalog sweeps asserted `>= 90` packages as a sanity floor. That pinned the catalog size, so every legitimate trim broke them; they now assert a loose floor whose point is catching a sweep that scanned nothing.
 
 - **Community packages are cancelled, not deferred** (owner decision, 2026-08-28). `docs/decisions/package-ecosystem-strategy.md` records it, along with what it makes removable: the 65 npm-published owned packages (whose distribution model had a measured 29-of-83 drift rate), the eight author-facing devtool packages, the package host v2 spine, and cpm's registry client. None of that is done yet — the decision is recorded so it is not re-litigated.
 

@@ -41,7 +41,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | Bootstrap | **pnpm workspaces** + `@electron/rebuild` via `./script/bootstrap-modern` |
 | CI | macOS x64/arm64, Linux x64/arm64 (packages + smoke), Windows x64 |
 | Catalog | **94** editor packages, all `workspace:@builtbygio/<id>@*` in `packages/`. **18** owned libs/natives stay `npm:@builtbygio/<id>@ver`. **0** git SHA pins |
-| Default themes | **One Dark** (`one-dark-ui` / `one-dark-syntax`). `chevron-dark-*` stays bundled |
+| Default themes | **One Dark** (`one-dark-ui` / `one-dark-syntax`). Eight themes ship: One Dark/Light + Chevron Dark/Light, UI + syntax each. Solarized and base16-tomorrow were dropped (untouched Atom-era palettes); `ThemeManager` maps their names onto the survivors |
 | Package host v2 | Spine landed; `core.packageHostV2` **default false** |
 
 ---

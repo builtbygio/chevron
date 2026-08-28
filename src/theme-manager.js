@@ -140,12 +140,20 @@ module.exports = class ThemeManager {
     if (!Array.isArray(themeNames)) {
       themeNames = [themeNames];
     }
-    // Map legacy atom-* theme package names to chevron-* (rename program).
+    // Map theme package names that no longer exist onto the ones that do:
+    // the atom-* -> chevron-* rename, and the solarized / base16-tomorrow
+    // palettes removed as untouched Atom-era third-party themes. Mapping keeps
+    // light configs on a light theme — the generic fallback below would pair a
+    // light UI with dark syntax.
     const THEME_RENAMES = {
       'atom-dark-syntax': 'chevron-dark-syntax',
       'atom-dark-ui': 'chevron-dark-ui',
       'atom-light-syntax': 'chevron-light-syntax',
-      'atom-light-ui': 'chevron-light-ui'
+      'atom-light-ui': 'chevron-light-ui',
+      'solarized-dark-syntax': 'one-dark-syntax',
+      'solarized-light-syntax': 'one-light-syntax',
+      'base16-tomorrow-dark-theme': 'one-dark-syntax',
+      'base16-tomorrow-light-theme': 'one-light-syntax'
     };
     themeNames = themeNames.map(name => THEME_RENAMES[name] || name);
 
@@ -166,11 +174,7 @@ module.exports = class ThemeManager {
         'one-dark-syntax',
         'one-dark-ui',
         'one-light-syntax',
-        'one-light-ui',
-        'base16-tomorrow-dark-theme',
-        'base16-tomorrow-light-theme',
-        'solarized-dark-syntax',
-        'solarized-light-syntax'
+        'one-light-ui'
       ];
       themeNames = _.intersection(themeNames, builtInThemeNames);
       if (themeNames.length === 0) {
