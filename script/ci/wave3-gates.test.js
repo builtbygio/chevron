@@ -45,10 +45,11 @@ describe('Wave 3 gates', () => {
     assert.match(read('static/index.js'), /document-register-element/);
   });
 
-  it('atom:// stays: an owned pin still emits it in shipped CSS', () => {
-    // image-view resolves a background image through the atom: protocol.
-    // This is shipped LESS, not a comment or a test, so the alias is load
-    // bearing until that pin converts to chevron://.
+  it('atom:// was the one gate Wave 4 reopened and closed', () => {
+    // Wave 3 verdict: stays, because image-view shipped
+    // atom://image-view/images/transparent-background.png in its LESS.
+    // Wave 4 converted that pin (0.64.3) and deleted the alias.
+    // script/ci/uri-scheme.test.js is the live gate now.
     const less = path.join(
       ROOT,
       'node_modules',
@@ -57,27 +58,21 @@ describe('Wave 3 gates', () => {
       'image-view.less'
     );
     if (fs.existsSync(less)) {
-      assert.match(
-        fs.readFileSync(less, 'utf8'),
-        /atom:\/\/image-view\//,
-        'if image-view converted, re-run the Wave 3 atom:// gate'
-      );
+      const src = fs.readFileSync(less, 'utf8');
+      assert.doesNotMatch(src, /atom:\/\//);
+      assert.match(src, /chevron:\/\/image-view\//);
     }
-    // Both schemes must keep resolving while that is true.
     const handler = read('src/main-process/atom-protocol-handler.js');
-    assert.match(handler, /'atom'/);
-    assert.match(handler, /'chevron'/);
+    assert.match(handler, /registerScheme\('chevron'\)/);
   });
 
-  it('link clicks pass the scheme through instead of rewriting it', () => {
+  it('link clicks hand the URI to the registry unchanged', () => {
     // handleLinkClick used to rewrite chevron:// to atom://, so canonical
-    // links tripped the registry's deprecated-alias warning.
+    // links tripped the registry's deprecated-alias warning. Both the rewrite
+    // and the alias are gone.
     const src = read('src/window-event-handler.js');
     assert.doesNotMatch(src, /'atom:\/\/' \+ uri\.slice/);
     assert.match(src, /handleURI\(uri\)/);
-
-    const registry = read('src/uri-handler-registry.js');
-    assert.match(registry, /protocol !== 'chevron:' && protocol !== 'atom:'/);
-    assert.match(registry, /protocol === 'atom:'/);
+    assert.doesNotMatch(src, /startsWith\('atom:\/\/'\)/);
   });
 });

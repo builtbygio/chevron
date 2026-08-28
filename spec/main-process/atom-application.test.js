@@ -577,7 +577,7 @@ describe('AtomApplication', function() {
       });
     });
 
-    describe('atom:// URLs', function() {
+    describe('chevron:// URLs', function() {
       describe('with a package-name host', function() {
         it("loads the package's urlMain in a new window", async function() {
           await scenario.launch({});
@@ -593,8 +593,8 @@ describe('AtomApplication', function() {
 
           const [w1, w2] = await scenario.open(
             parseCommandLine([
-              'atom://package-with-url-main/test1',
-              'atom://package-with-url-main/test2'
+              'chevron://package-with-url-main/test1',
+              'chevron://package-with-url-main/test2'
             ])
           );
 
@@ -604,7 +604,7 @@ describe('AtomApplication', function() {
           );
           assert.strictEqual(
             w1.loadSettings.urlToOpen,
-            'atom://package-with-url-main/test1'
+            'chevron://package-with-url-main/test1'
           );
 
           assert.strictEqual(
@@ -613,7 +613,7 @@ describe('AtomApplication', function() {
           );
           assert.strictEqual(
             w2.loadSettings.urlToOpen,
-            'atom://package-with-url-main/test2'
+            'chevron://package-with-url-main/test2'
           );
         });
 
@@ -631,12 +631,12 @@ describe('AtomApplication', function() {
           };
 
           const [uw] = await scenario.open(
-            parseCommandLine(['atom://package-without-url-main/test'])
+            parseCommandLine(['chevron://package-without-url-main/test'])
           );
           assert.strictEqual(uw, w2);
 
           assert.isTrue(
-            w2.sendURIMessage.calledWith('atom://package-without-url-main/test')
+            w2.sendURIMessage.calledWith('chevron://package-without-url-main/test')
           );
           assert.strictEqual(w2.focus.callCount, 2);
 
@@ -656,7 +656,7 @@ describe('AtomApplication', function() {
           };
 
           const [uw] = await scenario.open(
-            parseCommandLine(['atom://package-without-url-main/test'])
+            parseCommandLine(['chevron://package-without-url-main/test'])
           );
           assert.notStrictEqual(uw, w0);
           assert.strictEqual(
@@ -669,7 +669,7 @@ describe('AtomApplication', function() {
 
           uw.emit('window:loaded');
           assert.isTrue(
-            uw.sendURIMessage.calledWith('atom://package-without-url-main/test')
+            uw.sendURIMessage.calledWith('chevron://package-without-url-main/test')
           );
         });
       });
@@ -684,7 +684,7 @@ describe('AtomApplication', function() {
             parseCommandLine(['--new-window', 'b'])
           );
 
-          const uri = `atom://core/open/file?filename=${encodeURIComponent(
+          const uri = `chevron://core/open/file?filename=${encodeURIComponent(
             scenario.convertEditorPath('a/1.md')
           )}`;
           const [uw] = await scenario.open(parseCommandLine([uri]));
@@ -701,7 +701,7 @@ describe('AtomApplication', function() {
             parseCommandLine(['--test', 'a/1.md'])
           );
 
-          const uri = `atom://core/open/file?filename=${encodeURIComponent(
+          const uri = `chevron://core/open/file?filename=${encodeURIComponent(
             scenario.convertEditorPath('b/2.md')
           )}`;
           const [uw] = await scenario.open(parseCommandLine([uri]));
@@ -1684,7 +1684,7 @@ class LaunchScenario {
 
   convertRootPath(shortRootPath) {
     if (
-      shortRootPath.startsWith('atom://') ||
+      shortRootPath.startsWith('chevron://') ||
       shortRootPath.startsWith('remote://')
     ) {
       return shortRootPath;
@@ -1709,7 +1709,7 @@ class LaunchScenario {
   convertPaths(paths) {
     return paths.map(shortPath => {
       if (
-        shortPath.startsWith('atom://') ||
+        shortPath.startsWith('chevron://') ||
         shortPath.startsWith('remote://')
       ) {
         return shortPath;

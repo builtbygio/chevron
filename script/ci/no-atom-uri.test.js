@@ -1,79 +1,91 @@
 'use strict';
 
 /**
- * H3 PR 23.3 — bundled packages publish chevron:// URIs, not atom://.
- * Run: node --test script/ci/no-atom-uri.test.js
+ * Wave 4 — nothing shipped may emit an `atom://` URI, in a package or in core.
  *
- * Core still accepts atom:// (Workspace retries the alternate scheme, and the
- * protocol handler registers both), so user deep links keep working. This
- * guards the *packages*, which is what has to be clean before that fallback
- * can be removed.
+ * This used to scan only `lib/` and `src/`, which is why it never saw the one
+ * emitter that actually mattered: `image-view/styles/image-view.less`. It now
+ * walks the whole package, skipping only spec/test trees, docs and binaries.
+ * Run: node --test script/ci/no-atom-uri.test.js
  */
 
 const { describe, it } = require('node:test');
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const cp = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 
-function scan(dir) {
-  try {
-    const out = cp.execSync(
-      `grep -rn "atom://" ${dir} 2>/dev/null || true`,
-      { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }
-    ).trim();
-    return out ? out.split('\n') : [];
-  } catch (_) {
-    return [];
-  }
+const SKIP_DIRS = new Set(['node_modules', '.git', 'spec', 'specs', 'test', 'tests']);
+const SKIP_EXT = /\.(png|jpe?g|gif|ico|icns|node|ttf|woff2?|zip|gz|tgz|map|md)$/i;
+
+function emittersIn(root) {
+  const hits = [];
+  if (!fs.existsSync(root) || fs.lstatSync(root).isSymbolicLink()) return hits;
+  const walk = dir => {
+    for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (SKIP_DIRS.has(ent.name)) continue;
+      const full = path.join(dir, ent.name);
+      if (ent.isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (SKIP_EXT.test(ent.name)) continue;
+      let src;
+      try {
+        src = fs.readFileSync(full, 'utf8');
+      } catch {
+        continue;
+      }
+      if (src.includes('atom://')) hits.push(path.relative(ROOT, full));
+    }
+  };
+  walk(root);
+  return hits;
 }
 
-describe('bundled packages publish chevron:// URIs (PR 23.3)', () => {
-  it('no in-repo package emits an atom:// URI', () => {
-    const hits = [];
-    for (const pkg of fs.readdirSync(path.join(ROOT, 'packages'))) {
-      for (const sub of ['lib', 'src']) {
-        const dir = path.join(ROOT, 'packages', pkg, sub);
-        if (fs.existsSync(dir)) hits.push(...scan(dir));
-      }
-    }
-    assert.deepStrictEqual(
-      hits.map(h => h.replace(ROOT + '/', '')),
-      [],
-      'use chevron:// in bundled package code'
-    );
-  });
+describe('nothing shipped emits atom:// (Wave 4)', () => {
+  const pkg = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
+  );
 
   it('no owned pin emits an atom:// URI', () => {
-    const deps =
-      JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
-        .dependencies || {};
+    const names = Object.keys(pkg.packageDependencies || {});
+    assert.ok(names.length >= 90, `catalog shrank to ${names.length}`);
     const hits = [];
-    for (const [name, spec] of Object.entries(deps)) {
-      if (!/builtbygio/.test(String(spec))) continue;
-      const root = path.join(ROOT, 'node_modules', name);
-      if (!fs.existsSync(root) || fs.lstatSync(root).isSymbolicLink()) continue;
-      for (const sub of ['lib', 'src']) {
-        const dir = path.join(root, sub);
-        if (fs.existsSync(dir)) hits.push(...scan(dir));
-      }
+    for (const name of names) {
+      const root = ['packages', 'node_modules']
+        .map(d => path.join(ROOT, d, name))
+        .find(fs.existsSync);
+      if (root) hits.push(...emittersIn(root));
     }
-    assert.deepStrictEqual(
-      hits.map(h => h.replace(ROOT + '/', '')),
-      [],
-      'use chevron:// in owned pin code'
-    );
+    assert.deepStrictEqual(hits, [], 'use chevron:// in owned pin code');
   });
 
-  it('core still accepts atom:// so existing links keep working', () => {
+  it('core emits no atom:// URI', () => {
+    const hits = [];
+    for (const dir of ['src', 'static', 'exports', 'menus', 'keymaps']) {
+      for (const hit of emittersIn(path.join(ROOT, dir))) {
+        // Prose in a comment is fine; a URI in code is not.
+        const line = fs
+          .readFileSync(path.join(ROOT, hit), 'utf8')
+          .split('\n')
+          .find(l => l.includes('atom://'));
+        if (!/^\s*(\/\/|\*|\/\*)/.test(line || '')) hits.push(hit);
+      }
+    }
+    assert.deepStrictEqual(hits, [], 'core must open chevron:// URIs');
+  });
+
+  it('core no longer accepts atom:// either', () => {
+    // Wave 4 removed the alias outright; script/ci/uri-scheme.test.js is the
+    // detailed gate.
     const ws = fs.readFileSync(path.join(ROOT, 'src/workspace.js'), 'utf8');
-    assert.match(ws, /alternateSchemeURI/);
+    assert.doesNotMatch(ws, /alternateSchemeURI/);
     const registry = fs.readFileSync(
       path.join(ROOT, 'src/uri-handler-registry.js'),
       'utf8'
     );
-    assert.match(registry, /protocol !== 'atom:'/);
+    assert.doesNotMatch(registry, /protocol !== 'atom:'/);
   });
 });

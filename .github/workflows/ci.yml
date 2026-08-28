@@ -222,7 +222,6 @@ jobs:
           node --test script/ci/package-host-eligibility.test.js
           node --test script/ci/src-typescript-first.test.js
           node --test script/ci/uri-scheme.test.js
-          node --test script/ci/uri-scheme-alias.test.js
           node --test script/ci/no-atom-uri.test.js
           node --test script/ci/shell-commands.test.js
 

@@ -1,5 +1,5 @@
 /*
- * Electron BP P0.1: path confinement for atom:// / chevron:// resolution helpers.
+ * Electron BP P0.1: path confinement for chevron:// resolution helpers.
  * Pure unit tests (no Electron protocol registration).
  */
 
@@ -34,8 +34,8 @@ describe('atom-protocol-handler path confinement (P0.1)', function() {
   });
 
   describe('relativePathFromAtomUrl', function() {
-    it('parses atom:// and chevron:// package paths', function() {
-      expect(relativePathFromAtomUrl('atom://tree-view/styles/tree.less')).toBe(
+    it('parses chevron:// package paths', function() {
+      expect(relativePathFromAtomUrl('chevron://tree-view/styles/tree.less')).toBe(
         path.join('tree-view', 'styles', 'tree.less')
       );
       expect(
@@ -44,24 +44,24 @@ describe('atom-protocol-handler path confinement (P0.1)', function() {
     });
 
     it('rejects traversal and absolute paths', function() {
-      expect(relativePathFromAtomUrl('atom://../../etc/passwd')).toBe(null);
-      expect(relativePathFromAtomUrl('atom://foo/../../../etc/hosts')).toBe(
+      expect(relativePathFromAtomUrl('chevron://../../etc/passwd')).toBe(null);
+      expect(relativePathFromAtomUrl('chevron://foo/../../../etc/hosts')).toBe(
         null
       );
-      expect(relativePathFromAtomUrl('atom://assets/../../../etc/hosts')).toBe(
+      expect(relativePathFromAtomUrl('chevron://assets/../../../etc/hosts')).toBe(
         null
       );
-      expect(relativePathFromAtomUrl('atom:///etc/passwd')).toBe(null);
+      expect(relativePathFromAtomUrl('chevron:///etc/passwd')).toBe(null);
     });
 
     it('strips query and hash', function() {
       expect(
-        relativePathFromAtomUrl('atom://tree-view/x.js?cache=1#frag')
+        relativePathFromAtomUrl('chevron://tree-view/x.js?cache=1#frag')
       ).toBe(path.join('tree-view', 'x.js'));
     });
 
     it('rejects empty', function() {
-      expect(relativePathFromAtomUrl('atom://')).toBe(null);
+      expect(relativePathFromAtomUrl('chevron://')).toBe(null);
       expect(relativePathFromAtomUrl('')).toBe(null);
     });
   });

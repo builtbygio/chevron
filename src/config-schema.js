@@ -115,7 +115,7 @@ const configSchema = {
         type: 'string',
         default: 'prompt',
         description:
-          'When should Chevron register itself as the default handler for chevron:// URIs (atom:// stays a deprecated alias)',
+          'When should Chevron register itself as the default handler for chevron:// URIs',
         enum: [
           {
             value: 'prompt',

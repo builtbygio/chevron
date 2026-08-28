@@ -35,7 +35,7 @@ module.exports = function parseCommandLine(processArgs) {
     A file may be opened at the desired line (and optionally column) by
     appending the numbers right after the file name, e.g. \`atom file:5:8\`.
 
-    Paths that start with \`atom://\` will be interpreted as URLs.
+    Paths that start with \`chevron://\` will be interpreted as URLs.
 
     Environment Variables:
 
@@ -158,9 +158,7 @@ module.exports = function parseCommandLine(processArgs) {
       uriHandler: true,
       'uri-handler': true,
       _: args._.filter(
-        str =>
-          typeof str === 'string' &&
-          (str.startsWith('atom://') || str.startsWith('chevron://'))
+        str => typeof str === 'string' && str.startsWith('chevron://')
       ).slice(0, 1)
     };
   }
@@ -214,8 +212,7 @@ module.exports = function parseCommandLine(processArgs) {
       // unknown-options-as-args; they are not paths.
       continue;
     }
-    if (path.startsWith('atom://') || path.startsWith('chevron://')) {
-      // Keep scheme as opened; packages may register either. Product scheme is chevron://.
+    if (path.startsWith('chevron://')) {
       urlsToOpen.push(path);
     } else {
       pathsToOpen.push(path);

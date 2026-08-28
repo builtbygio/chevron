@@ -269,8 +269,8 @@ importers:
         specifier: 2.0.3
         version: 2.0.3
       image-view:
-        specifier: npm:@builtbygio/image-view@0.64.2
-        version: '@builtbygio/image-view@0.64.2'
+        specifier: npm:@builtbygio/image-view@0.64.3
+        version: '@builtbygio/image-view@0.64.3'
       incompatible-packages:
         specifier: workspace:@builtbygio/incompatible-packages@*
         version: link:packages/incompatible-packages
@@ -907,8 +907,8 @@ packages:
     resolution: {integrity: sha512-CKgZtdLtBPEfQj0ieFWL8T5y4uvKP4/y9X0FihfAR0tvaEuQb045cRso6UBoCuDEoveFZxIS5BvbA8GJWWiIJA==}
     engines: {atom: '>=1.37.0'}
 
-  '@builtbygio/image-view@0.64.2':
-    resolution: {integrity: sha512-r373n4IA0c8oKLy5NNLe7TFnbEsbWxhudPFlmsJ8TN9qjjFiUdufW0KnqSuhi0XbVqZevtvJtpZSJaeZLratKA==}
+  '@builtbygio/image-view@0.64.3':
+    resolution: {integrity: sha512-8zwnzJVzY/uBomhFIpZ8WCevRdnX41axRYrHZVKgS/SQozfjbl5n10EtC+G1e8GrexIW1PlWbi7uYweInOKQ/w==}
 
   '@builtbygio/keybinding-resolver@0.39.4':
     resolution: {integrity: sha512-pbADOsMbFZCLBBGV4h/0wvJNyq8dl0N2sz6O61Q657EfU6xpVa0T0kt/ToHNU7mz4QXjmoRI5AJV1CEEj6s47A==}
@@ -4410,7 +4410,7 @@ snapshots:
       whats-my-line: 0.1.4
       yubikiri: 2.0.0
 
-  '@builtbygio/image-view@0.64.2':
+  '@builtbygio/image-view@0.64.3':
     dependencies:
       bytes: 3.1.2
       etch: 0.9.0

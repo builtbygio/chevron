@@ -1,8 +1,12 @@
 'use strict';
 
 /**
- * H3 PR 23 slice 3 — chevron:// is the product URI scheme; atom:// is a
- * deprecated alias that still resolves.
+ * Wave 4 — `chevron://` is the only product URI scheme. The `atom://` alias
+ * is gone from core, from the app's own menu URIs, and from the macOS
+ * CFBundleURLSchemes.
+ *
+ * The gate that allowed this: a sweep of all 94 owned pins found zero shipped
+ * `atom://` emitters once image-view 0.64.3 converted its LESS asset URL.
  * Run: node --test script/ci/uri-scheme.test.js
  */
 
@@ -14,42 +18,38 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const read = p => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
-describe('URI scheme (PR 23.3)', () => {
-  it('the handler registry accepts chevron: as well as atom:', () => {
+describe('URI scheme (Wave 4)', () => {
+  it('the handler registry accepts only chevron:', () => {
     const src = read('src/uri-handler-registry.js');
     assert.match(src, /protocol !== 'chevron:'/);
-    assert.match(src, /protocol !== 'atom:'/);
+    assert.doesNotMatch(src, /protocol !== 'atom:'/);
+    assert.doesNotMatch(src, /protocol === 'atom:'/);
   });
 
-  it('warns once when an atom:// URI is handled', () => {
+  it('the deprecation warning is gone with the alias it warned about', () => {
     const src = read('src/uri-handler-registry.js');
-    assert.match(src, /_warnedAtomScheme/);
-    assert.match(src, /deprecated alias/);
+    assert.doesNotMatch(src, /_warnedAtomScheme/);
   });
 
-  it('default-protocol registration leads with chevron', () => {
+  it('only chevron is registered as a protocol client', () => {
     const src = read('src/protocol-handler-installer.js');
-    // isDefaultProtocolClient must ask about chevron, not atom.
-    const isDefault = src.slice(
-      src.indexOf('async isDefaultProtocolClient'),
-      src.indexOf('async setAsDefaultProtocolClient')
-    );
-    assert.match(isDefault, /protocol: 'chevron'/);
-    assert.ok(
-      !/protocol: 'atom'/.test(isDefault),
-      'isDefaultProtocolClient should no longer key off atom'
-    );
-    // setAsDefaultProtocolClient still registers atom as a best-effort alias.
-    assert.match(src, /protocol: 'atom'/);
-    assert.match(src, /return chevronOk;/);
+    assert.match(src, /protocol: 'chevron'/);
+    assert.doesNotMatch(src, /protocol: 'atom'/);
+  });
+
+  it('the main-process protocol handler serves only chevron', () => {
+    const src = read('src/main-process/atom-protocol-handler.js');
+    assert.match(src, /registerScheme\('chevron'\)/);
+    assert.doesNotMatch(src, /\['atom', 'chevron'\]/);
+
+    const paths = read('src/main-process/atom-protocol-path.js');
+    assert.doesNotMatch(paths, /startsWith\('atom:\/\/'\)/);
+    assert.match(paths, /startsWith\('chevron:\/\/'\)/);
   });
 
   it('no longer claims dual-support forever', () => {
     const src = read('src/protocol-handler-installer.js');
-    assert.ok(
-      !/dual-support forever/.test(src),
-      'Chevron-only policy: strike the dual-support wording (D2/N3)'
-    );
+    assert.ok(!/dual-support forever/.test(src));
   });
 
   it('user-facing protocol copy says chevron://', () => {
@@ -59,16 +59,51 @@ describe('URI scheme (PR 23.3)', () => {
       src.indexOf('themes:')
     );
     assert.match(block, /chevron:\/\//);
-    assert.ok(
-      !/default atom:\/\/ URI handler/.test(block),
-      'prompt copy should lead with chevron://'
-    );
+    assert.doesNotMatch(block, /atom:\/\//);
   });
 
-  it('default openers resolve both spellings', () => {
-    const src = read('src/atom-environment.js');
-    assert.match(src, /chevron:\/\/\.chevron\/config/);
-    // atom:// and the .atom/ path segment are normalised, not enumerated.
-    assert.match(src, /replace\(\/\^atom:/);
+  it('the app opens its own menu URIs as chevron://', () => {
+    // These were atom://about, atom://config and five atom://.atom/* paths.
+    // Missing one would have broken About or Settings with the alias gone.
+    const src = read('src/main-process/atom-application.js');
+    for (const uri of [
+      'chevron://about',
+      'chevron://config',
+      'chevron://.chevron/config',
+      'chevron://.chevron/init-script',
+      'chevron://.chevron/keymap',
+      'chevron://.chevron/snippets',
+      'chevron://.chevron/stylesheet'
+    ]) {
+      assert.ok(src.includes(`'${uri}'`), `${uri} should be opened by name`);
+    }
+    assert.doesNotMatch(src, /'atom:\/\//);
+  });
+
+  it('macOS declares only the chevron URL scheme', () => {
+    const plist = read('resources/mac/atom-Info.plist');
+    const block = plist.slice(
+      plist.indexOf('CFBundleURLSchemes'),
+      plist.indexOf('CFBundleDocumentTypes')
+    );
+    assert.match(block, /<string>chevron<\/string>/);
+    assert.doesNotMatch(block, /<string>atom<\/string>/);
+  });
+
+  it('openers no longer try an alternate spelling', () => {
+    const ws = read('src/workspace.js');
+    assert.doesNotMatch(ws, /alternateSchemeURI/);
+
+    const env = read('src/atom-environment.js');
+    assert.match(env, /chevron:\/\/\.chevron\/config/);
+    assert.doesNotMatch(env, /replace\(\/\^atom:/);
+    // The `.atom` *host* spelling is a separate legacy surface and stays.
+    assert.match(env, /\\\.atom\\\//);
+  });
+
+  it('the CLI treats only chevron:// as a URL', () => {
+    const src = read('src/main-process/parse-command-line.js');
+    assert.match(src, /startsWith\('chevron:\/\/'\)/);
+    assert.doesNotMatch(src, /startsWith\('atom:\/\/'\)/);
   });
 });

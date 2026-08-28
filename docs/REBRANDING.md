@@ -33,7 +33,7 @@ This document is the rebrand record. The old root `MIGRATION-CHECKLIST.md` (Atom
 | Main process app | **`global.chevronApplication`**. `global.atomApplication` is unsupported legacy. |
 | Package module API | **`require('chevron')`**. `require('atom')` logs a one-shot warning. |
 | Engines | Prefer **`engines.chevron`**. `engines.atom` alone → cpm warning. |
-| Protocol | Prefer **`chevron://`**. `atom://` still registered for packages that open it (unsupported legacy). |
+| Protocol | **`chevron://`** only. The `atom://` alias was removed in Wave 4 once no owned pin emitted it; `atom://` no longer resolves. |
 | CLI | **`chevron`**, **`cpm`**. `atom` / `apm` remain shims, not a dual-product promise. |
 | Config home | **`~/.chevron`** default. `CHEVRON_HOME` first. `ATOM_HOME` only if explicitly set. **No default to `~/.atom`.** |
 | Themes | **`chevron-*-ui/syntax`**; old `atom-*` theme ids still map at load. |

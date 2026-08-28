@@ -306,11 +306,7 @@ module.exports = class WindowEventHandler {
     if (uri && uri[0] !== '#') {
       if (/^https?:\/\//.test(uri)) {
         this.applicationDelegate.openExternal(uri);
-      } else if (uri.startsWith('atom://') || uri.startsWith('chevron://')) {
-        // Pass the scheme through as written. This used to rewrite
-        // `chevron://` to `atom://`, which made canonical links trip the
-        // registry's "atom:// is a deprecated alias" warning. The registry
-        // accepts both and warns only on `atom:`.
+      } else if (uri.startsWith('chevron://')) {
         this.atomEnvironment.uriHandlerRegistry.handleURI(uri);
       }
     }

@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-08-28 (1.1.0 unsigned preview shipped; Wave 0 contract tests; **Waves 1-3 complete**)
+**Date of this handoff:** 2026-08-28 (1.1.0 unsigned preview shipped; Wave 0 contract tests; **Waves 1-4 complete**)
 
 ---
 
@@ -178,13 +178,19 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
    - **`Task` — DELETED.** Zero callers: nothing in `src/` but the export itself, and a sweep of all 94 owned pins found only `github/lib/async-queue.js`, which declares its *own* local `class Task` with no requires. Gone: `src/task.ts`, `src/task-bootstrap.js`, the export, `spec/task-spec.js` + fixtures. Gate: `script/ci/task-callers.test.js`.  
    - **`season` — STAYS.** Not blocked on pins (Wave 1 proved zero `.cson` across the catalog *and* the app tree). Blocked on user-authored `~/.chevron/*.cson` dual-read and any installed package's data (`config-file`, `user-config-path`, `keymap-extensions`, `package`, `grammar-registry`).  
    - **`document-register-element` — STAYS.** `document.createElement('atom-*')` under `contextIsolation`; already locked by `baseline-1.1.0` and `custom-element-factory`.  
-   - **`atom://` — STAYS.** `image-view/styles/image-view.less` ships a live `atom://image-view/images/transparent-background.png`, resolved by `atom-protocol-handler` (which serves both schemes). Shipped CSS, not a comment or a test. Convert that pin to `chevron://` and the gate reopens.  
+   - **`atom://` — STAYS at Wave 3, DELETED in Wave 4.** The blocker was `image-view/styles/image-view.less` shipping a live `atom://image-view/images/transparent-background.png`. Wave 4 converted that pin and removed the alias.  
    - **Bug fixed on the way:** `handleLinkClick` rewrote canonical `chevron://` links *to* `atom://` before calling `uriHandlerRegistry.handleURI`, so correct links tripped the registry's "atom:// is a deprecated alias" warning. It now passes the scheme through; only `atom://` warns.  
-4. **Do not delete** `season` / `document-register-element` / first-mate while callers remain (`Task` cleared its gate in Wave 3). **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  
-5. Residual `@atom/*` **dependency keys** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — published as `@builtbygio/*`; renaming the editor key is branding, not a drive-by.  
-6. **Startup perf** — custom V8 snapshot on Linux/Windows with **stock fallback** if verify fails; Darwin stock **frozen** (Q2).  
-7. **Later:** package host v2 **routing on** (spine is off); signing. Jasmine nightly is measurement, not a merge gate ([docs/jasmine-ci.md](docs/jasmine-ci.md)).  
-8. **Build:** `./script/bootstrap-modern` then `./script/with-modern-env ./script/build --no-bootstrap`. `pnpm install` alone leaves Electron natives unbuilt.
+4. **Wave 4 — done. `atom://` is gone.** `@builtbygio/image-view@0.64.3` emits `chevron://`, clearing the last shipped emitter across all 94 pins; then the alias came out of core: the opener fallback (`alternateSchemeURI`), `atom-paths` normalization, the `atom:` branch and deprecation warning in `URIHandlerRegistry`, the `atom` scheme in `AtomProtocolHandler` / `atom-protocol-path`, the CLI URL check, the OS protocol registration, and the macOS `CFBundleURLSchemes` entry. **`chevron://` is now the only product URI scheme.**  
+   - The app was emitting `atom://` **itself** — `atom://about`, `atom://config` and five `atom://.atom/*` menu URIs in `atom-application.js`. Converted; missing them would have broken About and Settings.  
+   - `script/ci/no-atom-uri.test.js` only scanned `lib/` and `src/`, which is why it never saw image-view's `styles/`. It now walks the whole package.  
+   - The `.atom` **host** spelling (`chevron://.atom/*`) is a separate legacy surface and still normalizes. Not gated, not touched.  
+   - Gates: `script/ci/uri-scheme.test.js`, `script/ci/no-atom-uri.test.js`. `uri-scheme-alias.test.js` deleted with the helper it tested.  
+
+5. **Do not delete** `season` / `document-register-element` / first-mate while callers remain (`Task` cleared its gate in Wave 3). **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  
+6. Residual `@atom/*` **dependency keys** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — published as `@builtbygio/*`; renaming the editor key is branding, not a drive-by.  
+7. **Startup perf** — custom V8 snapshot on Linux/Windows with **stock fallback** if verify fails; Darwin stock **frozen** (Q2).  
+8. **Later:** package host v2 **routing on** (spine is off); signing. Jasmine nightly is measurement, not a merge gate ([docs/jasmine-ci.md](docs/jasmine-ci.md)).  
+9. **Build:** `./script/bootstrap-modern` then `./script/with-modern-env ./script/build --no-bootstrap`. `pnpm install` alone leaves Electron natives unbuilt.
 
 ### Known dogfood leftovers (found 2026-08-13)
 
@@ -216,7 +222,7 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
 ### Explicitly out of scope unless asked
 
 - Pulsar rebase  
-- Hard-delete of the remaining Atom shims (`atom://` alias, `season`, `document-register-element`) — each failed its Wave 3 gate with a named caller; see `script/ci/wave3-gates.test.js`  
+- Hard-delete of the remaining Atom shims (`season`, `document-register-element`) — each failed its Wave 3 gate with a named caller; see `script/ci/wave3-gates.test.js`. (`atom://` cleared its gate in Wave 4 and is gone.)  
 
 ---
 

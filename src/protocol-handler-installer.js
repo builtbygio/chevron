@@ -11,7 +11,6 @@ module.exports = class ProtocolHandlerInstaller {
   }
 
   async isDefaultProtocolClient() {
-    // chevron:// is the product scheme; atom:// is a deprecated alias.
     return ipcRenderer.invoke('isDefaultProtocolClient', {
       protocol: 'chevron',
       path: process.execPath,
@@ -24,19 +23,15 @@ module.exports = class ProtocolHandlerInstaller {
     // hacks to make it work on Linux; see https://github.com/electron/electron/issues/6440
     if (!this.isSupported()) return false;
     const args = ['--uri-handler', '--'];
-    const chevronOk = await ipcRenderer.invoke('setAsDefaultProtocolClient', {
+    // Only chevron:// is registered. The atom:// alias went in Wave 4; an
+    // existing OS association for it is left alone rather than removed here,
+    // since unregistering a scheme the user may have set by hand is not this
+    // installer's call.
+    return ipcRenderer.invoke('setAsDefaultProtocolClient', {
       protocol: 'chevron',
       path: process.execPath,
       args
     });
-    // Deprecated alias, kept until bundled packages stop publishing atom://
-    // URIs (H3 PR 23.3 gate). Best effort: its failure must not fail setup.
-    await ipcRenderer.invoke('setAsDefaultProtocolClient', {
-      protocol: 'atom',
-      path: process.execPath,
-      args
-    });
-    return chevronOk;
   }
 
   async initialize(config, notifications) {

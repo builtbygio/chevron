@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Path confinement helpers for atom:// / chevron:// resolution.
+ * Path confinement helpers for chevron:// resolution.
  * Kept free of Electron requires so unit tests can load under host Node.
  * See Electron BP P0.1 / atom-protocol-handler.js.
  */
@@ -29,9 +29,7 @@ function relativePathFromAtomUrl(url) {
   if (typeof url !== 'string' || url.length === 0) return null;
 
   let raw;
-  if (url.startsWith('atom://')) {
-    raw = url.slice('atom://'.length);
-  } else if (url.startsWith('chevron://')) {
+  if (url.startsWith('chevron://')) {
     raw = url.slice('chevron://'.length);
   } else {
     raw = url;
