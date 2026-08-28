@@ -7,7 +7,7 @@ const CONFIG = require('../config');
 const execFileSync = require('./exec-file-sync');
 const { hostCanRunMksnapshot } = require('./mksnapshot-host-support');
 
-// Recognised by '@electron/get', used by the 'electron-mksnapshot' and 'electron-chromedriver' dependencies
+// Recognised by '@electron/get', used by the 'electron-mksnapshot' dependency
 process.env.ELECTRON_CUSTOM_VERSION = CONFIG.appMetadata.electronVersion;
 
 module.exports = function(ci) {
@@ -22,7 +22,7 @@ module.exports = function(ci) {
   if (skipMksnapshot) {
     // electron-mksnapshot's install script hard-exits on linux/win arm hosts.
     // Install the rest of script deps without lifecycle scripts, then finish
-    // the ones we still need (chromedriver + native addons).
+    // the ones we still need (native addons).
     console.log(
       `NOTE: mksnapshot cannot run on ${process.platform}-${process.arch}; ` +
         'using --ignore-scripts and completing select postinstalls without it.'
@@ -46,13 +46,6 @@ module.exports = function(ci) {
 };
 
 function finishScriptDepsWithoutMksnapshot(ci) {
-  // Chromedriver ships native arm64 linux binaries — fine to download here.
-  runNodeModuleScript(
-    'electron-chromedriver',
-    'download-chromedriver.js',
-    'chromedriver download'
-  );
-
   // Packages that normally compile / fetch binaries during install.
   for (const pkg of ['fs-admin', 'leveldown']) {
     try {

@@ -40,14 +40,12 @@ const argv = yargs
   .describe('create-debian-package', 'Create .deb package (Linux only)')
   .describe('create-rpm-package', 'Create .rpm package (Linux only)')
   .describe('compress-artifacts', 'Compress Atom binaries (and symbols on macOS)')
-  .describe('generate-api-docs', 'Only build the API documentation')
   .describe('install', 'Install Atom')
   .string('install')
   .describe('ci', 'Install dependencies quickly (package-lock.json files must be up to date)')
   .wrap(yargs.terminalWidth())
   .argv
 
-const checkChromedriverVersion = require('./lib/check-chromedriver-version')
 const cleanOutputDirectory = require('./lib/clean-output-directory')
 const codeSignOnMac = require('./lib/code-sign-on-mac')
 const codeSignOnWindows = require('./lib/code-sign-on-windows')
@@ -57,7 +55,6 @@ const createDebianPackage = require('./lib/create-debian-package')
 const createRpmPackage = require('./lib/create-rpm-package')
 const createWindowsInstaller = require('./lib/create-windows-installer')
 const dumpSymbols = require('./lib/dump-symbols')
-const generateAPIDocs = require('./lib/generate-api-docs')
 const generateMetadata = require('./lib/generate-metadata')
 const generateModuleCache = require('./lib/generate-module-cache')
 const generateStartupSnapshot = require('./lib/generate-startup-snapshot')
@@ -67,9 +64,6 @@ const packageApplication = require('./lib/package-application')
 const prebuildLessCache = require('./lib/prebuild-less-cache')
 const testSignOnMac = require('./lib/test-sign-on-mac')
 const transpileTypeScriptPaths = require('./lib/transpile-typescript-paths')
-const transpileCsonPaths = require('./lib/transpile-cson-paths')
-const transpilePegJsPaths = require('./lib/transpile-peg-js-paths')
-const transpilePackagesWithCustomTranspilerPaths = require('./lib/transpile-packages-with-custom-transpiler-paths.js')
 
 process.on('unhandledRejection', function (e) {
   console.error(e.stack || e)
@@ -84,25 +78,17 @@ process.env.ELECTRON_VERSION = CONFIG.appMetadata.electronVersion
 let binariesPromise = Promise.resolve()
 
 if (!argv.existingBinaries) {
-  checkChromedriverVersion()
   cleanOutputDirectory()
   copyAssets()
-  transpilePackagesWithCustomTranspilerPaths()
   // Package libs may ship .ts (owned forks); emit .js before metadata resolve.
   transpileTypeScriptPaths()
-  // Pin CSON → JSON at pack time. Do not delete this with Coffee/Babel fossils.
-  transpileCsonPaths()
-  transpilePegJsPaths()
   generateModuleCache()
   prebuildLessCache()
   generateMetadata()
-  generateAPIDocs()
-  if (!argv.generateApiDocs) {
-    binariesPromise = dumpSymbols()
-  }
+  binariesPromise = dumpSymbols()
 }
 
-if (!argv.generateApiDocs) {
+{
   binariesPromise
     .then(packageApplication)
     .then(packagedAppPath => generateStartupSnapshot(packagedAppPath).then(() => packagedAppPath))

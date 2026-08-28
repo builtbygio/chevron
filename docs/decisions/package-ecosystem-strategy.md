@@ -1,14 +1,36 @@
 # Package ecosystem strategy
 
-**Status:** locked product decision (2026-08)  
+**Status:** locked product decision (2026-08); **superseded 2026-08-28 — see "Community packages: never" below**  
 **Related:** [package-ownership-inventory.md](../reference/package-ownership-inventory.md), [REBRANDING.md](./REBRANDING.md), [security-phase-s-package-host.md](../reference/security-phase-s-package-host.md), [cpm-design.md](../reference/cpm-design.md)
+
+## Community packages: never (2026-08-28)
+
+The "Later" horizon is **cancelled by owner decision**. Chevron ships an owned catalog and nothing
+else. There is no future in which third-party packages are installed into the product.
+
+**Why this is recorded rather than assumed:** the original decision deferred community packages
+rather than refusing them, and a deferral quietly becomes a commitment. Several things exist only to
+serve that deferred future, and they are now dead weight rather than groundwork.
+
+**What this unlocks** — none of it done yet, all of it now legitimate:
+
+| Now removable | Reason it existed |
+|---|---|
+| The 65 npm-published owned packages | A distribution model for users installing packages individually. Measured cost: **29 of 83 pins had drifted** from what they ship (2026-08-28 audit). Collapsing them into `packages/*` retires that failure class |
+| Author-facing devtools — `dalek`, `deprecation-cop`, `incompatible-packages`, `timecop`, `package-generator`, `update-package-dependencies`, `styleguide`, `dev-live-reload` | Tools for *community package authors*. There is no community |
+| Package host v2 spine (`core.packageHostV2`, default off) | Sandboxing for untrusted third-party packages |
+| cpm's registry client (Pulsar search / install-by-name) | Installing packages the product does not ship |
+
+**What this does not change:** `cpm` still installs and rebuilds the owned catalog, and the T2
+privileged-`require` restrictions stay — they are defence in depth for the code we do ship, not only
+for code we do not.
 
 ## Decision
 
 | Horizon | Package source | Access model |
 |---------|----------------|--------------|
 | **Now** | **Closed core — owned catalog only** | Ship and maintain packages under `builtbygio/*` + monorepo `packages/*` / `packageDependencies`. No product commitment to open community install from Pulsar (or any public registry). |
-| **Later** | **Sandboxed community packages** | After base Chevron is stable enough, implement **package host v2** (utility process / restricted Node) so third-party packages can run without full editor privilege. |
+| ~~**Later**~~ | ~~Sandboxed community packages~~ | **Cancelled (2026-08-28).** See below. |
 
 This pairs with **Chevron-only** API policy (no dual-support product goal). Community Atom-era packages are **not** a supported extension path until host v2 exists.
 

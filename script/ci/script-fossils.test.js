@@ -48,13 +48,6 @@ describe('script-tree fossils (PR 10)', () => {
     assert.ok(fs.existsSync(path.join(SCRIPT, 'test')));
   });
 
-  it('keeps live CSON transpile', () => {
-    const build = read('script/build');
-    assert.ok(build.includes("require('./lib/transpile-cson-paths')"));
-    assert.ok(build.includes('transpileCsonPaths()'));
-    assert.ok(fs.existsSync(path.join(SCRIPT, 'lib', 'transpile-cson-paths.js')));
-  });
-
   it('dropped Coffee/Babel no-op transpile from script/build', () => {
     const build = read('script/build');
     assert.ok(!build.includes('transpileBabelPaths'));
@@ -65,32 +58,59 @@ describe('script-tree fossils (PR 10)', () => {
     );
   });
 
-  it('donna/joanna/tello stay — generate-api-docs runs from script/build', () => {
+  it('the CSON, PEG.js and custom-transpiler steps are gone', () => {
+    // Each was kept while it still had inputs. None does now: Wave 1 proved
+    // zero shipped `.cson` across all 94 pins and the app tree, there is no
+    // `.pegjs` source in the repo, and no package declares `atomTranspilers`.
     const build = read('script/build');
-    assert.ok(build.includes("require('./lib/generate-api-docs')"));
-    const docs = read('script/lib/generate-api-docs.js');
-    assert.ok(docs.includes("require('coffee-script/register')"));
-    assert.ok(docs.includes("require('donna')"));
-    assert.ok(docs.includes("require('joanna')"));
-    assert.ok(docs.includes("require('tello')"));
-    const pkg = JSON.parse(read('script/package.json'));
-    assert.ok(pkg.dependencies.donna);
-    assert.ok(pkg.dependencies.joanna);
-    assert.ok(pkg.dependencies.tello);
+    for (const name of [
+      'transpile-cson-paths',
+      'transpile-peg-js-paths',
+      'transpile-packages-with-custom-transpiler-paths'
+    ]) {
+      assert.ok(!build.includes(name), `script/build still calls ${name}`);
+      assert.ok(
+        !fs.existsSync(path.join(SCRIPT, 'lib', `${name}.js`)),
+        `${name}.js should be deleted`
+      );
+    }
   });
 
-  it('coffeelint stays — script/lint still requires it (not GitHub CI)', () => {
-    const lint = read('script/lint');
-    assert.ok(lint.includes('lint-coffee-script-paths'));
-    const coffeeLint = read('script/lib/lint-coffee-script-paths.js');
-    assert.ok(coffeeLint.includes("require('coffeelint')"));
+  it('generate-api-docs and its CoffeeScript toolchain are gone', () => {
+    // It wrote docs/output/atom-api.json, which is untracked and which nothing
+    // consumed once script/vsts/ was deleted. donna is CoffeeScript, so this
+    // removed the last CoffeeScript from the build.
+    const build = read('script/build');
+    assert.ok(!build.includes('generate-api-docs'));
+    assert.ok(!build.includes('generateAPIDocs'));
+    assert.ok(!fs.existsSync(path.join(SCRIPT, 'lib', 'generate-api-docs.js')));
     const pkg = JSON.parse(read('script/package.json'));
-    assert.ok(pkg.dependencies.coffeelint);
-    assert.strictEqual(
-      githubWorkflowsMention('script/lint'),
-      false,
-      'GitHub Actions must not grow a script/lint job without revisiting this dep'
+    for (const dep of ['donna', 'joanna', 'tello', 'coffeelint']) {
+      assert.ok(!pkg.dependencies[dep], `script/package.json still pulls ${dep}`);
+    }
+  });
+
+  it('the CoffeeScript linter is gone with the sources it linted', () => {
+    // It globbed dot-chevron/**/*.coffee, src/**/*.coffee and spec/*.coffee —
+    // all empty — and script/lint never ran in GitHub CI anyway.
+    const lint = read('script/lint');
+    assert.ok(!lint.includes('lint-coffee-script-paths'));
+    assert.ok(
+      !fs.existsSync(path.join(SCRIPT, 'lib', 'lint-coffee-script-paths.js'))
     );
+    assert.ok(!fs.existsSync(path.join(ROOT, 'coffeelint.json')));
+  });
+
+  it('the chromedriver harness is gone', () => {
+    // Only spec/integration/ used it, nothing ran that, and script/ci/
+    // smoke-test.js is the harness Chevron actually uses.
+    assert.ok(
+      !fs.existsSync(path.join(SCRIPT, 'lib', 'check-chromedriver-version.js'))
+    );
+    assert.ok(!fs.existsSync(path.join(ROOT, 'spec', 'integration')));
+    const pkg = JSON.parse(read('script/package.json'));
+    assert.ok(!pkg.dependencies['electron-chromedriver']);
+    assert.ok(fs.existsSync(path.join(SCRIPT, 'ci', 'smoke-test.js')));
   });
 
   it('script babel-core is unused and removed', () => {
