@@ -35,7 +35,7 @@ Today (0.6.x): T1/T2 still share the **preload Node world** for compatibility. C
 **Do**
 
 - Use `chevron.workspace`, `chevron.project`, `chevron.packages`, `chevron.notifications`, `BufferedProcess`
-- Long work: spawn via `BufferedProcess` or a main / `utilityProcess` host. **Do not add new `Task` callers.** `Task` is a wrap-then-delete leftover (`child_process.fork` + fake DOM) used only by existing owned pins (fuzzy-finder, symbols-view, `Workspace.replace`)
+- Long work: spawn via `BufferedProcess` or a main / `utilityProcess` host. **`Task` no longer exists** — Wave 3 deleted `src/task.ts` and the `Task` export once a grep proved zero callers across all 94 owned pins. It was `child_process.fork` plus a fake DOM; a `utilityProcess` host replaces it
 - Open external URLs via `applicationDelegate.openExternal` (scheme allowlist in main)
 - File manager / trash via `showItemInFolder` / `moveItemToTrash` on applicationDelegate
 - Declare **`engines.chevron`**
@@ -47,7 +47,7 @@ Today (0.6.x): T1/T2 still share the **preload Node world** for compatibility. C
 - Assume `require('fs')` / `child_process` / `net` will keep working for community packages
 - Use the editor preload as a webview preload or enable Node for guest content
 - Assume `~/.atom` is the config or package home
-- Add new `Task` callers or treat `require('atom')` as a supported API
+- Reintroduce `Task` (deleted in Wave 3) or treat `require('atom')` as a supported API
 
 ## Writing a host-eligible package (T2 authors)
 

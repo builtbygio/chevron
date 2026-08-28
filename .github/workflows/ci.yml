@@ -172,6 +172,7 @@ jobs:
           node --test script/ci/package-pin-policy.test.js
           node --test script/ci/patch-inventory.test.js
           node --test script/ci/baseline-1.1.0.test.js
+          node --test script/ci/wave3-gates.test.js
           node --test script/ci/replace-in-files.test.js
           node --test script/ci/wave1-ipc-slice.test.js
           node --test script/ci/user-config-path.test.js
@@ -460,6 +461,7 @@ jobs:
           node --test script/ci/lazy-first-mate.test.js
           node --test script/ci/jasmine-node-coffee.test.js
           node --test script/ci/patch-inventory.test.js
+          node --test script/ci/wave3-gates.test.js
 
       - name: Build + package (deb, tar, rpm)
         run: |
