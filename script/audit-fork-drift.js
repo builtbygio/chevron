@@ -59,9 +59,12 @@ function repoVersion(repo) {
   }
 }
 
-// Behind and ahead are different hazards. Behind means publishing from the
-// repo silently reverts shipped work. Ahead means the repo carries work that
-// was never published or never pinned here.
+// Behind and ahead are different hazards, but "ahead" does NOT mean the repo is
+// further along. fs-admin, git-utils and node-keytar each reported ahead while
+// being pristine upstream Atom, carrying none of the Chevron work their
+// published package ships — they simply sat on a later *upstream* release that
+// Chevron never adopted. Treat any mismatch as "not reconciled" and check the
+// content, not the number.
 function classify(repoVersion, pinned) {
   if (repoVersion === null) return 'unreadable';
   const parts = v =>
@@ -119,7 +122,9 @@ if (byState('behind').length) {
 }
 if (byState('ahead').length) {
   console.log(
-    'AHEAD: the repo carries work that was never published or never pinned here.\n' +
-      'Decide whether to publish it or drop it before reconciling.'
+    'AHEAD: a higher number here does NOT mean the repo is further along. It has\n' +
+      'meant the repo sat on a later upstream release while carrying none of the\n' +
+      'Chevron work its published package ships. Diff the repo against the\n' +
+      'published tarball before assuming the repo is the better source.'
   );
 }
