@@ -189,6 +189,7 @@ jobs:
           node --test script/ci/lsp-supervision.test.js
           node --test script/ci/lsp-diagnostics-service.test.js
           node --test script/ci/bootstrap-contract.test.js
+          node --test script/ci/config-contract.test.js
           node --test script/ci/dep-graph.test.js
           node --test script/ci/github-release-check.test.js
           node --test script/ci/sca-runtime.test.js
