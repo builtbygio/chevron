@@ -19,7 +19,7 @@
  *   - known native addon packages (superstring, keytar, …) — Phase S1.0
  *   - direct .node binding requires — Phase S1.0
  *
- * See docs/package-node-policy.md, docs/security-phase-s.md.
+ * See docs/reference/package-node-policy.md, docs/process/security-phase-s.md.
  */
 
 const Module = require('module');
@@ -171,8 +171,8 @@ function blockError(id, caller, kind, reason) {
   const msg =
     `[chevron-require-restrict] blocked require(${JSON.stringify(id)}) ` +
     `from community package (${caller || 'unknown'}) [${reason}]. ` +
-    `Use atom.* APIs / cpm dual-support surfaces; see docs/package-node-policy.md ` +
-    `and docs/security-phase-s.md. ` +
+    `Use atom.* APIs / cpm dual-support surfaces; see docs/reference/package-node-policy.md ` +
+    `and docs/process/security-phase-s.md. ` +
     `Set CHEVRON_RESTRICT_PACKAGE_REQUIRES=0 to disable.`;
   console.error(msg);
   const err = new Error(msg);

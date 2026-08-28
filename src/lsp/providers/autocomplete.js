@@ -3,7 +3,7 @@
 /**
  * autocomplete.provider v4.0 adapter for LSP textDocument/completion.
  *
- * Ranking strategy (docs/lsp-design.md §5.7 / §12.9):
+ * Ranking strategy (docs/reference/lsp-design.md §5.7 / §12.9):
  * - inclusionPriority 1 + excludeLowerPriority true → drops subsequence (0)
  *   but keeps snippets (1)
  * - high suggestionPriority so LSP list sorts above peers

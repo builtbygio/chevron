@@ -17,9 +17,9 @@
  *   IPC (still a trusted exception; Phase N later).
  *
  * Natives that keep sandbox:false on the editor window: see
- * `src/preload-natives.js` and docs/security-phase-n3.md.
+ * `src/preload-natives.js` and docs/process/security-phase-n3.md.
  *
- * Optional require policy (docs/package-node-policy.md, security-phase-s.md):
+ * Optional require policy (docs/reference/package-node-policy.md, security-phase-s.md):
  *   CHEVRON_AUDIT_PACKAGE_REQUIRES=1     — log privileged/native requires
  *   CHEVRON_RESTRICT_PACKAGE_REQUIRES    — default ON: block community
  *       privileged modules, native addons, and .node bindings; core/bundled free

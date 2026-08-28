@@ -127,9 +127,9 @@ describe('packaging policy (Stream D)', () => {
     );
   });
 
-  it('docs/packaging.md exists', () => {
+  it('docs/reference/packaging.md exists', () => {
     assert.ok(
-      fs.existsSync(path.join(ROOT, 'docs', 'packaging.md'))
+      fs.existsSync(path.join(ROOT, 'docs', 'reference', 'packaging.md'))
     );
   });
 

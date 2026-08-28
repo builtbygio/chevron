@@ -13,6 +13,6 @@ You may still run `./script/bootstrap-modern --with-apm` to install atom-package
 
 See:
 
-- [docs/cpm-cutover.md](../docs/cpm-cutover.md)
-- [docs/cpm-design.md](../docs/cpm-design.md)
-- [docs/cpm-phase-4-complete.md](../docs/cpm-phase-4-complete.md)
+- [docs/orientation/cpm-cutover.md](../docs/orientation/cpm-cutover.md)
+- [docs/reference/cpm-design.md](../docs/reference/cpm-design.md)
+- [docs/process/cpm-phase-4-complete.md](../docs/process/cpm-phase-4-complete.md)

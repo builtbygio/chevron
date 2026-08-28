@@ -8,7 +8,7 @@
  * a restricted loader and a stub `chevron` proxy: package code in this process
  * cannot reach privileged Node, native addons, or the real editor API.
  *
- * See docs/security-phase-s-package-host.md "Host v2 (target)".
+ * See docs/reference/security-phase-s-package-host.md "Host v2 (target)".
  *
  * inbound:  { type, requestId?, ... }
  * outbound: { type, requestId?, ... }

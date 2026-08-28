@@ -2,7 +2,7 @@
 
 // Chevron package API surface. This is the only package API: the exports/atom.js
 // alias was removed in H3 PR 23, so require('atom') fails with MODULE_NOT_FOUND.
-// See docs/REBRANDING.md and docs/chevron-architecture-modernization.md.
+// See docs/decisions/REBRANDING.md and docs/reference/chevron-architecture-modernization.md.
 
 const TextBuffer = require('text-buffer');
 const { Point, Range } = TextBuffer;
@@ -41,7 +41,7 @@ if (process.platform === 'win32') {
 
 if (process.type === 'renderer') {
   // `Task` was removed in Wave 3: no first-party caller and no owned pin used
-  // it. Run work in a utilityProcess worker instead (see docs/security-phase-s.md).
+  // it. Run work in a utilityProcess worker instead (see docs/process/security-phase-s.md).
   chevronExport.TextEditor = require('../src/text-editor');
 }
 

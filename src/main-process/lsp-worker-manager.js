@@ -3,7 +3,7 @@
 /**
  * Main-process manager for the LSP utilityProcess host (Phase 1).
  * Enforces workspace trust before any start-server.
- * See docs/lsp-design.md.
+ * See docs/reference/lsp-design.md.
  */
 
 const path = require('path');
@@ -175,7 +175,7 @@ async function startServer(opts) {
   }
 
   // Main decides what may be spawned; the renderer no longer supplies an
-  // arbitrary binary path (docs/lsp-design.md §6.2 — see lsp-command-policy).
+  // arbitrary binary path (docs/reference/lsp-design.md §6.2 — see lsp-command-policy).
   const check = commandPolicy.checkCommand(opts.command);
   if (!check.allowed) {
     const err = new Error(`Refusing to start language server: ${check.reason}`);

@@ -3,7 +3,7 @@
 /**
  * Apply LSP WorkspaceEdit with per-buffer transactions and rollback on failure.
  * Multi-file: one undo step per file (grouped via buffer.transact).
- * See docs/lsp-design.md Phase 4.
+ * See docs/reference/lsp-design.md Phase 4.
  */
 
 const fs = require('fs');

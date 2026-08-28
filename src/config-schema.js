@@ -1,5 +1,5 @@
 // This is loaded by atom-environment.coffee. See
-// docs/atom-architecture.md for more information about config
+// docs/reference/atom-architecture.md for more information about config
 // schemas.
 const configSchema = {
   core: {
@@ -40,14 +40,14 @@ const configSchema = {
         default: true,
         title: 'Restrict privileged requires in community packages',
         description:
-          'When enabled (default), community packages under `~/.atom/packages` / `~/.chevron/packages` cannot `require` privileged Node modules (`fs`, `child_process`, `electron`, …). Core and bundled packages are exempt. Override with env `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0`. See [package-node-policy](docs/package-node-policy.md).'
+          'When enabled (default), community packages under `~/.atom/packages` / `~/.chevron/packages` cannot `require` privileged Node modules (`fs`, `child_process`, `electron`, …). Core and bundled packages are exempt. Override with env `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0`. See [package-node-policy](docs/reference/package-node-policy.md).'
       },
       packageHostV2: {
         type: 'boolean',
         default: false,
         title: 'Package host v2 (experimental)',
         description:
-          'When enabled, Chevron boots a restricted `utilityProcess` package host and activates eligible community (T2) packages there instead of in the editor preload. Off by default. Env `CHEVRON_PACKAGE_HOST_V2=1` also enables. See [package host design](docs/security-phase-s-package-host.md).'
+          'When enabled, Chevron boots a restricted `utilityProcess` package host and activates eligible community (T2) packages there instead of in the editor preload. Off by default. Env `CHEVRON_PACKAGE_HOST_V2=1` also enables. See [package host design](docs/reference/security-phase-s-package-host.md).'
       },
       fsIpcStrict: {
         type: 'boolean',
@@ -357,7 +357,7 @@ const configSchema = {
       },
       automaticallyUpdate: {
         description:
-          'Check GitHub Releases for a newer Chevron unsigned preview. In-app install is not used until builds are signed; Check for Update opens the download page. See docs/releases.md.',
+          'Check GitHub Releases for a newer Chevron unsigned preview. In-app install is not used until builds are signed; Check for Update opens the download page. See docs/reference/releases.md.',
         type: 'boolean',
         default: true
       },

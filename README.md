@@ -28,7 +28,7 @@ Rather than a from-scratch rewrite, Chevron takes the harder — and more educat
 | macOS Apple Silicon | `chevron-mac-arm64.zip` |
 | Windows x64 | `chevron-x64-windows.zip` |
 
-All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtbygio/chevron/releases). Details: [docs/releases.md](docs/releases.md).
+All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtbygio/chevron/releases). Details: [docs/reference/releases.md](docs/reference/releases.md).
 
 ## Status
 
@@ -40,13 +40,13 @@ All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtb
 | Bundle ID | `dev.builtbygio.chevron` |
 | Package API | **Chevron only** (`require('chevron')`, `global.chevron`, `engines.chevron`) |
 | URI scheme | **`chevron://`** only — the `atom://` alias and the `.atom` host were removed in Wave 4 |
-| Package catalog | **Owned core only**; sandboxed community is host v2 (later) — [docs/package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md) |
+| Package catalog | **Owned core only**; sandboxed community is host v2 (later) — [docs/decisions/package-ecosystem-strategy.md](docs/decisions/package-ecosystem-strategy.md) |
 | Package manager | **cpm** (Electron-as-Node). The `apm` shim is retired. |
 | Updates | **https://github.com/builtbygio/chevron/releases** (unsigned; Check for Update opens this page) |
 | Config home | **`~/.chevron`** (`CHEVRON_HOME`; `ATOM_HOME` only if set) |
-| Security | Phase S Option C — [docs/security-phase-s-decision.md](docs/security-phase-s-decision.md), [docs/security-threat-model.md](docs/security-threat-model.md) |
+| Security | Phase S Option C — [docs/decisions/security-phase-s-decision.md](docs/decisions/security-phase-s-decision.md), [docs/reference/security-threat-model.md](docs/reference/security-threat-model.md) |
 
-See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
+See [CHANGELOG.md](CHANGELOG.md) and [docs/decisions/REBRANDING.md](docs/decisions/REBRANDING.md).
 
 ## Goals
 
@@ -54,11 +54,11 @@ See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
 - [x] Rearchitect IPC to work under `contextIsolation: true`
 - [x] Clean multi-platform builds on current Electron
 - [x] Chevron branding (icons, shell, package identity)
-- [x] Further first-run / onboarding polish — see [docs/onboarding-polish.md](docs/onboarding-polish.md)
-- [x] Modern package manager path — Phase 0–4 complete (`cpm`; see [docs/cpm-design.md](docs/cpm-design.md), [docs/cpm-cutover.md](docs/cpm-cutover.md)); the `apm` name is retired
-- [x] Security Phase N + Electron best-practices shippable scope ([docs/security-phase-n.md](docs/security-phase-n.md), [docs/electron-best-practices-plan.md](docs/electron-best-practices-plan.md))
-- [x] Phase S complete under **Option C** (editor `sandbox: false` intentional; utilityProcess git workers; T2 restrict) — [docs/security-phase-s-decision.md](docs/security-phase-s-decision.md)
-- [x] Post-1.1.0 modernization Waves 1–4 — shed the Atom-era shims that had no callers left: `Task` deleted, the `atom://` URI alias and `.atom` host removed (`chevron://` is now the only product scheme), dead Relay/`graphql@14` out of `github`, and the `natural` log4js patch retired. See [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md)
+- [x] Further first-run / onboarding polish — see [docs/process/onboarding-polish.md](docs/process/onboarding-polish.md)
+- [x] Modern package manager path — Phase 0–4 complete (`cpm`; see [docs/reference/cpm-design.md](docs/reference/cpm-design.md), [docs/orientation/cpm-cutover.md](docs/orientation/cpm-cutover.md)); the `apm` name is retired
+- [x] Security Phase N + Electron best-practices shippable scope ([docs/process/security-phase-n.md](docs/process/security-phase-n.md), [docs/process/electron-best-practices-plan.md](docs/process/electron-best-practices-plan.md))
+- [x] Phase S complete under **Option C** (editor `sandbox: false` intentional; utilityProcess git workers; T2 restrict) — [docs/decisions/security-phase-s-decision.md](docs/decisions/security-phase-s-decision.md)
+- [x] Post-1.1.0 modernization Waves 1–4 — shed the Atom-era shims that had no callers left: `Task` deleted, the `atom://` URI alias and `.atom` host removed (`chevron://` is now the only product scheme), dead Relay/`graphql@14` out of `github`, and the `natural` log4js patch retired. See [docs/reference/chevron-architecture-modernization.md](docs/reference/chevron-architecture-modernization.md)
 - [ ] `season` and `document-register-element` — both still have live callers; see `script/ci/wave3-gates.test.js` for the evidence
 
 ## Non-goals (for now)
@@ -99,9 +99,9 @@ cd chevron
 
 Platform guides:
 
-- [Linux](docs/build-instructions/linux.md) — `.deb` / `.rpm` / tarball, CI jobs
-- [macOS](docs/build-instructions/macOS.md) — Intel + Apple Silicon CI
-- [Windows](docs/build-instructions/windows.md) — VS 2022, zip artifact, CI job
+- [Linux](docs/orientation/build-instructions/linux.md) — `.deb` / `.rpm` / tarball, CI jobs
+- [macOS](docs/orientation/build-instructions/macOS.md) — Intel + Apple Silicon CI
+- [Windows](docs/orientation/build-instructions/windows.md) — VS 2022, zip artifact, CI job
 
 ## License
 

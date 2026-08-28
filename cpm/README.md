@@ -64,10 +64,10 @@ Native packages: cpm tries prebuilds before compiling.
 ./cpm/bin/cpm rebuild --force-source
 ```
 
-Author guide: [docs/cpm-prebuilds.md](../docs/cpm-prebuilds.md).
+Author guide: [docs/orientation/cpm-prebuilds.md](../docs/orientation/cpm-prebuilds.md).
 
 ## Design and cutover
 
-- Design (authoritative): [docs/cpm-design.md](../docs/cpm-design.md)  
-- User/author cutover: [docs/cpm-cutover.md](../docs/cpm-cutover.md)  
+- Design (authoritative): [docs/reference/cpm-design.md](../docs/reference/cpm-design.md)  
+- User/author cutover: [docs/orientation/cpm-cutover.md](../docs/orientation/cpm-cutover.md)  
 - Phases 0–4 are **complete** on `master`.

@@ -10,7 +10,7 @@
  *    cpm itself no longer depends on prebuild-install)
  * 4. Caller falls back to @electron/rebuild (source)
  *
- * See docs/cpm-prebuilds.md.
+ * See docs/orientation/cpm-prebuilds.md.
  */
 
 const fs = require('fs');

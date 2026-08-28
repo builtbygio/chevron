@@ -4,7 +4,7 @@
 /**
  * Cold-start measurement for the packaged app.
  *
- * Phase 0 of docs/startup-snapshot-plan.md: decide whether restoring the
+ * Phase 0 of docs/reference/startup-snapshot-plan.md: decide whether restoring the
  * custom V8 startup snapshot is worth the effort, using a number rather than
  * an adjective.
  *
@@ -308,7 +308,7 @@ async function main() {
     prev = m.time;
   }
 
-  // Threshold from docs/startup-snapshot-plan.md §4.
+  // Threshold from docs/reference/startup-snapshot-plan.md §4.
   const v = wall.median;
   console.log('\n─── snapshot-plan §4 decision gate ───');
   if (v > 2500) {

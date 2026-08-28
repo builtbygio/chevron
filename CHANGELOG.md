@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- `script/vsts/` — 26 files of Azure DevOps pipelines inherited from Atom. Nothing referenced them, no GitHub Actions workflow ran them, and the one endpoint they targeted (`atom/atom-nightly-releases`) is archived. They were not inert: the 1.1.0 release commit rewrote `get-release-version.js` to drop `request-promise-native`, spending real effort on code that never runs.
+
 - Wave 4: the `atom://` URI alias is gone. `chevron://` is now the only product URI scheme. Removed the opener fallback (`alternateSchemeURI`), `atom-paths` normalization, the `atom:` branch and its deprecation warning in `URIHandlerRegistry`, the `atom` scheme in `AtomProtocolHandler` / `atom-protocol-path`, the CLI URL check, the OS protocol-client registration, and the macOS `CFBundleURLSchemes` entry. **Breaking:** `atom://` deep links and any package publishing them stop resolving. Unblocked by `@builtbygio/image-view@0.64.3`, which converted the last shipped emitter across all 94 pins.
 - Wave 3: `Task` is deleted — `src/task.ts`, `src/task-bootstrap.js`, the `require('chevron').Task` export, and `spec/task-spec.js` with its fixtures. The Wave 3 gate is zero callers, and it passed: nothing in `src/` referenced it but the export, and a sweep of all 94 owned pins found only a same-named local class in `github/lib/async-queue.js`. Long-running work belongs in a `utilityProcess` host. **Breaking** for any package that called `Task`.
 - Wave 2: `spell-check` pin → `@builtbygio/spell-check@0.77.6`, which drops an unused `natural` dependency, and with it `patches/natural@0.4.0.patch`. `natural@0.4.0` declared `log4js: "*"` → 6.9.1, where `logger.setLevel` is `undefined`, so it threw at require time and Chevron patched it. spell-check never actually required `natural` — the string appeared only in its `package.json` — so the patch is retired rather than folded into a fork. `natural@0.4.0`, `log4js`, `apparatus` and `sylvester` all leave the dependency graph; `spelling-manager` is unaffected (it uses `natural@^0.6.3`, which dropped `log4js` upstream).
@@ -27,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `docs/` is reorganised by purpose into `orientation/`, `reference/`, `decisions/` and `process/`, so a reader can tell a live reference from a finished plan. `reference/` is the section that must stay true; `process/` is closed by definition. Every doc is reachable from `docs/README.md`, and all cross-links, code comments and CI test paths were updated (0 broken links repo-wide).
+
 - Wave 4: the app's own menu URIs are `chevron://` — `chevron://about`, `chevron://config` and five `chevron://.chevron/*` paths in `atom-application.js`, which were still `atom://`. With the alias removed these would have broken About and Settings.
 - Wave 4: `script/ci/no-atom-uri.test.js` now walks whole packages instead of only `lib/` and `src/`. That blind spot is why the one real emitter, `image-view/styles/image-view.less`, went unnoticed.
 - Wave 4: `image-view` pin → `@builtbygio/image-view@0.64.3`; `snippets` pin → `@builtbygio/snippets@1.5.6`.
@@ -38,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Wave 2: `github` pin → `@builtbygio/github@0.37.13`, which drops the dead Relay layer left behind by the 8B migration — the unloadable `relay-network-layer-manager` (it required `relay-runtime`, never a dependency), 76 relay-compiler `__generated__` artifacts, a 655 KB `schema.graphql`, and the `graphql@14.5.8` runtime dep that nothing required. `graphql` is gone from the lockfile; the tarball drops 510 → 423 files and 3.30 → 1.9 MB unpacked. The live 8B path (`graphql-client`, `GraphQLQuery`, `relay-stub`, `graphql/recovered/`) is untouched and now gated by `script/ci/github-8b.test.js`.
 - Wave 1 (complete): `Workspace.replace` runs closed files through `replace-in-files` in-process (same JS RegExp events), and forces a global regex the way the old Task worker did. Public `Task` export stays. `src/replace-handler.ts` removed.
 - Wave 1 `sendSync`→`invoke` slice: the Windows jump list and the beep sound move to `chevron:app-get-jump-list-settings` / `chevron:app-set-jump-list` / `chevron:shell-beep`. The `atom-*-sync` twins stay for `remote-compat`. Clipboard stays sync — `atom.clipboard.read()` is synchronous public API.
-- Wave 1 pin CSON inventory: all 94 catalog pins and the app tree ship **0** `.cson`. `season` is no longer a pin reader; it stays for user `.cson` dual-read, the compile cache, and third-party package data (`docs/language-stack.md`).
+- Wave 1 pin CSON inventory: all 94 catalog pins and the app tree ship **0** `.cson`. `season` is no longer a pin reader; it stays for user `.cson` dual-read, the compile cache, and third-party package data (`docs/reference/language-stack.md`).
 - Wave 0 modernization contract: `script/ci/baseline-1.1.0.test.js` locks One Dark, host v2 off, `season`, the `atom://` alias, and the `Task` export. Architecture leftover table / GROK / ownership inventory match the 1.1.0 catalog (31 workspace + 83 npm, 0 git SHAs).
 
 ## [1.1.0] — 2026-08-26
@@ -87,16 +91,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `src/package-host-eligibility.ts` is TypeScript, and `script/ci/src-typescript-first.test.js` now runs in CI. The guard existed but was never invoked, so Epic 21 landed six new `src/**/*.js` files against PR 16's TypeScript-first policy without CI noticing. `src/main-process/**` is now an explicit, documented exemption: main registers no TypeScript compile-cache, and utilityProcess entries are forked by literal path whose extension differs between dev and packaged builds. A companion assertion fails if any `.ts` appears under an exempt directory, so the exemption cannot quietly widen.
 - Windows userData lives in `%LOCALAPPDATA%\chevron` (H3 PR 23b). `generate-metadata.js` writes `chevron` / `chevron-<channel>` instead of the Atom-era names. **No migration ships**: the owner confirmed there is no Windows install base, so there is no userData to orphan and a copy-forward migration would have been permanent boot-path complexity guarding a loss that cannot happen. The migration was designed (#199) and implemented (#206), then discarded once the premise was checked.
 
-- TextMate is a **permanent supported fallback** (H3 PR 22 closed as not applicable, owner decision 2026-08-17). first-mate + oniguruma stay, wrapped and lazy-loaded (PR 14). The 13b port stream is finished and the 12-row keep-TextMate list in [docs/language-stack.md](docs/language-stack.md) will not empty: `language-hyperlink` and `language-todo` are injection grammars other packages depend on, `language-text` is plain text, `language-source` has no grammar. Deleting the TextMate engine would regress plain-text highlighting, TODO/FIXME scopes and hyperlink injection.
+- TextMate is a **permanent supported fallback** (H3 PR 22 closed as not applicable, owner decision 2026-08-17). first-mate + oniguruma stay, wrapped and lazy-loaded (PR 14). The 13b port stream is finished and the 12-row keep-TextMate list in [docs/reference/language-stack.md](docs/reference/language-stack.md) will not empty: `language-hyperlink` and `language-todo` are injection grammars other packages depend on, `language-text` is plain text, `language-source` has no grammar. Deleting the TextMate engine would regress plain-text highlighting, TODO/FIXME scopes and hyperlink injection.
 - All 94 bundled `packageDependencies` now declare `engines.chevron` (H3 PR 23 prerequisite). The 21 in-repo packages that previously declared only `engines.atom` — 8 themes plus `about`, `autoflow`, `dalek`, `deprecation-cop`, `dev-live-reload`, `git-diff`, `go-to-line`, `grammar-selector`, `incompatible-packages`, `line-ending-selector`, `link`, `update-package-dependencies`, `welcome` — gain `"chevron": "*"`. `engines.atom` stays until PR 23 removes the name surface.
-- Windows userData migration plan ([docs/windows-userdata-migrate.md](docs/windows-userdata-migrate.md)) — the gate H3 PR 23b depends on. Design only, no code: copy-never-move out of `%LOCALAPPDATA%\atom`, skip regenerable caches, never overwrite newer data, one-shot marker, fail open, `CHEVRON_SKIP_USERDATA_MIGRATE=1` escape. Splits the work so the migration lands inert before the name flip, which is the irreversible half.
+- Windows userData migration plan ([docs/decisions/windows-userdata-migrate.md](docs/decisions/windows-userdata-migrate.md)) — the gate H3 PR 23b depends on. Design only, no code: copy-never-move out of `%LOCALAPPDATA%\atom`, skip regenerable caches, never overwrite newer data, one-shot marker, fail open, `CHEVRON_SKIP_USERDATA_MIGRATE=1` escape. Splits the work so the migration lands inert before the name flip, which is the irreversible half.
 - `atom-select-list` 0.8.2 uses `require('chevron')` and `global.chevron` (H3 PR 23 prerequisite). It was the last `builtbygio` pin reaching for the Atom names, and `git-diff` / `grammar-selector` / `line-ending-selector` depend on it. `script/ci/owned-require-chevron.test.js` is now wired into `ci.yml` — it existed but was never run, which is why this went unnoticed.
 
-- Package host v2 documentation (H3 Epic 21, slice 21.5): [package host design](docs/security-phase-s-package-host.md) records what is built vs still owed; [package-node-policy](docs/package-node-policy.md) gains "Writing a host-eligible package" for T2 authors; [cpm-design](docs/cpm-design.md) states plainly that the Pulsar registry is a client implementation, not a product store — T2 reopening depends on the host, not a registry URL. Architecture doc marks Epic 21 slices landed and records that **routing is still off**.
+- Package host v2 documentation (H3 Epic 21, slice 21.5): [package host design](docs/reference/security-phase-s-package-host.md) records what is built vs still owed; [package-node-policy](docs/reference/package-node-policy.md) gains "Writing a host-eligible package" for T2 authors; [cpm-design](docs/reference/cpm-design.md) states plainly that the Pulsar registry is a client implementation, not a product store — T2 reopening depends on the host, not a registry URL. Architecture doc marks Epic 21 slices landed and records that **routing is still off**.
 - Package host v2 hybrid routing (H3 Epic 21, slice 21.4): `src/package-host-eligibility.js` decides whether a package may run in the host. Implements the design doc's **(B) Hybrid** slice — pure-logic community packages go to the host; anything touching the DOM (`document`, `window`, `createElement`, `customElements`, etch/React, workspace panels, view registry) stays editor-side under the v1 require policy. Packages needing privileged Node also stay in-process, so a policy error is not converted into an activation failure. `package.json` `chevronPackageHost: "eligible" | "editor"` overrides the heuristics in both directions. Detection is conservative by design: a false "needs DOM" costs nothing, a false "eligible" blanks a UI. Routing is inert unless `core.packageHostV2` / `CHEVRON_PACKAGE_HOST_V2` is on.
 - Package host v2 services (H3 Epic 21, slice 21.3): `providedServices` / `consumedServices` cross the process boundary as **descriptors** (name, version, method list) rather than live objects, with each side building an RPC proxy. Host packages can provide services the editor calls, and consume editor-side services through a reverse `host-request` channel. Late offers reach already-active consumers, and each consumer method is called at most once per service version. Range matching uses a small internal semver subset (`*`, exact, `^`, `~`, comparators) because the host must load in CI's `unit-and-cpm` job, which never runs a root `npm ci`.
 - Package host v2 activation (H3 Epic 21, slice 21.2): the host can now activate **logic-only** packages. `workers/package-host-require.js` is a restricted loader — package code gets the stub proxy for `require('chevron')`/`require('atom')`, and privileged ids, native addons and `.node` bindings throw unconditionally (no `CHEVRON_RESTRICT_PACKAGE_REQUIRES` escape, unlike the in-process v1 policy). `workers/package-host-stub.js` implements the RPC-friendly `chevron.*` surface: `config` served from a snapshot pushed at activate time, `commands` (selector-string targets only), `notifications`, `workspace.open` by URI, plus `Disposable`/`CompositeDisposable`. Contributions stream to the editor as descriptors. Fixtures in `spec/fixtures/packages/package-host-{logic-only,privileged}`.
-- Package host v2 bootstrap (H3 Epic 21, slice 21.1): `src/main-process/package-host-manager.js` supervises a `chevron-package-host` `utilityProcess` defined by `src/main-process/workers/package-host.js`, reachable over allowlisted `chevron:package-host-*` IPC. The host boots, answers `ping`/`describe`/`shutdown`, and **loads no packages yet** — activation lands in 21.2. Gated by `core.packageHostV2` (default `false`). See [docs/security-phase-s-package-host.md](docs/security-phase-s-package-host.md).
+- Package host v2 bootstrap (H3 Epic 21, slice 21.1): `src/main-process/package-host-manager.js` supervises a `chevron-package-host` `utilityProcess` defined by `src/main-process/workers/package-host.js`, reachable over allowlisted `chevron:package-host-*` IPC. The host boots, answers `ping`/`describe`/`shutdown`, and **loads no packages yet** — activation lands in 21.2. Gated by `core.packageHostV2` (default `false`). See [docs/reference/security-phase-s-package-host.md](docs/reference/security-phase-s-package-host.md).
 
 ### Fixed
 
@@ -104,43 +108,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `language-ruby-on-rails` 0.26.0 ships the Rails dialect grammars and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-ruby-on-rails` 0.26.0 ships the Rails dialect grammars and snippets as JSON (H2 PR 13c). `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-sass` 0.64.0 ships the TextMate `source.css.scss`, `source.sass`, and `source.sassdoc` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for SCSS. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-sass` 0.64.0 ships the TextMate `source.css.scss`, `source.sass`, and `source.sassdoc` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for SCSS. `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-objective-c` 0.17.0 ships the `source.objc`, `source.objcpp`, and `source.strings` grammars, settings, and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-objective-c` 0.17.0 ships the `source.objc`, `source.objcpp`, and `source.strings` grammars, settings, and snippets as JSON (H2 PR 13c). `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-git` 0.20.0 ships the `text.git-commit`, `source.git-config`, and `text.git-rebase` grammars, settings, and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-git` 0.20.0 ships the `text.git-commit`, `source.git-config`, and `text.git-rebase` grammars, settings, and snippets as JSON (H2 PR 13c). `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-csharp` 1.3.0 ships the TextMate `source.cs`, `source.csx`, and `source.cake` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for C#. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-csharp` 1.3.0 ships the TextMate `source.cs`, `source.csx`, and `source.cake` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for C#. `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-xml` 0.37.0 ships the TextMate `text.xml` and `text.xml.xsl` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for XML. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-xml` 0.37.0 ships the TextMate `text.xml` and `text.xml.xsl` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for XML. `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-property-list` 0.10.0 ships the `source.plist` and `text.xml.plist` grammars, settings, and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-property-list` 0.10.0 ships the `source.plist` and `text.xml.plist` grammars, settings, and snippets as JSON (H2 PR 13c). `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-php` 0.50.0 ships the TextMate `text.html.php` and `source.php` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-php` 0.50.0 ships the TextMate `text.html.php` and `source.php` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-perl` 0.40.0 ships the TextMate `source.perl` and `source.perl6` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for Perl 5. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-perl` 0.40.0 ships the TextMate `source.perl` and `source.perl6` grammars, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default for Perl 5. `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-coffee-script` 0.51.0 ships the `source.coffee` and `source.litcoffee` grammars, settings, and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-coffee-script` 0.51.0 ships the `source.coffee` and `source.litcoffee` grammars, settings, and snippets as JSON (H2 PR 13c). `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-clojure` 0.24.0 ships the TextMate `source.clojure` grammar, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-clojure` 0.24.0 ships the TextMate `source.clojure` grammar, settings, and snippets as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-yaml` 0.34.0 ships the TextMate `source.yaml` grammar and settings as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-yaml` 0.34.0 ships the TextMate `source.yaml` grammar and settings as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-toml` 0.22.0 ships the TextMate `source.toml` grammar and settings as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-toml` 0.22.0 ships the TextMate `source.toml` grammar and settings as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-sql` 0.27.0 ships the TextMate `source.sql` grammar and settings as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-sql` 0.27.0 ships the TextMate `source.sql` grammar and settings as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-mustache` 0.15.0 ships the `text.html.mustache` and `source.sql.mustache` grammars as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-mustache` 0.15.0 ships the `text.html.mustache` and `source.sql.mustache` grammars as JSON (H2 PR 13c). `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-make` 0.24.0 ships the `source.makefile` grammar and settings as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-make` 0.24.0 ships the `source.makefile` grammar and settings as JSON (H2 PR 13c). `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-less` 0.36.0 ships the TextMate `source.css.less` grammar and settings as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-less` 0.36.0 ships the TextMate `source.css.less` grammar and settings as JSON (H2 PR 13c). Tree-sitter stays default. `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-gfm` 0.91.0 ships GFM settings and snippets as JSON (H2 PR 13c). Grammar was already JSON. `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-gfm` 0.91.0 ships GFM settings and snippets as JSON (H2 PR 13c). Grammar was already JSON. `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-todo` 0.30.0 ships the `text.todo` injection grammar and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-todo` 0.30.0 ships the `text.todo` injection grammar and snippets as JSON (H2 PR 13c). `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
 - `github` 0.37.9: GitHub App device-flow login (classic PAT fallback); `electron.remote` dropped from `directory-select.js` and `git-timings-view.js` (8B). Inbox stays. **Not** gone from the package: 7 files still use `require('electron').remote` — `Menu`/`MenuItem` in `actionable-review-view.js`, `staging-view.js`, `conflict-controller.js`, `issueish-list-controller.js`; `BrowserWindow` in `worker-manager.js`; `getCurrentWindow()` in `event-logger.js` and `git-shell-out-strategy.js`. These block PR 20 (`exports/remote.js` delete) until the github epic.
 
@@ -166,35 +170,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Replace deprecated `vscode-ripgrep@1.9.0` with `@vscode/ripgrep@1.15.14` (H2 PR 15). Same CJS `rgPath` / `bin/rg` layout. Bootstrap fallback now fetches `microsoft/ripgrep-prebuilt` v13.0.0-13 (native darwin-arm64). Not 1.18 (ESM + optionalDependencies).
 
-- `language-text` 0.8.0 ships the `text.plain` grammar and snippets as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-text` 0.8.0 ships the `text.plain` grammar and snippets as JSON (H2 PR 13c). `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-hyperlink` 0.18.0 ships the `text.hyperlink` injection grammar as JSON (H2 PR 13c). `season` stays. See [docs/language-stack.md](docs/language-stack.md).
+- `language-hyperlink` 0.18.0 ships the `text.hyperlink` injection grammar as JSON (H2 PR 13c). `season` stays. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- `language-source` 0.10.0 ships `.source` editor settings as JSON (H2 PR 13c). `season` stays — other language pins still ship CSON. See [docs/language-stack.md](docs/language-stack.md).
+- `language-source` 0.10.0 ships `.source` editor settings as JSON (H2 PR 13c). `season` stays — other language pins still ship CSON. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- C# highlighting defaults to tree-sitter (`tree-sitter-c-sharp@0.23.5` via `builtbygio/language-csharp` 1.2.0). Official grammar with npm prebuilds. `source.csx` and `source.cake` stay TextMate. TextMate `csharp.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
+- C# highlighting defaults to tree-sitter (`tree-sitter-c-sharp@0.23.5` via `builtbygio/language-csharp` 1.2.0). Official grammar with npm prebuilds. `source.csx` and `source.cake` stay TextMate. TextMate `csharp.cson` stays as the fallback. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- Clojure highlighting defaults to tree-sitter (`tree-sitter-clojure-orchard@0.2.8` via `builtbygio/language-clojure` 0.23.0). No official `tree-sitter/tree-sitter-clojure`; oakmac `0.4.0` is 2019/`nan` and is not used. TextMate `clojure.cson` stays as the fallback. Bootstrap rebuilds the N-API addon (no npm prebuilds). See [docs/language-stack.md](docs/language-stack.md).
+- Clojure highlighting defaults to tree-sitter (`tree-sitter-clojure-orchard@0.2.8` via `builtbygio/language-clojure` 0.23.0). No official `tree-sitter/tree-sitter-clojure`; oakmac `0.4.0` is 2019/`nan` and is not used. TextMate `clojure.cson` stays as the fallback. Bootstrap rebuilds the N-API addon (no npm prebuilds). See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- Perl highlighting defaults to tree-sitter (`tree-sitter-perl@1.2.1` via `builtbygio/language-perl` 0.39.0). Perl 6 / Raku stays TextMate. TextMate `perl.cson` stays as the fallback. Bootstrap rebuilds the N-API addon (no npm prebuilds). See [docs/language-stack.md](docs/language-stack.md).
+- Perl highlighting defaults to tree-sitter (`tree-sitter-perl@1.2.1` via `builtbygio/language-perl` 0.39.0). Perl 6 / Raku stays TextMate. TextMate `perl.cson` stays as the fallback. Bootstrap rebuilds the N-API addon (no npm prebuilds). See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- SCSS highlighting defaults to tree-sitter (`tree-sitter-scss@1.0.0` via `builtbygio/language-sass` 0.63.0). Indented Sass and SassDoc stay TextMate. TextMate `scss.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
+- SCSS highlighting defaults to tree-sitter (`tree-sitter-scss@1.0.0` via `builtbygio/language-sass` 0.63.0). Indented Sass and SassDoc stay TextMate. TextMate `scss.cson` stays as the fallback. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- Less highlighting defaults to tree-sitter (`mdovale/tree-sitter-less` via `builtbygio/language-less` 0.35.0). No published npm package; bootstrap rebuilds the N-API addon. TextMate `less.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
+- Less highlighting defaults to tree-sitter (`mdovale/tree-sitter-less` via `builtbygio/language-less` 0.35.0). No published npm package; bootstrap rebuilds the N-API addon. TextMate `less.cson` stays as the fallback. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- SQL highlighting defaults to tree-sitter (`@derekstride/tree-sitter-sql@0.3.11` via `builtbygio/language-sql` 0.26.0). No official `tree-sitter/tree-sitter-sql`; this is the maintained grammar. TextMate `sql.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
+- SQL highlighting defaults to tree-sitter (`@derekstride/tree-sitter-sql@0.3.11` via `builtbygio/language-sql` 0.26.0). No official `tree-sitter/tree-sitter-sql`; this is the maintained grammar. TextMate `sql.cson` stays as the fallback. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- TOML highlighting defaults to tree-sitter (`@tree-sitter-grammars/tree-sitter-toml@0.7.0` via `builtbygio/language-toml` 0.21.0). TextMate `toml.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
+- TOML highlighting defaults to tree-sitter (`@tree-sitter-grammars/tree-sitter-toml@0.7.0` via `builtbygio/language-toml` 0.21.0). TextMate `toml.cson` stays as the fallback. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- PHP highlighting defaults to tree-sitter (`tree-sitter-php@0.24.2` via `builtbygio/language-php` 0.49.0). `text.html.php` uses the HTML+PHP grammar; `source.php` uses `php_only`. TextMate `html.cson` / `php.cson` stay as fallbacks. See [docs/language-stack.md](docs/language-stack.md).
+- PHP highlighting defaults to tree-sitter (`tree-sitter-php@0.24.2` via `builtbygio/language-php` 0.49.0). `text.html.php` uses the HTML+PHP grammar; `source.php` uses `php_only`. TextMate `html.cson` / `php.cson` stay as fallbacks. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- XML highlighting defaults to tree-sitter (`@tree-sitter-grammars/tree-sitter-xml@0.7.0` via `builtbygio/language-xml` 0.36.0). `text.xml.xsl` and the TextMate `xml.cson` stay as fallbacks. See [docs/language-stack.md](docs/language-stack.md).
+- XML highlighting defaults to tree-sitter (`@tree-sitter-grammars/tree-sitter-xml@0.7.0` via `builtbygio/language-xml` 0.36.0). `text.xml.xsl` and the TextMate `xml.cson` stay as fallbacks. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- YAML highlighting defaults to tree-sitter (`@tree-sitter-grammars/tree-sitter-yaml@0.7.1` via `builtbygio/language-yaml` 0.33.0). TextMate `yaml.cson` stays as the fallback. See [docs/language-stack.md](docs/language-stack.md).
+- YAML highlighting defaults to tree-sitter (`@tree-sitter-grammars/tree-sitter-yaml@0.7.1` via `builtbygio/language-yaml` 0.33.0). TextMate `yaml.cson` stays as the fallback. See [docs/reference/language-stack.md](docs/reference/language-stack.md).
 
-- Catalog of every bundled `language-*`: tree-sitter, TextMate-only, or both, with a named owner and **port** / **keep TextMate** decision. See [docs/language-stack.md](docs/language-stack.md). This is the H2 exception list — first-mate stays. `GrammarRegistry.getParserKindCounts()` reports live TextMate vs tree-sitter grammar counts.
+- Catalog of every bundled `language-*`: tree-sitter, TextMate-only, or both, with a named owner and **port** / **keep TextMate** decision. See [docs/reference/language-stack.md](docs/reference/language-stack.md). This is the H2 exception list — first-mate stays. `GrammarRegistry.getParserKindCounts()` reports live TextMate vs tree-sitter grammar counts.
 
-- Windows x64 cold start (GHA `windows-2022`, custom snapshot): median wall **2,734 ms**; workspace-ready **1,585 ms**; require interval **15 ms**. Darwin stock snapshot is **frozen** (no constructor bisection). Linux/Windows keep the custom snapshot. `measure-startup.js` finds `Chevron x64/chevron.exe` via `find-packaged-app`. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md) §4.9–§4.10.
+- Windows x64 cold start (GHA `windows-2022`, custom snapshot): median wall **2,734 ms**; workspace-ready **1,585 ms**; require interval **15 ms**. Darwin stock snapshot is **frozen** (no constructor bisection). Linux/Windows keep the custom snapshot. `measure-startup.js` finds `Chevron x64/chevron.exe` via `find-packaged-app`. See [docs/reference/startup-snapshot-plan.md](docs/reference/startup-snapshot-plan.md) §4.9–§4.10.
 
 - Compile-cache no longer registers Coffee or Babel-prefix compilers. TypeScript and CSON stay. `src/babel.js` and `src/coffee-script.js` are deleted.
 
@@ -218,7 +222,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Find-in-project defaults to ripgrep. `find-and-replace.useRipgrep` is now `true`. `Workspace.scan` treats an omitted `options.ripgrep` as ripgrep. One-release escape: set the pin to `false` and/or `CHEVRON_SEARCH_ENGINE=scandal`. Scandal search and `Task` stay.
 
-- Architecture target is [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md). Living docs no longer teach Atom dual-support, apm Node 12, or `Task` as the package-author worker. `docs/atom-architecture.md` is a current-state sketch that defers to that target. Custom V8 snapshot status in `docs/build-modernization.md`: Linux/Windows on, Darwin stock.
+- Architecture target is [docs/reference/chevron-architecture-modernization.md](docs/reference/chevron-architecture-modernization.md). Living docs no longer teach Atom dual-support, apm Node 12, or `Task` as the package-author worker. `docs/reference/atom-architecture.md` is a current-state sketch that defers to that target. Custom V8 snapshot status in `docs/reference/build-modernization.md`: Linux/Windows on, Darwin stock.
 - Own remaining unowned core loaders as `builtbygio` git pins: `first-mate@7.4.3`, `atom-keymap@8.2.15`, `atom-select-list@0.8.1`, `season@6.0.2`, `scandal@3.2.0`, `text-buffer@13.18.6`, `fs-admin@0.15.0`, `scrollbar-style@4.0.1`. Each ships compiled `lib/` from the npm tarball (several Atom git tags were Coffee-only or missing the published version). `prepare`/`prepublish` that `rimraf lib/` are no-ops. Overrides hoist nested copies (including text-buffer’s `fs-admin@0.19` and owned-package `atom-select-list@0.7.2`) to the same SHAs.
 - Bootstrap force-copy of monorepo superstring/watcher no longer includes `packages/*/build/` and only runs when natives are actually rebuilt, so a warm cache cannot ship a host-Node `.node`. `link-package-natives-to-root` no longer copies `tree-sitter`.
 - `./script/build` without `--no-bootstrap` no longer calls the dead `script/bootstrap` stub. A bootstrapped tree packages; a cold tree prints the `bootstrap-modern` commands.
@@ -249,17 +253,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Newly owned natives (`nslog`, `ctags`, `nsfw`, `atom-pathspec`, `isbinaryfile@2`, and the other builtbygio native pins) keep the APIs Chevron actually calls: nslog is still a function, ctags still has 3-arg `findTags` + `createReadStream`, oniguruma still exports `OnigRegExp`/`OnigScanner`, nsfw still uses actions 0–3, isbinaryfile stays the 2.x buffer API. Coffee/grunt/Atom CI dropped; keytar no longer pulls `prebuild-install`.
-- Startup harness waits for `window:setup-window:end` (workspace ready) and graceful-quits so the V8 compile cache can persist. Linux x64 1.0.1 baseline: ~2.1 s cold / ~2.0 s warm; cache writes but only saves ~6%. See [docs/startup-snapshot-plan.md](docs/startup-snapshot-plan.md).
+- Startup harness waits for `window:setup-window:end` (workspace ready) and graceful-quits so the V8 compile cache can persist. Linux x64 1.0.1 baseline: ~2.1 s cold / ~2.0 s warm; cache writes but only saves ~6%. See [docs/reference/startup-snapshot-plan.md](docs/reference/startup-snapshot-plan.md).
 - Defer heavy bundled packages (`github`, `markdown-preview`, `settings-view`, autocomplete, `language-*`, …) until after first paint. Linux `setup-window:end` **1582 → 1103 ms**. Skip the untitled editor when Welcome will auto-open.
 - Restore the custom V8 startup snapshot on Electron 43: evaluate modules at snapshot time, construct `AtomEnvironment` at runtime. Linux require interval **327 → 11 ms**; workspace-ready is unchanged on a fast host because construction still runs at runtime. `electron-mksnapshot` is driven so the context generator sees the custom isolate blob, not Electron's stock one. `CHEVRON_SKIP_MKSNAPSHOT=1` keeps the stock path.
 
 ## [1.0.1] — 2026-08-13
 
-**Unsigned preview.** Same 1.0 contract as 1.0.0: owned catalog, Phase S Option C, GitHub Releases. Installers: [v1.0.1](https://github.com/builtbygio/chevron/releases/tag/v1.0.1). See [docs/releases.md](docs/releases.md).
+**Unsigned preview.** Same 1.0 contract as 1.0.0: owned catalog, Phase S Option C, GitHub Releases. Installers: [v1.0.1](https://github.com/builtbygio/chevron/releases/tag/v1.0.1). See [docs/reference/releases.md](docs/reference/releases.md).
 
 ### Added
 
-- Linux **Jasmine** nightly + manual workflow (`jasmine.yml`) and opt-in on the main CI (dispatch `run_full_core_tests` or PR label `jasmine`). Not a required PR gate. `script/test` finds `Chevron-linux-<arch>/chevron`. See [docs/jasmine-ci.md](docs/jasmine-ci.md) (#57).
+- Linux **Jasmine** nightly + manual workflow (`jasmine.yml`) and opt-in on the main CI (dispatch `run_full_core_tests` or PR label `jasmine`). Not a required PR gate. `script/test` finds `Chevron-linux-<arch>/chevron`. See [docs/reference/jasmine-ci.md](docs/reference/jasmine-ci.md) (#57).
 
 ### Changed
 
@@ -291,13 +295,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] — 2026-08-12
 
-**Unsigned preview.** Modernization 1.0: owned catalog, Phase S Option C, GitHub Releases as the update URL. Binaries are **not** codesigned. See [docs/releases.md](docs/releases.md) and [docs/dogfood-1.0.md](docs/dogfood-1.0.md).
+**Unsigned preview.** Modernization 1.0: owned catalog, Phase S Option C, GitHub Releases as the update URL. Binaries are **not** codesigned. See [docs/reference/releases.md](docs/reference/releases.md) and [docs/process/dogfood-1.0.md](docs/process/dogfood-1.0.md).
 
 Deferred on purpose: package host v2, `language-*` forks (#79), `@electron/packager`, custom E43 snapshot, signing.
 
 ### Security
 
-- **Phase S complete (Option C):** editor Chromium `sandbox` stays **false** by product decision ([docs/security-phase-s-decision.md](docs/security-phase-s-decision.md)). GitHub package git workers use **utilityProcess only** (Node BrowserWindow path is emergency-only via `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1`). Community native/privileged require restrict and package-host design remain as shipped. S4 sendSync→invoke and package-host v2 are post–Phase S.
+- **Phase S complete (Option C):** editor Chromium `sandbox` stays **false** by product decision ([docs/decisions/security-phase-s-decision.md](docs/decisions/security-phase-s-decision.md)). GitHub package git workers use **utilityProcess only** (Node BrowserWindow path is emergency-only via `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1`). Community native/privileged require restrict and package-host design remain as shipped. S4 sendSync→invoke and package-host v2 are post–Phase S.
 - **Repo audit P0–P2 hygiene** (SECURITY.md, Help URLs, inventories, unit CI, arm64 soft-gate, legacy transpile isolate, nested-modules policy) — see prior unreleased bullets in git history / closed issues #51–#67.
 
 ### Fixed
@@ -308,29 +312,29 @@ Deferred on purpose: package host v2, `language-*` forks (#79), `@electron/packa
 
 ### Added
 
-- **Unsigned preview releases:** tag `v*` publishes multi-platform CI artifacts to GitHub Releases. Check for Update queries the Releases API and opens the download page (no silent install). Update URL: https://github.com/builtbygio/chevron/releases — [docs/releases.md](docs/releases.md).
-- **LSP plan + Phases 0–5 + goal hardening:** [docs/lsp-design.md](docs/lsp-design.md). Phases 0–5 as planned; adjustments for G5 supervision (crash restart/backoff/storm/idle), G6 replaceable `lsp.diagnostics` (+ gutter/panel + stub consumer), clearer unsandboxed trust copy.
+- **Unsigned preview releases:** tag `v*` publishes multi-platform CI artifacts to GitHub Releases. Check for Update queries the Releases API and opens the download page (no silent install). Update URL: https://github.com/builtbygio/chevron/releases — [docs/reference/releases.md](docs/reference/releases.md).
+- **LSP plan + Phases 0–5 + goal hardening:** [docs/reference/lsp-design.md](docs/reference/lsp-design.md). Phases 0–5 as planned; adjustments for G5 supervision (crash restart/backoff/storm/idle), G6 replaceable `lsp.diagnostics` (+ gutter/panel + stub consumer), clearer unsandboxed trust copy.
 
 ### Changed
 
 - **Class C fold:** owned pins now ship the precompiled decaffeinate/debabel JS (`archive-view`, `autocomplete-chevron-api`, `autocomplete-css`, `bookmarks`, `keybinding-resolver`, `open-on-github`, `styleguide`, `symbols-view`, `timecop`, `wrap-guide`). Bootstrap no longer patches `node_modules` for Coffee/babel-prefix leftovers; `script/patches/decaffeinated-*` and `debabelled-*` removed.
-- **Runtime SCA:** owned `markdown-preview`, `autocomplete-plus`, `github`, `notifications`, and `settings-view` pins bump **marked 4.3.0** (last CJS; call `marked.parse`) and **DOMPurify 3.4.13**. `github` sanitizes after parse (marked 1+ dropped `sanitizer`) and uses dugite **1.110.0**. Root overrides force those marked/DOMPurify versions and **tar 6.2.1** under dugite. In-repo `deprecation-cop` matches. Leftover: residual `request`/`form-data` — see [docs/sca-runtime-inventory.md](docs/sca-runtime-inventory.md).
+- **Runtime SCA:** owned `markdown-preview`, `autocomplete-plus`, `github`, `notifications`, and `settings-view` pins bump **marked 4.3.0** (last CJS; call `marked.parse`) and **DOMPurify 3.4.13**. `github` sanitizes after parse (marked 1+ dropped `sanitizer`) and uses dugite **1.110.0**. Root overrides force those marked/DOMPurify versions and **tar 6.2.1** under dugite. In-repo `deprecation-cop` matches. Leftover: residual `request`/`form-data` — see [docs/reference/sca-runtime-inventory.md](docs/reference/sca-runtime-inventory.md).
 - **SUPPORT.md** rewritten for Chevron (#75): points at README, `docs/`, CONTRIBUTING, Issues, and SECURITY.md. Dead Atom Flight Manual / atom.io API / Atom Discussions links removed.
-- **Docs hygiene (#76):** first-party `docs/` point at Chevron, not the dead Flight Manual; `docs/rfcs/` marked historical. **package-node-policy.md** matches Chevron-only home and legacy `atom` aliases ([REBRANDING.md](docs/REBRANDING.md)).
-- **Build modernization (Streams A–E):** A–C as before; **B** — `overrides.nan=2.28.0` (no nested keytar nan 2.14), frozen Class C patch sets; **D** — [packaging.md](docs/packaging.md), stock V8 snapshot marker, packager retained; **E** — [dependency-graph.md](docs/dependency-graph.md), `atom/*` git pin ceiling (33). See [docs/build-modernization.md](docs/build-modernization.md).
-- **Chevron-only product policy:** drop dual-support commitment. Default config home is **`~/.chevron`** (no default to `~/.atom`). Prefer `engines.chevron` (cpm warns on `engines.atom` alone). `require('atom')` logs a one-shot deprecation warning. See [docs/REBRANDING.md](docs/REBRANDING.md).
-- **Package ecosystem:** **owned catalog only** for the near term; open/sandboxed community packages deferred until base Chevron is ready (package host v2). See [docs/package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md).
-- **Atom → Chevron rename program (Phases 0–5):** Chevron-primary API — `global.chevron` / `global.chevronApplication` / `require('chevron')` with `atom` aliases; bundled themes renamed `atom-*-ui/syntax` → `chevron-*-ui/syntax` with config migrate for old names; monorepo packages prefer `require('chevron')`. Policy in [docs/REBRANDING.md](docs/REBRANDING.md) + [docs/atom-to-chevron-rename-plan.md](docs/atom-to-chevron-rename-plan.md). Deferred: `atom-keymap`, `atom-select-list`, `@atom/*`.
-- **#62 Options 2–3 — drop CoffeeScript and Babel 5 runtime transpile:** remove `coffee-script` and `babel-core@5` from app dependencies. Bootstrap decaffeinates remaining Coffee `lib/` packages and applies precompiled plain JS for atom/* babel-prefix packages; owned builtbygio forks (settings-view, find-and-replace, autocomplete-plus, command-palette, tree-view) and monorepo `packages/*` are precompiled at source. Compile-cache refuses `.coffee` / babel opt-in prefixes with migration errors; cpm warns on install. TypeScript path unchanged. See [docs/babel-coffee-isolation-plan.md](docs/babel-coffee-isolation-plan.md).
+- **Docs hygiene (#76):** first-party `docs/` point at Chevron, not the dead Flight Manual; `docs/rfcs/` marked historical. **package-node-policy.md** matches Chevron-only home and legacy `atom` aliases ([REBRANDING.md](docs/decisions/REBRANDING.md)).
+- **Build modernization (Streams A–E):** A–C as before; **B** — `overrides.nan=2.28.0` (no nested keytar nan 2.14), frozen Class C patch sets; **D** — [packaging.md](docs/reference/packaging.md), stock V8 snapshot marker, packager retained; **E** — [dependency-graph.md](docs/reference/dependency-graph.md), `atom/*` git pin ceiling (33). See [docs/reference/build-modernization.md](docs/reference/build-modernization.md).
+- **Chevron-only product policy:** drop dual-support commitment. Default config home is **`~/.chevron`** (no default to `~/.atom`). Prefer `engines.chevron` (cpm warns on `engines.atom` alone). `require('atom')` logs a one-shot deprecation warning. See [docs/decisions/REBRANDING.md](docs/decisions/REBRANDING.md).
+- **Package ecosystem:** **owned catalog only** for the near term; open/sandboxed community packages deferred until base Chevron is ready (package host v2). See [docs/decisions/package-ecosystem-strategy.md](docs/decisions/package-ecosystem-strategy.md).
+- **Atom → Chevron rename program (Phases 0–5):** Chevron-primary API — `global.chevron` / `global.chevronApplication` / `require('chevron')` with `atom` aliases; bundled themes renamed `atom-*-ui/syntax` → `chevron-*-ui/syntax` with config migrate for old names; monorepo packages prefer `require('chevron')`. Policy in [docs/decisions/REBRANDING.md](docs/decisions/REBRANDING.md) + [docs/process/atom-to-chevron-rename-plan.md](docs/process/atom-to-chevron-rename-plan.md). Deferred: `atom-keymap`, `atom-select-list`, `@atom/*`.
+- **#62 Options 2–3 — drop CoffeeScript and Babel 5 runtime transpile:** remove `coffee-script` and `babel-core@5` from app dependencies. Bootstrap decaffeinates remaining Coffee `lib/` packages and applies precompiled plain JS for atom/* babel-prefix packages; owned builtbygio forks (settings-view, find-and-replace, autocomplete-plus, command-palette, tree-view) and monorepo `packages/*` are precompiled at source. Compile-cache refuses `.coffee` / babel opt-in prefixes with migration errors; cpm warns on install. TypeScript path unchanged. See [docs/process/babel-coffee-isolation-plan.md](docs/process/babel-coffee-isolation-plan.md).
 - **CI speed:** split Electron binary/header cache from npm/`node_modules` cache; bootstrap skips `npm ci` and native force-rebuild when deps + natives fingerprints match (warm cache). Override with `CHEVRON_FORCE_NATIVE_REBUILD=1`.
 - **npm hygiene (not silence):** keep default npm loglevel so deprecations stay visible; upgrade cpm `@electron/rebuild` / pacote / arborist; bump root `semver` / `resolve` / `postcss`.
 - **prebuildify path:** drop first-party `prebuild-install` dependency; cpm prefers **`node-gyp-build`** (prebuildify model); owned `tree-sitter` / `@atom/watcher` install scripts use `node-gyp-build`; legacy `prebuild-install` only if a third-party package still ships it.
 - **Dockerfile** replaced: Ubuntu 24.04 + Node 24 + Python 3.12 (no Python 2 / Atom-era bootstrap). See comments in `Dockerfile` for usage.
 - Help menus: removed obsolete “Terms of Use” (atom.io product ToS); “View License” remains for in-app license text.
-- Removed stale root `MIGRATION-CHECKLIST.md` (AtomNova); see [docs/REBRANDING.md](docs/REBRANDING.md).
+- Removed stale root `MIGRATION-CHECKLIST.md` (AtomNova); see [docs/decisions/REBRANDING.md](docs/decisions/REBRANDING.md).
 - CI: fast `unit-and-cpm` job (`cpm` tests + `script/ci/package-require-audit.test.js`). Full Jasmine still optional / local (see CI workflow comments).
 - CI Linux arm64: bootstrap/build are hard gates; only the Xvfb smoke step is soft-gated (no longer whole-job `continue-on-error`).
-- Docs: [package-ownership-inventory.md](docs/package-ownership-inventory.md), [sca-runtime-inventory.md](docs/sca-runtime-inventory.md); package-node-policy classification edge cases.
+- Docs: [package-ownership-inventory.md](docs/reference/package-ownership-inventory.md), [sca-runtime-inventory.md](docs/reference/sca-runtime-inventory.md); package-node-policy classification edge cases.
 
 ## [0.6.0] — 2026-08-01
 
@@ -338,8 +342,8 @@ Electron best-practices hardening track complete for its terminal goals. Electro
 
 ### Security
 
-- **Electron best practices P0–P3 (shipped scope):** path-confined `atom://`/`chevron://`; package-worker-only `atom-bw-id-call-sync` + scoped `atom-wc-send`; tighter CSP; **default-on** community privileged-require restrict (`core.restrictCommunityPackageRequires`); experimental web features **off** by default; strict FS IPC roots (`core.fsIpcStrict`); guest `file:` root confinement; `nodeIntegrationInWorker: false`; `certificate-error` denied; production Electron fuses on package (ASAR integrity macOS-only); threat model doc. See [docs/electron-best-practices-plan.md](docs/electron-best-practices-plan.md) (plan **closed**).
-- **Follow-on (not this release):** full `sendSync`→`invoke` ([inventory §11](docs/remote-ipc-inventory.md)), github `utilityProcess` workers, editor `sandbox: true` (Phase S — blocked on natives).
+- **Electron best practices P0–P3 (shipped scope):** path-confined `atom://`/`chevron://`; package-worker-only `atom-bw-id-call-sync` + scoped `atom-wc-send`; tighter CSP; **default-on** community privileged-require restrict (`core.restrictCommunityPackageRequires`); experimental web features **off** by default; strict FS IPC roots (`core.fsIpcStrict`); guest `file:` root confinement; `nodeIntegrationInWorker: false`; `certificate-error` denied; production Electron fuses on package (ASAR integrity macOS-only); threat model doc. See [docs/process/electron-best-practices-plan.md](docs/process/electron-best-practices-plan.md) (plan **closed**).
+- **Follow-on (not this release):** full `sendSync`→`invoke` ([inventory §11](docs/reference/remote-ipc-inventory.md)), github `utilityProcess` workers, editor `sandbox: true` (Phase S — blocked on natives).
 
 ### Changed
 
@@ -376,7 +380,7 @@ Language modernization, owned-package ownership, and Security Phase N close-out 
 
 ### Added
 
-- **Electron best-practices plan:** [`docs/electron-best-practices-plan.md`](docs/electron-best-practices-plan.md) — P0 protocol/IPC allowlists through Phase S (next track after 0.5.0)
+- **Electron best-practices plan:** [`docs/process/electron-best-practices-plan.md`](docs/process/electron-best-practices-plan.md) — P0 protocol/IPC allowlists through Phase S (next track after 0.5.0)
 
 ## [0.4.0] — 2026-07-22
 
@@ -384,9 +388,9 @@ Package manager cutover and Security Phase N resume. Electron remains **43.1.0**
 
 ### Added
 
-- **cpm package manager (Phases 0–4 complete)** — cutover guide: [docs/cpm-cutover.md](docs/cpm-cutover.md)
+- **cpm package manager (Phases 0–4 complete)** — cutover guide: [docs/orientation/cpm-cutover.md](docs/orientation/cpm-cutover.md)
   - **Phase 4:** product no longer bundles classic apm (Node 12); packaging/CI use **cpm** only; `apm` remains a **shim → cpm**
-  - **Phase 3:** prefer native **prebuilds** before source rebuild (`chevron.prebuilds`, `prebuild-install`, then `@electron/rebuild`); `--force-source`; [docs/cpm-prebuilds.md](docs/cpm-prebuilds.md)
+  - **Phase 3:** prefer native **prebuilds** before source rebuild (`chevron.prebuilds`, `prebuild-install`, then `@electron/rebuild`); `--force-source`; [docs/orientation/cpm-prebuilds.md](docs/orientation/cpm-prebuilds.md)
   - **Phase 2:** registry client (`search`, `view`, install-by-name via Pulsar API; `CPM_REGISTRY_URL`)
   - **Phase 1:** `@chevron/cpm` under `cpm/` — Electron-as-Node CLI (`list`, `doctor`, `install`, `uninstall`, `link`, `rebuild --no-color`)
     - Launchers `cpm` / `apm` shims; product packaging copies `app/cpm`; `getApmPath()` prefers cpm
@@ -403,7 +407,7 @@ Package manager cutover and Security Phase N resume. Electron remains **43.1.0**
   - Bundled `packageDependencies` stay root `dependencies` (design §13.5 Option A)
 - **Secondary tooling** no longer invokes classic apm for monorepo installs (`script/test`, `update-dependency`, `run-apm-install` → host npm; `getApmBinPath` → monorepo cpm shim)
 - **First-run / onboarding** (`packages/welcome`): Welcome/Guide copy documents **cpm** (and `apm` shim); removed Atom sunset/telemetry consent; Teletype card removed
-- **User migration (cutover):** prefer `cpm …`; existing `apm …` scripts keep working via shim; Settings installer uses cpm; registry defaults to Pulsar — see [docs/cpm-cutover.md](docs/cpm-cutover.md)
+- **User migration (cutover):** prefer `cpm …`; existing `apm …` scripts keep working via shim; Settings installer uses cpm; registry defaults to Pulsar — see [docs/orientation/cpm-cutover.md](docs/orientation/cpm-cutover.md)
 - **Settings package search / featured / install UI** use Pulsar registry APIs (not dead atom.io); registry patch re-applied after Coffee transpile in the package build
 - Session handoff (`GROK.md`) rewritten for post-cpm baseline; **next epic = Security Phase N**
 

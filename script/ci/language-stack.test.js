@@ -2,7 +2,7 @@
 
 /**
  * H2 PR 13: every packageDependencies language-* is named in
- * docs/language-stack.md. The exception list must not silently drift.
+ * docs/reference/language-stack.md. The exception list must not silently drift.
  * Run: node --test script/ci/language-stack.test.js
  */
 
@@ -42,7 +42,7 @@ const KEEP_TEXTMATE = [
 ];
 
 describe('language stack catalog (H2 PR 13)', () => {
-  const doc = read('docs/language-stack.md');
+  const doc = read('docs/reference/language-stack.md');
   const registry = read('src/grammar-registry.js');
   const pins = languagePins();
 
@@ -78,7 +78,7 @@ describe('language stack catalog (H2 PR 13)', () => {
   });
 
   it('grammar-registry points at the catalog and exposes getParserKindCounts', () => {
-    assert.match(registry, /docs\/language-stack\.md/);
+    assert.match(registry, /docs\/reference\/language-stack\.md/);
     assert.match(registry, /getParserKindCounts\s*\(/);
     assert.match(registry, /first-mate is not deleted by H2/);
   });

@@ -6,7 +6,7 @@ Chevron **1.0** is an **unsigned preview**: owned catalog, Phase S Option C, no 
 
 | Need | Go here |
 |------|---------|
-| Download / update URL | [GitHub Releases](https://github.com/builtbygio/chevron/releases) — [docs/releases.md](docs/releases.md) |
+| Download / update URL | [GitHub Releases](https://github.com/builtbygio/chevron/releases) — [docs/reference/releases.md](docs/reference/releases.md) |
 | What Chevron is, status, how to build | [README.md](README.md) |
 | Project docs (cpm, security, LSP, build) | [docs/README.md](docs/README.md) |
 | How to contribute | [CONTRIBUTING.md](CONTRIBUTING.md) |
@@ -17,4 +17,4 @@ Open an issue if something is broken or unclear. For non-trivial work, discuss t
 
 ## Historical Atom docs
 
-GitHub sunset Atom in 2022. Old **Atom Flight Manual** and **atom.io API** pages are unmaintained and often dead. Do not treat them as current Chevron documentation. Architecture notes that still apply are in [docs/atom-architecture.md](docs/atom-architecture.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
+GitHub sunset Atom in 2022. Old **Atom Flight Manual** and **atom.io API** pages are unmaintained and often dead. Do not treat them as current Chevron documentation. Architecture notes that still apply are in [docs/reference/atom-architecture.md](docs/reference/atom-architecture.md) and [docs/decisions/REBRANDING.md](docs/decisions/REBRANDING.md).

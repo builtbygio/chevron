@@ -7,7 +7,7 @@
  *
  * Phase N5 hardens guests + secondary package windows without sandboxing
  * this editor host. Phase S prep: inventory + package-host isolation
- * (see docs/security-phase-s.md).
+ * (see docs/process/security-phase-s.md).
  *
  * Migration classes:
  *   renderer-hot  — must stay co-located with TextEditor / grammars for now
@@ -193,7 +193,7 @@ module.exports = {
 
   /**
    * Phase S product decision (S5/S6): Option C — editor stays sandbox:false.
-   * See docs/security-phase-s-decision.md.
+   * See docs/decisions/security-phase-s-decision.md.
    */
   phaseSDecision: {
     option: 'C',

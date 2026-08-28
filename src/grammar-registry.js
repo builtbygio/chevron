@@ -24,7 +24,7 @@ const PATH_SPLIT_REGEX = new RegExp('[/.]');
 //   - official tree-sitter@0.25 (N-API) — default when
 //     `core.useTreeSitterParsers` is on and a `type: tree-sitter` grammar exists
 //
-// Catalog + TextMate exception list: docs/language-stack.md.
+// Catalog + TextMate exception list: docs/reference/language-stack.md.
 // first-mate is not deleted by H2. Optional H3 only if that list is empty.
 module.exports = class GrammarRegistry {
   constructor({ config } = {}) {
@@ -664,7 +664,7 @@ module.exports = class GrammarRegistry {
   createGrammar(grammarPath, params) {
     // `type: tree-sitter` comes from language-* `grammars/tree-sitter-*.json`.
     // Everything else is TextMate and goes through first-mate. See
-    // docs/language-stack.md for which bundled packages ship which kind.
+    // docs/reference/language-stack.md for which bundled packages ship which kind.
     if (params.type === 'tree-sitter') {
       return new TreeSitterGrammar(this, grammarPath, params);
     } else {

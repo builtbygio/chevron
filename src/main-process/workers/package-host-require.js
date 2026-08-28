@@ -65,7 +65,7 @@ function blocked(id, packageName, reason) {
     `[chevron-package-host] blocked require(${JSON.stringify(id)}) from ` +
       `package "${packageName}" [${reason}]. The package host runs T2 code ` +
       `without privileged Node. Use the chevron.* API; see ` +
-      `docs/package-node-policy.md and docs/security-phase-s-package-host.md.`
+      `docs/reference/package-node-policy.md and docs/reference/security-phase-s-package-host.md.`
   );
   err.code = 'CHEVRON_HOST_REQUIRE_BLOCKED';
   err.chevronReason = reason;

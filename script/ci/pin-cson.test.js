@@ -65,7 +65,7 @@ function shippedCson(name) {
 
 describe('pin CSON → JSON (H2 PR 13c)', () => {
   const doc = fs.readFileSync(
-    path.join(ROOT, 'docs', 'language-stack.md'),
+    path.join(ROOT, 'docs', 'reference', 'language-stack.md'),
     'utf8'
   );
 
@@ -632,7 +632,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
 // Wave 1 inventory: 13c only ever swept `language-*`. `season` cannot be
 // deleted on that evidence alone, so sweep every catalog pin and the repo
 // itself. When this is empty, the only readers left are user `.cson` and
-// third-party packages — see docs/language-stack.md §3a.
+// third-party packages — see docs/reference/language-stack.md §3a.
 describe('pin CSON inventory (Wave 1)', () => {
   const pkg = JSON.parse(
     fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
@@ -709,7 +709,7 @@ describe('pin CSON inventory (Wave 1)', () => {
     );
 
     const langDoc = fs.readFileSync(
-      path.join(ROOT, 'docs', 'language-stack.md'),
+      path.join(ROOT, 'docs', 'reference', 'language-stack.md'),
       'utf8'
     );
     assert.match(langDoc, /Pin CSON inventory/);

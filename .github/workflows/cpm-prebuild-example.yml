@@ -63,4 +63,4 @@ jobs:
         with:
           path: artifacts
       - name: Note
-        run: echo "Publish npm tarball with merged prebuilds/ folder; see docs/cpm-prebuilds.md"
+        run: echo "Publish npm tarball with merged prebuilds/ folder; see docs/orientation/cpm-prebuilds.md"

@@ -7,7 +7,7 @@
  * passed while the renderer could grant its own trust and pass an arbitrary
  * `command` straight through to `spawn` — the module was right, the boundary
  * was open. These tests assert the *refusal*, which is the property that
- * matters (docs/lsp-design.md §6.2).
+ * matters (docs/reference/lsp-design.md §6.2).
  */
 
 const { describe, it, beforeEach } = require('node:test');

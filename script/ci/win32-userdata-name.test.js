@@ -5,7 +5,7 @@
  * Run: node --test script/ci/win32-userdata-name.test.js
  *
  * There are no Windows users (owner, 2026-08-18), so the name was flipped
- * outright. See docs/windows-userdata-migrate.md.
+ * outright. See docs/decisions/windows-userdata-migrate.md.
  */
 
 const { describe, it } = require('node:test');
@@ -48,7 +48,7 @@ describe('win32 userData name (PR 23b)', () => {
 
   it('the decision is recorded, not left as a pending plan', () => {
     const doc = fs.readFileSync(
-      path.join(ROOT, 'docs/windows-userdata-migrate.md'),
+      path.join(ROOT, 'docs/decisions/windows-userdata-migrate.md'),
       'utf8'
     );
     assert.match(doc, /no migration built/i);
