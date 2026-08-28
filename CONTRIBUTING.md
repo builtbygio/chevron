@@ -42,7 +42,7 @@ Chevron uses a **branch → PR → merge** workflow, no direct commits to `maste
 
 - **New tests go in `script/ci/*.test.js` and use Node's built-in `node:test`.** That job runs on every PR.
 - Do not add Jasmine / `spec/*-spec.js` for new work. `script/test` (Jasmine in Electron) stays as a compatibility harness — nightly and the `jasmine` PR label — not the merge gate. See [docs/reference/jasmine-ci.md](docs/reference/jasmine-ci.md).
-- Do not treat CSON pack-time transpile (`script/lib/transpile-cson-paths.js`) as leftover Coffee tooling.
+- CSON pack-time transpile is **gone** — every owned pin ships JSON. `season` stays only for user-authored `~/.chevron/*.cson` and third-party package data.
 
 ## TypeScript in `src/`
 

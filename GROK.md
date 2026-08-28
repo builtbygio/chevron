@@ -202,6 +202,13 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
 - **Fixed in #108:** empty tree-view — `collectDefaultRoots` used `atomApplication.windows` (never set); must use `getAllWindows()`. `/tmp` projects hid this. Keep `document-register-element` (contextIsolation); do not Grim-wrap `registerElement`.  
 - Jasmine harness still defines `window.atom` for ~7500 spec references. Product `require('atom')` is `MODULE_NOT_FOUND`.
 
+**Community packages: never** (owner, 2026-08-28). Not deferred — cancelled. See
+`docs/decisions/package-ecosystem-strategy.md`. This makes removable, none of it done yet: the 65
+npm-published owned packages (29 of 83 had drifted — collapse them into `packages/*`), the eight
+author-facing devtools (`dalek`, `deprecation-cop`, `incompatible-packages`, `timecop`,
+`package-generator`, `update-package-dependencies`, `styleguide`, `dev-live-reload`), the package
+host v2 spine, and cpm's Pulsar registry client.
+
 **Retired, do not resurrect:** the `apm/` tree and `--with-apm` (the installer it called was already
 deleted); `script/vsts/` Azure pipelines; the in-app **benchmarks** feature (`--benchmark`,
 `window:run-benchmarks`) — wired up but never run by anything, and startup perf uses a different

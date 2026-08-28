@@ -360,7 +360,7 @@ Risk (**high** if we delete early): landing “delete Task + scandal after a dog
 | Config schema + scoped store + observe API | **Keep** |
 | User `config.cson` / `keymap.cson` | **Migrated** (PR 5; dual-read CSON, `season` stays) |
 | Pin `.cson` (~70) | **Migrate** per-package (H2 stream); checklist already says this |
-| `transpile-cson-paths.js` | **Keep** until pins are JSON |
+| `transpile-cson-paths.js` | **Deleted** — pins are all JSON (Wave 1 swept 94 pins + the app tree: zero `.cson`) |
 | `season` | **Wrap** until pins + user dual-read are done; then **delete** |
 | LESS themes + `less-cache` | **Keep** |
 | `document-register-element` | See Pillar 5 |
@@ -401,7 +401,7 @@ Risk (**high** if we delete early): landing “delete Task + scandal after a dog
 | `transpile-cson-paths.js` | **Keep** until pins are JSON |
 | `module-cache.js` | **Wrap** (still pays at boot); revisit after snapshot decision |
 | script `babel-core@5` | **Delete** if unused (no-op transpile) |
-| coffeelint / donna / joanna / tello | **Keep** until CI-invocation grep says unused |
+| coffeelint / donna / joanna / tello | **Deleted** — coffeelint globbed three empty paths and `script/lint` never ran in CI; `generate-api-docs` (donna/joanna/tello) wrote an untracked artifact nothing consumed once `script/vsts/` went |
 | `npm@6` in `script/` | **Delete** if grep confirms no require |
 | Full ESM rewrite | **Won't** |
 
