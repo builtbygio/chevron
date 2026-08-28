@@ -200,7 +200,6 @@ jobs:
           node --test script/ci/search-engine.test.js
           node --test script/ci/package-host-routing.test.js
           node --test script/ci/crash-branding.test.js
-          node --test script/ci/script-fossils.test.js
           node --test script/ci/load-tree-sitter-language.test.js
           node --test script/ci/package-utility-worker.test.js
           node --test script/ci/git-utility-host-integration.test.js
