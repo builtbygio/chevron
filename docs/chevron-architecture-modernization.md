@@ -110,7 +110,7 @@ Every leftover named here has a delete / wrap / migrate verdict. Items missed in
 | `Package.getType()` returns `'atom'` | `src/package.js` | **Done** — returns `'chevron'` |
 | Windows intermediate `package.json` `name` | `script/lib/generate-metadata.js` | **Done** (PR 23b) — writes `chevron` / `chevron-<channel>`; no migrate (no Windows install base) |
 | `src/electron-shims.js` | Grim-wraps `path.dirname`/`extname`/`basename` | **Wrap** — path Grim stays; remote.require aliases already gone |
-| `exports/atom.js` / `global.atom` / `apm` | — | **Done** (PR 23). `require('atom')` is `MODULE_NOT_FOUND`. `atom://` **alias remains** |
+| `exports/atom.js` / `global.atom` / `apm` | — | **Done** (PR 23). `require('atom')` is `MODULE_NOT_FOUND`. The `atom://` alias went in **Wave 4** |
 | `docs/atom-architecture.md`, `cpm-design.md` “dual-support forever” | docs | **Delete** the teaching — **PR 1 (this change)** |
 
 ---
@@ -949,7 +949,7 @@ Owner answers 2026-08-15. These are **final**.
 | Q1 | After dogfood, is the GitHub inbox UI load-bearing (8B) or is git-in-the-editor enough (8A/8C)? | **Resolved 2026-08-17: 8B.** Inbox is used. Skip Epic 18 / PR 19. Long-term: GitHub App login (not `github.atom.io`). | Do not slim or delete inbox views. 8B is an upgrade epic when staffed, not one master PR. Classic PAT is the interim login. |
 | Q2 | Is Darwin cold start a dogfood blocker? | **Resolved: leave Darwin on stock snapshot.** Do not staff constructor bisection. | PR 12 publishes numbers only. `packaging-policy.js` `darwin-boot-crash` stays. |
 | Q3 | Does Windows keep the custom snapshot? | **Resolved: keep Windows custom snapshot until measured worse.** PR 12 still publishes the number. | Same as D8. Measure; do not pre-disable. |
-| Q4 | When do we hard-delete `require('atom')` / `global.atom`? | **PR 23 landed** (`require('atom')` is `MODULE_NOT_FOUND`; `global.atom` gone; `apm` retired). `atom://` alias remains until Wave 3. | Further name deletes wait on Wave 3 gates. |
+| Q4 | When do we hard-delete `require('atom')` / `global.atom`? | **PR 23 landed** (`require('atom')` is `MODULE_NOT_FOUND`; `global.atom` gone; `apm` retired). The `atom://` alias was deleted in Wave 4. | Further name deletes wait on Wave 3 gates. |
 | Q5 | New `src/` files TS-only? | **Resolved: yes**, after H1 compile-cache cleanup (PR 16 after PR 11). | CI lint once PR 11 lands. |
 | Q6 | Default theme `one-dark-*` or `chevron-dark-*`? | **PR 17 shipped `chevron-dark-*`. 1.1.0 restored One Dark** (look regression). Product default is `one-dark-ui` / `one-dark-syntax`. | Do not flip without a product PR. `script/ci/baseline-1.1.0.test.js` guards it. |
 | Q7 | Move `rg` spawn from preload to main? | **Resolved: do it in H1** (PR 2b). | Not a later revisit. Allowlisted main spawn + `invoke`. No new utilityProcess host. No `sandbox: true`. |

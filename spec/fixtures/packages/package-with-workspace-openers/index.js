@@ -10,7 +10,7 @@ module.exports = {
   activate() {
     this.activateCallCount++;
     return atom.workspace.addOpener(filePath => {
-      if (filePath === 'atom://fictitious') {
+      if (filePath === 'chevron://fictitious') {
         return this.openerCount++;
       }
     });

@@ -9,15 +9,15 @@ describe('parseCommandLine', () => {
         '--safe',
         '--test',
         '/some/path',
-        'atom://test/url',
-        'atom://other/url'
+        'chevron://test/url',
+        'chevron://other/url'
       ]);
       assert.isTrue(args.devMode);
       assert.isTrue(args.safeMode);
       assert.isTrue(args.test);
       assert.deepEqual(args.urlsToOpen, [
-        'atom://test/url',
-        'atom://other/url'
+        'chevron://test/url',
+        'chevron://other/url'
       ]);
       assert.deepEqual(args.pathsToOpen, ['/some/path']);
     });
@@ -34,9 +34,9 @@ describe('parseCommandLine', () => {
           '-_',
           '-_',
           'some/other/path',
-          'atom://test/url',
+          'chevron://test/url',
           '--_',
-          'atom://other/url',
+          'chevron://other/url',
           '-_',
           './another-path.file',
           '-_',
@@ -44,8 +44,8 @@ describe('parseCommandLine', () => {
           '-_'
         ]);
         assert.deepEqual(args.urlsToOpen, [
-          'atom://test/url',
-          'atom://other/url'
+          'chevron://test/url',
+          'chevron://other/url'
         ]);
         assert.deepEqual(args.pathsToOpen, [
           '/some/path',
@@ -79,15 +79,15 @@ describe('parseCommandLine', () => {
           '22',
           '97',
           'some/other/path',
-          'atom://test/url',
+          'chevron://test/url',
           '885',
-          'atom://other/url',
+          'chevron://other/url',
           '42',
           './another-path.file'
         ]);
         assert.deepEqual(args.urlsToOpen, [
-          'atom://test/url',
-          'atom://other/url'
+          'chevron://test/url',
+          'chevron://other/url'
         ]);
         assert.deepEqual(args.pathsToOpen, [
           '/some/path',
@@ -106,13 +106,13 @@ describe('parseCommandLine', () => {
         '--safe',
         '--test',
         '/some/path',
-        'atom://test/url',
-        'atom://other/url'
+        'chevron://test/url',
+        'chevron://other/url'
       ]);
       assert.isUndefined(args.devMode);
       assert.isUndefined(args.safeMode);
       assert.isUndefined(args.test);
-      assert.deepEqual(args.urlsToOpen, ['atom://test/url']);
+      assert.deepEqual(args.urlsToOpen, ['chevron://test/url']);
       assert.deepEqual(args.pathsToOpen, []);
     });
   });
@@ -128,15 +128,15 @@ describe('parseCommandLine', () => {
         getPsnFlag(),
         getPsnFlag(),
         'some/other/path',
-        'atom://test/url',
+        'chevron://test/url',
         getPsnFlag(),
-        'atom://other/url',
+        'chevron://other/url',
         '-psn_ Any argument starting with "-psn_" should be ignored, even this one.',
         './another-path.file'
       ]);
       assert.deepEqual(args.urlsToOpen, [
-        'atom://test/url',
-        'atom://other/url'
+        'chevron://test/url',
+        'chevron://other/url'
       ]);
       assert.deepEqual(args.pathsToOpen, [
         '/some/path',

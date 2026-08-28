@@ -44,11 +44,10 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>atom</string>
 				<string>chevron</string>
 			</array>
 			<key>CFBundleURLName</key>
-			<string>Chevron URI schemes (atom:// package API + chevron:// alias)</string>
+			<string>Chevron URI scheme (chevron://)</string>
 		</dict>
 	</array>
 	<key>CFBundleDocumentTypes</key>

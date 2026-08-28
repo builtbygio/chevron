@@ -43,12 +43,14 @@ describe('1.1.0 product contract', () => {
     );
   });
 
-  it('atom:// remains a deprecated alias for chevron://', () => {
+  it('the atom:// alias is gone (Wave 4 superseded the 1.1.0 contract here)', () => {
+    // 1.1.0 locked atom:// in place as a deprecated alias. Wave 4 removed it
+    // once image-view 0.64.3 cleared the last shipped emitter;
+    // script/ci/uri-scheme.test.js is the live gate.
     const ws = read('src/workspace.js');
-    assert.match(ws, /function alternateSchemeURI/);
-    assert.match(ws, /uri\.startsWith\('atom:\/\/'\)/);
+    assert.doesNotMatch(ws, /function alternateSchemeURI/);
     const registry = read('src/uri-handler-registry.js');
-    assert.match(registry, /protocol !== 'atom:'/);
+    assert.doesNotMatch(registry, /protocol !== 'atom:'/);
   });
 
   it('Task is gone (Wave 3 superseded the 1.1.0 contract here)', () => {

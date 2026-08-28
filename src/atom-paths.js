@@ -88,19 +88,11 @@ module.exports = {
   getAppDirectory: getAppDirectory,
 
   /**
-   * App package URIs: accept atom:// and chevron://.
-   * Canonical product scheme is chevron://; atom:// remains for packages that
-   * still open atom:// paths (unsupported legacy).
+   * App package URIs. `chevron://` is the only product scheme; the `atom://`
+   * alias was removed in Wave 4. Kept as a no-op normalizer so callers that
+   * pass a URI through do not need to change.
    */
-  normalizeAppUri: uri => {
-    if (typeof uri !== 'string') return uri;
-    if (uri.startsWith('atom://')) {
-      return 'chevron://' + uri.slice('atom://'.length);
-    }
-    return uri;
-  },
+  normalizeAppUri: uri => uri,
 
-  isAppUri: uri =>
-    typeof uri === 'string' &&
-    (uri.startsWith('atom://') || uri.startsWith('chevron://'))
+  isAppUri: uri => typeof uri === 'string' && uri.startsWith('chevron://')
 };

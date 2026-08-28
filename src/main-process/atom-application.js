@@ -144,6 +144,16 @@ ipcMain.handle('isDefaultProtocolClient', (_, { protocol, path, args }) => {
 ipcMain.handle('setAsDefaultProtocolClient', (_, { protocol, path, args }) => {
   return app.setAsDefaultProtocolClient(protocol, path, args);
 });
+
+// Wave 4: used to withdraw the stale atom:// registration that earlier
+// versions installed. Only the schemes this app knows about are accepted.
+ipcMain.handle(
+  'removeAsDefaultProtocolClient',
+  (_, { protocol, path, args }) => {
+    if (protocol !== 'atom' && protocol !== 'chevron') return false;
+    return app.removeAsDefaultProtocolClient(protocol, path, args);
+  }
+);
 // The application's singleton class.
 //
 // It's the entry point into the Atom application and maintains the global state
@@ -708,21 +718,27 @@ module.exports = class AtomApplication extends EventEmitter {
       });
     }
 
-    this.openPathOnEvent('application:about', 'atom://about');
-    this.openPathOnEvent('application:show-settings', 'atom://config');
-    this.openPathOnEvent('application:open-your-config', 'atom://.atom/config');
+    this.openPathOnEvent('application:about', 'chevron://about');
+    this.openPathOnEvent('application:show-settings', 'chevron://config');
+    this.openPathOnEvent(
+      'application:open-your-config',
+      'chevron://.chevron/config'
+    );
     this.openPathOnEvent(
       'application:open-your-init-script',
-      'atom://.atom/init-script'
+      'chevron://.chevron/init-script'
     );
-    this.openPathOnEvent('application:open-your-keymap', 'atom://.atom/keymap');
+    this.openPathOnEvent(
+      'application:open-your-keymap',
+      'chevron://.chevron/keymap'
+    );
     this.openPathOnEvent(
       'application:open-your-snippets',
-      'atom://.atom/snippets'
+      'chevron://.chevron/snippets'
     );
     this.openPathOnEvent(
       'application:open-your-stylesheet',
-      'atom://.atom/stylesheet'
+      'chevron://.chevron/stylesheet'
     );
     this.openPathOnEvent(
       'application:open-license',
@@ -1581,14 +1597,14 @@ module.exports = class AtomApplication extends EventEmitter {
     }
   }
 
-  // Open an atom:// url.
+  // Open a chevron:// url.
   //
   // The host of the URL being opened is assumed to be the package name
   // responsible for opening the URL.  A new window will be created with
   // that package's `urlMain` as the bootstrap script.
   //
   // options -
-  //   :urlToOpen - The atom:// url to open.
+  //   :urlToOpen - The chevron:// url to open.
   //   :devMode - Boolean to control the opened window's dev mode.
   //   :safeMode - Boolean to control the opened window's safe mode.
   openUrl({ urlToOpen, devMode, safeMode, env }) {

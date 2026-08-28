@@ -60,10 +60,11 @@ describe('default themes', () => {
     assert.match(src, /relaunch of Chevron/);
   });
 
-  it('does not change the file-watcher enum value or atom:// protocol', () => {
+  it('does not change the file-watcher enum value', () => {
+    // `value: 'atom'` is the file-watcher backend name, unrelated to the
+    // atom:// URI scheme that Wave 4 removed. It stays.
     const src = read('src/config-schema.js');
     assert.match(src, /value: 'atom'/);
-    assert.match(src, /atom:\/\//);
   });
 
   it('settings-view user-facing copy says Chevron', () => {

@@ -269,8 +269,8 @@ importers:
         specifier: 2.0.3
         version: 2.0.3
       image-view:
-        specifier: npm:@builtbygio/image-view@0.64.2
-        version: '@builtbygio/image-view@0.64.2'
+        specifier: npm:@builtbygio/image-view@0.64.3
+        version: '@builtbygio/image-view@0.64.3'
       incompatible-packages:
         specifier: workspace:@builtbygio/incompatible-packages@*
         version: link:packages/incompatible-packages
@@ -503,8 +503,8 @@ importers:
         specifier: 9.2.1
         version: 9.2.1
       snippets:
-        specifier: npm:@builtbygio/snippets@1.5.5
-        version: '@builtbygio/snippets@1.5.5'
+        specifier: npm:@builtbygio/snippets@1.5.6
+        version: '@builtbygio/snippets@1.5.6'
       solarized-dark-syntax:
         specifier: workspace:@builtbygio/solarized-dark-syntax@*
         version: link:packages/solarized-dark-syntax
@@ -907,8 +907,8 @@ packages:
     resolution: {integrity: sha512-CKgZtdLtBPEfQj0ieFWL8T5y4uvKP4/y9X0FihfAR0tvaEuQb045cRso6UBoCuDEoveFZxIS5BvbA8GJWWiIJA==}
     engines: {atom: '>=1.37.0'}
 
-  '@builtbygio/image-view@0.64.2':
-    resolution: {integrity: sha512-r373n4IA0c8oKLy5NNLe7TFnbEsbWxhudPFlmsJ8TN9qjjFiUdufW0KnqSuhi0XbVqZevtvJtpZSJaeZLratKA==}
+  '@builtbygio/image-view@0.64.3':
+    resolution: {integrity: sha512-8zwnzJVzY/uBomhFIpZ8WCevRdnX41axRYrHZVKgS/SQozfjbl5n10EtC+G1e8GrexIW1PlWbi7uYweInOKQ/w==}
 
   '@builtbygio/keybinding-resolver@0.39.4':
     resolution: {integrity: sha512-pbADOsMbFZCLBBGV4h/0wvJNyq8dl0N2sz6O61Q657EfU6xpVa0T0kt/ToHNU7mz4QXjmoRI5AJV1CEEj6s47A==}
@@ -1056,8 +1056,8 @@ packages:
   '@builtbygio/settings-view@0.261.15':
     resolution: {integrity: sha512-QAdLAfe5BhVXiM6CwfBhOZJOSHtfAvd/NnQYt3lvwEl7JnIaloQNFBmnyi8Gpu16PNWgoKHxxVPl3mPgcmFucQ==}
 
-  '@builtbygio/snippets@1.5.5':
-    resolution: {integrity: sha512-863MBio/ZrKI3hd1Kl60Tu9GMf5vDyiGFAaa9Hhkl5TQMuPAz98kvN1g5np9bXAeXJwaiHZDNfdFDZ22JqM17Q==}
+  '@builtbygio/snippets@1.5.6':
+    resolution: {integrity: sha512-fayt21A1qZrFiOH8UplDcDfnIB1+2K1fhZZ332OuSxNeT3g1GjcgfZk8OQpuCUyvI8Ii9zdYIzIno+raPHtDRQ==}
 
   '@builtbygio/spell-check@0.77.6':
     resolution: {integrity: sha512-TzNfBKWZnZMDrEKzm3YJwhWVjq+aeo632Mol5y4V5r0Qu6NzHXKDkwurXux37v/GdRRV27+86QH2o2lUDn+TwQ==}
@@ -4410,7 +4410,7 @@ snapshots:
       whats-my-line: 0.1.4
       yubikiri: 2.0.0
 
-  '@builtbygio/image-view@0.64.2':
+  '@builtbygio/image-view@0.64.3':
     dependencies:
       bytes: 3.1.2
       etch: 0.9.0
@@ -4667,7 +4667,7 @@ snapshots:
       semver: 5.7.2
       underscore-plus: 1.7.0
 
-  '@builtbygio/snippets@1.5.5':
+  '@builtbygio/snippets@1.5.6':
     dependencies:
       async: 0.2.10
       atom-select-list: '@builtbygio/atom-select-list@0.8.2'

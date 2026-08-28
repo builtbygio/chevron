@@ -308,15 +308,15 @@ class GuideView {
   }
   didClickStylingButton() {
     this.props.reporterProxy.sendEvent("clicked-styling-cta");
-    chevron.workspace.open("chevron://.atom/stylesheet", { split: "left" });
+    chevron.workspace.open("chevron://.chevron/stylesheet", { split: "left" });
   }
   didClickInitScriptButton() {
     this.props.reporterProxy.sendEvent("clicked-init-script-cta");
-    chevron.workspace.open("chevron://.atom/init-script", { split: "left" });
+    chevron.workspace.open("chevron://.chevron/init-script", { split: "left" });
   }
   didClickSnippetsButton() {
     this.props.reporterProxy.sendEvent("clicked-snippets-cta");
-    chevron.workspace.open("chevron://.atom/snippets", { split: "left" });
+    chevron.workspace.open("chevron://.chevron/snippets", { split: "left" });
   }
   didExpandOrCollapseSection(event) {
     const sectionName = event.currentTarget.closest("details").dataset.section;

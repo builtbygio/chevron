@@ -7,10 +7,10 @@ const {
   relativePathFromAtomUrl
 } = require('./atom-protocol-path');
 
-// Handles requests with the 'atom' and 'chevron' protocols.
+// Handles requests with the 'chevron' protocol.
 //
 // It's created by {AtomApplication} upon instantiation and is used to create a
-// custom resource loader for 'atom://' and 'chevron://' URLs (same search paths).
+// custom resource loader for 'chevron://' URLs.
 //
 // The following directories are searched in order:
 //   * $ATOM_HOME/assets  (config home; may be ~/.atom or ~/.chevron)
@@ -19,7 +19,7 @@ const {
 //   * RESOURCE_PATH/node_modules
 //
 // Security (Electron BP P0.1): resolved files must stay under the chosen root.
-// Traversal via atom://../../… must not escape package/asset trees.
+// Traversal via chevron://../../… must not escape package/asset trees.
 
 module.exports = class AtomProtocolHandler {
   constructor(resourcePath, safeMode) {
@@ -36,11 +36,9 @@ module.exports = class AtomProtocolHandler {
     this.registerAtomProtocol();
   }
 
-  // Register both product schemes; packages still use atom:// as the public API.
+  // chevron:// is the only product scheme (the atom:// alias went in Wave 4).
   registerAtomProtocol() {
-    for (const scheme of ['atom', 'chevron']) {
-      this.registerScheme(scheme);
-    }
+    this.registerScheme('chevron');
   }
 
   registerScheme(scheme) {
