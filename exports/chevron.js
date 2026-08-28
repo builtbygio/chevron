@@ -40,7 +40,8 @@ if (process.platform === 'win32') {
 }
 
 if (process.type === 'renderer') {
-  chevronExport.Task = require('../src/task');
+  // `Task` was removed in Wave 3: no first-party caller and no owned pin used
+  // it. Run work in a utilityProcess worker instead (see docs/security-phase-s.md).
   chevronExport.TextEditor = require('../src/text-editor');
 }
 

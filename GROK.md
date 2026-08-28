@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-08-28 (1.1.0 unsigned preview shipped; Wave 0 contract tests; **Waves 1 and 2 complete**)
+**Date of this handoff:** 2026-08-28 (1.1.0 unsigned preview shipped; Wave 0 contract tests; **Waves 1-3 complete**)
 
 ---
 
@@ -174,8 +174,13 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
    ⚠️ **Fork repos lag npm.** `builtbygio/github` `main` was 0.37.9 while npm shipped 0.37.12 (28 files: the `atom.`→`chevron.` conversion, published but never pushed). `spell-check` (repo 0.77.3 / npm 0.77.5) and `tree-view` (repo 0.229.3 / npm 0.229.6) match the pattern. #16 reconciled github; the others still lie.  
 
    **Publishing a fork:** the repo keeps the **unscoped** name (`github`, `season`); set `name` to `@builtbygio/<id>` in a throwaway clone, then `npm publish --access public --ignore-scripts`. Diff `npm pack --dry-run` against the previous tarball before publishing — github had no `.npmignore`, so a plain publish would have shipped the 630-file `test/` tree that 0.37.12 excluded by an unrecorded manual step (fixed by #17).  
-3. **Wave 3 (next)** — delete `Task` / `season` / `document-register-element` / `atom://` only after greps and tests prove zero callers.  
-4. **Do not delete** `Task` / `season` / `document-register-element` / first-mate while callers remain. **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  
+3. **Wave 3 — done. One of four passed the gate.** Evidence recorded in `script/ci/wave3-gates.test.js` so this is not re-derived:  
+   - **`Task` — DELETED.** Zero callers: nothing in `src/` but the export itself, and a sweep of all 94 owned pins found only `github/lib/async-queue.js`, which declares its *own* local `class Task` with no requires. Gone: `src/task.ts`, `src/task-bootstrap.js`, the export, `spec/task-spec.js` + fixtures. Gate: `script/ci/task-callers.test.js`.  
+   - **`season` — STAYS.** Not blocked on pins (Wave 1 proved zero `.cson` across the catalog *and* the app tree). Blocked on user-authored `~/.chevron/*.cson` dual-read and any installed package's data (`config-file`, `user-config-path`, `keymap-extensions`, `package`, `grammar-registry`).  
+   - **`document-register-element` — STAYS.** `document.createElement('atom-*')` under `contextIsolation`; already locked by `baseline-1.1.0` and `custom-element-factory`.  
+   - **`atom://` — STAYS.** `image-view/styles/image-view.less` ships a live `atom://image-view/images/transparent-background.png`, resolved by `atom-protocol-handler` (which serves both schemes). Shipped CSS, not a comment or a test. Convert that pin to `chevron://` and the gate reopens.  
+   - **Bug fixed on the way:** `handleLinkClick` rewrote canonical `chevron://` links *to* `atom://` before calling `uriHandlerRegistry.handleURI`, so correct links tripped the registry's "atom:// is a deprecated alias" warning. It now passes the scheme through; only `atom://` warns.  
+4. **Do not delete** `season` / `document-register-element` / first-mate while callers remain (`Task` cleared its gate in Wave 3). **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  
 5. Residual `@atom/*` **dependency keys** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — published as `@builtbygio/*`; renaming the editor key is branding, not a drive-by.  
 6. **Startup perf** — custom V8 snapshot on Linux/Windows with **stock fallback** if verify fails; Darwin stock **frozen** (Q2).  
 7. **Later:** package host v2 **routing on** (spine is off); signing. Jasmine nightly is measurement, not a merge gate ([docs/jasmine-ci.md](docs/jasmine-ci.md)).  
@@ -211,7 +216,7 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
 ### Explicitly out of scope unless asked
 
 - Pulsar rebase  
-- Hard-delete of remaining Atom shims (`atom://` alias, `Task` export, `season`, `document-register-element`) before Wave 3 gates  
+- Hard-delete of the remaining Atom shims (`atom://` alias, `season`, `document-register-element`) — each failed its Wave 3 gate with a named caller; see `script/ci/wave3-gates.test.js`  
 
 ---
 

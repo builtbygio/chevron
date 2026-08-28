@@ -51,9 +51,11 @@ describe('1.1.0 product contract', () => {
     assert.match(registry, /protocol !== 'atom:'/);
   });
 
-  it('Task export stays; Workspace.replace does not call Task', () => {
-    assert.ok(fs.existsSync(path.join(ROOT, 'src', 'task.ts')));
-    assert.match(read('exports/chevron.js'), /Task/);
+  it('Task is gone (Wave 3 superseded the 1.1.0 contract here)', () => {
+    // 1.1.0 locked the Task export in place. Wave 3 removed it once the grep
+    // proved zero callers; script/ci/task-callers.test.js is the live gate.
+    assert.ok(!fs.existsSync(path.join(ROOT, 'src', 'task.ts')));
+    assert.doesNotMatch(read('exports/chevron.js'), /chevronExport\.Task\s*=/);
     const ws = read('src/workspace.js');
     assert.doesNotMatch(ws, /Task\.once/);
     assert.match(ws, /replaceInFiles/);

@@ -11,14 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Wave 3: `Task` is deleted — `src/task.ts`, `src/task-bootstrap.js`, the `require('chevron').Task` export, and `spec/task-spec.js` with its fixtures. The Wave 3 gate is zero callers, and it passed: nothing in `src/` referenced it but the export, and a sweep of all 94 owned pins found only a same-named local class in `github/lib/async-queue.js`. Long-running work belongs in a `utilityProcess` host. **Breaking** for any package that called `Task`.
 - Wave 2: `spell-check` pin → `@builtbygio/spell-check@0.77.6`, which drops an unused `natural` dependency, and with it `patches/natural@0.4.0.patch`. `natural@0.4.0` declared `log4js: "*"` → 6.9.1, where `logger.setLevel` is `undefined`, so it threw at require time and Chevron patched it. spell-check never actually required `natural` — the string appeared only in its `package.json` — so the patch is retired rather than folded into a fork. `natural@0.4.0`, `log4js`, `apparatus` and `sylvester` all leave the dependency graph; `spelling-manager` is unaffected (it uses `natural@^0.6.3`, which dropped `log4js` upstream).
 - Wave 2: five patch files pnpm never applied — `fs-admin@0.15.0`, `keytar@4.13.0`, `one-dark-ui@1.12.5`, `settings-view@0.261.15`, `tree-view@0.229.6`. None were listed in `patchedDependencies`; each fix already ships inside the owned `@builtbygio` fork (verified against the installed packages).
 
 ### Added
 
-- Wave 2: `script/ci/patch-inventory.test.js` — `patches/` and pnpm `patchedDependencies` must agree in both directions, so a patch file cannot rot unapplied again. It also records why `natural@0.4.0` still needs its patch: `natural` declares `log4js: "*"`, which resolves to 6.9.1 where `logger.setLevel` is `undefined`, so the unpatched package throws at require time.
+- Wave 3: `script/ci/wave3-gates.test.js` — records the evidence behind each Wave 3 verdict, so the shims that stay are not re-litigated or deleted on a hunch.
+- Wave 2: `script/ci/patch-inventory.test.js` — `patches/` and pnpm `patchedDependencies` must agree in both directions, so a patch file cannot rot unapplied again. It also records why the `natural@0.4.0` patch was retired rather than folded into a fork: `natural` declared `log4js: "*"` (→ 6.9.1, where `logger.setLevel` is `undefined`), but `spell-check` never actually used `natural`.
 
 ### Changed
+
+- Wave 3: `season`, `document-register-element` and the `atom://` alias all **stay** — each failed its zero-callers gate for a specific reason, now recorded in `script/ci/wave3-gates.test.js`. Notably `atom://` is load-bearing: `image-view` ships `atom://image-view/images/transparent-background.png` in its LESS, resolved by `atom-protocol-handler`.
+- Wave 3: clicking a `chevron://` link no longer warns that `atom://` is deprecated. `handleLinkClick` rewrote canonical `chevron://` URIs *to* `atom://` before handing them to `URIHandlerRegistry`, which then warned about the alias it had just been given. The scheme now passes through unchanged.
 
 - Wave 2: `github` pin → `@builtbygio/github@0.37.13`, which drops the dead Relay layer left behind by the 8B migration — the unloadable `relay-network-layer-manager` (it required `relay-runtime`, never a dependency), 76 relay-compiler `__generated__` artifacts, a 655 KB `schema.graphql`, and the `graphql@14.5.8` runtime dep that nothing required. `graphql` is gone from the lockfile; the tarball drops 510 → 423 files and 3.30 → 1.9 MB unpacked. The live 8B path (`graphql-client`, `GraphQLQuery`, `relay-stub`, `graphql/recovered/`) is untouched and now gated by `script/ci/github-8b.test.js`.
 - Wave 1 (complete): `Workspace.replace` runs closed files through `replace-in-files` in-process (same JS RegExp events), and forces a global regex the way the old Task worker did. Public `Task` export stays. `src/replace-handler.ts` removed.
