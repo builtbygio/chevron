@@ -7,7 +7,6 @@ const path = require('path');
 const spawnSync = require('./lib/spawn-sync');
 
 const repositoryRootPath = path.resolve(__dirname, '..');
-const apmRootPath = path.join(repositoryRootPath, 'apm');
 const scriptRootPath = path.join(repositoryRootPath, 'script');
 const buildOutputPath = path.join(repositoryRootPath, 'out');
 const docsOutputPath = path.join(repositoryRootPath, 'docs', 'output');
@@ -30,7 +29,6 @@ const atomHomeDirPath = (() => {
 })();
 
 const appMetadata = require(path.join(repositoryRootPath, 'package.json'));
-const apmMetadata = require(path.join(apmRootPath, 'package.json'));
 const computedAppVersion = computeAppVersion(
   process.env.ATOM_RELEASE_VERSION || appMetadata.version
 );
@@ -47,14 +45,12 @@ if (process.env.npm_config_jobs === undefined) {
 
 module.exports = {
   appMetadata,
-  apmMetadata,
   channel,
   channelName,
   appName,
   executableName,
   computedAppVersion,
   repositoryRootPath,
-  apmRootPath,
   scriptRootPath,
   buildOutputPath,
   docsOutputPath,
@@ -63,7 +59,6 @@ module.exports = {
   electronDownloadPath,
   atomHomeDirPath,
   homeDirPath,
-  getApmBinPath,
   getCpmBinPath,
   getNpmBinPath,
   getPnpmBinPath,
@@ -125,23 +120,6 @@ function computeAppVersion(version) {
   return version;
 }
 
-function getApmBinPath() {
-  // Phase 4+: monorepo tooling uses cpm's apm shim (not classic atom-package-manager).
-  // Optional --with-apm still installs classic apm under apm/, but product and scripts
-  // prefer cpm.
-  const apmBinName = process.platform === 'win32' ? 'apm.cmd' : 'apm';
-  const cpmApm = path.join(repositoryRootPath, 'cpm', 'bin', apmBinName);
-  if (require('fs').existsSync(cpmApm)) {
-    return cpmApm;
-  }
-  return path.join(
-    apmRootPath,
-    'node_modules',
-    'atom-package-manager',
-    'bin',
-    apmBinName
-  );
-}
 
 function getCpmBinPath() {
   const cpmBinName = process.platform === 'win32' ? 'cpm.cmd' : 'cpm';

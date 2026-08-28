@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- The `apm/` tree and the `--with-apm` bootstrap flag. The flag could not work: `script/lib/install-apm.js` had already been deleted, so `--with-apm` crashed with `MODULE_NOT_FOUND` — it was a trap, not an escape hatch. `script/config.js` no longer exports `apmRootPath`, `apmMetadata` or `getApmBinPath` (nothing consumed them, and `getApmBinPath` could only return a path that does not exist). Windows Squirrel installs stop writing `apm.cmd` / `apm.sh` shims, which pointed at targets absent from both `cpm/bin/` and `resources/win/`. `cpm/package-lock.json` no longer advertises an `apm` bin its `package.json` dropped.
+- `docs/ai-design.md` — an in-app AI **proposal**, never decided or implemented. Recover from git history if that work is funded.
+
 - `script/vsts/` — 26 files of Azure DevOps pipelines inherited from Atom. Nothing referenced them, no GitHub Actions workflow ran them, and the one endpoint they targeted (`atom/atom-nightly-releases`) is archived. They were not inert: the 1.1.0 release commit rewrote `get-release-version.js` to drop `request-promise-native`, spending real effort on code that never runs.
 
 - Wave 4: the `atom://` URI alias is gone. `chevron://` is now the only product URI scheme. Removed the opener fallback (`alternateSchemeURI`), `atom-paths` normalization, the `atom:` branch and its deprecation warning in `URIHandlerRegistry`, the `atom` scheme in `AtomProtocolHandler` / `atom-protocol-path`, the CLI URL check, the OS protocol-client registration, and the macOS `CFBundleURLSchemes` entry. **Breaking:** `atom://` deep links and any package publishing them stop resolving. Unblocked by `@builtbygio/image-view@0.64.3`, which converted the last shipped emitter across all 94 pins.
