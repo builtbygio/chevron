@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Wave 2: five patch files pnpm never applied — `fs-admin@0.15.0`, `keytar@4.13.0`, `one-dark-ui@1.12.5`, `settings-view@0.261.15`, `tree-view@0.229.6`. None were listed in `patchedDependencies`; each fix already ships inside the owned `@builtbygio` fork (verified against the installed packages).
+
+### Added
+
+- Wave 2: `script/ci/patch-inventory.test.js` — `patches/` and pnpm `patchedDependencies` must agree in both directions, so a patch file cannot rot unapplied again. It also records why `natural@0.4.0` still needs its patch: `natural` declares `log4js: "*"`, which resolves to 6.9.1 where `logger.setLevel` is `undefined`, so the unpatched package throws at require time.
+
 ### Changed
 
 - Wave 1 (complete): `Workspace.replace` runs closed files through `replace-in-files` in-process (same JS RegExp events), and forces a global regex the way the old Task worker did. Public `Task` export stays. `src/replace-handler.ts` removed.

@@ -170,6 +170,7 @@ jobs:
           node --test script/ci/package-require-audit.test.js
           node --test script/ci/legacy-transpile.test.js
           node --test script/ci/package-pin-policy.test.js
+          node --test script/ci/patch-inventory.test.js
           node --test script/ci/baseline-1.1.0.test.js
           node --test script/ci/replace-in-files.test.js
           node --test script/ci/wave1-ipc-slice.test.js
@@ -458,6 +459,7 @@ jobs:
           node --test script/ci/lsp-builtin-discover.test.js
           node --test script/ci/lazy-first-mate.test.js
           node --test script/ci/jasmine-node-coffee.test.js
+          node --test script/ci/patch-inventory.test.js
 
       - name: Build + package (deb, tar, rpm)
         run: |
