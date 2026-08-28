@@ -28,25 +28,25 @@ const spawnSetx = (args, callback) => Spawner.spawn(setxPath, args, callback);
 const spawnUpdate = (args, callback) =>
   Spawner.spawn(updateDotExe, args, callback);
 
-// Add the app launcher, cpm, and apm to the PATH
+// Add the app launcher and cpm to the PATH
 //
 // This is done by adding .cmd shims to the root bin folder in the install
 // directory that point to the newly installed versions inside the versioned
-// app directories. apm is always named apm / apm-beta / apm-nightly — never
+// app directories. cpm is always named cpm / cpm-beta / cpm-nightly — never
 // derived by string-replacing "atom" in the exe name (breaks chevron.exe).
-// cpm follows the same channel naming (cpm / cpm-beta / …).
+//
+// No apm shim is written: the name is retired. An install upgraded from a
+// version that wrote one keeps that stale file, but it pointed at a missing
+// target then too.
 const addCommandsToPath = callback => {
   const atomCmdName = execName.replace(/\.exe$/i, '.cmd');
   const atomShName = execName.replace(/\.exe$/i, '');
-  // Channel suffix from chevron-beta.exe / atom-beta.exe → apm-beta / cpm-beta
+  // Channel suffix from chevron-beta.exe / atom-beta.exe → cpm-beta
   const channelMatch = atomShName.match(/-(beta|nightly|dev)$/i);
   const channelSuffix = channelMatch
     ? `-${channelMatch[1].toLowerCase()}`
     : '';
-  const apmBase = `apm${channelSuffix}`;
   const cpmBase = `cpm${channelSuffix}`;
-  const apmCmdName = `${apmBase}.cmd`;
-  const apmShName = apmBase;
   const cpmCmdName = `${cpmBase}.cmd`;
   const cpmShName = cpmBase;
 
@@ -68,35 +68,9 @@ const addCommandsToPath = callback => {
       '/'
     )}" "$@"\r\necho`;
 
-    // Prefer cpm's apm.cmd when packaged; else classic apm.
-    const cpmApmCmd = path.join(
-      process.resourcesPath,
-      'app',
-      'cpm',
-      'bin',
-      'apm.cmd'
-    );
-    const classicApmCmd = path.join(
-      process.resourcesPath,
-      'app',
-      'apm',
-      'bin',
-      'apm.cmd'
-    );
-    const apmTarget = fs.existsSync(cpmApmCmd) ? cpmApmCmd : classicApmCmd;
-    const apmCommandPath = path.join(binFolder, apmCmdName);
-    const relativeApmPath = path.relative(binFolder, apmTarget);
-    const apmCommand = `@echo off\r\n"%~dp0\\${relativeApmPath}" %*`;
-
-    const apmShCommandPath = path.join(binFolder, apmShName);
-    const relativeApmShPath = path.relative(
-      binFolder,
-      path.join(appFolder, 'resources', 'cli', 'apm.sh')
-    );
-    const apmShCommand = `#!/bin/sh\r\n"$(dirname "$0")/${relativeApmShPath.replace(
-      /\\/g,
-      '/'
-    )}" "$@"`;
+    // No apm shims. The apm name is retired: cpm ships only a `cpm` bin, the
+    // classic apm tree is gone, and resources/win has no apm.cmd or apm.sh — so
+    // these shims pointed at files that do not exist on a Windows install.
 
     const cpmCmdTarget = path.join(
       process.resourcesPath,
@@ -139,9 +113,7 @@ const addCommandsToPath = callback => {
 
     const files = [
       [atomCommandPath, atomCommand],
-      [atomShCommandPath, atomShCommand],
-      [apmCommandPath, apmCommand],
-      [apmShCommandPath, apmShCommand]
+      [atomShCommandPath, atomShCommand]
     ];
     if (fs.existsSync(cpmTarget) || fs.existsSync(cpmCliCmd)) {
       files.push([cpmCommandPath, cpmCommand]);
@@ -184,7 +156,7 @@ const addCommandsToPath = callback => {
   });
 };
 
-// Remove atom and apm from the PATH
+// Remove the install bin folder from the PATH (uninstall)
 const removeCommandsFromPath = callback =>
   WinPowerShell.getPath((error, pathEnv) => {
     if (error != null) {

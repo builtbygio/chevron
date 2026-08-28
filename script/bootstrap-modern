@@ -2,7 +2,7 @@
 # Chevron bootstrap for modern host toolchains (macOS 13+ / Linux / Windows via Git Bash).
 #
 # Phase 0: root app dependencies use **pnpm workspaces** (not apm/Node 12).
-# Phase 4: product ships cpm only; --with-apm is deprecated (debug only).
+# Phase 4: product ships cpm only. The classic apm tree is gone.
 # Electron natives are still patched and rebuilt with modern node-gyp.
 # script/ and cpm/ still install with host npm (their own lockfiles).
 #
@@ -22,18 +22,13 @@ cd "$REPO_ROOT"
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/lib/modern-env.sh"
 
-WITH_APM=false
 for arg in "$@"; do
   case "$arg" in
     --ci) export CI=true ;;
-    --with-apm) WITH_APM=true ;;
   esac
 done
 if [ "${CI:-}" = "true" ]; then
   echo "CI mode enabled"
-fi
-if [ "$WITH_APM" = true ]; then
-  echo "NOTE: --with-apm is deprecated (Phase 4 debug only)"
 fi
 
 echo ""
@@ -324,27 +319,7 @@ fi
 # Record natives fingerprint only when critical artifacts exist (skip or rebuild).
 node -e 'require("./script/lib/natives-fingerprint").write(); console.log("Natives fingerprint written.");'
 
-# --- Step 4: classic apm tree (Phase 4 retired from product) -----------------
-# Product packages ship cpm only. --with-apm remains for rare local debugging
-# of historical atom-package-manager, not for packaging.
-if [ "$WITH_APM" = true ]; then
-  echo "WARNING: --with-apm is deprecated (Phase 4). Product no longer bundles classic apm."
-  echo "Installing apm for local debugging only…"
-  node <<'NODE'
-'use strict';
-const installApm = require('./script/lib/install-apm');
-const ci = process.env.CI === 'true';
-process.on('unhandledRejection', e => {
-  console.error(e.stack || e);
-  process.exit(1);
-});
-installApm(ci, { ignoreScripts: true });
-NODE
-else
-  echo "Classic apm not installed (Phase 4: product uses cpm; apm name is a cpm shim)."
-fi
-
-# --- Step 5: fingerprint -----------------------------------------------------
+# --- Step 4: fingerprint -----------------------------------------------------
 node <<'NODE'
 'use strict';
 require('./script/lib/dependencies-fingerprint').write();

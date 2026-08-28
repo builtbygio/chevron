@@ -10,10 +10,6 @@ module.exports = function() {
   const fs = require('fs-extra');
   const glob = require('glob');
 
-  const apmDependenciesPath = path.join(CONFIG.apmRootPath, 'node_modules');
-  console.log(`Cleaning ${apmDependenciesPath}`);
-  fs.removeSync(apmDependenciesPath);
-
   const atomDependenciesPath = path.join(
     CONFIG.repositoryRootPath,
     'node_modules'

@@ -202,6 +202,11 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
 - **Fixed in #108:** empty tree-view — `collectDefaultRoots` used `atomApplication.windows` (never set); must use `getAllWindows()`. `/tmp` projects hid this. Keep `document-register-element` (contextIsolation); do not Grim-wrap `registerElement`.  
 - Jasmine harness still defines `window.atom` for ~7500 spec references. Product `require('atom')` is `MODULE_NOT_FOUND`.
 
+**Retired, do not resurrect:** the `apm/` tree and `--with-apm` (the installer it called was already
+deleted); `script/vsts/` Azure pipelines; `Task`; the `atom://` scheme and `.atom` host. Windows
+Squirrel no longer writes `apm.*` shims — an install upgraded from an older build keeps a stale
+`apm.cmd`, which pointed at a missing target then too.
+
 **Dev policy env:**  
 - `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log privileged + native requires  
 - `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` — opt **out** of community privileged/native restrict (default is on)  

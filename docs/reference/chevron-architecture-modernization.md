@@ -228,7 +228,7 @@ Work is ordered so each horizon is a product that still boots.
 | **H2** | Language-first + catalog hygiene | Tree-sitter ports for named TextMate-only languages **or** a written exception list with owners; first-mate lazy; pin CSON conversion stream; `github` is **8B** (upgrade, do not slim); factory/catalog CE work; `Task` callers migrated then public `Task` removable | After H1 search/replace; Epic 18/19 **skipped** (Q1 = 8B) |
 | **H3** | Platform reopen | Package host v2 **epic** (owner-gated); first-mate removable **only if** exception list is empty; Atom name shims; Windows userData name; signing | After base Chevron is “done enough” (owner call) |
 
-Avalonia / in-app AI stay **after H3** unless a separate funded spike says otherwise. AI already has a design (`docs/ai-design.md`) that correctly waits on LSP + Phase S invariants.
+Avalonia / in-app AI stay **after H3** unless a separate funded spike says otherwise. The in-app AI design doc was deleted as an undecided proposal; recover it from git history if that work is ever funded.
 
 ---
 
@@ -993,7 +993,7 @@ Owner answers 2026-08-15. These are **final**.
 | `docs/reference/jasmine-ci.md` | Test split |
 | `docs/orientation/owned-package-modernization-checklist.md` | Per-package hygiene |
 | `docs/reference/atom-architecture.md` | **Stale** current-state sketch; superseded as target by this doc |
-| `docs/ai-design.md` | Post-LSP optional; not in this plan |
+| in-app AI | Post-LSP optional; not in this plan. The proposal doc was deleted — see git history |
 | `src/preload-natives.js` | Why sandbox is false |
 | `src/main-process/atom-window.js` | Editor webPreferences |
 | `static/preload.js` / `static/index.js` | Boot |
@@ -1293,7 +1293,7 @@ So TextMate is a **permanent supported fallback**, exactly as G4 and D4 already 
 - Mass `AtomEnvironment` class rename
 - Host v2 before owner sign-off (**given 2026-08-17**; Epic 21 slices 21.1–21.5 built, routing still off)
 - Custom snapshot Darwin bisection (**Q2: do not staff**)
-- AI integration (`docs/ai-design.md` stays a separate design)
+- AI integration (no live design doc; the proposal was deleted as undecided)
 - Deleting `Task`, `season`, or `document-register-element` in H1
 - Epic 18 / PR 19 (**skipped**: Q1 is 8B)
 - A new `utilityProcess` host **for `rg`** (PR 2b is main-process spawn)

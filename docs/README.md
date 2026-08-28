@@ -107,6 +107,5 @@ Relay + `graphql@14` in `github`, and the `natural` log4js patch.
 
 These fit none of the four sections. See the note in the PR that reorganised this tree.
 
-- [ai-design.md](./ai-design.md) — a **proposal**, never decided or implemented
 - [native-profiling.md](./native-profiling.md) — Atom-era macOS Instruments how-to; not Chevron-specific
 - [rfcs/](./rfcs/) — **archived Atom-era RFCs**, deliberately unedited. Not Chevron specs
