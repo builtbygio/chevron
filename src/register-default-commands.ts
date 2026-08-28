@@ -70,7 +70,6 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
       'application:open-your-stylesheet'() { return ipcRenderer.send('command', 'application:open-your-stylesheet'); },
       'application:open-license'() { return this.getModel().openLicense(); },
       'window:run-package-specs'() { return this.runPackageSpecs(); },
-      'window:run-benchmarks'() { return this.runBenchmarks(); },
       'window:toggle-left-dock'() { return this.getModel().getLeftDock().toggle(); },
       'window:toggle-right-dock'() { return this.getModel().getRightDock().toggle(); },
       'window:toggle-bottom-dock'() { return this.getModel().getBottomDock().toggle(); },

@@ -663,9 +663,9 @@ describe('pin CSON inventory (Wave 1)', () => {
     );
   });
 
-  it('the app itself ships no CSON (keymaps, menus, dot-atom templates)', () => {
+  it('the app itself ships no CSON (keymaps, menus, dot-chevron templates)', () => {
     const offenders = [];
-    for (const dir of ['keymaps', 'menus', 'dot-atom', 'src', 'static']) {
+    for (const dir of ['keymaps', 'menus', 'dot-chevron', 'src', 'static']) {
       const root = path.join(ROOT, dir);
       if (!fs.existsSync(root)) continue;
       const walk = current => {

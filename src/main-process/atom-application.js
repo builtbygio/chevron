@@ -181,8 +181,6 @@ module.exports = class AtomApplication extends EventEmitter {
     if (
       !socketPath ||
       options.test ||
-      options.benchmark ||
-      options.benchmarkTest ||
       (process.platform !== 'win32' && !fs.existsSync(socketPath))
     ) {
       return createApplication(options);
@@ -253,7 +251,7 @@ module.exports = class AtomApplication extends EventEmitter {
     this.storageFolder = new StorageFolder(process.env.ATOM_HOME);
     this.autoUpdateManager = new AutoUpdateManager(
       this.version,
-      options.test || options.benchmark || options.benchmarkTest,
+      options.test,
       this.config
     );
 
@@ -283,7 +281,7 @@ module.exports = class AtomApplication extends EventEmitter {
     );
 
     let socketServerPromise;
-    if (options.test || options.benchmark || options.benchmarkTest) {
+    if (options.test) {
       socketServerPromise = Promise.resolve();
     } else {
       socketServerPromise = this.listenForArgumentsFromNewProcess();
@@ -324,7 +322,7 @@ module.exports = class AtomApplication extends EventEmitter {
     let optionsForWindowsToOpen = [];
     let shouldReopenPreviousWindows = false;
 
-    if (options.test || options.benchmark || options.benchmarkTest) {
+    if (options.test) {
       optionsForWindowsToOpen.push(options);
     } else if (options.newWindow) {
       shouldReopenPreviousWindows = false;
@@ -365,8 +363,6 @@ module.exports = class AtomApplication extends EventEmitter {
       executedFrom,
       foldersToOpen,
       urlsToOpen,
-      benchmark,
-      benchmarkTest,
       test,
       pidToKillWhenClosed,
       devMode,
@@ -393,16 +389,6 @@ module.exports = class AtomApplication extends EventEmitter {
         executedFrom,
         pathsToOpen,
         logFile,
-        timeout,
-        env
-      });
-    } else if (benchmark || benchmarkTest) {
-      return this.runBenchmarks({
-        headless: true,
-        test: benchmarkTest,
-        resourcePath: this.resourcePath,
-        executedFrom,
-        pathsToOpen,
         timeout,
         env
       });
@@ -956,17 +942,6 @@ module.exports = class AtomApplication extends EventEmitter {
     );
 
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'run-benchmarks', (event, benchmarksPath) => {
-        this.runBenchmarks({
-          resourcePath: this.devResourcePath,
-          pathsToOpen: [benchmarksPath],
-          headless: false,
-          test: false
-        });
-      })
-    );
-
-    this.disposable.add(
       ipcHelpers.on(ipcMain, 'command', (event, command) => {
         this.emit(command);
       })
@@ -1125,7 +1100,7 @@ module.exports = class AtomApplication extends EventEmitter {
 
   initializeAtomHome(configDirPath) {
     if (!fs.existsSync(configDirPath)) {
-      const templateConfigDirPath = fs.resolve(this.resourcePath, 'dot-atom');
+      const templateConfigDirPath = fs.resolve(this.resourcePath, 'dot-chevron');
       fs.copySync(templateConfigDirPath, configDirPath);
     }
   }
@@ -1816,67 +1791,6 @@ module.exports = class AtomApplication extends EventEmitter {
     });
     this.addWindow(window);
     if (env) window.replaceEnvironment(env);
-    return window;
-  }
-
-  runBenchmarks({
-    headless,
-    test,
-    resourcePath,
-    executedFrom,
-    pathsToOpen,
-    env
-  }) {
-    let windowInitializationScript;
-    if (resourcePath !== this.resourcePath && !fs.existsSync(resourcePath)) {
-      ({ resourcePath } = this);
-    }
-
-    try {
-      windowInitializationScript = require.resolve(
-        path.resolve(this.devResourcePath, 'src', 'initialize-benchmark-window')
-      );
-    } catch (error) {
-      windowInitializationScript = require.resolve(
-        path.resolve(
-          __dirname,
-          '..',
-          '..',
-          'src',
-          'initialize-benchmark-window'
-        )
-      );
-    }
-
-    const benchmarkPaths = [];
-    if (pathsToOpen != null) {
-      for (let pathToOpen of pathsToOpen) {
-        benchmarkPaths.push(
-          path.resolve(executedFrom, fs.normalize(pathToOpen))
-        );
-      }
-    }
-
-    if (benchmarkPaths.length === 0) {
-      process.stderr.write('Error: Specify at least one benchmark path.\n\n');
-      process.exit(1);
-    }
-
-    const devMode = true;
-    const isSpec = true;
-    const safeMode = false;
-    const window = this.createWindow({
-      windowInitializationScript,
-      resourcePath,
-      headless,
-      test,
-      isSpec,
-      devMode,
-      benchmarkPaths,
-      safeMode,
-      env
-    });
-    this.addWindow(window);
     return window;
   }
 

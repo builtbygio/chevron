@@ -93,18 +93,6 @@ module.exports = function parseCommandLine(processArgs) {
       'Do not load packages from ~/.atom/packages or ~/.atom/dev/packages.'
     );
   options
-    .boolean('benchmark')
-    .describe(
-      'benchmark',
-      'Open a new window that runs the specified benchmarks.'
-    );
-  options
-    .boolean('benchmark-test')
-    .describe(
-      'benchmark-test',
-      'Run a faster version of the benchmarks in headless mode.'
-    );
-  options
     .alias('t', 'test')
     .boolean('t')
     .describe(
@@ -165,8 +153,6 @@ module.exports = function parseCommandLine(processArgs) {
 
   const addToLastWindow = args['add'];
   const safeMode = args['safe'];
-  const benchmark = args['benchmark'];
-  const benchmarkTest = args['benchmark-test'];
   const test = args['test'];
   const mainProcess = args['main-process'];
   const timeout = args['timeout'];
@@ -253,8 +239,6 @@ module.exports = function parseCommandLine(processArgs) {
     clearWindowState,
     addToLastWindow,
     mainProcess,
-    benchmark,
-    benchmarkTest,
     env: process.env
   };
 };

@@ -51,7 +51,7 @@ while getopts ":anwtfvh-:" opt; do
           REDIRECT_STDERR=1
           EXPECT_OUTPUT=1
           ;;
-        foreground|benchmark|benchmark-test|test)
+        foreground|test)
           EXPECT_OUTPUT=1
           ;;
         enable-electron-logging)

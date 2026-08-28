@@ -203,7 +203,9 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
 - Jasmine harness still defines `window.atom` for ~7500 spec references. Product `require('atom')` is `MODULE_NOT_FOUND`.
 
 **Retired, do not resurrect:** the `apm/` tree and `--with-apm` (the installer it called was already
-deleted); `script/vsts/` Azure pipelines; `Task`; the `atom://` scheme and `.atom` host. Windows
+deleted); `script/vsts/` Azure pipelines; the in-app **benchmarks** feature (`--benchmark`,
+`window:run-benchmarks`) — wired up but never run by anything, and startup perf uses a different
+harness; `Task`; the `atom://` scheme and `.atom` host. `dot-atom/` is now `dot-chevron/`. Windows
 Squirrel no longer writes `apm.*` shims — an install upgraded from an older build keeps a stale
 `apm.cmd`, which pointed at a missing target then too.
 
