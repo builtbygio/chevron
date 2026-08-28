@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-08-28 (1.1.0 unsigned preview shipped; Wave 0 contract tests; **Wave 1 complete**)
+**Date of this handoff:** 2026-08-28 (1.1.0 unsigned preview shipped; Wave 0 contract tests; **Waves 1 and 2 complete**)
 
 ---
 
@@ -166,8 +166,15 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
    - `Workspace.replace` is off `Task` (`replace-in-files` in-process; export stays). Forces a global regex the way the old worker did.  
    - `sendSync`→`invoke` slice: app jump list + shell beep on `chevron:*` (`script/ci/wave1-ipc-slice.test.js`). `atom-*-sync` twins stay for `remote-compat`. **Clipboard deliberately stays sync** — `atom.clipboard.read()` is synchronous public API. Next mover is `remote-compat` itself, not another getter slice ([remote-ipc-inventory.md](docs/remote-ipc-inventory.md) §11).  
    - Pin `.cson` inventory: **0** across all 94 catalog pins *and* the app tree (`script/ci/pin-cson.test.js` → `pin CSON inventory (Wave 1)`). `season` is no longer a pin reader; its Wave 3 gate is user `.cson` dual-read + third-party package data ([language-stack.md](docs/language-stack.md) *Pin CSON inventory*).  
-2. **Wave 2 (next)** — owned npm: github GraphQL **in place** (inbox stays; React is already 18.3; leftover is `graphql@14` / `relay-compiler@5`). Fold the `natural` log4js patch into the published spell-check stack.  
-3. **Wave 3** — delete `Task` / `season` / `document-register-element` / `atom://` only after greps and tests prove zero callers.  
+2. **Wave 2 — complete.** Both items were owned-npm work, published under `@builtbygio`:  
+   - **github GraphQL — done.** [builtbygio/github#16](https://github.com/builtbygio/github/pull/16) + [#17](https://github.com/builtbygio/github/pull/17) merged, `@builtbygio/github@0.37.13` published, pin + lockfile bumped here. 8B had already replaced Relay with `graphql-client` + `GraphQLQuery`; the old layer was dead weight (`relay-network-layer-manager.js` requires `relay-runtime`, never a dependency; 76 `__generated__` artifacts; `graphql@14` required by nothing; a 655 KB `schema.graphql` feeding relay-compiler). Tarball **510 → 423 files, 3.30 → 1.9 MB unpacked**; `graphql@14.5.8` is out of the lockfile entirely. Kept `lib/relay-stub.js` (live 8B code) and `graphql/recovered/` (read at runtime). Gated by `script/ci/github-8b.test.js`.  
+   - **`natural` log4js patch — done, and no fork was needed.** [builtbygio/spell-check#5](https://github.com/builtbygio/spell-check/pull/5) merged, `@builtbygio/spell-check@0.77.6` published, pin bumped, `patches/natural@0.4.0.patch` deleted. The plan was to publish `@builtbygio/natural` with the fix folded in; the actual finding is that **spell-check declared `natural` and never used it** — across all 33 files the string appears only in `package.json`. Dropping the unused dependency retires the patch outright and takes `natural@0.4.0`, `log4js@6.9.1`, `apparatus` and `sylvester` out of the app graph. `spelling-manager` is unaffected: it uses `natural@^0.6.3`, which dropped `log4js` upstream and never needed the patch. Guarded by `script/ci/patch-inventory.test.js`.  
+   - **Landed here:** deleted five patch files that pnpm never applied (their fixes shipped inside the owned forks during N2) and added `script/ci/patch-inventory.test.js` so `patches/` and `patchedDependencies` cannot drift again.  
+
+   ⚠️ **Fork repos lag npm.** `builtbygio/github` `main` was 0.37.9 while npm shipped 0.37.12 (28 files: the `atom.`→`chevron.` conversion, published but never pushed). `spell-check` (repo 0.77.3 / npm 0.77.5) and `tree-view` (repo 0.229.3 / npm 0.229.6) match the pattern. #16 reconciled github; the others still lie.  
+
+   **Publishing a fork:** the repo keeps the **unscoped** name (`github`, `season`); set `name` to `@builtbygio/<id>` in a throwaway clone, then `npm publish --access public --ignore-scripts`. Diff `npm pack --dry-run` against the previous tarball before publishing — github had no `.npmignore`, so a plain publish would have shipped the 630-file `test/` tree that 0.37.12 excluded by an unrecorded manual step (fixed by #17).  
+3. **Wave 3 (next)** — delete `Task` / `season` / `document-register-element` / `atom://` only after greps and tests prove zero callers.  
 4. **Do not delete** `Task` / `season` / `document-register-element` / first-mate while callers remain. **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  
 5. Residual `@atom/*` **dependency keys** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — published as `@builtbygio/*`; renaming the editor key is branding, not a drive-by.  
 6. **Startup perf** — custom V8 snapshot on Linux/Windows with **stock fallback** if verify fails; Darwin stock **frozen** (Q2).  

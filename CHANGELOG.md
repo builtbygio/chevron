@@ -9,8 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Wave 2: `spell-check` pin → `@builtbygio/spell-check@0.77.6`, which drops an unused `natural` dependency, and with it `patches/natural@0.4.0.patch`. `natural@0.4.0` declared `log4js: "*"` → 6.9.1, where `logger.setLevel` is `undefined`, so it threw at require time and Chevron patched it. spell-check never actually required `natural` — the string appeared only in its `package.json` — so the patch is retired rather than folded into a fork. `natural@0.4.0`, `log4js`, `apparatus` and `sylvester` all leave the dependency graph; `spelling-manager` is unaffected (it uses `natural@^0.6.3`, which dropped `log4js` upstream).
+- Wave 2: five patch files pnpm never applied — `fs-admin@0.15.0`, `keytar@4.13.0`, `one-dark-ui@1.12.5`, `settings-view@0.261.15`, `tree-view@0.229.6`. None were listed in `patchedDependencies`; each fix already ships inside the owned `@builtbygio` fork (verified against the installed packages).
+
+### Added
+
+- Wave 2: `script/ci/patch-inventory.test.js` — `patches/` and pnpm `patchedDependencies` must agree in both directions, so a patch file cannot rot unapplied again. It also records why `natural@0.4.0` still needs its patch: `natural` declares `log4js: "*"`, which resolves to 6.9.1 where `logger.setLevel` is `undefined`, so the unpatched package throws at require time.
+
 ### Changed
 
+- Wave 2: `github` pin → `@builtbygio/github@0.37.13`, which drops the dead Relay layer left behind by the 8B migration — the unloadable `relay-network-layer-manager` (it required `relay-runtime`, never a dependency), 76 relay-compiler `__generated__` artifacts, a 655 KB `schema.graphql`, and the `graphql@14.5.8` runtime dep that nothing required. `graphql` is gone from the lockfile; the tarball drops 510 → 423 files and 3.30 → 1.9 MB unpacked. The live 8B path (`graphql-client`, `GraphQLQuery`, `relay-stub`, `graphql/recovered/`) is untouched and now gated by `script/ci/github-8b.test.js`.
 - Wave 1 (complete): `Workspace.replace` runs closed files through `replace-in-files` in-process (same JS RegExp events), and forces a global regex the way the old Task worker did. Public `Task` export stays. `src/replace-handler.ts` removed.
 - Wave 1 `sendSync`→`invoke` slice: the Windows jump list and the beep sound move to `chevron:app-get-jump-list-settings` / `chevron:app-set-jump-list` / `chevron:shell-beep`. The `atom-*-sync` twins stay for `remote-compat`. Clipboard stays sync — `atom.clipboard.read()` is synchronous public API.
 - Wave 1 pin CSON inventory: all 94 catalog pins and the app tree ship **0** `.cson`. `season` is no longer a pin reader; it stays for user `.cson` dual-read, the compile cache, and third-party package data (`docs/language-stack.md`).
