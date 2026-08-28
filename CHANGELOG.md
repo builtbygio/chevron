@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `script/audit-fork-drift.js` — reports owned forks whose GitHub repo does not match the version pinned here, split into **behind** (publishing from the repo would silently revert shipped work) and **ahead** (repo work never published or never pinned). Found **29 of 83**; `tree-view` was three releases and a whole `.js`→`.ts` conversion behind. Needs network and `gh auth`, so it is a pre-publish check rather than a merge gate.
+
 - Wave 3: `script/ci/wave3-gates.test.js` — records the evidence behind each Wave 3 verdict, so the shims that stay are not re-litigated or deleted on a hunch.
 - Wave 2: `script/ci/patch-inventory.test.js` — `patches/` and pnpm `patchedDependencies` must agree in both directions, so a patch file cannot rot unapplied again. It also records why the `natural@0.4.0` patch was retired rather than folded into a fork: `natural` declared `log4js: "*"` (→ 6.9.1, where `logger.setLevel` is `undefined`), but `spell-check` never actually used `natural`.
 
