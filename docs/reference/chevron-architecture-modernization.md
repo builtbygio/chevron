@@ -1053,7 +1053,7 @@ Architecture PRs should not land over unfinished dogfood week (#106 Days 2–7) 
 
 - **Title:** `config: JSON default for ~/.chevron; dual-read CSON`
 - **Status:** **this change**
-- **Files:** `src/user-config-path.js`, `src/config-file.js`, `src/keymap-extensions.ts`, `src/atom-environment.js`, `src/main-process/start.js`, `src/main-process/atom-application.js`, `static/index.js` (CSON cache setup stays — pins still need it), `dot-atom/*` (already JSON), tests, CHANGELOG
+- **Files:** `src/user-config-path.js`, `src/config-file.js`, `src/keymap-extensions.ts`, `src/atom-environment.js`, `src/main-process/start.js`, `src/main-process/atom-application.js`, `static/index.js` (CSON cache setup stays — pins still need it), `dot-chevron/*` (already JSON), tests, CHANGELOG
 - **Depends on:** none (parallel with 2–4)
 - **Description:** New homes get `config.json` / `keymap.json`. Existing `*.cson` still load; first boot copies to JSON and leaves CSON. One-shot notification. Escape: `CHEVRON_CONFIG_CSON=1`. **Does not remove `season`.**
 

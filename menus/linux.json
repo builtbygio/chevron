@@ -395,10 +395,6 @@
               "command": "window:run-package-specs"
             },
             {
-              "label": "Run &Benchmarks",
-              "command": "window:run-benchmarks"
-            },
-            {
               "label": "Toggle Developer &Tools",
               "command": "window:toggle-dev-tools"
             }

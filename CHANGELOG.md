@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- The in-app **benchmarks** feature: `benchmarks/`, `src/initialize-benchmark-window.js`, the `--benchmark` / `--benchmark-test` CLI flags, the `window:run-benchmarks` command and its Run Benchmarks menu item on all three platforms, `AtomApplication#runBenchmarks` and its `run-benchmarks` IPC handler, and the `benchmark-runner.js` packaging copy. It was wired up and functional but nothing ran it — no CI job, no npm script — and startup performance is measured by a different harness (`docs/reference/startup-snapshot-plan.md` §4).
+- `docs/native-profiling.md` — an Atom-era macOS Instruments walkthrough with nothing Chevron-specific in it.
+
 - The `apm/` tree and the `--with-apm` bootstrap flag. The flag could not work: `script/lib/install-apm.js` had already been deleted, so `--with-apm` crashed with `MODULE_NOT_FOUND` — it was a trap, not an escape hatch. `script/config.js` no longer exports `apmRootPath`, `apmMetadata` or `getApmBinPath` (nothing consumed them, and `getApmBinPath` could only return a path that does not exist). Windows Squirrel installs stop writing `apm.cmd` / `apm.sh` shims, which pointed at targets absent from both `cpm/bin/` and `resources/win/`. `cpm/package-lock.json` no longer advertises an `apm` bin its `package.json` dropped.
 - `docs/ai-design.md` — an in-app AI **proposal**, never decided or implemented. Recover from git history if that work is funded.
 
@@ -31,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Wave 2: `script/ci/patch-inventory.test.js` — `patches/` and pnpm `patchedDependencies` must agree in both directions, so a patch file cannot rot unapplied again. It also records why the `natural@0.4.0` patch was retired rather than folded into a fork: `natural` declared `log4js: "*"` (→ 6.9.1, where `logger.setLevel` is `undefined`), but `spell-check` never actually used `natural`.
 
 ### Changed
+
+- `dot-atom/` is renamed **`dot-chevron/`**. It is the template copied into a fresh config home by `AtomApplication#initializeAtomHome`, so the name was the last place the app seeded `~/.chevron` from a directory called `dot-atom`. Existing installs are unaffected — the template is only read when the config dir does not yet exist.
+- `docs/rfcs/` moves to **`docs/decisions/inherited/rfcs/`**. They are decision records Chevron inherited rather than authored, kept for provenance: RFC 003 is why core packages are bundled the way they are, and `packages/README.md` cites it.
 
 - `docs/` is reorganised by purpose into `orientation/`, `reference/`, `decisions/` and `process/`, so a reader can tell a live reference from a finished plan. `reference/` is the section that must stay true; `process/` is closed by definition. Every doc is reachable from `docs/README.md`, and all cross-links, code comments and CI test paths were updated (0 broken links repo-wide).
 

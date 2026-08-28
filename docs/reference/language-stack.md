@@ -122,10 +122,10 @@ Already JSON (no 13c work): `language-c`, `language-css`, `language-go`, `langua
 | Surface | `.cson` files |
 |---------|---------------|
 | 94 `packageDependencies` pins (`node_modules/*` + in-repo `packages/*`) | **0** |
-| App tree (`src`, `static`, `keymaps`, `menus`, `dot-atom`) | **0** |
+| App tree (`src`, `static`, `keymaps`, `menus`, `dot-chevron`) | **0** |
 | Tracked files in this repo (`git ls-files '*.cson'`) | **0** |
 
-`keymaps/` and `menus/` are already `.json`; `dot-atom/` templates ship `keymap.json` / `snippets.json`.
+`keymaps/` and `menus/` are already `.json`; `dot-chevron/` templates ship `keymap.json` / `snippets.json`.
 
 **So `season` is no longer a pin reader.** What is left splits into user-authored files and third-party package data. Both must be empty before a Wave 3 delete:
 

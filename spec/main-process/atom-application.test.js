@@ -588,7 +588,7 @@ describe('AtomApplication', function() {
               { name: 'package-with-url-main', urlMain: 'some/url-main' }
             ],
             resolvePackagePath: () =>
-              path.resolve('dot-atom/package-with-url-main')
+              path.resolve('dot-chevron/package-with-url-main')
           };
 
           const [w1, w2] = await scenario.open(
@@ -600,7 +600,7 @@ describe('AtomApplication', function() {
 
           assert.strictEqual(
             w1.loadSettings.windowInitializationScript,
-            path.resolve('dot-atom/package-with-url-main/some/url-main')
+            path.resolve('dot-chevron/package-with-url-main/some/url-main')
           );
           assert.strictEqual(
             w1.loadSettings.urlToOpen,
@@ -609,7 +609,7 @@ describe('AtomApplication', function() {
 
           assert.strictEqual(
             w2.loadSettings.windowInitializationScript,
-            path.resolve('dot-atom/package-with-url-main/some/url-main')
+            path.resolve('dot-chevron/package-with-url-main/some/url-main')
           );
           assert.strictEqual(
             w2.loadSettings.urlToOpen,
@@ -759,16 +759,17 @@ describe('AtomApplication', function() {
       assert.isNull(w._locations[0].initialColumn);
     });
 
-    it('disregards test and benchmark windows', async function() {
+    it('disregards test windows', async function() {
+      // `--benchmark` was removed with the benchmarks feature; this used to
+      // open a fourth (benchmark) window, hence one fewer stub below.
       await scenario.launch(parseCommandLine(['--test', 'b']));
       await scenario.open(parseCommandLine(['--new-window']));
       await scenario.open(parseCommandLine(['--test', 'c']));
-      await scenario.open(parseCommandLine(['--benchmark', 'b']));
 
       await scenario.open(parseCommandLine(['a/1.md']));
 
-      // Test and benchmark StubWindows are visible as empty editor windows here
-      await scenario.assert('[_ _] [_ 1.md] [_ _] [_ _]');
+      // Test StubWindows are visible as empty editor windows here
+      await scenario.assert('[_ _] [_ 1.md] [_ _]');
     });
   });
 

@@ -12,8 +12,7 @@ const includePathInPackagedApp = require('./include-path-in-packaged-app');
 module.exports = function() {
   console.log(`Copying assets to ${CONFIG.intermediateAppPath}`);
   let srcPaths = [
-    path.join(CONFIG.repositoryRootPath, 'benchmarks', 'benchmark-runner.js'),
-    path.join(CONFIG.repositoryRootPath, 'dot-atom'),
+    path.join(CONFIG.repositoryRootPath, 'dot-chevron'),
     path.join(CONFIG.repositoryRootPath, 'exports'),
     path.join(CONFIG.repositoryRootPath, 'package.json'),
     path.join(CONFIG.repositoryRootPath, 'static'),

@@ -74,6 +74,7 @@ stronger than prose: `script/ci/wave3-gates.test.js` records why `season` and
 | [security-phase-s-decision.md](./decisions/security-phase-s-decision.md) | **Option C** — editor `sandbox: false` on purpose |
 | [nested-package-modules.md](./decisions/nested-package-modules.md) | Nested `packages/*/node_modules` policy |
 | [windows-userdata-migrate.md](./decisions/windows-userdata-migrate.md) | Resolved — no migration built, and why |
+| [inherited/rfcs/](./decisions/inherited/rfcs/) | **Atom-era RFCs**, deliberately unedited. Not Chevron specs — kept as *provenance*: RFC 003 is why core packages are bundled the way they are, cited by `packages/README.md` |
 
 ## process — closed, kept for the "why"
 
@@ -103,9 +104,3 @@ Relay + `graphql@14` in `github`, and the `natural` log4js patch.
 
 `season` and `document-register-element` **stay** — see `script/ci/wave3-gates.test.js`.
 
-## Unsorted — pending a decision
-
-These fit none of the four sections. See the note in the PR that reorganised this tree.
-
-- [native-profiling.md](./native-profiling.md) — Atom-era macOS Instruments how-to; not Chevron-specific
-- [rfcs/](./rfcs/) — **archived Atom-era RFCs**, deliberately unedited. Not Chevron specs
