@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Wave 2: `github` pin → `@builtbygio/github@0.37.13`, which drops the dead Relay layer left behind by the 8B migration — the unloadable `relay-network-layer-manager` (it required `relay-runtime`, never a dependency), 76 relay-compiler `__generated__` artifacts, a 655 KB `schema.graphql`, and the `graphql@14.5.8` runtime dep that nothing required. `graphql` is gone from the lockfile; the tarball drops 510 → 423 files and 3.30 → 1.9 MB unpacked. The live 8B path (`graphql-client`, `GraphQLQuery`, `relay-stub`, `graphql/recovered/`) is untouched and now gated by `script/ci/github-8b.test.js`.
 - Wave 1 (complete): `Workspace.replace` runs closed files through `replace-in-files` in-process (same JS RegExp events), and forces a global regex the way the old Task worker did. Public `Task` export stays. `src/replace-handler.ts` removed.
 - Wave 1 `sendSync`→`invoke` slice: the Windows jump list and the beep sound move to `chevron:app-get-jump-list-settings` / `chevron:app-set-jump-list` / `chevron:shell-beep`. The `atom-*-sync` twins stay for `remote-compat`. Clipboard stays sync — `atom.clipboard.read()` is synchronous public API.
 - Wave 1 pin CSON inventory: all 94 catalog pins and the app tree ship **0** `.cson`. `season` is no longer a pin reader; it stays for user `.cson` dual-read, the compile cache, and third-party package data (`docs/language-stack.md`).

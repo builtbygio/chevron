@@ -27,13 +27,67 @@ describe('github 8B React 18 (inbox stays)', () => {
     // React 18, no Relay — not about a frozen version number.
     assert.match(app.packageDependencies.github, /^0\.37\.\d+$/);
     // 1.1.0 catalog: npm pins, 0 git SHAs (see baseline-1.1.0.test.js).
-    assert.match(app.dependencies.github, /^npm:@builtbygio\/github@0\.37\.\d+$/);
+    assert.match(
+      app.dependencies.github,
+      /^npm:@builtbygio\/github@0\.37\.\d+$/
+    );
     const pkg = JSON.parse(read('package.json'));
     assert.match(pkg.version, /^0\.37\.\d+$/);
     assert.strictEqual(pkg.dependencies.react, '18.3.1');
     assert.strictEqual(pkg.dependencies['react-dom'], '18.3.1');
     assert.ok(!pkg.dependencies['react-relay']);
     assert.ok(!pkg.dependencies['relay-runtime']);
+  });
+
+  it('ships no Relay layer (Wave 2)', () => {
+    // 8B replaced Relay with graphql-client + GraphQLQuery. 0.37.13 deleted
+    // what was left: an unloadable network-layer manager (it required
+    // relay-runtime, never a dependency), the relay-compiler artifacts, and
+    // the 655 KB schema those artifacts were generated from.
+    assert.ok(
+      !fs.existsSync(
+        path.join(GITHUB, 'lib', 'relay-network-layer-manager.js')
+      ),
+      'relay-network-layer-manager required relay-runtime, which is not a dep'
+    );
+    assert.ok(
+      !fs.existsSync(path.join(GITHUB, 'graphql', 'schema.graphql')),
+      'schema.graphql only fed relay-compiler'
+    );
+
+    const generated = [];
+    const walk = dir => {
+      for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (ent.name === 'node_modules') continue;
+        const full = path.join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name === '__generated__') generated.push(full);
+          else walk(full);
+        }
+      }
+    };
+    walk(path.join(GITHUB, 'lib'));
+    assert.deepStrictEqual(generated, [], 'relay-compiler artifacts remain');
+
+    const pkg = JSON.parse(read('package.json'));
+    assert.ok(!pkg.dependencies.graphql, 'graphql@14 was required by nothing');
+    assert.ok(!(pkg.devDependencies || {})['relay-compiler']);
+    assert.ok(!(pkg.devDependencies || {})['babel-plugin-relay']);
+  });
+
+  it('keeps the live 8B GraphQL path', () => {
+    // relay-stub stands in for Relay pagination props; load-recovered reads
+    // graphql/recovered/ at runtime. Neither is dead weight.
+    assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'relay-stub.js')));
+    assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'graphql-client.js')));
+    assert.ok(
+      fs.existsSync(path.join(GITHUB, 'lib', 'views', 'graphql-query.js'))
+    );
+    const recovered = fs.readdirSync(path.join(GITHUB, 'graphql', 'recovered'));
+    assert.ok(
+      recovered.length > 0,
+      'recovered GraphQL documents are loaded at runtime'
+    );
   });
 
   it('mounts with createRoot, not ReactDOM.render', () => {
@@ -82,7 +136,11 @@ describe('github 8B React 18 (inbox stays)', () => {
     assert.match(createDialog, /BareCreateDialogController/);
     assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'relay-stub.js')));
     assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'graphql-pager.js')));
-    assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'containers', 'aggregated-reviews-json.js')));
+    assert.ok(
+      fs.existsSync(
+        path.join(GITHUB, 'lib', 'containers', 'aggregated-reviews-json.js')
+      )
+    );
     assert.ok(fs.existsSync(path.join(GITHUB, 'lib', 'graphql-client.js')));
     const client = read('lib/graphql-client.js');
     assert.match(client, /graphqlMutate/);
@@ -91,7 +149,7 @@ describe('github 8B React 18 (inbox stays)', () => {
     assert.doesNotMatch(addReaction, /commitMutation/);
     const libJs = [];
     function walk(dir) {
-      for (const ent of fs.readdirSync(dir, {withFileTypes: true})) {
+      for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
         const p = path.join(dir, ent.name);
         if (ent.isDirectory()) {
           if (ent.name === '__generated__') continue;
@@ -106,10 +164,11 @@ describe('github 8B React 18 (inbox stays)', () => {
       assert.doesNotMatch(src, /require\(['\"]react-relay['\"]\)/, p);
     }
     const recovered = path.join(GITHUB, 'graphql', 'recovered');
-    const docs = fs
-      .readdirSync(recovered)
-      .filter(n => n.endsWith('.graphql'));
-    assert.ok(docs.length >= 30, `expected recovered operations, got ${docs.length}`);
+    const docs = fs.readdirSync(recovered).filter(n => n.endsWith('.graphql'));
+    assert.ok(
+      docs.length >= 30,
+      `expected recovered operations, got ${docs.length}`
+    );
   });
 
   it('login copy points at a classic PAT, not github.atom.io', () => {
