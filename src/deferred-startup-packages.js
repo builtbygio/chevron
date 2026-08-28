@@ -50,26 +50,22 @@ const DEFERRED_STARTUP_PACKAGES = new Set([
   'autocomplete-snippets',
   'background-tips',
   'bracket-matcher',
-  'dalek',
   'deprecation-cop',
   'dev-live-reload',
   'find-and-replace',
   'fuzzy-finder',
   'github',
   'image-view',
-  'incompatible-packages',
   'keybinding-resolver',
   'lsp-diagnostics-stub',
   'lsp-servers',
   'markdown-preview',
   'open-on-github',
-  'package-generator',
   'snippets',
   'spell-check',
   'styleguide',
   'symbols-view',
   'timecop',
-  'update-package-dependencies'
 ]);
 
 function isDeferredStartupPackage(name) {
