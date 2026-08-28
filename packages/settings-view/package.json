@@ -35,11 +35,6 @@
     "chevron": "*"
   },
   "consumedServices": {
-    "status-bar": {
-      "versions": {
-        "^1.0.0": "consumeStatusBar"
-      }
-    },
     "snippets": {
       "versions": {
         "0.1.0": "consumeSnippets"

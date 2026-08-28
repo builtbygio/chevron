@@ -69,13 +69,11 @@ describe('default themes', () => {
 
   it('settings-view user-facing copy says Chevron', () => {
     const general = read('node_modules/settings-view/lib/general-panel.js');
-    const updates = read('node_modules/settings-view/lib/updates-panel.js');
     const card = read('node_modules/settings-view/lib/package-card.js');
     const themes = read('node_modules/settings-view/lib/themes-panel.js');
     assert.match(general, /Chevron's core settings/);
     assert.doesNotMatch(general, /Atom's core settings/);
-    assert.match(updates, /Restart Chevron/);
-    assert.doesNotMatch(updates, /Restart Atom/);
+    // updates-panel.js went with the registry: there are no package updates.
     assert.match(card, /Restart Chevron/);
     assert.doesNotMatch(card, /Restart Atom/);
     assert.match(themes, /style Chevron/);

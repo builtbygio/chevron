@@ -142,98 +142,6 @@ module.exports =
       return handleProcessErrors(apmProcess, errorMessage, callback);
     }
 
-    loadFeatured(loadThemes, callback) {
-      if (!callback) {
-        callback = loadThemes;
-        loadThemes = false;
-      }
-
-      const args = ['featured', '--json'];
-      const version = chevron.getVersion();
-      if (loadThemes) { args.push('--themes'); }
-      if (semver.valid(version)) { args.push('--compatible', version); }
-      const errorMessage = 'Fetching featured packages failed.';
-
-      const apmProcess = this.runCommand(args, function(code, stdout, stderr) {
-        let error;
-        if (code === 0) {
-          let packages;
-          try {
-            let left;
-            packages = (left = JSON.parse(stdout)) != null ? left : [];
-          } catch (parseError) {
-            error = createJsonParseError(errorMessage, parseError, stdout);
-            return callback(error);
-          }
-
-          return callback(null, packages);
-        } else {
-          error = new Error(errorMessage);
-          error.stdout = stdout;
-          error.stderr = stderr;
-          return callback(error);
-        }
-      });
-
-      return handleProcessErrors(apmProcess, errorMessage, callback);
-    }
-
-    loadOutdated(clearCache, callback) {
-      if (clearCache) {
-        this.clearOutdatedCache();
-      // Short circuit if we have cached data.
-      } else if (this.apmCache.loadOutdated.value && (this.apmCache.loadOutdated.expiry > Date.now())) {
-        return callback(null, this.apmCache.loadOutdated.value);
-      }
-
-      const args = ['outdated', '--json'];
-      const version = chevron.getVersion();
-      if (semver.valid(version)) { args.push('--compatible', version); }
-      const errorMessage = 'Fetching outdated packages and themes failed.';
-
-      const apmProcess = this.runCommand(args, (code, stdout, stderr) => {
-        let error;
-        let pack;
-        if (code === 0) {
-          let packages;
-          try {
-            let left;
-            packages = (left = JSON.parse(stdout)) != null ? left : [];
-          } catch (parseError) {
-            error = createJsonParseError(errorMessage, parseError, stdout);
-            return callback(error);
-          }
-
-          const updatablePackages = ((() => {
-            const result = [];
-            for (pack of Array.from(packages)) {               if (!this.getVersionPinnedPackages().includes(pack != null ? pack.name : undefined)) {
-                result.push(pack);
-              }
-            }
-            return result;
-          })());
-
-          this.apmCache.loadOutdated = {
-            value: updatablePackages,
-            expiry: Date.now() + this.CACHE_EXPIRY
-          };
-
-          for (pack of Array.from(updatablePackages)) {
-            this.emitPackageEvent('update-available', pack);
-          }
-
-          return callback(null, updatablePackages);
-        } else {
-          error = new Error(errorMessage);
-          error.stdout = stdout;
-          error.stderr = stderr;
-          return callback(error);
-        }
-      });
-
-      return handleProcessErrors(apmProcess, errorMessage, callback);
-    }
-
     getVersionPinnedPackages() {
       let left;
       return (left = chevron.config.get('core.versionPinnedPackages')) != null ? left : [];
@@ -246,62 +154,14 @@ module.exports =
       };
     }
 
-    loadPackage(packageName, callback) {
-      const args = ['view', packageName, '--json'];
-      const errorMessage = `Fetching package '${packageName}' failed.`;
-
-      const apmProcess = this.runCommand(args, function(code, stdout, stderr) {
-        let error;
-        if (code === 0) {
-          let packages;
-          try {
-            let left;
-            packages = (left = JSON.parse(stdout)) != null ? left : [];
-          } catch (parseError) {
-            error = createJsonParseError(errorMessage, parseError, stdout);
-            return callback(error);
-          }
-
-          return callback(null, packages);
-        } else {
-          error = new Error(errorMessage);
-          error.stdout = stdout;
-          error.stderr = stderr;
-          return callback(error);
-        }
-      });
-
-      return handleProcessErrors(apmProcess, errorMessage, callback);
-    }
-
     loadCompatiblePackageVersion(packageName, callback) {
-      const args = ['view', packageName, '--json', '--compatible', this.normalizeVersion(chevron.getVersion())];
-      const errorMessage = `Fetching package '${packageName}' failed.`;
-
-      const apmProcess = this.runCommand(args, function(code, stdout, stderr) {
-        let error;
-        if (code === 0) {
-          let parsed;
-          try {
-            let left;
-            parsed = (left = JSON.parse(stdout)) != null ? left : null;
-          } catch (parseError) {
-            error = createJsonParseError(errorMessage, parseError, stdout);
-            return callback(error);
-          }
-
-          // apm historically returned one object; tolerate a one-element array.
-          const pack = Array.isArray(parsed) ? (parsed[0] != null ? parsed[0] : null) : parsed;
-          return callback(null, pack);
-        } else {
-          error = new Error(errorMessage);
-          error.stdout = stdout;
-          error.stderr = stderr;
-          return callback(error);
-        }
-      });
-
-      return handleProcessErrors(apmProcess, errorMessage, callback);
+      // Asked the registry for the newest version matching this product. There
+      // is no registry; package-card treats an error as "no update available".
+      callback(
+        new Error(
+          `Chevron ships an owned catalog; no registry version for '${packageName}'.`
+        )
+      );
     }
 
     getInstalled() {
@@ -316,151 +176,45 @@ module.exports =
       });
     }
 
-    getFeatured(loadThemes) {
-      return new Promise((resolve, reject) => {
-        return this.loadFeatured(!!loadThemes, function(error, result) {
-          if (error) {
-            return reject(error);
-          } else {
-            return resolve(result);
-          }
-        });
-      });
+    // Chevron ships an owned catalog and does not install community packages,
+    // so there is no registry to feature from and nothing can be out of date.
+    // These resolve empty rather than throwing: the Packages and Themes panels
+    // call them on open, and an empty list is the truthful answer.
+    getFeatured(_loadThemes) {
+      return Promise.resolve([]);
     }
 
-    getOutdated(clearCache) {
-      if (clearCache == null) { clearCache = false; }
-      return new Promise((resolve, reject) => {
-        return this.loadOutdated(clearCache, function(error, result) {
-          if (error) {
-            return reject(error);
-          } else {
-            return resolve(result);
-          }
-        });
-      });
+    getOutdated(_clearCache) {
+      return Promise.resolve([]);
     }
 
     getPackage(packageName) {
-      return this.packagePromises[packageName] != null ? this.packagePromises[packageName] : (this.packagePromises[packageName] = new Promise((resolve, reject) => {
-        return this.loadPackage(packageName, function(error, result) {
-          if (error) {
-            return reject(error);
-          } else {
-            return resolve(result);
-          }
-        });
-      }));
-    }
-
-    satisfiesVersion(version, metadata) {
-      const engine = (metadata.engines != null ? metadata.engines.atom : undefined) != null ? (metadata.engines != null ? metadata.engines.atom : undefined) : '*';
-      if (!semver.validRange(engine)) { return false; }
-      return semver.satisfies(version, engine);
-    }
-
-    normalizeVersion(version) {
-      if (typeof version === 'string') { [version] = Array.from(version.split('-')); }
-      return version;
+      // No registry: package metadata for anything not installed cannot be
+      // fetched. Reject with the reason rather than spawning a cpm command
+      // that no longer exists.
+      return Promise.reject(
+        new Error(
+          `Chevron ships an owned catalog and cannot look up '${packageName}' in a package registry.`
+        )
+      );
     }
 
     update(pack, newVersion, callback) {
-      let args;
-      const {name, theme, apmInstallSource} = pack;
-
-      const errorMessage = newVersion ?
-        `Updating to \u201C${name}@${newVersion}\u201D failed.`
-      :
-        "Updating to latest sha failed.";
-      const onError = error => {
-        error.packageInstallError = !theme;
-        this.emitPackageEvent('update-failed', pack, error);
-        return (typeof callback === 'function' ? callback(error) : undefined);
-      };
-
-      if ((apmInstallSource != null ? apmInstallSource.type : undefined) === 'git') {
-        args = ['install', apmInstallSource.source];
-      } else {
-        args = ['install', `${name}@${newVersion}`];
-      }
-
-      const exit = (code, stdout, stderr) => {
-        if (code === 0) {
-          this.clearOutdatedCache();
-          if (typeof callback === 'function') {
-            callback();
-          }
-          return this.emitPackageEvent('updated', pack);
-        } else {
-          const error = new Error(errorMessage);
-          error.stdout = stdout;
-          error.stderr = stderr;
-          return onError(error);
-        }
-      };
-
-      this.emitPackageEvent('updating', pack);
-      const apmProcess = this.runCommand(args, exit);
-      return handleProcessErrors(apmProcess, errorMessage, onError);
-    }
-
-    unload(name) {
-      if (chevron.packages.isPackageLoaded(name)) {
-        if (chevron.packages.isPackageActive(name)) { chevron.packages.deactivatePackage(name); }
-        return chevron.packages.unloadPackage(name);
-      }
+      // Updating means fetching a newer version from a registry. There is
+      // none. getOutdated() resolves empty, so nothing should reach here.
+      const error = new Error(
+        `Chevron ships an owned catalog; '${pack && pack.name}' cannot be updated from a registry.`
+      );
+      if (typeof callback === 'function') callback(error);
+      return error;
     }
 
     install(pack, callback) {
-      let {name, version, theme} = pack;
-      const activateOnSuccess = !theme && !chevron.packages.isPackageDisabled(name);
-      const activateOnFailure = chevron.packages.isPackageActive(name);
-      const nameWithVersion = (version != null) ? `${name}@${version}` : name;
-
-      this.unload(name);
-      const args = ['install', nameWithVersion, '--json'];
-
-      const errorMessage = `Installing \u201C${nameWithVersion}\u201D failed.`;
-      const onError = error => {
-        error.packageInstallError = !theme;
-        this.emitPackageEvent('install-failed', pack, error);
-        return (typeof callback === 'function' ? callback(error) : undefined);
-      };
-
-      const exit = (code, stdout, stderr) => {
-        if (code === 0) {
-          // get real package name from package.json
-          try {
-            const packageInfo = JSON.parse(stdout)[0];
-            pack = _.extend({}, pack, packageInfo.metadata);
-            ({
-              name
-            } = pack);
-          } catch (err) {}
-            // using old apm without --json support
-          this.clearOutdatedCache();
-          if (activateOnSuccess) {
-            chevron.packages.activatePackage(name);
-          } else {
-            chevron.packages.loadPackage(name);
-          }
-
-          if (typeof callback === 'function') {
-            callback();
-          }
-          return this.emitPackageEvent('installed', pack);
-        } else {
-          if (activateOnFailure) { chevron.packages.activatePackage(name); }
-          const error = new Error(errorMessage);
-          error.stdout = stdout;
-          error.stderr = stderr;
-          return onError(error);
-        }
-      };
-
-      this.emitPackageEvent('installing', pack);
-      const apmProcess = this.runCommand(args, exit);
-      return handleProcessErrors(apmProcess, errorMessage, onError);
+      const error = new Error(
+        `Chevron ships an owned catalog; '${pack && pack.name}' cannot be installed from a registry.`
+      );
+      if (typeof callback === 'function') callback(error);
+      return error;
     }
 
     uninstall(pack, callback) {
@@ -563,22 +317,13 @@ module.exports =
     }
 
     checkNativeBuildTools() {
-      return new Promise((resolve, reject) => {
-        const apmProcess = this.runCommand(['install', '--check'], function(code, stdout, stderr) {
-          if (code === 0) {
-            return resolve();
-          } else {
-            return reject(new Error());
-          }
-        });
-
-        return apmProcess.onWillThrowError(function({error, handle}) {
-          handle();
-          return reject(error);
-        });
-      });
+      // This probed `cpm install --check`, which existed to verify a native
+      // toolchain before installing a community package. There is no install
+      // path any more; error-view already treats a rejection as "unknown".
+      return Promise.reject(
+        new Error('Native build tooling is not probed: Chevron does not install packages.')
+      );
     }
-
     removePackageNameFromDisabledPackages(packageName) {
       return chevron.config.removeAtKeyPath('core.disabledPackages', packageName);
     }

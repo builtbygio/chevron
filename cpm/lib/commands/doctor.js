@@ -9,7 +9,6 @@ const {
   getElectronVersion,
   isElectronAsNode
 } = require('../paths');
-const { getRegistryBaseUrl } = require('../registry');
 
 function doctor() {
   const home = getPackageHome();
@@ -34,7 +33,6 @@ function doctor() {
   console.log(
     `electron-as-node: ${isElectronAsNode() ? 'yes' : 'NO — prefer product binary launchers'}`
   );
-  console.log(`registry:        ${getRegistryBaseUrl()}`);
   console.log(`package home:    ${home}`);
   console.log(`packages dir:    ${packagesDir} ${fs.existsSync(packagesDir) ? '' : '(missing)'}`);
   console.log(`cpm meta:        ${metaDir}`);
