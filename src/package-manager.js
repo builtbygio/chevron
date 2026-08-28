@@ -18,14 +18,6 @@ const {
   packageIdFromName,
   applyPackageId
 } = require('./main-process/package-id');
-function hostEligibility() {
-  return require('./package-host-eligibility');
-}
-
-function defaultPackageHostClient() {
-  return require('./package-host-client');
-}
-
 // Extended: Package manager for coordinating the lifecycle of Atom packages.
 //
 // An instance of this class is always available as the `atom.packages` global.
@@ -79,7 +71,6 @@ module.exports = class PackageManager {
 
     this.packageActivators = [];
     this.registerPackageActivator(this, ['chevron', 'textmate']);
-    this.packageHostClient = params.packageHostClient || defaultPackageHostClient();
     this.hostContributionDisposable = null;
   }
 
@@ -885,75 +876,6 @@ module.exports = class PackageManager {
     return promises;
   }
 
-  packageShouldActivateInHost(pack) {
-    if (!pack || !this.packageHostClient || !this.packageHostClient.available()) {
-      return false;
-    }
-    const { isHostEnabled, shouldActivateInHost } = hostEligibility();
-    if (!isHostEnabled(this.config)) return false;
-    const decision = shouldActivateInHost({
-      packagePath: pack.path,
-      metadata: pack.metadata,
-      hostEnabled: true
-    });
-    return Boolean(decision && decision.inHost);
-  }
-
-  hostConfigSnapshot() {
-    const project =
-      global.chevron && global.chevron.project ? global.chevron.project : null;
-    const projectPaths =
-      project && typeof project.getPaths === 'function'
-        ? project.getPaths()
-        : [];
-    return this.packageHostClient.configSnapshot(this.config, projectPaths);
-  }
-
-  applyHostContribution(pack, descriptor) {
-    this.packageHostClient.applyContribution(
-      {
-        commandRegistry: this.commandRegistry,
-        notificationManager: this.notificationManager,
-        config: this.config,
-        workspace:
-          global.chevron && global.chevron.workspace
-            ? global.chevron.workspace
-            : null
-      },
-      pack,
-      descriptor
-    );
-  }
-
-  ensureHostContributionListener() {
-    if (this.hostContributionDisposable || !this.packageHostClient.onHostEvent) {
-      return;
-    }
-    this.hostContributionDisposable = this.packageHostClient.onHostEvent(msg => {
-      if (!msg || msg.type !== 'package-contribution') return;
-      const pack =
-        this.getActivePackage(msg.name) || this.activatingPackages[msg.name];
-      if (!pack) return;
-      this.applyHostContribution(pack, msg.descriptor);
-    });
-  }
-
-  async completeHostActivation(pack) {
-    this.ensureHostContributionListener();
-    const result = await this.packageHostClient.activatePackage({
-      name: pack.name,
-      root: pack.path,
-      configSnapshot: this.hostConfigSnapshot(),
-      state: this.getPackageState(pack.name) || {}
-    });
-    pack.hostActivation = true;
-    pack.hostCommandNames = (result && result.commands) || [];
-    for (const descriptor of (result && result.contributions) || []) {
-      this.applyHostContribution(pack, descriptor);
-    }
-    return pack;
-  }
-
   // Activate a single package by name
   activatePackage(name) {
     let pack = this.getActivePackage(name);
@@ -966,15 +888,8 @@ module.exports = class PackageManager {
       return Promise.reject(new Error(`Failed to load package '${name}'`));
     }
 
-    if (this.packageShouldActivateInHost(pack)) {
-      pack.hostActivation = true;
-    }
-
     this.activatingPackages[pack.name] = pack;
     const activationPromise = pack.activate().then(async () => {
-      if (pack.hostActivation) {
-        await this.completeHostActivation(pack);
-      }
       if (this.activatingPackages[pack.name] != null) {
         delete this.activatingPackages[pack.name];
         this.activePackages[pack.name] = pack;
@@ -1059,17 +974,6 @@ module.exports = class PackageManager {
 
     if (!suppressSerialization && this.isPackageActive(pack.name)) {
       this.serializePackage(pack);
-    }
-
-    if (pack.hostActivation && this.packageHostClient) {
-      try {
-        await this.packageHostClient.deactivatePackage(pack.name);
-      } catch (error) {
-        console.error(
-          `Error deactivating hosted package '${pack.name}'`,
-          error
-        );
-      }
     }
 
     const deactivationResult = pack.deactivate();

@@ -29,7 +29,9 @@ describe('1.1.0 product contract', () => {
 
   it('package host v2 routing defaults off', () => {
     const schema = read('src/config-schema.js');
-    assert.match(schema, /packageHostV2:\s*\{[\s\S]*?default:\s*false/);
+    // Package host v2 was removed with the community-package decision; the
+    // 1.1.0 contract pinned it to default false, which no longer applies.
+    assert.doesNotMatch(schema, /packageHostV2/);
   });
 
   it('season stays (dual-read CSON + pin grammars)', () => {

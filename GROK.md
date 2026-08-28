@@ -42,7 +42,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | CI | macOS x64/arm64, Linux x64/arm64 (packages + smoke), Windows x64 |
 | Catalog | **94** editor packages, all `workspace:@builtbygio/<id>@*` in `packages/`. **18** owned libs/natives stay `npm:@builtbygio/<id>@ver`. **0** git SHA pins |
 | Default themes | **One Dark** (`one-dark-ui` / `one-dark-syntax`). Eight themes ship: One Dark/Light + Chevron Dark/Light, UI + syntax each. Solarized and base16-tomorrow were dropped (untouched Atom-era palettes); `ThemeManager` maps their names onto the survivors |
-| Package host v2 | Spine landed; `core.packageHostV2` **default false** |
+| Package host v2 | **Removed** (2026-08-28) — community packages are cancelled, so sandboxing third-party code has no subject. T2 require restrict stays |
 
 ---
 

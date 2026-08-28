@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **Package host v2.** It existed to sandbox untrusted third-party packages in a restricted `utilityProcess`, which community packages being cancelled makes pointless. Gone: the `core.packageHostV2` setting, `src/package-host-client.ts`, `src/package-host-eligibility.ts`, `src/main-process/package-host-manager.js`, the `workers/package-host.js` utilityProcess entry, ~15 `chevron:package-host-*` IPC handlers, five spec fixtures and five CI suites. `PackageManager` loses its host-activation routing — `packageShouldActivateInHost`, `completeHostActivation`, the contribution listener, and the host branches in activate/deactivate.
+- The **T2 privileged-`require` restrictions stay.** They are defence in depth for the code Chevron ships, not only for code it does not; `package-require-audit` was a dependency *of* the host eligibility check, not the other way round.
+
 - Four bundled syntax themes: `solarized-dark-syntax`, `solarized-light-syntax`, `base16-tomorrow-dark-theme` and `base16-tomorrow-light-theme`. They are untouched Atom-era third-party palettes — the only Chevron change in any of them is the `repository` and `engines` metadata — and they carry no product identity. `packageDependencies` 90 → 86.
 - The eight remaining themes are the two that matter: **One Dark / One Light** (the default and its light counterpart) and **Chevron Dark / Chevron Light** (product identity), each as a UI + syntax pair.
 
