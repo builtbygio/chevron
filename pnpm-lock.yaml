@@ -145,12 +145,6 @@ importers:
       background-tips:
         specifier: workspace:@builtbygio/background-tips@*
         version: link:packages/background-tips
-      base16-tomorrow-dark-theme:
-        specifier: workspace:@builtbygio/base16-tomorrow-dark-theme@*
-        version: link:packages/base16-tomorrow-dark-theme
-      base16-tomorrow-light-theme:
-        specifier: workspace:@builtbygio/base16-tomorrow-light-theme@*
-        version: link:packages/base16-tomorrow-light-theme
       bookmarks:
         specifier: workspace:@builtbygio/bookmarks@*
         version: link:packages/bookmarks
@@ -496,12 +490,6 @@ importers:
       snippets:
         specifier: workspace:@builtbygio/snippets@*
         version: link:packages/snippets
-      solarized-dark-syntax:
-        specifier: workspace:@builtbygio/solarized-dark-syntax@*
-        version: link:packages/solarized-dark-syntax
-      solarized-light-syntax:
-        specifier: workspace:@builtbygio/solarized-light-syntax@*
-        version: link:packages/solarized-light-syntax
       spell-check:
         specifier: workspace:@builtbygio/spell-check@*
         version: link:packages/spell-check
@@ -642,10 +630,6 @@ importers:
       underscore-plus:
         specifier: 1.x
         version: 1.7.0
-
-  packages/base16-tomorrow-dark-theme: {}
-
-  packages/base16-tomorrow-light-theme: {}
 
   packages/bookmarks:
     dependencies:
@@ -1261,10 +1245,6 @@ importers:
       underscore-plus:
         specifier: ^1.0.0
         version: 1.7.0
-
-  packages/solarized-dark-syntax: {}
-
-  packages/solarized-light-syntax: {}
 
   packages/spell-check:
     dependencies:

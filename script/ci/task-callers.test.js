@@ -40,7 +40,10 @@ describe('Task is gone (Wave 3)', () => {
     // `class Task` with no requires at all — not the chevron export.
     const pkg = JSON.parse(read('package.json'));
     const names = Object.keys(pkg.packageDependencies || {});
-    assert.ok(names.length >= 90, `catalog shrank to ${names.length}`);
+    // Guard against a sweep that scans nothing (an empty or broken catalog
+    // read would otherwise pass silently). A loose floor on purpose: the
+    // catalog is curated, so pinning its exact size just breaks on every trim.
+    assert.ok(names.length >= 50, `catalog read returned only ${names.length} packages`);
     const offenders = [];
     for (const name of names) {
       const root = ['packages', 'node_modules']

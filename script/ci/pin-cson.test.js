@@ -649,7 +649,10 @@ describe('pin CSON inventory (Wave 1)', () => {
   });
 
   it('no catalog pin ships CSON', () => {
-    assert.ok(catalog.length >= 90, `catalog shrank to ${catalog.length}`);
+    // Guard against a sweep that scans nothing (an empty or broken catalog
+    // read would otherwise pass silently). A loose floor on purpose: the
+    // catalog is curated, so pinning its exact size just breaks on every trim.
+    assert.ok(catalog.length >= 50, `catalog read returned only ${catalog.length} packages`);
     const offenders = [];
     for (const name of catalog) {
       for (const file of shippedCson(name)) {
