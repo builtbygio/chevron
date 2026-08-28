@@ -24,7 +24,7 @@
 |--------|-------------|
 | Community package runs `child_process` / raw `fs` / `electron` | Default-on require restrict (P1.2); FS IPC roots (P2.1) |
 | Community package loads arbitrary `.node` / keytar / superstring | Native addon + `.node` block (Phase S1.0) |
-| Path traversal via `atom://` / `chevron://` | Path confinement (P0.1) |
+| Path traversal via `chevron://` | Path confinement (P0.1). The `atom://` alias was removed in Wave 4, so that scheme no longer reaches the resolver |
 | Renderer drives arbitrary `BrowserWindow` methods | Package-worker-only IPC allowlist (P0.2) |
 | Cross-webContents message injection | Manager↔worker / self-only `atom-wc-send` (P0.3) |
 | Guest opens `file:///etc/passwd` | Guest file: roots (P2.4) |

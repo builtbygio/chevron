@@ -32,7 +32,7 @@ Chevron is the only supported product. We do **not** promise dual-support for At
 | require | `require('chevron')` | `require('atom')` (warns once) |
 | Config home | `~/.chevron`, `CHEVRON_HOME` | default `~/.atom`; portable `.atom` |
 | Engines | `engines.chevron` | `engines.atom` alone |
-| Protocol | `chevron://` | `atom://` (still handled) |
+| Protocol | `chevron://` | `atom://` **removed** (Wave 4) |
 | CLI | `chevron`, `cpm` | `atom`, `apm` shims |
 
 ## Phases completed

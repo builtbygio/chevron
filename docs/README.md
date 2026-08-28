@@ -30,7 +30,7 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 
 | Doc | Purpose |
 |-----|---------|
-| [releases.md](./releases.md) | **1.0 unsigned preview** — update URL, signing later |
+| [releases.md](./releases.md) | **1.1.0 unsigned preview** — update URL, signing later |
 | [dogfood-1.0.md](./dogfood-1.0.md) | 1.0 dogfood-week checklist |
 | [chevron-architecture-modernization.md](./chevron-architecture-modernization.md) | **Architecture target** + H1–H3 PR plan (authoritative) |
 | [REBRANDING.md](./REBRANDING.md) | Chevron-only product decisions |
@@ -38,6 +38,9 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [lsp-design.md](./lsp-design.md) | **LSP** (implemented) — utilityProcess host, workspace trust, phases 0–5 + goal adjustments |
 | [lsp-server-distribution.md](./lsp-server-distribution.md) | Optional cpm language-server install (`chevron-lsp-*`) |
 | [build-modernization.md](./build-modernization.md) | Bootstrap/build Streams A–E (contract, hygiene, patches, snapshot, deps) |
+| [language-stack.md](./language-stack.md) | Tree-sitter coverage, the TextMate exception list, and the pin CSON inventory that gates `season` |
+| [startup-snapshot-plan.md](./startup-snapshot-plan.md) | Custom V8 snapshot: on for Linux/Windows, Darwin stock frozen |
+| [ai-design.md](./ai-design.md) | **Proposed only** — not an authoritative product decision |
 | [bootstrap-patch-matrix.md](./bootstrap-patch-matrix.md) | Idempotent bootstrap patches + critical natives |
 | [bootstrap-report.md](./bootstrap-report.md) | Current bootstrap recipe (modern path) |
 | [packaging.md](./packaging.md) | `@electron/packager` + custom V8 snapshot (Linux/Windows; Darwin stock) |
@@ -62,7 +65,6 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [babel-coffee-isolation-plan.md](./babel-coffee-isolation-plan.md) | Coffee + Babel 5 runtime dropped (#62 Options 2–3) |
 | [atom-to-chevron-rename-plan.md](./atom-to-chevron-rename-plan.md) | Atom → Chevron rename program (API, themes, pins) |
 | [REBRANDING.md](./REBRANDING.md) | Product rebrand + Chevron-only policy |
-
 | [nested-package-modules.md](./nested-package-modules.md) | Nested `packages/*/node_modules` policy |
 | [electron-best-practices-plan.md](./electron-best-practices-plan.md) | BP P0–P3 (closed at 0.6.0) |
 | [security-phase-n.md](./security-phase-n.md) | Phase N plan (package Node surface) |
@@ -76,8 +78,28 @@ Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [READ
 | [sca-runtime-inventory.md](./sca-runtime-inventory.md) | npm audit prioritisation (runtime vs test) |
 | [remote-ipc-inventory.md](./remote-ipc-inventory.md) | Historical remote/IPC map |
 
+## Post-1.1.0 modernization waves
+
+Waves 1–4 are complete. The plan and the leftover table live in
+[chevron-architecture-modernization.md](./chevron-architecture-modernization.md); `GROK.md` at the
+repo root carries the per-wave outcome. What the waves removed: `Task`, the `atom://` scheme and the
+`.atom` host, dead Relay + `graphql@14` in `github`, and the `natural` log4js patch.
+
+`season` and `document-register-element` **stay** — each failed its zero-callers gate for a reason
+recorded in `script/ci/wave3-gates.test.js`, so check there before proposing either for deletion.
+
+## Historical — closed, kept for the "why"
+
+These describe finished work. They are **not** current-state references; read the architecture doc
+and `GROK.md` for that.
+
+- Phase closeouts: [cpm-phase-0-inventory.md](./cpm-phase-0-inventory.md), [cpm-phase-0-spike.md](./cpm-phase-0-spike.md), [cpm-phase-1-complete.md](./cpm-phase-1-complete.md), [cpm-phase-4-complete.md](./cpm-phase-4-complete.md)
+- Closed plans: [electron-best-practices-plan.md](./electron-best-practices-plan.md), [babel-coffee-isolation-plan.md](./babel-coffee-isolation-plan.md), [toolchain-node-python-upgrade-plan.md](./toolchain-node-python-upgrade-plan.md), [atom-to-chevron-rename-plan.md](./atom-to-chevron-rename-plan.md)
+- Decision records: [windows-userdata-migrate.md](./windows-userdata-migrate.md) (resolved — no migration built), [security-phase-s-decision.md](./security-phase-s-decision.md)
+- Snapshots in time: [dogfood-1.0.md](./dogfood-1.0.md), [bootstrap-report.md](./bootstrap-report.md), [bootstrap-patch-matrix.md](./bootstrap-patch-matrix.md), [remote-ipc-inventory.md](./remote-ipc-inventory.md)
+- [rfcs/](./rfcs/) — **archived Atom-era RFCs**, deliberately unedited. Not Chevron specs.
+
 ## Other
 
 - [contributing.md](./contributing.md), [contributing-to-packages.md](./contributing-to-packages.md)
 - [native-profiling.md](./native-profiling.md)
-- RFCs under `rfcs/`, toolchain upgrade plan

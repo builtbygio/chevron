@@ -4,7 +4,13 @@
 **Date:** 2026-07-19 · **Closeout:** 2026-07-22  
 **Product version context:** post-0.3.0; cpm shipped via PRs #24–#30  
 **Related:** [cpm-design-eli5.md](./cpm-design-eli5.md), [cpm-cutover.md](./cpm-cutover.md), [REBRANDING.md](./REBRANDING.md)  
-**Replaced in product:** classic bundled `apm` (`atom-package-manager@2.6.2`); **`apm` name remains a shim → cpm**
+**Replaced in product:** classic bundled `apm` (`atom-package-manager@2.6.2`)
+
+> **Superseded (2026-08):** this doc describes the design as implemented, when `apm` survived as a
+> name shim. **That shim is retired** — cpm 0.2.0 publishes only the `cpm` bin, and nothing installs
+> an `apm` name any more (`script/ci/no-apm.test.js` guards it). `PackageManager#getApmPath()` keeps
+> its name because packages call it, but resolves `cpm/bin/cpm`. Read the `apm` shim references
+> below as history.
 
 ---
 
@@ -16,7 +22,7 @@ Build **cpm** (Chevron Package Manager): a modern package installer and lifecycl
 2. Installs packages into **`~/.chevron`** (owned catalog is the product; a user-folder install is a CLI capability, **not** a dual-product / community-store promise).
 3. Rebuilds natives against **product Electron** (currently 43.x) via a clear path.
 4. Improves **supply-chain / install-time security** relative to classic apm.
-5. Ships as **`cpm`**. **`apm` is a name shim** for muscle memory and scripts (including Windows `apm.cmd`) — not a long-lived dual-support product.
+5. Ships as **`cpm`**. `apm` was a name shim for muscle memory and scripts — explicitly not a long-lived dual-support product, and **retired** in cpm 0.2.0.
 
 cpm is **not** a rewrite of the editor’s package loader (`PackageManager`, `global.chevron`). It is the **installer and rebuild CLI** (and later, registry client). Product policy: [REBRANDING.md](./REBRANDING.md), [chevron-architecture-modernization.md](./chevron-architecture-modernization.md).
 
@@ -54,7 +60,7 @@ cpm is **not** a rewrite of the editor’s package loader (`PackageManager`, `gl
 Locked product policy ([REBRANDING.md](./REBRANDING.md), [chevron-architecture-modernization.md](./chevron-architecture-modernization.md)):
 
 - Supported: **`engines.chevron`**, **`chevron://`**, **`global.chevron`**, **`require('chevron')`**, **`~/.chevron`**, **`cpm`**.
-- **`engines.atom`**, **`atom://`**, **`global.atom`**, **`require('atom')`**, **`apm`** are **unsupported shims** slated for removal. They are not a platform.
+- **`engines.atom`**, **`global.atom`** are **unsupported shims** slated for removal. They are not a platform. `require('atom')`, `apm` and `atom://` are already **gone**.
 - Default config / package home is **`~/.chevron`**. `ATOM_HOME` is honoured only if **explicitly** set — no default to `~/.atom`.
 - Catalog is **owned-only** until package host v2. cpm may still talk to Pulsar as a **client implementation**; product UX must not promise a community store.
 
@@ -501,7 +507,7 @@ Respect licenses and Pulsar terms if proxying their API; document attribution.
 ### Phase 4 — Retire apm tree — **DONE** (#30)
 
 - Product packaging ships **cpm only** (no atom-package-manager Node 12 tree).
-- **`apm` name** remains a **shim → cpm** (shell, Squirrel, deb/rpm, `getApmPath`).
+- **`apm` name** was a shim → cpm (shell, Squirrel, deb/rpm, `getApmPath`). **Retired** in cpm 0.2.0; only `getApmPath()` keeps the name, resolving `cpm/bin/cpm`.
 - CI no longer runs `--with-apm`.
 - Monorepo `apm/` kept as historical/debug only (`--with-apm` deprecated).
 

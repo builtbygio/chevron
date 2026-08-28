@@ -13,7 +13,7 @@ This doc is **privilege and Node policy**, not a dual-product promise. Names and
 | Editor env | `global.chevron` | `global.atom` |
 | Package module | `require('chevron')` | `require('atom')` (one-shot warning) |
 | Engines | `engines.chevron` | `engines.atom` alone → cpm warning |
-| Protocol | `chevron://` | `atom://` still registered |
+| Protocol | `chevron://` | `atom://` **removed** (Wave 4) — it no longer resolves |
 | Config home | **`~/.chevron`** | `ATOM_HOME` only if **explicitly** set — **no default to `~/.atom`** |
 
 Config home order: `CHEVRON_HOME` → explicit `ATOM_HOME` → portable `.chevron` → **`~/.chevron`**.
@@ -128,7 +128,7 @@ Do not rely on restrict alone for untrusted code execution; it is a package-poli
 
 ## Install / rebuild
 
-Use **cpm** (or the `apm` shim → cpm). Prefer prebuilds for natives. See [cpm-cutover.md](./cpm-cutover.md) and [cpm-prebuilds.md](./cpm-prebuilds.md).
+Use **cpm**. The `apm` name is retired. Prefer prebuilds for natives. See [cpm-cutover.md](./cpm-cutover.md) and [cpm-prebuilds.md](./cpm-prebuilds.md).
 
 ## Owned package CI
 
