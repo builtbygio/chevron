@@ -202,7 +202,6 @@ jobs:
           node --test script/ci/s4-ipc-slice.test.js
           node --test script/ci/rg-ipc.test.js
           node --test script/ci/search-engine.test.js
-          node --test script/ci/package-host-routing.test.js
           node --test script/ci/crash-branding.test.js
           node --test script/ci/load-tree-sitter-language.test.js
           node --test script/ci/package-utility-worker.test.js
@@ -219,11 +218,7 @@ jobs:
           node --test script/ci/no-coffee.test.js
           node --test script/ci/no-request.test.js
           node --test script/ci/win32-userdata-name.test.js
-          node --test script/ci/package-host-bootstrap.test.js
-          node --test script/ci/package-host-activate.test.js
           node --test script/ci/package-id.test.js
-          node --test script/ci/package-host-services.test.js
-          node --test script/ci/package-host-eligibility.test.js
           node --test script/ci/src-typescript-first.test.js
           node --test script/ci/uri-scheme.test.js
           node --test script/ci/no-atom-uri.test.js

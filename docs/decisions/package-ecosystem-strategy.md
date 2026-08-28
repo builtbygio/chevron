@@ -18,7 +18,7 @@ serve that deferred future, and they are now dead weight rather than groundwork.
 |---|---|
 | ~~The 65 npm-published owned packages~~ **— done 2026-08-28** | A distribution model for users installing packages individually. Measured cost: **29 of 83 pins had drifted** from what they ship. All 94 editor packages are now `workspace:` in `packages/`; the 18 owned libs/natives stay npm pins. The drift class is retired |
 | ~~Author-facing devtools~~ **— 4 of 9 removed 2026-08-28** | Only `dalek`, `incompatible-packages`, `update-package-dependencies` and `package-generator` were community-only; `package-generator` was additionally broken (calls a `cpm init` that does not exist). **`deprecation-cop`, `timecop`, `styleguide`, `dev-live-reload` and `keybinding-resolver` stay** — they serve maintainers and users of a closed product, not package authors |
-| Package host v2 spine (`core.packageHostV2`, default off) | Sandboxing for untrusted third-party packages |
+| ~~Package host v2 spine~~ **— removed 2026-08-28** | Sandboxing for untrusted third-party packages. Gone: `core.packageHostV2`, `package-host-client`, `package-host-eligibility`, the main-process manager, the utilityProcess worker, five spec fixtures and five CI suites |
 | cpm's registry client (Pulsar search / install-by-name) | Installing packages the product does not ship |
 
 **What this does not change:** `cpm` still installs and rebuilds the owned catalog, and the T2

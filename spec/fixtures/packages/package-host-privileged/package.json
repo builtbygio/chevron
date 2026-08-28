@@ -1,9 +1,0 @@
-{
-  "name": "package-host-privileged",
-  "version": "1.0.0",
-  "main": "./lib/main",
-  "description": "Fixture that attempts a privileged require inside the package host (Epic 21.2). Must be refused.",
-  "engines": {
-    "chevron": ">=1.0.0"
-  }
-}
