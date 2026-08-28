@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- All 26 owned forks that were **behind** what they ship are reconciled to their published tarball (`archive-view` … `wrap-guide`), each with an `.npmignore` so the tarball shape no longer depends on a manual publish-time step. Every one is verified by packing to exactly the published file set. Repo infrastructure (`.github/`, CI config) is deliberately left alone — the old tarballs carry stale pre-Chevron copies. Only 3 forks now differ from their pin, all *ahead*: `fs-admin`, `git-utils`, `node-keytar`.
 - `script/audit-fork-drift.js` — reports owned forks whose GitHub repo does not match the version pinned here, split into **behind** (publishing from the repo would silently revert shipped work) and **ahead** (repo work never published or never pinned). Found **29 of 83**; `tree-view` was three releases and a whole `.js`→`.ts` conversion behind. Needs network and `gh auth`, so it is a pre-publish check rather than a merge gate.
 
 - Wave 3: `script/ci/wave3-gates.test.js` — records the evidence behind each Wave 3 verdict, so the shims that stay are not re-litigated or deleted on a hunch.
