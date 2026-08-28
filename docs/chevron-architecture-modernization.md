@@ -36,8 +36,8 @@ The 2025–2026 work already purged the worst Atom-era *runtime* debts. Treat th
 | No `@electron/remote`; `src/remote-compat.js` + `register-renderer-ipc.js` | `static/preload.js` 32–35; `docs/remote-ipc-inventory.md` |
 | Guest `<webview>` sandboxed; git workers in `utilityProcess` | Phase S3; `src/main-process/package-utility-worker.js` |
 | T2 community privileged/native `require` restricted by default | `src/package-require-audit.js`; `core.restrictCommunityPackageRequires` |
-| cpm Phases 0–4; apm is a shim | `docs/cpm-design.md`; `cpm/` |
-| Chevron-only API policy | `docs/REBRANDING.md`; `exports/atom.js` warns once |
+| cpm Phases 0–4; the `apm` name is retired | `docs/cpm-design.md`; `cpm/`; `script/ci/no-apm.test.js` |
+| Chevron-only API policy | `docs/REBRANDING.md`; `require('atom')` is `MODULE_NOT_FOUND` (`exports/atom.js` is gone) |
 | Owned catalog only until host v2 | `docs/package-ecosystem-strategy.md` |
 | Official `tree-sitter@0.25.1` (N-API); DeeDeeG 0.17 deleted | CHANGELOG / #125 |
 | First-party Coffee/CSON **gone from the monorepo tree** | `find` over `src/`, in-repo `packages/`, `keymaps/`, `menus/` (excluding `node_modules`) is empty. **Owned git pins still ship ~70 `.cson` files** (mostly `language-*` grammars/settings/snippets) — see Pillar 3 |
@@ -500,7 +500,7 @@ The package system **is** Chevron’s product. Do not replace it with VS Code ex
 
 **Change**
 
-1. **Product API is `require('chevron')` / `global.chevron` only.** `exports/atom.js` stays as a one-shot warning until a dedicated shim-removal PR. Owned packages already migrated (`owned-require-chevron.test.js`). PR 1 edits the `exports/chevron.js` header that still says `require('atom')` exists “so community packages keep working.”
+1. **Product API is `require('chevron')` / `global.chevron` only.** Done: `exports/atom.js` is deleted and `require('atom')` is `MODULE_NOT_FOUND` (PR 23). Owned packages migrated (`owned-require-chevron.test.js`).
 2. **`engines.chevron` is required** for catalog packages (already on forks). `engines.atom` alone is a cpm warning; after H2 it is a hard reject for *new* installs.
 3. **Do not grow `packageDependencies` with curiosity packages.**
 4. **github package** is the largest architecture tax inside the catalog (see Pillar 8) — an **epic**, not two PRs.

@@ -39,6 +39,7 @@ All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtb
 | Electron | **43.1.0** |
 | Bundle ID | `dev.builtbygio.chevron` |
 | Package API | **Chevron only** (`require('chevron')`, `global.chevron`, `engines.chevron`) |
+| URI scheme | **`chevron://`** only — the `atom://` alias and the `.atom` host were removed in Wave 4 |
 | Package catalog | **Owned core only**; sandboxed community is host v2 (later) — [docs/package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md) |
 | Package manager | **cpm** (Electron-as-Node). The `apm` shim is retired. |
 | Updates | **https://github.com/builtbygio/chevron/releases** (unsigned; Check for Update opens this page) |
@@ -54,9 +55,11 @@ See [CHANGELOG.md](CHANGELOG.md) and [docs/REBRANDING.md](docs/REBRANDING.md).
 - [x] Clean multi-platform builds on current Electron
 - [x] Chevron branding (icons, shell, package identity)
 - [x] Further first-run / onboarding polish — see [docs/onboarding-polish.md](docs/onboarding-polish.md)
-- [x] Modern package manager path — Phase 0–4 complete (`cpm`; see [docs/cpm-design.md](docs/cpm-design.md), [docs/cpm-cutover.md](docs/cpm-cutover.md)); `apm` remains as a cpm shim
+- [x] Modern package manager path — Phase 0–4 complete (`cpm`; see [docs/cpm-design.md](docs/cpm-design.md), [docs/cpm-cutover.md](docs/cpm-cutover.md)); the `apm` name is retired
 - [x] Security Phase N + Electron best-practices shippable scope ([docs/security-phase-n.md](docs/security-phase-n.md), [docs/electron-best-practices-plan.md](docs/electron-best-practices-plan.md))
 - [x] Phase S complete under **Option C** (editor `sandbox: false` intentional; utilityProcess git workers; T2 restrict) — [docs/security-phase-s-decision.md](docs/security-phase-s-decision.md)
+- [x] Post-1.1.0 modernization Waves 1–4 — shed the Atom-era shims that had no callers left: `Task` deleted, the `atom://` URI alias and `.atom` host removed (`chevron://` is now the only product scheme), dead Relay/`graphql@14` out of `github`, and the `natural` log4js patch retired. See [docs/chevron-architecture-modernization.md](docs/chevron-architecture-modernization.md)
+- [ ] `season` and `document-register-element` — both still have live callers; see `script/ci/wave3-gates.test.js` for the evidence
 
 ## Non-goals (for now)
 

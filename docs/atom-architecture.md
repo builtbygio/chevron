@@ -86,7 +86,7 @@ Created in `atom-window.js` with roughly:
 - **Guest `<webview>`s:** no Node; sandboxed prefs forced on attach.
 - **Git:** `utilityProcess` (`package-utility-worker.js`). Node BrowserWindow workers are gone.
 - **LSP:** `utilityProcess` (`src/main-process/workers/lsp-host.js`).
-- **`Task`:** still a renderer `child_process.fork` + fake DOM (`src/task.ts`, `task-bootstrap.js`). Callers: fuzzy-finder, symbols-view, `Workspace.replace`. Wrap-then-delete — not a public API to grow.
+- **`Task`:** **deleted** (Wave 3). It was a renderer `child_process.fork` + fake DOM; `src/task.ts`, `task-bootstrap.js` and the public export are gone, after a grep proved zero callers across all 94 owned pins. Long work belongs in a `utilityProcess` host.
 
 See [security-phase-s-decision.md](./security-phase-s-decision.md).
 
@@ -161,12 +161,12 @@ User config/keymaps/snippets: **JSON default** (`config.json`). Existing `*.cson
 
 - **Bundled / owned** — `packageDependencies` git pins on `builtbygio/*`. This is the catalog.
 - **User-installed** — `~/.chevron/packages` via **cpm**. Not a product store. Community privileged `require` and native loads are **restricted by default**.
-- **Not** `~/.atom/packages` unless the user set `ATOM_HOME`. **Not** apm Node 12.
+- **Not** `~/.atom/packages` unless the user set `ATOM_HOME`. **Not** apm — that name is retired, not aliased.
 
 Lifecycle: `activate` → optional services (`provide*` / `consume*`) → `deactivate`.  
-Declare `engines.chevron`. Use `require('chevron')`. Long work: `BufferedProcess` or a main/`utilityProcess` host — **do not add new `Task` callers.**
+Declare `engines.chevron`. Use `require('chevron')`. Long work: `BufferedProcess` or a main/`utilityProcess` host — **`Task` no longer exists.**
 
-Package manager: **cpm** (Electron-as-Node). `apm` is a name shim → cpm. See [cpm-design.md](./cpm-design.md) and [package-ecosystem-strategy.md](./package-ecosystem-strategy.md).
+Package manager: **cpm** (Electron-as-Node). The `apm` name is **retired** — nothing installs it. See [cpm-design.md](./cpm-design.md) and [package-ecosystem-strategy.md](./package-ecosystem-strategy.md).
 
 ---
 
@@ -197,7 +197,7 @@ See [remote-ipc-inventory.md](./remote-ipc-inventory.md), [security-threat-model
 | Concern | What |
 |---------|------|
 | **Host toolchain** | Node 20–24 + Python 3.12 for bootstrap/build |
-| **Package manager** | **cpm** (product Electron as Node). `apm` is a shim |
+| **Package manager** | **cpm** (product Electron as Node). The `apm` name is retired |
 | **App runtime** | Electron **43.1.0** (in-process Node ~24) |
 | **Package** | `script/build` → `out/Chevron.app` / `Chevron-linux-<arch>/chevron` / `chevron.exe` + `app.asar` |
 | **Natives** | Rebuilt for Electron ABI; unpacked from asar |

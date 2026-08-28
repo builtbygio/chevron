@@ -13,7 +13,7 @@ This is the user-facing cutover guide for the package-manager transition.
 | Area | Before | After |
 |------|--------|--------|
 | User / Settings install | Classic **apm** (bundled Node 12) | **cpm** (Electron-as-Node on product binary) |
-| Command name `apm` | Real apm binary | **Shim → cpm** (scripts keep working) |
+| Command name `apm` | Real apm binary | **Retired** — nothing installs an `apm` name. Use `cpm` |
 | Command name `cpm` | n/a | Primary package manager on PATH |
 | App bootstrap (from source) | apm installed root `node_modules` | **Host npm** + modern Electron rebuild |
 | Product package contents | `app/apm` = atom-package-manager | **`app/cpm` only** (+ tiny legacy path stubs) |
