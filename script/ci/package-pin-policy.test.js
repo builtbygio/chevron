@@ -84,7 +84,6 @@ const OWNED_BUILTBYGIO = [
   'oniguruma',
   'open-on-github',
   'pathwatcher',
-  'package-generator',
   'scrollbar-style',
   'season',
   'settings-view',

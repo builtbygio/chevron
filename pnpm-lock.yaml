@@ -187,9 +187,6 @@ importers:
       ctags:
         specifier: npm:@builtbygio/ctags@3.1.0
         version: '@builtbygio/ctags@3.1.0'
-      dalek:
-        specifier: workspace:@builtbygio/dalek@*
-        version: link:packages/dalek
       dedent:
         specifier: ^0.7.0
         version: 0.7.0
@@ -271,9 +268,6 @@ importers:
       image-view:
         specifier: workspace:@builtbygio/image-view@*
         version: link:packages/image-view
-      incompatible-packages:
-        specifier: workspace:@builtbygio/incompatible-packages@*
-        version: link:packages/incompatible-packages
       jasmine-json:
         specifier: ~0.0
         version: 0.0.3
@@ -463,9 +457,6 @@ importers:
       open-on-github:
         specifier: workspace:@builtbygio/open-on-github@*
         version: link:packages/open-on-github
-      package-generator:
-        specifier: workspace:@builtbygio/package-generator@*
-        version: link:packages/package-generator
       pathwatcher:
         specifier: npm:@builtbygio/pathwatcher@8.1.2
         version: '@builtbygio/pathwatcher@8.1.2'
@@ -550,9 +541,6 @@ importers:
       typescript:
         specifier: 6.0.3
         version: 6.0.3
-      update-package-dependencies:
-        specifier: workspace:@builtbygio/update-package-dependencies@*
-        version: link:packages/update-package-dependencies
       welcome:
         specifier: workspace:@builtbygio/welcome@*
         version: link:packages/welcome
@@ -713,19 +701,6 @@ importers:
       underscore-plus:
         specifier: ^1.0.0
         version: 1.7.0
-
-  packages/dalek:
-    dependencies:
-      grim:
-        specifier: ^2.0.1
-        version: 2.0.3
-    devDependencies:
-      atom-mocha-test-runner:
-        specifier: ^1.0.0
-        version: 1.2.0
-      sinon:
-        specifier: 9.0.3
-        version: 9.0.3
 
   packages/deprecation-cop:
     dependencies:
@@ -955,12 +930,6 @@ importers:
       fs-plus:
         specifier: ^3.0.0
         version: 3.1.1
-
-  packages/incompatible-packages:
-    dependencies:
-      etch:
-        specifier: ^0.12.2
-        version: 0.12.8
 
   packages/keybinding-resolver:
     dependencies:
@@ -1227,18 +1196,6 @@ importers:
 
   packages/open-on-github: {}
 
-  packages/package-generator:
-    dependencies:
-      fs-plus:
-        specifier: ^3.0.0
-        version: 3.1.1
-      temp:
-        specifier: ^0.8.1
-        version: 0.8.4
-      underscore-plus:
-        specifier: ^1.0.0
-        version: 1.7.0
-
   packages/settings-view:
     dependencies:
       async:
@@ -1444,8 +1401,6 @@ importers:
       underscore-plus:
         specifier: ^1.0.0
         version: 1.7.0
-
-  packages/update-package-dependencies: {}
 
   packages/watcher:
     dependencies:
@@ -3977,10 +3932,6 @@ packages:
 
   simple-swizzle@0.2.4:
     resolution: {integrity: sha512-nAu1WFPQSMNr2Zn9PGSZK9AGn4t/y97lEm+MXTtUDwfP0ksAIX4nO+6ruD9Jwut4C49SB1Ws+fbXsm/yScWOHw==}
-
-  sinon@9.0.3:
-    resolution: {integrity: sha512-IKo9MIM111+smz9JGwLmw5U1075n1YXeAq8YeSFlndCLhAL5KGn6bLgu7b/4AYHTV/LcEMcRm2wU2YiL55/6Pg==}
-    deprecated: 16.1.1
 
   sinon@9.2.1:
     resolution: {integrity: sha512-naPfsamB5KEE1aiioaoqJ6MEhdUs/2vtI5w1hPAXX/UwvoPjXcwh1m5HiKx0HGgKR8lQSoFIgY5jM6KK8VrS9w==}
@@ -7549,16 +7500,6 @@ snapshots:
   simple-swizzle@0.2.4:
     dependencies:
       is-arrayish: 0.3.4
-
-  sinon@9.0.3:
-    dependencies:
-      '@sinonjs/commons': 1.8.6
-      '@sinonjs/fake-timers': 6.0.1
-      '@sinonjs/formatio': 5.0.1
-      '@sinonjs/samsam': 5.3.1
-      diff: 4.0.4
-      nise: 4.1.0
-      supports-color: 7.2.0
 
   sinon@9.2.1:
     dependencies:
