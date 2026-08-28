@@ -71,29 +71,45 @@ describe('patch inventory', () => {
     }
   });
 
-  it('the natural log4js patch is still needed (Wave 2 leftover)', () => {
-    // `natural@0.4.0` declares `log4js: "*"`, which resolves to log4js 6,
-    // where `logger.setLevel` no longer exists. Without this patch the
-    // spell-check stack throws at require time. Deleting the patch needs a
-    // published owned `natural`, which does not exist yet.
-    assert.ok(entries.has('natural@0.4.0'), 'natural patch must stay');
-    const patch = fs.readFileSync(
-      path.join(ROOT, 'patches', 'natural@0.4.0.patch'),
-      'utf8'
+  it('the natural log4js patch is retired, not merely deleted', () => {
+    // natural@0.4.0 declared log4js "*", which resolves to 6.9.1 where
+    // logger.setLevel is undefined, so it threw at require time. The fix was
+    // not to fork natural: spell-check declared the dependency and never used
+    // it, so 0.77.6 dropped it and the patch became unnecessary.
+    assert.ok(
+      !entries.has('natural@0.4.0'),
+      'natural patch was retired by spell-check 0.77.6'
     );
-    assert.match(patch, /logger\.level = 'WARN'/);
+    assert.ok(
+      !fs.existsSync(path.join(ROOT, 'patches', 'natural@0.4.0.patch')),
+      'the patch file should be gone with its entry'
+    );
 
-    // The `log4js: "*"` half is an installed-tree fact, so it only runs where
-    // the root package.json is installed (the post-bootstrap Linux job).
-    // unit-and-cpm deliberately never installs it.
-    const naturalPkg = path.join(
-      ROOT,
-      'node_modules',
-      'natural',
-      'package.json'
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     );
-    if (!fs.existsSync(naturalPkg)) return;
-    const natural = JSON.parse(fs.readFileSync(naturalPkg, 'utf8'));
-    assert.strictEqual(natural.dependencies.log4js, '*');
+    assert.match(
+      pkg.dependencies['spell-check'],
+      /^npm:@builtbygio\/spell-check@0\.77\.(?:[6-9]|\d{2,})/,
+      'needs the release that dropped natural'
+    );
+
+    // Installed-tree facts: only run where the root package.json is installed.
+    const modules = path.join(ROOT, 'node_modules');
+    if (!fs.existsSync(path.join(modules, 'spell-check'))) return;
+    const sc = JSON.parse(
+      fs.readFileSync(path.join(modules, 'spell-check', 'package.json'), 'utf8')
+    );
+    assert.ok(
+      !sc.dependencies.natural,
+      'spell-check must not depend on natural'
+    );
+    assert.ok(
+      !fs.existsSync(path.join(modules, 'log4js')),
+      'log4js entered the tree only through natural@0.4.0'
+    );
+
+    const lock = fs.readFileSync(path.join(ROOT, 'pnpm-lock.yaml'), 'utf8');
+    assert.doesNotMatch(lock, /natural@0\.4\.0/);
   });
 });

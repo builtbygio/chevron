@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Wave 2: `spell-check` pin → `@builtbygio/spell-check@0.77.6`, which drops an unused `natural` dependency, and with it `patches/natural@0.4.0.patch`. `natural@0.4.0` declared `log4js: "*"` → 6.9.1, where `logger.setLevel` is `undefined`, so it threw at require time and Chevron patched it. spell-check never actually required `natural` — the string appeared only in its `package.json` — so the patch is retired rather than folded into a fork. `natural@0.4.0`, `log4js`, `apparatus` and `sylvester` all leave the dependency graph; `spelling-manager` is unaffected (it uses `natural@^0.6.3`, which dropped `log4js` upstream).
 - Wave 2: five patch files pnpm never applied — `fs-admin@0.15.0`, `keytar@4.13.0`, `one-dark-ui@1.12.5`, `settings-view@0.261.15`, `tree-view@0.229.6`. None were listed in `patchedDependencies`; each fix already ships inside the owned `@builtbygio` fork (verified against the installed packages).
 
 ### Added
