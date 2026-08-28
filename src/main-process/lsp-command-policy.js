@@ -3,7 +3,7 @@
 /**
  * Which commands main is willing to spawn as a language server.
  *
- * Background (docs/lsp-design.md §6.2, and the Phase N3/S1 package policy):
+ * Background (docs/reference/lsp-design.md §6.2, and the Phase N3/S1 package policy):
  * `child_process` is on the privileged denylist for package code, yet
  * `lsp:start-server` used to forward whatever `command` string the renderer
  * sent straight to `spawn`. That handed arbitrary process execution back to

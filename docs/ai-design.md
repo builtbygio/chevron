@@ -3,7 +3,7 @@
 **Status:** design (proposed — not yet authoritative)
 **Date:** 2026-08-07
 **Product version context:** post-LSP; see §4 for why the ordering matters
-**Related:** [lsp-design.md](./lsp-design.md), [package-ecosystem-strategy.md](./package-ecosystem-strategy.md), [security-phase-s-package-host.md](./security-phase-s-package-host.md)
+**Related:** [lsp-design.md](./reference/lsp-design.md), [package-ecosystem-strategy.md](./decisions/package-ecosystem-strategy.md), [security-phase-s-package-host.md](./reference/security-phase-s-package-host.md)
 
 ---
 
@@ -89,7 +89,7 @@ Sequencing is a design decision, not a scheduling one:
    "here is the function, its type, its callers, and the current error."
    Without it, context is "some nearby text."
 2. **Shared infrastructure.** LSP builds the supervised utilityProcess host
-   pattern (§5.2 of [lsp-design.md](./lsp-design.md)). The AI host is the
+   pattern (§5.2 of [lsp-design.md](./reference/lsp-design.md)). The AI host is the
    **third consumer** of that pattern, after git workers and language servers.
    Building it twice would be waste; building AI first would mean building it
    in the wrong place.
@@ -154,7 +154,7 @@ self-hosted gateways), `ollama` (localhost, **no credentials, no egress**).
 **Design rule:** no vendor SDK dependencies. Adapters are thin HTTP shapes, so
 adding a provider is a ~100-line file and the dependency surface stays auditable
 — which matters given the supply-chain posture in
-[package-ecosystem-strategy.md](./package-ecosystem-strategy.md).
+[package-ecosystem-strategy.md](./decisions/package-ecosystem-strategy.md).
 
 ### 5.3 Credentials
 

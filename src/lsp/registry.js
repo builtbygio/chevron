@@ -3,7 +3,7 @@
 /**
  * Server registration registry (Phase 3).
  * Precedence: package-registered > user config > built-in table.
- * See docs/lsp-design.md §5.5.
+ * See docs/reference/lsp-design.md §5.5.
  */
 
 // No event-kit here — unit CI runs without root node_modules.

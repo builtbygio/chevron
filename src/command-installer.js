@@ -30,7 +30,7 @@ module.exports = class CommandInstaller {
     };
 
     // Chevron-only: `chevron` and `cpm`. The `atom` / `apm` command shims were
-    // removed in H3 PR 23 (docs/chevron-architecture-modernization.md).
+    // removed in H3 PR 23 (docs/reference/chevron-architecture-modernization.md).
     this.installChevronCommand(true, (error, chevronCommandName) => {
       if (error) return showErrorDialog(error);
       this.installCpmCommand(true, (error, cpmCommandName) => {

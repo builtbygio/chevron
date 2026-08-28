@@ -57,7 +57,7 @@ We may ask for more detail, request a coordinated disclosure window, or decline 
 - Unmaintained third-party Atom packages installed by the user from the registry
 - Theoretical CVEs in transitive deps with no demonstrated attack path in Chevron
 
-Background: [docs/security-threat-model.md](docs/security-threat-model.md), [docs/package-node-policy.md](docs/package-node-policy.md), [docs/security-phase-s.md](docs/security-phase-s.md).
+Background: [docs/reference/security-threat-model.md](docs/reference/security-threat-model.md), [docs/reference/package-node-policy.md](docs/reference/package-node-policy.md), [docs/process/security-phase-s.md](docs/process/security-phase-s.md).
 
 ## Safe harbor
 

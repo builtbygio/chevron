@@ -8,7 +8,7 @@
  * Shape deliberately mirrors lsp-worker-manager.js so the two supervised hosts
  * behave the same way (boot handshake, request/response ids, exit broadcast).
  *
- * See docs/security-phase-s-package-host.md.
+ * See docs/reference/security-phase-s-package-host.md.
  */
 
 const path = require('path');
@@ -264,7 +264,7 @@ async function callHostService(name, version, method, args) {
  *
  * The caller supplies a **config snapshot** because packages read config
  * synchronously during `activate()` and the real config lives in the editor.
- * See docs/security-phase-s-package-host.md "Activation flow (v2)".
+ * See docs/reference/security-phase-s-package-host.md "Activation flow (v2)".
  */
 async function activatePackage({ name, root, configSnapshot, state }) {
   if (!root) throw new Error('activatePackage requires a package root');

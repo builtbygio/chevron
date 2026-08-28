@@ -30,7 +30,7 @@ function verifyNode(ci) {
   throw new Error(
     `Chevron bootstrap requires Node ${NODE_MIN_MAJOR}–${NODE_MAX_MAJOR} ` +
       `(prefer 24 via \`nvm use\` / .nvmrc). Found v${fullVersion}.\n` +
-      'See docs/toolchain-node-python-upgrade-plan.md and script/bootstrap-modern.'
+      'See docs/process/toolchain-node-python-upgrade-plan.md and script/bootstrap-modern.'
   );
 }
 
@@ -118,7 +118,7 @@ function verifyPython(ci) {
         'Tried:\n  ' +
         tried.join('\n  ') +
         '\nSet PYTHON or NODE_GYP_FORCE_PYTHON, or: brew install python@3.12 && python3.12 -m pip install setuptools\n' +
-        'See docs/toolchain-node-python-upgrade-plan.md'
+        'See docs/process/toolchain-node-python-upgrade-plan.md'
     );
   }
 

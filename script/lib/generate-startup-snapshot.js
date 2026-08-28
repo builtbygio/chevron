@@ -20,7 +20,7 @@ function writeStockSnapshotMarker(reason) {
       dest,
       `reason=${reason}\nelectron=${CONFIG.appMetadata.electronVersion}\n` +
         `platform=${process.platform}\narch=${process.arch}\n` +
-        'See docs/packaging.md and docs/startup-snapshot-plan.md.\n'
+        'See docs/reference/packaging.md and docs/reference/startup-snapshot-plan.md.\n'
     );
   } catch (_) {
     /* non-fatal */

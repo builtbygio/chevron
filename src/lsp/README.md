@@ -1,7 +1,7 @@
 # `src/lsp` — Language Server Protocol (client infrastructure)
 
-**Design:** [docs/lsp-design.md](../../docs/lsp-design.md) (implemented)  
-**Server install:** [docs/lsp-server-distribution.md](../../docs/lsp-server-distribution.md)
+**Design:** [docs/reference/lsp-design.md](../../docs/reference/lsp-design.md) (implemented)  
+**Server install:** [docs/reference/lsp-server-distribution.md](../../docs/reference/lsp-server-distribution.md)
 
 | Phase | Status | Contents |
 |-------|--------|----------|

@@ -778,7 +778,7 @@ jobs:
         run: node script/ci/smoke-test.js
 
       # Architecture H1 PR 12: publish Windows cold-start numbers.
-      # Same harness as docs/startup-snapshot-plan.md (§4). Five cold homes.
+      # Same harness as docs/reference/startup-snapshot-plan.md (§4). Five cold homes.
       - name: Measure cold start
         run: node script/ci/measure-startup.js --runs 5 --json out/startup-windows.json
 
@@ -845,7 +845,7 @@ jobs:
 
             - macOS Gatekeeper / Windows SmartScreen will warn. That is expected.
             - In-app update checks open [GitHub Releases](https://github.com/builtbygio/chevron/releases); they do not silently install.
-            - Product contract: owned catalog only; Phase S **Option C** (editor `sandbox: false`). See [docs/releases.md](https://github.com/builtbygio/chevron/blob/master/docs/releases.md).
+            - Product contract: owned catalog only; Phase S **Option C** (editor `sandbox: false`). See [docs/reference/releases.md](https://github.com/builtbygio/chevron/blob/master/docs/reference/releases.md).
 
             Update URL: https://github.com/builtbygio/chevron/releases
           files: |

@@ -6,7 +6,7 @@
  * GitHub package git workers always run in Electron utilityProcess.
  * The Node BrowserWindow emergency path is gone.
  *
- * See docs/security-phase-s-utilityprocess.md.
+ * See docs/process/security-phase-s-utilityprocess.md.
  */
 
 const path = require('path');

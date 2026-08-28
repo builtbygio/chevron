@@ -41,7 +41,7 @@ Chevron uses a **branch → PR → merge** workflow, no direct commits to `maste
 ## Tests
 
 - **New tests go in `script/ci/*.test.js` and use Node's built-in `node:test`.** That job runs on every PR.
-- Do not add Jasmine / `spec/*-spec.js` for new work. `script/test` (Jasmine in Electron) stays as a compatibility harness — nightly and the `jasmine` PR label — not the merge gate. See [docs/jasmine-ci.md](docs/jasmine-ci.md).
+- Do not add Jasmine / `spec/*-spec.js` for new work. `script/test` (Jasmine in Electron) stays as a compatibility harness — nightly and the `jasmine` PR label — not the merge gate. See [docs/reference/jasmine-ci.md](docs/reference/jasmine-ci.md).
 - Do not treat CSON pack-time transpile (`script/lib/transpile-cson-paths.js`) as leftover Coffee tooling.
 
 ## TypeScript in `src/`

@@ -17,8 +17,8 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | **Long term** | Possible Avalonia rehost; keep hackable package spirit |
 
 **Do not** rebase onto Pulsar unless the owner revisits that decision.  
-**Chevron only:** product API is `global.chevron` / `require('chevron')` / `engines.chevron` / `~/.chevron`. Atom surfaces are unsupported legacy shims (may be removed). See [docs/REBRANDING.md](docs/REBRANDING.md).  
-**Packages:** **owned catalog only** for now; sandboxed community packages later (host v2). See [docs/package-ecosystem-strategy.md](docs/package-ecosystem-strategy.md).
+**Chevron only:** product API is `global.chevron` / `require('chevron')` / `engines.chevron` / `~/.chevron`. Atom surfaces are unsupported legacy shims (may be removed). See [docs/decisions/REBRANDING.md](docs/decisions/REBRANDING.md).  
+**Packages:** **owned catalog only** for now; sandboxed community packages later (host v2). See [docs/decisions/package-ecosystem-strategy.md](docs/decisions/package-ecosystem-strategy.md).
 
 ---
 
@@ -26,7 +26,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 | Item | Value |
 |------|--------|
-| Version | **1.1.0** (unsigned preview — [docs/releases.md](docs/releases.md)) |
+| Version | **1.1.0** (unsigned preview — [docs/reference/releases.md](docs/reference/releases.md)) |
 | Electron | **43.1.0** (ladder complete) |
 | Package / productName | `chevron` / **Chevron** |
 | Bundle ID | `dev.builtbygio.chevron` |
@@ -50,8 +50,8 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 ### Electron best-practices (P0–P3 shippable) — **complete in 0.6.0**
 
-Authoritative plan (closed): **`docs/electron-best-practices-plan.md`**.  
-Threat model: **`docs/security-threat-model.md`**.
+Authoritative plan (closed): **`docs/process/electron-best-practices-plan.md`**.  
+Threat model: **`docs/reference/security-threat-model.md`**.
 
 | Stream | Status |
 |--------|--------|
@@ -63,7 +63,7 @@ Threat model: **`docs/security-threat-model.md`**.
 | P1.3 Experimental web features default off | **Done** |
 | P1.4 Threat model doc | **Done** |
 | P2.1 FS IPC strict roots | **Done** |
-| P2.2 sendSync → invoke | **Closed** (inventory only — `docs/remote-ipc-inventory.md` §11) |
+| P2.2 sendSync → invoke | **Closed** (inventory only — `docs/reference/remote-ipc-inventory.md` §11) |
 | P2.3 `nodeIntegrationInWorker: false` | **Done** |
 | P2.4 Guest `file:` roots | **Done** |
 | P3.2 Production Electron fuses | **Done** (ASAR integrity macOS-only) |
@@ -89,7 +89,7 @@ Threat model: **`docs/security-threat-model.md`**.
 | 3 | Prefer native prebuilds before source rebuild |
 | 4 | Product ships cpm only; apm name is shim |
 
-Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
+Docs: `docs/reference/cpm-design.md`, `docs/orientation/cpm-cutover.md`, `docs/orientation/cpm-prebuilds.md`.
 
 ### Branding / packaging
 
@@ -104,7 +104,7 @@ Docs: `docs/cpm-design.md`, `docs/cpm-cutover.md`, `docs/cpm-prebuilds.md`.
 | Tier-1 package forks | **Pinned** to `builtbygio/*` |
 | N2 patches folded into forks | **Done** |
 | Nine package libs → TypeScript + zero CoffeeScript first-party | **Done** |
-| Phase S | **Complete (Option C)** — `docs/security-phase-s-decision.md` |
+| Phase S | **Complete (Option C)** — `docs/decisions/security-phase-s-decision.md` |
 
 ---
 
@@ -129,7 +129,7 @@ Workflow when changing a package:
 
 ### 1.0 unsigned preview — **published**
 
-Tag `v1.1.0` (after `v1.0.1`). Docs: [docs/releases.md](docs/releases.md), [docs/dogfood-1.0.md](docs/dogfood-1.0.md).  
+Tag `v1.1.0` (after `v1.0.1`). Docs: [docs/reference/releases.md](docs/reference/releases.md), [docs/process/dogfood-1.0.md](docs/process/dogfood-1.0.md).  
 Tracker: **#106**. 1.0.1 mac zips are per-arch (`chevron-mac-x64.zip` / `chevron-mac-arm64.zip`).
 
 Landed with 1.0 / immediately after:
@@ -151,12 +151,12 @@ Landed with 1.0 / immediately after:
 
 ### Phase S — **complete**
 
-Authoritative: **`docs/security-phase-s.md`** + **`docs/security-phase-s-decision.md`** (Option C).  
+Authoritative: **`docs/process/security-phase-s.md`** + **`docs/decisions/security-phase-s-decision.md`** (Option C).  
 Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require restrict.
 
 ### LSP — **phases 0–5 landed**
 
-[docs/lsp-design.md](docs/lsp-design.md). Host v2 / more servers later.
+[docs/reference/lsp-design.md](docs/reference/lsp-design.md). Host v2 / more servers later.
 
 ### Primary next tracks
 
@@ -164,8 +164,8 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
 
 1. **Wave 1 — done.** Three parts, all landed:  
    - `Workspace.replace` is off `Task` (`replace-in-files` in-process; export stays). Forces a global regex the way the old worker did.  
-   - `sendSync`→`invoke` slice: app jump list + shell beep on `chevron:*` (`script/ci/wave1-ipc-slice.test.js`). `atom-*-sync` twins stay for `remote-compat`. **Clipboard deliberately stays sync** — `atom.clipboard.read()` is synchronous public API. Next mover is `remote-compat` itself, not another getter slice ([remote-ipc-inventory.md](docs/remote-ipc-inventory.md) §11).  
-   - Pin `.cson` inventory: **0** across all 94 catalog pins *and* the app tree (`script/ci/pin-cson.test.js` → `pin CSON inventory (Wave 1)`). `season` is no longer a pin reader; its Wave 3 gate is user `.cson` dual-read + third-party package data ([language-stack.md](docs/language-stack.md) *Pin CSON inventory*).  
+   - `sendSync`→`invoke` slice: app jump list + shell beep on `chevron:*` (`script/ci/wave1-ipc-slice.test.js`). `atom-*-sync` twins stay for `remote-compat`. **Clipboard deliberately stays sync** — `atom.clipboard.read()` is synchronous public API. Next mover is `remote-compat` itself, not another getter slice ([remote-ipc-inventory.md](docs/reference/remote-ipc-inventory.md) §11).  
+   - Pin `.cson` inventory: **0** across all 94 catalog pins *and* the app tree (`script/ci/pin-cson.test.js` → `pin CSON inventory (Wave 1)`). `season` is no longer a pin reader; its Wave 3 gate is user `.cson` dual-read + third-party package data ([language-stack.md](docs/reference/language-stack.md) *Pin CSON inventory*).  
 2. **Wave 2 — complete.** Both items were owned-npm work, published under `@builtbygio`:  
    - **github GraphQL — done.** [builtbygio/github#16](https://github.com/builtbygio/github/pull/16) + [#17](https://github.com/builtbygio/github/pull/17) merged, `@builtbygio/github@0.37.13` published, pin + lockfile bumped here. 8B had already replaced Relay with `graphql-client` + `GraphQLQuery`; the old layer was dead weight (`relay-network-layer-manager.js` requires `relay-runtime`, never a dependency; 76 `__generated__` artifacts; `graphql@14` required by nothing; a 655 KB `schema.graphql` feeding relay-compiler). Tarball **510 → 423 files, 3.30 → 1.9 MB unpacked**; `graphql@14.5.8` is out of the lockfile entirely. Kept `lib/relay-stub.js` (live 8B code) and `graphql/recovered/` (read at runtime). Gated by `script/ci/github-8b.test.js`.  
    - **`natural` log4js patch — done, and no fork was needed.** [builtbygio/spell-check#5](https://github.com/builtbygio/spell-check/pull/5) merged, `@builtbygio/spell-check@0.77.6` published, pin bumped, `patches/natural@0.4.0.patch` deleted. The plan was to publish `@builtbygio/natural` with the fix folded in; the actual finding is that **spell-check declared `natural` and never used it** — across all 33 files the string appears only in `package.json`. Dropping the unused dependency retires the patch outright and takes `natural@0.4.0`, `log4js@6.9.1`, `apparatus` and `sylvester` out of the app graph. `spelling-manager` is unaffected: it uses `natural@^0.6.3`, which dropped `log4js` upstream and never needed the patch. Guarded by `script/ci/patch-inventory.test.js`.  
@@ -194,7 +194,7 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
 5. **Do not delete** `season` / `document-register-element` / first-mate while callers remain (`Task` cleared its gate in Wave 3). **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  
 6. Residual `@atom/*` **dependency keys** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — published as `@builtbygio/*`; renaming the editor key is branding, not a drive-by.  
 7. **Startup perf** — custom V8 snapshot on Linux/Windows with **stock fallback** if verify fails; Darwin stock **frozen** (Q2).  
-8. **Later:** package host v2 **routing on** (spine is off); signing. Jasmine nightly is measurement, not a merge gate ([docs/jasmine-ci.md](docs/jasmine-ci.md)).  
+8. **Later:** package host v2 **routing on** (spine is off); signing. Jasmine nightly is measurement, not a merge gate ([docs/reference/jasmine-ci.md](docs/reference/jasmine-ci.md)).  
 9. **Build:** `./script/bootstrap-modern` then `./script/with-modern-env ./script/build --no-bootstrap`. `pnpm install` alone leaves Electron natives unbuilt.
 
 ### Known dogfood leftovers (found 2026-08-13)
@@ -215,7 +215,7 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
 - Linux arm64: bootstrap/build are hard gates; **smoke only** is soft-gated (`continue-on-error` on smoke step)  
 - Custom V8 snapshot on Linux/Windows; Darwin stock **frozen** (`darwin-boot-crash`, Q2)
 - Keep `GROK.md` / CHANGELOG current when landing epics  
-- Nested `packages/*/node_modules`: untracked; policy in `docs/nested-package-modules.md`  
+- Nested `packages/*/node_modules`: untracked; policy in `docs/decisions/nested-package-modules.md`  
 - CI: Electron + node-gyp cache at `$GITHUB_WORKSPACE/.cache/*`; `node_modules` cache enables bootstrap **native rebuild skip** (`script/lib/natives-fingerprint.js`); force with `CHEVRON_FORCE_NATIVE_REBUILD=1`  
 
 ### Later (not next)
@@ -245,14 +245,18 @@ git status
 # Smoke: node script/ci/smoke-test.js   # or xvfb-run -a on Linux
 ```
 
+**Docs are sorted by purpose** — `docs/orientation/` (how to work on it), `docs/reference/`
+(**how it works now — must be true**), `docs/decisions/` (why, read before undoing), `docs/process/`
+(finished work, not current state). Index: [docs/README.md](docs/README.md).
+
 **Read first:**
 
 1. This file  
-2. `docs/chevron-architecture-modernization.md` (**architecture target** + H1–H3 PR plan)  
-3. `docs/atom-architecture.md` (current-state sketch; defers to the target)  
-4. `docs/security-phase-s.md` (active) + `src/preload-natives.js`  
-5. `docs/electron-best-practices-plan.md` (closed)  
-6. `docs/security-threat-model.md`  
+2. `docs/reference/chevron-architecture-modernization.md` (**architecture target** + H1–H3 PR plan)  
+3. `docs/reference/atom-architecture.md` (current-state sketch; defers to the target)  
+4. `docs/process/security-phase-s.md` (active) + `src/preload-natives.js`  
+5. `docs/process/electron-best-practices-plan.md` (closed)  
+6. `docs/reference/security-threat-model.md`  
 7. `src/main-process/register-renderer-ipc.js` (trust boundary)  
 
 ---

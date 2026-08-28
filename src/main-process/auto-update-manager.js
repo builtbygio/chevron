@@ -37,7 +37,7 @@ module.exports = class AutoUpdateManager extends EventEmitter {
       'atom.png'
     );
     // Squirrel / electron autoUpdater feed (signed builds). Unsigned preview
-    // uses GitHub Releases instead — see docs/releases.md.
+    // uses GitHub Releases instead — see docs/reference/releases.md.
     this.updateUrlPrefix =
       process.env.CHEVRON_UPDATE_URL_PREFIX ||
       process.env.ATOM_UPDATE_URL_PREFIX ||

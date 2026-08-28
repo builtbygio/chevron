@@ -26,7 +26,7 @@
  *   cpm install ./packages/chevron-lsp-rust
  * or a published name when available.
  *
- * See docs/lsp-server-distribution.md and docs/cpm-prebuilds.md.
+ * See docs/reference/lsp-server-distribution.md and docs/orientation/cpm-prebuilds.md.
  */
 
 const fs = require('fs');

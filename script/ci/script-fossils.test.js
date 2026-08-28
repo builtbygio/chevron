@@ -19,7 +19,7 @@ function read(rel) {
 
 function walkJs(dir, acc) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name === 'node_modules' || entry.name === 'vsts') continue;
+    if (entry.name === 'node_modules') continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       walkJs(full, acc);

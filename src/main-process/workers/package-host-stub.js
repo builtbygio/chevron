@@ -13,7 +13,7 @@
  * the real config lives in the editor process. Writes and side effects are
  * fire-and-forget descriptors emitted back to the editor.
  *
- * See docs/security-phase-s-package-host.md "`atom.*` proxy surface".
+ * See docs/reference/security-phase-s-package-host.md "`atom.*` proxy surface".
  */
 
 /** Minimal Disposable, structurally compatible with event-kit. */

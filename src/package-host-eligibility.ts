@@ -11,7 +11,7 @@
  * Runs editor-side (it is `PackageManager`'s routing input), so it lives in
  * `src/` rather than under `main-process/workers/`.
  *
- * See docs/security-phase-s-package-host.md "Activation flow (v2)".
+ * See docs/reference/security-phase-s-package-host.md "Activation flow (v2)".
  */
 
 const fs = require('fs');

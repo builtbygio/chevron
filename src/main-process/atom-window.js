@@ -196,7 +196,7 @@ module.exports = class AtomWindow extends EventEmitter {
         // - Preload world: full Node, boots Atom (static/preload.js) + packages.
         // - sandbox stays false so preload can load natives (superstring,
         //   pathwatcher, tree-sitter, oniguruma, …). Phase S Option C:
-        //   editor sandbox stays false — see docs/security-phase-s-decision.md.
+        //   editor sandbox stays false — see docs/decisions/security-phase-s-decision.md.
         // - webviewTag remains for community packages; guests are sandboxed
         //   in will-attach-webview (N3/N4). Secondary package windows are
         //   hardened in register-renderer-ipc (N5), not the editor itself.

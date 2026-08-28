@@ -53,12 +53,10 @@ describe('no deprecated request package', () => {
     assert.deepStrictEqual(hits, []);
   });
 
-  it('script/ and vsts package.json do not declare request', () => {
-    for (const rel of [
-      'script/package.json',
-      'script/vsts/package.json',
-      'package.json'
-    ]) {
+  it('script/ and root package.json do not declare request', () => {
+    // script/vsts/ was deleted with the dead Azure DevOps pipelines; it used
+    // to be the third tree checked here.
+    for (const rel of ['script/package.json', 'package.json']) {
       const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
       assert.strictEqual(
         pkg.dependencies && pkg.dependencies.request,

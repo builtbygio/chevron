@@ -245,8 +245,8 @@ describe('script/build does not call the dead bootstrap stub', () => {
 });
 
 describe('patch matrix doc exists', () => {
-  it('docs/bootstrap-patch-matrix.md is present', () => {
-    const p = path.join(__dirname, '..', '..', 'docs', 'bootstrap-patch-matrix.md');
+  it('docs/reference/bootstrap-patch-matrix.md is present', () => {
+    const p = path.join(__dirname, '..', '..', 'docs', 'reference', 'bootstrap-patch-matrix.md');
     assert.ok(fs.existsSync(p));
     const text = fs.readFileSync(p, 'utf8');
     assert.ok(text.includes('critical-natives'));

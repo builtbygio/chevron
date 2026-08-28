@@ -1,105 +1,112 @@
 # Chevron documentation
 
-Chevron is a modernized fork of Atom. This tree holds **project-specific** design and ops docs. Historical Atom Flight Manual / atom.io pages are unmaintained — start here, not there.
+Chevron is a modernized fork of Atom. This tree holds **project-specific** design and ops docs.
+Historical Atom Flight Manual / atom.io pages are unmaintained — start here, not there.
 
-## Package manager (cpm)
+Docs are organised by **what they are for**, because the four kinds have very different
+lifetimes and a reader needs to know which one they are holding:
 
-| Doc | Purpose |
-|-----|---------|
-| [cpm-cutover.md](./cpm-cutover.md) | **Start here** — user/author/packager migration notes |
-| [cpm-design.md](./cpm-design.md) | Authoritative design (Phases 0–4 complete) |
-| [cpm-design-eli5.md](./cpm-design-eli5.md) | Plain-language companion |
-| [cpm-prebuilds.md](./cpm-prebuilds.md) | Native prebuild guidance for package authors |
-| [cpm-phase-1-complete.md](./cpm-phase-1-complete.md) | Phase 1 closeout |
-| [cpm-phase-4-complete.md](./cpm-phase-4-complete.md) | Phase 4 closeout |
-| [cpm-phase-0-inventory.md](./cpm-phase-0-inventory.md) | Historical Phase 0 inventory |
-| [cpm-phase-0-spike.md](./cpm-phase-0-spike.md) | Historical Phase 0 spike |
+| Section | Question it answers | If it goes stale |
+|---------|--------------------|------------------|
+| [orientation/](./orientation/) | *What is this and how do I work on it?* | newcomers get lost |
+| [reference/](./reference/) | *How does the system work **now**?* | **people act on it and break things** |
+| [decisions/](./decisions/) | *Why is it this way?* | settled questions get re-litigated or quietly undone |
+| [process/](./process/) | *How did finished work get done?* | mostly harmless — it is history |
 
-CLI source and README: [`cpm/`](../cpm/).
+`reference/` is the section that must stay true. `process/` is closed by definition — do not read
+it as current state.
 
-## Build from source
+---
 
-- [build-instructions/linux.md](./build-instructions/linux.md)
-- [build-instructions/macOS.md](./build-instructions/macOS.md)
-- [build-instructions/windows.md](./build-instructions/windows.md)
-- [build-instructions/build-status.md](./build-instructions/build-status.md)
-
-Always use `./script/bootstrap-modern` (host Node 24 + host npm). See root [README.md](../README.md).
-
-## Product / architecture
+## orientation — start here
 
 | Doc | Purpose |
 |-----|---------|
-| [releases.md](./releases.md) | **1.1.0 unsigned preview** — update URL, signing later |
-| [dogfood-1.0.md](./dogfood-1.0.md) | 1.0 dogfood-week checklist |
-| [chevron-architecture-modernization.md](./chevron-architecture-modernization.md) | **Architecture target** + H1–H3 PR plan (authoritative) |
-| [REBRANDING.md](./REBRANDING.md) | Chevron-only product decisions |
-| [package-ecosystem-strategy.md](./package-ecosystem-strategy.md) | Owned catalog now; sandboxed community later |
-| [lsp-design.md](./lsp-design.md) | **LSP** (implemented) — utilityProcess host, workspace trust, phases 0–5 + goal adjustments |
-| [lsp-server-distribution.md](./lsp-server-distribution.md) | Optional cpm language-server install (`chevron-lsp-*`) |
-| [build-modernization.md](./build-modernization.md) | Bootstrap/build Streams A–E (contract, hygiene, patches, snapshot, deps) |
-| [language-stack.md](./language-stack.md) | Tree-sitter coverage, the TextMate exception list, and the pin CSON inventory that gates `season` |
-| [startup-snapshot-plan.md](./startup-snapshot-plan.md) | Custom V8 snapshot: on for Linux/Windows, Darwin stock frozen |
-| [ai-design.md](./ai-design.md) | **Proposed only** — not an authoritative product decision |
-| [bootstrap-patch-matrix.md](./bootstrap-patch-matrix.md) | Idempotent bootstrap patches + critical natives |
-| [bootstrap-report.md](./bootstrap-report.md) | Current bootstrap recipe (modern path) |
-| [packaging.md](./packaging.md) | `@electron/packager` + custom V8 snapshot (Linux/Windows; Darwin stock) |
-| [dependency-graph.md](./dependency-graph.md) | Root dep kinds, `nan` override, atom/* pin ceiling |
+| [atom-architecture-eli5.md](./orientation/atom-architecture-eli5.md) | The big picture, no jargon |
+| [build-instructions/linux.md](./orientation/build-instructions/linux.md) · [macOS.md](./orientation/build-instructions/macOS.md) · [windows.md](./orientation/build-instructions/windows.md) | Build from source |
+| [build-instructions/build-status.md](./orientation/build-instructions/build-status.md) | Per-platform build/CI status |
+| [cpm-cutover.md](./orientation/cpm-cutover.md) | **cpm start here** — user / author / packager migration |
+| [cpm-design-eli5.md](./orientation/cpm-design-eli5.md) | cpm in plain language |
+| [cpm-prebuilds.md](./orientation/cpm-prebuilds.md) | Native prebuilds for package authors |
+| [contributing-to-packages.md](./orientation/contributing-to-packages.md) | Working on a bundled package |
+| [owned-package-modernization-checklist.md](./orientation/owned-package-modernization-checklist.md) | Per-package ownership → modernize checklist |
+| [contributing.md](./contributing.md) | → root `CONTRIBUTING.md` |
 
+Always use `./script/bootstrap-modern` (host Node 24 + Python 3.12). See root [README.md](../README.md).
 
-| [onboarding-polish.md](./onboarding-polish.md) | First-run Welcome/Guide checklist |
-| [atom-architecture.md](./atom-architecture.md) | Current-state architecture sketch (defers to the target doc) |
-| [atom-architecture-eli5.md](./atom-architecture-eli5.md) | ELI5 architecture |
-| [CHANGELOG.md](../CHANGELOG.md) | Release notes |
-| [jasmine-ci.md](./jasmine-ci.md) | Full `script/test` nightly / opt-in (#57) |
+## reference — current state
 
-## Security
+**This is the section that must be true.** If you change behaviour, change these.
 
 | Doc | Purpose |
 |-----|---------|
-| [security-threat-model.md](./security-threat-model.md) | Trust tiers + residual risk |
-| [security-phase-s.md](./security-phase-s.md) | Phase S — **complete** (Option C) |
-| [security-phase-s-decision.md](./security-phase-s-decision.md) | **S5/S6** product decision: editor sandbox false |
-| [security-phase-s-package-host.md](./security-phase-s-package-host.md) | **S1.2** package host design (Option B/C) |
-| [security-phase-s-utilityprocess.md](./security-phase-s-utilityprocess.md) | **S3** github workers → utilityProcess |
-| [babel-coffee-isolation-plan.md](./babel-coffee-isolation-plan.md) | Coffee + Babel 5 runtime dropped (#62 Options 2–3) |
-| [atom-to-chevron-rename-plan.md](./atom-to-chevron-rename-plan.md) | Atom → Chevron rename program (API, themes, pins) |
-| [REBRANDING.md](./REBRANDING.md) | Product rebrand + Chevron-only policy |
-| [nested-package-modules.md](./nested-package-modules.md) | Nested `packages/*/node_modules` policy |
-| [electron-best-practices-plan.md](./electron-best-practices-plan.md) | BP P0–P3 (closed at 0.6.0) |
-| [security-phase-n.md](./security-phase-n.md) | Phase N plan (package Node surface) |
-| [security-phase-n2.md](./security-phase-n2.md) | N2 package shell / fs IPC |
-| [security-phase-n3.md](./security-phase-n3.md) | N3 preload privilege + guests |
-| [security-phase-n4.md](./security-phase-n4.md) | N4 guest WebContents polish |
-| [security-phase-n5.md](./security-phase-n5.md) | N5 secondary windows; Phase S path (hackable-compatible) |
-| [package-node-policy.md](./package-node-policy.md) | Package author Node policy |
-| [package-ownership-inventory.md](./package-ownership-inventory.md) | Owned catalog (no `atom/*` app pins) |
-| [owned-package-modernization-checklist.md](./owned-package-modernization-checklist.md) | Per-package ownership → modernize PR checklist |
-| [sca-runtime-inventory.md](./sca-runtime-inventory.md) | npm audit prioritisation (runtime vs test) |
-| [remote-ipc-inventory.md](./remote-ipc-inventory.md) | Historical remote/IPC map |
+| [chevron-architecture-modernization.md](./reference/chevron-architecture-modernization.md) | **Architecture target** + leftover table (authoritative) |
+| [atom-architecture.md](./reference/atom-architecture.md) | Current-state sketch; defers to the target |
+| [cpm-design.md](./reference/cpm-design.md) | cpm design, implemented |
+| [lsp-design.md](./reference/lsp-design.md) | LSP host, implemented (phases 0–5) |
+| [lsp-server-distribution.md](./reference/lsp-server-distribution.md) | Optional `chevron-lsp-*` server install |
+| [language-stack.md](./reference/language-stack.md) | Tree-sitter coverage, TextMate exception list, **pin CSON inventory** (gates `season`) |
+| [security-threat-model.md](./reference/security-threat-model.md) | Trust tiers + residual risk |
+| [security-phase-s-package-host.md](./reference/security-phase-s-package-host.md) | Package host v2 spine (routing default off) |
+| [package-node-policy.md](./reference/package-node-policy.md) | What package authors may use |
+| [package-ownership-inventory.md](./reference/package-ownership-inventory.md) | Owned catalog |
+| [sca-runtime-inventory.md](./reference/sca-runtime-inventory.md) | npm audit prioritisation (runtime vs test) |
+| [remote-ipc-inventory.md](./reference/remote-ipc-inventory.md) | remote/IPC map; **§11 is the live `sendSync` inventory** |
+| [releases.md](./reference/releases.md) | 1.1.0 product contract, update URL, signing later |
+| [packaging.md](./reference/packaging.md) | Packaging + startup snapshot |
+| [startup-snapshot-plan.md](./reference/startup-snapshot-plan.md) | Snapshot: Linux/Windows on, Darwin stock frozen |
+| [build-modernization.md](./reference/build-modernization.md) | Bootstrap/build streams |
+| [bootstrap-report.md](./reference/bootstrap-report.md) | Bootstrap current state |
+| [bootstrap-patch-matrix.md](./reference/bootstrap-patch-matrix.md) | Patch matrix for Electron/Node/native pin changes |
+| [dependency-graph.md](./reference/dependency-graph.md) | Install topology |
+| [jasmine-ci.md](./reference/jasmine-ci.md) | Jasmine suite: nightly measurement, not a merge gate |
+
+## decisions — why it is this way
+
+Read before proposing to undo any of it. Some of these are also enforced as tests, which is
+stronger than prose: `script/ci/wave3-gates.test.js` records why `season` and
+`document-register-element` survive, and it fails rather than rotting.
+
+| Doc | Decision |
+|-----|----------|
+| [REBRANDING.md](./decisions/REBRANDING.md) | Chevron-only product identity; Atom surfaces are unsupported |
+| [package-ecosystem-strategy.md](./decisions/package-ecosystem-strategy.md) | Owned catalog now; sandboxed community later (locked) |
+| [security-phase-s-decision.md](./decisions/security-phase-s-decision.md) | **Option C** — editor `sandbox: false` on purpose |
+| [nested-package-modules.md](./decisions/nested-package-modules.md) | Nested `packages/*/node_modules` policy |
+| [windows-userdata-migrate.md](./decisions/windows-userdata-migrate.md) | Resolved — no migration built, and why |
+
+## process — closed, kept for the "why"
+
+Finished work. **Not** current-state references. Kept where they explain a constraint; git history
+holds the rest.
+
+| Doc | Outcome |
+|-----|---------|
+| [electron-best-practices-plan.md](./process/electron-best-practices-plan.md) | P0–P3, closed at 0.6.0 |
+| [security-phase-n.md](./process/security-phase-n.md) · [n2](./process/security-phase-n2.md) · [n3](./process/security-phase-n3.md) · [n4](./process/security-phase-n4.md) · [n5](./process/security-phase-n5.md) | Phase N, complete |
+| [security-phase-s.md](./process/security-phase-s.md) | Phase S, complete (Option C) |
+| [security-phase-s-utilityprocess.md](./process/security-phase-s-utilityprocess.md) | S3 github workers → utilityProcess |
+| [cpm-phase-0-inventory.md](./process/cpm-phase-0-inventory.md) · [spike](./process/cpm-phase-0-spike.md) · [phase 1](./process/cpm-phase-1-complete.md) · [phase 4](./process/cpm-phase-4-complete.md) | cpm closeouts |
+| [atom-to-chevron-rename-plan.md](./process/atom-to-chevron-rename-plan.md) | Rename program |
+| [babel-coffee-isolation-plan.md](./process/babel-coffee-isolation-plan.md) | Coffee + Babel 5 runtime dropped |
+| [toolchain-node-python-upgrade-plan.md](./process/toolchain-node-python-upgrade-plan.md) | T1–T4 complete |
+| [onboarding-polish.md](./process/onboarding-polish.md) | First-run polish tracks |
+| [dogfood-1.0.md](./process/dogfood-1.0.md) | 1.0 dogfood week |
+| [modernization/](./process/modernization/) | Early audit + transition plans. **Superseded** — `dependency-audit.md` still describes git SHA pins; the catalog has none |
 
 ## Post-1.1.0 modernization waves
 
-Waves 1–4 are complete. The plan and the leftover table live in
-[chevron-architecture-modernization.md](./chevron-architecture-modernization.md); `GROK.md` at the
-repo root carries the per-wave outcome. What the waves removed: `Task`, the `atom://` scheme and the
-`.atom` host, dead Relay + `graphql@14` in `github`, and the `natural` log4js patch.
+Waves 1–4 are complete. Plan and leftover table:
+[chevron-architecture-modernization.md](./reference/chevron-architecture-modernization.md); per-wave
+outcome in root `GROK.md`. The waves removed `Task`, the `atom://` scheme and `.atom` host, dead
+Relay + `graphql@14` in `github`, and the `natural` log4js patch.
 
-`season` and `document-register-element` **stay** — each failed its zero-callers gate for a reason
-recorded in `script/ci/wave3-gates.test.js`, so check there before proposing either for deletion.
+`season` and `document-register-element` **stay** — see `script/ci/wave3-gates.test.js`.
 
-## Historical — closed, kept for the "why"
+## Unsorted — pending a decision
 
-These describe finished work. They are **not** current-state references; read the architecture doc
-and `GROK.md` for that.
+These fit none of the four sections. See the note in the PR that reorganised this tree.
 
-- Phase closeouts: [cpm-phase-0-inventory.md](./cpm-phase-0-inventory.md), [cpm-phase-0-spike.md](./cpm-phase-0-spike.md), [cpm-phase-1-complete.md](./cpm-phase-1-complete.md), [cpm-phase-4-complete.md](./cpm-phase-4-complete.md)
-- Closed plans: [electron-best-practices-plan.md](./electron-best-practices-plan.md), [babel-coffee-isolation-plan.md](./babel-coffee-isolation-plan.md), [toolchain-node-python-upgrade-plan.md](./toolchain-node-python-upgrade-plan.md), [atom-to-chevron-rename-plan.md](./atom-to-chevron-rename-plan.md)
-- Decision records: [windows-userdata-migrate.md](./windows-userdata-migrate.md) (resolved — no migration built), [security-phase-s-decision.md](./security-phase-s-decision.md)
-- Snapshots in time: [dogfood-1.0.md](./dogfood-1.0.md), [bootstrap-report.md](./bootstrap-report.md), [bootstrap-patch-matrix.md](./bootstrap-patch-matrix.md), [remote-ipc-inventory.md](./remote-ipc-inventory.md)
-- [rfcs/](./rfcs/) — **archived Atom-era RFCs**, deliberately unedited. Not Chevron specs.
-
-## Other
-
-- [contributing.md](./contributing.md), [contributing-to-packages.md](./contributing-to-packages.md)
-- [native-profiling.md](./native-profiling.md)
+- [ai-design.md](./ai-design.md) — a **proposal**, never decided or implemented
+- [native-profiling.md](./native-profiling.md) — Atom-era macOS Instruments how-to; not Chevron-specific
+- [rfcs/](./rfcs/) — **archived Atom-era RFCs**, deliberately unedited. Not Chevron specs

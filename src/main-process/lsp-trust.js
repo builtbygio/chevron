@@ -122,7 +122,7 @@ function listTrusted() {
 
 /**
  * Grant trust only after an explicit user confirmation in the **main**
- * process (docs/lsp-design.md §6.2: trust is a user decision, not a
+ * process (docs/reference/lsp-design.md §6.2: trust is a user decision, not a
  * renderer-settable flag). Revoking never prompts — removing capability is
  * always safe.
  *

@@ -15,7 +15,7 @@ const { applyPackageId } = require('../../src/main-process/package-id');
 // Atom-era folder names so an existing install's userData would not be
 // orphaned. There are no Windows users to orphan (owner, 2026-08-18), so no
 // migration is needed and the name is simply Chevron's.
-// See docs/windows-userdata-migrate.md.
+// See docs/decisions/windows-userdata-migrate.md.
 let intermediatePackageName = CONFIG.appMetadata.name;
 if (process.platform === 'win32') {
   intermediatePackageName =
