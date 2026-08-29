@@ -53,13 +53,34 @@ function shouldSkipCustomSnapshot(electronVersion, opts = {}) {
   if (platform === 'darwin') {
     return { skip: true, reason: 'darwin-boot-crash' };
   }
+  // linux-x64 generates a valid snapshot and boots, but spell-check fails to
+  // activate in roughly half of CI smoke runs (PR #240: fail, fail, pass,
+  // pass). Root cause not identified. The snapshot has been off on every
+  // platform for all of 1.1.0 because the tree-view exclusion discarded it, so
+  // gating here keeps shipped behaviour unchanged rather than trading a silent
+  // build failure for an intermittent one. CHEVRON_FORCE_MKSNAPSHOT=1 still
+  // retries; lift this once spell-check is understood and cold start measured.
+  if (platform === 'linux') {
+    return { skip: true, reason: 'linux-spell-check-flake' };
+  }
   return { skip: false, reason: 'generate' };
 }
 
-function stockSnapshotNote(electronVersion) {
+function stockSnapshotNote(electronVersion, reason) {
+  const why = {
+    'env-skip': 'CHEVRON_SKIP_MKSNAPSHOT is set; unset it to retry.',
+    'darwin-boot-crash':
+      'Frozen on darwin: a valid snapshot pair still leaves the renderer ' +
+      'empty at boot. CHEVRON_FORCE_MKSNAPSHOT=1 retries.',
+    'linux-spell-check-flake':
+      'Gated on linux: spell-check fails to activate in about half of smoke ' +
+      'runs with a snapshot baked. CHEVRON_FORCE_MKSNAPSHOT=1 retries.',
+    'host-unsupported': 'electron-mksnapshot does not run on this host.'
+  }[reason];
   return (
     `Custom startup snapshot skipped on Electron ${electronVersion}. ` +
-    "Using Electron's stock V8 snapshots. Unset CHEVRON_SKIP_MKSNAPSHOT to retry."
+    "Using Electron's stock V8 snapshots. " +
+    (why || 'CHEVRON_FORCE_MKSNAPSHOT=1 retries.')
   );
 }
 

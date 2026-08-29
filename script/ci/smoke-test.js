@@ -237,7 +237,14 @@ const PROBE_EXPR = `(function() {
     notifications: chevron.notifications
       .getNotifications()
       .filter(n => ['error', 'fatal'].includes(n.getType()))
-      .map(n => n.getType() + ': ' + n.getMessage()),
+      .map(function(n) {
+        // Carry detail/stack through. Package.handleError attaches both, and
+        // without them an activation failure reports only that it happened.
+        var o = n.getOptions() || {};
+        return n.getType() + ': ' + n.getMessage() +
+          (o.detail ? ' | detail: ' + String(o.detail).slice(0, 500) : '') +
+          (o.stack ? ' | stack: ' + String(o.stack).slice(0, 800) : '');
+      }),
     txtText: byExt('.txt').getText(),
     tsGrammar: byExt('.ts').getGrammar() && byExt('.ts').getGrammar().name,
     cssGrammar: byExt('.css').getGrammar() && byExt('.css').getGrammar().name,

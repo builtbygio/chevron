@@ -22,24 +22,34 @@ const ROOT = path.resolve(__dirname, '..', '..');
 describe('packaging policy (Stream D)', () => {
   it('attempts custom snapshot on Electron 43+ unless skipped or host-unsupported', () => {
     assert.strictEqual(STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR, 43);
-    const generate = shouldSkipCustomSnapshot('43.1.0');
+    // Pin the platform: the bare call falls back to process.platform, and
+    // linux/darwin are both gated, so an unpinned assertion would pass or fail
+    // depending on which runner executed it.
+    const generate = shouldSkipCustomSnapshot('43.1.0', { platform: 'win32' });
     assert.strictEqual(generate.skip, false);
     assert.strictEqual(generate.reason, 'generate');
 
-    const forced = shouldSkipCustomSnapshot('43.1.0', { force: true });
+    const forced = shouldSkipCustomSnapshot('43.1.0', {
+      platform: 'win32',
+      force: true
+    });
     assert.strictEqual(forced.skip, false);
 
-    const skipped = shouldSkipCustomSnapshot('43.1.0', { skip: true });
+    const skipped = shouldSkipCustomSnapshot('43.1.0', {
+      platform: 'win32',
+      skip: true
+    });
     assert.strictEqual(skipped.skip, true);
     assert.strictEqual(skipped.reason, 'env-skip');
 
     const forceWins = shouldSkipCustomSnapshot('43.1.0', {
+      platform: 'win32',
       skip: true,
       force: true
     });
     assert.strictEqual(forceWins.skip, false);
 
-    const old = shouldSkipCustomSnapshot('28.3.0');
+    const old = shouldSkipCustomSnapshot('28.3.0', { platform: 'win32' });
     assert.strictEqual(old.skip, false);
 
     const host = shouldSkipCustomSnapshot('28.3.0', { hostCanRun: false });
@@ -55,8 +65,16 @@ describe('packaging policy (Stream D)', () => {
     });
     assert.strictEqual(darwinForced.skip, false);
 
+    // linux is gated on the spell-check smoke flake (PR #240).
     const linux = shouldSkipCustomSnapshot('43.1.0', { platform: 'linux' });
-    assert.strictEqual(linux.skip, false);
+    assert.strictEqual(linux.skip, true);
+    assert.strictEqual(linux.reason, 'linux-spell-check-flake');
+
+    const linuxForced = shouldSkipCustomSnapshot('43.1.0', {
+      platform: 'linux',
+      force: true
+    });
+    assert.strictEqual(linuxForced.skip, false);
 
     const win32 = shouldSkipCustomSnapshot('43.1.0', { platform: 'win32' });
     assert.strictEqual(win32.skip, false);
@@ -64,7 +82,16 @@ describe('packaging policy (Stream D)', () => {
   });
 
   it('note mentions CHEVRON_SKIP_MKSNAPSHOT', () => {
-    assert.ok(stockSnapshotNote('43.1.0').includes('CHEVRON_SKIP_MKSNAPSHOT'));
+    assert.ok(
+      stockSnapshotNote('43.1.0', 'env-skip').includes('CHEVRON_SKIP_MKSNAPSHOT')
+    );
+    assert.ok(
+      stockSnapshotNote('43.1.0', 'linux-spell-check-flake').includes(
+        'CHEVRON_FORCE_MKSNAPSHOT'
+      )
+    );
+    // Unknown reason still tells the reader how to retry.
+    assert.ok(stockSnapshotNote('43.1.0').includes('CHEVRON_FORCE_MKSNAPSHOT'));
   });
 
   it('getHostArch does not require @electron/get', () => {

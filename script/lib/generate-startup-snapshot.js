@@ -63,7 +63,12 @@ module.exports = function(packagedAppPath) {
     }
   );
   if (decision.skip) {
-    console.log(`\nNOTE: ${stockSnapshotNote(CONFIG.appMetadata.electronVersion)}\n`);
+    console.log(
+      `\nNOTE: ${stockSnapshotNote(
+        CONFIG.appMetadata.electronVersion,
+        decision.reason
+      )}\n`
+    );
     writeStockSnapshotMarker(decision.reason);
     return Promise.resolve();
   }

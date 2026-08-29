@@ -253,13 +253,15 @@ function shouldExcludeModule({
     requiredModuleRelativePath ===
       path.join('..', 'node_modules', '@vscode', 'ripgrep', 'lib', 'index.js') ||
     requiredModuleRelativePath === path.join('..', 'src', 'startup-time.js') ||
-    // pnpm hoists minimatch; snapshot must not bake
-    // tree-view/node_modules/minimatch (that path does not exist).
-    requiredModuleRelativePath.startsWith(
-      path.join('..', 'node_modules', 'tree-view')
+    // pnpm hoists minimatch; snapshot must not bake tree-view's nested copy.
+    // Scope this to that nested tree only: excluding all of tree-view drops a
+    // SNAPSHOT_STARTUP_PACKAGES entry that initialize-application-window.js
+    // requires while generating, which fails verify and discards the snapshot.
+    requiredModuleRelativePath.includes(
+      path.join('node_modules', 'tree-view', 'node_modules')
     ) ||
     requiringModuleRelativePath.includes(
-      path.join('node_modules', 'tree-view')
+      path.join('node_modules', 'tree-view', 'node_modules')
     )
   );
 }
