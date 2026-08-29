@@ -38,10 +38,8 @@ var import_general_panel = __toESM(require("./general-panel"));
 var import_editor_panel = __toESM(require("./editor-panel"));
 var import_package_detail_view = __toESM(require("./package-detail-view"));
 var import_keybindings_panel = __toESM(require("./keybindings-panel"));
-var import_install_panel = __toESM(require("./install-panel"));
 var import_themes_panel = __toESM(require("./themes-panel"));
 var import_installed_packages_panel = __toESM(require("./installed-packages-panel"));
-var import_updates_panel = __toESM(require("./updates-panel"));
 var import_uri_handler_panel = __toESM(require("./uri-handler-panel"));
 class SettingsView {
   constructor({ uri, packageManager, snippetsProvider, activePanel } = {}) {
@@ -139,8 +137,6 @@ class SettingsView {
     this.addCorePanel("Keybindings", "keyboard", () => new import_keybindings_panel.default());
     this.addCorePanel("Packages", "package", () => new import_installed_packages_panel.default(this, this.packageManager));
     this.addCorePanel("Themes", "paintcan", () => new import_themes_panel.default(this, this.packageManager));
-    this.addCorePanel("Updates", "cloud-download", () => new import_updates_panel.default(this, this.packageManager));
-    this.addCorePanel("Install", "plus", () => new import_install_panel.default(this, this.packageManager));
     this.showDeferredPanel();
     if (!this.activePanel) {
       this.showPanel("Core");

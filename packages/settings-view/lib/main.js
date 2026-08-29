@@ -1,7 +1,6 @@
 let SettingsView = null
 let settingsView = null
 
-let statusView = null
 
 const PackageManager = require('./package-manager')
 let packageManager = null
@@ -66,22 +65,14 @@ module.exports = {
 
   deactivate () {
     if (settingsView) settingsView.destroy()
-    if (statusView) statusView.destroy()
     settingsView = null
     packageManager = null
-    statusView = null
   },
 
-  consumeStatusBar (statusBar) {
-    if (packageManager == null) packageManager = new PackageManager()
-    packageManager.getOutdated().then(updates => {
-      if (packageManager) {
-        const PackageUpdatesStatusView = require('./package-updates-status-view')
-        statusView = new PackageUpdatesStatusView()
-        statusView.initialize(statusBar, packageManager, updates)
-      }
-    })
-  },
+  // consumeStatusBar was the "N package updates" indicator. It polled the
+  // registry via `cpm outdated`; with community packages cancelled there is
+  // nothing to update, so the service is no longer consumed.
+
 
   consumeSnippets (snippets) {
     if (typeof snippets.getUnparsedSnippets === 'function') {

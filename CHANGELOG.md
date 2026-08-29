@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **cpm's package registry.** `lib/registry.js` and the `search`, `view`, `featured`, `outdated` and `install` commands, plus their tests. cpm keeps what an owned catalog needs: `rebuild`, `list`, `doctor`, `uninstall`, `link`/`unlink`. Chevron no longer talks to the Pulsar registry at all.
+- **settings-view's Install and Updates panels**, the "N package updates" status-bar indicator, and the `status-bar` entry in `consumedServices` that pointed at the handler they used. Seven panels remain: Core, Editor, URI Handling, System, Keybindings, Packages, Themes.
+
 - **Package host v2.** It existed to sandbox untrusted third-party packages in a restricted `utilityProcess`, which community packages being cancelled makes pointless. Gone: the `core.packageHostV2` setting, `src/package-host-client.ts`, `src/package-host-eligibility.ts`, `src/main-process/package-host-manager.js`, the `workers/package-host.js` utilityProcess entry, ~15 `chevron:package-host-*` IPC handlers, five spec fixtures and five CI suites. `PackageManager` loses its host-activation routing — `packageShouldActivateInHost`, `completeHostActivation`, the contribution listener, and the host branches in activate/deactivate.
 - The **T2 privileged-`require` restrictions stay.** They are defence in depth for the code Chevron ships, not only for code it does not; `package-require-audit` was a dependency *of* the host eligibility check, not the other way round.
 
@@ -84,6 +87,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default UI/syntax themes are **One Dark** (`one-dark-ui` / `one-dark-syntax`). `chevron-dark-*` stays bundled. `one-dark-ui` **1.12.6** sets `color-scheme: dark` for Electron 43 native widgets.
 - mocha **11.8.0**, script ESLint **9** with `ESLINT_USE_FLAT_CONFIG=false`, dugite no longer uses `got`. Package host v2 routing is wired and **default off**.
 - `keytar` and `fs-admin` always register with `NODE_MODULE_CONTEXT_AWARE` (Electron 43 renderer).
+
+### Fixed
+
+- **`snippets` was compiling its PEG grammar at run time.** Removing `transpile-peg-js-paths` in the previous release was justified by a scan that found no `.pegjs` sources — but that scan ran while the 65 owned packages still lived in `node_modules`, so `packages/snippets/lib/snippet-body.pegjs` was invisible to it. `snippet-body-parser` fell back to `loophole`'s `allowUnsafeEval` to build the parser on first use. The build step is restored, `snippet-body.js` is generated again, and the step now carries a comment saying why it exists.
 
 ### Fixed
 

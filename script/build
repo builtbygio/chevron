@@ -64,6 +64,7 @@ const packageApplication = require('./lib/package-application')
 const prebuildLessCache = require('./lib/prebuild-less-cache')
 const testSignOnMac = require('./lib/test-sign-on-mac')
 const transpileTypeScriptPaths = require('./lib/transpile-typescript-paths')
+const transpilePegJsPaths = require('./lib/transpile-peg-js-paths')
 
 process.on('unhandledRejection', function (e) {
   console.error(e.stack || e)
@@ -82,6 +83,9 @@ if (!argv.existingBinaries) {
   copyAssets()
   // Package libs may ship .ts (owned forks); emit .js before metadata resolve.
   transpileTypeScriptPaths()
+  // snippets ships lib/snippet-body.pegjs. Without this the package falls back
+  // to compiling the grammar at run time through loophole's allowUnsafeEval.
+  transpilePegJsPaths()
   generateModuleCache()
   prebuildLessCache()
   generateMetadata()

@@ -16,7 +16,7 @@ function runCpm(args, env) {
   });
 }
 
-describe('cpm list / ls / outdated (settings-view contract)', () => {
+describe('cpm list / ls', () => {
   let tmp;
 
   afterEach(() => {
@@ -76,12 +76,5 @@ describe('cpm list / ls / outdated (settings-view contract)', () => {
     );
     assert.ok(parsed.git.some(p => p.name === 'from-git'));
     assert.ok(!parsed.user.some(p => p.name === 'from-git'));
-  });
-
-  it('outdated --json is a JSON array', () => {
-    const out = runCpm(['outdated', '--json', '--compatible', '1.0.1']);
-    assert.strictEqual(out.status, 0, out.stderr);
-    const parsed = JSON.parse(out.stdout);
-    assert.ok(Array.isArray(parsed));
   });
 });
