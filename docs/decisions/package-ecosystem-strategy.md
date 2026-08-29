@@ -72,7 +72,7 @@ Until that ships, treat “community packages” as a **post–base-Chevron** tr
 | Option | Why not now |
 |--------|-------------|
 | Full Pulsar reopen with hard gates | Stabilization cost while API/names are still moving |
-| Private registry immediately | Ops + review load before core is “done enough” |
+| ~~Private registry immediately~~ | ~~Ops + review load before core is “done enough”~~ **Revisited 2026-08-29:** that cost comes from accepting third-party code. A first-party registry serving only owned packages carries no review or moderation load. See [build-architecture.md](./build-architecture.md) |
 | Git/path install as product feature | Fine for developers; not the supported end-user catalog story |
 | Closed forever | Rejected as permanent; sandboxed community is the planned reopen path |
 
