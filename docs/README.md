@@ -70,7 +70,8 @@ stronger than prose: `script/ci/wave3-gates.test.js` records why `season` and
 | Doc | Decision |
 |-----|----------|
 | [REBRANDING.md](./decisions/REBRANDING.md) | Chevron-only product identity; Atom surfaces are unsupported |
-| [package-ecosystem-strategy.md](./decisions/package-ecosystem-strategy.md) | Owned catalog now; sandboxed community later (locked) |
+| [package-ecosystem-strategy.md](./decisions/package-ecosystem-strategy.md) | Owned catalog only; community packages cancelled (locked) |
+| [build-architecture.md](./decisions/build-architecture.md) | Compiled build, signed package artifacts, first-party registry (proposed) |
 | [security-phase-s-decision.md](./decisions/security-phase-s-decision.md) | **Option C** — editor `sandbox: false` on purpose |
 | [nested-package-modules.md](./decisions/nested-package-modules.md) | Nested `packages/*/node_modules` policy |
 | [windows-userdata-migrate.md](./decisions/windows-userdata-migrate.md) | Resolved — no migration built, and why |
