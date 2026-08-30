@@ -20,6 +20,8 @@ var _checkRunsAccumulator = _interopRequireDefault(require("./check-runs-accumul
 
 var _accumulator = _interopRequireDefault(require("./accumulator"));
 
+var _relayStub = require("../../relay-stub");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _objectSpread2(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
@@ -68,7 +70,8 @@ class BareCheckSuitesAccumulator extends _react.default.Component {
     const [suite] = suites;
     return _react.default.createElement(_checkRunsAccumulator.default, {
       onDidRefetch: this.props.onDidRefetch,
-      checkSuite: suite
+      checkSuite: suite,
+      relay: (0, _relayStub.createRelayStub)()
     }, ({
       error,
       checkRuns,

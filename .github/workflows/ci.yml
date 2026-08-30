@@ -450,6 +450,7 @@ jobs:
           node --test script/ci/chevron-dark-themes.test.js
           node --test script/ci/theme-migration.test.js
           node --test script/ci/package-requires-resolve.test.js
+          node --test script/ci/accumulator-relay-prop.test.js
 
       # These need a real node_modules: github-8b reads node_modules/github,
       # lsp-builtin-discover resolves servers out of it, lazy-first-mate
