@@ -5,12 +5,12 @@
 atom-text-editor {
   .gutter .line-number {
     &.git-line-modified {
-      border-left: 2px solid @syntax-color-modified;
+      border-left: 2px solid var(--syntax-color-modified);
       padding-left: ~"calc(0.5em - 2px)";
     }
 
     &.git-line-added {
-      border-left: 2px solid @syntax-color-added;
+      border-left: 2px solid var(--syntax-color-added);
       padding-left: ~"calc(0.5em - 2px)";
     }
 
@@ -23,7 +23,7 @@ atom-text-editor {
       width: 0;
       content: "";
       border: solid transparent;
-      border-left-color: @syntax-color-removed;
+      border-left-color: var(--syntax-color-removed);
       border-width: @size;
       margin-top: -@size;
       pointer-events: none;
@@ -54,19 +54,19 @@ atom-text-editor {
 
     &.git-line-modified:before {
       content: @primitive-dot;
-      color: @syntax-color-modified;
+      color: var(--syntax-color-modified);
     }
 
     &.git-line-added:before {
       content: @plus;
-      color: @syntax-color-added;
+      color: var(--syntax-color-added);
     }
 
     &.git-line-removed:before,
     &.git-previous-line-removed:before {
       border: none; // reset triangle
       content: @dash;
-      color: @syntax-color-removed;
+      color: var(--syntax-color-removed);
     }
     &.git-line-removed:before {
       top: 1em;

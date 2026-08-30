@@ -7,9 +7,9 @@
   max-height: 20em;
   overflow: auto;
   padding: 0.5em 0.75em;
-  background: @tool-panel-background-color;
-  border: 1px solid @base-border-color;
-  border-radius: @component-border-radius;
+  background: var(--tool-panel-background-color);
+  border: 1px solid var(--base-border-color);
+  border-radius: var(--component-border-radius);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   z-index: 10;
 }
@@ -18,9 +18,9 @@
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
-  font-family: @font-family;
+  font-family: var(--font-family);
   font-size: 0.95em;
-  color: @text-color;
+  color: var(--text-color);
 }
 
 .lsp-ui-definitions {
@@ -58,12 +58,12 @@ atom-panel.modal .lsp-ui-trust,
   padding: 1.25em 1.4em 1.1em;
   min-width: 32em;
   max-width: 40em;
-  color: @text-color-highlight;
+  color: var(--text-color-highlight);
 
   h1,
   p,
   div {
-    color: @text-color-highlight;
+    color: var(--text-color-highlight);
     opacity: 1;
   }
 
@@ -83,9 +83,9 @@ atom-panel.modal .lsp-ui-trust,
   .lsp-ui-trust-path-wrap {
     margin: 0 0 1em;
     padding: 0.65em 0.75em;
-    background: fade(@text-color-highlight, 8%);
-    border: 1px solid fade(@text-color-highlight, 14%);
-    border-radius: @component-border-radius;
+    background: ~"rgb(from var(--text-color-highlight) r g b / 8%)";
+    border: 1px solid ~"rgb(from var(--text-color-highlight) r g b / 14%)";
+    border-radius: var(--component-border-radius);
   }
 
   .lsp-ui-trust-path-label {
@@ -94,7 +94,7 @@ atom-panel.modal .lsp-ui-trust,
     font-weight: 600;
     letter-spacing: 0.02em;
     text-transform: uppercase;
-    color: @text-color-subtle;
+    color: var(--text-color-subtle);
   }
 
   .lsp-ui-trust-path {
@@ -174,7 +174,7 @@ atom-panel.modal .lsp-ui-trust,
   max-height: 12em;
   overflow: auto;
   padding: 0.5em 0.75em;
-  border-top: 1px solid @base-border-color;
+  border-top: 1px solid var(--base-border-color);
 }
 
 .lsp-ui-diagnostics-title {
@@ -198,25 +198,25 @@ atom-panel.modal .lsp-ui-trust,
 
 .lsp-ui-diag-error,
 .line-number.lsp-ui-diag-error {
-  color: @text-color-error;
+  color: var(--text-color-error);
 }
 
 .lsp-ui-diag-warning,
 .line-number.lsp-ui-diag-warning {
-  color: @text-color-warning;
+  color: var(--text-color-warning);
 }
 
 .lsp-ui-diag-info,
 .line-number.lsp-ui-diag-info,
 .lsp-ui-diag-hint,
 .line-number.lsp-ui-diag-hint {
-  color: @text-color-info;
+  color: var(--text-color-info);
 }
 
 .lsp-ui-diag-error-highlight .region {
-  background: fade(@background-color-error, 25%);
+  background: ~"rgb(from var(--background-color-error) r g b / 25%)";
 }
 
 .lsp-ui-diag-warning-highlight .region {
-  background: fade(@background-color-warning, 25%);
+  background: ~"rgb(from var(--background-color-warning) r g b / 25%)";
 }
