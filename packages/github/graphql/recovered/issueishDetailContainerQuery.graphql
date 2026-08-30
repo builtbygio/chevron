@@ -475,6 +475,9 @@ fragment prDetailView_pullRequest_1UVrY8 on PullRequest {
   isCrossRepository
   changedFiles
   state
+  headRefOid
+  mergeable
+  viewerCanUpdate
   number
   title
   bodyHTML

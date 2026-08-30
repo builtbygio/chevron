@@ -19,6 +19,8 @@ var _statusDonutChart = _interopRequireDefault(require("./status-donut-chart"));
 
 var _checkSuitesAccumulator = _interopRequireDefault(require("../containers/accumulators/check-suites-accumulator"));
 
+var _relayStub = require("../relay-stub");
+
 var _queryErrorTile = _interopRequireDefault(require("./query-error-tile"));
 
 var _octicon = _interopRequireDefault(require("../atom/octicon"));
@@ -53,7 +55,11 @@ class IssueishListView extends _react.default.Component {
 
     _defineProperty(this, "renderIssueish", issueish => {
       return _react.default.createElement(_checkSuitesAccumulator.default, {
-        commit: issueish.getLatestCommit()
+        commit: issueish.getLatestCommit(),
+        // Accumulator calls relay.hasMore() unconditionally. The Relay
+        // pagination container that used to inject this prop is gone, so the
+        // first-page-only stand-in supplies it (see relay-stub.js).
+        relay: (0, _relayStub.createRelayStub)()
       }, ({
         runsBySuite
       }) => {

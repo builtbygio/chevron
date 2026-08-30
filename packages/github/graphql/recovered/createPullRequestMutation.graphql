@@ -1,0 +1,20 @@
+mutation createPullRequestMutation(
+  $input: CreatePullRequestInput!
+) {
+  createPullRequest(input: $input) {
+    pullRequest {
+      id
+      number
+      title
+      url
+      state
+      isDraft
+      headRefName
+      baseRefName
+      author {
+        login
+        avatarUrl
+      }
+    }
+  }
+}
