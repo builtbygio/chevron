@@ -6,23 +6,23 @@
   &-tooltipMenu {
     &.tooltip {
       width: 400px; // Same as the github-Panel
-      padding-left: @component-padding;
-      padding-right: @component-padding;
+      padding-left: var(--component-padding);
+      padding-right: var(--component-padding);
       box-sizing: border-box;
     }
     .tooltip-inner.tooltip-inner {
-      padding: @component-padding / 2;
-      background-color: @tool-panel-background-color;
-      border: 1px solid @base-border-color;
+      padding: calc(var(--component-padding) / 2);
+      background-color: var(--tool-panel-background-color);
+      border: 1px solid var(--base-border-color);
       box-shadow: 0 4px 8px hsla(0, 0, 0, .1);
-      color: @text-color;
+      color: var(--text-color);
     }
     &.top .tooltip-arrow.tooltip-arrow {
-      width: @component-padding;
-      height: @component-padding;
+      width: var(--component-padding);
+      height: var(--component-padding);
       border-width: 0 0 1px 1px;
-      border-color: @base-border-color;
-      background-color: @tool-panel-background-color;
+      border-color: var(--base-border-color);
+      background-color: var(--tool-panel-background-color);
       border-bottom-right-radius: 2px;
       transform: rotate(-45deg);
     }
@@ -72,11 +72,11 @@
 
   // Merge conflict icon
   .github-ChangedFilesCount .icon-alert {
-    margin-left: @component-padding / 2;
+    margin-left: calc(var(--component-padding) / 2);
   }
 
   .github-branch-detached {
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
     font-style: italic;
   }
 }

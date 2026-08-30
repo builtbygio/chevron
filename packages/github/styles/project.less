@@ -3,27 +3,27 @@
 .github-Project {
   display: flex;
   align-items: center;
-  padding: @component-padding/2 @component-padding;
-  border-bottom: 1px solid @base-border-color;
+  padding: calc(var(--component-padding) / 2) var(--component-padding);
+  border-bottom: 1px solid var(--base-border-color);
 
   &-path {
     flex: 1;
-    margin-left: @component-padding;
+    margin-left: var(--component-padding);
   }
 
   &-avatarBtn {
     height: 23px;
     width: 23px;
     padding: 0;
-    border-radius: @component-border-radius;
-    background-color: @pane-item-background-color;
+    border-radius: var(--component-border-radius);
+    background-color: var(--pane-item-background-color);
     border: none;
   }
 
   &-avatar {
     width: 23px;
     height: 23px;
-    border-radius: @component-border-radius;
+    border-radius: var(--component-border-radius);
     color: transparent;
     overflow: hidden;
   }
@@ -51,10 +51,10 @@
     padding: 0;
     margin: 0;
     line-height: 1em;
-    fill: @text-color;
+    fill: var(--text-color);
 
     &:hover {
-      fill: @text-color-highlight;
+      fill: calc(var(--text-color) - highlight);
     }
 
     &.icon-unlock {

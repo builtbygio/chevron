@@ -16,13 +16,13 @@
 
   &-footer {
     flex-shrink: 0;
-    padding: @component-padding*2 @component-padding;
+    padding: calc(var(--component-padding) * 2) var(--component-padding);
   }
 
   &-LargeIcon:before {
     margin-right: 0;
-    margin-top: @component-padding * 5;
-    margin-bottom: @component-padding * 5;
+    margin-top: calc(var(--component-padding) * 5);
+    margin-bottom: calc(var(--component-padding) * 5);
     width: auto;
     height: auto;
     font-size: 8em;
@@ -39,7 +39,7 @@
     align-items: center;
 
     &--explained {
-      margin-bottom: @component-padding/2;
+      margin-bottom: calc(var(--component-padding) / 2);
     }
   }
 
@@ -51,7 +51,7 @@
   &-explanation {
     margin-left: 5%;
     margin-right: 5%;
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
   }
 
   &-tabLink {

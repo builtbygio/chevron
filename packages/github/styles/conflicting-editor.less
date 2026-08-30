@@ -12,15 +12,15 @@ atom-text-editor {
   .github-ConflictBlock {
     display: flex;
     align-items: center;
-    margin-right: @component-padding;
-    padding: @component-padding / 2;
+    margin-right: var(--component-padding);
+    padding: calc(var(--component-padding) / 2);
     cursor: default;
-    color: fade(@syntax-text-color, 75%);
+    color: ~"rgb(from var(--syntax-text-color) r g b / 75%)";
 
     .github-ResolutionControls {
       flex: 1;
       button {
-        margin-right: @component-padding;
+        margin-right: var(--component-padding);
       }
 
       span {
@@ -30,7 +30,7 @@ atom-text-editor {
   }
 
   .github-SideDescription {
-    font-family: @font-family;
+    font-family: var(--font-family);
     font-size: .9em;
   }
 
@@ -39,14 +39,14 @@ atom-text-editor {
   }
 
   .github-ConflictTopBlock {
-    margin-top: @component-padding;
-    border-top-left-radius: @component-border-radius * 1.5;
-    border-top-right-radius: @component-border-radius * 1.5;
+    margin-top: var(--component-padding);
+    border-top-left-radius: calc(var(--component-border-radius) * 1.5);
+    border-top-right-radius: calc(var(--component-border-radius) * 1.5);
   }
   .github-ConflictBottomBlock {
-    margin-bottom: @component-padding;
-    border-bottom-left-radius: @component-border-radius * 1.5;
-    border-bottom-right-radius: @component-border-radius * 1.5;
+    margin-bottom: var(--component-padding);
+    border-bottom-left-radius: calc(var(--component-border-radius) * 1.5);
+    border-bottom-right-radius: calc(var(--component-border-radius) * 1.5);
   }
 
 
@@ -54,13 +54,13 @@ atom-text-editor {
 
   .generate-conflicts(@name, @color) {
     .github-Conflict@{name} {
-      margin-right: @component-padding;
+      margin-right: var(--component-padding);
       background-color: @color;
       &.cursor-line { background-color: fadein(@color, 10%) !important; }
     }
 
     .github-Conflict@{name}Banner {
-      margin-right: @component-padding;
+      margin-right: var(--component-padding);
       background-color: @color;
       &.cursor-line { background-color: fadein(@color, 10%) !important; }
       &.github-ConflictUnmodifiedBanner span { color: fade(@color, 66%) !important; };
@@ -89,7 +89,7 @@ atom-text-editor {
   // Uses same color as Base
 
   .github-ConflictSeparator {
-    margin-right: @component-padding;
+    margin-right: var(--component-padding);
     background-color: fade(@conflict-color-base, 15%);
     &.cursor-line { background-color: fade(@conflict-color-base, 25%) !important; }
     span { color: fade(@conflict-color-base, 66%) !important; };

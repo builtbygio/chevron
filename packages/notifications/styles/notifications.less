@@ -17,7 +17,7 @@ atom-notifications {
   top: 35px;
   right: 0;
   bottom: 0;
-  padding: @component-padding;
+  padding: var(--component-padding);
   font-size: 1.2em;
   overflow-x: hidden;
   overflow-y: auto;
@@ -49,7 +49,7 @@ atom-notifications {
       padding-right: inherit;
     }
     &.has-close .message {
-      padding-right: @component-padding + 24px; // space for icon
+      padding-right: calc(var(--component-padding) + 24px); // space for icon
     }
   }
 
@@ -70,9 +70,9 @@ atom-notifications {
       left: 0;
       width: @icon-size;
       height: 100%;
-      padding-top: @component-padding;
+      padding-top: var(--component-padding);
       text-align: center;
-      border-radius: @component-border-radius 0 0 @component-border-radius;
+      border-radius: var(--component-border-radius) 0 0 var(--component-border-radius);
     }
 
 
@@ -107,7 +107,7 @@ atom-notifications {
 
     // .item's are used as general containers
     .item {
-      padding: @component-padding;
+      padding: var(--component-padding);
       border-top: 1px solid hsla(0,0%,0%,.1);
       &.message {
         border-top: none;
@@ -118,11 +118,11 @@ atom-notifications {
     }
 
     &.has-close .message {
-      padding-right: @component-padding + 24px; // space for icon
+      padding-right: calc(var(--component-padding) + 24px); // space for icon
     }
 
     .content {
-      border-radius: 0 @component-border-radius @component-border-radius 0;
+      border-radius: 0 var(--component-border-radius) var(--component-border-radius) 0;
     }
 
     .message {
@@ -172,11 +172,11 @@ atom-notifications {
       overflow-y: auto;
 
       .line {
-        font-family: @font-family-monospace;
+        font-family: calc(var(--font-family) - monospace);
       }
 
       .stack-toggle {
-        margin-top: @component-padding;
+        margin-top: var(--component-padding);
 
         .icon:before {
           margin: 0;
@@ -190,7 +190,7 @@ atom-notifications {
       }
 
       .stack-container {
-        margin-top: @component-padding;
+        margin-top: var(--component-padding);
 
         .line {
           white-space: pre;

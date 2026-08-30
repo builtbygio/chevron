@@ -4,8 +4,8 @@
 status-bar {
   display: block;
   font-size: 11px;
-  line-height: @component-line-height - 3px;
-  height: @component-line-height + 1px;
+  line-height: calc(var(--component-line-height) - 3px);
+  height: calc(var(--component-line-height) + 1px);
   position: relative;
   -webkit-user-select: none;
   cursor: default;
@@ -14,11 +14,11 @@ status-bar {
   min-width: -webkit-min-content;
 
   a, a:hover {
-    color: @text-color;
+    color: var(--text-color);
   }
 
   .flexbox-repaint-hack {
-    padding: 0 @component-line-height/2;
+    padding: 0 calc(var(--component-line-height) / 2);
     position: absolute;
     top: 0;
     right: 0;
@@ -35,10 +35,10 @@ status-bar {
 
   // Use 2/3 of space
   .status-bar-right {
-    padding-left: @component-padding;
+    padding-left: var(--component-padding);
     .inline-block {
       margin-right: 0;
-      margin-left: @component-padding*1.5;
+      margin-left: calc(var(--component-padding) * 1.5);
       & > .inline-block {
         margin-left: 0;
       }
@@ -109,6 +109,6 @@ status-bar {
 
   .cursor-position a,
   .cursor-position a:hover {
-    color: @text-color;
+    color: var(--text-color);
   }
 }

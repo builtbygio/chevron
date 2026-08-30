@@ -26,7 +26,7 @@ atom-text-editor {
   &.react-atom-decoration {
     width: 100%;
     text-align: center;
-    padding: 0 @component-padding/4;
+    padding: 0 calc(var(--component-padding) / 4);
   }
 
   button {
@@ -41,20 +41,20 @@ atom-text-editor {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: @tool-panel-background-color;
-  border-radius: @component-border-radius;
-  padding: @component-padding;
-  margin: @component-padding/2 0;
+  background-color: var(--tool-panel-background-color);
+  border-radius: var(--component-border-radius);
+  padding: var(--component-padding);
+  margin: calc(var(--component-padding) / 2) 0;
 
   p {
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    margin: @component-padding/4;
+    margin: calc(var(--component-padding) / 4);
   }
 
   button {
-    margin-left: @component-padding;
+    margin-left: var(--component-padding);
   }
 }

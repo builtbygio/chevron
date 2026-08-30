@@ -23,17 +23,17 @@
       position: relative;
       flex: 1 0 200px;
       padding: 10px 0 10px 40px;
-      color: @text-color-subtle;
+      color: calc(var(--text-color) - subtle);
       &:before {
         position: absolute;
         margin-left: -32px;
-        color: @text-color-highlight;
+        color: calc(var(--text-color) - highlight);
         text-align: center;
       }
       &:hover {
-        color: @text-color-highlight;
+        color: calc(var(--text-color) - highlight);
         &:before {
-          color: @text-color-selected;
+          color: calc(var(--text-color) - selected);
           font-size: 32px;
           width: 32px;
           height: 32px;
@@ -70,7 +70,7 @@
 
   .input-search,
   .input-textarea {
-    margin-top: @component-padding;
+    margin-top: var(--component-padding);
   }
 
   .input-label {
@@ -82,7 +82,7 @@
   .input-color,
   .input-number,
   .input-select {
-    margin: 0 @component-padding 0 0 !important;
+    margin: 0 var(--component-padding) 0 0 !important;
   }
 
 
@@ -124,7 +124,7 @@
     position: relative;
     opacity: 1;
     display: inline-block;
-    margin-right: @component-padding;
+    margin-right: var(--component-padding);
   }
 
   [data-name="error-messages"] .example-rendered {

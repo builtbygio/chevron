@@ -5,8 +5,8 @@
   display: flex;
   font-size: 1.25em;
   line-height: 1.4;
-  color: @text-color;
-  background-color: @base-background-color;
+  color: var(--text-color);
+  background-color: var(--base-background-color);
   overflow-x: auto;
 
   // Overrides ----------------------
@@ -16,7 +16,7 @@
   }
 
   a {
-    color: @text-color-info;
+    color: calc(var(--text-color) - info);
   }
 
   ul {
@@ -52,7 +52,7 @@
     width: 100%;
     max-width: 280px;
     margin: 0 auto 2em auto;
-    color: @text-color-highlight;
+    color: calc(var(--text-color) - highlight);
   }
 
   &-title {
@@ -68,9 +68,9 @@
   &-card {
     margin: 1em 0;
 
-    border-radius: @component-border-radius*2;
-    border: 1px solid @base-border-color;
-    background-color: lighten(@base-background-color, 3%);
+    border-radius: calc(var(--component-border-radius) * 2);
+    border: 1px solid var(--base-border-color);
+    background-color: ~"hsl(from var(--base-background-color) h s calc(l + 3))";
   }
 
   &-summary {
@@ -80,36 +80,36 @@
     line-height: 1.4;
     cursor: pointer;
     &:hover {
-      color: lighten(@text-color, 4%);
+      color: ~"hsl(from var(--text-color) h s calc(l + 4))";
     }
     &::-webkit-details-marker {
       display: none
     }
     &:before {
       width: 20px;
-      color: @text-color-subtle;
+      color: calc(var(--text-color) - subtle);
       details[open] & {
-        color: @text-color-highlight;
+        color: calc(var(--text-color) - highlight);
       }
     }
     details[open] & {
-      color: @text-color-highlight;
+      color: calc(var(--text-color) - highlight);
     }
   }
 
   &-highlight {
-    color: @text-color-highlight;
+    color: calc(var(--text-color) - highlight);
   }
 
   &-detail {
-    border-top: 1px solid @base-border-color;
+    border-top: 1px solid var(--base-border-color);
     padding: 1.5em;
     .welcome-note {
       margin-bottom: 0;
     }
     .btn {
-      margin-top: @component-padding/3;
-      margin-bottom: @component-padding/3;
+      margin-top: calc(var(--component-padding) / 3);
+      margin-bottom: calc(var(--component-padding) / 3);
     }
   }
 
@@ -118,7 +118,7 @@
     max-width: 100%;
     border-radius: 3px;
     margin: 0 0 1em 0;
-    border: 1px solid @base-border-color;
+    border: 1px solid var(--base-border-color);
   }
 
   &-consent {
@@ -151,14 +151,14 @@
     font-size: .8em;
     line-height: 1;
     border-radius: 3px;
-    color: @text-color-highlight;
-    border: 1px solid @text-color-subtle;
+    color: calc(var(--text-color) - highlight);
+    border: 1px solid calc(var(--text-color) - subtle);
     background: hsla(0,0%,0%,.1);
   }
 
   &-love {
-    color: @text-color-subtle;
-    a { color: @text-color-subtle; }
+    color: calc(var(--text-color) - subtle);
+    a { color: calc(var(--text-color) - subtle); }
 
     .icon::before {
       // Make these octicons look good inlined with text
@@ -178,7 +178,7 @@
 
   &-note {
     font-size: .86em;
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
 
     .icon {
       margin-left: 5px;

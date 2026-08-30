@@ -21,7 +21,7 @@ autocomplete-suggestion-list.select-list.popover-list {
   min-width: 243px; // Try and fail until the specs pass
   padding: 0;
   overflow: hidden;
-  color: @text-color;
+  color: var(--text-color);
 
   .suggestion-list-scroller {
     overflow-y: auto;
@@ -33,8 +33,8 @@ autocomplete-suggestion-list.select-list.popover-list {
     padding-right: @item-side-padding;
     min-height: @row-line-height;
     line-height: 1.3;
-    background: darken(@overlay-background-color, 4%);
-    border-radius: 0 0 @component-border-radius @component-border-radius;
+    background: ~"hsl(from var(--overlay-background-color) h s calc(l - 4))";
+    border-radius: 0 0 var(--component-border-radius) var(--component-border-radius);
 
     // let the other sibling decide how large the container should be
     width: min-content;
@@ -42,8 +42,8 @@ autocomplete-suggestion-list.select-list.popover-list {
   }
 
   .suggestion-description-content {
-    font-size: @font-size + 1px;
-    font-family: @font-family;
+    font-size: calc(var(--font-size) + 1px);
+    font-family: var(--font-family);
     max-height: 33vh;
     display: block;
     overflow-y: auto;
@@ -51,9 +51,9 @@ autocomplete-suggestion-list.select-list.popover-list {
   }
 
   .suggestion-description-more-link {
-    font-size: @font-size + 1px;
-    font-family: @font-family;
-    color: @text-color-info;
+    font-size: calc(var(--font-size) + 1px);
+    font-family: var(--font-family);
+    color: calc(var(--text-color) - info);
   }
 
   input {
@@ -69,7 +69,7 @@ autocomplete-suggestion-list.select-list.popover-list {
 
     li {
       display: table-row;
-      color: @text-color;
+      color: var(--text-color);
       line-height: @row-line-height;
 
       > span {
@@ -85,13 +85,13 @@ autocomplete-suggestion-list.select-list.popover-list {
 
       &.selected {
         .word {
-          color: fadeout(@text-color-selected, 20%);
+          color: ~"rgb(from var(--text-color-selected) r g b / calc(alpha - 0.2))";
         }
         .character-match {
-          color: @text-color-selected;
+          color: calc(var(--text-color) - selected);
         }
         .left-label, .right-label, .snippet-completion {
-          color: fadeout(@text-color-selected, 50%);
+          color: ~"rgb(from var(--text-color-selected) r g b / calc(alpha - 0.5))";
         }
       }
     }
@@ -117,8 +117,8 @@ autocomplete-suggestion-list {
     font-style: normal;
     font-weight: bold;
 
-    color: @text-color-subtle;
-    background: fadeout(@text-color, 90%);
+    color: calc(var(--text-color) - subtle);
+    background: ~"rgb(from var(--text-color) r g b / calc(alpha - 0.9))";
 
     &:empty { display: none; }
     > *::before {
@@ -141,8 +141,8 @@ autocomplete-suggestion-list {
     padding-right: @item-padding;
     vertical-align: middle;
 
-    font-size: @font-size-small;
-    color: @text-color-subtle;
+    font-size: calc(var(--font-size) - small);
+    color: calc(var(--text-color) - subtle);
 
     &:empty {
       padding-right: 0;
@@ -151,8 +151,8 @@ autocomplete-suggestion-list {
 
   .right-label {
     padding-right: @item-padding;
-    font-size: @font-size-small;
-    color: @text-color-subtle;
+    font-size: calc(var(--font-size) - small);
+    color: calc(var(--text-color) - subtle);
 
     &:empty {
       padding-right: 0;
@@ -169,11 +169,11 @@ autocomplete-suggestion-list {
 
   .character-match {
     font-weight: bold;
-    color: @text-color-highlight;
+    color: calc(var(--text-color) - highlight);
   }
 
   .snippet-completion {
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
   }
 
   // Here we set the max width of the popup

@@ -7,12 +7,12 @@
 
   header {
     text-align: center;
-    border-bottom: 1px solid @base-border-color;
-    padding: @component-padding;
+    border-bottom: 1px solid var(--base-border-color);
+    padding: var(--component-padding);
   }
 
   &-Controls {
-    padding: 0 @component-padding;
+    padding: 0 var(--component-padding);
     text-align: right;
   }
 
@@ -30,13 +30,13 @@
   }
 
   thead {
-    color: @text-color-highlight;
-    background-color: @background-color-highlight;
+    color: calc(var(--text-color) - highlight);
+    background-color: var(--background-color-highlight);
     font-weight: bold;
   }
 
   td {
-    padding: @component-padding / 2;
+    padding: calc(var(--component-padding) / 2);
     vertical-align: top;
   }
 

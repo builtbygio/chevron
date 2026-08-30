@@ -27,13 +27,13 @@
 
   &-wrapper {
     margin: auto;
-    padding: @component-padding*2;
+    padding: calc(var(--component-padding) * 2);
     text-align: center;
     width: 100%;
   }
 
   &-title {
-    color: @text-color-highlight;
+    color: calc(var(--text-color) - highlight);
     font-size: 1.5em;
     margin-bottom: .5em;
   }
@@ -56,11 +56,11 @@
   }
 
   &-action {
-    margin-top: @component-padding* 2;
+    margin-top: calc(var(--component-padding) * 2);
   }
 
   &-button {
-    margin: @component-padding/2;
+    margin: calc(var(--component-padding) / 2);
   }
 
 }

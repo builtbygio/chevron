@@ -1,6 +1,6 @@
 .github-EmojiReactions {
   &-add.btn.btn {
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
     border-color: transparent;
     background: none;
 
@@ -11,11 +11,11 @@
     &:focus.btn {
       border-color: transparent;
       box-shadow: none;
-      color: @text-color-info;
+      color: calc(var(--text-color) - info);
     }
 
     &:hover {
-      color: lighten(@text-color-subtle, 10%);
+      color: ~"hsl(from var(--text-color-subtle) h s calc(l + 10))";
     }
   }
 }

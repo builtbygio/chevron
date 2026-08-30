@@ -8,17 +8,17 @@
 .github-HunkHeaderView {
   display: flex;
   align-items: stretch;
-  font-size: @font-size;
-  border: 1px solid @base-border-color;
-  border-radius: @component-border-radius;
+  font-size: var(--font-size);
+  border: 1px solid var(--base-border-color);
+  border-radius: var(--component-border-radius);
   background-color: @hunk-bg-color;
   cursor: default;
 
   &-title {
     flex: 1;
     line-height: 2.4;
-    padding: 0 @component-padding;
-    color: @text-color-subtle;
+    padding: 0 var(--component-padding);
+    color: calc(var(--text-color) - subtle);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -30,9 +30,9 @@
   &-stageButton,
   &-discardButton {
     line-height: 1;
-    padding-left: @component-padding;
-    padding-right: @component-padding;
-    font-family: @font-family;
+    padding-left: var(--component-padding);
+    padding-right: var(--component-padding);
+    font-family: var(--font-family);
     border: none;
     border-left: inherit;
     background-color: transparent;
@@ -68,8 +68,8 @@
 
 // Selected
 .github-HunkHeaderView--isSelected {
-  color: @text-color-selected;
-  background-color: @background-color-selected;
+  color: calc(var(--text-color) - selected);
+  background-color: var(--background-color-selected);
   border-color: transparent;
   .github-HunkHeaderView-title {
     color: inherit;
@@ -77,8 +77,8 @@
   .github-HunkHeaderView-title,
   .github-HunkHeaderView-stageButton,
   .github-HunkHeaderView-discardButton {
-    &:hover  { background-color: @background-color-highlight; }
-    &:active { background-color: @background-color-selected; }
+    &:hover  { background-color: var(--background-color-highlight); }
+    &:active { background-color: var(--background-color-selected); }
   }
 }
 
@@ -87,12 +87,12 @@
 .github-FilePatchView:focus-within {
   .github-HunkHeaderView--isSelected {
     color: contrast(@button-background-color-selected);
-    background-color: @button-background-color-selected;
+    background-color: calc(var(--button-background-color) - selected);
     .github-HunkHeaderView-title,
     .github-HunkHeaderView-stageButton,
     .github-HunkHeaderView-discardButton {
-      &:hover  { background-color: lighten(@button-background-color-selected, 4%); }
-      &:active { background-color: darken(@button-background-color-selected, 4%); }
+      &:hover  { background-color: ~"hsl(from var(--button-background-color-selected) h s calc(l + 4))"; }
+      &:active { background-color: ~"hsl(from var(--button-background-color-selected) h s calc(l - 4))"; }
     }
   }
 }

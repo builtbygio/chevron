@@ -93,22 +93,22 @@
     vertical-align: middle;
   }
   .is-color:before {
-    margin-right: @component-padding*1.5;
+    margin-right: calc(var(--component-padding) * 1.5);
     width: 20%;
   }
   .is-size:after {
-    margin-left: @component-padding*1.5;
+    margin-left: calc(var(--component-padding) * 1.5);
     height: 4px;
-    background-color: @text-color;
+    background-color: var(--text-color);
   }
   .is-radius:after {
     width: 20px;
-    margin-left: @component-padding*1.5;
-    background-color: @text-color;
+    margin-left: calc(var(--component-padding) * 1.5);
+    background-color: var(--text-color);
   }
   .is-font:after {
-    margin-left: @component-padding;
-    color: @text-color-highlight;
+    margin-left: var(--component-padding);
+    color: calc(var(--text-color) - highlight);
   }
 
 

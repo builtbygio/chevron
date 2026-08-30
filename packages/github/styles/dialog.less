@@ -4,7 +4,7 @@
 
 .github-Dialog {
   &Prompt {
-    margin: @component-padding;
+    margin: var(--component-padding);
     text-align: center;
     font-size: 1.2em;
     user-select: none;
@@ -29,7 +29,7 @@
       align-items: center;
 
       input {
-        margin: 0 @component-padding;
+        margin: 0 var(--component-padding);
       }
 
       input[type="text"] , input[type="password"] {
@@ -90,15 +90,15 @@
     top: 0;
     bottom: 0;
     border: none;
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
     cursor: pointer;
 
     &:hover {
-      color: @text-color-highlight;
+      color: calc(var(--text-color) - highlight);
     }
 
     &:focus {
-      border: solid 1px @button-background-color-selected;
+      border: solid 1px calc(var(--button-background-color) - selected);
       border-radius: 4px;
     }
   }
@@ -107,10 +107,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: @component-padding;
+    padding: var(--component-padding);
 
     .loading {
-      margin: @component-padding;
+      margin: var(--component-padding);
     }
   }
 
@@ -124,7 +124,7 @@
     margin: 0;
 
     &[readOnly] {
-      color: @text-color-subtle;
+      color: calc(var(--text-color) - subtle);
     }
   }
 
@@ -153,27 +153,27 @@
     flex: 1;
 
     .Select-control {
-      border-color: @button-border-color;
+      border-color: var(--button-border-color);
     }
 
     &.Select--single > .Select-control .Select-value.Select-value {
-      background: @button-background-color;
+      background: var(--button-background-color);
     }
 
     &.Select.has-value.Select--single > .Select-control .Select-value .Select-value-label {
-      color: @text-color;
+      color: var(--text-color);
     }
 
     .Select-option {
-      background: @button-background-color;
-      color: @text-color;
+      background: var(--button-background-color);
+      color: var(--text-color);
 
       &.is-focused {
-        background: @button-background-color-selected;
+        background: calc(var(--button-background-color) - selected);
       }
 
       &.is-disabled {
-        color: @text-color-subtle;
+        color: calc(var(--text-color) - subtle);
       }
     }
 
@@ -186,8 +186,8 @@
 
     &Avatar {
       flex: 0;
-      border-radius: @component-padding/4;
-      margin: 0 @component-padding 0 0;
+      border-radius: calc(var(--component-padding) / 4);
+      margin: 0 var(--component-padding) 0 0;
     }
 
     &Unwritable {
@@ -200,7 +200,7 @@
 
   &-separator {
     flex: 0;
-    margin: 0 @component-padding;
+    margin: 0 var(--component-padding);
   }
 
   .github-AtomTextEditor-container {
@@ -213,16 +213,16 @@
     summary {
       cursor: default;
       user-select: none;
-      margin: @component-padding 0;
+      margin: var(--component-padding) 0;
 
       &:focus {
-        border: solid 1px @button-background-color-selected;
+        border: solid 1px calc(var(--button-background-color) - selected);
         border-radius: 4px;
       }
     }
 
     main {
-      padding-top: @component-padding;
+      padding-top: var(--component-padding);
     }
   }
 
@@ -232,17 +232,17 @@
 
     &Heading {
       display: inline-block;
-      margin-right: @component-padding;
+      margin-right: var(--component-padding);
     }
 
     &Option {
       display: inline-flex;
       align-items: center;
-      padding: @component-padding/4;
-      margin-right: @component-padding;
+      padding: calc(var(--component-padding) / 4);
+      margin-right: var(--component-padding);
 
       &:focus-within {
-        border: solid 1px @button-background-color-selected;
+        border: solid 1px calc(var(--button-background-color) - selected);
         border-radius: 4px;
       }
     }
@@ -258,7 +258,7 @@
 
       .github-AtomTextEditor-container {
         flex: 1;
-        margin-left: @component-padding;
+        margin-left: var(--component-padding);
       }
     }
   }
@@ -271,23 +271,23 @@
 
     &Heading {
       display: inline-block;
-      margin-right: @component-padding*2;
+      margin-right: calc(var(--component-padding) * 2);
     }
 
     &Option {
       display: inline-flex;
       align-items: center;
-      padding: @component-padding/4;
-      margin-right: @component-padding;
+      padding: calc(var(--component-padding) / 4);
+      margin-right: var(--component-padding);
 
       &:focus-within {
-        border: solid 1px @button-background-color-selected;
+        border: solid 1px calc(var(--button-background-color) - selected);
         border-radius: 4px;
       }
 
       span::before {
-        margin-left: @component-padding/2;
-        margin-right: @component-padding/2;
+        margin-left: calc(var(--component-padding) / 2);
+        margin-right: calc(var(--component-padding) / 2);
       }
     }
   }

@@ -2,7 +2,7 @@
 
 // Highlight matched text
 .fuzzy-finder .list-group .character-match {
-  color: @text-color-highlight;
+  color: calc(var(--text-color) - highlight);
   font-weight: bold;
 }
 
@@ -22,7 +22,7 @@
     width: @size;
     top: 50%;
     margin-top: -(@size / 2);
-    right: @component-padding;
+    right: var(--component-padding);
   }
 }
 
@@ -31,6 +31,6 @@
   justify-content: flex-end;
 
   .badge {
-    margin-right: (@component-padding / 2);
+    margin-right: (calc(var(--component-padding) / 2));
   }
 }
