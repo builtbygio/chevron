@@ -6,7 +6,7 @@
 .image-view {
   display: flex;
   flex-direction: column;
-  background-color: @pane-item-background-color;
+  background-color: var(--pane-item-background-color);
   user-select: none;
 
 
@@ -18,8 +18,8 @@
     align-items: center;
     flex-wrap: wrap;
     padding: @spacing;
-    border-bottom: 1px solid @panel-heading-border-color;
-    background-color: @panel-heading-background-color;
+    border-bottom: 1px solid var(--panel-heading-border-color);
+    background-color: var(--panel-heading-background-color);
 
     a {
       display: inline-block;
@@ -100,7 +100,7 @@
 
   .zoom-to-fit {
     &.image-container {
-      padding: @component-padding;
+      padding: var(--component-padding);
 
       img {
         flex: 1 1 0;

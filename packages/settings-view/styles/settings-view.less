@@ -13,10 +13,10 @@
     padding: 0 @breadcrumb-padding;
     font-size: 1.125em;
     line-height: 3rem;
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
     list-style: none;
-    border-bottom: 1px solid @base-border-color;
-    background-color: @base-background-color;
+    border-bottom: 1px solid var(--base-border-color);
+    background-color: var(--base-background-color);
 
     + .section {
       border-top: none;
@@ -25,7 +25,7 @@
     > li {
       display: inline-block;
       a {
-        color: @text-color;
+        color: var(--text-color);
       }
 
       + li:before {
@@ -36,13 +36,13 @@
 
     > .active a {
       font-weight: 600;
-      color: @text-color-highlight;
+      color: calc(var(--text-color) - highlight);
     }
 
   }
 
   .text {
-    color: @text-color;
+    color: var(--text-color);
   }
 
   .alert-type(@tx; @bg) {
@@ -80,18 +80,18 @@
     .error-link {
       color: inherit;
       text-decoration: underline;
-      margin-left: @component-padding/2;
+      margin-left: calc(var(--component-padding) / 2);
     }
   }
 
   select.form-control {
-    color: @text-color;
-    border-color: @button-border-color;
-    background-color: @button-background-color;
+    color: var(--text-color);
+    border-color: var(--button-border-color);
+    background-color: var(--button-background-color);
     &:hover,
     &:focus {
       box-shadow: none;
-      background-color: @button-background-color-hover;
+      background-color: calc(var(--button-background-color) - hover);
     }
   }
 
@@ -138,8 +138,8 @@
     width: 4em;
     height: 1.6em;
     border-radius: 4px;
-    border: 1px solid @base-border-color;
-    background: darken(@base-background-color, 2%);
+    border: 1px solid var(--base-border-color);
+    background: ~"hsl(from var(--base-background-color) h s calc(l - 2))";
     &::-webkit-color-swatch-wrapper {
       padding: 2px;
       margin: 0;
@@ -152,7 +152,7 @@
   }
 
   .editor-container {
-    margin: @component-padding*2 0;
+    margin: calc(var(--component-padding) * 2) 0;
     &:last-child {
       margin-bottom: 0;
     }
@@ -163,7 +163,7 @@
 
   .section {
     padding: @section-padding;
-    border-top: 1px solid @base-border-color;
+    border-top: 1px solid var(--base-border-color);
     &:first-child,
     &:last-child {
       padding: @section-padding;
@@ -189,7 +189,7 @@
   }
 
   div > .package-detail section.section.settings-panel {
-      border-top: 1px solid @base-border-color;
+      border-top: 1px solid var(--base-border-color);
   }
 
   .section-container {
@@ -199,8 +199,8 @@
     &.updates-container {
       .package-container {
         > .row {
-          margin-left: -@component-padding;
-          margin-right: -@component-padding;
+          margin-left: calc(var(--component-padding) * -1);
+          margin-right: calc(var(--component-padding) * -1);
         }
       }
       .native-key-bindings, .alert-info {
@@ -211,8 +211,8 @@
 
   section .section-heading,
   .section .section-heading {
-    margin-bottom: @component-padding*2;
-    color: @text-color-highlight;
+    margin-bottom: calc(var(--component-padding) * 2);
+    color: calc(var(--text-color) - highlight);
     font-size: 1.75em;
     font-weight: bold;
     line-height: 1;
@@ -222,7 +222,7 @@
 
   .sub-section-heading.icon:before,
   .section-heading.icon:before {
-    margin-right: @component-padding*.8;
+    margin-right: calc(var(--component-padding) * .8);
   }
 
   .section-heading-count {
@@ -240,12 +240,12 @@
       top: -1px; // -1px fixes a rounding issue on retina screens
       z-index: 1;
       margin: 0;
-      padding: @component-padding 0;
+      padding: var(--component-padding) 0;
       font-size: 1.4em;
       font-weight: bold;
       line-height: 1;
-      color: @text-color-highlight;
-      background-color: @base-background-color;
+      color: calc(var(--text-color) - highlight);
+      background-color: var(--base-background-color);
       -webkit-user-select: none;
 
       &.has-items {
@@ -254,21 +254,21 @@
         &::before {
           .icon(20px);
           content: @chevron-down;
-          color: @text-color-subtle;
+          color: calc(var(--text-color) - subtle);
         }
 
         &:hover:after {
-          color: @text-color-highlight;
+          color: calc(var(--text-color) - highlight);
         }
       }
     }
 
     .sub-section-body {
-      margin-top: @component-padding;
-      margin-bottom: @component-padding*3;
+      margin-top: var(--component-padding);
+      margin-bottom: calc(var(--component-padding) * 3);
       margin-left: 6px;
       padding-left: 14px;
-      border-left: 1px solid @base-border-color;
+      border-left: 1px solid var(--base-border-color);
     }
 
     &.collapsed {
@@ -293,7 +293,7 @@
   }
 
   .setting-description {
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
     -webkit-user-select: none;
     cursor: default;
 
@@ -303,10 +303,10 @@
   }
 
   .link {
-    color: @text-color-info;
+    color: calc(var(--text-color) - info);
 
     &:hover, &:focus {
-      color: lighten(@text-color-info, 4%);
+      color: ~"hsl(from var(--text-color-info) h s calc(l + 4))";
     }
   }
 
@@ -316,9 +316,9 @@
     max-width: 240px;
     -webkit-user-select: none;
     user-select: none;
-    padding-top: @component-padding;
-    background-color: lighten(@base-background-color, 2%);
-    border-right: 1px solid @base-border-color;
+    padding-top: var(--component-padding);
+    background-color: ~"hsl(from var(--base-background-color) h s calc(l + 2))";
+    border-right: 1px solid var(--base-border-color);
     overflow-x: auto;
 
     .icon:before {
@@ -390,15 +390,15 @@
         white-space: nowrap;
 
         &:hover {
-          color: @text-color-highlight;
-          background-color: @background-color-highlight;
+          color: calc(var(--text-color) - highlight);
+          background-color: var(--background-color-highlight);
         }
       }
     }
 
     .nav > li.active > a {
-      color: @text-color-selected;
-      background-color: @background-color-selected;
+      color: calc(var(--text-color) - selected);
+      background-color: var(--background-color-selected);
     }
   }
 
@@ -418,7 +418,7 @@
 
   .settings-panel {
     label {
-      color: @text-color;
+      color: var(--text-color);
     }
 
     .control-group + .control-group {
@@ -430,7 +430,7 @@
     }
 
     .grammar-filetypes {
-      margin-top: @component-padding;
+      margin-top: var(--component-padding);
     }
 
     .input-radio-group .input-label {
@@ -447,8 +447,8 @@
     .package-keymap-table,
     .package-grammars-table,
     .package-snippets-table {
-      padding-top: @component-padding;
-      padding-left: @component-padding;
+      padding-top: var(--component-padding);
+      padding-left: var(--component-padding);
 
       td {
         white-space: nowrap;
@@ -464,7 +464,7 @@
     }
 
     .update-message {
-      padding-right: @component-padding;
+      padding-right: var(--component-padding);
     }
 
     .link {
@@ -473,7 +473,7 @@
 
     .link,
     .text {
-      margin: 0 15px @component-padding 15px;
+      margin: 0 15px var(--component-padding) 15px;
     }
 
     .update-link,
@@ -487,17 +487,17 @@
 
   .themes-panel {
     .control-group {
-      margin-top:  @component-padding*3;
+      margin-top:  calc(var(--component-padding) * 3);
     }
     .themes-picker {
       display: flex;
       flex-wrap: wrap;
-      margin: 0 -@component-padding;
+      margin: 0 calc(var(--component-padding) * -1);
     }
     .themes-picker-item {
       flex: 1;
       min-width: 320px; // Enough for the UI Theme description
-      padding: 0 @component-padding;
+      padding: 0 var(--component-padding);
       .controls {
         height: 100%;
         display: flex;
@@ -517,7 +517,7 @@
     }
 
     .theme-chooser {
-      padding-top: @component-padding*2;
+      padding-top: calc(var(--component-padding) * 2);
     }
 
     .theme-description {
@@ -533,41 +533,41 @@
       display: flex;
       flex-wrap: wrap;
       margin: 0 -@component-padding/2;
-      padding-top: @component-padding*1.5;
+      padding-top: calc(var(--component-padding) * 1.5);
 
 
       .editor-container {
         flex: 1;
         min-width: 130px;
-        margin: @component-padding/2;
+        margin: calc(var(--component-padding) / 2);
       }
 
       .btn-group {
-        margin: @component-padding/2;
+        margin: calc(var(--component-padding) / 2);
         padding-left: 1px; // Counter balance since btns have margin-left: -1px
       }
     }
 
     .search-message {
-      margin: @component-padding 0 0;
+      margin: var(--component-padding) 0 0;
     }
 
     .error-message {
-      padding: @component-padding 0;
+      padding: var(--component-padding) 0;
     }
 
   }
 
   .btn-retry {
-    margin-left: @component-padding;
+    margin-left: var(--component-padding);
   }
 
   .readme {
-    margin-top: @component-padding;
+    margin-top: var(--component-padding);
   }
 
   .panel-heading .label {
-    margin-left: @component-padding;
+    margin-left: var(--component-padding);
   }
 
   .loading-area {
@@ -581,13 +581,13 @@
   }
 
   .error-view {
-    margin: @component-padding 0 @component-padding 0;
+    margin: var(--component-padding) 0 var(--component-padding) 0;
   }
 
   .packages-panel {
     .nav {
       .badge {
-        margin-left: @component-icon-padding;
+        margin-left: var(--component-icon-padding);
       }
     }
   }
@@ -608,12 +608,12 @@
     }
 
     th {
-      padding: @component-padding - 2px @component-padding;
+      padding: calc(var(--component-padding) - 2px) var(--component-padding);
       padding-left: 0;
     }
 
     td {
-      height: @component-line-height;
+      height: var(--component-line-height);
     }
 
     td, th {
@@ -621,7 +621,7 @@
       padding-right: 1%;
       white-space: nowrap;
       overflow: hidden;
-      border-color: @base-border-color;
+      border-color: var(--base-border-color);
     }
 
     col.keystroke {
@@ -646,7 +646,7 @@
   }
 
   .compile-tools-message {
-    padding-top: @component-padding;
+    padding-top: var(--component-padding);
 
     code {
       text-shadow: none;
@@ -663,7 +663,7 @@
     }
 
     td, th {
-      padding: 0 @component-padding @component-padding/2 0;
+      padding: 0 var(--component-padding) calc(var(--component-padding) / 2) 0;
     }
   }
 }
@@ -715,16 +715,16 @@
   }
 
   .update-all-button:last-child {
-    margin-left: @component-padding/2;
+    margin-left: calc(var(--component-padding) / 2);
   }
 
   .keybinding-panel .is-user {
-    color: @text-color-selected;
-    background-color: @background-color-selected;
+    color: calc(var(--text-color) - selected);
+    background-color: var(--background-color-selected);
   }
 
   .btn-wrap-group .btn {
-    margin: 0 @component-padding/2 @component-padding/2 0;
+    margin: 0 calc(var(--component-padding) / 2) calc(var(--component-padding) / 2) 0;
   }
 }
 

@@ -9,31 +9,31 @@
   &-footer {
     display: flex;
     align-items: center;
-    padding: @component-padding;
-    border-top: 1px solid @base-border-color;
-    background-color: @app-background-color;
+    padding: var(--component-padding);
+    border-top: 1px solid var(--base-border-color);
+    background-color: var(--app-background-color);
   }
 
   &-footerTitle {
     font-size: 1.4em;
-    margin: 0 @component-padding*2 0 0;
+    margin: 0 calc(var(--component-padding) * 2) 0 0;
   }
 
   &-openReviewsButton,
   &-reviewChangesButton {
-    margin-left: @component-padding;
+    margin-left: var(--component-padding);
   }
 
   &-commentCount {
-    margin-right: @component-padding;
-    color: @text-color-subtle;
+    margin-right: var(--component-padding);
+    color: calc(var(--text-color) - subtle);
   }
 
   &-commentsResolved {
-    color: @text-color-highlight;
+    color: calc(var(--text-color) - highlight);
   }
 
   &-progessBar {
-    margin-right: @component-padding;
+    margin-right: var(--component-padding);
   }
 }

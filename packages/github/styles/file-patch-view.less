@@ -20,20 +20,20 @@
     justify-content: center;
     text-align: center;
     font-size: 1.2em;
-    padding: @component-padding;
+    padding: var(--component-padding);
   }
 
   &-controlBlock {
-    background-color: @syntax-background-color;
+    background-color: var(--syntax-background-color);
     display: flow-root;
   }
 
   &-controlBlock &-header {
-    margin: @component-padding*4 @component-padding @component-padding 0;
+    margin: calc(var(--component-padding) * 4) var(--component-padding) var(--component-padding) 0;
   }
 
   &-controlBlock .github-HunkHeaderView {
-    margin: @component-padding @component-padding @component-padding 0;
+    margin: var(--component-padding) var(--component-padding) var(--component-padding) 0;
   }
 
   &-controlBlock + &-controlBlock {
@@ -45,10 +45,10 @@
   &-header {
     display: flex;
     align-items: center;
-    border: 1px solid @base-border-color;
-    border-radius: @component-border-radius;
-    font-family: @font-family;
-    font-size: @font-size;
+    border: 1px solid var(--base-border-color);
+    border-radius: var(--component-border-radius);
+    font-family: var(--font-family);
+    font-size: var(--font-size);
     background-color: @header-bg-color;
     cursor: default;
 
@@ -62,7 +62,7 @@
     }
 
     .btn-group {
-      margin: @component-padding/2;
+      margin: calc(var(--component-padding) / 2);
     }
   }
 
@@ -71,11 +71,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    margin-left: @component-padding;
+    margin-left: var(--component-padding);
   }
 
   &-message {
-    font-family: @font-family;
+    font-family: var(--font-family);
     text-align: center;
     margin: 15px 0 0 0;
   }
@@ -83,7 +83,7 @@
   &-showDiffButton {
     background: transparent;
     border: none;
-    color: @text-color-highlight;
+    color: calc(var(--text-color) - highlight);
     font-size: 18px;
     margin-bottom: 15px;
 
@@ -95,7 +95,7 @@
   &-collapseButton {
     background: transparent;
     border: none;
-    padding: @component-padding/1.5;
+    padding: calc(var(--component-padding) / 1.5);
 
     & + .github-FilePatchView-title {
       margin-left: 0; // chevron already has margin
@@ -122,7 +122,7 @@
       justify-content: center;
       text-align: center;
       font-size: 1.2em;
-      padding: @component-padding;
+      padding: var(--component-padding);
     }
 
     .large-file-patch {
@@ -139,42 +139,42 @@
   // Used for mode changes
 
   &-meta {
-    font-family: @font-family;
-    padding-top: @component-padding;
+    font-family: var(--font-family);
+    padding-top: var(--component-padding);
   }
 
   &-metaContainer {
-    border: 1px solid @base-border-color;
-    border-radius: @component-border-radius;
+    border: 1px solid var(--base-border-color);
+    border-radius: var(--component-border-radius);
   }
 
   &-metaHeader {
     display: flex;
     align-items: center;
     font-size: .9em;
-    border-bottom: 1px solid @base-border-color;
+    border-bottom: 1px solid var(--base-border-color);
   }
 
   &-metaTitle {
     flex: 1;
     margin: 0;
-    padding-left: @component-padding;
+    padding-left: var(--component-padding);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   &-metaControls {
-    margin-left: @component-padding;
+    margin-left: var(--component-padding);
   }
 
   &-metaButton {
     line-height: 1.9; // Magic number to match the hunk height
-    padding-left: @component-padding;
-    padding-right: @component-padding;
-    font-family: @font-family;
+    padding-left: var(--component-padding);
+    padding-right: var(--component-padding);
+    font-family: var(--font-family);
     border: none;
-    border-left: 1px solid @base-border-color;
+    border-left: 1px solid var(--base-border-color);
     background-color: transparent;
     cursor: default;
     &:hover  { background-color: mix(@syntax-text-color, @syntax-background-color, 4%); }
@@ -189,14 +189,14 @@
   }
 
   &-metaDetails {
-    padding: @component-padding;
+    padding: var(--component-padding);
   }
 
   &-metaDiff {
     margin: 0 .2em;
     padding: .2em .4em;
     line-height: 1.6;
-    border-radius: @component-border-radius;
+    border-radius: var(--component-border-radius);
     &--added {
       color: mix(@text-color-highlight, @text-color-success, 40%);
       background-color: mix(@base-background-color, @background-color-success, 80%);
@@ -207,7 +207,7 @@
     }
     &--fullWidth {
       display: block;
-      margin: @component-padding/2 0 0 0;
+      margin: calc(var(--component-padding) / 2) 0 0 0;
       &:first-child {
         margin-top: 0;
       }
@@ -221,7 +221,7 @@
       line-height: 1;
       vertical-align: middle;
       word-break: break-all;
-      background-color: @base-background-color;
+      background-color: var(--base-background-color);
     }
   }
 
@@ -260,7 +260,7 @@
       padding: 0;
       opacity: 1;
       width: 2ch;
-      font-family: @font-family;
+      font-family: var(--font-family);
       text-align: center;
       color: mix(@syntax-gutter-text-color, @syntax-text-color);
       -webkit-font-smoothing: antialiased;
@@ -313,8 +313,8 @@
     &.icons .line-number,
     &[gutter-name="github-comment-icon"] .github-editorCommentGutterIcon {
       &.github-FilePatchView-line--selected {
-        color: @text-color-selected;
-        background: @background-color-selected;
+        color: calc(var(--text-color) - selected);
+        background: var(--background-color-selected);
         &.github-editorCommentGutterIcon.empty {
           z-index: -1;
         }
@@ -338,7 +338,7 @@
     &[gutter-name="github-comment-icon"] .github-editorCommentGutterIcon {
       &.github-FilePatchView-line--selected {
         color: contrast(@button-background-color-selected);
-        background: @button-background-color-selected;
+        background: calc(var(--button-background-color) - selected);
         &.github-editorCommentGutterIcon.empty {
           z-index: -1;
         }

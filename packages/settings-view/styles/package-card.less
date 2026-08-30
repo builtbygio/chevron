@@ -7,12 +7,12 @@
   // TODO: Somehow unify the "card".
 
   .package-card {
-    padding: @component-padding*1.5;
-    margin-bottom: @component-padding;
+    padding: calc(var(--component-padding) * 1.5);
+    margin-bottom: var(--component-padding);
     list-style-type: none;
     font-size: 1.2em;
-    border-radius: @component-border-radius*2;
-    border: 1px solid @base-border-color;
+    border-radius: calc(var(--component-border-radius) * 2);
+    border: 1px solid var(--base-border-color);
     background-color: @package-card-background-color;
     overflow: hidden;
     cursor: pointer;
@@ -57,18 +57,18 @@
 
     &.col-lg-4 {
       min-width: 190px;
-      padding: @component-padding 0;
-      padding-left: @component-padding;
-      padding-right: @component-padding;
+      padding: var(--component-padding) 0;
+      padding-left: var(--component-padding);
+      padding-right: var(--component-padding);
     }
 
     .thumbnail {
       border-radius: 3px;
       margin: 0;
       min-height: 140px;
-      color: @text-color;
-      border-radius: @component-border-radius*2;
-      border: 1px solid @base-border-color;
+      color: var(--text-color);
+      border-radius: calc(var(--component-border-radius) * 2);
+      border: 1px solid var(--base-border-color);
       background-color: @package-card-background-color;
 
       .caption {
@@ -79,16 +79,16 @@
     .package-name {
       margin-right: .5em;
       font-weight: bolder;
-      color: @text-color-highlight;
+      color: calc(var(--text-color) - highlight);
     }
 
     .package-version {
       font-size: .8em;
-      margin-right: @component-padding;
+      margin-right: var(--component-padding);
     }
 
     .description {
-      color: @text-color;
+      color: var(--text-color);
       overflow: hidden;
       min-height: 38px;
       max-height: 38px;
@@ -103,7 +103,7 @@
     }
 
     .downloads {
-      color: @text-color-highlight;
+      color: calc(var(--text-color) - highlight);
       overflow: hidden;
       text-overflow: ellipsis;
       display: -webkit-box;
@@ -136,21 +136,21 @@
       line-height: 1.4;
 
       .css-truncate-target {
-        color: @text-color-success;
+        color: calc(var(--text-color) - success);
       }
     }
 
     .stats {
 
       .stats-item {
-        margin-left: @component-padding*1.5;
+        margin-left: calc(var(--component-padding) * 1.5);
         height: 26px;
         display: inline-block;
         line-height: 24px;
         vertical-align: top;
 
         .icon {
-          color: @text-color-subtle;
+          color: calc(var(--text-color) - subtle);
         }
       }
 
@@ -190,11 +190,11 @@
 
         &:hover {
           .octicon {
-            color: @text-color-success;
+            color: calc(var(--text-color) - success);
           }
 
           .value {
-            color: @text-color-success;
+            color: calc(var(--text-color) - success);
           }
         }
       }
@@ -215,11 +215,11 @@
 
     .meta-user {
       flex: 1 0 auto;
-      margin-top: @component-padding;
-      margin-right: @component-padding;
+      margin-top: var(--component-padding);
+      margin-right: var(--component-padding);
 
       .avatar {
-        border-radius: @component-border-radius;
+        border-radius: var(--component-border-radius);
         height: 24px;
         width: 24px;
         display: inline-block;
@@ -228,8 +228,8 @@
       }
 
       .author {
-        color: @text-color-subtle;
-        margin-left: @component-padding;
+        color: calc(var(--text-color) - subtle);
+        margin-left: var(--component-padding);
         &:focus {
           outline: none;
         }
@@ -237,7 +237,7 @@
     }
 
     .meta-controls {
-      margin-top: @component-padding/2;
+      margin-top: calc(var(--component-padding) / 2);
 
       .install-button.is-installing,
       .uninstall-button.is-uninstalling {
@@ -249,31 +249,31 @@
 
       .status-indicator {
         padding: 0;
-        width: @component-padding/2;
+        width: calc(var(--component-padding) / 2);
         min-width: 4px;
         pointer-events: none;
         transition: background .4s;
-        background: @background-color-success;
+        background: var(--background-color-success);
         &.is-disabled {
-          background: @background-color-warning;
+          background: var(--background-color-warning);
         }
       }
 
       .btn-toolbar > .btn-group {
         float: left;
-        margin: @component-padding/2 0 0 @component-padding/2;
+        margin: calc(var(--component-padding) / 2) 0 0 calc(var(--component-padding) / 2);
       }
     }
 
     .meta-lower {
       padding: 13px;
-      background-color: @input-background-color;
+      background-color: var(--input-background-color);
       line-height: 1;
     }
 
     &.blank-slate {
       text-align: center;
-      color: @text-color-subtle;
+      color: calc(var(--text-color) - subtle);
       height: 132px;
       line-height: 132px;
     }

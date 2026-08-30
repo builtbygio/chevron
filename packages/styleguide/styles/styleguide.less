@@ -16,18 +16,18 @@
 
 .styleguide-controls {
   position: absolute;
-  right: @component-padding;
-  top: @component-padding;
+  right: var(--component-padding);
+  top: var(--component-padding);
   z-index: 100;
 }
 
 .styleguide-header {
   padding: @styleguide-spacing;
-  border-bottom: 1px solid @base-border-color;
+  border-bottom: 1px solid var(--base-border-color);
   h1 {
     font-size: 2em;
     margin: 0 0 .5em 0;
-    color: @text-color-highlight;
+    color: calc(var(--text-color) - highlight);
   }
   p {
     font-size: 1.2em;
@@ -44,7 +44,7 @@
   & > section {
     background-color: @styleguide-bg;
     padding: 0;
-    border-bottom: 1px solid @base-border-color;
+    border-bottom: 1px solid var(--base-border-color);
     border-top: none;
 
     &:last-child {
@@ -52,18 +52,18 @@
     }
 
     &.collapsed {
-      background-color: @base-background-color;
+      background-color: var(--base-background-color);
       > .section-heading {
         display: block;
         margin: 0;
         padding-bottom: @styleguide-spacing;
-        color: @text-color;
+        color: var(--text-color);
         &:hover {
-          color: @text-color-highlight;
-          background-color: @background-color-highlight;
+          color: calc(var(--text-color) - highlight);
+          background-color: var(--background-color-highlight);
         }
         &:active {
-          background-color: @base-background-color;
+          background-color: var(--base-background-color);
         }
       }
       > * {
@@ -77,14 +77,14 @@
     cursor: pointer;
     font-weight: normal;
     font-size: 1.8em;
-    color: @text-color-highlight;
+    color: calc(var(--text-color) - highlight);
   }
 
   section > h2 {
     font-size: 1.5em;
     line-height: 1.2;
     margin: 1em @styleguide-spacing 0 @styleguide-spacing;
-    color: @text-color-highlight;
+    color: calc(var(--text-color) - highlight);
   }
 
   section > p {
@@ -100,27 +100,27 @@
 
   display: flex;
   flex-wrap: wrap;
-  border-radius: @component-border-radius;
-  padding: @component-padding / 2;
+  border-radius: var(--component-border-radius);
+  padding: calc(var(--component-padding) / 2);
 
   .example-rendered,
   .example-code {
     position: relative;
     flex: 1 1 300px;
     min-width: 0;
-    margin: @component-padding / 2;
-    border-radius: @component-border-radius;
-    border: 1px solid @tool-panel-border-color;
+    margin: calc(var(--component-padding) / 2);
+    border-radius: var(--component-border-radius);
+    border: 1px solid var(--tool-panel-border-color);
   }
 
   .example-rendered {
-    padding: @component-padding;
+    padding: var(--component-padding);
     background: @example-background;
     overflow: hidden;
   }
 
   .example-code {
-    background-color: @syntax-background-color;
+    background-color: var(--syntax-background-color);
     pre {
       border: none;
       background-color: inherit;

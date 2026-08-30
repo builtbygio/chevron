@@ -94,7 +94,50 @@ function convert(source, vars) {
     if (/^\s*@[a-zA-Z][a-zA-Z0-9-]*\s*:/.test(line)) return line;
     if (/^\s*@import\b/.test(line)) return line;
 
+    // LESS guards are build-time conditionals. They cannot read a custom
+    // property, because its value does not exist until the browser resolves
+    // it. Same for functions that need a real colour or number at build time
+    // -- contrast() picks a branch, hsvvalue() measures. A var() reference
+    // makes them fail outright ("Argument cannot be evaluated to a color").
+    // These need the variable to stay a LESS variable, or the rule needs
+    // rewriting by hand.
+    if (/\bwhen\s*\(/.test(line)) {
+      if ([...line.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
+        unhandled.push({ line: i + 1, text: line.trim(), reason: 'less-guard' });
+      }
+      return line;
+    }
+    // A mixin call passes the value into LESS, where the body may do colour
+    // maths on it (.make-type-icon runs hsvvalue/contrast on its argument).
+    // var() is opaque to all of that.
+    if (/^\s*[.#][-\w]+[^{};]*\([^)]*\)\s*;/.test(line)) {
+      if ([...line.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
+        unhandled.push({ line: i + 1, text: line.trim(), reason: 'mixin-argument' });
+      }
+      return line;
+    }
+    const BUILD_TIME_FNS = /\b(contrast|hsvvalue|hsvhue|hsvsaturation|luma|luminance|lightness|saturation|hue|red|green|blue|alpha|ceil|floor|round|percentage|unit|isnumber|iscolor)\s*\(/;
+    if (BUILD_TIME_FNS.test(line)) {
+      if ([...line.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
+        unhandled.push({ line: i + 1, text: line.trim(), reason: 'build-time-fn' });
+      }
+      return line;
+    }
+
     let result = line;
+
+    // Nested colour functions -- fadeout(darken(@c, 4%), 55%) -- would need
+    // the two transforms composed into one relative-colour expression. That is
+    // a colour-expression compiler, not a rewrite; converting only the inner
+    // call leaves LESS's outer function holding an escaped string, which fails
+    // the build. Refuse the whole line.
+    const COLOUR_FN = '(?:darken|lighten|fade|fadeout|fadein|mix|contrast|saturate|desaturate|tint|shade)';
+    if (new RegExp(COLOUR_FN + '\\s*\\([^)]*' + COLOUR_FN + '\\s*\\(').test(line)) {
+      if ([...line.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
+        unhandled.push({ line: i + 1, text: line.trim(), reason: 'nested-colour-fn' });
+      }
+      return line;
+    }
 
     // 1. colour functions wrapping a theme variable
     result = result.replace(
@@ -103,14 +146,86 @@ function convert(source, vars) {
         vars.has(name) ? COLOR_FNS[fn](name, Number(pct)) : whole
     );
 
-    // 2. arithmetic on a theme variable -- report, do not touch
-    for (const m of result.matchAll(
-      /@([a-zA-Z][a-zA-Z0-9-]*)\s*[*/+-]\s*[0-9@.]/g
-    )) {
-      if (vars.has(m[1])) {
-        unhandled.push({ line: i + 1, text: line.trim(), reason: 'arithmetic' });
+    // 2. arithmetic. `*` and `/` by a plain number are safe: the unit comes
+    //    from the variable, so LESS's `@pad / 2` and CSS's
+    //    calc(var(--pad) / 2) agree. So is `+`/`-` when the operand carries
+    //    its own unit, or when both sides are variables.
+    //
+    //    `+`/`-` with a BARE number is not: LESS infers the unit from the
+    //    left operand (`@font-size + 1` is 13px) while
+    //    calc(var(--font-size) + 1) is invalid CSS and is dropped silently.
+    //    Those are reported, never guessed.
+    //
+    //    Chained arithmetic is also reported: wrapping one term in calc()
+    //    would change how the rest of the expression associates.
+    //    Whether an expression is "chained" is decided locally, per match, not
+    //    by counting operators in the line. A line-level count reads the
+    //    hyphen in `@font-size` as a minus, and the `//` of a trailing comment
+    //    as two divisions -- both false positives. It also wrongly rejects
+    //    `padding: @pad/4 @pad/2`, which is two independent safe terms.
+    const isOperator = ch => ch === '*' || ch === '/' || ch === '+' || ch === '-';
+    const precededByExpression = (offset, end) => {
+      let j = offset - 1;
+      while (j >= 0 && result[j] === ' ') j--;
+      if (j < 0) return false;
+      if (isOperator(result[j])) return true;
+      if (result[j] === '(') {
+        // `(@pad / 2)` is LESS grouping a single term, not a larger
+        // expression: safe if the paren closes right after the operand.
+        let k = end;
+        while (k < result.length && result[k] === ' ') k++;
+        return result[k] !== ')';
       }
-    }
+      return false;
+    };
+    const followedByExpression = end => {
+      let j = end;
+      while (j < result.length && result[j] === ' ') j++;
+      return j < result.length && isOperator(result[j]);
+    };
+
+    // `-@var` is negation, not subtraction. Left alone, step 3 turns it into
+    // `-var(--x)`, which is not valid CSS and is dropped silently.
+    // The negated variable must be the whole term: `-@pad * 2.5` would
+    // otherwise become calc(var(--pad) * -1) * 2.5, leaving the `* 2.5`
+    // dangling outside the calc() -- invalid CSS that LESS passes through
+    // untouched and the browser drops without a word.
+    result = result.replace(
+      /(^|[\s:,(])-\s*@([a-zA-Z][a-zA-Z0-9-]*)(?![a-zA-Z0-9-])(\s*[*/+-]?)/g,
+      (whole, lead, name, trailer) => {
+        if (!vars.has(name)) return whole;
+        if (trailer.trim() !== '') {
+          unhandled.push({ line: i + 1, text: line.trim(), reason: 'negated-expression' });
+          return whole;
+        }
+        return `${lead}calc(var(--${name}) * -1)${trailer}`;
+      }
+    );
+    result = result.replace(
+      /@([a-zA-Z][a-zA-Z0-9-]*)\s*([*/+-])\s*(@?[a-zA-Z0-9.]+[a-z%]*)/g,
+      (whole, name, op, operand, offset) => {
+        if (!vars.has(name)) return whole;
+        if (
+          precededByExpression(offset, offset + whole.length) ||
+          followedByExpression(offset + whole.length)
+        ) {
+          unhandled.push({ line: i + 1, text: line.trim(), reason: 'chained' });
+          return whole;
+        }
+        const operandIsVar = operand.startsWith('@');
+        if (operandIsVar && !vars.has(operand.slice(1))) {
+          unhandled.push({ line: i + 1, text: line.trim(), reason: 'local-var' });
+          return whole;
+        }
+        const bareNumber = !operandIsVar && /^[0-9.]+$/.test(operand);
+        if ((op === '+' || op === '-') && bareNumber) {
+          unhandled.push({ line: i + 1, text: line.trim(), reason: 'unit-ambiguous' });
+          return whole;
+        }
+        const right = operandIsVar ? `var(--${operand.slice(1)})` : operand;
+        return `calc(var(--${name}) ${op} ${right})`;
+      }
+    );
 
     // 3. plain references (skip any left inside an arithmetic expression)
     result = result.replace(
@@ -119,11 +234,62 @@ function convert(source, vars) {
         if (!vars.has(name)) return whole;
         const after = result.slice(offset + whole.length);
         const before = result.slice(0, offset);
+        // `@name:` is a definition, not a reference -- including inside a
+        // mixin body on a line that starts with something else, which is why
+        // the line-anchored guard above is not enough:
+        //   .attr-syntax-color() { @syntax-color-attribute: #888; }
+        if (/^\s*:/.test(after)) return whole;
         if (/^\s*[*/+-]\s*[0-9@.]/.test(after)) return whole;
         if (/[0-9)]\s*[*/+-]\s*$/.test(before)) return whole;
         return `var(--${name})`;
       }
     );
+
+    // Safety net. Enumerating every LESS construct that consumes a value at
+    // build time is whack-a-mole -- guards, mixin arguments, nested colour
+    // functions and bare mix()/contrast() each failed the build in turn. So
+    // instead: if a var() we introduced ended up inside any function LESS will
+    // evaluate itself, abandon the line. CSS functions that pass var()
+    // through untouched are the only ones allowed to contain one.
+    const CSS_FNS = new Set([
+      'calc', 'var', 'hsl', 'hsla', 'rgb', 'rgba', 'color-mix', 'url',
+      'linear-gradient', 'radial-gradient', 'translate', 'translateX',
+      'translateY', 'scale', 'rotate', 'cubic-bezier', 'min', 'max', 'clamp',
+      'env', 'attr', 'counter', 'repeat', 'minmax', 'fit-content'
+    ]);
+    if (result !== line && result.includes('var(--')) {
+      // A LESS variable still doing arithmetic next to a var() we introduced:
+      // `@size + (calc(var(--pad) * 2))`. LESS evaluates the sum and cannot
+      // add a calc(), so it crashes on the unit.
+      if (/@[a-zA-Z][a-zA-Z0-9-]*\s*[*/+-]/.test(result) ||
+          /[*/+-]\s*\(?\s*@[a-zA-Z]/.test(result)) {
+        unhandled.push({
+          line: i + 1,
+          text: line.trim(),
+          reason: 'mixed LESS/CSS arithmetic'
+        });
+        return line;
+      }
+      for (const m of result.matchAll(/([a-zA-Z][a-zA-Z0-9-]*)\s*\(/g)) {
+        if (CSS_FNS.has(m[1])) continue;
+        const open = m.index + m[0].length;
+        let depth = 1;
+        let k = open;
+        while (k < result.length && depth > 0) {
+          if (result[k] === '(') depth++;
+          else if (result[k] === ')') depth--;
+          k++;
+        }
+        if (result.slice(open, k).includes('var(--')) {
+          unhandled.push({
+            line: i + 1,
+            text: line.trim(),
+            reason: `var() inside LESS ${m[1]}()`
+          });
+          return line;
+        }
+      }
+    }
 
     return result;
   });

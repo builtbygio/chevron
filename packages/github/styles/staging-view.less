@@ -14,10 +14,10 @@
   &-header {
     display: flex;
     align-items: center;
-    padding: 0 0 0 @component-padding;
+    padding: 0 0 0 var(--component-padding);
     font-weight: 600;
-    border-top: 1px solid @panel-heading-border-color;
-    border-bottom: 1px solid @panel-heading-border-color;
+    border-top: 1px solid var(--panel-heading-border-color);
+    border-bottom: 1px solid var(--panel-heading-border-color);
 
     .github-UnstagedChanges > & {
       border-top: none;
@@ -26,8 +26,8 @@
     .icon {
       text-align: center;
       &:before {
-        color: @text-color-subtle;
-        margin-right: @component-padding / 1.2;
+        color: calc(var(--text-color) - subtle);
+        margin-right: calc(var(--component-padding) / 1.2);
         vertical-align: middle;
       }
     }
@@ -36,19 +36,19 @@
   &-headerButton {
     height: 2.5em;
     border: none;
-    padding: 0 @component-padding;
+    padding: 0 var(--component-padding);
     font-weight: normal;
-    border-left: 1px solid @panel-heading-border-color;
+    border-left: 1px solid var(--panel-heading-border-color);
     white-space: nowrap;
     background: none;
     cursor: default;
 
     &:disabled {
-      color: @text-color-subtle;
+      color: calc(var(--text-color) - subtle);
     }
 
     &:active {
-      background-color: @button-background-color-hover;
+      background-color: calc(var(--button-background-color) - hover);
     }
 
     &.icon:before {
@@ -59,7 +59,7 @@
 
     &--fullWidth {
       border-left: none;
-      border-bottom: 1px solid @panel-heading-border-color;
+      border-bottom: 1px solid var(--panel-heading-border-color);
     }
 
     &--iconOnly:before {
@@ -70,7 +70,7 @@
 
   &-title {
     flex: 1;
-    margin-right: @component-padding;
+    margin-right: var(--component-padding);
     line-height: 2.5em;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -89,17 +89,17 @@
 // -----------------------------------------
 
 .github-StagingView-group-truncatedMsg {
-  padding: @component-padding / 2 @component-padding;
+  padding: calc(var(--component-padding) / 2) var(--component-padding);
 }
 
 .github-StagingView-group.is-focused .is-selected {
   // is selected
-  color: @text-color-selected;
-  background: @background-color-selected;
+  color: calc(var(--text-color) - selected);
+  background: var(--background-color-selected);
 
   // also has focus
   .github-StagingView:focus & {
     color: contrast(@button-background-color-selected);
-    background: @button-background-color-selected;
+    background: calc(var(--button-background-color) - selected);
   }
 }

@@ -4,12 +4,12 @@
   display: flex;
 
   &-avatar {
-    margin: @component-padding/2;
+    margin: calc(var(--component-padding) / 2);
 
     > img {
       width: 60px;
       height: 60px;
-      border-radius: @component-border-radius;
+      border-radius: var(--component-border-radius);
     }
   }
 
@@ -18,8 +18,8 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    margin: @component-padding/2 @component-padding;
-    font-size: @font-size;
+    margin: calc(var(--component-padding) / 2) var(--component-padding);
+    font-size: var(--font-size);
     line-height: 20px;
     text-align: left;
 
@@ -27,7 +27,7 @@
       white-space: nowrap;
     }
     .icon {
-      color: @text-color-subtle;
+      color: calc(var(--text-color) - subtle);
       vertical-align: middle;
     }
 

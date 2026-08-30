@@ -6,14 +6,14 @@
 
   &-header {
     font-weight: 600;
-    color: @text-color-subtle;
-    padding: @component-padding/2;
-    border-bottom: 1px solid @base-border-color;
+    color: calc(var(--text-color) - subtle);
+    padding: calc(var(--component-padding) / 2);
+    border-bottom: 1px solid var(--base-border-color);
     display: flex;
     align-items: center;
 
     &::-webkit-details-marker {
-      color: @text-color-subtle;
+      color: calc(var(--text-color) - subtle);
     }
   }
 
@@ -22,8 +22,8 @@
   }
 
   &-content {
-    border-bottom: 1px solid @base-border-color;
-    background-color: @base-background-color;
+    border-bottom: 1px solid var(--base-border-color);
+    background-color: var(--base-background-color);
 
     // Add an "Empty" label for empty items
     &:empty::before {
@@ -31,7 +31,7 @@
       display: block;
       font-style: italic;
       text-align: center;
-      color: @text-color-subtle;
+      color: calc(var(--text-color) - subtle);
     }
   }
 
@@ -42,21 +42,21 @@
   }
 
   &[open] &-header {
-    color: @text-color-highlight;
+    color: calc(var(--text-color) - highlight);
   }
 
   &-listItem {
     display: flex;
     align-items: center;
-    padding: @component-padding / 4;
-    border-bottom: 1px solid @base-border-color;
+    padding: calc(var(--component-padding) / 4);
+    border-bottom: 1px solid var(--base-border-color);
 
     &:last-child {
       border: none;
     }
 
     &:active {
-      background-color: @background-color-highlight;
+      background-color: var(--background-color-highlight);
     }
   }
 

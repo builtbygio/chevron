@@ -8,13 +8,13 @@
   &-header {
     display: flex;
     align-items: center;
-    border: 1px solid @base-border-color;
-    padding: @component-padding;
-    border-radius: @component-border-radius @component-border-radius 0 0;
+    border: 1px solid var(--base-border-color);
+    padding: var(--component-padding);
+    border-radius: var(--component-border-radius) var(--component-border-radius) 0 0;
   }
 
   &-donut-chart {
-    margin-right: @component-padding;
+    margin-right: var(--component-padding);
 
     svg {
       display: block;
@@ -46,37 +46,37 @@
   &-list-item {
     display: flex;
     flex-direction: row;
-    padding: @component-padding/2 @component-padding;
-    border: 1px solid @base-border-color;
+    padding: calc(var(--component-padding) / 2) var(--component-padding);
+    border: 1px solid var(--base-border-color);
     border-top: none;
 
     &--checkRun {
-      padding-left: @component-padding*2;
+      padding-left: calc(var(--component-padding) * 2);
     }
 
     &:last-child {
-      border-radius: 0 0 @component-border-radius @component-border-radius;
+      border-radius: 0 0 var(--component-border-radius) var(--component-border-radius);
     }
 
     &-icon {
       width: @donut-size;
-      margin-right: @component-padding;
+      margin-right: var(--component-padding);
       text-align: center;
       .icon::before { margin-right: 0; }
     }
 
     &-name {
       font-weight: bold;
-      color: @text-color-info;
+      color: calc(var(--text-color) - info);
       margin-right: 0.5em;
     }
 
     &-context {
       flex: 1;
-      color: @text-color-subtle;
+      color: calc(var(--text-color) - subtle);
       strong {
         margin-right: .5em;
-        color: @text-color-highlight;
+        color: calc(var(--text-color) - highlight);
       }
     }
 
@@ -91,9 +91,9 @@
 
     &-details-link {
       margin-left: .5em;
-      color: @text-color-info;
+      color: calc(var(--text-color) - info);
       a {
-        color: @text-color-info;
+        color: calc(var(--text-color) - info);
       }
     }
   }
@@ -114,6 +114,6 @@
   }
 
   &--neutral {
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
   }
 }

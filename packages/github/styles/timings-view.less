@@ -8,23 +8,23 @@
   &-header {
     display: flex;
     justify-content: flex-end;
-    padding: @component-padding;
-    border-bottom: 1px solid @base-border-color;
+    padding: var(--component-padding);
+    border-bottom: 1px solid var(--base-border-color);
   }
 
   .waterfall-widget {
-    border-radius: @component-border-radius;
-    border: 1px solid @pane-item-border-color;
-    background-color: @pane-item-background-color;
+    border-radius: var(--component-border-radius);
+    border: 1px solid var(--pane-item-border-color);
+    background-color: var(--pane-item-background-color);
     margin: 10px;
   }
 
   .waterfall-header {
     padding: 5px 5px 0 5px;
-    color: @text-color;
-    font-size: @font-size;
+    color: var(--text-color);
+    font-size: var(--font-size);
     display: flex;
-    border-bottom: 1px solid @pane-item-border-color;
+    border-bottom: 1px solid var(--pane-item-border-color);
 
     .collapse-toggle {
       cursor: pointer;
@@ -60,7 +60,7 @@
     position: absolute;
     height: 100%;
     width: 1px;
-    border-left: 1px solid @pane-item-border-color;
+    border-left: 1px solid var(--pane-item-border-color);
   }
 
   .waterfall-timeline {
@@ -71,7 +71,7 @@
   .waterfall-timeline-label {
     position: absolute;
     padding-left: 5px;
-    color: @text-color;
+    color: var(--text-color);
   }
 
   .waterfall-row {
@@ -80,11 +80,11 @@
     padding: 2px 0;
 
     &:nth-child(2n+1) {
-      background-color: @app-background-color;
+      background-color: var(--app-background-color);
     }
 
     &:hover {
-      background-color: @pane-item-border-color;
+      background-color: var(--pane-item-border-color);
     }
   }
 

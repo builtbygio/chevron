@@ -10,14 +10,14 @@
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    padding: @component-padding * 3;
+    padding: calc(var(--component-padding) * 3);
 
     > * {
-      margin: @component-padding 0;
+      margin: var(--component-padding) 0;
     }
 
     h1 {
-      margin-bottom: @component-padding * 3;
+      margin-bottom: calc(var(--component-padding) * 3);
     }
 
     button {
@@ -28,10 +28,10 @@
 
     ol {
       text-align: left;
-      padding: @component-padding 0;
+      padding: var(--component-padding) 0;
 
       a {
-        color: @text-color-info;
+        color: calc(var(--text-color) - info);
       }
     }
 
@@ -47,7 +47,7 @@
       padding-left: 0;
 
       li:not(:last-child) {
-        margin-bottom: @component-padding;
+        margin-bottom: var(--component-padding);
       }
     }
   }

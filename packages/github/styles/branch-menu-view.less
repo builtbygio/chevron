@@ -12,7 +12,7 @@
   }
 
   &-item {
-    margin: @component-padding / 2;
+    margin: calc(var(--component-padding) / 2);
   }
 
   .icon-sync::before {
@@ -26,7 +26,7 @@
     flex-basis: 16px;
     flex-grow: 0;
     flex-shrink: 0;
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
   }
 
   .icon-git-branch::before {
@@ -57,22 +57,22 @@
       text-align: left;
     }
     atom-text-editor[readonly] {
-      color: @text-color-subtle;
+      color: calc(var(--text-color) - subtle);
       pointer-events: none;
     }
   }
 
   &-message {
     max-height: 20em;
-    margin: @component-padding / 2;
-    padding: @component-padding / 2;
+    margin: calc(var(--component-padding) / 2);
+    padding: calc(var(--component-padding) / 2);
     line-height: 1.4;
     white-space: normal;
     text-align: left;
     overflow-y: auto;
-    border: 1px solid @base-border-color;
-    border-radius: @component-border-radius;
-    background-color: @inset-panel-background-color;
+    border: 1px solid var(--base-border-color);
+    border-radius: var(--component-border-radius);
+    background-color: var(--inset-panel-background-color);
 
     &:empty {
       display: none;

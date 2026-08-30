@@ -16,10 +16,10 @@
   height: 100%;
 
   atom-text-editor {
-    padding: @component-padding/2;
-    border-top: 1px solid @base-border-color;
-    border-bottom: 1px solid @base-border-color;
-    border-radius: @component-border-radius;
+    padding: calc(var(--component-padding) / 2);
+    border-top: 1px solid var(--base-border-color);
+    border-bottom: 1px solid var(--base-border-color);
+    border-radius: var(--component-border-radius);
   }
 
   // Top Header ------------------------------------------
@@ -27,14 +27,14 @@
   &-topHeader {
     display: flex;
     align-items: center;
-    padding: 0 @component-padding;
+    padding: 0 var(--component-padding);
     font-weight: 600;
-    border-bottom: 1px solid @panel-heading-border-color;
+    border-bottom: 1px solid var(--panel-heading-border-color);
     cursor: default;
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
 
     .icon:before {
-      margin-right: @component-padding / 1.2;
+      margin-right: calc(var(--component-padding) / 1.2);
     }
 
     .icon.refreshing::before {
@@ -56,11 +56,11 @@
     cursor: pointer;
     font-weight: 400;
     &:hover {
-      color: @text-color-highlight;
+      color: calc(var(--text-color) - highlight);
       text-decoration: underline;
     }
     &.icon:hover:before {
-      color: @text-color-highlight;
+      color: calc(var(--text-color) - highlight);
     }
   }
 
@@ -80,18 +80,18 @@
   }
 
   &-section {
-    border-bottom: 1px solid @base-border-color;
+    border-bottom: 1px solid var(--base-border-color);
 
     &.resolved-comments {
       border-bottom: 0;
-      padding-left: @component-padding;
+      padding-left: var(--component-padding);
       .github-Reviews {
         &-title {
-          color: @text-color-subtle;
+          color: calc(var(--text-color) - subtle);
         }
         &-header {
-          color: @text-color-subtle;
-          padding-top: @component-padding * 0.5;
+          color: calc(var(--text-color) - subtle);
+          padding-top: calc(var(--component-padding) * 0.5);
         }
       }
     }
@@ -100,7 +100,7 @@
   &-header {
     display: flex;
     align-items: center;
-    padding: @component-padding;
+    padding: var(--component-padding);
     cursor: default;
   }
 
@@ -109,30 +109,30 @@
     font-size: 1em;
     margin: 0;
     font-weight: 600;
-    color: @text-color-highlight;
+    color: calc(var(--text-color) - highlight);
   }
 
   &-count {
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
   }
 
   &-countNr {
-    color: @text-color-highlight;
+    color: calc(var(--text-color) - highlight);
   }
 
   &-progessBar {
     width: 5em;
-    margin-left: @component-padding;
+    margin-left: var(--component-padding);
   }
 
   &-container {
-    font-size: @font-size-default;
-    padding: @component-padding;
+    font-size: calc(var(--font-size) - default);
+    padding: var(--component-padding);
     padding-top: 0;
   }
 
   .github-EmojiReactions {
-    padding: @component-padding 0 0;
+    padding: var(--component-padding) 0 0;
   }
 
   // empty states
@@ -159,13 +159,13 @@
 // Review Summaries ------------------------------------------
 
 .github-ReviewSummary {
-  padding: @component-padding;
-  border: 1px solid @base-border-color;
-  border-radius: @component-border-radius;
+  padding: var(--component-padding);
+  border: 1px solid var(--base-border-color);
+  border-radius: var(--component-border-radius);
   background-color: @background-color;
 
   & + & {
-    margin-top: @component-padding;
+    margin-top: var(--component-padding);
   }
 
   &-header {
@@ -175,13 +175,13 @@
   &-icon  {
     vertical-align: -3px;
     &.icon-check {
-      color: @text-color-success;
+      color: calc(var(--text-color) - success);
     }
     &.icon-alert {
-      color: @text-color-warning;
+      color: calc(var(--text-color) - warning);
     }
     &.icon-comment {
-      color: @text-color-subtle;
+      color: calc(var(--text-color) - subtle);
     }
   }
 
@@ -189,7 +189,7 @@
     margin-right: .5em;
     width: @avatar-size;
     height: @avatar-size;
-    border-radius: @component-border-radius;
+    border-radius: var(--component-border-radius);
     image-rendering: -webkit-optimize-contrast;
   }
 
@@ -199,21 +199,21 @@
   }
 
   &-type {
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
   }
 
   &-timeAgo {
     margin-left: auto;
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
   }
 
   &-comment {
     position: relative;
-    margin-top: @component-padding/2;
+    margin-top: calc(var(--component-padding) / 2);
     margin-left: 7px;
     padding-left: 12px;
-    font-size: @font-size-body;
-    border-left: 2px solid @base-border-color;
+    font-size: calc(var(--font-size) - body);
+    border-left: 2px solid var(--base-border-color);
   }
 }
 
@@ -222,19 +222,19 @@
 
 .github-Review {
   position: relative;
-  border: 1px solid @base-border-color;
-  border-radius: @component-border-radius;
+  border: 1px solid var(--base-border-color);
+  border-radius: var(--component-border-radius);
   background-color: @background-color;
   box-shadow: 0;
   transition: border-color 0.5s, box-shadow 0.5s;
 
   & + & {
-    margin-top: @component-padding;
+    margin-top: var(--component-padding);
   }
 
   &--highlight {
-    border-color: @button-background-color-selected;
-    box-shadow: 0 0 5px @button-background-color-selected;
+    border-color: calc(var(--button-background-color) - selected);
+    box-shadow: 0 0 5px calc(var(--button-background-color) - selected);
   }
 
   // Header ------------------
@@ -242,12 +242,12 @@
   &-reference {
     display: flex;
     align-items: center;
-    padding-left: @component-padding;
+    padding-left: var(--component-padding);
     height: @nav-size;
     cursor: default;
 
     &::-webkit-details-marker {
-      margin-right: @component-padding/1.5;
+      margin-right: calc(var(--component-padding) / 1.5);
     }
 
     .resolved & {
@@ -256,7 +256,7 @@
   }
 
   &-path {
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
@@ -264,8 +264,8 @@
   }
 
   &-file {
-    color: @text-color;
-    margin-right: @component-padding/2;
+    color: var(--text-color);
+    margin-right: calc(var(--component-padding) / 2);
     font-weight: 500;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -274,16 +274,16 @@
   }
 
   &-lineNr {
-    color: @text-color-subtle;
-    margin-right: @component-padding/2;
+    color: calc(var(--text-color) - subtle);
+    margin-right: calc(var(--component-padding) / 2);
   }
 
   &-referenceAvatar {
     margin-left: auto;
-    margin-right: @component-padding/2;
+    margin-right: calc(var(--component-padding) / 2);
     width: @avatar-size;
     height: @avatar-size;
-    border-radius: @component-border-radius;
+    border-radius: var(--component-border-radius);
     image-rendering: -webkit-optimize-contrast;
 
     .github-Review[open] & {
@@ -292,8 +292,8 @@
   }
 
   &-referenceTimeAgo {
-    color: @text-color-subtle;
-    margin-right: @component-padding/2;
+    color: calc(var(--text-color) - subtle);
+    margin-right: calc(var(--component-padding) / 2);
     .github-Review[open] & {
       display: none;
     }
@@ -304,7 +304,7 @@
     .github-Review[open] & {
       display: flex;
     }
-    border-top: 1px solid @base-border-color;
+    border-top: 1px solid var(--base-border-color);
   }
 
   &-navButton {
@@ -317,16 +317,16 @@
     flex-basis: 50%;
 
     &.outdated {
-      border-bottom: 1px solid @base-border-color;
+      border-bottom: 1px solid var(--base-border-color);
     }
     &:last-child {
-      border-left: 1px solid @base-border-color;
+      border-left: 1px solid var(--base-border-color);
     }
     &:hover {
-      background-color: @background-color-highlight;
+      background-color: var(--background-color-highlight);
     }
     &:active {
-      background-color: @background-color-selected;
+      background-color: var(--background-color-selected);
     }
     &[disabled] {
       opacity: 0.65;
@@ -341,7 +341,7 @@
   // Diff ------------------
 
   &-diffLine {
-    padding: 0 @component-padding/2;
+    padding: 0 calc(var(--component-padding) / 2);
     line-height: 1.75;
 
     &:last-child {
@@ -377,15 +377,15 @@
   // Comments ------------------
 
   &-comments {
-    padding: @component-padding;
+    padding: var(--component-padding);
     padding-left: @component-padding + @avatar-size + 5px; // space for avatar
   }
 
   &-comment {
-    margin-bottom: @component-padding*1.5;
+    margin-bottom: calc(var(--component-padding) * 1.5);
 
     &--hidden {
-      color: @text-color-subtle;
+      color: calc(var(--text-color) - subtle);
       display: flex;
       align-items: center;
     }
@@ -395,16 +395,16 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: @component-padding/4;
+    margin-bottom: calc(var(--component-padding) / 4);
   }
 
   &-avatar {
     position: absolute;
-    left: @component-padding;
+    left: var(--component-padding);
     margin-right: .5em;
     width: @avatar-size;
     height: @avatar-size;
-    border-radius: @component-border-radius;
+    border-radius: var(--component-border-radius);
     image-rendering: -webkit-optimize-contrast;
   }
 
@@ -414,24 +414,24 @@
   }
 
   &-timeAgo, &-actionsMenu, &-edited {
-    color: @text-color-subtle;
+    color: calc(var(--text-color) - subtle);
   }
 
   &-actionsMenu::before {
     margin-right: 0;
-    margin-left: @component-padding/2;
+    margin-left: calc(var(--component-padding) / 2);
   }
 
   &-pendingBadge {
-    margin-left: @component-padding;
+    margin-left: var(--component-padding);
   }
 
   &-authorAssociationBadge {
-    margin-left: @component-padding;
+    margin-left: var(--component-padding);
   }
 
   &-text  {
-    font-size: @font-size-body;
+    font-size: calc(var(--font-size) - body);
 
     a {
       font-weight: 500;
@@ -439,17 +439,17 @@
   }
 
   &-reply, &-editable {
-    margin-top: @component-padding;
+    margin-top: var(--component-padding);
 
     atom-text-editor {
       width: 100%;
       min-height: 2.125em;
-      border: 1px solid @base-border-color;
+      border: 1px solid var(--base-border-color);
     }
 
     &--disabled {
       atom-text-editor {
-        color: @text-color-subtle;
+        color: calc(var(--text-color) - subtle);
       }
     }
   }
@@ -460,17 +460,17 @@
 
   &-resolvedText {
     text-align: center;
-    margin-bottom: @component-padding;
+    margin-bottom: var(--component-padding);
     padding: 0 2*@component-padding;
   }
 
   &-editable-footer {
-    margin: @component-padding/2 0 @component-padding 0;
+    margin: calc(var(--component-padding) / 2) 0 var(--component-padding) 0;
     display: flex;
     justify-content: flex-end;
 
     .btn {
-      margin-left: @component-padding/2;
+      margin-left: calc(var(--component-padding) / 2);
     }
   }
 
@@ -481,8 +481,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: @component-padding;
-    border-top: 1px solid @base-border-color;
+    padding: var(--component-padding);
+    border-top: 1px solid var(--base-border-color);
   }
 
   &-resolveButton {
