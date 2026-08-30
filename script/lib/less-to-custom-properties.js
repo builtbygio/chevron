@@ -139,6 +139,34 @@ function convert(source, vars) {
       return line;
     }
 
+    // 1a. mix(a, b, W%) -> color-mix(in srgb, a W%, b). Verified equivalent
+    //     against the LESS compiler: mix(#ff0000, #0000ff, 25%) and
+    //     mix(#336699, #ffffff, 70%) both match the sRGB interpolation CSS
+    //     performs, and LESS's default weight is 50% like color-mix's.
+    //     Operands may be theme variables or literals; at least one has to be
+    //     a theme variable or there is nothing to convert.
+    const operand = tok =>
+      tok.startsWith('@')
+        ? (vars.has(tok.slice(1)) ? `var(--${tok.slice(1)})` : null)
+        : tok;
+    result = result.replace(
+      /\bmix\(\s*(@?[a-zA-Z0-9#.-]+)\s*,\s*(@?[a-zA-Z0-9#.-]+)\s*(?:,\s*([0-9.]+)%\s*)?\)/g,
+      (whole, a, b, pct) => {
+        const touchesTheme =
+          (a.startsWith('@') && vars.has(a.slice(1))) ||
+          (b.startsWith('@') && vars.has(b.slice(1)));
+        if (!touchesTheme) return whole;
+        const left = operand(a);
+        const right = operand(b);
+        if (!left || !right) {
+          unhandled.push({ line: i + 1, text: line.trim(), reason: 'mix-local-var' });
+          return whole;
+        }
+        const weight = pct === undefined ? '50' : pct;
+        return esc(`color-mix(in srgb, ${left} ${weight}%, ${right})`);
+      }
+    );
+
     // 1. colour functions wrapping a theme variable
     result = result.replace(
       /\b(darken|lighten|fade|fadeout|fadein)\(\s*@([a-zA-Z][a-zA-Z0-9-]*)\s*,\s*([0-9.]+)%\s*\)/g,

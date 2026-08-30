@@ -40,7 +40,7 @@
 
     &:hover,
     &:focus {
-      color: mix(@text-color-highlight, @text-color-subtle);
+      color: ~"color-mix(in srgb, var(--text-color-highlight) 50%, var(--text-color-subtle))";
     }
   }
 

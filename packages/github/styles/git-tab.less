@@ -50,6 +50,6 @@
     width: auto;
     height: auto;
     font-size: 8em;
-    color: mix(@base-background-color, @text-color, 66%); // 2/3 of bg color
+    color: ~"color-mix(in srgb, var(--base-background-color) 66%, var(--text-color))"; // 2/3 of bg color
   }
 }

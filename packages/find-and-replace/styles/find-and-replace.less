@@ -297,7 +297,7 @@ atom-workspace.find-visible {
       padding: 0 0 0 var(--component-padding);
       margin-left: 8px;
 
-      box-shadow: inset 0 1px 0 mix(@base-border-color, @base-background-color);
+      box-shadow: inset 0 1px 0 ~"color-mix(in srgb, var(--base-border-color) 50%, var(--base-background-color))";
 
       // box-shadow over a border is used to not affect height calculation
       &.separator {
