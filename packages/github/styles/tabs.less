@@ -15,7 +15,7 @@
   padding: calc(var(--component-padding) / 2) calc(var(--component-padding) * 1.5);
   text-align: center;
   font-weight: 600;
-  color: mix(@text-color, @app-background-color, 75%);
+  color: ~"color-mix(in srgb, var(--text-color) 75%, var(--app-background-color))";
   cursor: default;
   user-select: none;
 
@@ -31,7 +31,7 @@
   }
 
   &-icon {
-    color: mix(@text-color, @app-background-color, 33%);
+    color: ~"color-mix(in srgb, var(--text-color) 33%, var(--app-background-color))";
     vertical-align: middle;
     &:before {
       margin-right: .4em;
@@ -40,7 +40,7 @@
 
   &-count {
     display: inline-block;
-    background-color: mix(@text-color-subtle, @app-background-color, 20%);
+    background-color: ~"color-mix(in srgb, var(--text-color-subtle) 20%, var(--app-background-color))";
     border-radius: var(--component-border-radius);
     padding: 0 .25em;
     margin-left: calc(var(--component-padding) / 2);

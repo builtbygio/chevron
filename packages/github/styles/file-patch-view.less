@@ -177,8 +177,8 @@
     border-left: 1px solid var(--base-border-color);
     background-color: transparent;
     cursor: default;
-    &:hover  { background-color: mix(@syntax-text-color, @syntax-background-color, 4%); }
-    &:active { background-color: mix(@syntax-text-color, @syntax-background-color, 2%); }
+    &:hover  { background-color: ~"color-mix(in srgb, var(--syntax-text-color) 4%, var(--syntax-background-color))"; }
+    &:active { background-color: ~"color-mix(in srgb, var(--syntax-text-color) 2%, var(--syntax-background-color))"; }
 
     &.icon-move-up::before,
     &.icon-move-down::before {
@@ -198,12 +198,12 @@
     line-height: 1.6;
     border-radius: var(--component-border-radius);
     &--added {
-      color: mix(@text-color-highlight, @text-color-success, 40%);
-      background-color: mix(@base-background-color, @background-color-success, 80%);
+      color: ~"color-mix(in srgb, var(--text-color-highlight) 40%, var(--text-color-success))";
+      background-color: ~"color-mix(in srgb, var(--base-background-color) 80%, var(--background-color-success))";
     }
     &--removed {
-      color: mix(@text-color-highlight, @text-color-error, 40%);
-      background-color: mix(@base-background-color, @background-color-error, 80%);
+      color: ~"color-mix(in srgb, var(--text-color-highlight) 40%, var(--text-color-error))";
+      background-color: ~"color-mix(in srgb, var(--base-background-color) 80%, var(--background-color-error))";
     }
     &--fullWidth {
       display: block;
@@ -262,7 +262,7 @@
       width: 2ch;
       font-family: var(--font-family);
       text-align: center;
-      color: mix(@syntax-gutter-text-color, @syntax-text-color);
+      color: ~"color-mix(in srgb, var(--syntax-gutter-text-color) 50%, var(--syntax-text-color))";
       -webkit-font-smoothing: antialiased;
 
       &:before {
@@ -348,7 +348,7 @@
 
   atom-text-editor {
     .selection .region {
-      background-color: mix(@button-background-color-selected, @syntax-background-color, 25%);
+      background-color: ~"color-mix(in srgb, var(--button-background-color-selected) 25%, var(--syntax-background-color))";
     }
   }
 }
@@ -358,7 +358,7 @@
 
   atom-text-editor {
     .selection .region {
-      background-color: mix(@button-background-color-selected, @syntax-background-color, 8%);
+      background-color: ~"color-mix(in srgb, var(--button-background-color-selected) 8%, var(--syntax-background-color))";
     }
   }
 }

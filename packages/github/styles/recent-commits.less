@@ -45,7 +45,7 @@
     height: @size;
     border-radius: var(--component-border-radius);
     color: transparent;
-    background-color: mix(@text-color, @base-background-color, 15%);
+    background-color: ~"color-mix(in srgb, var(--text-color) 15%, var(--base-background-color))";
     box-shadow: 1px 0 var(--base-background-color);
     overflow: hidden;
     transition: margin .12s cubic-bezier(.5,.1,0,1);
