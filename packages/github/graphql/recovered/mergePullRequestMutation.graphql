@@ -1,0 +1,21 @@
+mutation mergePullRequestMutation(
+  $input: MergePullRequestInput!
+) {
+  mergePullRequest(input: $input) {
+    pullRequest {
+      id
+      number
+      state
+      merged
+      mergedAt
+      viewerCanUpdate
+      headRefName
+      baseRefName
+      mergeCommit {
+        id
+        oid
+        messageHeadline
+      }
+    }
+  }
+}

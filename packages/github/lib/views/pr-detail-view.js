@@ -36,6 +36,8 @@ var _issueishBadge = _interopRequireDefault(require("../views/issueish-badge"));
 
 var _checkoutButton = _interopRequireDefault(require("./checkout-button"));
 
+var _mergePullRequest = _interopRequireDefault(require("../mutations/merge-pull-request"));
+
 var _prCommitsView = require("../views/pr-commits-view");
 
 var _prStatusesView = require("../views/pr-statuses-view");
@@ -53,7 +55,37 @@ class BarePullRequestDetailView extends _react.default.Component {
     super(...args);
 
     _defineProperty(this, "state", {
-      refreshing: false
+      refreshing: false,
+      merging: false,
+      mergeError: null
+    });
+
+    _defineProperty(this, "handleMergeClick", async e => {
+      e.preventDefault();
+      const pullRequest = this.props.pullRequest;
+      // headRefOid pins the merge to the commit that was reviewed. Without it
+      // a push landing between render and click would be merged unseen.
+      if (this.state.merging || !pullRequest.headRefOid) return;
+      this.setState({merging: true, mergeError: null});
+      try {
+        const result = await (0, _mergePullRequest.default)(
+          {endpoint: this.props.endpoint, token: this.props.token},
+          {
+            pullRequestID: pullRequest.id,
+            headOid: pullRequest.headRefOid,
+            mergeMethod: 'MERGE'
+          }
+        );
+        const errors = result && result.errors;
+        if (errors && errors.length) {
+          this.setState({merging: false, mergeError: errors[0].message});
+          return;
+        }
+        this.setState({merging: false});
+        this.refresher.refreshNow(true);
+      } catch (err) {
+        this.setState({merging: false, mergeError: err.message});
+      }
     });
 
     _defineProperty(this, "handleRefreshClick", e => {
@@ -129,6 +161,27 @@ class BarePullRequestDetailView extends _react.default.Component {
     }, pullRequest.isCrossRepository ? `${repo.owner.login}/${pullRequest.baseRefName}` : pullRequest.baseRefName), ' ‹ ', _react.default.createElement("code", {
       className: "github-IssueishDetailView-headRefName"
     }, pullRequest.isCrossRepository ? `${author.login}/${pullRequest.headRefName}` : pullRequest.headRefName));
+  }
+
+  renderMergeButton(pullRequest) {
+    // Only offered when GitHub says the branch is mergeable and the viewer may
+    // act. MergeableState is MERGEABLE / CONFLICTING / UNKNOWN -- UNKNOWN means
+    // GitHub is still computing it, so the button stays hidden rather than
+    // offering a merge that would be rejected.
+    if (pullRequest.state !== 'OPEN') return null;
+    if (!pullRequest.viewerCanUpdate) return null;
+    if (pullRequest.mergeable !== 'MERGEABLE') return null;
+    if (!pullRequest.headRefOid) return null;
+
+    return _react.default.createElement("div", {
+      className: "github-IssueishDetailView-merge"
+    }, _react.default.createElement("button", {
+      className: "btn btn-primary github-IssueishDetailView-mergeButton",
+      onClick: this.handleMergeClick,
+      disabled: this.state.merging
+    }, this.state.merging ? 'Merging\u2026' : 'Merge pull request'), this.state.mergeError ? _react.default.createElement("div", {
+      className: "github-IssueishDetailView-mergeError error-messages"
+    }, this.state.mergeError) : null);
   }
 
   renderPullRequestBody(pullRequest) {
@@ -281,7 +334,7 @@ class BarePullRequestDetailView extends _react.default.Component {
       checkoutOp: this.props.checkoutOp,
       classNamePrefix: "github-IssueishDetailView-checkoutButton--",
       classNames: ['github-IssueishDetailView-checkoutButton']
-    }))), this.renderPullRequestBody(pullRequest), _react.default.createElement(_reviewsFooterView.default, {
+    }), this.renderMergeButton(pullRequest))), this.renderPullRequestBody(pullRequest), _react.default.createElement(_reviewsFooterView.default, {
       commentsResolved: this.props.reviewCommentsResolvedCount,
       totalComments: this.props.reviewCommentsTotalCount,
       openReviews: this.props.openReviews,
