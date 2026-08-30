@@ -45,8 +45,8 @@
   }
 
   .tree-view-root {
-    padding-left: @component-icon-padding;
-    padding-right: @component-padding;
+    padding-left: var(--component-icon-padding);
+    padding-right: var(--component-padding);
     background-color: inherit;
 
     /*
@@ -93,13 +93,13 @@
   /* Drag and Drop */
   .placeholder {
     position: absolute;
-    left: @component-icon-padding;
+    left: var(--component-icon-padding);
     padding: 0;
     z-index: 999;
     display: inline-block;
 
-    width: calc(~"100% -" @component-icon-padding);
-    background: @background-color-info;
+    width: calc(~"100% -" var(--component-icon-padding));
+    background: var(--background-color-info);
 
     list-style: none;
     pointer-events: none;
@@ -122,7 +122,7 @@
       margin-left: -1px;
       width: 4px;
       height: 4px;
-      background: @background-color-info;
+      background: var(--background-color-info);
       border-radius: 4px;
       border: 1px solid transparent;
     }

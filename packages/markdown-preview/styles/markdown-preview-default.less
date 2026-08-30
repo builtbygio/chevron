@@ -132,7 +132,7 @@
 
   code {
     color: @fg-strong;
-    background-color: contrast(@syntax-background-color, lighten(@syntax-background-color, 8%), darken(@syntax-background-color, 6%));
+    background-color: contrast(var(--syntax-background-color), ~"hsl(from var(--syntax-background-color) h s calc(l + 8))", ~"hsl(from var(--syntax-background-color) h s calc(l - 6))");
   }
 
   atom-text-editor {
@@ -140,7 +140,7 @@
     padding: 1em;
     font-size: .92em;
     border-radius: 3px;
-    background-color: contrast(@syntax-background-color, lighten(@syntax-background-color, 4%), darken(@syntax-background-color, 4%));
+    background-color: contrast(var(--syntax-background-color), ~"hsl(from var(--syntax-background-color) h s calc(l + 4))", ~"hsl(from var(--syntax-background-color) h s calc(l - 4))");
   }
 
 
@@ -150,7 +150,7 @@
     color: @fg-strong;
     border: 1px solid @border;
     border-bottom: 2px solid darken(@border, 6%);
-    background-color: contrast(@syntax-background-color, lighten(@syntax-background-color, 8%), darken(@syntax-background-color, 6%));
+    background-color: contrast(var(--syntax-background-color), ~"hsl(from var(--syntax-background-color) h s calc(l + 8))", ~"hsl(from var(--syntax-background-color) h s calc(l - 6))");
   }
 
 }

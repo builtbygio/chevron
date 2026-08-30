@@ -13,7 +13,7 @@
 .deprecation-cop {
   overflow: auto;
   -webkit-flex: 1;
-  background-color: @app-background-color;
+  background-color: var(--app-background-color);
 
   .deprecation-overview {    
     &:after {
@@ -24,11 +24,11 @@
   }
 
   .deprecation-info {
-    padding: 0 @component-padding;
+    padding: 0 var(--component-padding);
   }
 
   .deprecation-info:hover {
-    background-color: @background-color-selected;
+    background-color: var(--background-color-selected);
   }
 
   .deprecation-detail.list-item {
@@ -38,7 +38,7 @@
     .deprecation-message {
       padding: 5px 0 5px 28px;
       line-height: 1.4;
-      font-size: @font-size;
+      font-size: var(--font-size);
 
       p:last-child {
         margin-bottom: 0;
@@ -61,12 +61,12 @@
   }
 
   .stack-trace {
-    background-color: @tool-panel-background-color;
-    padding: @component-padding;
-    margin-bottom: @component-padding;
+    background-color: var(--tool-panel-background-color);
+    padding: var(--component-padding);
+    margin-bottom: var(--component-padding);
   }
 
   a {
-    color: @text-color-highlight;
+    color: var(--text-color-highlight);
   }
 }

@@ -52,7 +52,7 @@
     }
 
     &.modified:hover .close-icon {
-      color: @background-color-info;
+      color: var(--background-color-info);
     }
 
     &.modified:not(:hover) .close-icon {
@@ -61,7 +61,7 @@
       right: 11px;
       width: 8px;
       height: 8px;
-      border: 2px solid @background-color-info;
+      border: 2px solid var(--background-color-info);
       border-radius: 12px;
     }
   }
@@ -71,10 +71,10 @@
     position: relative;
     top: 0;
     padding: 0;
-    height: @tab-height;
+    height: var(--tab-height);
     z-index: 999;
     list-style: none;
-    background: @background-color-info;
+    background: var(--background-color-info);
     pointer-events: none;
 
     // bar
@@ -91,7 +91,7 @@
     &:after {
       content: "";
       position: absolute;
-      top: @tab-height;
+      top: var(--tab-height);
       margin-top: -1px;
       margin-left: -2px;
       z-index: 9999;

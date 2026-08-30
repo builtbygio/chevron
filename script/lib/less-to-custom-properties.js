@@ -131,6 +131,36 @@ function convert(source, vars) {
   return { output: out.join('\n'), unhandled };
 }
 
+// Identify a theme by the `theme` field of its nearest enclosing package.json,
+// walking up from the file. Name matching is wrong twice over: `lsp-ui` ends in
+// -ui and is an ordinary package, and themes also appear nested as spec
+// fixtures (dev-live-reload/spec/fixtures/theme-with-ui-variables).
+function isThemeStylesheet(file) {
+  let dir = path.dirname(path.resolve(file));
+  const stop = path.resolve(ROOT);
+  while (dir.startsWith(stop)) {
+    const manifest = path.join(dir, 'package.json');
+    if (fs.existsSync(manifest)) {
+      try {
+        const { theme } = JSON.parse(fs.readFileSync(manifest, 'utf8'));
+        return theme === 'ui' || theme === 'syntax';
+      } catch (e) {
+        return false;
+      }
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return false;
+}
+
+// Specs own their fixtures; rewriting them changes what the test exercises.
+function isFixture(file) {
+  const parts = path.resolve(file).split(path.sep);
+  return parts.includes('spec') || parts.includes('test');
+}
+
 function lessFilesUnder(target) {
   const found = [];
   const walk = dir => {
@@ -166,7 +196,9 @@ function main() {
   for (const target of targets) {
     for (const file of lessFilesUnder(target)) {
       // A theme's own variable files define the values; never rewrite them.
-      if (/packages\/[^/]+-(ui|syntax)\/styles\//.test(file)) continue;
+      // Identify themes by their `theme` field, not their name: lsp-ui ends in
+      // -ui and is an ordinary package whose stylesheets do need converting.
+      if (isThemeStylesheet(file) || isFixture(file)) continue;
       scanned++;
       const src = fs.readFileSync(file, 'utf8');
       const { output, unhandled } = convert(src, vars);
