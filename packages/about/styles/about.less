@@ -13,8 +13,8 @@
   font-size: 1.25em;
   line-height: 1.4;
   padding: 4em;
-  color: @text-color;
-  background-color: @base-background-color;
+  color: var(--text-color);
+  background-color: var(--base-background-color);
 
   button {
     cursor: default;
@@ -60,16 +60,16 @@
   width: 100%;
   max-width: 280px;
   margin: 0 auto 1em auto;
-  color: @text-color-highlight;
+  color: var(--text-color-highlight);
   transition: color 0.2s;
 }
 
 .about-version-container {
   &:hover {
-    color: lighten(@text-color, 15%);
+    color: ~"hsl(from var(--text-color) h s calc(l + 15))";
   }
   &:active {
-    color: lighten(@text-color, 30%);
+    color: ~"hsl(from var(--text-color) h s calc(l + 30))";
   }
 }
 
@@ -80,7 +80,7 @@
 }
 
 .about-more-version {
-  color: @text-color-subtle;
+  color: var(--text-color-subtle);
   font-size: .9em;
 }
 
@@ -100,10 +100,10 @@
 .about-updates-box {
   display: flex;
   align-items: center;
-  padding: @component-padding;
-  border: 1px solid @base-border-color;
-  border-radius: @component-border-radius * 2;
-  background-color: @background-color-highlight;
+  padding: var(--component-padding);
+  border: 1px solid var(--base-border-color);
+  border-radius: calc(var(--component-border-radius) * 2);
+  background-color: var(--background-color-highlight);
 }
 
 .about-updates-status {
@@ -118,9 +118,9 @@
 }
 
 .about-updates-label {
-  color: @text-color-subtle;
+  color: var(--text-color-subtle);
   &.is-strong {
-    color: @text-color;
+    color: var(--text-color);
   }
 }
 
@@ -161,15 +161,15 @@
 }
 
 .about-credits {
-  color: @text-color-subtle;
+  color: var(--text-color-subtle);
 }
 
 
 // the blue squirrel --------------------------------
 
 .about-release-notes {
-  color: @background-color-info;
+  color: var(--background-color-info);
   &:hover {
-    color: lighten(@background-color-info, 15%);
+    color: ~"hsl(from var(--background-color-info) h s calc(l + 15))";
   }
 }
