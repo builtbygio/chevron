@@ -15,6 +15,10 @@ const HOST_SCRIPT = path.join(__dirname, 'workers', 'lsp-host.js');
 
 let host = null;
 let hostReady = false;
+// Callers that arrived while the host was still booting. `host` is assigned
+// synchronously after fork(), so any second ensureHost() during boot lands in
+// the not-ready branch and has to be woken by the host-booted message.
+let readyWaiters = [];
 let nextRequestId = 1;
 const pending = new Map();
 /** @type {Set<Electron.WebContents>} */
@@ -42,19 +46,31 @@ function broadcast(msg) {
   }
 }
 
+function settleReadyWaiters(error) {
+  const waiters = readyWaiters;
+  readyWaiters = [];
+  for (const waiter of waiters) {
+    clearTimeout(waiter.timer);
+    if (error) waiter.reject(error);
+    else waiter.resolve();
+  }
+}
+
 function ensureHost() {
   if (host && hostReady) return Promise.resolve();
   if (host && !hostReady) {
+    // This used to assign `host._waitReady = onReady` and nothing ever called
+    // it, so every caller that arrived during boot waited the full 10s and then
+    // rejected with "LSP host start timeout" -- which is what a language server
+    // failing to start looked like from the renderer. Queue instead, and let
+    // the host-booted / exit handlers below settle these.
     return new Promise((resolve, reject) => {
-      const t = setTimeout(() => reject(new Error('LSP host start timeout')), 10000);
-      const onReady = msg => {
-        if (msg && msg.type === 'host-booted') {
-          clearTimeout(t);
-          hostReady = true;
-          resolve();
-        }
-      };
-      host._waitReady = onReady;
+      const waiter = { resolve, reject, timer: null };
+      waiter.timer = setTimeout(() => {
+        readyWaiters = readyWaiters.filter(w => w !== waiter);
+        reject(new Error('LSP host start timeout'));
+      }, 10000);
+      readyWaiters.push(waiter);
     });
   }
 
@@ -89,6 +105,7 @@ function ensureHost() {
       if (msg.type === 'host-booted') {
         hostReady = true;
         clearTimeout(bootTimer);
+        settleReadyWaiters(null);
         resolve();
         return;
       }
@@ -116,6 +133,7 @@ function ensureHost() {
     child.on('exit', code => {
       host = null;
       hostReady = false;
+      settleReadyWaiters(new Error(`LSP host exited (${code})`));
       for (const [, p] of pending) {
         p.reject(new Error(`LSP host exited (${code})`));
       }
