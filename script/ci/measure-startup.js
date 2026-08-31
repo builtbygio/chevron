@@ -28,6 +28,7 @@ const os = require('os');
 const path = require('path');
 const WebSocket = require(path.join(__dirname, '..', 'node_modules', 'ws'));
 const { findPackagedApp } = require('../lib/find-packaged-app');
+const { makeTempDir } = require('../lib/temp-dir');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const PORT = 9455;
@@ -193,7 +194,7 @@ async function gracefulQuit(app) {
 
 async function singleRun(binary, runIndex, reuseHome) {
   const home =
-    reuseHome || fs.mkdtempSync(path.join(os.tmpdir(), `chevron-cold-${runIndex}-`));
+    reuseHome || makeTempDir(`chevron-cold-${runIndex}-`);
   fs.mkdirSync(path.join(home, 'electronUserData'), { recursive: true });
 
   const t0 = Date.now();

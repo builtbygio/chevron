@@ -13,6 +13,7 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { makeTempDir } = require('./temp-dir');
 
 const STOCK_CONTEXT_MAX_BYTES = 2 * 1024 * 1024;
 
@@ -32,7 +33,7 @@ function runCustomMksnapshot({
   stdio = 'inherit'
 }) {
   fs.mkdirSync(outputDir, { recursive: true });
-  const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-mksnap-'));
+  const workDir = makeTempDir('chevron-mksnap-');
   fs.cpSync(mksnapshotBinDir, workDir, { recursive: true });
 
   const absScript = path.resolve(scriptPath);

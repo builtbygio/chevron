@@ -12,6 +12,7 @@ const fs = require('fs');
 const os = require('os');
 
 const verify = require('../lib/verify-machine-requirements');
+const { makeTempDir } = require('../lib/temp-dir');
 const {
   parsePythonVersion,
   isAcceptablePython,
@@ -164,14 +165,14 @@ describe('critical-natives', () => {
   });
 
   it('findArtifact reports missing package', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'crit-nat-'));
+    const tmp = makeTempDir('crit-nat-');
     const r = findArtifact(tmp, 'superstring');
     assert.strictEqual(r.present, false);
     fs.rmSync(tmp, { recursive: true, force: true });
   });
 
   it('findArtifact finds a planted .node', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'crit-nat-'));
+    const tmp = makeTempDir('crit-nat-');
     const release = path.join(
       tmp,
       'node_modules',
@@ -189,7 +190,7 @@ describe('critical-natives', () => {
   });
 
   it('checkCriticalNatives aggregates missing', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'crit-all-'));
+    const tmp = makeTempDir('crit-all-');
     const result = checkCriticalNatives(tmp);
     assert.strictEqual(result.ok, false);
     assert.ok(result.missing.length >= CRITICAL_REBUILD_PACKAGES.length - 1);

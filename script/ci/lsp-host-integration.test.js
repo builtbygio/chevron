@@ -14,6 +14,7 @@ const fs = require('fs');
 const os = require('os');
 const { fork } = require('child_process');
 const { encodeMessage } = require('../../src/lsp/framing');
+const { makeTempDir } = require('../lib/temp-dir');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const HOST = path.join(ROOT, 'src/main-process/workers/lsp-host.js');
@@ -93,7 +94,7 @@ describe('LSP host integration (mock server)', () => {
   let host;
 
   before(() => {
-    tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lsp-host-int-'));
+    tmp = makeTempDir('lsp-host-int-');
     mockScript = writeMockServer(tmp);
   });
 

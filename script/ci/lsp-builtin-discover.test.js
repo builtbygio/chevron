@@ -10,6 +10,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { makeTempDir } = require('../lib/temp-dir');
 const {
   resolveBuiltinRegistrations,
   resolveInstalledPackageCommand,
@@ -21,7 +22,7 @@ describe('optional chevron-lsp-* discovery', () => {
   let prevHome;
 
   before(() => {
-    tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-lsp-home-'));
+    tmp = makeTempDir('chevron-lsp-home-');
     prevHome = process.env.CHEVRON_HOME;
     process.env.CHEVRON_HOME = tmp;
     const binDir = path.join(

@@ -17,6 +17,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const { makeTempDir } = require('./lib/temp-dir');
 const {
   encodeMessage,
   LspFrameDecoder,
@@ -63,7 +64,7 @@ async function main() {
     process.exit(2);
   }
 
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-lsp-spike-'));
+  const tmpDir = makeTempDir('chevron-lsp-spike-');
   const filePath = path.join(tmpDir, 'sample.ts');
   const source = [
     'export function greet(name: string): string {',
