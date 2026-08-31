@@ -142,6 +142,33 @@ describe('bundled packages', () => {
       assert.deepEqual(problems, [], problems.join('\n  '));
     });
 
+    it('ships nothing that the bundle already inlined', () => {
+      // Deleting lib/ alone left the three autocomplete packages shipping
+      // completions.json twice -- inlined in the bundle and still beside it,
+      // 436K of duplicate data nothing read. esbuild's metafile is the only
+      // thing that knows what was actually absorbed, so the bundler deletes
+      // from that rather than from a guess about directory names.
+      //
+      // Scoped to what the bundle actually absorbed: what main reaches. These
+      // packages also ship update.js / fetch-*-docs.js (maintenance scripts
+      // that regenerate completions.json) and their spec/ directories. Those
+      // are never bundle inputs and shipped long before bundling -- whether
+      // the app should carry them at all is a real question, and a separate
+      // one from this.
+      const problems = [];
+      for (const name of BUNDLED) {
+        const root = path.join(APP, 'node_modules', name);
+        if (!fs.existsSync(root)) continue;
+        if (fs.existsSync(path.join(root, 'lib'))) {
+          problems.push(`${name}: lib/ was inlined and still ships`);
+        }
+        if (fs.existsSync(path.join(root, 'completions.json'))) {
+          problems.push(`${name}: completions.json is inlined and still ships`);
+        }
+      }
+      assert.deepEqual(problems, [], problems.join('\n  '));
+    });
+
     it('does not inline a second copy of event-kit', () => {
       const offenders = [];
       for (const name of BUNDLED) {

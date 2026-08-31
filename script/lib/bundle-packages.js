@@ -30,11 +30,17 @@
  *                    dependencies and resolve it from the app's hoisted
  *                    node_modules, which is exactly why it is easy to miss.
  *
- * After bundling, the package's lib/ is removed and its main is rewritten to
- * ./index.js. Removing lib/ is the point rather than tidiness: if anything
- * still reaches into it, the build or the smoke test says so immediately
- * instead of the bundle silently being dead weight beside the sources it was
- * meant to replace.
+ * After bundling, everything that went into the bundle is removed and main is
+ * rewritten to ./index.js. Removing the inputs is the point rather than
+ * tidiness: if anything still reaches into them, the build or the smoke test
+ * says so immediately instead of the bundle silently being dead weight beside
+ * the sources it was meant to replace.
+ *
+ * "Everything that went into the bundle" is esbuild's own metafile, not lib/.
+ * Deleting lib/ alone left the three autocomplete packages shipping their
+ * completions.json twice -- inlined in the bundle and still sitting beside it,
+ * 436K of duplicate data that nothing read. The metafile is the only thing
+ * that knows what was actually inlined.
  */
 
 const fs = require('fs');
@@ -42,6 +48,19 @@ const path = require('path');
 const esbuild = require('esbuild');
 
 const CONFIG = require('../config');
+
+const ROOT = path.resolve(__dirname, '..', '..');
+
+// esbuild reports inputs relative to the working directory; a directory left
+// empty by deleting them is not something the package needs either.
+function removeEmptyDirectories(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const full = path.join(dir, entry.name);
+    removeEmptyDirectories(full);
+    if (fs.readdirSync(full).length === 0) fs.rmdirSync(full);
+  }
+}
 
 const EXTERNAL = ['chevron', 'atom', 'electron', 'event-kit'];
 
@@ -75,7 +94,7 @@ function bundleOne(packageName) {
   const entry = require.resolve(path.resolve(packageRoot, manifest.main));
   const outfile = path.join(packageRoot, 'index.js');
 
-  esbuild.buildSync({
+  const result = esbuild.buildSync({
     entryPoints: [entry],
     outfile,
     bundle: true,
@@ -84,6 +103,7 @@ function bundleOne(packageName) {
     target: 'node22',
     external: EXTERNAL,
     logLevel: 'warning',
+    metafile: true,
     // Packages are first-party and shipped with the app; readable output is
     // worth more than the bytes when someone is reading a stack trace.
     minify: false,
@@ -93,16 +113,28 @@ function bundleOne(packageName) {
   manifest.main = './index.js';
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
 
-  const libPath = path.join(packageRoot, 'lib');
-  if (fs.existsSync(libPath)) {
-    fs.rmSync(libPath, { recursive: true, force: true });
+  // Delete exactly what was inlined -- sources and any data file the bundle
+  // absorbed -- and nothing else. Assets the loader still reads on its own
+  // (grammars, keymaps, menus, settings, styles) are never bundle inputs, so
+  // they are never in this list.
+  let removed = 0;
+  for (const input of Object.keys(result.metafile.inputs)) {
+    const absolute = path.resolve(ROOT, input);
+    if (!absolute.startsWith(packageRoot + path.sep)) continue;
+    if (absolute === outfile) continue;
+    if (fs.existsSync(absolute)) {
+      fs.unlinkSync(absolute);
+      removed++;
+    }
   }
+  removeEmptyDirectories(packageRoot);
 
-  return fs.statSync(outfile).size;
+  return { size: fs.statSync(outfile).size, removed };
 }
 
 module.exports = function() {
   let total = 0;
+  let totalRemoved = 0;
   const sizes = [];
   for (const packageName of BUNDLED) {
     const packageRoot = path.join(
@@ -115,13 +147,15 @@ module.exports = function() {
         `${packageName} is in the bundle list but is not a bundled package`
       );
     }
-    const size = bundleOne(packageName);
+    const { size, removed } = bundleOne(packageName);
     total += size;
+    totalRemoved += removed;
     sizes.push(`${packageName} ${Math.round(size / 1024)}K`);
   }
   console.log(
     `Bundled ${BUNDLED.length} packages into one index.js each ` +
-      `(${Math.round(total / 1024)}K total): ${sizes.join(', ')}`
+      `(${Math.round(total / 1024)}K total, ${totalRemoved} inlined files ` +
+      `removed): ${sizes.join(', ')}`
   );
 };
 
