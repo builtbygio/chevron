@@ -61,6 +61,7 @@ const generateStartupSnapshot = require('./lib/generate-startup-snapshot')
 const installApplication = require('./lib/install-application')
 const notarizeOnMac = require('./lib/notarize-on-mac')
 const packageApplication = require('./lib/package-application')
+const bundlePackages = require('./lib/bundle-packages')
 const compilePackageStyles = require('./lib/compile-package-styles')
 const testSignOnMac = require('./lib/test-sign-on-mac')
 const transpileTypeScriptPaths = require('./lib/transpile-typescript-paths')
@@ -86,6 +87,9 @@ if (!argv.existingBinaries) {
   // snippets ships lib/snippet-body.pegjs. Without this the package falls back
   // to compiling the grammar at run time through loophole's allowUnsafeEval.
   transpilePegJsPaths()
+  // Before generateModuleCache: bundling removes each package's lib/, and the
+  // module cache indexes what is on disk when it runs.
+  bundlePackages()
   generateModuleCache()
   compilePackageStyles()
   generateMetadata()
