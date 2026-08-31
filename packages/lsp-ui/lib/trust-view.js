@@ -8,9 +8,56 @@
 
 function parseRgb(color) {
   if (!color || color === 'transparent') return null;
-  const m = String(color).match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
-  if (!m) return null;
-  return { r: Number(m[1]), g: Number(m[2]), b: Number(m[3]) };
+  const text = String(color);
+
+  // Fully transparent computes as `rgba(0, 0, 0, 0)`, not the keyword, so the
+  // check above misses it. Parsed as black it reads as a dark background and
+  // the dialog paints pale text -- correct on a dark theme, unreadable on a
+  // light one, which is why this only showed up in One Light.
+  const rgba = text.match(
+    /rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:[\s,/]+([\d.]+))?/
+  );
+  if (rgba) {
+    const alpha = rgba[4] === undefined ? 1 : Number(rgba[4]);
+    if (alpha === 0) return null;
+    return { r: Number(rgba[1]), g: Number(rgba[2]), b: Number(rgba[3]) };
+  }
+
+  // Relative colour syntax and color-mix() compute to `color(srgb r g b / a)`
+  // with 0-1 channels. Converted stylesheets produce these, so a parser that
+  // only understands rgb() would silently fall back to its default.
+  const srgb = text.match(
+    /color\(\s*srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?/
+  );
+  if (srgb) {
+    const alpha = srgb[4] === undefined ? 1 : Number(srgb[4]);
+    if (alpha === 0) return null;
+    return {
+      r: Number(srgb[1]) * 255,
+      g: Number(srgb[2]) * 255,
+      b: Number(srgb[3]) * 255
+    };
+  }
+
+  return null;
+}
+
+// The modal panel itself is transparent in several themes, so sampling it says
+// nothing about what the dialog is drawn on. Walk up until something actually
+// paints, and fall back to the body.
+function effectiveBackground(start) {
+  let node = start;
+  while (node && node.nodeType === 1) {
+    const parsed = parseRgb(window.getComputedStyle(node).backgroundColor);
+    if (parsed) return parsed;
+    node = node.parentElement;
+  }
+  for (const el of [document.body, document.documentElement]) {
+    if (!el) continue;
+    const parsed = parseRgb(window.getComputedStyle(el).backgroundColor);
+    if (parsed) return parsed;
+  }
+  return null;
 }
 
 function luminance({ r, g, b }) {
@@ -88,11 +135,7 @@ class TrustView {
     const host =
       (this.element.closest && this.element.closest('atom-panel.modal')) ||
       this.element;
-    const bg = parseRgb(window.getComputedStyle(host).backgroundColor) || {
-      r: 32,
-      g: 33,
-      b: 35
-    };
+    const bg = effectiveBackground(host) || { r: 32, g: 33, b: 35 };
     const dark = luminance(bg) < 140;
     const ink = dark ? { r: 236, g: 236, b: 236 } : { r: 28, g: 28, b: 28 };
     const muted = dark ? { r: 176, g: 180, b: 186 } : { r: 90, g: 94, b: 100 };
