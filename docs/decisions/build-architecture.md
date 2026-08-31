@@ -94,7 +94,11 @@ Order is forced by dependency, not preference. Each step ships alone and leaves 
    then the 55 that do. The loader accepts both shapes during the transition. (Counted
    2026-08-31 against `packageDependencies`: 86 bundled packages, of which 8 are themes.
    The zero-dependency set is easier than 23 suggests — 12 of them are grammar-only
-   `language-*` packages with no JavaScript at all.) *Deletes:*
+   `language-*` packages with no JavaScript at all. The loader half of this step is
+   smaller than "the loader accepts both shapes" implies: `generate-metadata.js` already
+   emits `_atomPackages`, a manifest for all 86 bundled packages that `Package` reads
+   instead of scanning directories. The work is the bundle and the container, not the
+   contract.) *Deletes:*
    `transpile-typescript-paths`, `transpile-peg-js-paths`, `precompile-babel-prefix-files`,
    `src/typescript.js`.
 3. **Bundle core, then re-measure startup.** *Deletes, if measurement agrees:* `module-cache`,

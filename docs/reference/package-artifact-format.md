@@ -158,15 +158,43 @@ signature = Ed25519(sk, sha256(manifest.json bytes))
 
 ## Loader contract
 
-`PackageManager` accepts both shapes during the transition:
+**Most of this already exists**, which was not obvious from the sketch and is
+worth stating plainly before anyone plans work around it.
 
-1. If the directory has `manifest.json` with `formatVersion`, load as an
-   artifact: `main` is the bundle, `contributes` is authoritative, no directory
-   scanning.
-2. Otherwise fall back to today's `package.json` + directory conventions.
+`generate-metadata.js` already emits `_atomPackages` into the app's
+`package.json`: one entry per bundled package — all 86 — carrying the full
+`metadata`, `keymaps`, `menus` and `settings` inlined as objects,
+`grammarPaths`, `main`, `rootDirPath` and `styleSheetPaths`. `Package` reads it
+through `packageManager.packagesCache` and skips the directory scan entirely;
+the `fs.list(grammarsDirPath, …)` branch is the fallback for packages that are
+not bundled, not the normal path.
 
-Nothing needs both. The check is one `existsSync` per package, and the
-fallback disappears with the last unbundled package rather than on a flag day.
+So the editor already loads bundled packages from a manifest. What
+`manifest.json` adds is not the idea:
+
+| | `_atomPackages` today | `.chevpkg` manifest |
+|---|---|---|
+| Scope | one blob for all 86 packages | one file per package |
+| `main` | relative path into a source tree | the package's own bundle |
+| Assets | paths into the app tree | paths inside the artifact |
+| Integrity | none | hash per shipped file |
+| Signature | none | Ed25519 over the manifest |
+| Installable | no — build output only | yes, same bytes either way |
+
+The practical consequence: the loader change in step 2 is small. Both shapes
+are already accepted, because `packagesCache` *is* the second shape. What
+changes is where `main` points and that the entry becomes per-package and
+verifiable.
+
+During the transition the resolution order is:
+
+1. Directory has `manifest.json` with `formatVersion` — load as an artifact.
+2. Package appears in `packagesCache` — today's bundled path, unchanged.
+3. Otherwise scan directories — today's unbundled path, unchanged.
+
+Nothing needs more than one. Step 2's work is therefore the bundle and the
+container, not the contract; the contract is mostly a rename of something that
+ships already.
 
 The spec harness is the known landmine: Jasmine loads packages from their
 directories, so bundled packages need either a dev mode that skips bundling or
