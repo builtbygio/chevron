@@ -136,28 +136,24 @@ function createAutocompleteProvider(client) {
       '.source.ts, .source.tsx, .source.js, .source.js.jsx, .source.jsx, .source.flow, .source.rust, .source.python',
     disableForSelector: '.comment, .string',
     inclusionPriority: 1,
-    // Only claim exclusivity when a server will actually answer.
+    // Deliberately NOT excludeLowerPriority.
     //
-    // The selector above is deliberately broad and getSuggestions gates the
-    // real work on getServerIdForEditor. But excludeLowerPriority is read by
-    // autocomplete-plus at *filter* time, before getSuggestions runs, so a
-    // static `true` dropped the built-in subsequence provider (priority 0)
-    // even when no server was running -- and getSuggestions then returned []
-    // because there was no serverId. The result was no completions at all in
-    // .ts/.tsx/.js/.jsx/.flow/.rust/.python, the languages this is meant to
-    // improve. Reading it as a getter keeps the ranking intent (LSP wins when
-    // present, snippets survive at priority 1) without that failure mode.
-    get excludeLowerPriority() {
-      try {
-        const editor =
-          typeof chevron !== 'undefined' &&
-          chevron.workspace &&
-          chevron.workspace.getActiveTextEditor();
-        return Boolean(editor && client.getServerIdForEditor(editor));
-      } catch (error) {
-        return false;
-      }
-    },
+    // This provider used to declare `excludeLowerPriority: true`, which
+    // autocomplete-plus reads at filter time to drop every lower-priority
+    // provider -- including the built-in word provider at priority 0. That is
+    // only safe if this provider always answers, and it does not: it returns
+    // [] when no server is running, when the project is untrusted, while a
+    // server is still initialising, and whenever the server has nothing for
+    // the prefix. Each of those became "no completions at all" in
+    // .ts/.tsx/.js/.jsx/.flow/.rust/.python.
+    //
+    // Making it conditional on getServerIdForEditor was not enough: once a
+    // session exists the exclusion comes back, so an untitled file completed
+    // and the same text in a project file did not.
+    //
+    // suggestionPriority below already sorts server results above their peers,
+    // which is the actual goal. Word matches now appear underneath instead of
+    // instead-of-nothing. A slightly longer list beats an empty one.
     suggestionPriority: 5,
     // Server order is semantic; do not re-fuzzy locally.
     filterSuggestions: false,

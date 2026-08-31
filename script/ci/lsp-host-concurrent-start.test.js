@@ -33,6 +33,32 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const MANAGER = path.join(ROOT, 'src', 'main-process', 'lsp-worker-manager.js');
 
+describe('lsp autocomplete provider', () => {
+  it('never claims exclusivity over lower-priority providers', () => {
+    // excludeLowerPriority drops the built-in word provider at filter time,
+    // before this provider has a chance to return []. It returns [] with no
+    // server, with an untrusted project, while initialising, and whenever the
+    // server has nothing -- each of which became "no completions at all" in
+    // every language the selector claims. suggestionPriority does the ranking.
+    const src = fs
+      .readFileSync(
+        path.join(ROOT, 'src', 'lsp', 'providers', 'autocomplete.js'),
+        'utf8'
+      )
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    assert.ok(
+      !/excludeLowerPriority/.test(src),
+      'the LSP autocomplete provider must not set excludeLowerPriority, in ' +
+        'any form -- static or getter. Rank with suggestionPriority instead.'
+    );
+    assert.ok(
+      /suggestionPriority:\s*[1-9]/.test(src),
+      'server results still need to outrank word matches'
+    );
+  });
+});
+
 describe('lsp host concurrent start', () => {
   // Strip comments first: the fix documents the old `host._waitReady` line by
   // name, and a naive scan for the string matches that explanation. Same trap
