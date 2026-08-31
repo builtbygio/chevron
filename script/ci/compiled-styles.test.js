@@ -62,6 +62,40 @@ describe('stylesheets are compiled at build time', () => {
     );
   });
 
+  describe('path handling across platforms', () => {
+    // glob returns forward slashes even on Windows, where path.join produces
+    // backslashes. The two spellings of one file compared unequal, so a
+    // theme's index.less went into the discard list as well as the compiled
+    // list and the build died unlinking it twice:
+    //
+    //   ENOENT: no such file or directory, unlink
+    //     'D:\a\chevron\chevron\out\app\node_modules\one-dark-ui\index.less'
+    //
+    // Invisible on Linux, where both spellings are identical. Comparing on one
+    // normalised spelling is checkable from any platform.
+    const { normalize, samePath } = require('../lib/compile-package-styles');
+
+    it('treats the two spellings of one path as the same file', () => {
+      assert.ok(
+        samePath(
+          'D:\\a\\out\\app\\node_modules\\one-dark-ui\\index.less',
+          'D:/a/out/app/node_modules/one-dark-ui/index.less'
+        ),
+        'a glob result and a path.join result must compare equal'
+      );
+    });
+
+    it('still tells different files apart', () => {
+      assert.ok(!samePath('D:/a/index.less', 'D:/a/styles/atom.less'));
+      assert.ok(!samePath('/a/index.less', '/a/index2.less'));
+    });
+
+    it('normalises to one separator', () => {
+      assert.equal(normalize('a\\b\\c.less'), 'a/b/c.less');
+      assert.equal(normalize('a/b/c.less'), 'a/b/c.less');
+    });
+  });
+
   const describeApp = fs.existsSync(APP) ? describe : describe.skip;
 
   describeApp('the packaged app', () => {
