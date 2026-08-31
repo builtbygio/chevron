@@ -107,6 +107,20 @@ const OVERLAY_BAND = `
   --overlay-contrast-l-min: 0;
   --overlay-contrast-l-max: unit(lightness(@overlay-background-color) - 40);
 }
+
+// Which way this theme moves a colour to increase contrast: +1 on a dark
+// theme (lighten), -1 on a light one (darken). LESS's contrast(bg, a, b)
+// picks a branch from bg's luminance at build time, which needs both theme
+// halves in scope; multiplying a lightness delta by this sign expresses the
+// same choice at runtime from the UI theme alone.
+//   contrast(bg, darken(c, N%), lighten(c, N%))
+//     -> hsl(from var(--c) h s calc(l + (var(--contrast-shift-sign) * N)))
+.chevron-contrast-sign() when (lightness(@base-background-color) < 50) {
+  --contrast-shift-sign: 1;
+}
+.chevron-contrast-sign() when (lightness(@base-background-color) >= 50) {
+  --contrast-shift-sign: -1;
+}
 `;
 
 function render(kind, names) {
@@ -127,7 +141,9 @@ ${kind === 'ui' ? OVERLAY_BAND : ''}
 :root {
 ` +
     names.map(n => `  --${n}: @${n};`).join('\n') +
-    (kind === 'ui' ? '\n  .chevron-overlay-contrast-band();' : '') +
+    (kind === 'ui'
+      ? '\n  .chevron-overlay-contrast-band();\n  .chevron-contrast-sign();'
+      : '') +
     '\n}\n'
   );
 }
