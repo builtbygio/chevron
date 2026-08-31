@@ -200,7 +200,11 @@ atom-workspace.find-visible {
   margin-top: @wrap-size * -0.5;
   margin-left: @wrap-size * -0.5;
 
-  background: fadeout(darken(@syntax-background-color, 4%), 55%);
+  // fadeout(darken(@syntax-background-color, 4%), 55%) composed into one
+  // relative-colour expression: lightness -4, alpha -0.55. Verified
+  // against LESS, which resolves the original to hsla(220,13%,14%,0.45)
+  // for one-dark's hsl(220,13%,18%).
+  background: ~"hsl(from var(--syntax-background-color) h s calc(l - 4) / calc(alpha - 0.55))";
   border-radius: calc(var(--component-border-radius) * 2);
   text-align: center;
   pointer-events: none;
