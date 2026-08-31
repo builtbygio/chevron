@@ -19,6 +19,7 @@ const https = require('https');
 const os = require('os');
 const path = require('path');
 const CONFIG = require('../config');
+const { makeTempDir } = require('./temp-dir');
 
 const RG_VERSION = 'v13.0.0-13';
 const RG_MULTI_ARCH_LINUX_VERSION = 'v13.0.0-4';
@@ -189,7 +190,7 @@ async function downloadRipgrepFallback(pkgDir) {
   const ext = process.platform === 'win32' ? 'zip' : 'tar.gz';
   const asset = `ripgrep-${version}-${target}.${ext}`;
   const url = `https://github.com/${RG_REPO}/releases/download/${version}/${asset}`;
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-rg-'));
+  const tmpDir = makeTempDir('chevron-rg-');
   const archive = path.join(tmpDir, asset);
   console.log(`Downloading ripgrep fallback ${url}`);
   await downloadFile(url, archive, githubToken());

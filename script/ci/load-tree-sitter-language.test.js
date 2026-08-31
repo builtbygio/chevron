@@ -5,6 +5,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { makeTempDir } = require('../lib/temp-dir');
 
 const {
   loadLanguageModule,
@@ -67,7 +68,7 @@ describe('load-tree-sitter-language', () => {
   });
 
   it('detects ESM syntax without type:module (tree-sitter-perl)', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-esm-detect-'));
+    const root = makeTempDir('ts-esm-detect-');
     const esmFile = path.join(root, 'index.js');
     write(
       esmFile,
@@ -80,7 +81,7 @@ describe('load-tree-sitter-language', () => {
   });
 
   it('rewrites app.asar package roots to app.asar.unpacked when present', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-asar-'));
+    const root = makeTempDir('ts-asar-');
     const asarPkg = path.join(
       root,
       'app.asar',
@@ -101,7 +102,7 @@ describe('load-tree-sitter-language', () => {
   });
 
   it('require()s a CJS grammar parser as-is', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-cjs-'));
+    const root = makeTempDir('ts-cjs-');
     const pkg = path.join(root, 'node_modules', 'tree-sitter-cjs-fixture');
     write(
       path.join(pkg, 'package.json'),
@@ -119,7 +120,7 @@ describe('load-tree-sitter-language', () => {
   });
 
   it('loads an ESM grammar via node-gyp-build', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-esm-'));
+    const root = makeTempDir('ts-esm-');
     const pkg = path.join(root, 'node_modules', 'tree-sitter-esm-fixture');
     write(
       path.join(pkg, 'package.json'),
@@ -152,7 +153,7 @@ describe('load-tree-sitter-language', () => {
   });
 
   it('loads ESM-without-type:module via node-gyp-build (tree-sitter-perl)', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-perl-esm-'));
+    const root = makeTempDir('ts-perl-esm-');
     const pkg = path.join(root, 'node_modules', 'tree-sitter-perl-fixture');
     write(
       path.join(pkg, 'package.json'),
@@ -186,7 +187,7 @@ describe('load-tree-sitter-language', () => {
   });
 
   it('falls back to node-gyp-build when require throws SyntaxError on an addon', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-syntax-'));
+    const root = makeTempDir('ts-syntax-');
     const pkg = path.join(root, 'node_modules', 'tree-sitter-syntax-fixture');
     write(
       path.join(pkg, 'package.json'),

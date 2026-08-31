@@ -10,6 +10,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { makeTempDir } = require('../lib/temp-dir');
 const {
   countMatches,
   replaceInFile,
@@ -34,7 +35,7 @@ describe('replaceInFile / replaceInFiles', () => {
   let dir;
 
   before(() => {
-    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-replace-'));
+    dir = makeTempDir('chevron-replace-');
   });
 
   afterEach(() => {

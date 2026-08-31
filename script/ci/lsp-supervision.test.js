@@ -17,6 +17,7 @@ const {
   DEFAULT_IDLE_MS
 } = require('../../src/main-process/workers/lsp-host');
 const { encodeMessage } = require('../../src/lsp/framing');
+const { makeTempDir } = require('../lib/temp-dir');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const HOST = path.join(ROOT, 'src/main-process/workers/lsp-host.js');
@@ -92,7 +93,7 @@ describe('host restarts crashing server once', () => {
   let marker;
 
   before(() => {
-    tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lsp-sup-'));
+    tmp = makeTempDir('lsp-sup-');
     marker = path.join(tmp, 'crashed');
   });
 

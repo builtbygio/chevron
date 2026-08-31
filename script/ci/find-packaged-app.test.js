@@ -6,9 +6,10 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { findPackagedApp } = require('../lib/find-packaged-app');
+const { makeTempDir } = require('../lib/temp-dir');
 
 function makeOut() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-find-app-'));
+  return makeTempDir('chevron-find-app-');
 }
 
 function touch(filePath) {

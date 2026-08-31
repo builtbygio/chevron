@@ -25,6 +25,7 @@ const http = require('http');
 const os = require('os');
 const path = require('path');
 const WebSocket = require('ws');
+const { makeTempDir } = require('../lib/temp-dir');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const PORT = 9451;
@@ -569,11 +570,11 @@ async function main() {
   const binary = findAppBinary(process.argv[2]);
   console.log(`smoke-test: launching ${binary}`);
 
-  const atomHome = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-smoke-'));
+  const atomHome = makeTempDir('chevron-smoke-');
   // Pre-create electronUserData so Chromium state is isolated too
   fs.mkdirSync(path.join(atomHome, 'electronUserData'), { recursive: true });
 
-  const probeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-probes-'));
+  const probeDir = makeTempDir('chevron-probes-');
 
   // A second probe file inside a *project folder*. Loose files opened by path
   // have no project root, so getServerIdForEditor always returns null for
@@ -581,7 +582,7 @@ async function main() {
   // path that already worked. An LSP provider claiming exclusivity only
   // suppressed the word provider once a project root existed, so "works in a
   // new file, not in an existing one" was invisible to this harness.
-  const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-project-'));
+  const projectDir = makeTempDir('chevron-project-');
   const projectFile = path.join(projectDir, 'project-probe.ts');
   fs.writeFileSync(
     projectFile,

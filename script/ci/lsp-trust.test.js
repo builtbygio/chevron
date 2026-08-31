@@ -10,6 +10,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { makeTempDir } = require('../lib/temp-dir');
 
 describe('LSP workspace trust', () => {
   let tmpHome;
@@ -18,7 +19,7 @@ describe('LSP workspace trust', () => {
   let lspTrust;
 
   before(() => {
-    tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-lsp-trust-'));
+    tmpHome = makeTempDir('chevron-lsp-trust-');
     prevChevron = process.env.CHEVRON_HOME;
     prevAtom = process.env.ATOM_HOME;
     process.env.CHEVRON_HOME = tmpHome;

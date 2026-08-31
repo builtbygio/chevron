@@ -13,6 +13,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { makeTempDir } = require('../lib/temp-dir');
 const {
   preferCson,
   resolveUserDataFile,
@@ -40,7 +41,7 @@ describe('preferCson', () => {
 
 describe('resolveUserDataFile', () => {
   beforeEach(() => {
-    tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-config-'));
+    tmp = makeTempDir('chevron-config-');
   });
   afterEach(() => {
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -93,7 +94,7 @@ describe('resolveUserDataFile', () => {
 
 describe('migrateStemToJson', () => {
   beforeEach(() => {
-    tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-config-'));
+    tmp = makeTempDir('chevron-config-');
   });
   afterEach(() => {
     fs.rmSync(tmp, { recursive: true, force: true });
