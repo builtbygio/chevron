@@ -303,7 +303,12 @@ const PROBE_EXPR = `(function() {
                       var pRect = pEl ? pEl.getBoundingClientRect() : null;
                       var pReady = pEl && pRect && pRect.width > 0 &&
                                    pEl.querySelectorAll('li').length > 0;
-                      if (pReady || pTries >= 40) {
+                      // 20s, double the loose-file budget. Opening a
+                      // project root also starts tree-view scanning, so the
+                      // first suggestion here can take much longer than in a
+                      // bare file -- one local run needed the full 10s, which
+                      // would have failed on a loaded CI runner.
+                      if (pReady || pTries >= 80) {
                         window.__acProbe.project = {
                           popup: !!pEl,
                           items: pEl ? pEl.querySelectorAll('li').length : 0,
