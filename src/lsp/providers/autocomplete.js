@@ -136,7 +136,28 @@ function createAutocompleteProvider(client) {
       '.source.ts, .source.tsx, .source.js, .source.js.jsx, .source.jsx, .source.flow, .source.rust, .source.python',
     disableForSelector: '.comment, .string',
     inclusionPriority: 1,
-    excludeLowerPriority: true,
+    // Only claim exclusivity when a server will actually answer.
+    //
+    // The selector above is deliberately broad and getSuggestions gates the
+    // real work on getServerIdForEditor. But excludeLowerPriority is read by
+    // autocomplete-plus at *filter* time, before getSuggestions runs, so a
+    // static `true` dropped the built-in subsequence provider (priority 0)
+    // even when no server was running -- and getSuggestions then returned []
+    // because there was no serverId. The result was no completions at all in
+    // .ts/.tsx/.js/.jsx/.flow/.rust/.python, the languages this is meant to
+    // improve. Reading it as a getter keeps the ranking intent (LSP wins when
+    // present, snippets survive at priority 1) without that failure mode.
+    get excludeLowerPriority() {
+      try {
+        const editor =
+          typeof chevron !== 'undefined' &&
+          chevron.workspace &&
+          chevron.workspace.getActiveTextEditor();
+        return Boolean(editor && client.getServerIdForEditor(editor));
+      } catch (error) {
+        return false;
+      }
+    },
     suggestionPriority: 5,
     // Server order is semantic; do not re-fuzzy locally.
     filterSuggestions: false,
