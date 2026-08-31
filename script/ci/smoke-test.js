@@ -231,8 +231,76 @@ const PROBE_EXPR = `(function() {
       packagesActive: packagesActive
     });
   }
+  // Autocomplete: type into the .ts probe and assert a popup appears.
+  //
+  // Nothing here ever exercised a UI overlay, which is how a broken
+  // autocomplete shipped. The LSP provider claimed excludeLowerPriority
+  // unconditionally, so it suppressed the built-in word provider and then
+  // returned nothing when no server was running -- .ts/.js/.rust/.python had
+  // no completions at all and every check stayed green.
+  //
+  // Type with insertText only. A cursor move fires cursorMoved{textChanged:
+  // false}, which schedules a hide that only the typing path cancels; probing
+  // with moveToEndOfLine + a manual command dispatch reports a false failure.
+  if (!window.__acProbe) {
+    window.__acProbe = { phase: 'starting', result: null };
+    var acEditor = byExt('.ts');
+    chevron.packages
+      .activatePackage('autocomplete-plus')
+      .then(function() {
+        var pane = chevron.workspace.paneForItem(acEditor);
+        pane.activate();
+        pane.activateItem(acEditor);
+        chevron.views.getView(acEditor).focus();
+        acEditor.setText('const probeAlpha = 1; const probeBeta = 2; ');
+        acEditor.moveToBottom();
+        window.__acProbe.phase = 'seeded';
+        setTimeout(function() {
+          window.__acProbe.phase = 'typing';
+          'prob'.split('').forEach(function(ch) { acEditor.insertText(ch); });
+          // Poll rather than wait a fixed interval: suggestion generation and
+          // the overlay's render frame are both slower on a loaded CI runner
+          // than locally, and a fixed sleep turns that into a flaky assertion.
+          var tries = 0;
+          (function settle() {
+            var el = document.querySelector('autocomplete-suggestion-list');
+            var rect = el ? el.getBoundingClientRect() : null;
+            var ready = el && rect && rect.width > 0 && rect.height > 0 &&
+                        el.querySelectorAll('li').length > 0;
+            if (ready || tries >= 40) {
+              window.__acProbe.result = {
+                popup: !!el,
+                items: el ? el.querySelectorAll('li').length : 0,
+                width: rect ? Math.round(rect.width) : 0,
+                height: rect ? Math.round(rect.height) : 0,
+                waitedMs: tries * 250
+              };
+              window.__acProbe.phase = 'done';
+              return;
+            }
+            tries++;
+            setTimeout(settle, 250);
+          })();
+        }, 600);
+      })
+      .catch(function(error) {
+        window.__acProbe.phase = 'done';
+        window.__acProbe.result = { error: String((error && error.message) || error) };
+      });
+  }
+  if (window.__acProbe.phase !== 'done') {
+    return JSON.stringify({
+      status: 'waiting-editors',
+      count: editors.length,
+      paths: paths,
+      packagesActive: packagesActive,
+      autocompletePhase: window.__acProbe.phase
+    });
+  }
+
   return JSON.stringify({
     status: 'ready',
+    autocomplete: window.__acProbe.result,
     packagesActive: packagesActive,
     notifications: chevron.notifications
       .getNotifications()
@@ -599,6 +667,27 @@ async function main() {
       if (state.cssGrammar !== 'CSS') {
         failures.push(
           `probe.css grammar: ${state.cssGrammar} (expected CSS)`
+        );
+      }
+      // Typing 'prob' after `const probeAlpha` / `const probeBeta` must offer
+      // both. This is the only check that exercises a rendered UI overlay.
+      const ac = state.autocomplete;
+      if (!ac) {
+        failures.push('autocomplete probe did not report');
+      } else if (ac.error) {
+        failures.push(`autocomplete probe error: ${ac.error}`);
+      } else if (!ac.popup) {
+        failures.push(
+          'no autocomplete popup after typing a prefix with two matches ' +
+            '(a provider claiming excludeLowerPriority without answering will ' +
+            'do this)'
+        );
+      } else if (ac.items < 2) {
+        failures.push(`autocomplete showed ${ac.items} items (expected 2+)`);
+      } else if (ac.width < 1 || ac.height < 1) {
+        failures.push(
+          `autocomplete popup has no size (${ac.width}x${ac.height}); it ` +
+            'attached but did not render'
         );
       }
       if (failures.length > 0) {
