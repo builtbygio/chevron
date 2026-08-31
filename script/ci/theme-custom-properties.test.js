@@ -16,6 +16,7 @@ const { describe, it } = require('node:test');
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 
@@ -85,6 +86,25 @@ function emittedProperties(theme) {
 }
 
 describe('theme custom properties', () => {
+  it('the committed files match the generator', () => {
+    // The files say "GENERATED ... do not edit". They were hand-written in
+    // #242 and the script they named did not exist until this check was added,
+    // so anyone trying to regenerate them was stuck. Now the claim is true and
+    // enforced: --check exits non-zero if any file differs.
+    const result = spawnSync(
+      process.execPath,
+      [path.join(ROOT, 'script', 'lib', 'generate-theme-custom-properties.js'), '--check'],
+      { encoding: 'utf8' }
+    );
+    assert.equal(
+      result.status,
+      0,
+      'custom-properties.less is out of date; run ' +
+        'node script/lib/generate-theme-custom-properties.js\n' +
+        (result.stderr || '')
+    );
+  });
+
   it('every theme ships a custom-properties.less', () => {
     for (const theme of themeDirs()) {
       assert.ok(
