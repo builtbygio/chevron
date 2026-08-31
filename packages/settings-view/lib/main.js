@@ -43,11 +43,11 @@ module.exports = {
       'settings-view:editor' () { chevron.workspace.open(`${CONFIG_URI}/editor`) },
       'settings-view:show-keybindings' () { chevron.workspace.open(`${CONFIG_URI}/keybindings`) },
       'settings-view:change-themes' () { chevron.workspace.open(`${CONFIG_URI}/themes`) },
-      'settings-view:install-packages-and-themes' () { chevron.workspace.open(`${CONFIG_URI}/install`) },
       'settings-view:view-installed-themes' () { chevron.workspace.open(`${CONFIG_URI}/themes`) },
       'settings-view:uninstall-themes' () { chevron.workspace.open(`${CONFIG_URI}/themes`) },
       'settings-view:view-installed-packages' () { chevron.workspace.open(`${CONFIG_URI}/packages`) },
       'settings-view:uninstall-packages' () { chevron.workspace.open(`${CONFIG_URI}/packages`) },
+      'settings-view:install-packages-and-themes' () { chevron.workspace.open(`${CONFIG_URI}/install`) },
       'settings-view:check-for-package-updates' () { chevron.workspace.open(`${CONFIG_URI}/updates`) }
     })
 
@@ -84,7 +84,15 @@ module.exports = {
   },
 
   createSettingsView (params) {
-    if (SettingsView == null) SettingsView = require('./settings-view')
+    if (SettingsView == null) {
+      // settings-view.js is an esbuild bundle: it ends in
+      // `module.exports = __toCommonJS(...)`, so require() yields
+      // { default: SettingsView }, not the class. Calling `new` on that object
+      // threw "SettingsView is not a constructor" and no Settings panel could
+      // open at all. Interop both ways so a future plain-CJS build still works.
+      const mod = require('./settings-view')
+      SettingsView = mod && mod.default ? mod.default : mod
+    }
     if (packageManager == null) packageManager = new PackageManager()
     params.packageManager = packageManager
     params.snippetsProvider = SnippetsProvider
