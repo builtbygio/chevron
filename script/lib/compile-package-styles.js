@@ -70,6 +70,19 @@ function renderSync(filePath, source, importPaths) {
   return css;
 }
 
+// glob patterns are forward-slash on every platform, and glob returns
+// forward-slash paths even on Windows, where path.join produces backslashes.
+// Mixing the two spellings silently breaks any comparison between them.
+const pattern = p => p.split(path.sep).join('/');
+
+// glob returns forward slashes even on Windows, where path.join produces
+// backslashes, so the same file has two spellings and `a !== b` is true for
+// both of them. That put a theme's index.less into the discard list as well as
+// the compiled list, and the build died unlinking it twice -- on Windows only,
+// because on Linux the two spellings are identical. Compare on one spelling.
+const samePath = (a, b) => normalize(a) === normalize(b);
+const normalize = p => p.split(/[\\/]/).join('/');
+
 // Package styles only -- never compile a nested dependency's Less (github's
 // node_modules/react-select uses mixins this pipeline does not provide).
 function packageLessFiles(packageName) {
@@ -78,10 +91,12 @@ function packageLessFiles(packageName) {
     'node_modules',
     packageName
   );
-  return glob.sync(path.join(packageRoot, '**', '*.less'), {
-    ignore: path.join(packageRoot, 'node_modules', '**', '*.less'),
-    nodir: true
-  });
+  return glob
+    .sync(pattern(path.join(packageRoot, '**', '*.less')), {
+      ignore: pattern(path.join(packageRoot, 'node_modules', '**', '*.less')),
+      nodir: true
+    })
+    .map(file => path.resolve(file));
 }
 
 module.exports = function() {
@@ -114,7 +129,8 @@ module.exports = function() {
   // ../mixins/mixins -- so deleting a source as soon as it is compiled breaks
   // the imports of every file compiled after it.
   const results = [];
-  const compileTo = (lessFilePath, importPaths, importFallbackVariables) => {
+  const compileTo = (rawPath, importPaths, importFallbackVariables) => {
+    const lessFilePath = path.resolve(rawPath);
     const source = fs.readFileSync(lessFilePath, 'utf8');
     const css = renderSync(
       lessFilePath,
@@ -124,9 +140,9 @@ module.exports = function() {
     results.push({ lessFilePath, css });
   };
 
-  for (const lessFilePath of glob.sync(
-    path.join(appPath, 'static', '**', '*.less')
-  )) {
+  for (const lessFilePath of glob
+    .sync(pattern(path.join(appPath, 'static', '**', '*.less')))
+    .map(file => path.resolve(file))) {
     compileTo(lessFilePath, staticPaths, false);
   }
 
@@ -147,7 +163,7 @@ module.exports = function() {
   for (const themeName of themes) {
     const themeRoot = path.join(appPath, 'node_modules', themeName);
     const ownStyles = path.join(themeRoot, 'styles');
-    const indexPath = path.join(themeRoot, 'index.less');
+    const indexPath = path.resolve(themeRoot, 'index.less');
     if (!fs.existsSync(indexPath)) {
       throw new Error(
         `theme ${themeName} has no index.less; its stylesheets have no entry ` +
@@ -156,15 +172,22 @@ module.exports = function() {
     }
     compileTo(indexPath, [ownStyles, ...staticPaths], true);
     for (const lessFilePath of packageLessFiles(themeName)) {
-      if (lessFilePath !== indexPath) discarded.push(lessFilePath);
+      if (!samePath(lessFilePath, indexPath)) discarded.push(lessFilePath);
     }
   }
 
+  const removed = new Set();
+  const remove = lessFilePath => {
+    const key = normalize(path.resolve(lessFilePath));
+    if (removed.has(key)) return;
+    removed.add(key);
+    fs.unlinkSync(lessFilePath);
+  };
   for (const { lessFilePath, css } of results) {
     fs.writeFileSync(lessFilePath.replace(/\.less$/, '.css'), css);
-    fs.unlinkSync(lessFilePath);
+    remove(lessFilePath);
   }
-  for (const lessFilePath of discarded) fs.unlinkSync(lessFilePath);
+  for (const lessFilePath of discarded) remove(lessFilePath);
   const compiled = results.length;
 
   // prebuild-less-cache published both of these for the runtime less cache to
@@ -179,3 +202,7 @@ module.exports = function() {
       `${discarded.length} theme partials folded into their index)`
   );
 };
+
+// Exported for script/ci/compiled-styles.test.js.
+module.exports.normalize = normalize;
+module.exports.samePath = samePath;
