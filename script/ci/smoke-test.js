@@ -481,7 +481,12 @@ async function main() {
         process.env.ELECTRON_OZONE_PLATFORM_HINT || 'x11',
       ELECTRON_ENABLE_LOGGING: '1'
     }),
-    stdio: ['ignore', 'pipe', 'pipe']
+    stdio: ['ignore', 'pipe', 'pipe'],
+    // Electron forks zygote / gpu / utility / crashpad children. Killing only
+    // the browser process leaves those orphaned -- a smoke run that is
+    // interrupted used to leave a dozen processes and a ~8 MB user-data dir
+    // behind each time. Own a process group so the whole tree can be signalled.
+    detached: process.platform !== 'win32'
   });
   let appOutput = '';
   app.stdout.on('data', chunk => (appOutput += chunk));
@@ -489,13 +494,45 @@ async function main() {
   let appExited = false;
   app.on('exit', () => (appExited = true));
 
+  let shutdownDone = false;
   const shutdown = () => {
+    if (shutdownDone) return;
+    shutdownDone = true;
     try {
-      if (!appExited) app.kill('SIGKILL');
+      if (!appExited) {
+        if (process.platform !== 'win32' && app.pid) {
+          // Negative pid signals the whole group, so the Electron children go
+          // with the browser process rather than being reparented to init.
+          try {
+            process.kill(-app.pid, 'SIGKILL');
+          } catch (error) {
+            app.kill('SIGKILL');
+          }
+        } else {
+          app.kill('SIGKILL');
+        }
+      }
     } catch (error) {
       /* already gone */
     }
+    for (const dir of [atomHome, probeDir]) {
+      try {
+        if (dir) fs.rmSync(dir, { recursive: true, force: true });
+      } catch (error) {
+        /* best effort */
+      }
+    }
   };
+
+  // A `finally` does not run when node is killed, so an interrupted or
+  // timed-out run would otherwise orphan the whole Electron tree.
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+    process.once(signal, () => {
+      shutdown();
+      process.exit(130);
+    });
+  }
+  process.once('exit', shutdown);
 
   try {
     const deadline = Date.now() + STARTUP_TIMEOUT_MS;
