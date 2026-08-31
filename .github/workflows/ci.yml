@@ -455,6 +455,10 @@ jobs:
           node --test script/ci/theme-migration.test.js
           node --test script/ci/package-requires-resolve.test.js
           node --test script/ci/accumulator-relay-prop.test.js
+          node --test script/ci/theme-custom-properties.test.js
+          node --test script/ci/theme-variables-eliminated.test.js
+          node --test script/ci/temp-dir-hygiene.test.js
+          node --test script/ci/ci-runs-every-test.test.js
 
       # These need a real node_modules: github-8b reads node_modules/github,
       # lsp-builtin-discover resolves servers out of it, lazy-first-mate
@@ -480,6 +484,11 @@ jobs:
             --compress-artifacts
           # Require deb + tar + rpm artifacts
           ls -la out/*.deb out/*.tar.gz out/*.rpm
+
+      # Asserts on out/app, so it has to follow the build: no bundled package
+      # ships .less, and no per-theme-pair compile cache is warmed.
+      - name: Compiled stylesheet contract
+        run: node --test script/ci/compiled-styles.test.js
 
       - name: Launch smoke test (Xvfb)
         run: xvfb-run -a node script/ci/smoke-test.js

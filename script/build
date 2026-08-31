@@ -61,7 +61,7 @@ const generateStartupSnapshot = require('./lib/generate-startup-snapshot')
 const installApplication = require('./lib/install-application')
 const notarizeOnMac = require('./lib/notarize-on-mac')
 const packageApplication = require('./lib/package-application')
-const prebuildLessCache = require('./lib/prebuild-less-cache')
+const compilePackageStyles = require('./lib/compile-package-styles')
 const testSignOnMac = require('./lib/test-sign-on-mac')
 const transpileTypeScriptPaths = require('./lib/transpile-typescript-paths')
 const transpilePegJsPaths = require('./lib/transpile-peg-js-paths')
@@ -87,7 +87,7 @@ if (!argv.existingBinaries) {
   // to compiling the grammar at run time through loophole's allowUnsafeEval.
   transpilePegJsPaths()
   generateModuleCache()
-  prebuildLessCache()
+  compilePackageStyles()
   generateMetadata()
   binariesPromise = dumpSymbols()
 }
