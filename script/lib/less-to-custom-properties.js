@@ -90,9 +90,18 @@ function convert(source, vars) {
   const lines = source.split('\n');
 
   const out = lines.map((line, i) => {
+    // Analyse and rewrite code only. A trailing // comment that quotes LESS
+    // -- e.g. a note recording what an expression was before conversion --
+    // otherwise trips the colour-function and arithmetic detectors, and the
+    // `//` itself reads as two divisions. Split it off and put it back.
+    // `http://` is not a comment: require whitespace or line start before //.
+    const commentAt = line.search(/(^|\s)\/\//);
+    const code = commentAt === -1 ? line : line.slice(0, commentAt);
+    const comment = commentAt === -1 ? '' : line.slice(commentAt);
+
     // Never rewrite the variable definitions themselves, or imports.
-    if (/^\s*@[a-zA-Z][a-zA-Z0-9-]*\s*:/.test(line)) return line;
-    if (/^\s*@import\b/.test(line)) return line;
+    if (/^\s*@[a-zA-Z][a-zA-Z0-9-]*\s*:/.test(code)) return line;
+    if (/^\s*@import\b/.test(code)) return line;
 
     // LESS guards are build-time conditionals. They cannot read a custom
     // property, because its value does not exist until the browser resolves
@@ -101,8 +110,8 @@ function convert(source, vars) {
     // makes them fail outright ("Argument cannot be evaluated to a color").
     // These need the variable to stay a LESS variable, or the rule needs
     // rewriting by hand.
-    if (/\bwhen\s*\(/.test(line)) {
-      if ([...line.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
+    if (/\bwhen\s*\(/.test(code)) {
+      if ([...code.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
         unhandled.push({ line: i + 1, text: line.trim(), reason: 'less-guard' });
       }
       return line;
@@ -110,21 +119,21 @@ function convert(source, vars) {
     // A mixin call passes the value into LESS, where the body may do colour
     // maths on it (.make-type-icon runs hsvvalue/contrast on its argument).
     // var() is opaque to all of that.
-    if (/^\s*[.#][-\w]+[^{};]*\([^)]*\)\s*;/.test(line)) {
-      if ([...line.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
+    if (/^\s*[.#][-\w]+[^{};]*\([^)]*\)\s*;/.test(code)) {
+      if ([...code.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
         unhandled.push({ line: i + 1, text: line.trim(), reason: 'mixin-argument' });
       }
       return line;
     }
     const BUILD_TIME_FNS = /\b(contrast|hsvvalue|hsvhue|hsvsaturation|luma|luminance|lightness|saturation|hue|red|green|blue|alpha|ceil|floor|round|percentage|unit|isnumber|iscolor)\s*\(/;
-    if (BUILD_TIME_FNS.test(line)) {
-      if ([...line.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
+    if (BUILD_TIME_FNS.test(code)) {
+      if ([...code.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
         unhandled.push({ line: i + 1, text: line.trim(), reason: 'build-time-fn' });
       }
       return line;
     }
 
-    let result = line;
+    let result = code;
 
     // Nested colour functions -- fadeout(darken(@c, 4%), 55%) -- would need
     // the two transforms composed into one relative-colour expression. That is
@@ -132,8 +141,8 @@ function convert(source, vars) {
     // call leaves LESS's outer function holding an escaped string, which fails
     // the build. Refuse the whole line.
     const COLOUR_FN = '(?:darken|lighten|fade|fadeout|fadein|mix|contrast|saturate|desaturate|tint|shade)';
-    if (new RegExp(COLOUR_FN + '\\s*\\([^)]*' + COLOUR_FN + '\\s*\\(').test(line)) {
-      if ([...line.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
+    if (new RegExp(COLOUR_FN + '\\s*\\([^)]*' + COLOUR_FN + '\\s*\\(').test(code)) {
+      if ([...code.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
         unhandled.push({ line: i + 1, text: line.trim(), reason: 'nested-colour-fn' });
       }
       return line;
@@ -319,7 +328,7 @@ function convert(source, vars) {
       }
     }
 
-    return result;
+    return result + comment;
   });
 
   return { output: out.join('\n'), unhandled };
