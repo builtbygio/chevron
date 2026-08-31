@@ -54,10 +54,11 @@ function accumulatorNames() {
 }
 
 // Reachability from the package entry point, not "someone imports it".
-// aggregated-reviews-container.js still renders two accumulators without a
-// relay prop, but nothing imports it -- aggregated-reviews-json.js replaced
-// it. Asserting runtime behaviour against unreachable code is a false
-// positive, so walk the require graph from `main` instead.
+// aggregated-reviews-container.js used to render two accumulators without a
+// relay prop while being imported by nothing -- a naive importer check flagged
+// it, which is a false positive against unreachable code. That module is gone
+// now, but the distinction is what keeps this test honest as more of the Relay
+// era is removed, so it still walks the require graph from `main`.
 function reachableModules() {
   const entry = require.resolve(
     path.join(ROOT, 'packages', 'github', require(

@@ -299,7 +299,7 @@ jobs:
             node_modules
             script/node_modules
             cpm/node_modules
-          key: nm-${{ runner.os }}-${{ matrix.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          key: nm-${{ runner.os }}-${{ matrix.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
           restore-keys: |
             nm-${{ runner.os }}-${{ matrix.arch }}-node24-
 
@@ -431,7 +431,7 @@ jobs:
             node_modules
             script/node_modules
             cpm/node_modules
-          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
           restore-keys: |
             nm-${{ runner.os }}-${{ runner.arch }}-node24-
 
@@ -624,7 +624,7 @@ jobs:
             node_modules
             script/node_modules
             cpm/node_modules
-          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
           restore-keys: |
             nm-${{ runner.os }}-${{ runner.arch }}-node24-
 
@@ -753,7 +753,7 @@ jobs:
             node_modules
             script/node_modules
             cpm/node_modules
-          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'package-lock.json', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
           restore-keys: |
             nm-${{ runner.os }}-${{ runner.arch }}-node24-
 
