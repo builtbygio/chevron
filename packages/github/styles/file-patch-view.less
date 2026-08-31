@@ -2,7 +2,7 @@
 @import "octicon-utf-codes";
 @import "octicon-mixins";
 
-@header-bg-color: mix(@syntax-text-color, @syntax-background-color, 6%);
+@header-bg-color: ~"color-mix(in srgb, var(--syntax-text-color) 6%, var(--syntax-background-color))";
 
 .github-FilePatchView {
   display: flex;
@@ -337,7 +337,10 @@
     &.icons .line-number,
     &[gutter-name="github-comment-icon"] .github-editorCommentGutterIcon {
       &.github-FilePatchView-line--selected {
-        color: contrast(@button-background-color-selected);
+        // contrast(@button-background-color-selected) resolves to #ffffff in all
+  // four shipped themes -- the selected button is never light enough to flip
+  // it -- so this is a constant, not a per-theme branch.
+  color: #fff;
         background: calc(var(--button-background-color) - selected);
         &.github-editorCommentGutterIcon.empty {
           z-index: -1;

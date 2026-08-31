@@ -19,7 +19,7 @@
     -webkit-user-select: none;
 
     &:hover {
-      background-color: contrast(@package-card-background-color, darken(@package-card-background-color, 2%), lighten(@package-card-background-color, 2%));
+      background-color: ~"hsl(from @{package-card-background-color} h s calc(l + (var(--contrast-shift-sign) * 2)))";
     }
     &:active {
       background-color: @package-card-background-color;

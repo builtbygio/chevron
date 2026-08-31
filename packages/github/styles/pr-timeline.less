@@ -41,7 +41,7 @@
 
   .pre-timeline-item-icon {
     position: absolute;
-    margin-left: -@component-padding * 2.5;
+    margin-left: calc(var(--component-padding) * -2.5);
     text-align: center;
     margin-top: 2px;
     color: ~"color-mix(in srgb, var(--text-color) 33%, var(--base-background-color))";
@@ -111,7 +111,7 @@
       display: table-cell;
       line-height: @avatar-size + 4px;
       padding: 0 calc(var(--component-padding) / 3);
-      padding-left: @avatar-size + @component-padding;
+      padding-left: ~"calc(@{avatar-size} + var(--component-padding))";
       max-height: @avatar-size;
       text-overflow: ellipsis;
       white-space: nowrap;

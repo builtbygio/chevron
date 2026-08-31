@@ -1,10 +1,10 @@
 @import "variables";
 
 @avatar-size: 16px;
-@font-size-default: @font-size;
-@font-size-body: @font-size - 1px;
+@font-size-default: ~"var(--font-size)";
+@font-size-body: ~"calc(var(--font-size) - 1px)";
 @nav-size: 2.5em;
-@background-color: mix(@base-background-color, @tool-panel-background-color, 66%);
+@background-color: ~"color-mix(in srgb, var(--base-background-color) 66%, var(--tool-panel-background-color))";
 
 // Reviews  ----------------------------------------------
 
@@ -378,7 +378,7 @@
 
   &-comments {
     padding: var(--component-padding);
-    padding-left: @component-padding + @avatar-size + 5px; // space for avatar
+    padding-left: ~"calc(var(--component-padding) + @{avatar-size} + 5px)"; // space for avatar
   }
 
   &-comment {
@@ -461,7 +461,7 @@
   &-resolvedText {
     text-align: center;
     margin-bottom: var(--component-padding);
-    padding: 0 2*@component-padding;
+    padding: 0 calc(2 * var(--component-padding));
   }
 
   &-editable-footer {

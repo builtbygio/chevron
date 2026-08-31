@@ -123,6 +123,18 @@ const OVERLAY_BAND = `
 }
 `;
 
+// Syntax themes publish their own sign, read from the syntax background rather
+// than the UI one. The two normally agree, but a mixed pair (dark UI, light
+// syntax) would otherwise pick the wrong ink for editor overlays.
+const SYNTAX_BAND = `
+.chevron-syntax-contrast-sign() when (lightness(@syntax-background-color) < 50) {
+  --syntax-contrast-shift-sign: 1;
+}
+.chevron-syntax-contrast-sign() when (lightness(@syntax-background-color) >= 50) {
+  --syntax-contrast-shift-sign: -1;
+}
+`;
+
 function render(kind, names) {
   const importName = kind === 'ui' ? 'ui-variables' : 'syntax-variables';
   return (
@@ -137,13 +149,13 @@ function render(kind, names) {
 // values under the same property names.
 
 @import "${importName}";
-${kind === 'ui' ? OVERLAY_BAND : ''}
+${kind === 'ui' ? OVERLAY_BAND : SYNTAX_BAND}
 :root {
 ` +
     names.map(n => `  --${n}: @${n};`).join('\n') +
     (kind === 'ui'
       ? '\n  .chevron-overlay-contrast-band();\n  .chevron-contrast-sign();'
-      : '') +
+      : '\n  .chevron-syntax-contrast-sign();') +
     '\n}\n'
   );
 }

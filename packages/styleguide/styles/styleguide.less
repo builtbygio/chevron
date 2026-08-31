@@ -1,8 +1,8 @@
 @import "ui-variables";
 @import "syntax-variables";
 
-@styleguide-spacing: @component-padding *1.5;
-@styleguide-bg: darken(@base-background-color, 2%);
+@styleguide-spacing: ~"calc(var(--component-padding) * 1.5)";
+@styleguide-bg: ~"hsl(from var(--base-background-color) h s calc(l - 2))";
 
 .styleguide {
   position: relative;
@@ -96,7 +96,7 @@
 // Example -------------------------------
 
 .styleguide .example {
-  @example-background: @base-background-color;
+  @example-background: ~"var(--base-background-color)";
 
   display: flex;
   flex-wrap: wrap;

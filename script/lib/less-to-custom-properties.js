@@ -85,7 +85,114 @@ const COLOR_FNS = {
   fadein: (v, n) => esc(`rgb(from var(--${v}) r g b / calc(alpha + ${n / 100}))`)
 };
 
-function convert(source, vars) {
+// A local variable defined from a theme variable -- @default-padding:
+// @component-padding -- keeps the theme in scope at build time even after every
+// use site is converted, because LESS still has to resolve the right-hand side.
+// These are the last thing standing between the catalog and a single compile.
+//
+// Rewriting the definition to hold an escaped CSS string moves the dependency
+// out without touching any use site: `@default-padding: ~"var(--component-
+// padding)"` makes every `@default-padding` emit the var() reference verbatim.
+//
+// That only holds while the local is used as a plain value. LESS cannot do
+// arithmetic on a string, and cannot pass one to darken(); either would fail
+// the build or, worse, silently emit garbage. So every use site is checked
+// first, and a local that is used as anything but a value is left alone and
+// reported.
+function localUsedUnsafely(lines, name, defLine) {
+  const use = new RegExp(`@${name}\\b`);
+  const reasons = [];
+  lines.forEach((line, i) => {
+    if (i === defLine) return;
+    const commentAt = line.search(/(^|\s)\/\//);
+    const code = commentAt === -1 ? line : line.slice(0, commentAt);
+    if (!use.test(code)) return;
+
+    if (/\bwhen\s*\(/.test(code)) {
+      reasons.push(`used in a LESS guard (line ${i + 1})`);
+      return;
+    }
+    // Inside a LESS function -- darken(@local, 5%). calc() and var() are CSS
+    // and resolve in the browser, so a string is fine there.
+    const inFn = new RegExp(
+      `\\b(?!calc\\b|var\\b)[a-zA-Z][-\\w]*\\(\\s*[^()]*@${name}\\b`
+    );
+    if (inFn.test(code)) {
+      reasons.push(`passed to a LESS function (line ${i + 1})`);
+      return;
+    }
+    // Build-time arithmetic. Inside a ~"..." escape the maths is CSS calc and
+    // already resolves in the browser, so only look at the unescaped parts.
+    const bare = code.replace(/~"[^"]*"/g, '');
+    if (
+      new RegExp(`@${name}\\s*[*/+]`).test(bare) ||
+      new RegExp(`[*/+]\\s*@${name}\\b`).test(bare) ||
+      new RegExp(`@${name}\\s+-\\s+`).test(bare) ||
+      new RegExp(`\\S\\s+-\\s*@${name}\\b`).test(bare)
+    ) {
+      reasons.push(`an arithmetic operand (line ${i + 1})`);
+    }
+  });
+  return reasons;
+}
+
+// Convert `@local: <expression>;` by running the expression back through
+// convert() as an ordinary declaration. Every guard above -- guards, mixin
+// arguments, build-time functions, nested colour functions -- therefore applies
+// to definitions too, with no second copy of the rules to keep in step.
+function convertDefinitions(source, vars) {
+  const unhandled = [];
+  const lines = source.split('\n');
+  const isLocal = name => !vars.has(name);
+
+  lines.forEach((line, i) => {
+    const commentAt = line.search(/(^|\s)\/\//);
+    const code = commentAt === -1 ? line : line.slice(0, commentAt);
+    const comment = commentAt === -1 ? '' : line.slice(commentAt);
+
+    const def = code.match(/^(\s*@([a-zA-Z][a-zA-Z0-9-]*)\s*:\s*)(.+?);\s*$/);
+    if (!def) return;
+    const [, prefix, name, rhs] = def;
+    if (!isLocal(name)) return;
+    // Only definitions that actually pull in a theme variable.
+    if (![...rhs.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
+      return;
+    }
+
+    const unsafe = localUsedUnsafely(lines, name, i);
+    if (unsafe.length) {
+      unhandled.push({
+        line: i + 1,
+        text: line.trim(),
+        reason: `@${name} is ${unsafe[0]}`
+      });
+      return;
+    }
+
+    const probe = `  x: ${rhs};`;
+    const { output, unhandled: probeUnhandled } = convert(probe, vars, true);
+    if (probeUnhandled.length) {
+      unhandled.push({
+        line: i + 1,
+        text: line.trim(),
+        reason: probeUnhandled[0].reason
+      });
+      return;
+    }
+    if (output === probe) return;
+
+    let value = output.replace(/^\s*x:\s*/, '').replace(/;\s*$/, '');
+    // convert() escapes what LESS would otherwise try to parse. A result that
+    // is not already escaped becomes one here, so the local holds a string in
+    // every case and behaves the same way at every use site.
+    if (!/^~"/.test(value)) value = esc(value);
+    lines[i] = prefix + value + ';' + comment;
+  });
+
+  return { output: lines.join('\n'), unhandled };
+}
+
+function convert(source, vars, skipDefinitions) {
   const unhandled = [];
   const lines = source.split('\n');
 
@@ -238,6 +345,24 @@ function convert(source, vars) {
         return `${lead}calc(var(--${name}) * -1)${trailer}`;
       }
     );
+    // Number-first multiplication -- `2 * @component-padding`. The rule below
+    // only matches variable-first, so these fell through every guard and were
+    // emitted unchanged: no rewrite, and no report either. A silent pass is
+    // worse than a refusal, because the count then says the file is clean.
+    // Multiplication commutes and the unit still comes from the variable, so
+    // this is as safe as `@pad * 2`. Only `*`: `2 / @pad` is not the same
+    // quantity, and `2 + @pad` is unit-ambiguous the same way round.
+    result = result.replace(
+      /(^|[\s:,(])([0-9.]+)\s*\*\s*@([a-zA-Z][a-zA-Z0-9-]*)(?![a-zA-Z0-9-])/g,
+      (whole, lead, factor, name, offset) => {
+        if (!vars.has(name)) return whole;
+        if (followedByExpression(offset + whole.length)) {
+          unhandled.push({ line: i + 1, text: line.trim(), reason: 'chained' });
+          return whole;
+        }
+        return `${lead}calc(${factor} * var(--${name}))`;
+      }
+    );
     result = result.replace(
       /@([a-zA-Z][a-zA-Z0-9-]*)\s*([*/+-])\s*(@?[a-zA-Z0-9.]+[a-z%]*)/g,
       (whole, name, op, operand, offset) => {
@@ -331,7 +456,13 @@ function convert(source, vars) {
     return result + comment;
   });
 
-  return { output: out.join('\n'), unhandled };
+  let output = out.join('\n');
+  if (!skipDefinitions) {
+    const defs = convertDefinitions(output, vars);
+    output = defs.output;
+    unhandled.push(...defs.unhandled);
+  }
+  return { output, unhandled };
 }
 
 // Identify a theme by the `theme` field of its nearest enclosing package.json,
@@ -422,7 +553,7 @@ function main() {
   if (allUnhandled.length) {
     console.log(`\n${allUnhandled.length} expressions need manual conversion:`);
     for (const u of allUnhandled.slice(0, 40)) {
-      console.log(`  ${u.file}:${u.line}  ${u.text}`);
+      console.log(`  ${u.file}:${u.line}  [${u.reason}]  ${u.text}`);
     }
     if (allUnhandled.length > 40) {
       console.log(`  … and ${allUnhandled.length - 40} more`);

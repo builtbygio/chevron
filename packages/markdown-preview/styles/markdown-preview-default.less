@@ -9,14 +9,14 @@
 
 .markdown-preview:not([data-use-github-style]) {
 
-  @fg: @syntax-text-color;
-  @bg: @syntax-background-color;
+  @fg: ~"var(--syntax-text-color)";
+  @bg: ~"var(--syntax-background-color)";
 
-  @fg-accent: @syntax-cursor-color;
-  @fg-strong: contrast(@bg, darken(@fg, 32%), lighten(@fg, 32%));
-  @fg-subtle: contrast(@fg, lighten(@fg, 16%), darken(@fg, 16%));
+  @fg-accent: ~"var(--syntax-cursor-color)";
+  @fg-strong: ~"hsl(from var(--syntax-text-color) h s clamp(0, calc(l + (var(--syntax-contrast-shift-sign) * 32)), 100))";
+  @fg-subtle: ~"hsl(from var(--syntax-text-color) h s clamp(0, calc(l - (var(--syntax-contrast-shift-sign) * 16)), 100))";
 
-  @border: contrast(@bg, lighten(@bg, 16%), darken(@bg, 16%));
+  @border: ~"hsl(from var(--syntax-background-color) h s clamp(0, calc(l + (var(--syntax-contrast-shift-sign) * 16)), 100))";
 
   @margin: 1.5em;
 
@@ -132,7 +132,7 @@
 
   code {
     color: @fg-strong;
-    background-color: contrast(var(--syntax-background-color), ~"hsl(from var(--syntax-background-color) h s calc(l + 8))", ~"hsl(from var(--syntax-background-color) h s calc(l - 6))");
+    background-color: ~"hsl(from var(--syntax-background-color) h s calc(l + 1 + (var(--syntax-contrast-shift-sign) * 7)))";
   }
 
   atom-text-editor {
@@ -140,7 +140,7 @@
     padding: 1em;
     font-size: .92em;
     border-radius: 3px;
-    background-color: contrast(var(--syntax-background-color), ~"hsl(from var(--syntax-background-color) h s calc(l + 4))", ~"hsl(from var(--syntax-background-color) h s calc(l - 4))");
+    background-color: ~"hsl(from var(--syntax-background-color) h s calc(l + (var(--syntax-contrast-shift-sign) * 4)))";
   }
 
 
@@ -149,8 +149,8 @@
   kbd {
     color: @fg-strong;
     border: 1px solid @border;
-    border-bottom: 2px solid darken(@border, 6%);
-    background-color: contrast(var(--syntax-background-color), ~"hsl(from var(--syntax-background-color) h s calc(l + 8))", ~"hsl(from var(--syntax-background-color) h s calc(l - 6))");
+    border-bottom: 2px solid ~"hsl(from @{border} h s calc(l - 6))";
+    background-color: ~"hsl(from var(--syntax-background-color) h s calc(l + 1 + (var(--syntax-contrast-shift-sign) * 7)))";
   }
 
 }

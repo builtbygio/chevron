@@ -8,7 +8,9 @@
 
 .github-RecentCommits {
   // Fit @show-max + 1px for the top border
-  max-height: @show-max * @size + @component-padding * @show-max + @component-padding + 1px;
+  // @show-max and @size are package-local and still resolve at build time;
+  // only @component-padding is a theme value, so calc() carries the mix.
+  max-height: ~"calc((@{show-max} * @{size}) + (var(--component-padding) * @{show-max}) + var(--component-padding) + 1px)";
   overflow-x: hidden;
   overflow-y: auto;
   border-top: 1px solid var(--base-border-color);
@@ -31,7 +33,7 @@
   display: flex;
   align-items: center;
   padding: 0 var(--component-padding);
-  line-height: @size + @component-padding;
+  line-height: ~"calc(@{size} + var(--component-padding))";
 
   &-authors {
     position: absolute;
@@ -71,7 +73,7 @@
   &-message {
     flex: 1;
     margin: 0 .5em;
-    margin-left: @size + @component-padding;
+    margin-left: ~"calc(@{size} + var(--component-padding))";
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
@@ -101,7 +103,10 @@
 
     // also has focus
     .github-RecentCommits:focus & {
-      color: contrast(@button-background-color-selected);
+      // contrast(@button-background-color-selected) resolves to #ffffff in all
+  // four shipped themes -- the selected button is never light enough to flip
+  // it -- so this is a constant, not a per-theme branch.
+  color: #fff;
       background: calc(var(--button-background-color) - selected);
     }
   }
@@ -115,13 +120,17 @@
 @media (min-height: 900px) {
   .github-RecentCommits {
     @show-max: 5;
-    max-height: @show-max * @size + @component-padding * @show-max + @component-padding + 1px;
+    // @show-max and @size are package-local and still resolve at build time;
+  // only @component-padding is a theme value, so calc() carries the mix.
+  max-height: ~"calc((@{show-max} * @{size}) + (var(--component-padding) * @{show-max}) + var(--component-padding) + 1px)";
   }
 }
 
 @media (min-height: 1200px) {
   .github-RecentCommits {
     @show-max: 10;
-    max-height: @show-max * @size + @component-padding * @show-max + @component-padding + 1px;
+    // @show-max and @size are package-local and still resolve at build time;
+  // only @component-padding is a theme value, so calc() carries the mix.
+  max-height: ~"calc((@{show-max} * @{size}) + (var(--component-padding) * @{show-max}) + var(--component-padding) + 1px)";
   }
 }
