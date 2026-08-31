@@ -88,6 +88,27 @@ function overriddenNames() {
   };
 }
 
+// UI themes additionally publish the lightness band a colour must sit in to
+// stay legible on an overlay. Clamping into it is a no-op unless the colour is
+// too close to the overlay background, which is what autocomplete-plus's old
+// hsvvalue() guard approximated -- except that guard needed the syntax theme
+// and the UI theme in scope together, which is exactly what forced the 16x
+// per-theme-pair compile. A band derived from the UI theme alone needs nothing
+// from the syntax theme, so the consumer can compile once.
+const OVERLAY_BAND = `
+// Legibility band for colours drawn on overlays. 40 is the minimum lightness
+// separation from the overlay background; clamp(min, l, max) leaves a colour
+// alone when it already sits outside the band.
+.chevron-overlay-contrast-band() when (lightness(@overlay-background-color) < 50) {
+  --overlay-contrast-l-min: unit(lightness(@overlay-background-color) + 40);
+  --overlay-contrast-l-max: 100;
+}
+.chevron-overlay-contrast-band() when (lightness(@overlay-background-color) >= 50) {
+  --overlay-contrast-l-min: 0;
+  --overlay-contrast-l-max: unit(lightness(@overlay-background-color) - 40);
+}
+`;
+
 function render(kind, names) {
   const importName = kind === 'ui' ? 'ui-variables' : 'syntax-variables';
   return (
@@ -102,10 +123,11 @@ function render(kind, names) {
 // values under the same property names.
 
 @import "${importName}";
-
+${kind === 'ui' ? OVERLAY_BAND : ''}
 :root {
 ` +
     names.map(n => `  --${n}: @${n};`).join('\n') +
+    (kind === 'ui' ? '\n  .chevron-overlay-contrast-band();' : '') +
     '\n}\n'
   );
 }
