@@ -108,7 +108,7 @@
 
   // fatal
   .notification-type.fatal {
-    .type(@text-color-error; @background-color-error);
+    .type(text-color-error);
   }
 
   .hide-fatal li.fatal {
@@ -116,12 +116,12 @@
   }
 
   .notifications-log-notification.fatal {
-    .log(@text-color-error; @background-color-error);
+    .log(text-color-error);
   }
 
   // error
   .notification-type.error {
-    .type(@text-color-error; @background-color-error);
+    .type(text-color-error);
   }
 
   .hide-error li.error {
@@ -129,12 +129,12 @@
   }
 
   .notifications-log-notification.error {
-    .log(@text-color-error; @background-color-error);
+    .log(text-color-error);
   }
 
   // warning
   .notification-type.warning {
-    .type(@text-color-warning; @background-color-warning);
+    .type(text-color-warning);
   }
 
   .hide-warning li.warning {
@@ -142,12 +142,12 @@
   }
 
   .notifications-log-notification.warning {
-    .log(@text-color-warning; @background-color-warning);
+    .log(text-color-warning);
   }
 
   // info
   .notification-type.info {
-    .type(@text-color-info; @background-color-info);
+    .type(text-color-info);
   }
 
   .hide-info li.info {
@@ -155,12 +155,12 @@
   }
 
   .notifications-log-notification.info {
-    .log(@text-color-info; @background-color-info);
+    .log(text-color-info);
   }
 
   // success
   .notification-type.success {
-    .type(@text-color-success; @background-color-success);
+    .type(text-color-success);
   }
 
   .hide-success li.success {
@@ -168,26 +168,29 @@
   }
 
   .notifications-log-notification.success {
-    .log(@text-color-success; @background-color-success);
+    .log(text-color-success);
   }
 
 }
 
 // Type Mixin
 
-.type(@txt; @bg) {
+// Take custom property NAMES so this file compiles once rather than once per
+// UI x syntax theme pair. Both previously took a @bg they never used, and
+// .log's `lighten(@txt, 0%)` was a no-op; neither is carried forward.
+.type(@txt) {
   &.show-type {
-    color: @txt;
+    color: ~"var(--@{txt})";
     opacity: 1;
   }
 }
 
-.log(@txt; @bg) {
+.log(@txt) {
   .message {
-    color: lighten(@txt, 0%);
+    color: ~"var(--@{txt})";
   }
 
   &.icon:before {
-    color: @txt;
+    color: ~"var(--@{txt})";
   }
 }
