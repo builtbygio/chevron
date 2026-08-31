@@ -37,7 +37,8 @@ atom-notifications {
       display: block;
     }
     .message {
-      padding-right: @component-padding * 2 + 95px; // space for icon and button
+      // calc keeps the arithmetic in CSS: 95px is explicit, so no unit is inferred.
+  padding-right: calc(var(--component-padding) * 2 + 95px); // space for icon and button
     }
   }
 
@@ -231,59 +232,69 @@ atom-notifications {
 
 atom-notifications {
   atom-notification.fatal {
-    .notification(@text-color-error; @background-color-error);
+    .notification(text-color-error; background-color-error);
   }
 
   atom-notification.error {
-    .notification(@text-color-error; @background-color-error);
+    .notification(text-color-error; background-color-error);
   }
 
   atom-notification.warning {
-    .notification(@text-color-warning; @background-color-warning);
+    .notification(text-color-warning; background-color-warning);
   }
 
   atom-notification.info {
-    .notification(@text-color-info; @background-color-info);
+    .notification(text-color-info; background-color-info);
   }
 
   atom-notification.success {
-    .notification(@text-color-success; @background-color-success);
+    .notification(text-color-success; background-color-success);
   }
 }
 
 
 // Mixins -------------------------------
 
+// Takes custom property NAMES, not colours. The browser resolves them, so this
+// file no longer needs the theme in scope and compiles once instead of once
+// per UI x syntax theme pair.
+//
+// Each LESS transform maps to relative colour syntax:
+//   darken(@c, N%)                  -> h s calc(l - N)
+//   lighten(@c, N%)                 -> h s calc(l + N)
+//   desaturate(lighten(@c,18%), 5%) -> h calc(s - 5) calc(l + 18)
+//   fadeout(darken(@c,40%), N%)     -> h s calc(l - 40) / calc(alpha - N/100)
+// LESS owns hsl(), so each is wrapped in its ~"..." escape.
 .notification(@txt; @bg) {
 
   .content {
-    color: darken(@txt, 40%);
-    background-color: lighten(@bg, 25%);
+    color: ~"hsl(from var(--@{txt}) h s calc(l - 40))";
+    background-color: ~"hsl(from var(--@{bg}) h s calc(l + 25))";
   }
 
   a {
-    color: darken(@txt, 20%);
+    color: ~"hsl(from var(--@{txt}) h s calc(l - 20))";
   }
 
   code {
-    color: darken(@txt, 40%);
-    background-color: desaturate(lighten(@bg, 18%), 5%);
+    color: ~"hsl(from var(--@{txt}) h s calc(l - 40))";
+    background-color: ~"hsl(from var(--@{bg}) h calc(s - 5) calc(l + 18))";
   }
 
   &.icon:before {
-    color: lighten(@bg, 36%);
-    background-color: @bg;
+    color: ~"hsl(from var(--@{bg}) h s calc(l + 36))";
+    background-color: ~"var(--@{bg})";
   }
 
   .close-all.btn {
-    border: 1px solid fadeout(darken(@txt, 40%), 70%);
-    color: fadeout(darken(@txt, 40%), 40%);
+    border: 1px solid ~"hsl(from var(--@{txt}) h s calc(l - 40) / calc(alpha - 0.7))";
+    color: ~"hsl(from var(--@{txt}) h s calc(l - 40) / calc(alpha - 0.4))";
     text-shadow: none;
 
     &:hover {
       background: none;
-      border-color: fadeout(darken(@txt, 40%), 20%);
-      color: darken(@txt, 40%);
+      border-color: ~"hsl(from var(--@{txt}) h s calc(l - 40) / calc(alpha - 0.2))";
+      color: ~"hsl(from var(--@{txt}) h s calc(l - 40))";
     }
   }
 }
