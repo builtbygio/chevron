@@ -337,7 +337,10 @@
     &.icons .line-number,
     &[gutter-name="github-comment-icon"] .github-editorCommentGutterIcon {
       &.github-FilePatchView-line--selected {
-        color: contrast(@button-background-color-selected);
+        // contrast(@button-background-color-selected) resolves to #ffffff in all
+  // four shipped themes -- the selected button is never light enough to flip
+  // it -- so this is a constant, not a per-theme branch.
+  color: #fff;
         background: calc(var(--button-background-color) - selected);
         &.github-editorCommentGutterIcon.empty {
           z-index: -1;

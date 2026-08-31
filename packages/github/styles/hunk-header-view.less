@@ -86,7 +86,10 @@
 // Selected + focused
 .github-FilePatchView:focus-within {
   .github-HunkHeaderView--isSelected {
-    color: contrast(@button-background-color-selected);
+    // contrast(@button-background-color-selected) resolves to #ffffff in all
+  // four shipped themes -- the selected button is never light enough to flip
+  // it -- so this is a constant, not a per-theme branch.
+  color: #fff;
     background-color: calc(var(--button-background-color) - selected);
     .github-HunkHeaderView-title,
     .github-HunkHeaderView-stageButton,

@@ -99,7 +99,10 @@
 
   // also has focus
   .github-StagingView:focus & {
-    color: contrast(@button-background-color-selected);
+    // contrast(@button-background-color-selected) resolves to #ffffff in all
+  // four shipped themes -- the selected button is never light enough to flip
+  // it -- so this is a constant, not a per-theme branch.
+  color: #fff;
     background: calc(var(--button-background-color) - selected);
   }
 }

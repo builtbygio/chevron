@@ -378,7 +378,7 @@
 
   &-comments {
     padding: var(--component-padding);
-    padding-left: @component-padding + @avatar-size + 5px; // space for avatar
+    padding-left: ~"calc(var(--component-padding) + @{avatar-size} + 5px)"; // space for avatar
   }
 
   &-comment {

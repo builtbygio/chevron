@@ -10,6 +10,13 @@
 
 @import "syntax-variables";
 
+.chevron-syntax-contrast-sign() when (lightness(@syntax-background-color) < 50) {
+  --syntax-contrast-shift-sign: 1;
+}
+.chevron-syntax-contrast-sign() when (lightness(@syntax-background-color) >= 50) {
+  --syntax-contrast-shift-sign: -1;
+}
+
 :root {
   --syntax-text-color: @syntax-text-color;
   --syntax-cursor-color: @syntax-cursor-color;
@@ -41,4 +48,5 @@
   --syntax-color-attribute: @syntax-color-attribute;
   --syntax-color-import: @syntax-color-import;
   --syntax-color-snippet: @syntax-color-snippet;
+  .chevron-syntax-contrast-sign();
 }
