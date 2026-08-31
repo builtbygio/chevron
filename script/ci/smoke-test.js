@@ -275,7 +275,55 @@ const PROBE_EXPR = `(function() {
                 height: rect ? Math.round(rect.height) : 0,
                 waitedMs: tries * 250
               };
-              window.__acProbe.phase = 'done';
+              // Now the same thing inside a project folder. This is the case
+              // the loose-file check above cannot see: with a project root,
+              // getServerIdForEditor can return a server, and a provider that
+              // claims exclusivity then suppresses the word provider whether
+              // or not it has anything to offer.
+              var projectProbe = chevron.project
+                .getPaths()
+                .filter(function(p) { return p.indexOf('chevron-project-') !== -1; })[0];
+              if (!projectProbe) {
+                window.__acProbe.project = { error: 'project folder not opened' };
+                window.__acProbe.phase = 'done';
+                return;
+              }
+              chevron.workspace
+                .open(projectProbe + '/project-probe.ts')
+                .then(function(pEd) {
+                  var pPane = chevron.workspace.paneForItem(pEd);
+                  pPane.activate();
+                  pPane.activateItem(pEd);
+                  chevron.views.getView(pEd).focus();
+                  setTimeout(function() {
+                    'proj'.split('').forEach(function(ch) { pEd.insertText(ch); });
+                    var pTries = 0;
+                    (function pSettle() {
+                      var pEl = document.querySelector('autocomplete-suggestion-list');
+                      var pRect = pEl ? pEl.getBoundingClientRect() : null;
+                      var pReady = pEl && pRect && pRect.width > 0 &&
+                                   pEl.querySelectorAll('li').length > 0;
+                      if (pReady || pTries >= 40) {
+                        window.__acProbe.project = {
+                          popup: !!pEl,
+                          items: pEl ? pEl.querySelectorAll('li').length : 0,
+                          rootCount: chevron.project.getPaths().length,
+                          waitedMs: pTries * 250
+                        };
+                        window.__acProbe.phase = 'done';
+                        return;
+                      }
+                      pTries++;
+                      setTimeout(pSettle, 250);
+                    })();
+                  }, 500);
+                })
+                .catch(function(error) {
+                  window.__acProbe.project = {
+                    error: String((error && error.message) || error)
+                  };
+                  window.__acProbe.phase = 'done';
+                });
               return;
             }
             tries++;
@@ -301,6 +349,7 @@ const PROBE_EXPR = `(function() {
   return JSON.stringify({
     status: 'ready',
     autocomplete: window.__acProbe.result,
+    autocompleteInProject: window.__acProbe.project,
     packagesActive: packagesActive,
     notifications: chevron.notifications
       .getNotifications()
@@ -520,6 +569,21 @@ async function main() {
   fs.mkdirSync(path.join(atomHome, 'electronUserData'), { recursive: true });
 
   const probeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-probes-'));
+
+  // A second probe file inside a *project folder*. Loose files opened by path
+  // have no project root, so getServerIdForEditor always returns null for
+  // them -- which meant every autocomplete check here exercised the one code
+  // path that already worked. An LSP provider claiming exclusivity only
+  // suppressed the word provider once a project root existed, so "works in a
+  // new file, not in an existing one" was invisible to this harness.
+  const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-project-'));
+  const projectFile = path.join(projectDir, 'project-probe.ts');
+  fs.writeFileSync(
+    projectFile,
+    'export const projectAlpha = 1;\n' +
+      'export const projectBeta = 2;\n' +
+      'export const projectGamma = 3;\n'
+  );
   const probes = {
     txt: path.join(probeDir, 'probe.txt'),
     ts: path.join(probeDir, 'probe.ts'),
@@ -538,7 +602,7 @@ async function main() {
     console.log('smoke-test: linux flags', linuxFlags.join(' '));
     launchArgs.push(...linuxFlags);
   }
-  launchArgs.push(probes.txt, probes.ts, probes.css);
+  launchArgs.push(projectDir, probes.txt, probes.ts, probes.css);
 
   const app = childProcess.spawn(binary, launchArgs, {
     env: Object.assign({}, process.env, {
@@ -583,7 +647,7 @@ async function main() {
     } catch (error) {
       /* already gone */
     }
-    for (const dir of [atomHome, probeDir]) {
+    for (const dir of [atomHome, probeDir, projectDir]) {
       try {
         if (dir) fs.rmSync(dir, { recursive: true, force: true });
       } catch (error) {
@@ -688,6 +752,27 @@ async function main() {
         failures.push(
           `autocomplete popup has no size (${ac.width}x${ac.height}); it ` +
             'attached but did not render'
+        );
+      }
+      // The project-folder case. A loose file has no project root, so it never
+      // reaches the code path where a provider can claim exclusivity -- which
+      // is how "works in a new file, not in an existing one" shipped.
+      const acp = state.autocompleteInProject;
+      if (!acp) {
+        failures.push('autocomplete-in-project probe did not report');
+      } else if (acp.error) {
+        failures.push(`autocomplete-in-project probe error: ${acp.error}`);
+      } else if (!acp.rootCount) {
+        failures.push('project folder was not opened as a project root');
+      } else if (!acp.popup) {
+        failures.push(
+          'no autocomplete popup in a file inside a project folder, though ' +
+            'the same typing works in a loose file — a provider is claiming ' +
+            'exclusivity without answering'
+        );
+      } else if (acp.items < 2) {
+        failures.push(
+          `autocomplete in project showed ${acp.items} items (expected 2+)`
         );
       }
       if (failures.length > 0) {
