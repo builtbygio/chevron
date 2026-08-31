@@ -11,6 +11,7 @@
 const { describe, it, before } = require('node:test');
 const assert = require('assert');
 const path = require('path');
+const fs = require('fs');
 const { fork } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -30,6 +31,44 @@ function resolveDugite() {
 }
 
 const DUGITE_PATH = resolveDugite();
+
+// Resolving the module is not enough. CI installs dugite with
+// --ignore-scripts and then fetches the embedded git separately, because that
+// download is a GitHub release tarball and flaky (ECONNRESET). When all its
+// retries fail the workflow prints
+//
+//   WARNING: dugite embedded git missing after retries; git-utility tests may
+//   skip or use PATH git.
+//
+// and carries on -- but this file only skipped on `!DUGITE_PATH`, so with the
+// module present and the binary absent it ran anyway and failed the merge
+// gate on a third-party download. Check for the binary the tests actually
+// invoke, honouring LOCAL_GIT_DIRECTORY the way dugite does.
+function resolveEmbeddedGit() {
+  if (!DUGITE_PATH) return null;
+  const root = process.env.LOCAL_GIT_DIRECTORY
+    ? path.resolve(process.env.LOCAL_GIT_DIRECTORY)
+    : path.join(path.dirname(DUGITE_PATH), '..', '..', 'git');
+  const candidates =
+    process.platform === 'win32'
+      ? [path.join(root, 'cmd', 'git.exe'), path.join(root, 'bin', 'git.exe')]
+      : [path.join(root, 'bin', 'git')];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+const EMBEDDED_GIT = resolveEmbeddedGit();
+const SKIP_REASON = !DUGITE_PATH
+  ? 'dugite is not installed'
+  : !EMBEDDED_GIT
+    ? 'dugite embedded git is missing (its download failed); ' +
+      'these tests exercise the bundled binary, not PATH git'
+    : null;
+if (SKIP_REASON) {
+  console.log(`git-utility-host integration: skipped -- ${SKIP_REASON}`);
+}
 
 function forkHost() {
   return fork(HOST, [], {
@@ -89,7 +128,7 @@ function onceMessage(child, predicate, timeoutMs = 15000) {
   });
 }
 
-describe('git-utility-host integration (dugite)', { skip: !DUGITE_PATH }, () => {
+describe('git-utility-host integration (dugite)', { skip: SKIP_REASON || false }, () => {
   before(() => {
     assert.ok(DUGITE_PATH, 'dugite must be resolvable for integration tests');
   });
