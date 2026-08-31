@@ -193,40 +193,48 @@ autocomplete-suggestion-list {
     text-overflow: ellipsis;
   }
 
-  .make-type-icon(attribute, @syntax-color-attribute);
-  .make-type-icon(builtin, @syntax-color-keyword);
-  .make-type-icon(class, @syntax-color-class);
-  .make-type-icon(constant, @syntax-color-constant);
-  .make-type-icon(function, @syntax-color-function);
-  .make-type-icon(import, @syntax-color-import);
-  .make-type-icon(keyword, @syntax-color-keyword);
-  .make-type-icon(method, @syntax-color-method);
-  .make-type-icon(module, @syntax-color-import);
-  .make-type-icon(mixin, @syntax-color-class);
-  .make-type-icon(package, @syntax-color-import);
-  .make-type-icon(property, @syntax-color-property);
-  .make-type-icon(require, @syntax-color-import);
-  .make-type-icon(snippet, @syntax-color-snippet);
-  .make-type-icon(tag, @syntax-color-tag);
-  .make-type-icon(type, @syntax-color-class);
-  .make-type-icon(value, @syntax-color-value);
-  .make-type-icon(variable, @syntax-color-variable);
-  .make-type-icon(selector, @syntax-color-attribute);
-  .make-type-icon(pseudo-selector, @syntax-color-attribute);
+  .make-type-icon(attribute, syntax-color-attribute);
+  .make-type-icon(builtin, syntax-color-keyword);
+  .make-type-icon(class, syntax-color-class);
+  .make-type-icon(constant, syntax-color-constant);
+  .make-type-icon(function, syntax-color-function);
+  .make-type-icon(import, syntax-color-import);
+  .make-type-icon(keyword, syntax-color-keyword);
+  .make-type-icon(method, syntax-color-method);
+  .make-type-icon(module, syntax-color-import);
+  .make-type-icon(mixin, syntax-color-class);
+  .make-type-icon(package, syntax-color-import);
+  .make-type-icon(property, syntax-color-property);
+  .make-type-icon(require, syntax-color-import);
+  .make-type-icon(snippet, syntax-color-snippet);
+  .make-type-icon(tag, syntax-color-tag);
+  .make-type-icon(type, syntax-color-class);
+  .make-type-icon(value, syntax-color-value);
+  .make-type-icon(variable, syntax-color-variable);
+  .make-type-icon(selector, syntax-color-attribute);
+  .make-type-icon(pseudo-selector, syntax-color-attribute);
 }
 
-.make-type-icon(@type, @color) {
+// Takes the custom property NAME, not a colour: the value is resolved by the
+// browser, so this file no longer needs the syntax theme in scope and compiles
+// once instead of once per UI x syntax theme pair.
+//
+// The lightness clamp replaces a LESS guard that fired when the icon colour's
+// hsvvalue() was within 20 of the overlay background's, and then shifted the
+// colour 30% darker or lighter. clamp() is inert unless the colour is actually
+// inside the band, so it expresses the same "only when too close" intent
+// without a build-time conditional -- and the band comes from the UI theme
+// alone (--overlay-contrast-l-*), which is what breaks the dependency on
+// having both themes in scope together.
+//
+// It is not identical. hsvvalue() is max(r,g,b), so it flagged saturated
+// mid-lightness colours as illegible when they were not: One Light's `class`
+// is a saturated amber at lightness 40 on a lightness 97 background, and was
+// being darkened to lightness 10, losing the colour coding. Lightness is the
+// better proxy for legibility here.
+.make-type-icon(@type, @name) {
   .icon.@{type} {
-    color: @color;
-    background: fadeout(@color, 80%)
-  }
-}
-.make-type-icon(@type, @color)
-  when (hsvvalue(@color) - hsvvalue(@overlay-background-color) > -20)
-  and (hsvvalue(@color) - hsvvalue(@overlay-background-color) < 20) {
-  .icon.@{type} {
-    @corrected-color: contrast(@overlay-background-color, darken(@color, 30%), lighten(@color, 30%));
-    color: @corrected-color;
-    background: fadeout(@corrected-color, 80%);
+    color: ~"hsl(from var(--@{name}) h s clamp(var(--overlay-contrast-l-min), l, var(--overlay-contrast-l-max)))";
+    background: ~"hsl(from var(--@{name}) h s clamp(var(--overlay-contrast-l-min), l, var(--overlay-contrast-l-max)) / 0.2)";
   }
 }

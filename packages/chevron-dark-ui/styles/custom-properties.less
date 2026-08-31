@@ -10,6 +10,18 @@
 
 @import "ui-variables";
 
+// Legibility band for colours drawn on overlays. 40 is the minimum lightness
+// separation from the overlay background; clamp(min, l, max) leaves a colour
+// alone when it already sits outside the band.
+.chevron-overlay-contrast-band() when (lightness(@overlay-background-color) < 50) {
+  --overlay-contrast-l-min: unit(lightness(@overlay-background-color) + 40);
+  --overlay-contrast-l-max: 100;
+}
+.chevron-overlay-contrast-band() when (lightness(@overlay-background-color) >= 50) {
+  --overlay-contrast-l-min: 0;
+  --overlay-contrast-l-max: unit(lightness(@overlay-background-color) - 40);
+}
+
 :root {
   --text-color: @text-color;
   --text-color-subtle: @text-color-subtle;
@@ -66,4 +78,5 @@
   --component-border-radius: @component-border-radius;
   --tab-height: @tab-height;
   --font-family: @font-family;
+  .chevron-overlay-contrast-band();
 }
