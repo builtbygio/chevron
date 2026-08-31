@@ -2,7 +2,7 @@
 @import "octicon-utf-codes";
 @import "octicon-mixins";
 
-@header-bg-color: mix(@syntax-text-color, @syntax-background-color, 6%);
+@header-bg-color: ~"color-mix(in srgb, var(--syntax-text-color) 6%, var(--syntax-background-color))";
 
 .github-FilePatchView {
   display: flex;

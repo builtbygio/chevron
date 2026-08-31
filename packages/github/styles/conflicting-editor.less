@@ -1,10 +1,10 @@
 @import "variables";
 
-@conflict-color-ours:     spin(@syntax-color-renamed, 80); // usually magenta/purple-ish
-@conflict-color-theirs:   @syntax-color-renamed;
-@conflict-color-base:     desaturate( @syntax-color-renamed, 100% );
-@conflict-color-modified: @syntax-color-modified;
-@conflict-color-resolved: @syntax-color-added;
+@conflict-color-ours:     ~"hsl(from var(--syntax-color-renamed) calc(h + 80) s l)"; // usually magenta/purple-ish
+@conflict-color-theirs:   ~"var(--syntax-color-renamed)";
+@conflict-color-base:     ~"hsl(from var(--syntax-color-renamed) h 0 l)";
+@conflict-color-modified: ~"var(--syntax-color-modified)";
+@conflict-color-resolved: ~"var(--syntax-color-added)";
 
 
 atom-text-editor {
@@ -55,15 +55,15 @@ atom-text-editor {
   .generate-conflicts(@name, @color) {
     .github-Conflict@{name} {
       margin-right: var(--component-padding);
-      background-color: @color;
-      &.cursor-line { background-color: fadein(@color, 10%) !important; }
+      background-color: ~"hsl(from @{color} h s l / 0.15)";
+      &.cursor-line { background-color: ~"hsl(from @{color} h s l / 0.25)" !important; }
     }
 
     .github-Conflict@{name}Banner {
       margin-right: var(--component-padding);
-      background-color: @color;
-      &.cursor-line { background-color: fadein(@color, 10%) !important; }
-      &.github-ConflictUnmodifiedBanner span { color: fade(@color, 66%) !important; };
+      background-color: ~"hsl(from @{color} h s l / 0.15)";
+      &.cursor-line { background-color: ~"hsl(from @{color} h s l / 0.25)" !important; }
+      &.github-ConflictUnmodifiedBanner span { color: ~"hsl(from @{color} h s l / 0.66)" !important; };
     }
 
     .github-Conflict@{name}Block {
@@ -74,21 +74,21 @@ atom-text-editor {
   //   dark  (sign  1): l 50+50=100, a 0.58-0.08=0.50  -> white 50%
   //   light (sign -1): l 50-50=0,   a 0.58+0.08=0.66  -> black 66%
   color: ~"hsl(0 0% calc(50 + (var(--syntax-contrast-shift-sign) * 50)) / calc(0.58 - (var(--syntax-contrast-shift-sign) * 0.08)))";
-      background-color: fadein(@color, 20%);
+      background-color: ~"hsl(from @{color} h s l / 0.35)";
 
       .btn {
         color: white;
         border-color: hsla(0,0%,0%,.15);
         border: none;
-        background: fade(@color, 100%);
+        background: ~"hsl(from @{color} h s l / 1)";
       }
     }
   }
 
-  .generate-conflicts(Ours,      fade(@conflict-color-ours, 15%) );
-  .generate-conflicts(Theirs,    fade(@conflict-color-theirs, 15%) );
-  .generate-conflicts(Base,      fade(@conflict-color-base, 15%) );
-  .generate-conflicts(Modified,  fade(@conflict-color-modified, 15%) );
+  .generate-conflicts(Ours,      @conflict-color-ours);
+  .generate-conflicts(Theirs,    @conflict-color-theirs);
+  .generate-conflicts(Base,      @conflict-color-base);
+  .generate-conflicts(Modified,  @conflict-color-modified);
 
 
   // Separator -------------------------
@@ -96,15 +96,15 @@ atom-text-editor {
 
   .github-ConflictSeparator {
     margin-right: var(--component-padding);
-    background-color: fade(@conflict-color-base, 15%);
-    &.cursor-line { background-color: fade(@conflict-color-base, 25%) !important; }
-    span { color: fade(@conflict-color-base, 66%) !important; };
+    background-color: ~"hsl(from @{conflict-color-base} h s l / 0.15)";
+    &.cursor-line { background-color: ~"hsl(from @{conflict-color-base} h s l / 0.25)" !important; }
+    span { color: ~"hsl(from @{conflict-color-base} h s l / 0.66)" !important; };
   }
 
   // Resolved -------------------------
 
   .github-ResolvedLines {
-    background-color: fade(@conflict-color-resolved, 15%);
-    &.cursor-line { background-color: fade(@conflict-color-resolved, 25%) !important; }
+    background-color: ~"hsl(from @{conflict-color-resolved} h s l / 0.15)";
+    &.cursor-line { background-color: ~"hsl(from @{conflict-color-resolved} h s l / 0.25)" !important; }
   }
 }

@@ -1,8 +1,8 @@
 @import "ui-variables.less";
 @import "syntax-variables.less";
 
-@gh-comment-line: mix(@background-color-info, @syntax-background-color, 20%);
-@gh-comment-line-cursor: mix(@background-color-info, @syntax-selection-color, 40%);
+@gh-comment-line: ~"color-mix(in srgb, var(--background-color-info) 20%, var(--syntax-background-color))";
+@gh-comment-line-cursor: ~"color-mix(in srgb, var(--background-color-info) 40%, var(--syntax-selection-color))";
 
 atom-text-editor {
   .line.github-editorCommentHighlight {
