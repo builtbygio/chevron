@@ -5,7 +5,8 @@
 [../reference/build-modernization.md](../reference/build-modernization.md),
 [../reference/startup-snapshot-plan.md](../reference/startup-snapshot-plan.md),
 [../reference/cpm-design.md](../reference/cpm-design.md),
-[../reference/package-artifact-format.md](../reference/package-artifact-format.md)
+[../reference/package-artifact-format.md](../reference/package-artifact-format.md),
+[bundled-dependency-sharing.md](./bundled-dependency-sharing.md)
 
 ## The decision
 
@@ -94,7 +95,10 @@ Order is forced by dependency, not preference. Each step ships alone and leaves 
    then the 55 that do. The loader accepts both shapes during the transition. (Counted
    2026-08-31 against `packageDependencies`: 86 bundled packages, of which 8 are themes.
    The zero-dependency set is easier than 23 suggests — 12 of them are grammar-only
-   `language-*` packages with no JavaScript at all. The loader half of this step is
+   `language-*` packages with no JavaScript at all. Re-measured against the built app
+   2026-09-01, which corrects the native count below: 10 bundled, 32 ready, 7 blocked by a
+   native module, 1 by an esbuild parse failure, 1 by an API question. See
+   [bundled-dependency-sharing.md](./bundled-dependency-sharing.md). The loader half of this step is
    smaller than "the loader accepts both shapes" implies: `generate-metadata.js` already
    emits `_atomPackages`, a manifest for all 86 bundled packages that `Package` reads
    instead of scanning directories. The work is the bundle and the container, not the
