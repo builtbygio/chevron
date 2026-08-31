@@ -4,7 +4,8 @@
 **Related:** [package-ecosystem-strategy.md](./package-ecosystem-strategy.md),
 [../reference/build-modernization.md](../reference/build-modernization.md),
 [../reference/startup-snapshot-plan.md](../reference/startup-snapshot-plan.md),
-[../reference/cpm-design.md](../reference/cpm-design.md)
+[../reference/cpm-design.md](../reference/cpm-design.md),
+[../reference/package-artifact-format.md](../reference/package-artifact-format.md)
 
 ## The decision
 
@@ -83,13 +84,17 @@ Order is forced by dependency, not preference. Each step ships alone and leaves 
 
 0. **Write the artifact spec.** Manifest schema, layout, signing, loader contract. Steps 2 and
    4 both produce this thing; without the contract they produce two different things.
+   *Written:* [package-artifact-format.md](../reference/package-artifact-format.md).
 1. **Theming → CSS custom properties.** Mechanical across 323 files, but needs visual
    verification, not a green build. *Deletes:* `prebuild-less-cache.js`, the 16× matrix,
    runtime `less-cache`, the snapshot's `lessSourcesByRelativeFilePath` payload.
    **Must precede step 2:** until a stylesheet compiles without knowing the active theme, a
    package artifact cannot be self-contained.
-2. **Bundle the catalog**, starting with the 32 packages that have no runtime dependencies,
-   then the 60 that do. The loader accepts both shapes during the transition. *Deletes:*
+2. **Bundle the catalog**, starting with the 23 packages that have no runtime dependencies,
+   then the 55 that do. The loader accepts both shapes during the transition. (Counted
+   2026-08-31 against `packageDependencies`: 86 bundled packages, of which 8 are themes.
+   The zero-dependency set is easier than 23 suggests — 12 of them are grammar-only
+   `language-*` packages with no JavaScript at all.) *Deletes:*
    `transpile-typescript-paths`, `transpile-peg-js-paths`, `precompile-babel-prefix-files`,
    `src/typescript.js`.
 3. **Bundle core, then re-measure startup.** *Deletes, if measurement agrees:* `module-cache`,
