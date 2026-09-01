@@ -66,7 +66,37 @@ function removeEmptyDirectories(dir) {
 // docs/decisions/bundled-dependency-sharing.md. grim is a global deprecation
 // registry that core writes and deprecation-cop reads; a copy per package
 // means deprecation-cop reads its own and silently shows an empty list.
-const EXTERNAL = ['chevron', 'atom', 'electron', 'event-kit', 'grim'];
+const RUNTIME_PROVIDED = ['chevron', 'atom', 'electron', 'event-kit', 'grim'];
+
+// Native modules can never be inlined -- esbuild has no loader for .node, and
+// a compiled binary is not something a bundle can absorb. They stay external
+// and are required from node_modules at run time, exactly as they are today.
+//
+// This was mistaken for a blocker: six packages sat in BLOCKED as "native"
+// when what they needed was the native module marked external, the same
+// treatment event-kit gets. Bundling still pays off for them -- one entry
+// point, the JavaScript resolved ahead of time.
+//
+// It does mean these cannot become fully self-contained registry artifacts.
+// That is the native-module track, deliberately out of scope here.
+const NATIVE = [
+  '@atom/fuzzy-native',
+  'ctags',
+  'keytar',
+  'oniguruma',
+  'pathwatcher',
+  'spellchecker',
+  'superstring'
+];
+
+// Packages whose value is a file on disk rather than code. Inlining them
+// moves the code away from the asset it points at: @vscode/ripgrep computes
+// rgPath as path.join(__dirname, '../bin/rg'), so once it is inlined into
+// fuzzy-finder's bundle __dirname is the package root and the path becomes
+// node_modules/bin/rg. The binary is still there; nothing can find it.
+const BINARY_ASSETS = ['@vscode/ripgrep'];
+
+const EXTERNAL = [...RUNTIME_PROVIDED, ...NATIVE, ...BINARY_ASSETS];
 
 // Everything that bundles cleanly today. Explicit rather than derived: what a
 // package pulls in changes when its dependencies change, and a list that
@@ -84,11 +114,13 @@ const BUNDLED = [
   'autosave',
   'background-tips',
   'bookmarks',
+  'bracket-matcher',
   'command-palette',
   'deprecation-cop',
   'dev-live-reload',
   'encoding-selector',
   'find-and-replace',
+  'fuzzy-finder',
   'git-diff',
   'go-to-line',
   'grammar-selector',
@@ -108,10 +140,12 @@ const BUNDLED = [
   'open-on-github',
   'settings-view',
   'snippets',
+  'spell-check',
   'status-bar',
   'styleguide',
   'tabs',
   'timecop',
+  'tree-view',
   'welcome',
   'whitespace',
   'wrap-guide'
@@ -120,14 +154,26 @@ const BUNDLED = [
 // Not bundled, with the reason. A package leaves this list by having its
 // reason removed, not by someone trying it again and finding it works.
 const BLOCKED = {
-  'bracket-matcher': 'oniguruma (native, reached transitively)',
-  'fuzzy-finder': '@atom/fuzzy-native (native)',
-  github: 'keytar (native)',
-  'spell-check': 'spellchecker (native)',
-  'symbols-view': 'ctags (native)',
-  'tree-view': 'pathwatcher (native)',
-  'lsp-ui': 'fs-admin (native), and requires ../../../src/ -- not self-contained',
-  'markdown-preview': 'esbuild cannot parse htmlparser2/dist/commonjs/Parser.js'
+              // Not the native module -- fs-admin would simply be external like the
+  // others. lsp-ui requires ../../../src/lsp, ../../../src/text-editor-element
+  // and ../../../src/get-window-load-settings, and bundling it inlines 45 core
+  // modules into the package: decoration.js, cursor.js, selection.js, the
+  // tokenizer. Those carry state and identity core also uses, so it is the
+  // grim problem at 45x. Blocked until those imports are a real interface.
+  // Two problems, both of which the guards caught before this shipped: it
+  // forks lib/worker.js by path, a second entry point the bundle does not
+  // reach, and lib/helpers.js locates files through __dirname in three places.
+  // Bundling it cost all 17 github: commands -- the package still activated,
+  // registered nothing, and reported no error.
+  github: 'forks lib/worker.js by path; lib/helpers.js resolves via __dirname',
+  // Same shape: lib/load-tags-handler.js is run as a task, and
+  // lib/tag-generator.js resolves it through __dirname.
+  'symbols-view': 'runs lib/load-tags-handler.js as a task, resolved via __dirname',
+  'lsp-ui': 'requires ../../../src/; bundling inlines 45 core modules',
+  // htmlparser2 imports the 'entities/decode' subpath, which does not resolve
+  // in the installed entities version. A dependency-resolution problem, not a
+  // bundling one.
+  'markdown-preview': "htmlparser2 imports 'entities/decode', which does not resolve"
 };
 function bundleOne(packageName) {
   const packageRoot = path.join(
@@ -152,6 +198,20 @@ function bundleOne(packageName) {
     format: 'cjs',
     target: 'node22',
     external: EXTERNAL,
+    // Resolve the way the runtime does. Without this esbuild honours the
+    // "import" branch of a dependency's exports map and inlines its ESM build,
+    // where require() would have taken the CommonJS one -- a different file
+    // with, sometimes, a different shape.
+    //
+    // natural does `require('underscore')._`, an old idiom the UMD build
+    // supports and the ESM build does not, so spell-check bundled cleanly and
+    // then failed to activate with "Cannot read properties of undefined
+    // (reading 'without')". Nothing about the bundle looked wrong; it had
+    // simply inlined a different underscore.
+    //
+    // mainFields alone does not fix it: an exports map takes precedence over
+    // main, so the conditions are what decide.
+    conditions: ['node', 'require'],
     logLevel: 'warning',
     metafile: true,
     // Packages are first-party and shipped with the app; readable output is
@@ -172,6 +232,12 @@ function bundleOne(packageName) {
     const absolute = path.resolve(ROOT, input);
     if (!absolute.startsWith(packageRoot + path.sep)) continue;
     if (absolute === outfile) continue;
+    // A package.json can be a bundle input -- github requires its own for the
+    // version string -- but the loader reads it to find the package at all.
+    // Inlining it does not stop it being needed on disk, and deleting it makes
+    // the package vanish. The build caught this immediately; nothing else
+    // would have.
+    if (absolute === manifestPath) continue;
     if (fs.existsSync(absolute)) {
       fs.unlinkSync(absolute);
       removed++;
@@ -211,4 +277,7 @@ module.exports = function() {
 
 module.exports.BUNDLED = BUNDLED;
 module.exports.EXTERNAL = EXTERNAL;
+module.exports.NATIVE = NATIVE;
+module.exports.BINARY_ASSETS = BINARY_ASSETS;
+module.exports.RUNTIME_PROVIDED = RUNTIME_PROVIDED;
 module.exports.BLOCKED = BLOCKED;
