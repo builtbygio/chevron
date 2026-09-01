@@ -144,7 +144,6 @@
     "scrollbar-style": "npm:@builtbygio/scrollbar-style@4.0.1",
     "season": "npm:@builtbygio/season@6.0.2",
     "semver": "7.8.5",
-    "service-hub": "^0.7.4",
     "settings-view": "workspace:@builtbygio/settings-view@*",
     "sinon": "9.2.1",
     "snippets": "workspace:@builtbygio/snippets@*",
