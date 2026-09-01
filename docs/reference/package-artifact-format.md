@@ -214,17 +214,33 @@ The registry is a static file host plus a signed index. No server, no database,
 no review queue — that cost came from accepting third-party code, and this
 catalog does not.
 
-## Open, and deliberately so
+## Decided
 
-These need a decision before implementation, not before this document lands:
+**Key custody — offline.** One signature per release over a signed index, not
+one per package: the manifest already carries a hash per shipped file, so a
+signature over the manifest covers the artifact, and a signature over an index
+of manifests covers the catalog. CI builds and produces the index; a human
+signs it on an offline machine or a hardware key; CI publishes the artifacts
+and the signature. CI never holds the key.
 
-1. **Key custody.** Where the signing key lives and who can use it. A key in
-   CI secrets signs whatever CI is told to sign; a key held offline means
-   releases block on a human. First-party-only makes the weaker option
-   defensible, but it should be chosen rather than defaulted into.
-2. **Version pinning across the catalog.** Whether bundled packages pin exact
-   versions in the app manifest or float within a range. Exact is what makes a
-   build reproducible; floating is what makes a security patch one-line.
-3. **Downgrade and rollback.** Whether `cpm` may install an older version over
-   a newer one, and whether the app tolerates a version below its `engines`
-   floor rather than refusing to load.
+The cost is release latency -- nothing ships until someone is at the key -- and
+that is the intended trade: the signature attests that a person approved the
+release, which is the property a CI-held key cannot give.
+
+**Version pinning — exact.** What the project already does, and what makes a
+build reproducible. A security patch is then a deliberate edit per affected
+package rather than something that arrives on its own, which is the right way
+round for a catalog this size.
+
+## Still open
+
+**Whether `temp` may be inlined.** It keeps module-level `tracking`,
+`filesToDelete` and `dirsToDelete` and registers a process exit listener; ten
+packages depend on it. Duplicated copies each clean up after themselves, which
+is probably fine -- but this repository has already spent a change on 1719
+leaked temp directories, so probably-fine is not the standard. Someone should
+read what those handlers do under duplication before it is inlined.
+
+**Downgrade and rollback.** Whether `cpm` may install an older version over a
+newer one, and whether the app tolerates a version below its `engines` floor
+rather than refusing to load.
