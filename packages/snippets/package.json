@@ -10,14 +10,14 @@
     "chevron": "*"
   },
   "dependencies": {
-    "async": "~0.2.6",
-    "atom-select-list": "^0.7.0",
+    "async": "^3.2.6",
+    "atom-select-list": "^0.8.2",
     "fs-plus": "^3.0.0",
     "loophole": "^1",
     "pegjs": "~0.8.0",
     "scoped-property-store": "^0.17.0",
     "season": "^6.0.2",
-    "temp": "~0.8.0",
+    "temp": "^0.9.2",
     "underscore-plus": "^1.0.0"
   },
   "providedServices": {

@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "dedent": "^0.7.0",
-    "etch": "^0.12.6",
+    "etch": "^0.14.1",
     "underscore-plus": "^1.0.0"
   },
   "standard": {
