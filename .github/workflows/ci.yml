@@ -493,7 +493,9 @@ jobs:
       # Asserts on out/app, so it has to follow the build: no bundled package
       # ships .less, and no per-theme-pair compile cache is warmed.
       - name: Compiled stylesheet contract
-        run: node --test script/ci/compiled-styles.test.js
+        run: |
+          node --test script/ci/compiled-styles.test.js
+          node --test script/ci/nested-modules-preserved.test.js
 
       - name: Launch smoke test (Xvfb)
         run: xvfb-run -a node script/ci/smoke-test.js

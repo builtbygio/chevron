@@ -54,19 +54,7 @@ module.exports = function() {
       copyModuleTree(modulePath, destPath);
     });
 
-  nestHoistedDep('tree-view', 'minimatch');
-  // htmlparser2 and parse5 need entities 7.x / 6.x; the hoisted copy is 4.5.0,
-  // which satisfies dom-serializer and nothing else. pnpm keeps the right
-  // versions nested, and copying only the top-level package directory drops
-  // them, so in the packaged app `require('cheerio')` threw
-  // ERR_PACKAGE_PATH_NOT_EXPORTED for 'entities/decode'. markdown-preview
-  // requires cheerio on its first render, so opening a preview did nothing at
-  // all -- no error surfaced, the pane simply never appeared.
-  nestPackageDep('htmlparser2', 'entities');
-  nestPackageDep('parse5', 'entities');
-  // language-css wants tree-sitter-css 0.23.2 (prebuilds). pnpm may hoist
-  // 0.20.0 from tree-sitter-less/scss, which has no native binding.
-  nestPackageDep('language-css', 'tree-sitter-css');
+  preserveNestedModules();
 
   // Chevron: force-patched natives may leave nested absolute symlinks
   // (e.g. text-buffer/node_modules/superstring → repo root). asar cannot
@@ -166,6 +154,91 @@ function materializeExternalSymlinks(rootDir) {
       }
     }
   }
+}
+
+// pnpm nests a dependency under the package that needs it whenever the hoisted
+// version does not satisfy that package's range. The copy pass above walks the
+// top-level entries only, so those nested copies were left behind and every
+// package fell back to the single hoisted version.
+//
+// That broke things silently and only in the packaged app, because the dev
+// tree resolves correctly. markdown-preview was the case that surfaced:
+// htmlparser2 needs entities ^7, the app shipped 4.5.0, and opening a preview
+// said "Previewing Markdown Failed" while the same code worked in dev.
+//
+// It was being patched one casualty at a time -- tree-view/minimatch,
+// language-css/tree-sitter-css, htmlparser2/entities, parse5/entities. Across
+// the tree there are 126 dependencies whose hoisted replacement does not
+// satisfy the declared range, 36 of them in packages the editor actually
+// loads, so naming them individually was never going to finish.
+//
+// This copies what pnpm resolved instead of re-deciding it.
+function preserveNestedModules() {
+  const sourceRoot = path.join(CONFIG.repositoryRootPath, 'node_modules');
+  const destRoot = path.join(CONFIG.intermediateAppPath, 'node_modules');
+  let copied = 0;
+
+  const realPathOf = entry => {
+    try {
+      return fs.realpathSync(entry);
+    } catch (_) {
+      return null;
+    }
+  };
+
+  // Scoped packages live one level down: @scope/name.
+  const topLevelPackages = [];
+  for (const entry of fs.readdirSync(sourceRoot)) {
+    if (entry.startsWith('.')) continue;
+    if (entry.startsWith('@')) {
+      let scoped;
+      try {
+        scoped = fs.readdirSync(path.join(sourceRoot, entry));
+      } catch (_) {
+        continue;
+      }
+      for (const name of scoped) topLevelPackages.push(path.join(entry, name));
+    } else {
+      topLevelPackages.push(entry);
+    }
+  }
+
+  for (const packageName of topLevelPackages) {
+    const resolved = realPathOf(path.join(sourceRoot, packageName));
+    if (!resolved) continue;
+    const nestedRoot = path.join(resolved, 'node_modules');
+    let nestedEntries;
+    try {
+      if (!fs.statSync(nestedRoot).isDirectory()) continue;
+      nestedEntries = fs.readdirSync(nestedRoot);
+    } catch (_) {
+      continue;
+    }
+
+    for (const nestedName of nestedEntries) {
+      // .bin holds shims that point outside the tree; asar cannot follow them
+      // and nothing in the app runs them.
+      if (nestedName.startsWith('.')) continue;
+      const names = nestedName.startsWith('@')
+        ? fs
+            .readdirSync(path.join(nestedRoot, nestedName))
+            .map(inner => path.join(nestedName, inner))
+        : [nestedName];
+
+      for (const name of names) {
+        const dest = path.join(destRoot, packageName, 'node_modules', name);
+        if (fs.existsSync(dest)) continue;
+        const src = realPathOf(path.join(nestedRoot, name));
+        if (!src) continue;
+        // Copy rather than symlink: asar stores a symlink as a single entry
+        // with no children, so require() from the parent finds nothing.
+        copyModuleTree(src, dest);
+        copied++;
+      }
+    }
+  }
+
+  console.log(`Preserved ${copied} nested dependencies pnpm had resolved`);
 }
 
 function nestHoistedDep(packageName, depName) {
