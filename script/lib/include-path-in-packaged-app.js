@@ -138,6 +138,47 @@ for (let packageName in CONFIG.appMetadata.packageDependencies) {
   );
 }
 
+// Lint, test and build tooling. These are dependencies of the repository, not
+// of the editor: `standard` pulls eslint and its plugins, `inquirer` pulls
+// rxjs, and the rest are test harnesses and native-build helpers. The root
+// package.json has 152 dependencies and no devDependencies, so nothing in the
+// manifest distinguishes them -- and copy-assets copies every top-level entry.
+//
+// Named individually rather than derived. Deriving would mean trusting the
+// declared dependency graph, and packages require things they do not declare:
+// every bundled package with "no runtime dependencies" requires event-kit.
+// Each name here was checked against a require trace of a running editor --
+// 659 modules across 143 packages -- and appears in none of them.
+//
+// script/ci/no-dev-tooling-in-installer.test.js re-checks that nothing in the
+// shipped tree requires them, so adding a real dependency on one fails rather
+// than shipping broken.
+for (const devTool of [
+  'acorn',
+  'ajv',
+  'atom-mocha-test-runner',
+  'chai-as-promised',
+  'es-abstract',
+  'eslint',
+  'eslint-plugin-import',
+  'eslint-plugin-node',
+  'eslint-plugin-react',
+  'eslint-utils',
+  'esquery',
+  'prebuildify',
+  'regexpp',
+  'rxjs',
+  'test-until'
+]) {
+  EXCLUDE_REGEXPS_SOURCES.push(
+    '^' +
+      escapeRegExp(path.join(CONFIG.repositoryRootPath, 'node_modules', devTool)) +
+      '($|' +
+      escapeRegExp(path.sep) +
+      ')'
+  );
+}
+
 // Language servers are not part of the product installer.
 // docs/reference/lsp-server-distribution.md: "Chevron does not ship
 // language-server binaries in the product installer." These arrive anyway
