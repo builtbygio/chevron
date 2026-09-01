@@ -143,6 +143,7 @@ const BUNDLED = [
   'spell-check',
   'status-bar',
   'styleguide',
+  'symbols-view',
   'tabs',
   'timecop',
   'tree-view',
@@ -165,10 +166,13 @@ const BLOCKED = {
   // reach, and lib/helpers.js locates files through __dirname in three places.
   // Bundling it cost all 17 github: commands -- the package still activated,
   // registered nothing, and reported no error.
-  github: 'forks lib/worker.js by path; lib/helpers.js resolves via __dirname',
-  // Same shape: lib/load-tags-handler.js is run as a task, and
-  // lib/tag-generator.js resolves it through __dirname.
-  'symbols-view': 'runs lib/load-tags-handler.js as a task, resolved via __dirname',
+  // Three separate obstacles, not one. lib/worker.js is loaded as a second
+  // renderer by path; lib/graphql/load-recovered.js locates a data directory
+  // as path.join(__dirname, '..', '..', 'graphql', 'recovered'); and
+  // lib/helpers.js:200 does require.resolve(path.join(__dirname, 'shared',
+  // relPath)) -- a dynamic require of a computed path, which no bundler can
+  // follow. The last one is the real blocker; the others have known fixes.
+  github: 'dynamic require.resolve of a computed path in lib/helpers.js',
   'lsp-ui': 'requires ../../../src/; bundling inlines 45 core modules',
   // htmlparser2 imports the 'entities/decode' subpath, which does not resolve
   // in the installed entities version. A dependency-resolution problem, not a

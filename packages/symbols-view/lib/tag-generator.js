@@ -40,8 +40,14 @@ class TagGenerator {
   }
   getPackageRoot() {
     const { resourcePath } = chevron.getLoadSettings();
-    const currentFileWasRequiredFromSnapshot = !import_fs_plus.default.isAbsolute(__dirname);
-    const packageRoot = currentFileWasRequiredFromSnapshot ? import_path.default.join(resourcePath, "node_modules", "symbols-view") : import_path.default.resolve(__dirname, "..");
+    // See the note in github's helpers.js: deriving the root from __dirname
+    // breaks the moment the package is bundled at the package root.
+    const packageRoot =
+      chevron.packages.resolvePackagePath("symbols-view") ||
+      import_path.default.join(resourcePath, "node_modules", "symbols-view");
+    // vendor/ctags-<platform> is an executable and lib/ctags-config is passed
+    // to it by path, so both have to resolve on the real filesystem rather
+    // than inside the asar.
     if (import_path.default.extname(resourcePath) === ".asar" && packageRoot.indexOf(resourcePath) === 0) {
       return import_path.default.join(`${resourcePath}.unpacked`, "node_modules", "symbols-view");
     } else {
