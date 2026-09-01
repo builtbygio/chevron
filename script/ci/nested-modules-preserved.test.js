@@ -35,6 +35,50 @@ const APP = path.join(ROOT, 'out', 'app');
 const DEV_MODULES = path.join(ROOT, 'node_modules');
 const semver = require(path.join(DEV_MODULES, 'semver'));
 
+// Whether anything that actually ships inside `pkgDir` requires `dep`.
+//
+// The range check below is a proxy for the real property: that resolution
+// cannot hand a shipped file a version it was not written against. When a
+// package's nested copy is dropped because the only file requiring it is
+// itself excluded from the installer, the proxy fails while the real property
+// holds -- season/lib/csonc.js is the case that forced this, the only requirer
+// of yargs in a package whose library half never touches it.
+//
+// So rather than an allowlist, ask the shipped tree directly. Anything that
+// starts requiring the dep for real fails the check again, which is the whole
+// point of the guard.
+function shippedCodeRequires(pkgDir, dep) {
+  const pattern = new RegExp(
+    `require\\(\\s*['"]${dep.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:/|['"])`
+  );
+  let found = false;
+  const walk = dir => {
+    if (found) return;
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch (error) {
+      return;
+    }
+    for (const entry of entries) {
+      if (found) return;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === 'node_modules') continue;
+        walk(full);
+      } else if (/\.(js|ts|json)$/.test(entry.name) && entry.name !== 'package.json') {
+        try {
+          if (pattern.test(fs.readFileSync(full, 'utf8'))) found = true;
+        } catch (error) {
+          // unreadable file proves nothing; keep looking
+        }
+      }
+    }
+  };
+  walk(pkgDir);
+  return found;
+}
+
 function readManifest(dir) {
   try {
     return JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
@@ -96,6 +140,8 @@ describe('packaging preserves resolved versions', () => {
             continue;
           }
           if (!satisfied) {
+            // Unsatisfiable only matters if something shipped can reach it.
+            if (!shippedCodeRequires(path.join(appModules, name), dep)) continue;
             offenders.push(
               `${name} declares ${dep}@${range} and would get ${hoisted.version}`
             );
@@ -123,6 +169,60 @@ describe('packaging preserves resolved versions', () => {
       assert.ok(
         semver.satisfies(version, '^7.0.0'),
         `expected entities ^7 under htmlparser2, found ${version}`
+      );
+    });
+  });
+});
+
+/**
+ * The reachability escape hatch is narrow on purpose.
+ *
+ * Dropping a nested copy is safe only when nothing that ships can require the
+ * dependency. season is the case that forced this: its `csonc` CLI is the sole
+ * requirer of yargs, the CLI is excluded from the installer, and the library
+ * half never touches it -- so the declared range goes unsatisfied while no
+ * shipped file can observe that.
+ *
+ * If the check ever silently returns false for everything, the guard above
+ * degrades to a no-op without failing, which is the failure mode worth testing
+ * for directly.
+ */
+describe('the reachability check actually detects requires', () => {
+  const APP_ = path.join(ROOT, 'out', 'app');
+  const describeApp = fs.existsSync(APP_) ? describe : describe.skip;
+
+  describeApp('against the built app', () => {
+    it('finds a require that is really there', () => {
+      // first-mate genuinely requires season; the check must say so.
+      const firstMate = path.join(APP_, 'node_modules', 'first-mate');
+      if (!fs.existsSync(firstMate)) return;
+      assert.ok(
+        shippedCodeRequires(firstMate, 'season'),
+        'first-mate requires season in lib/grammar-registry.js; a check that ' +
+          'misses this would let the guard pass on anything'
+      );
+    });
+
+    it('does not invent one that is not', () => {
+      const firstMate = path.join(APP_, 'node_modules', 'first-mate');
+      if (!fs.existsSync(firstMate)) return;
+      assert.ok(
+        !shippedCodeRequires(firstMate, 'this-package-does-not-exist'),
+        'the check must not match arbitrary names'
+      );
+    });
+
+    it('season ships its library and no requirer of yargs', () => {
+      const season = path.join(APP_, 'node_modules', 'season');
+      if (!fs.existsSync(season)) return;
+      assert.ok(
+        fs.existsSync(path.join(season, 'lib', 'cson.js')),
+        'the library half must still ship'
+      );
+      assert.ok(
+        !shippedCodeRequires(season, 'yargs'),
+        'if something in the shipped season starts requiring yargs, the ' +
+          'nested copy has to come back'
       );
     });
   });
