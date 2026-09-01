@@ -478,9 +478,6 @@ importers:
       semver:
         specifier: 7.8.5
         version: 7.8.5
-      service-hub:
-        specifier: ^0.7.4
-        version: 0.7.4
       settings-view:
         specifier: workspace:@builtbygio/settings-view@*
         version: link:packages/settings-view
@@ -3842,9 +3839,6 @@ packages:
   serialize-javascript@7.0.5:
     resolution: {integrity: sha512-F4LcB0UqUl1zErq+1nYEEzSHJnIwb3AF2XWB94b+afhrekOUijwooAYqFyRbjYkm2PAKBabx6oYv/xDxNi8IBw==}
     engines: {node: '>=20.0.0'}
-
-  service-hub@0.7.4:
-    resolution: {integrity: sha512-KEElYXKNsSbOOVR7BcjL7SEyQHtWuozhI6RxMSsaZyOR8q5Itao/6ig9urL6H7vDCgqjv1MNsVuvMiynHDJtTw==}
 
   set-blocking@2.0.0:
     resolution: {integrity: sha512-KiKBS8AnWGEyLzofFfmvKwpdPzqiy16LvQfK3yv/fVH7Bj13/wl3JSR1J+rfgRE9q7xUJK4qvgS8raSOeLUehw==}
@@ -7393,11 +7387,6 @@ snapshots:
       underscore-plus: 1.7.0
 
   serialize-javascript@7.0.5: {}
-
-  service-hub@0.7.4:
-    dependencies:
-      event-kit: 1.5.0
-      semver: 5.7.2
 
   set-blocking@2.0.0: {}
 
