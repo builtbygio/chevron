@@ -1,13 +1,18 @@
 'use strict';
 
 /**
- * User config / keymap / snippets file format (architecture H1 PR 5).
- * Default writer is JSON. Dual-read CSON. Never delete .cson.
- * Never overwrite an existing config.json. Escape: CHEVRON_CONFIG_CSON=1.
+ * User config / keymap / snippets files are JSON.
  *
- * Do not require('season') at load — the unit-and-cpm CI job has no app
- * node_modules. JSON-shaped CSON is parsed with JSON.parse; real CSON
- * lazy-loads season (present in the packaged app).
+ * CSON is no longer read. It was retained to migrate users arriving from
+ * Atom, and reading it cost the product a second language's compiler:
+ * season -> cson-parser -> coffee-script, 0.38 MB shipped so that a file
+ * most users no longer have could be parsed once.
+ *
+ * A .cson found here is reported, never read and never deleted. Reporting
+ * matters: a real Atom config.cson is not JSON -- unquoted keys, indentation
+ * instead of braces -- so silently ignoring it would start the user on
+ * defaults with their settings sitting in a file on disk, which is the worst
+ * of the available behaviours.
  */
 
 const fs = require('fs');
@@ -15,9 +20,8 @@ const path = require('path');
 
 const STEMS = ['config', 'keymap', 'snippets'];
 
-function preferCson(env = process.env) {
-  return Boolean(env && env.CHEVRON_CONFIG_CSON === '1');
-}
+// CHEVRON_CONFIG_CSON is gone with the reader: an escape hatch that writes a
+// format nothing reads is worse than no escape hatch.
 
 function pathsFor(homeDir, stem) {
   return {
@@ -34,70 +38,41 @@ function exists(filePath) {
   }
 }
 
-function resolveUserDataFile(homeDir, stem, env = process.env) {
+function resolveUserDataFile(homeDir, stem) {
   const { json, cson } = pathsFor(homeDir, stem);
-  const jsonExists = exists(json);
-  const csonExists = exists(cson);
+  // Always the .json path. An orphaned .cson is surfaced through
+  // strandedCsonFiles rather than read.
+  return {
+    filePath: json,
+    format: 'json',
+    strandedCson: !exists(json) && exists(cson) ? cson : null
+  };
+}
 
-  if (preferCson(env)) {
-    if (csonExists) return { filePath: cson, format: 'cson' };
-    if (jsonExists) return { filePath: json, format: 'json' };
-    return { filePath: cson, format: 'cson' };
+// Files the user still has in CSON that nothing will read. The caller decides
+// how to tell them; this only reports.
+function strandedCsonFiles(homeDir) {
+  const stranded = [];
+  for (const stem of STEMS) {
+    const { json, cson } = pathsFor(homeDir, stem);
+    if (!exists(json) && exists(cson)) stranded.push(cson);
   }
-
-  if (jsonExists) return { filePath: json, format: 'json' };
-  if (csonExists) {
-    return { filePath: cson, format: 'cson', shouldMigrate: true };
-  }
-  return { filePath: json, format: 'json' };
+  return stranded;
 }
 
 function readObjectFile(filePath) {
   const text = fs.readFileSync(filePath, 'utf8');
   if (!text.trim()) return {};
-  try {
-    return JSON.parse(text);
-  } catch (jsonError) {
-    if (path.extname(filePath) === '.json') throw jsonError;
-    return require('season').readFileSync(filePath);
-  }
+  return JSON.parse(text);
 }
 
 function writeJsonFile(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data || {}, null, 2) + '\n');
 }
 
-function migrateStemToJson(homeDir, stem, env = process.env) {
-  if (preferCson(env)) return { migrated: false };
-  const { json, cson } = pathsFor(homeDir, stem);
-  if (exists(json) || !exists(cson)) return { migrated: false };
-  let data;
-  try {
-    data = readObjectFile(cson);
-  } catch (error) {
-    return { migrated: false, error };
-  }
-  try {
-    writeJsonFile(json, data);
-  } catch (error) {
-    return { migrated: false, error };
-  }
-  return { migrated: true, from: cson, to: json };
-}
-
-function migrateUserDataFiles(homeDir, env = process.env) {
-  const result = {};
-  for (const stem of STEMS) {
-    result[stem] = migrateStemToJson(homeDir, stem, env);
-  }
-  return result;
-}
-
 module.exports = {
-  preferCson,
+  strandedCsonFiles,
   resolveUserDataFile,
-  migrateStemToJson,
-  migrateUserDataFiles,
   readObjectFile,
   writeJsonFile
 };

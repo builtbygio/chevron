@@ -6,8 +6,7 @@ const StorageFolder = require('../storage-folder');
 const Config = require('../config');
 const ConfigFile = require('../config-file');
 const {
-  resolveUserDataFile,
-  migrateUserDataFiles
+  resolveUserDataFile
 } = require('../user-config-path');
 const FileRecoveryService = require('./file-recovery-service');
 const StartupTime = require('../startup-time');
@@ -224,10 +223,6 @@ module.exports = class AtomApplication extends EventEmitter {
 
     this.initializeAtomHome(process.env.ATOM_HOME);
 
-    const migrated = migrateUserDataFiles(process.env.ATOM_HOME);
-    this.configMigratedFromCson = Boolean(
-      migrated.config && migrated.config.migrated
-    );
     this.configFilePath = resolveUserDataFile(
       process.env.ATOM_HOME,
       'config'
