@@ -232,15 +232,32 @@ build reproducible. A security patch is then a deliberate edit per affected
 package rather than something that arrives on its own, which is the right way
 round for a catalog this size.
 
+**Downgrading — `cpm` warns, then replaces.** A package does not exist in two
+versions at once. If `cpm install foo@1.0` runs while `foo@2.0` is installed,
+`cpm` reports that a newer version is already present and asks whether to
+continue; on yes it uninstalls `foo@2.0` and installs `foo@1.0`. One version
+per package id, always.
+
+**`engines.chevron` — the app refuses to load a package that does not match.**
+Not a warning, not a degraded load. A package that declares a Chevron range it
+does not get is not loaded, because the alternative is a package half-working
+against an API it was not written for, which surfaces to the user as an
+unattributable bug in the editor rather than a clear one in the package.
+
+**`temp` may be inlined.** Resolved by reading its exit handling rather than
+reasoning about it: `attachExitListener()` returns immediately unless a
+consumer has called `temp.track()`, so an untracked copy registers no listener
+and owns no cleanup state. Four shipped packages require `temp`
+(`archive-view`, `git-diff`, `github`, `keybinding-resolver`) and exactly one
+line of shipped runtime code calls `.track()`:
+`packages/github/lib/helpers.js:334`. The other callers are test files --
+`git-diff/spec/*` and `script/test` -- which never run in a packaged app. So
+however many copies bundling inlines,
+at most one attaches an exit listener, and the duplication hazard does not
+arise. If a second package ever calls `.track()` it gets its own listener and
+its own file list, which is still correct; the listener-count warning would
+need eleven of them.
+
 ## Still open
 
-**Whether `temp` may be inlined.** It keeps module-level `tracking`,
-`filesToDelete` and `dirsToDelete` and registers a process exit listener; ten
-packages depend on it. Duplicated copies each clean up after themselves, which
-is probably fine -- but this repository has already spent a change on 1719
-leaked temp directories, so probably-fine is not the standard. Someone should
-read what those handlers do under duplication before it is inlined.
-
-**Downgrade and rollback.** Whether `cpm` may install an older version over a
-newer one, and whether the app tolerates a version below its `engines` floor
-rather than refusing to load.
+Nothing in this section is blocking 1.2.0.
