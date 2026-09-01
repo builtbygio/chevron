@@ -70,7 +70,6 @@ overrides:
   keytar: npm:@builtbygio/keytar@4.13.0
   nslog: npm:@builtbygio/nslog@3.2.0
   pathwatcher: npm:@builtbygio/pathwatcher@8.1.2
-  atom-keymap: npm:@builtbygio/atom-keymap@8.2.15
   atom-pathspec: npm:@builtbygio/atom-pathspec@0.0.0
   atom-select-list: npm:@builtbygio/atom-select-list@0.8.2
   first-mate: npm:@builtbygio/first-mate@7.4.3
@@ -112,9 +111,6 @@ importers:
       async:
         specifier: 3.2.6
         version: 3.2.6
-      atom-keymap:
-        specifier: npm:@builtbygio/atom-keymap@8.2.15
-        version: '@builtbygio/atom-keymap@8.2.15'
       atom-pathspec:
         specifier: npm:@builtbygio/atom-pathspec@0.0.0
         version: '@builtbygio/atom-pathspec@0.0.0'
@@ -1452,9 +1448,6 @@ packages:
 
   '@atom/source-map-support@0.3.4':
     resolution: {integrity: sha512-tKmv2GIeHGPCevOD5q+bsf0IHtWtUnDbGEDGKNR0xNp1X2dQv4hihc0HjnH/4QhlNaVT7FQ5akl/Wks0i+Anlg==}
-
-  '@builtbygio/atom-keymap@8.2.15':
-    resolution: {integrity: sha512-7aoy/lgVF+XPXGS33NDFkXtKpeV93IyWEZ+YSTDrv/D9Dl2kVk1HV5rf/dDAJLL14wYhcPU1ZQN3LhcVhkIT/Q==}
 
   '@builtbygio/atom-pathspec@0.0.0':
     resolution: {integrity: sha512-TysmG7SL8ByoJY7tUDamohY7WIJ6orhGZ6C/qIfsIwypyGOdwmSSoM9hZuaUIm3xr5RUDQPClEScWKNCm9B1FA==}
@@ -4650,18 +4643,6 @@ snapshots:
   '@atom/source-map-support@0.3.4':
     dependencies:
       source-map: 0.1.32
-
-  '@builtbygio/atom-keymap@8.2.15':
-    dependencies:
-      clear-cut: 2.0.2
-      emissary: 1.3.3
-      event-kit: 1.5.0
-      fs-plus: 3.1.1
-      grim: 1.5.0
-      keyboard-layout: '@builtbygio/keyboard-layout@2.0.17'
-      pathwatcher: '@builtbygio/pathwatcher@8.1.2'
-      property-accessors: 1.1.3
-      season: '@builtbygio/season@6.0.2'
 
   '@builtbygio/atom-pathspec@0.0.0': {}
 

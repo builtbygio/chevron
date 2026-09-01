@@ -16,11 +16,13 @@ const pkg = JSON.parse(
 );
 
 /** Catalog packages that must stay on npm:@builtbygio/<id>@ver (not atom/* git). */
+// atom-keymap is gone from this list, not missing from it: the fork was
+// vendored into src/keymap/ in the CSON-and-Atom-era cleanup. The
+// builtbygio/atom-keymap repository is now unused.
 const OWNED_BUILTBYGIO = [
   '@atom/fuzzy-native',
   '@atom/nsfw',
   'archive-view',
-  'atom-keymap',
   'atom-pathspec',
   'atom-select-list',
   'autocomplete-chevron-api',
