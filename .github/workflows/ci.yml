@@ -459,6 +459,7 @@ jobs:
           node --test script/ci/theme-variables-eliminated.test.js
           node --test script/ci/temp-dir-hygiene.test.js
           node --test script/ci/ci-runs-every-test.test.js
+          node --test script/ci/keymap-vendored.test.js
           node --test script/ci/bundled-packages.test.js
           node --test script/ci/cpm-caller-flags.test.js
           node --test script/ci/no-shipped-language-servers.test.js

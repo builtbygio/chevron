@@ -7,7 +7,7 @@
  */
 const fs = require('fs-plus');
 const path = require('path');
-const KeymapManager = require('atom-keymap');
+const KeymapManager = require('./keymap/keymap-manager');
 // JSON only: CSON is no longer read, and CHEVRON_CONFIG_CSON is gone with it.
 
 const bundledKeymaps = __guard__(require('../package.json'), x => x._atomKeymaps);

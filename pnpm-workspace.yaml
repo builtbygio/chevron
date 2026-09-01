@@ -89,7 +89,6 @@ overrides:
   keytar: $keytar
   nslog: $nslog
   pathwatcher: $pathwatcher
-  'atom-keymap': '$atom-keymap'
   'atom-pathspec': '$atom-pathspec'
   'atom-select-list': '$atom-select-list'
   'first-mate': '$first-mate'
