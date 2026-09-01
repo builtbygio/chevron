@@ -394,7 +394,13 @@ module.exports = class MarkdownPreviewView {
       .replace(/:host/g, '.host') // Remove shadow-dom :host selector causing problem on FF
       .replace(cssUrlRegExp, function (match, assetsName, offset, string) {
         // base64 encode assets
-        const assetPath = path.join(__dirname, '../assets', assetsName)
+        // assets/ sits beside lib/, so '../assets' was right from lib/ and
+        // wrong from a bundle at the package root.
+        const assetPath = path.join(
+          chevron.packages.resolvePackagePath('markdown-preview'),
+          'assets',
+          assetsName
+        )
         const originalData = fs.readFileSync(assetPath, 'binary')
         const base64Data = Buffer.from(originalData, 'binary').toString(
           'base64'

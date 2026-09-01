@@ -140,6 +140,7 @@ const BUNDLED = [
   'language-typescript',
   'line-ending-selector',
   'link',
+  'markdown-preview',
   'lsp-diagnostics-stub',
   'lsp-servers',
   'notifications',
@@ -191,14 +192,6 @@ const BLOCKED = {
   // reach, and lib/helpers.js locates files through __dirname in three places.
   // Bundling it cost all 17 github: commands -- the package still activated,
   // registered nothing, and reported no error.
-  // The entities/decode resolution failure is fixed (copy-assets now nests the
-  // versions htmlparser2 and parse5 need), and it bundles cleanly. What blocks
-  // it now is its own path handling: renderer.ts derives the package root as
-  // path.dirname(__dirname) and markdown-preview-view.ts loads assets from
-  // path.join(__dirname, '../assets'), both of which move when the code is
-  // bundled at the package root. It also locates the emoji folder through
-  // require.resolve('emoji-images'). Same shape as snippets, more sites.
-  'markdown-preview': "own __dirname asset paths; see renderer.ts and markdown-preview-view.ts",
   'lsp-ui': 'requires ../../../src/; bundling inlines 45 core modules',
 };
 function bundleOne(packageName) {
