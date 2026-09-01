@@ -101,7 +101,16 @@ module.exports =
       const stderr = lines => errorLines.push(lines);
       const exit = code => callback(code, outputLines.join('\n'), errorLines.join('\n'));
 
-      args.push('--no-color');
+      // Deliberately no --no-color. It is an apm-era flag: cpm's `list` does
+      // not declare it and does not allowUnknownOption, so commander exits
+      // with "unknown option '--no-color'" before running anything. Every call
+      // through here failed, which is why the Packages and Themes panels list
+      // nothing and "Fetching local packages failed." is thrown on startup.
+      // cpm emits no colour to suppress -- `ls --json` is JSON.
+      //
+      // cpm's `rebuild` does accept it, added as a no-op for
+      // Package.runRebuildProcess, which is why that caller kept working and
+      // this one did not.
 
       if (chevron.config.get('core.useProxySettingsWhenCallingApm')) {
         const bufferedProcess = new BufferedProcess({command, args, stdout, stderr, exit, autoStart: false});
@@ -197,6 +206,29 @@ module.exports =
           `Chevron ships an owned catalog and cannot look up '${packageName}' in a package registry.`
         )
       );
+    }
+
+    // Restored: #239 removed both of these with the registry client, but
+    // package-card.js still calls them from displayNotInstalledState, so
+    // rendering any card in that state threw
+    // "this.packageManager.normalizeVersion is not a function" and the whole
+    // Packages panel came up empty.
+    //
+    // The original read engines.atom. Across the catalog today 83 packages
+    // declare both engines.atom and engines.chevron, 6 declare only chevron
+    // and 1 only atom, so chevron is preferred with atom as the fallback --
+    // reading only atom would silently treat those 6 as unconstrained.
+    satisfiesVersion(version, metadata) {
+      const engines = metadata.engines || {};
+      const engine = engines.chevron || engines.atom || '*';
+      if (!semver.validRange(engine)) return false;
+      return semver.satisfies(version, engine);
+    }
+
+    // chevron.getVersion() can carry a prerelease suffix (1.2.0-beta1);
+    // engines ranges are written against the release version.
+    normalizeVersion(version) {
+      return typeof version === 'string' ? version.split('-')[0] : version;
     }
 
     update(pack, newVersion, callback) {

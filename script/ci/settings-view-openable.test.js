@@ -117,6 +117,46 @@ describe('settings-view is openable', () => {
     );
   });
 
+  it('every packageManager method the views call is defined', () => {
+    // #239 removed the registry client and took normalizeVersion and
+    // satisfiesVersion with it, but package-card.js still called both from
+    // displayNotInstalledState. Rendering a card in that state threw
+    // "this.packageManager.normalizeVersion is not a function", and the whole
+    // Packages panel came up empty -- no card rendered, no error shown to the
+    // user, just a blank list.
+    //
+    // Nothing caught it: the panel opens, the view constructs, and the throw
+    // happens inside a render path. The bug is a caller outliving its method,
+    // which is checkable without running anything.
+    const managerSource = fs.readFileSync(
+      path.join(LIB, 'package-manager.ts'),
+      'utf8'
+    );
+    const defined = new Set(
+      [...managerSource.matchAll(/^\s{2,6}([a-zA-Z][\w]*)\s*\(/gm)].map(m => m[1])
+    );
+
+    const called = new Map();
+    for (const entry of fs.readdirSync(LIB)) {
+      if (!/\.(js|ts)$/.test(entry) || entry.startsWith('package-manager')) continue;
+      const src = fs.readFileSync(path.join(LIB, entry), 'utf8');
+      for (const m of src.matchAll(/\bpackageManager\.([a-zA-Z][\w]*)\s*\(/g)) {
+        if (!called.has(m[1])) called.set(m[1], entry);
+      }
+    }
+
+    const missing = [...called.entries()]
+      .filter(([name]) => !defined.has(name))
+      .map(([name, file]) => `${file} calls packageManager.${name}(), which no longer exists`);
+
+    assert.deepEqual(
+      missing,
+      [],
+      'a caller outlived its method; the panel renders empty rather than ' +
+        'failing visibly:\n  ' + missing.join('\n  ')
+    );
+  });
+
   it('no menu entry dispatches a command that no longer exists', () => {
     const src = fs.readFileSync(MAIN, 'utf8');
     const declared = new Set(
