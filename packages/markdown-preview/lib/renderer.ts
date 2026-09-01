@@ -12,7 +12,16 @@ let yamlFrontMatter = null
 
 const { scopeForFenceName } = require('./extension-helper')
 const { resourcePath } = chevron.getLoadSettings()
-const packagePath = path.dirname(__dirname)
+// Resolved on first use rather than from this file's position: __dirname moves
+// when the package is bundled into a single index.js at the package root, and
+// path.dirname(__dirname) then points at node_modules. Same helper snippets,
+// symbols-view and github each carried.
+let packagePathCache = null
+function packageRoot() {
+  if (packagePathCache) return packagePathCache
+  packagePathCache = chevron.packages.resolvePackagePath('markdown-preview')
+  return packagePathCache
+}
 
 const emojiFolder = path.join(
   path.dirname(require.resolve('emoji-images')),
@@ -137,7 +146,7 @@ var resolveImagePaths = function (element, filePath) {
       if (src.startsWith(resourcePath)) {
         continue
       }
-      if (src.startsWith(packagePath)) {
+      if (src.startsWith(packageRoot())) {
         continue
       }
 
