@@ -126,21 +126,27 @@ function getPackageRoot() {
   const {
     resourcePath
   } = chevron.getLoadSettings();
-  const currentFileWasRequiredFromSnapshot = !_path.default.isAbsolute(__dirname);
 
-  if (currentFileWasRequiredFromSnapshot) {
-    return _path.default.join(resourcePath, 'node_modules', 'github');
-  } else {
-    const packageRoot = _path.default.resolve(__dirname, '..');
+  // Ask the package manager rather than deriving the root from this file's
+  // position. path.resolve(__dirname, '..') was right while this file lived in
+  // lib/ and wrong once the package is bundled into a single index.js at the
+  // package root, where it resolves to node_modules/. snippets and
+  // symbols-view carried the same helper; this is the last copy.
+  const packageRoot =
+    chevron.packages.resolvePackagePath('github') ||
+    _path.default.join(resourcePath, 'node_modules', 'github');
 
-    if (_path.default.extname(resourcePath) === '.asar') {
-      if (packageRoot.indexOf(resourcePath) === 0) {
-        return _path.default.join(`${resourcePath}.unpacked`, 'node_modules', 'github');
-      }
-    }
-
-    return packageRoot;
+  // Files handed to a child process or a second renderer by path -- worker.js,
+  // shared/keytar-strategy.js -- have to exist on the real filesystem rather
+  // than inside the asar.
+  if (
+    _path.default.extname(resourcePath) === '.asar' &&
+    packageRoot.indexOf(resourcePath) === 0
+  ) {
+    return _path.default.join(`${resourcePath}.unpacked`, 'node_modules', 'github');
   }
+
+  return packageRoot;
 }
 
 function getAtomAppName() {
@@ -192,15 +198,16 @@ function getSharedModulePath(relPath) {
   let modulePath = SHARED_MODULE_PATHS.get(relPath);
 
   if (!modulePath) {
-    modulePath = require.resolve(_path.default.join(__dirname, 'shared', relPath));
-
-    if (!_path.default.isAbsolute(modulePath)) {
-      // Assume we're snapshotted
-      const {
-        resourcePath
-      } = chevron.getLoadSettings();
-      modulePath = _path.default.join(resourcePath, modulePath);
-    }
+    // Not a require: this path is handed to a child process through
+    // ATOM_GITHUB_KEYTAR_STRATEGY_PATH, and that process requires it. So it is
+    // a second entry point, and must be built from the package root rather
+    // than from __dirname -- which moves when the package is bundled.
+    modulePath = _path.default.join(
+      getPackageRoot(),
+      'lib',
+      'shared',
+      `${relPath}.js`
+    );
 
     SHARED_MODULE_PATHS.set(relPath, modulePath);
   }

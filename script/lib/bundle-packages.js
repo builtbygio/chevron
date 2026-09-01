@@ -94,7 +94,12 @@ const NATIVE = [
 // rgPath as path.join(__dirname, '../bin/rg'), so once it is inlined into
 // fuzzy-finder's bundle __dirname is the package root and the path becomes
 // node_modules/bin/rg. The binary is still there; nothing can find it.
-const BINARY_ASSETS = ['@vscode/ripgrep'];
+const BINARY_ASSETS = [
+  '@vscode/ripgrep',
+  // dugite locates its embedded git as path.resolve(__dirname, '..', '..',
+  // 'git'), so inlining it points github at a git that is not there.
+  'dugite'
+];
 
 const EXTERNAL = [...RUNTIME_PROVIDED, ...NATIVE, ...BINARY_ASSETS];
 
@@ -122,6 +127,7 @@ const BUNDLED = [
   'find-and-replace',
   'fuzzy-finder',
   'git-diff',
+  'github',
   'go-to-line',
   'grammar-selector',
   'image-view',
@@ -154,6 +160,25 @@ const BUNDLED = [
 
 // Not bundled, with the reason. A package leaves this list by having its
 // reason removed, not by someone trying it again and finding it works.
+// Files that legitimately survive bundling, with why. esbuild only reaches
+// what main requires, so anything loaded another way -- or not loaded at all
+// but still covered by a test -- stays in lib/. Declaring them keeps the "no
+// code survives bundling" check able to tell them from leftovers.
+const SURVIVES_BUNDLING = {
+  github: {
+    'lib/worker.js': 'loaded as a second renderer by path',
+    'lib/shared/keytar-strategy.js':
+      'passed to a child process through ATOM_GITHUB_KEYTAR_STRATEGY_PATH',
+    // Nothing reachable from main requires this one -- the other twelve
+    // mutations are required by controllers, this one is not -- but
+    // script/ci/github-pr-mutations.test.js loads it by path and asserts the
+    // GraphQL it sends. Whether the app should be using it is a separate
+    // question from whether it may be deleted; it may not.
+    'lib/mutations/create-pull-request.js':
+      'unreached from main, covered by script/ci/github-pr-mutations.test.js'
+  }
+};
+
 const BLOCKED = {
               // Not the native module -- fs-admin would simply be external like the
   // others. lsp-ui requires ../../../src/lsp, ../../../src/text-editor-element
@@ -166,13 +191,6 @@ const BLOCKED = {
   // reach, and lib/helpers.js locates files through __dirname in three places.
   // Bundling it cost all 17 github: commands -- the package still activated,
   // registered nothing, and reported no error.
-  // Three separate obstacles, not one. lib/worker.js is loaded as a second
-  // renderer by path; lib/graphql/load-recovered.js locates a data directory
-  // as path.join(__dirname, '..', '..', 'graphql', 'recovered'); and
-  // lib/helpers.js:200 does require.resolve(path.join(__dirname, 'shared',
-  // relPath)) -- a dynamic require of a computed path, which no bundler can
-  // follow. The last one is the real blocker; the others have known fixes.
-  github: 'dynamic require.resolve of a computed path in lib/helpers.js',
   // The entities/decode resolution failure is fixed (copy-assets now nests the
   // versions htmlparser2 and parse5 need), and it bundles cleanly. What blocks
   // it now is its own path handling: renderer.ts derives the package root as
@@ -190,6 +208,7 @@ function bundleOne(packageName) {
     packageName
   );
   const manifestPath = path.join(packageRoot, 'package.json');
+  const kept = new Set(Object.keys(SURVIVES_BUNDLING[packageName] || {}));
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   if (!manifest.main) {
     throw new Error(`${packageName} has no main; nothing to bundle`);
@@ -246,6 +265,13 @@ function bundleOne(packageName) {
     // the package vanish. The build caught this immediately; nothing else
     // would have.
     if (absolute === manifestPath) continue;
+    // A file can be both inlined and still needed on disk. github requires
+    // lib/shared/keytar-strategy.js, so esbuild absorbs it, and also hands its
+    // path to a child process -- which cannot read the bundle. Deleting it
+    // left lib/shared holding nothing but a README.
+    if (kept.has(path.relative(packageRoot, absolute).split(path.sep).join('/'))) {
+      continue;
+    }
     if (fs.existsSync(absolute)) {
       fs.unlinkSync(absolute);
       removed++;
@@ -289,3 +315,4 @@ module.exports.NATIVE = NATIVE;
 module.exports.BINARY_ASSETS = BINARY_ASSETS;
 module.exports.RUNTIME_PROVIDED = RUNTIME_PROVIDED;
 module.exports.BLOCKED = BLOCKED;
+module.exports.SURVIVES_BUNDLING = SURVIVES_BUNDLING;
