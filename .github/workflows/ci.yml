@@ -460,6 +460,7 @@ jobs:
           node --test script/ci/temp-dir-hygiene.test.js
           node --test script/ci/ci-runs-every-test.test.js
           node --test script/ci/bundled-packages.test.js
+          node --test script/ci/cpm-caller-flags.test.js
 
       # These need a real node_modules: github-8b reads node_modules/github,
       # lsp-builtin-discover resolves servers out of it, lazy-first-mate
