@@ -245,6 +245,30 @@ const PROBE_EXPR = `(function() {
   // with moveToEndOfLine + a manual command dispatch reports a false failure.
   if (!window.__acProbe) {
     window.__acProbe = { phase: 'starting', result: null };
+    // The work below runs inside setTimeout callbacks, so a throw there lands
+    // outside the promise chain's .catch and leaves phase stuck. The outer
+    // loop then spends its whole 120s budget waiting for a probe that already
+    // died, and reports "no autocomplete popup" -- which reads as a product
+    // failure and is a probe failure. Caught roughly one run in four.
+    //
+    // This is the backstop for the case that is neither a throw nor a result:
+    // something simply never settling. Well inside the 120s budget, so the
+    // outer loop still gets a poll after it fires.
+    setTimeout(function() {
+      if (window.__acProbe.phase === 'done') return;
+      window.__acProbe.stuckAt = window.__acProbe.phase;
+      window.__acProbe.phase = 'done';
+      if (!window.__acProbe.result) {
+        window.__acProbe.result = {
+          error: 'probe never settled; stuck at ' + window.__acProbe.stuckAt
+        };
+      }
+      if (!window.__acProbe.project) {
+        window.__acProbe.project = {
+          error: 'probe never settled; stuck at ' + window.__acProbe.stuckAt
+        };
+      }
+    }, 60000);
     var acEditor = byExt('.ts');
     chevron.packages
       .activatePackage('autocomplete-plus')
@@ -257,6 +281,7 @@ const PROBE_EXPR = `(function() {
         acEditor.moveToBottom();
         window.__acProbe.phase = 'seeded';
         setTimeout(function() {
+          try {
           window.__acProbe.phase = 'typing';
           'prob'.split('').forEach(function(ch) { acEditor.insertText(ch); });
           // Poll rather than wait a fixed interval: suggestion generation and
@@ -335,6 +360,13 @@ const PROBE_EXPR = `(function() {
             tries++;
             setTimeout(settle, 250);
           })();
+          } catch (error) {
+            window.__acProbe.phase = 'done';
+            window.__acProbe.result = {
+              error: 'probe threw while typing: ' +
+                String((error && error.message) || error)
+            };
+          }
         }, 600);
       })
       .catch(function(error) {
