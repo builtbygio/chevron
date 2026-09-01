@@ -223,6 +223,36 @@ describe('bundled packages', () => {
       assert.deepEqual(problems, [], problems.join('\n  '));
     });
 
+    it('no bundle computes a path from __dirname', () => {
+      // A dependency that locates its own files relative to __dirname breaks
+      // when inlined: the code moves to the package root and the path moves
+      // with it. @vscode/ripgrep sets rgPath = path.join(__dirname,
+      // '../bin/rg'), which became node_modules/bin/rg once fuzzy-finder
+      // inlined it -- the binary still there, nothing able to find it.
+      //
+      // Matches only __dirname inside a path computation. snippets and
+      // bracket-matcher both contain `sandbox.__dirname = ...`, a vm sandbox
+      // being given a property, which is not a lookup and not a hazard.
+      const offenders = [];
+      for (const name of BUNDLED) {
+        const bundle = path.join(APP, 'node_modules', name, 'index.js');
+        if (!fs.existsSync(bundle)) continue;
+        const src = fs.readFileSync(bundle, 'utf8');
+        src.split('\n').forEach((line, i) => {
+          if (/\bpath\d*\.(join|resolve)\s*\(\s*__dirname/.test(line)) {
+            offenders.push(`${name}:${i + 1}  ${line.trim().slice(0, 90)}`);
+          }
+        });
+      }
+      assert.deepEqual(
+        offenders,
+        [],
+        'inlined code that resolves paths from __dirname points somewhere ' +
+          'else once bundled; the dependency has to stay external:\n  ' +
+          offenders.join('\n  ')
+      );
+    });
+
     it('does not inline a second copy of event-kit', () => {
       const offenders = [];
       for (const name of BUNDLED) {
