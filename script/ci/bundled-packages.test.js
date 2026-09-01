@@ -34,7 +34,12 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const APP = path.join(ROOT, 'out', 'app');
-const { BUNDLED, EXTERNAL, BLOCKED } = require('../lib/bundle-packages');
+const {
+  BUNDLED,
+  EXTERNAL,
+  BLOCKED,
+  SURVIVES_BUNDLING
+} = require('../lib/bundle-packages');
 
 function sourceFiles(packageName) {
   const found = [];
@@ -184,9 +189,16 @@ describe('bundled packages', () => {
           }
         };
         walk(path.join(root, 'lib'));
-        if (strayCode.length) {
+        // esbuild only reaches what main requires, so a file loaded another
+        // way survives -- correctly. Each one is declared with a reason in
+        // SURVIVES_BUNDLING, so a genuine leftover is still caught.
+        const declared = Object.keys(SURVIVES_BUNDLING[name] || {});
+        const unexpected = strayCode.filter(
+          f => !declared.includes(f.split(path.sep).join('/'))
+        );
+        if (unexpected.length) {
           problems.push(
-            `${name}: code survived bundling in lib/: ${strayCode.join(', ')}`
+            `${name}: code survived bundling in lib/: ${unexpected.join(', ')}`
           );
         }
         const manifest = JSON.parse(
