@@ -215,6 +215,7 @@ jobs:
           node --test script/ci/github-pr-mutations.test.js
           node --test script/ci/settings-view-openable.test.js
           node --test script/ci/lsp-host-concurrent-start.test.js
+          node --test script/ci/autocomplete-inflight-hide.test.js
           node --test script/ci/trust-view-contrast.test.js
           node --test script/ci/language-stack.test.js
           node --test script/ci/no-atom-global.test.js
