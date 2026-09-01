@@ -1,156 +1,102 @@
 'use strict';
 
 /**
- * User config/keymap/snippets: JSON default, dual-read CSON (H1 PR 5).
- * Run: node --test script/ci/user-config-path.test.js
+ * User config, keymap and snippets are JSON. CSON is not read.
  *
- * Does not require('season') — the unit-and-cpm job has no app node_modules.
- * CSON fixtures are JSON (valid CSON) so migrate can JSON.parse them.
+ * CSON reading existed to carry users over from Atom, and it cost the product
+ * a second language's compiler: season -> cson-parser -> coffee-script,
+ * 0.38 MB shipped so a file most users no longer have could be parsed once.
+ *
+ * A real Atom config.cson is not valid JSON -- unquoted keys, indentation
+ * rather than braces -- so a user with one gets defaults. That is the point of
+ * strandedCsonFiles: the file is reported and left alone, never read and never
+ * deleted, because silently starting on defaults while the user's settings sit
+ * on disk is the worst available behaviour.
+ *
+ * Run: node --test script/ci/user-config-path.test.js
  */
 
-const { describe, it, beforeEach, afterEach } = require('node:test');
+const { describe, it, before, after } = require('node:test');
 const assert = require('assert');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { makeTempDir } = require('../lib/temp-dir');
 const {
-  preferCson,
   resolveUserDataFile,
-  migrateStemToJson,
-  migrateUserDataFiles
+  strandedCsonFiles,
+  readObjectFile,
+  writeJsonFile
 } = require('../../src/user-config-path');
 
 let tmp;
+before(() => {
+  tmp = makeTempDir('chevron-userconfig-');
+});
+after(() => {
+  try {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  } catch (error) {}
+});
 
-function write(filePath, contents) {
-  fs.writeFileSync(filePath, contents);
+function home(name) {
+  const dir = path.join(tmp, name);
+  fs.mkdirSync(dir, { recursive: true });
+  return dir;
 }
 
-function writeJsonShapedCson(filePath, data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n');
-}
-
-describe('preferCson', () => {
-  it('is off unless CHEVRON_CONFIG_CSON=1', () => {
-    assert.strictEqual(preferCson({}), false);
-    assert.strictEqual(preferCson({ CHEVRON_CONFIG_CSON: '0' }), false);
-    assert.strictEqual(preferCson({ CHEVRON_CONFIG_CSON: '1' }), true);
-  });
-});
-
-describe('resolveUserDataFile', () => {
-  beforeEach(() => {
-    tmp = makeTempDir('chevron-config-');
-  });
-  afterEach(() => {
-    fs.rmSync(tmp, { recursive: true, force: true });
+describe('user data files are JSON', () => {
+  it('resolves the .json path even when only .cson exists', () => {
+    const dir = home('cson-only');
+    fs.writeFileSync(path.join(dir, 'config.cson'), '"*":\n  core:\n    x: 1\n');
+    const resolved = resolveUserDataFile(dir, 'config');
+    assert.equal(resolved.filePath, path.join(dir, 'config.json'));
+    assert.equal(resolved.format, 'json');
   });
 
-  it('defaults new homes to config.json', () => {
-    const r = resolveUserDataFile(tmp, 'config', {});
-    assert.strictEqual(r.filePath, path.join(tmp, 'config.json'));
-    assert.strictEqual(r.format, 'json');
-    assert.ok(!r.shouldMigrate);
+  it('reports a .cson that nothing will read', () => {
+    const dir = home('stranded');
+    fs.writeFileSync(path.join(dir, 'config.cson'), '"*":\n  core:\n    x: 1\n');
+    fs.writeFileSync(path.join(dir, 'keymap.cson'), "'body':\n  'ctrl-x': 'y'\n");
+    const stranded = strandedCsonFiles(dir).map(f => path.basename(f)).sort();
+    assert.deepEqual(stranded, ['config.cson', 'keymap.cson']);
   });
 
-  it('uses existing config.json', () => {
-    write(path.join(tmp, 'config.json'), '{}');
-    const r = resolveUserDataFile(tmp, 'config', {});
-    assert.strictEqual(r.filePath, path.join(tmp, 'config.json'));
-    assert.strictEqual(r.format, 'json');
+  it('does not report a .cson once the .json beside it exists', () => {
+    const dir = home('both');
+    fs.writeFileSync(path.join(dir, 'config.cson'), '"*":\n  core:\n    x: 1\n');
+    writeJsonFile(path.join(dir, 'config.json'), { '*': { core: { x: 1 } } });
+    assert.deepEqual(strandedCsonFiles(dir), []);
   });
 
-  it('reads config.cson when json is absent', () => {
-    write(path.join(tmp, 'config.cson'), '{"*":{"core":{"telemetryConsent":"no"}}}');
-    const r = resolveUserDataFile(tmp, 'config', {});
-    assert.strictEqual(r.filePath, path.join(tmp, 'config.cson'));
-    assert.strictEqual(r.format, 'cson');
-    assert.strictEqual(r.shouldMigrate, true);
+  it('never deletes a .cson', () => {
+    const dir = home('kept');
+    const cson = path.join(dir, 'config.cson');
+    fs.writeFileSync(cson, '"*":\n  core:\n    x: 1\n');
+    resolveUserDataFile(dir, 'config');
+    strandedCsonFiles(dir);
+    assert.ok(fs.existsSync(cson), 'the user file must survive untouched');
   });
 
-  it('prefers json when both exist', () => {
-    write(path.join(tmp, 'config.json'), '{"*":{}}');
-    write(path.join(tmp, 'config.cson'), '{"stale":true}');
-    const r = resolveUserDataFile(tmp, 'config', {});
-    assert.strictEqual(r.filePath, path.join(tmp, 'config.json'));
-    assert.strictEqual(r.format, 'json');
+  it('reads and writes JSON', () => {
+    const dir = home('roundtrip');
+    const file = path.join(dir, 'config.json');
+    writeJsonFile(file, { a: { b: 2 } });
+    assert.deepEqual(readObjectFile(file), { a: { b: 2 } });
   });
 
-  it('CHEVRON_CONFIG_CSON=1 prefers cson and new files are cson', () => {
-    const env = { CHEVRON_CONFIG_CSON: '1' };
-    assert.strictEqual(
-      resolveUserDataFile(tmp, 'config', env).filePath,
-      path.join(tmp, 'config.cson')
-    );
-    write(path.join(tmp, 'config.cson'), '{}');
-    write(path.join(tmp, 'config.json'), '{}');
-    assert.strictEqual(
-      resolveUserDataFile(tmp, 'config', env).filePath,
-      path.join(tmp, 'config.cson')
-    );
-  });
-});
-
-describe('migrateStemToJson', () => {
-  beforeEach(() => {
-    tmp = makeTempDir('chevron-config-');
-  });
-  afterEach(() => {
-    fs.rmSync(tmp, { recursive: true, force: true });
+  it('treats an empty file as an empty object', () => {
+    const dir = home('empty');
+    const file = path.join(dir, 'config.json');
+    fs.writeFileSync(file, '   \n');
+    assert.deepEqual(readObjectFile(file), {});
   });
 
-  it('copies cson to json and leaves cson in place', () => {
-    const cson = path.join(tmp, 'config.cson');
-    writeJsonShapedCson(cson, { '*': { core: { telemetryConsent: 'no' } } });
-    const r = migrateStemToJson(tmp, 'config', {});
-    assert.strictEqual(r.migrated, true);
-    assert.strictEqual(r.to, path.join(tmp, 'config.json'));
-    assert.ok(fs.existsSync(cson));
-    const json = JSON.parse(fs.readFileSync(r.to, 'utf8'));
-    assert.strictEqual(json['*'].core.telemetryConsent, 'no');
-  });
-
-  it('never overwrites an existing config.json', () => {
-    write(path.join(tmp, 'config.json'), '{"keep":true}');
-    writeJsonShapedCson(path.join(tmp, 'config.cson'), { stale: true });
-    const r = migrateStemToJson(tmp, 'config', {});
-    assert.strictEqual(r.migrated, false);
-    assert.deepStrictEqual(
-      JSON.parse(fs.readFileSync(path.join(tmp, 'config.json'), 'utf8')),
-      { keep: true }
-    );
-  });
-
-  it('does nothing when CHEVRON_CONFIG_CSON=1', () => {
-    writeJsonShapedCson(path.join(tmp, 'config.cson'), { '*': {} });
-    const r = migrateStemToJson(tmp, 'config', { CHEVRON_CONFIG_CSON: '1' });
-    assert.strictEqual(r.migrated, false);
-    assert.strictEqual(fs.existsSync(path.join(tmp, 'config.json')), false);
-  });
-
-  it('migrates keymap and snippets the same way', () => {
-    writeJsonShapedCson(path.join(tmp, 'keymap.cson'), {
-      'atom-workspace': { 'ctrl-x': 'core:close' }
-    });
-    writeJsonShapedCson(path.join(tmp, 'snippets.cson'), {
-      '.source.js': { log: { prefix: 'log', body: 'console.log' } }
-    });
-    const all = migrateUserDataFiles(tmp, {});
-    assert.strictEqual(all.keymap.migrated, true);
-    assert.strictEqual(all.snippets.migrated, true);
-    assert.ok(fs.existsSync(path.join(tmp, 'keymap.cson')));
-    assert.ok(fs.existsSync(path.join(tmp, 'snippets.cson')));
-    assert.ok(fs.existsSync(path.join(tmp, 'keymap.json')));
-    assert.ok(fs.existsSync(path.join(tmp, 'snippets.json')));
-  });
-});
-
-describe('season stays', () => {
-  it('is still an app dependency', () => {
-    const pkg = JSON.parse(
-      fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8')
-    );
-    assert.ok(pkg.dependencies.season, 'season must stay (pin CSON + dual-read)');
+  it('does not fall back to a CSON parser on invalid JSON', () => {
+    // The fallback is what pulled coffee-script into the product. Invalid
+    // JSON must now throw rather than quietly reaching for another parser.
+    const dir = home('invalid');
+    const file = path.join(dir, 'config.json');
+    fs.writeFileSync(file, '"*":\n  core:\n    x: 1\n');
+    assert.throws(() => readObjectFile(file), /JSON/);
   });
 });

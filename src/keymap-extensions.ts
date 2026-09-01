@@ -8,7 +8,7 @@
 const fs = require('fs-plus');
 const path = require('path');
 const KeymapManager = require('atom-keymap');
-const CSON = require('season');
+// JSON only: CSON is no longer read, and CHEVRON_CONFIG_CSON is gone with it.
 
 const bundledKeymaps = __guard__(require('../package.json'), x => x._atomKeymaps);
 
@@ -41,19 +41,8 @@ KeymapManager.prototype.getUserKeymapPath = function() {
   let userKeymapPath;
   if (this.configDirPath == null) { return ""; }
 
-  if (process.env.CHEVRON_CONFIG_CSON === '1') {
-    const csonPath = path.join(this.configDirPath, 'keymap.cson');
-    if (fs.isFileSync(csonPath)) { return csonPath; }
-    if ((userKeymapPath = CSON.resolve(path.join(this.configDirPath, 'keymap')))) {
-      return userKeymapPath;
-    }
-    return csonPath;
-  }
-
-  if ((userKeymapPath = CSON.resolve(path.join(this.configDirPath, 'keymap')))) {
-    return userKeymapPath;
-  }
-  return path.join(this.configDirPath, 'keymap.json');
+  userKeymapPath = path.join(this.configDirPath, 'keymap.json');
+  return userKeymapPath;
 };
 
 KeymapManager.prototype.loadUserKeymap = function() {

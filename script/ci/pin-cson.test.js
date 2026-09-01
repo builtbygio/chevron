@@ -690,25 +690,44 @@ describe('pin CSON inventory (Wave 1)', () => {
     );
   });
 
-  it('season stays for user .cson and third-party packages', () => {
+  it('no user-facing file reads CSON any more', () => {
+    // This assertion used to run the other way: it required season in each of
+    // these files, to hold the dual-read in place. CSON reading has since been
+    // dropped, so it holds the opposite -- reintroducing a reader here brings
+    // coffee-script back with it.
+    for (const rel of [
+      ['src', 'config-file.js'],
+      ['src', 'user-config-path.js'],
+      ['src', 'keymap-extensions.ts']
+    ]) {
+      const source = fs
+        .readFileSync(path.join(ROOT, ...rel), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/^\s*(\/\/|\*).*$/gm, '');
+      assert.doesNotMatch(
+        source,
+        /require\('season'\)/,
+        `${rel.join('/')} must not read CSON`
+      );
+    }
+
+    // season is still installed, and not by choice: first-mate's
+    // grammar-registry requires it, so the TextMate fallback keeps
+    // season -> cson-parser -> coffee-script in the tree. Removing it means
+    // forking first-mate or dropping TextMate grammars -- a separate
+    // decision, recorded here so the dependency is not mistaken for one core
+    // still wants.
     const seasonDep = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     ).dependencies.season;
-    assert.ok(seasonDep, 'season must stay while user .cson is dual-read');
-
-    // Readers that serve user-authored files. These are the Wave 3 gate,
-    // not the pins.
+    assert.ok(seasonDep, 'season is still pulled in by first-mate');
     assert.match(
-      fs.readFileSync(path.join(ROOT, 'src', 'config-file.js'), 'utf8'),
-      /require\('season'\)/
-    );
-    assert.match(
-      fs.readFileSync(path.join(ROOT, 'src', 'user-config-path.js'), 'utf8'),
-      /require\('season'\)/
-    );
-    assert.match(
-      fs.readFileSync(path.join(ROOT, 'src', 'keymap-extensions.ts'), 'utf8'),
-      /require\('season'\)/
+      fs.readFileSync(
+        path.join(ROOT, 'node_modules', 'first-mate', 'lib', 'grammar-registry.js'),
+        'utf8'
+      ),
+      /require\('season'\)/,
+      'if first-mate stops requiring season, the whole chain can go'
     );
 
     const langDoc = fs.readFileSync(

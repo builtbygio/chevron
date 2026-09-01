@@ -28,15 +28,27 @@ describe('Wave 3 gates', () => {
     // Wave 1 proved all 94 pins and the app tree ship zero .cson
     // (script/ci/pin-cson.test.js). That was never the blocker. season still
     // reads user-authored ~/.chevron files and any installed package's data.
-    assert.ok(pkgJson().dependencies.season, 'season must stay');
+    // season is still installed because first-mate requires it, not because
+    // core wants it. The three user-facing readers have been converted to
+    // JSON; package.js and grammar-registry.js still go through season, but
+    // only to read product files that are all JSON already.
+    assert.ok(pkgJson().dependencies.season, 'season is pulled in by first-mate');
+    for (const rel of ['src/package.js', 'src/grammar-registry.js']) {
+      assert.match(read(rel), /require\('season'\)/, `${rel} still uses season`);
+    }
     for (const rel of [
       'src/config-file.js',
       'src/user-config-path.js',
-      'src/keymap-extensions.ts',
-      'src/package.js',
-      'src/grammar-registry.js'
+      'src/keymap-extensions.ts'
     ]) {
-      assert.match(read(rel), /require\('season'\)/, `${rel} still reads CSON`);
+      const source = read(rel)
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/^\s*(\/\/|\*).*$/gm, '');
+      assert.doesNotMatch(
+        source,
+        /require\('season'\)/,
+        `${rel} must not read CSON`
+      );
     }
   });
 

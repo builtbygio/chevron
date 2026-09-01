@@ -48,7 +48,7 @@ const StartupTime = require('./startup-time');
 const getReleaseChannel = require('./get-release-channel');
 const {
   resolveUserDataFile,
-  migrateUserDataFiles
+  strandedCsonFiles
 } = require('./user-config-path');
 
 const stat = util.promisify(fs.stat);
@@ -258,9 +258,6 @@ class AtomEnvironment {
         'The directory where projects are assumed to be located. Packages created using the Package Generator will be stored here by default.'
     };
 
-    if (this.enablePersistence && this.configDirPath) {
-      migrateUserDataFiles(this.configDirPath);
-    }
     this.config.initialize({
       mainSource:
         this.enablePersistence &&
@@ -341,10 +338,23 @@ class AtomEnvironment {
   }
 
   notifyConfigJsonMigration() {
-    if (!this.getLoadSettings().configMigratedFromCson) return;
-    this.notifications.addInfo('Chevron now saves settings as JSON', {
+    // CSON is no longer read. Say so, once, and name the files -- a real Atom
+    // config.cson is not valid JSON, so ignoring it silently would start the
+    // user on defaults with their settings sitting on disk unread.
+    if (!this.enablePersistence || !this.configDirPath) return;
+    let stranded = [];
+    try {
+      stranded = strandedCsonFiles(this.configDirPath);
+    } catch (error) {
+      return;
+    }
+    if (stranded.length === 0) return;
+    this.notifications.addWarning('Chevron no longer reads CSON', {
       description:
-        'Your existing `config.cson` was copied to `config.json` and left in place. Set `CHEVRON_CONFIG_CSON=1` to keep writing CSON for this release.',
+        'These files are not being read, and nothing has been deleted:\n\n' +
+        stranded.map(f => '- `' + f + '`').join('\n') +
+        '\n\nChevron reads the `.json` file beside each. Convert them, or ' +
+        'let Chevron write fresh defaults.',
       dismissable: true
     });
   }

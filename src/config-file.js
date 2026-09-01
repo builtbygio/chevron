@@ -3,7 +3,8 @@ const fs = require('fs-plus');
 const dedent = require('dedent');
 const { Disposable, Emitter } = require('event-kit');
 const { watchPath } = require('./path-watcher');
-const CSON = require('season');
+// JSON only. season was here to write CSON when this.path ended in .cson;
+// CSON is no longer read, so writing it would produce a file nothing loads.
 const Path = require('path');
 const asyncQueue = require('async/queue');
 
@@ -31,9 +32,12 @@ module.exports = class ConfigFile {
     this.value = {};
     this.reloadCallbacks = [];
 
-    // season writes JSON when this.path ends in .json, CSON when .cson.
+    // Always JSON.
     const writeQueue = asyncQueue((data, callback) =>
-      CSON.writeFile(this.path, data, error => {
+      fs.writeFile(
+        this.path,
+        JSON.stringify(data || {}, null, 2) + '\n',
+        error => {
         if (error) {
           this.emitter.emit(
             'did-error',
@@ -66,7 +70,7 @@ module.exports = class ConfigFile {
   async watch(callback) {
     if (!fs.existsSync(this.path)) {
       fs.makeTreeSync(Path.dirname(this.path));
-      CSON.writeFileSync(this.path, {}, { flag: 'wx' });
+      fs.writeFileSync(this.path, '{}\n', { flag: 'wx' });
     }
 
     await this.reload();
@@ -103,7 +107,15 @@ module.exports = class ConfigFile {
 
   reload() {
     return new Promise(resolve => {
-      CSON.readFile(this.path, (error, data) => {
+      fs.readFile(this.path, 'utf8', (error, text) => {
+        let data;
+        if (!error) {
+          try {
+            data = text && text.trim() ? JSON.parse(text) : {};
+          } catch (parseError) {
+            error = parseError;
+          }
+        }
         if (error) {
           this.emitter.emit(
             'did-error',
