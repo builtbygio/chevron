@@ -475,11 +475,42 @@ See https://github.com/atom/autocomplete-plus/wiki/Provider-API`
       }
     }
 
-    if (this.shouldDisplaySuggestions && suggestions.length) {
+    if (suggestions.length && this.suggestionsStillWanted(options)) {
       return this.showSuggestionList(suggestions, options)
     } else {
       return this.hideSuggestionList()
     }
+  }
+
+  // Private: Whether a request that has just resolved should still be shown.
+  //
+  // shouldDisplaySuggestions alone is not enough to answer this. It is a single
+  // mutable flag, and requestHideSuggestionList lowers it synchronously while
+  // deferring only the hide itself; cancelHideSuggestionListRequest clears that
+  // timeout but never raises the flag again. In the synchronous path that is
+  // fine, because bufferChanged calls requestNewSuggestions immediately after
+  // and that sets it back to true.
+  //
+  // Across the async gap it is not fine. Providers are promises, and the LSP
+  // provider is an IPC round trip to a utility process, so any cursorMoved with
+  // textChanged: false landing mid-flight lowers the flag with nothing to raise
+  // it -- and the request is discarded even though currentSuggestionsPromise
+  // still points at it, i.e. the manager's own generation check says it is
+  // current. The user sees no popup at all, and the odds scale with provider
+  // latency, which is why it read as a CI smoke flake rather than a bug.
+  //
+  // The flag cannot simply be restored: a cursor move that genuinely takes the
+  // user elsewhere must still cancel the request, and restoring would pop a
+  // suggestion list up at a stale location. What distinguishes the two cases is
+  // not whether a hide was asked for but whether the cursor actually left the
+  // position this request was made for, which options.bufferPosition already
+  // carries.
+  suggestionsStillWanted (options) {
+    if (this.shouldDisplaySuggestions) { return true }
+    if (options == null || options.bufferPosition == null) { return false }
+    const cursor = this.editor != null ? this.editor.getLastCursor() : null
+    if (cursor == null) { return false }
+    return cursor.getBufferPosition().isEqual(options.bufferPosition)
   }
 
   getUniqueSuggestions (suggestions, uniqueKeyFunction) {
