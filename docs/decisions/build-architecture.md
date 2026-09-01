@@ -115,6 +115,15 @@ Order is forced by dependency, not preference. Each step ships alone and leaves 
    `compile-cache`, `native-compile-cache`, and the whole snapshot chain.
 4. **Stand up the registry.** Cheapest step, and only cheap once 1–3 have made the artifact real.
 
+## What ships that should not
+
+Measured 2026-09-01: **8% of the asar (34.9 MB of 461.5 MB) is packages nothing declares
+a dependency on**, led by a 12.9 MB copy of `pyright` — a language server the editor tells
+users to install separately. See
+[shipped-dependency-audit-2026-09.md](../reference/shipped-dependency-audit-2026-09.md)
+for why this is not a one-line fix: packaging manipulates the module tree without a model
+of what the app requires, and it fails in both directions.
+
 ## Explicitly not in scope
 
 | Not doing | Why |

@@ -15,7 +15,6 @@ const { RenameView } = require('./rename-view');
 const { ListView } = require('./list-view');
 const { DiagnosticsView } = require('./diagnostics-view');
 const { TrustView } = require('./trust-view');
-const { pathToUri } = require('../../../src/lsp/path-uri');
 
 let lsp = null;
 let disposables = null;
@@ -34,18 +33,14 @@ const HOVER_DELAY_MS = 400;
 
 function ensureLsp() {
   if (lsp) return lsp;
-  if (global.__chevronLsp) {
-    lsp = global.__chevronLsp;
-    return lsp;
-  }
-  try {
-    const getWindowLoadSettings = require('../../../src/get-window-load-settings');
-    const { resourcePath } = getWindowLoadSettings();
-    const path = require('path');
-    lsp = require(path.join(resourcePath, 'src', 'lsp'));
-  } catch (_) {
-    lsp = require('../../../src/lsp');
-  }
+  // chevron.lsp is the LSP client as public API. The three fallbacks this
+  // replaced -- global.__chevronLsp, a resourcePath join, and a relative
+  // require into src/ -- all reached core through paths that only exist
+  // because this package ships inside the app. That is what kept it from
+  // being bundled, and would keep it from ever being installable.
+  const env = global.chevron || global.atom;
+  lsp = env && env.lsp;
+  if (!lsp) throw new Error('lsp-ui: chevron.lsp is not available');
   return lsp;
 }
 
@@ -237,7 +232,7 @@ module.exports = {
           for (const editor of e.workspace.getTextEditors()) {
             const filePath = editor.getPath && editor.getPath();
             if (!filePath) continue;
-            const uri = pathToUri(filePath);
+            const uri = chevron.lsp.pathToUri(filePath);
             const fileDiags = uri ? svc.getDiagnostics(uri) : [];
             diagnosticsView.updateGutter(editor, fileDiags);
           }

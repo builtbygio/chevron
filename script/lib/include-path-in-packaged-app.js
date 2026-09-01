@@ -138,6 +138,35 @@ for (let packageName in CONFIG.appMetadata.packageDependencies) {
   );
 }
 
+// Language servers are not part of the product installer.
+// docs/reference/lsp-server-distribution.md: "Chevron does not ship
+// language-server binaries in the product installer." These arrive anyway
+// because they are hoisted into the repository's node_modules and copy-assets
+// copies every top-level entry.
+//
+// Nothing can reach them. resolveInstalledPackageCommand searches
+// $CHEVRON_HOME/packages and <resourcePath>/packages, which() searches PATH,
+// and the last resort is `npx --yes typescript-language-server` -- which would
+// download a second copy rather than use the one being shipped. The
+// TypeScript support that does work comes from node_modules/typescript's
+// tsserver.js, resolved explicitly by resolveTsserverPath, and that stays.
+for (const serverPackage of [
+  'pyright',
+  'typescript-language-server',
+  'vscode-languageserver-protocol',
+  'vscode-languageserver-types'
+]) {
+  EXCLUDE_REGEXPS_SOURCES.push(
+    '^' +
+      escapeRegExp(
+        path.join(CONFIG.repositoryRootPath, 'node_modules', serverPackage)
+      ) +
+      '($|' +
+      escapeRegExp(path.sep) +
+      ')'
+  );
+}
+
 // Ignore Hunspell dictionaries only on macOS.
 if (process.platform === 'darwin') {
   EXCLUDE_REGEXPS_SOURCES.push(

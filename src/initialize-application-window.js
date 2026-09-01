@@ -87,6 +87,32 @@ module.exports = function({ blobStore }) {
     env: process.env
   });
 
+  // Published before startEditorWindow, because that is what activates
+  // packages and lsp-ui reads chevron.lsp inside its own activate(). Wiring it
+  // in the .then() afterwards left the API undefined at exactly the moment a
+  // package needed it, and cost lsp-ui one command registration -- silently,
+  // because the throw aborted the rest of activate() and the package still
+  // reported itself active.
+  //
+  // The client was already reachable as global.__chevronLsp, so this names an
+  // existing surface rather than widening it. The two path helpers and
+  // stripHtml travel with it: servers speak file:// URIs and return markup, so
+  // every consumer has to convert both, and keeping them private would mean
+  // each one reimplementing them.
+  try {
+    const lsp = require('./lsp');
+    const { pathToUri, uriToPath } = require('./lsp/path-uri');
+    const { stripHtml } = require('./lsp/markup');
+    global.chevron.lsp = Object.assign(Object.create(lsp), {
+      pathToUri,
+      uriToPath,
+      stripHtml
+    });
+    global.__chevronLsp = lsp;
+  } catch (err) {
+    console.error('[chevron-lsp] could not publish chevron.lsp', err);
+  }
+
   return global.chevron.startEditorWindow().then(function() {
     // Workaround for focus getting cleared upon window creation
     const windowFocused = function() {
@@ -99,9 +125,7 @@ module.exports = function({ blobStore }) {
 
     // LSP Phase 1 client (diagnostics + TypeScript when project trusted)
     try {
-      const lsp = require('./lsp');
-      global.__chevronLsp = lsp;
-      lsp.activate();
+      require('./lsp').activate();
     } catch (err) {
       console.error('[chevron-lsp] activate failed', err);
     }
