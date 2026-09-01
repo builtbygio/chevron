@@ -107,7 +107,11 @@ Order is forced by dependency, not preference. Each step ships alone and leaves 
    (`precompile-babel-prefix-files` is already gone — it turned out to have no caller at all.
    `transpile-typescript-paths` cannot follow yet: 109 `.ts` files sit in bundled packages,
    which esbuild could compile directly, plus 14 in `src/` and 4 in `markdown-preview`.)
-3. **Bundle core, then re-measure startup.** *Deletes, if measurement agrees:* `module-cache`,
+3. **Bundle core, then re-measure startup.** Measured 2026-09-01 for the 47 already-bundled
+   packages: no clear startup win, and the instrumented phases run slightly slower bundled —
+   see [startup-measurement-2026-09.md](../reference/startup-measurement-2026-09.md). Bundling
+   core should not be expected to pay for itself in startup time. *Deletes, if measurement
+   agrees:* `module-cache`,
    `compile-cache`, `native-compile-cache`, and the whole snapshot chain.
 4. **Stand up the registry.** Cheapest step, and only cheap once 1–3 have made the artifact real.
 
