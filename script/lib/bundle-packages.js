@@ -173,11 +173,15 @@ const BLOCKED = {
   // relPath)) -- a dynamic require of a computed path, which no bundler can
   // follow. The last one is the real blocker; the others have known fixes.
   github: 'dynamic require.resolve of a computed path in lib/helpers.js',
+  // The entities/decode resolution failure is fixed (copy-assets now nests the
+  // versions htmlparser2 and parse5 need), and it bundles cleanly. What blocks
+  // it now is its own path handling: renderer.ts derives the package root as
+  // path.dirname(__dirname) and markdown-preview-view.ts loads assets from
+  // path.join(__dirname, '../assets'), both of which move when the code is
+  // bundled at the package root. It also locates the emoji folder through
+  // require.resolve('emoji-images'). Same shape as snippets, more sites.
+  'markdown-preview': "own __dirname asset paths; see renderer.ts and markdown-preview-view.ts",
   'lsp-ui': 'requires ../../../src/; bundling inlines 45 core modules',
-  // htmlparser2 imports the 'entities/decode' subpath, which does not resolve
-  // in the installed entities version. A dependency-resolution problem, not a
-  // bundling one.
-  'markdown-preview': "htmlparser2 imports 'entities/decode', which does not resolve"
 };
 function bundleOne(packageName) {
   const packageRoot = path.join(
