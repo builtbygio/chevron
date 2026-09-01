@@ -55,6 +55,15 @@ module.exports = function() {
     });
 
   nestHoistedDep('tree-view', 'minimatch');
+  // htmlparser2 and parse5 need entities 7.x / 6.x; the hoisted copy is 4.5.0,
+  // which satisfies dom-serializer and nothing else. pnpm keeps the right
+  // versions nested, and copying only the top-level package directory drops
+  // them, so in the packaged app `require('cheerio')` threw
+  // ERR_PACKAGE_PATH_NOT_EXPORTED for 'entities/decode'. markdown-preview
+  // requires cheerio on its first render, so opening a preview did nothing at
+  // all -- no error surfaced, the pane simply never appeared.
+  nestPackageDep('htmlparser2', 'entities');
+  nestPackageDep('parse5', 'entities');
   // language-css wants tree-sitter-css 0.23.2 (prebuilds). pnpm may hoist
   // 0.20.0 from tree-sitter-less/scss, which has no native binding.
   nestPackageDep('language-css', 'tree-sitter-css');
