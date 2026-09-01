@@ -32,7 +32,7 @@ from that one premise:
 | Resolution across 749 `node_modules` dirs is slow at boot | `src/module-cache.js` + `generate-module-cache.js` |
 | Boot executes thousands of loose files | `generate-startup-snapshot.js`, `snapshot-exclude.js`, `run-mksnapshot.js` (~660 lines) |
 | Packages ship `.ts` (17 of them) | `src/compile-cache.js` + `src/typescript.js`, transpiling on the user's machine |
-| `"use babel"` pragmas survive | `precompile-babel-prefix-files.js` (302 lines) |
+| `"use babel"` pragmas survive | ~~`precompile-babel-prefix-files.js` (302 lines)~~ — **deleted 2026-09-01**; it had no caller, and babel-core@5 was already gone from app dependencies, so its fallback could not have run |
 | Stylesheets need the active theme's variables | `prebuild-less-cache.js`, warmed across every theme pair |
 
 Chevron abandoned the premise when it closed the catalog. It still pays for it — five caches
@@ -103,8 +103,10 @@ Order is forced by dependency, not preference. Each step ships alone and leaves 
    emits `_atomPackages`, a manifest for all 86 bundled packages that `Package` reads
    instead of scanning directories. The work is the bundle and the container, not the
    contract.) *Deletes:*
-   `transpile-typescript-paths`, `transpile-peg-js-paths`, `precompile-babel-prefix-files`,
-   `src/typescript.js`.
+   `transpile-typescript-paths`, `transpile-peg-js-paths`, `src/typescript.js`.
+   (`precompile-babel-prefix-files` is already gone — it turned out to have no caller at all.
+   `transpile-typescript-paths` cannot follow yet: 109 `.ts` files sit in bundled packages,
+   which esbuild could compile directly, plus 14 in `src/` and 4 in `markdown-preview`.)
 3. **Bundle core, then re-measure startup.** *Deletes, if measurement agrees:* `module-cache`,
    `compile-cache`, `native-compile-cache`, and the whole snapshot chain.
 4. **Stand up the registry.** Cheapest step, and only cheap once 1–3 have made the artifact real.
