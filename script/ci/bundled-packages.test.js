@@ -69,6 +69,18 @@ describe('bundled packages', () => {
     }
   });
 
+  it('nothing is blocked any more', () => {
+    // Every catalog package bundles. BLOCKED is kept because the next package
+    // to hit a real obstacle should record it here rather than be dropped from
+    // the list silently, but it is empty and should stay that way.
+    assert.deepEqual(
+      Object.keys(BLOCKED),
+      [],
+      'a package was blocked; the reason belongs in BLOCKED and in a PR ' +
+        'description, not in someone\'s memory'
+    );
+  });
+
   it('no bundled package reaches into core', () => {
     const offenders = [];
     for (const name of BUNDLED) {

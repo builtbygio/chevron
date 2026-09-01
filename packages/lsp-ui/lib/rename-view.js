@@ -4,7 +4,6 @@
  * Mini-editor modal for rename (Phase 4).
  */
 
-const TextEditorElement = require('../../../src/text-editor-element');
 
 class RenameView {
   constructor() {
@@ -15,8 +14,10 @@ class RenameView {
     this.label.classList.add('lsp-ui-rename-label');
     this.label.textContent = 'Rename to:';
 
-    this.input = TextEditorElement.createTextEditorElement();
-    this.input.setAttribute('mini', true);
+    // buildTextEditor + getView is the public route to an editor element;
+    // requiring src/text-editor-element reached straight into core.
+    this._inputEditor = chevron.workspace.buildTextEditor({ mini: true });
+    this.input = chevron.views.getView(this._inputEditor);
 
     this.element.appendChild(this.label);
     this.element.appendChild(this.input);

@@ -5,7 +5,8 @@
  * Always uses textContent — server strings never become HTML.
  */
 
-const { stripHtml } = require('../../../src/lsp/markup');
+// chevron.lsp, not a relative path into src/: a package that reaches into
+// core cannot be bundled or installed from a registry.
 
 class HoverView {
   constructor() {
@@ -20,7 +21,7 @@ class HoverView {
     this.hide();
     if (!editor || !contents || !contents.value) return;
 
-    const text = stripHtml(contents.value);
+    const text = chevron.lsp.stripHtml(contents.value);
     if (!text.trim()) return;
 
     const pre = document.createElement('pre');

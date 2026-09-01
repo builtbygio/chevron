@@ -143,6 +143,7 @@ const BUNDLED = [
   'markdown-preview',
   'lsp-diagnostics-stub',
   'lsp-servers',
+  'lsp-ui',
   'notifications',
   'open-on-github',
   'settings-view',
@@ -181,19 +182,7 @@ const SURVIVES_BUNDLING = {
 };
 
 const BLOCKED = {
-              // Not the native module -- fs-admin would simply be external like the
-  // others. lsp-ui requires ../../../src/lsp, ../../../src/text-editor-element
-  // and ../../../src/get-window-load-settings, and bundling it inlines 45 core
-  // modules into the package: decoration.js, cursor.js, selection.js, the
-  // tokenizer. Those carry state and identity core also uses, so it is the
-  // grim problem at 45x. Blocked until those imports are a real interface.
-  // Two problems, both of which the guards caught before this shipped: it
-  // forks lib/worker.js by path, a second entry point the bundle does not
-  // reach, and lib/helpers.js locates files through __dirname in three places.
-  // Bundling it cost all 17 github: commands -- the package still activated,
-  // registered nothing, and reported no error.
-  'lsp-ui': 'requires ../../../src/; bundling inlines 45 core modules',
-};
+            };
 function bundleOne(packageName) {
   const packageRoot = path.join(
     CONFIG.intermediateAppPath,

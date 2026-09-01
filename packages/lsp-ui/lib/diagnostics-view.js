@@ -65,8 +65,7 @@ class DiagnosticsView {
 
   async _openDiagnostic(d, env) {
     if (!env || !env.workspace || !d.uri) return;
-    const { uriToPath } = require('../../../src/lsp/path-uri');
-    const filePath = uriToPath(d.uri);
+    const filePath = chevron.lsp.uriToPath(d.uri);
     if (!filePath) return;
     const editor = await env.workspace.open(filePath, {
       initialLine: d.range.start.row,
