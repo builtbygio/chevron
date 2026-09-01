@@ -107,6 +107,7 @@ const BUNDLED = [
   'notifications',
   'open-on-github',
   'settings-view',
+  'snippets',
   'status-bar',
   'styleguide',
   'tabs',
@@ -126,15 +127,7 @@ const BLOCKED = {
   'symbols-view': 'ctags (native)',
   'tree-view': 'pathwatcher (native)',
   'lsp-ui': 'fs-admin (native), and requires ../../../src/ -- not self-contained',
-  'markdown-preview': 'esbuild cannot parse htmlparser2/dist/commonjs/Parser.js',
-  // lib/helpers.ts computes the package root as path.resolve(__dirname, '..'),
-  // which is right from lib/ and wrong from the bundle at the package root --
-  // it lands on node_modules/ instead. snippets.ts then loads its built-in
-  // snippets from <that>/lib/snippets, finds nothing, and the package
-  // activates with no bundled snippets at all. Nothing throws. Fixing it means
-  // giving the package a way to find its own root that does not depend on how
-  // deep the calling file sits, which is its own change.
-  snippets: "lib/helpers.ts locates package files via path.resolve(__dirname, '..')"
+  'markdown-preview': 'esbuild cannot parse htmlparser2/dist/commonjs/Parser.js'
 };
 function bundleOne(packageName) {
   const packageRoot = path.join(

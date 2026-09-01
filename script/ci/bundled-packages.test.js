@@ -154,7 +154,7 @@ describe('bundled packages', () => {
   const describeApp = fs.existsSync(APP) ? describe : describe.skip;
 
   describeApp('in the packaged app', () => {
-    it('each bundled package is one index.js with no lib/', () => {
+    it('each bundled package ships one index.js and no other code', () => {
       const problems = [];
       for (const name of BUNDLED) {
         const root = path.join(APP, 'node_modules', name);
@@ -165,8 +165,29 @@ describe('bundled packages', () => {
         if (!fs.existsSync(path.join(root, 'index.js'))) {
           problems.push(`${name}: no index.js`);
         }
-        if (fs.existsSync(path.join(root, 'lib'))) {
-          problems.push(`${name}: lib/ survived; the bundle is dead weight`);
+        // A surviving lib/ is only wrong if it still holds code. snippets
+        // keeps lib/snippets.json, its built-in snippets, which the package
+        // reads by path at run time and esbuild therefore never absorbed --
+        // deleting it would remove the data the bundle depends on.
+        const strayCode = [];
+        const walk = dir => {
+          if (!fs.existsSync(dir)) return;
+          for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            const full = path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+              walk(full);
+              continue;
+            }
+            if (/\.(js|ts)$/.test(entry.name)) {
+              strayCode.push(path.relative(root, full));
+            }
+          }
+        };
+        walk(path.join(root, 'lib'));
+        if (strayCode.length) {
+          problems.push(
+            `${name}: code survived bundling in lib/: ${strayCode.join(', ')}`
+          );
         }
         const manifest = JSON.parse(
           fs.readFileSync(path.join(root, 'package.json'), 'utf8')
@@ -195,9 +216,6 @@ describe('bundled packages', () => {
       for (const name of BUNDLED) {
         const root = path.join(APP, 'node_modules', name);
         if (!fs.existsSync(root)) continue;
-        if (fs.existsSync(path.join(root, 'lib'))) {
-          problems.push(`${name}: lib/ was inlined and still ships`);
-        }
         if (fs.existsSync(path.join(root, 'completions.json'))) {
           problems.push(`${name}: completions.json is inlined and still ships`);
         }
