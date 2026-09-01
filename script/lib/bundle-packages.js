@@ -62,23 +62,80 @@ function removeEmptyDirectories(dir) {
   }
 }
 
-const EXTERNAL = ['chevron', 'atom', 'electron', 'event-kit'];
+// Runtime-provided. Chosen by correctness, not size -- see
+// docs/decisions/bundled-dependency-sharing.md. grim is a global deprecation
+// registry that core writes and deprecation-cop reads; a copy per package
+// means deprecation-cop reads its own and silently shows an empty list.
+const EXTERNAL = ['chevron', 'atom', 'electron', 'event-kit', 'grim'];
 
-// Zero-runtime-dependency packages with JavaScript, minus lsp-ui. The twelve
-// grammar-only language-* packages have no code to bundle at all.
+// Everything that bundles cleanly today. Explicit rather than derived: what a
+// package pulls in changes when its dependencies change, and a list that
+// discovers itself would start bundling something new without anyone deciding
+// to. BLOCKED below records the frontier and why, so the two stay in step.
 const BUNDLED = [
+  'about',
+  'archive-view',
   'autocomplete-chevron-api',
   'autocomplete-css',
   'autocomplete-html',
+  'autocomplete-plus',
   'autocomplete-snippets',
+  'autoflow',
+  'autosave',
+  'background-tips',
+  'bookmarks',
+  'command-palette',
+  'deprecation-cop',
+  'dev-live-reload',
+  'encoding-selector',
+  'find-and-replace',
+  'git-diff',
   'go-to-line',
+  'grammar-selector',
+  'image-view',
+  'keybinding-resolver',
+  'language-c',
+  'language-html',
+  'language-javascript',
+  'language-ruby',
+  'language-rust-bundled',
+  'language-typescript',
+  'line-ending-selector',
+  'link',
   'lsp-diagnostics-stub',
   'lsp-servers',
+  'notifications',
   'open-on-github',
+  'settings-view',
+  'status-bar',
+  'styleguide',
+  'tabs',
+  'timecop',
+  'welcome',
   'whitespace',
   'wrap-guide'
 ];
 
+// Not bundled, with the reason. A package leaves this list by having its
+// reason removed, not by someone trying it again and finding it works.
+const BLOCKED = {
+  'bracket-matcher': 'oniguruma (native, reached transitively)',
+  'fuzzy-finder': '@atom/fuzzy-native (native)',
+  github: 'keytar (native)',
+  'spell-check': 'spellchecker (native)',
+  'symbols-view': 'ctags (native)',
+  'tree-view': 'pathwatcher (native)',
+  'lsp-ui': 'fs-admin (native), and requires ../../../src/ -- not self-contained',
+  'markdown-preview': 'esbuild cannot parse htmlparser2/dist/commonjs/Parser.js',
+  // lib/helpers.ts computes the package root as path.resolve(__dirname, '..'),
+  // which is right from lib/ and wrong from the bundle at the package root --
+  // it lands on node_modules/ instead. snippets.ts then loads its built-in
+  // snippets from <that>/lib/snippets, finds nothing, and the package
+  // activates with no bundled snippets at all. Nothing throws. Fixing it means
+  // giving the package a way to find its own root that does not depend on how
+  // deep the calling file sits, which is its own change.
+  snippets: "lib/helpers.ts locates package files via path.resolve(__dirname, '..')"
+};
 function bundleOne(packageName) {
   const packageRoot = path.join(
     CONFIG.intermediateAppPath,
@@ -161,3 +218,4 @@ module.exports = function() {
 
 module.exports.BUNDLED = BUNDLED;
 module.exports.EXTERNAL = EXTERNAL;
+module.exports.BLOCKED = BLOCKED;

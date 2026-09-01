@@ -34,7 +34,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const APP = path.join(ROOT, 'out', 'app');
-const { BUNDLED, EXTERNAL } = require('../lib/bundle-packages');
+const { BUNDLED, EXTERNAL, BLOCKED } = require('../lib/bundle-packages');
 
 function sourceFiles(packageName) {
   const found = [];
@@ -88,20 +88,56 @@ describe('bundled packages', () => {
     );
   });
 
-  it('every bundled package has no runtime dependencies', () => {
+  it('no bundled package is also recorded as blocked', () => {
+    const both = BUNDLED.filter(name => BLOCKED[name]);
+    assert.deepEqual(
+      both,
+      [],
+      'a package cannot be both bundled and blocked; if the reason is gone, ' +
+        'remove the BLOCKED entry:\n  ' + both.join('\n  ')
+    );
+    for (const name of Object.keys(BLOCKED)) {
+      assert.ok(
+        fs.existsSync(path.join(ROOT, 'packages', name, 'package.json')),
+        `${name} is recorded as blocked but is not a package`
+      );
+      assert.ok(
+        BLOCKED[name] && BLOCKED[name].length > 10,
+        `${name} is blocked without a reason anyone can act on`
+      );
+    }
+  });
+
+  it('no bundled package locates its own files through __dirname', () => {
+    // esbuild rewrites __dirname to the output file's directory. Code that sat
+    // in lib/ and did path.resolve(__dirname, '..') to find the package root
+    // gets the package's parent once it is bundled at the root instead.
+    //
+    // snippets did exactly this, and the failure is silent: getPackageRoot()
+    // returned node_modules/, snippets.ts looked for its built-in snippets
+    // under <that>/lib/snippets, found nothing, and the package activated with
+    // no bundled snippets. It is blocked for this reason rather than fixed
+    // here.
+    //
+    // Scoped to lib/, which is what the bundle reaches. The update.ts and
+    // fetch-*-docs scripts at package roots also use __dirname and are not
+    // bundle inputs -- nothing requires them from main.
     const offenders = [];
     for (const name of BUNDLED) {
-      const manifest = JSON.parse(
-        fs.readFileSync(path.join(ROOT, 'packages', name, 'package.json'), 'utf8')
-      );
-      const deps = Object.keys(manifest.dependencies || {});
-      if (deps.length) offenders.push(`${name}: ${deps.join(', ')}`);
+      for (const file of sourceFiles(name)) {
+        const src = fs.readFileSync(file, 'utf8');
+        src.split('\n').forEach((line, i) => {
+          if (/\b__dirname\b/.test(line) && !/^\s*(\/\/|\*)/.test(line)) {
+            offenders.push(`${path.relative(ROOT, file)}:${i + 1}`);
+          }
+        });
+      }
     }
     assert.deepEqual(
       offenders,
       [],
-      'packages with dependencies are a later slice; inlining them needs each ' +
-        'dependency checked for identity the way event-kit was:\n  ' +
+      'bundling moves the code to the package root, so __dirname no longer ' +
+        'points where it did; asset paths built from it break silently:\n  ' +
         offenders.join('\n  ')
     );
   });
