@@ -241,28 +241,6 @@ function preserveNestedModules() {
   console.log(`Preserved ${copied} nested dependencies pnpm had resolved`);
 }
 
-function nestHoistedDep(packageName, depName) {
-  nestPackageDep(packageName, depName);
-}
-
-function nestPackageDep(packageName, depName) {
-  const destRoot = path.join(CONFIG.intermediateAppPath, 'node_modules');
-  const nested = path.join(destRoot, packageName, 'node_modules', depName);
-  const srcNested = path.join(
-    CONFIG.repositoryRootPath,
-    'node_modules',
-    packageName,
-    'node_modules',
-    depName
-  );
-  const hoisted = path.join(destRoot, depName);
-  const src = fs.existsSync(srcNested) ? srcNested : hoisted;
-  if (!fs.existsSync(src) || fs.existsSync(nested)) return;
-  // Copy, do not symlink: asar stores a symlink as a single entry without
-  // child files, so require() from tree-view cannot load minimatch.js.
-  copyModuleTree(src, nested);
-}
-
 function copyModuleTree(src, dest) {
   if (!includePathInPackagedApp(src)) return;
   let srcStat;

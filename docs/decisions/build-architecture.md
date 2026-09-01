@@ -91,7 +91,12 @@ Order is forced by dependency, not preference. Each step ships alone and leaves 
    runtime `less-cache`, the snapshot's `lessSourcesByRelativeFilePath` payload.
    **Must precede step 2:** until a stylesheet compiles without knowing the active theme, a
    package artifact cannot be self-contained.
-2. **Bundle the catalog**, starting with the 23 packages that have no runtime dependencies,
+2. **Bundle the catalog** — **done 2026-09-01: 50 of 50, nothing blocked.** The
+   loader half turned out to be already built (`_atomPackages`); the work was the
+   bundle and the container. Four packages were held up not by dependencies but by
+   deriving their own root from `__dirname`, which moves once the code is bundled at
+   the package root; `lsp-ui` needed `chevron.lsp` to exist. *Originally:* starting
+   with the 23 packages that have no runtime dependencies,
    then the 55 that do. The loader accepts both shapes during the transition. (Counted
    2026-08-31 against `packageDependencies`: 86 bundled packages, of which 8 are themes.
    The zero-dependency set is easier than 23 suggests — 12 of them are grammar-only

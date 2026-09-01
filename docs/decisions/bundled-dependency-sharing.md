@@ -69,6 +69,18 @@ has just spent a PR on 1719 leaked temp directories, so "probably fine" is not
 the standard. It needs someone to read what the exit handlers actually do under
 duplication before it is inlined.
 
+## Outcome (2026-09-01)
+
+Every catalog package bundles: **50 of 50, nothing blocked.** The frontier
+described below is closed, and is kept as the record of how it was reached.
+
+The last three fell to the same idiom rather than to anything structural --
+`snippets`, `symbols-view`, `github` and `markdown-preview` each derived their
+package root from the calling file's position, which moves when the code is
+bundled at the package root. `lsp-ui` needed an actual API instead:
+`chevron.lsp`, which named a surface core was already publishing as
+`global.__chevronLsp`.
+
 ## The counts, corrected
 
 Two earlier figures in [build-architecture.md](./build-architecture.md) were

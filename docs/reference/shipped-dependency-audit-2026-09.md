@@ -30,6 +30,30 @@ eslint-plugin-react, esquery ~3.4 MB combined
 `mocha` and `chai` also ship; they are declared, so they are not in the
 undeclared figure, but they are test tooling in a shipped editor.
 
+## What happened since (2026-09-01, later the same day)
+
+| | when audited | now |
+|---|---|---|
+| undeclared content in the asar | 34.9 MB (8%) | **6.0 MB (1%)** |
+| asar on disk | 384 MB | **373 MB** |
+
+Three changes, in order:
+
+1. **Language servers removed.** `pyright` and `typescript-language-server`
+   contradicted a written policy -- the distribution doc says Chevron does not
+   ship language-server binaries -- and no code path could reach them anyway.
+2. **Nested versions preserved.** This audit called packaging's handling of the
+   module tree "both directions of the same problem"; the flattening half is
+   fixed, and the 126 unsatisfied ranges are down to one that is not shipped.
+   That cost 24 MB.
+3. **Lint and test tooling removed.** Fifteen packages, 19 MB, named
+   individually and checked against a require trace rather than derived from
+   the declared graph -- for the reason this document gives below.
+
+The remaining 6 MB is 217 small packages. The reasoning below still applies to
+them: a static require scan cannot see a module loaded through a computed name,
+and none of them is large enough to be worth that risk.
+
 ## Why it happens
 
 Two things compound.
