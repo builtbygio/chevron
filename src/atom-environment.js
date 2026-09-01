@@ -1577,12 +1577,16 @@ or use Pane::saveItemAs for programmatic saving.`);
   }
 
   getUserInitScriptPath() {
+    // No 'coffee'. compile-cache registers require handlers only for the
+    // extensions in its COMPILERS table -- .ts and .tsx -- so an init.coffee
+    // found here was handed to require() and parsed as JavaScript, which fails
+    // on the first line of any real CoffeeScript. The user got
+    // "Failed to load ~/.chevron/init.coffee" rather than a working init
+    // script, and offering the extension was what produced that.
     const initScriptPath = fs.resolve(this.getConfigDirPath(), 'init', [
       'js',
-      'ts',
-      'coffee'
+      'ts'
     ]);
-    // Prefer init.js (first-party default); coffee retained for dual-support user trees.
     return (
       initScriptPath || path.join(this.getConfigDirPath(), 'init.js')
     );
