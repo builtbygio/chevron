@@ -222,63 +222,6 @@ const PROBE_EXPR = `(function() {
       packagesActive: packagesActive
     });
   }
-  // Settings panels render nothing when a panel name is unregistered --
-  // showPanel just defers it -- so a missing panel is invisible from the
-  // command side. settings-view has shipped broken twice this way.
-  if (!window.__settingsProbe) {
-    window.__settingsProbe = { phase: 'starting', result: null };
-    setTimeout(function() {
-      if (window.__settingsProbe.phase === 'done') return;
-      window.__settingsProbe.phase = 'done';
-      if (!window.__settingsProbe.result) {
-        window.__settingsProbe.result = { error: 'settings probe never settled' };
-      }
-    }, 45000);
-    // Opening a settings tab takes focus, which makes the autocomplete probe
-    // above report no popup. Wait for it to finish before touching the
-    // workspace.
-    // Must wait for the probe to EXIST as well as finish: this block runs
-    // before __acProbe is created, so treating "not there yet" as done opened
-    // the settings tab before any typing had happened.
-    var waitForAutocomplete = function(next) {
-      if (window.__acProbe && window.__acProbe.phase === 'done') return next();
-      setTimeout(function() { waitForAutocomplete(next); }, 250);
-    };
-    waitForAutocomplete(function() {
-    chevron.workspace
-      .open('chevron://config/install')
-      .then(function(item) {
-        window.__settingsProbe.phase = 'opened';
-        var tries = 0;
-        (function settle() {
-          var root = item && item.element;
-          var menu = root ? root.querySelectorAll('.panels-menu li') : [];
-          var names = [];
-          for (var i = 0; i < menu.length; i++) {
-            if (menu[i].name) names.push(menu[i].name);
-          }
-          var heading = root ? root.querySelector('.section-heading') : null;
-          var cards = root ? root.querySelectorAll('.package-card').length : 0;
-          if ((names.length && heading) || tries >= 40) {
-            window.__settingsProbe.result = {
-              panels: names,
-              heading: heading ? heading.textContent : null,
-              cards: cards
-            };
-            window.__settingsProbe.phase = 'done';
-            return;
-          }
-          tries++;
-          setTimeout(settle, 250);
-        })();
-      })
-      .catch(function(error) {
-        window.__settingsProbe.result = { error: String(error && error.message) };
-        window.__settingsProbe.phase = 'done';
-      });
-    });
-  }
-
   const byExt = ext =>
     editors.find(e => (e.getPath() || '').endsWith(ext));
   if (!byExt('.txt') || !byExt('.ts') || !byExt('.css') || !byExt('.md')) {
@@ -461,9 +404,55 @@ const PROBE_EXPR = `(function() {
     tsGrammar: byExt('.ts').getGrammar() && byExt('.ts').getGrammar().name,
     cssGrammar: byExt('.css').getGrammar() && byExt('.css').getGrammar().name,
     mdGrammar: byExt('.md') && byExt('.md').getGrammar() && byExt('.md').getGrammar().name,
-    settings: window.__settingsProbe.result,
-    settingsPhase: window.__settingsProbe.phase,
     electron: process.versions.electron
+  });
+})()`;
+
+// Opening a settings tab takes focus and perturbs the editor probes above, so
+// this runs as its own evaluation after the main state has been collected --
+// not as another branch of the same expression. Sharing one expression made
+// smoke fail about one run in three even when the settings work happened last.
+const SETTINGS_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__settingsProbe) {
+    window.__settingsProbe = { phase: 'opening', result: null };
+    chevron.workspace
+      .open('chevron://config/install')
+      .then(function(item) {
+        var tries = 0;
+        (function settle() {
+          var root = item && item.element;
+          var menu = root ? root.querySelectorAll('.panels-menu li') : [];
+          var names = [];
+          for (var i = 0; i < menu.length; i++) {
+            if (menu[i].name) names.push(menu[i].name);
+          }
+          var heading = root ? root.querySelector('.section-heading') : null;
+          var cards = root ? root.querySelectorAll('.package-card').length : 0;
+          if ((names.length && heading) || tries >= 40) {
+            window.__settingsProbe.result = {
+              panels: names,
+              heading: heading ? heading.textContent : null,
+              cards: cards
+            };
+            window.__settingsProbe.phase = 'done';
+            return;
+          }
+          tries++;
+          setTimeout(settle, 250);
+        })();
+      })
+      .catch(function(error) {
+        window.__settingsProbe.result = { error: String(error && error.message) };
+        window.__settingsProbe.phase = 'done';
+      });
+  }
+  return JSON.stringify({
+    status: window.__settingsProbe.phase === 'done' ? 'ready' : 'pending',
+    settings: window.__settingsProbe.result
   });
 })()`;
 
@@ -481,7 +470,7 @@ function isAppWindowTarget(target) {
 // Accumulated renderer console / exception noise for timeout diagnostics.
 const rendererLogs = [];
 
-async function probeWindow(probePaths) {
+async function probeWindow(probePaths, expression = PROBE_EXPR) {
   const targets = await jsonList();
   // Prefer the main editor window only (never github worker / DevTools).
   const page = targets.find(isAppWindowTarget);
@@ -597,7 +586,7 @@ async function probeWindow(probePaths) {
 
       const result = await call(
         'Runtime.evaluate',
-        Object.assign({ expression: PROBE_EXPR }, baseParams)
+        Object.assign({ expression }, baseParams)
       );
       const value = result && result.result && result.result.value;
       if (!value) continue;
@@ -809,6 +798,26 @@ async function main() {
     }
 
     // Full editor/grammar probe (macOS + ideal Linux).
+    // Only now, with every editor probe recorded, open the settings tab.
+    if (state && state.status === 'ready') {
+      for (let attempt = 0; attempt < 40; attempt++) {
+        let settingsState;
+        try {
+          settingsState = await probeWindow(
+            [probes.txt, probes.ts, probes.css, probes.md],
+            SETTINGS_EXPR
+          );
+        } catch (error) {
+          settingsState = { settings: { error: String(error.message || error) } };
+        }
+        if (settingsState && settingsState.settings) {
+          state.settings = settingsState.settings;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
     if (state && state.status === 'ready') {
       console.log('smoke-test: state', JSON.stringify(state, null, 2));
       const failures = [];

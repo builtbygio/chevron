@@ -1,0 +1,33 @@
+{
+  "name": "@builtbygio/chevron-lsp-json",
+  "version": "0.1.0",
+  "description": "Optional JSON language server for Chevron via cpm (not bundled in the app)",
+  "main": "./lib/main",
+  "repository": "https://github.com/builtbygio/chevron",
+  "license": "MIT",
+  "engines": {
+    "chevron": ">=0.6.0"
+  },
+  "dependencies": {
+    "vscode-json-languageserver": "1.3.4"
+  },
+  "chevron": {
+    "languageServer": {
+      "id": "vscode-json",
+      "scopes": [
+        "source.json"
+      ],
+      "command": "node_modules/.bin/vscode-json-languageserver",
+      "args": [
+        "--stdio"
+      ]
+    }
+  },
+  "consumedServices": {
+    "chevron.lsp": {
+      "versions": {
+        "1.0.0": "consumeLsp"
+      }
+    }
+  }
+}

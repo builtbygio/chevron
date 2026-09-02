@@ -53,14 +53,42 @@ describe('no language servers in the installer', () => {
   });
 
   it('the packaging filter excludes them', () => {
-    const src = fs.readFileSync(
-      path.join(ROOT, 'script', 'lib', 'include-path-in-packaged-app.js'),
-      'utf8'
-    );
+    // Asks the filter rather than reading the source for names. The list is
+    // derived from what the chevron-lsp-* packages depend on, because one
+    // server drags in a closure -- adding chevron-lsp-json pulled thirteen
+    // packages in, only one of them named vscode-json-languageserver.
+    const include = require(path.join(
+      ROOT,
+      'script',
+      'lib',
+      'include-path-in-packaged-app.js'
+    ));
     for (const name of SERVER_PACKAGES) {
-      assert.ok(
-        src.includes(`'${name}'`),
+      const candidate = path.join(ROOT, 'node_modules', name, 'index.js');
+      assert.equal(
+        include(candidate),
+        false,
         `${name} must be excluded from the packaged app`
+      );
+    }
+  });
+
+  it('keeps packages the editor also uses', () => {
+    // The subtraction is the part that matters: `debug` is reachable from a
+    // language server and from the editor, and excluding it would break the
+    // app rather than slim it.
+    const include = require(path.join(
+      ROOT,
+      'script',
+      'lib',
+      'include-path-in-packaged-app.js'
+    ));
+    for (const name of ['debug', 'typescript']) {
+      const candidate = path.join(ROOT, 'node_modules', name, 'index.js');
+      assert.equal(
+        include(candidate),
+        true,
+        `${name} is shared with the editor and must still ship`
       );
     }
   });
