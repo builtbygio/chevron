@@ -1,27 +1,12 @@
 'use strict';
 
 /**
- * The keymap engine, vendored from the atom-keymap fork.
+ * The keymap engine, vendored from the atom-keymap fork to drop season,
+ * fs-plus and two mismatched dependency ranges. Resolution logic is adopted
+ * unchanged; only the dependencies underneath differ.
  *
- * atom-keymap was an owned @builtbygio fork of decompiled CoffeeScript. It
- * declared event-kit@^1.0.0 and grim@^1.2.1 while being handed the app's 2.5.3
- * and 2.0.3 -- two live mismatches -- and grim was never required by its code
- * at all. It also pulled season and fs-plus onto the keymap path, neither of
- * which the keymap needs now that CSON is not read.
- *
- * The engine itself is adopted rather than rewritten: keybinding resolution is
- * subtle -- partial matches, keyup bindings, selector specificity, ordering --
- * and a rewrite would risk all of it for no gain. What changed is the
- * dependencies underneath.
- *
- * Verified against the fork by building both and comparing a running editor:
- * 561 bindings from 30 sources, ctrl-s resolving to core:save, identical.
- *
- * These assertions cover the one piece that is genuinely new code: duplicate
- * key detection. season was called with allowDuplicateKeys:false, and JSON.parse
- * keeps the last of a duplicate pair silently -- so without this, a repeated
- * selector in a hand-edited keymap would stop being an error and start being a
- * binding that quietly does not work.
+ * These assertions cover the one genuinely new piece: duplicate key detection,
+ * which season provided via allowDuplicateKeys:false and JSON.parse does not.
  *
  * Run: node --test script/ci/keymap-vendored.test.js
  */

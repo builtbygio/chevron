@@ -1,46 +1,14 @@
 'use strict';
 
 /**
- * Bundle a package into one self-contained index.js.
+ * Bundle a package into one self-contained index.js, then delete whatever the
+ * bundle absorbed and point main at it.
  *
- * Step 2 of docs/decisions/build-architecture.md. A package that is one file
- * with its dependencies inlined is a package that can be shipped as a single
- * signed artifact -- bundled into the app or fetched from the registry, same
- * bytes either way. See docs/reference/package-artifact-format.md.
+ * Step 2 of docs/decisions/build-architecture.md; artifact shape in
+ * docs/reference/package-artifact-format.md.
  *
- * Rolled out package by package rather than by globbing the catalog, because
- * a package has to be checked for two things before it can join the list:
- *
- *   1. It must not reach into core. lsp-ui requires ../../../src/lsp,
- *      ../../../src/text-editor-element and ../../../src/get-window-load-settings.
- *      Bundling those would inline copies of core modules into the package;
- *      leaving them external means the package depends on paths that are not
- *      API. Either way it is not self-contained, so it cannot be an artifact
- *      until those imports become a real interface. Excluded, deliberately.
- *   2. Its runtime dependencies must be inlineable. Anything native, or
- *      anything whose identity core checks, has to stay external.
- *
- * What stays external, and why it is not just "node builtins":
- *
- *   chevron / atom   the editor global, provided at run time
- *   electron         provided by the runtime
- *   event-kit        core uses it too. A bundled second copy would hand core
- *                    Disposables from a different class, so instanceof checks
- *                    against core's copy would fail. These packages declare no
- *                    dependencies and resolve it from the app's hoisted
- *                    node_modules, which is exactly why it is easy to miss.
- *
- * After bundling, everything that went into the bundle is removed and main is
- * rewritten to ./index.js. Removing the inputs is the point rather than
- * tidiness: if anything still reaches into them, the build or the smoke test
- * says so immediately instead of the bundle silently being dead weight beside
- * the sources it was meant to replace.
- *
- * "Everything that went into the bundle" is esbuild's own metafile, not lib/.
- * Deleting lib/ alone left the three autocomplete packages shipping their
- * completions.json twice -- inlined in the bundle and still sitting beside it,
- * 436K of duplicate data that nothing read. The metafile is the only thing
- * that knows what was actually inlined.
+ * What to delete comes from esbuild's metafile, not from lib/ -- only the
+ * metafile knows what was actually inlined.
  */
 
 const fs = require('fs');
@@ -68,17 +36,8 @@ function removeEmptyDirectories(dir) {
 // means deprecation-cop reads its own and silently shows an empty list.
 const RUNTIME_PROVIDED = ['chevron', 'atom', 'electron', 'event-kit', 'grim'];
 
-// Native modules can never be inlined -- esbuild has no loader for .node, and
-// a compiled binary is not something a bundle can absorb. They stay external
-// and are required from node_modules at run time, exactly as they are today.
-//
-// This was mistaken for a blocker: six packages sat in BLOCKED as "native"
-// when what they needed was the native module marked external, the same
-// treatment event-kit gets. Bundling still pays off for them -- one entry
-// point, the JavaScript resolved ahead of time.
-//
-// It does mean these cannot become fully self-contained registry artifacts.
-// That is the native-module track, deliberately out of scope here.
+// Native modules stay external: esbuild has no .node loader. Their packages
+// still bundle usefully, but cannot become self-contained registry artifacts.
 const NATIVE = [
   '@atom/fuzzy-native',
   'ctags',
@@ -160,12 +119,9 @@ const BUNDLED = [
   'wrap-guide'
 ];
 
-// Not bundled, with the reason. A package leaves this list by having its
-// reason removed, not by someone trying it again and finding it works.
-// Files that legitimately survive bundling, with why. esbuild only reaches
-// what main requires, so anything loaded another way -- or not loaded at all
-// but still covered by a test -- stays in lib/. Declaring them keeps the "no
-// code survives bundling" check able to tell them from leftovers.
+// Files that legitimately survive bundling: esbuild only reaches what main
+// requires, so anything loaded by path stays in lib/. Declaring them lets the
+// "no code survives bundling" check tell them from leftovers.
 const SURVIVES_BUNDLING = {
   github: {
     'lib/worker.js': 'loaded as a second renderer by path',
@@ -207,19 +163,9 @@ function bundleOne(packageName) {
     format: 'cjs',
     target: 'node22',
     external: EXTERNAL,
-    // Resolve the way the runtime does. Without this esbuild honours the
-    // "import" branch of a dependency's exports map and inlines its ESM build,
-    // where require() would have taken the CommonJS one -- a different file
-    // with, sometimes, a different shape.
-    //
-    // natural does `require('underscore')._`, an old idiom the UMD build
-    // supports and the ESM build does not, so spell-check bundled cleanly and
-    // then failed to activate with "Cannot read properties of undefined
-    // (reading 'without')". Nothing about the bundle looked wrong; it had
-    // simply inlined a different underscore.
-    //
-    // mainFields alone does not fix it: an exports map takes precedence over
-    // main, so the conditions are what decide.
+    // Resolve the way require() does. Without this esbuild takes the "import"
+    // branch of an exports map and inlines a package's ESM build, which can
+    // have a different shape. mainFields does not help -- exports wins.
     conditions: ['node', 'require'],
     logLevel: 'warning',
     metafile: true,

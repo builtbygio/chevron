@@ -1,25 +1,12 @@
 'use strict';
 
 /**
- * Regenerate packages/<theme>/styles/custom-properties.less for every bundled
- * theme.
+ * Regenerate packages/<theme>/styles/custom-properties.less for every theme,
+ * publishing the variables that theme overrides as CSS custom properties.
  *
- * Each theme publishes the LESS variables it overrides as CSS custom
- * properties on :root, so package stylesheets can read var(--name) and compile
- * once instead of once per UI x syntax theme pair.
+ * See docs/reference/theme-custom-properties.md.
  *
- * Only the variables a theme actually overrides are published. The rest of
- * static/variables -- the 242 octicon codes, the mixins -- are constants and
- * stay LESS variables.
- *
- * Themes are found by the `theme` field of their package.json, never by name:
- * lsp-ui ends in -ui and is an ordinary package.
- *
- * Usage:
- *   node script/lib/generate-theme-custom-properties.js [--check]
- *
- * --check exits non-zero if any file on disk differs from what would be
- * generated, without writing.
+ * Usage: node script/lib/generate-theme-custom-properties.js [--check]
  */
 
 const fs = require('fs');
@@ -88,17 +75,10 @@ function overriddenNames() {
   };
 }
 
-// UI themes additionally publish the lightness band a colour must sit in to
-// stay legible on an overlay. Clamping into it is a no-op unless the colour is
-// too close to the overlay background, which is what autocomplete-plus's old
-// hsvvalue() guard approximated -- except that guard needed the syntax theme
-// and the UI theme in scope together, which is exactly what forced the 16x
-// per-theme-pair compile. A band derived from the UI theme alone needs nothing
-// from the syntax theme, so the consumer can compile once.
+// The lightness band a colour must sit in to stay legible on an overlay,
+// derived from the UI theme alone so consumers compile once.
 const OVERLAY_BAND = `
-// Legibility band for colours drawn on overlays. 40 is the minimum lightness
-// separation from the overlay background; clamp(min, l, max) leaves a colour
-// alone when it already sits outside the band.
+// 40 is the minimum lightness separation from the overlay background.
 .chevron-overlay-contrast-band() when (lightness(@overlay-background-color) < 50) {
   --overlay-contrast-l-min: unit(lightness(@overlay-background-color) + 40);
   --overlay-contrast-l-max: 100;
@@ -108,13 +88,8 @@ const OVERLAY_BAND = `
   --overlay-contrast-l-max: unit(lightness(@overlay-background-color) - 40);
 }
 
-// Which way this theme moves a colour to increase contrast: +1 on a dark
-// theme (lighten), -1 on a light one (darken). LESS's contrast(bg, a, b)
-// picks a branch from bg's luminance at build time, which needs both theme
-// halves in scope; multiplying a lightness delta by this sign expresses the
-// same choice at runtime from the UI theme alone.
-//   contrast(bg, darken(c, N%), lighten(c, N%))
-//     -> hsl(from var(--c) h s calc(l + (var(--contrast-shift-sign) * N)))
+// +1 on a dark theme (lighten), -1 on a light one (darken): expresses at
+// runtime the branch LESS's contrast() picked at build time.
 .chevron-contrast-sign() when (lightness(@base-background-color) < 50) {
   --contrast-shift-sign: 1;
 }
@@ -123,9 +98,8 @@ const OVERLAY_BAND = `
 }
 `;
 
-// Syntax themes publish their own sign, read from the syntax background rather
-// than the UI one. The two normally agree, but a mixed pair (dark UI, light
-// syntax) would otherwise pick the wrong ink for editor overlays.
+// Syntax themes publish their own sign, so a mixed pair (dark UI, light
+// syntax) still picks the right ink.
 const SYNTAX_BAND = `
 .chevron-syntax-contrast-sign() when (lightness(@syntax-background-color) < 50) {
   --syntax-contrast-shift-sign: 1;

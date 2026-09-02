@@ -1,25 +1,14 @@
 'use strict';
 
 /**
- * Which commands main is willing to spawn as a language server.
+ * Which commands main is willing to spawn as a language server
+ * (docs/reference/lsp-design.md §6.2).
  *
- * Background (docs/reference/lsp-design.md §6.2, and the Phase N3/S1 package policy):
- * `child_process` is on the privileged denylist for package code, yet
- * `lsp:start-server` used to forward whatever `command` string the renderer
- * sent straight to `spawn`. That handed arbitrary process execution back to
- * exactly the code the denylist restricts.
- *
- * Main therefore decides what may run, from sources it can read itself:
- *
- *   1. the built-in server table (`src/lsp/builtin-servers.js` — pure Node)
- *   2. the user's own `lsp.servers` config (their machine, their decision)
- *   3. commands a package registered *and that main recorded* at activation
- *
- * (3) is still renderer-supplied, so it is not a defence against a
- * compromised renderer on its own — the **workspace-trust prompt** is what
- * gates it, matching how VS Code treats extension-contributed servers. What
- * this module removes is the *silent* path: an unregistered, unknown binary
- * can no longer be spawned at all.
+ * Main decides, from sources it can read itself: the built-in server table,
+ * the user's own lsp.servers config, and commands a package registered and
+ * main recorded at activation. The third is renderer-supplied and gated by the
+ * workspace-trust prompt; what this removes is the silent path, where an
+ * unregistered binary could be spawned at all.
  */
 
 const path = require('path');

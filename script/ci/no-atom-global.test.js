@@ -22,14 +22,9 @@ const SOURCE_EXT = /\.(js|jsx|ts|tsx)$/;
 const BARE_ATOM = /(?<![.\w$-])atom\.(?=[a-zA-Z_$])/;
 
 /**
- * `atom` used as a **value** rather than a namespace. The bulk conversion only
- * rewrote `atom.x`, so these survived and threw ReferenceError once
- * global.atom was deleted — github and autocomplete-chevron-api failed to
- * activate in smoke because of exactly these forms.
- *
- * Deliberately a short list of unambiguous shapes rather than "bare atom
- * anywhere": `atom-text-editor` in a template, `declare const atom` in a
- * .d.ts, and github.com/atom/... URLs are all legitimate.
+ * `atom` used as a value rather than a namespace. A short list of unambiguous
+ * shapes, not "bare atom anywhere" -- `atom-text-editor`, `declare const
+ * atom` and github.com/atom/… URLs are all legitimate.
  */
 const ATOM_AS_VALUE = [
   /typeof\s+atom\b/,

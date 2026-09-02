@@ -3,19 +3,9 @@
 /**
  * Every live Accumulator render site supplies a `relay` prop.
  *
- * github/lib/containers/accumulators/accumulator.js renders with
- *
- *   this.props.children(error, resultBatch, this.props.relay.hasMore())
- *
- * unconditionally. Relay's createPaginationContainer used to inject that prop;
- * the migration to graphql-client replaced it with the first-page-only
- * stand-in in relay-stub.js. Any render site that forgets it throws
- *
- *   Cannot read properties of undefined (reading 'hasMore')
- *
- * at render time -- not at load time, so requiring the module proves nothing
- * and the smoke test never opens the GitHub tab. issueish-list-view shipped
- * without it and crashed on every item in the issueish list.
+ * accumulator.js calls this.props.relay.hasMore() unconditionally. Relay used
+ * to inject the prop; relay-stub.js does not. A missing one throws at render
+ * time, so requiring the module proves nothing and smoke never opens the tab.
  *
  * Run: node --test script/ci/accumulator-relay-prop.test.js
  */

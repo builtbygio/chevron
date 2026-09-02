@@ -3,26 +3,9 @@
 /**
  * Bundled packages are self-contained, and the list only grows deliberately.
  *
- * Step 2 of docs/decisions/build-architecture.md: a package that is one file
- * with its dependencies inlined can ship as a single signed artifact, bundled
- * into the app or fetched from the registry, same bytes either way.
- *
- * Two ways a package can look bundleable and not be, both of which this
- * checks against the source tree so a bad addition fails before the build:
- *
- *   1. It reaches into core. lsp-ui requires ../../../src/lsp,
- *      ../../../src/text-editor-element and ../../../src/get-window-load-settings.
- *      Inlining those duplicates core modules into the package; leaving them
- *      external makes the package depend on paths that are not API. Either
- *      way it is not self-contained. It is excluded on purpose.
- *   2. It has runtime dependencies. Those are the harder case and come later;
- *      the starting set is the zero-dependency packages.
- *
- * And one thing that must survive bundling: event-kit stays external. Core
- * uses it too, so a bundled second copy would hand core Disposables from a
- * different class and instanceof checks against core's copy would fail. These
- * packages declare no dependencies and resolve it from the app's hoisted
- * node_modules, which is exactly what makes it easy to inline by accident.
+ * Checks two ways a package can look bundleable and not be -- reaching into
+ * core, or having runtime dependencies -- plus that event-kit stays external,
+ * since a second copy breaks core's instanceof checks.
  *
  * Run: node --test script/ci/bundled-packages.test.js
  */
@@ -126,19 +109,10 @@ describe('bundled packages', () => {
   });
 
   it('no bundled package locates its own files through __dirname', () => {
-    // esbuild rewrites __dirname to the output file's directory. Code that sat
-    // in lib/ and did path.resolve(__dirname, '..') to find the package root
-    // gets the package's parent once it is bundled at the root instead.
-    //
-    // snippets did exactly this, and the failure is silent: getPackageRoot()
-    // returned node_modules/, snippets.ts looked for its built-in snippets
-    // under <that>/lib/snippets, found nothing, and the package activated with
-    // no bundled snippets. It is blocked for this reason rather than fixed
-    // here.
-    //
-    // Scoped to lib/, which is what the bundle reaches. The update.ts and
-    // fetch-*-docs scripts at package roots also use __dirname and are not
-    // bundle inputs -- nothing requires them from main.
+    // esbuild rewrites __dirname to the output directory, so code in lib/
+    // doing path.resolve(__dirname, '..') lands on the package's parent once
+    // bundled at the root. The failure is silent -- a package activates with
+    // its data missing. Scoped to lib/, which is what the bundle reaches.
     const offenders = [];
     for (const name of BUNDLED) {
       for (const file of sourceFiles(name)) {
@@ -224,18 +198,9 @@ describe('bundled packages', () => {
     });
 
     it('ships nothing that the bundle already inlined', () => {
-      // Deleting lib/ alone left the three autocomplete packages shipping
-      // completions.json twice -- inlined in the bundle and still beside it,
-      // 436K of duplicate data nothing read. esbuild's metafile is the only
-      // thing that knows what was actually absorbed, so the bundler deletes
-      // from that rather than from a guess about directory names.
-      //
-      // Scoped to what the bundle actually absorbed: what main reaches. These
-      // packages also ship update.js / fetch-*-docs.js (maintenance scripts
-      // that regenerate completions.json) and their spec/ directories. Those
-      // are never bundle inputs and shipped long before bundling -- whether
-      // the app should carry them at all is a real question, and a separate
-      // one from this.
+      // Scoped to what the bundle absorbed, which only esbuild's metafile
+      // knows. Maintenance scripts and spec/ at package roots are never bundle
+      // inputs; whether they should ship at all is a separate question.
       const problems = [];
       for (const name of BUNDLED) {
         const root = path.join(APP, 'node_modules', name);
@@ -248,15 +213,9 @@ describe('bundled packages', () => {
     });
 
     it('no bundle computes a path from __dirname', () => {
-      // A dependency that locates its own files relative to __dirname breaks
-      // when inlined: the code moves to the package root and the path moves
-      // with it. @vscode/ripgrep sets rgPath = path.join(__dirname,
-      // '../bin/rg'), which became node_modules/bin/rg once fuzzy-finder
-      // inlined it -- the binary still there, nothing able to find it.
-      //
-      // Matches only __dirname inside a path computation. snippets and
-      // bracket-matcher both contain `sandbox.__dirname = ...`, a vm sandbox
-      // being given a property, which is not a lookup and not a hazard.
+      // A dependency locating its own files via __dirname breaks when
+      // inlined -- @vscode/ripgrep's rgPath became node_modules/bin/rg.
+      // Matches only __dirname in a path computation, not `sandbox.__dirname`.
       const offenders = [];
       for (const name of BUNDLED) {
         const bundle = path.join(APP, 'node_modules', name, 'index.js');

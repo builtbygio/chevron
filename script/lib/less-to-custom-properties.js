@@ -2,34 +2,12 @@
 
 /**
  * Rewrite theme-variable references in package stylesheets to CSS custom
- * properties.
+ * properties. Arithmetic is reported, never converted.
  *
- * Only the 85 variables that themes actually override become custom
- * properties. Everything else in static/variables (the 242 octicon codes, the
- * mixins) stays a build-time LESS variable, and package-local variables like
- * about's `@atom-green` are left alone -- converting those would be wrong.
+ * See docs/reference/theme-custom-properties.md for the conversion table and
+ * the reasons.
  *
- * Handled:
- *   @text-color                 -> var(--text-color)
- *   darken(@c, 10%)             -> hsl(from var(--c) h s calc(l - 10))
- *   lighten(@c, 10%)            -> hsl(from var(--c) h s calc(l + 10))
- *   fade(@c, 50%)               -> rgb(from var(--c) r g b / 50%)
- *   fadeout(@c, 20%)            -> rgb(from var(--c) r g b / calc(alpha - 0.2))
- *   fadein(@c, 20%)             -> rgb(from var(--c) r g b / calc(alpha + 0.2))
- *
- * Deliberately NOT handled -- reported instead:
- *   arithmetic (`@font-size + 1`). LESS infers the unit from the left operand,
- *   so `12px + 1` is 13px. `calc(var(--font-size) + 1)` is invalid CSS: the
- *   unit has to be written out. Guessing it would silently produce a
- *   stylesheet that drops the declaration.
- *
- * `l` in relative color syntax resolves to a number, not a percentage, so the
- * replacement is calc(l - 10) and not calc(l - 10%) -- the latter does not
- * parse (verified in Electron 43 / Chrome 150).
- *
- * Usage:
- *   node script/lib/less-to-custom-properties.js --check  [paths...]
- *   node script/lib/less-to-custom-properties.js --write  [paths...]
+ * Usage: node script/lib/less-to-custom-properties.js --check|--write [paths]
  */
 
 const fs = require('fs');
@@ -85,20 +63,12 @@ const COLOR_FNS = {
   fadein: (v, n) => esc(`rgb(from var(--${v}) r g b / calc(alpha + ${n / 100}))`)
 };
 
-// A local variable defined from a theme variable -- @default-padding:
-// @component-padding -- keeps the theme in scope at build time even after every
-// use site is converted, because LESS still has to resolve the right-hand side.
-// These are the last thing standing between the catalog and a single compile.
-//
-// Rewriting the definition to hold an escaped CSS string moves the dependency
-// out without touching any use site: `@default-padding: ~"var(--component-
-// padding)"` makes every `@default-padding` emit the var() reference verbatim.
-//
-// That only holds while the local is used as a plain value. LESS cannot do
-// arithmetic on a string, and cannot pass one to darken(); either would fail
-// the build or, worse, silently emit garbage. So every use site is checked
-// first, and a local that is used as anything but a value is left alone and
-// reported.
+// A local defined from a theme variable keeps the theme in scope even after
+// every use site converts. Rewriting the definition to an escaped string --
+// `@default-padding: ~"var(--component-padding)"` -- moves the dependency out
+// without touching use sites, but only holds while the local is used as a
+// plain value: LESS cannot do arithmetic on a string or pass one to darken().
+// Use sites are checked first; anything else is left alone and reported.
 function localUsedUnsafely(lines, name, defLine) {
   const use = new RegExp(`@${name}\\b`);
   const reasons = [];
@@ -210,13 +180,9 @@ function convert(source, vars, skipDefinitions) {
     if (/^\s*@[a-zA-Z][a-zA-Z0-9-]*\s*:/.test(code)) return line;
     if (/^\s*@import\b/.test(code)) return line;
 
-    // LESS guards are build-time conditionals. They cannot read a custom
-    // property, because its value does not exist until the browser resolves
-    // it. Same for functions that need a real colour or number at build time
-    // -- contrast() picks a branch, hsvvalue() measures. A var() reference
-    // makes them fail outright ("Argument cannot be evaluated to a color").
-    // These need the variable to stay a LESS variable, or the rule needs
-    // rewriting by hand.
+    // Guards and build-time functions (contrast, hsvvalue) need a real value,
+    // which a custom property is not until the browser resolves it. These have
+    // to stay LESS variables or be rewritten by hand.
     if (/\bwhen\s*\(/.test(code)) {
       if ([...code.matchAll(/@([a-zA-Z][a-zA-Z0-9-]*)/g)].some(m => vars.has(m[1]))) {
         unhandled.push({ line: i + 1, text: line.trim(), reason: 'less-guard' });
@@ -255,12 +221,9 @@ function convert(source, vars, skipDefinitions) {
       return line;
     }
 
-    // 1a. mix(a, b, W%) -> color-mix(in srgb, a W%, b). Verified equivalent
-    //     against the LESS compiler: mix(#ff0000, #0000ff, 25%) and
-    //     mix(#336699, #ffffff, 70%) both match the sRGB interpolation CSS
-    //     performs, and LESS's default weight is 50% like color-mix's.
-    //     Operands may be theme variables or literals; at least one has to be
-    //     a theme variable or there is nothing to convert.
+    // 1a. mix(a, b, W%) -> color-mix(in srgb, a W%, b); equivalent to LESS's
+    //     sRGB interpolation, and both default to 50%. At least one operand
+    //     must be a theme variable or there is nothing to convert.
     const operand = tok =>
       tok.startsWith('@')
         ? (vars.has(tok.slice(1)) ? `var(--${tok.slice(1)})` : null)
@@ -290,23 +253,15 @@ function convert(source, vars, skipDefinitions) {
         vars.has(name) ? COLOR_FNS[fn](name, Number(pct)) : whole
     );
 
-    // 2. arithmetic. `*` and `/` by a plain number are safe: the unit comes
-    //    from the variable, so LESS's `@pad / 2` and CSS's
-    //    calc(var(--pad) / 2) agree. So is `+`/`-` when the operand carries
-    //    its own unit, or when both sides are variables.
+    // 2. arithmetic. `*` and `/` by a plain number are safe -- the unit comes
+    //    from the variable -- as is `+`/`-` when the operand carries a unit or
+    //    both sides are variables. `+`/`-` with a bare number is not, and is
+    //    reported: LESS infers the unit, CSS calc() cannot.
     //
-    //    `+`/`-` with a BARE number is not: LESS infers the unit from the
-    //    left operand (`@font-size + 1` is 13px) while
-    //    calc(var(--font-size) + 1) is invalid CSS and is dropped silently.
-    //    Those are reported, never guessed.
-    //
-    //    Chained arithmetic is also reported: wrapping one term in calc()
-    //    would change how the rest of the expression associates.
-    //    Whether an expression is "chained" is decided locally, per match, not
-    //    by counting operators in the line. A line-level count reads the
-    //    hyphen in `@font-size` as a minus, and the `//` of a trailing comment
-    //    as two divisions -- both false positives. It also wrongly rejects
-    //    `padding: @pad/4 @pad/2`, which is two independent safe terms.
+    //    Chained arithmetic is reported too, since wrapping one term changes
+    //    association. "Chained" is decided per match, not per line: a line
+    //    count reads the hyphen in `@font-size` as a minus and a trailing
+    //    `//` as two divisions.
     const isOperator = ch => ch === '*' || ch === '/' || ch === '+' || ch === '-';
     const precededByExpression = (offset, end) => {
       let j = offset - 1;
@@ -328,12 +283,9 @@ function convert(source, vars, skipDefinitions) {
       return j < result.length && isOperator(result[j]);
     };
 
-    // `-@var` is negation, not subtraction. Left alone, step 3 turns it into
-    // `-var(--x)`, which is not valid CSS and is dropped silently.
-    // The negated variable must be the whole term: `-@pad * 2.5` would
-    // otherwise become calc(var(--pad) * -1) * 2.5, leaving the `* 2.5`
-    // dangling outside the calc() -- invalid CSS that LESS passes through
-    // untouched and the browser drops without a word.
+    // `-@var` is negation, not subtraction; left alone step 3 emits
+    // `-var(--x)`, which is invalid. The negated variable must be the whole
+    // term, or the rest of the expression dangles outside the calc().
     result = result.replace(
       /(^|[\s:,(])-\s*@([a-zA-Z][a-zA-Z0-9-]*)(?![a-zA-Z0-9-])(\s*[*/+-]?)/g,
       (whole, lead, name, trailer) => {
@@ -345,13 +297,10 @@ function convert(source, vars, skipDefinitions) {
         return `${lead}calc(var(--${name}) * -1)${trailer}`;
       }
     );
-    // Number-first multiplication -- `2 * @component-padding`. The rule below
-    // only matches variable-first, so these fell through every guard and were
-    // emitted unchanged: no rewrite, and no report either. A silent pass is
-    // worse than a refusal, because the count then says the file is clean.
-    // Multiplication commutes and the unit still comes from the variable, so
-    // this is as safe as `@pad * 2`. Only `*`: `2 / @pad` is not the same
-    // quantity, and `2 + @pad` is unit-ambiguous the same way round.
+    // Number-first multiplication (`2 * @pad`). The rule below matches only
+    // variable-first, so these passed silently -- worse than a refusal, since
+    // the count then calls the file clean. Safe because multiplication
+    // commutes; only `*`, as `2 / @pad` and `2 + @pad` are not equivalent.
     result = result.replace(
       /(^|[\s:,(])([0-9.]+)\s*\*\s*@([a-zA-Z][a-zA-Z0-9-]*)(?![a-zA-Z0-9-])/g,
       (whole, lead, factor, name, offset) => {
@@ -407,12 +356,9 @@ function convert(source, vars, skipDefinitions) {
       }
     );
 
-    // Safety net. Enumerating every LESS construct that consumes a value at
-    // build time is whack-a-mole -- guards, mixin arguments, nested colour
-    // functions and bare mix()/contrast() each failed the build in turn. So
-    // instead: if a var() we introduced ended up inside any function LESS will
-    // evaluate itself, abandon the line. CSS functions that pass var()
-    // through untouched are the only ones allowed to contain one.
+    // Safety net: enumerating every LESS construct that consumes a build-time
+    // value is whack-a-mole, so instead abandon the line if an introduced
+    // var() landed inside any function LESS evaluates itself.
     const CSS_FNS = new Set([
       'calc', 'var', 'hsl', 'hsla', 'rgb', 'rgba', 'color-mix', 'url',
       'linear-gradient', 'radial-gradient', 'translate', 'translateX',

@@ -1,24 +1,12 @@
 'use strict';
 
 /**
- * Stylesheets are compiled once, at build time, and shipped as CSS.
+ * Stylesheets are compiled once at build time and shipped as CSS.
  *
- * prebuild-less-cache.js compiled all 323 stylesheets once per UI x syntax
- * theme pair -- 16 passes -- because a package stylesheet read @text-color, so
- * its output depended on the active theme, and less-cache buckets by a hash of
- * the import paths. Any pair that was not precompiled fell back to compiling
- * LESS at runtime, inside the editor, which is what made a downloadable theme
- * impossible: a theme absent from the build matrix could only ever be compiled
- * on the user's machine.
- *
- * With theme variables gone from the catalog (see
- * theme-variables-eliminated.test.js) a stylesheet compiles to the same bytes
- * under every theme, so compile-package-styles.js compiles each one once and
- * ships CSS. A theme switch is now a stylesheet swap.
- *
- * The build-tree assertions run everywhere. The packaged-app assertions only
- * run when out/app exists, so this is useful locally and after a CI build
- * without failing on a bare checkout.
+ * With theme variables gone from the catalog, a stylesheet compiles to the
+ * same bytes under every theme, so nothing needs a per-theme-pair cache and no
+ * Less should reach a user machine. Build-tree assertions run everywhere; the
+ * packaged-app ones only when out/app exists.
  *
  * Run: node --test script/ci/compiled-styles.test.js
  */

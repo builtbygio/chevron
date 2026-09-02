@@ -3,23 +3,11 @@
 /**
  * Lint, test and build tooling is not shipped to users.
  *
- * The root package.json has 152 dependencies and no devDependencies, so
- * nothing in the manifest separates the editor's dependencies from the
- * repository's. copy-assets copies every top-level node_modules entry, so
- * `standard`'s eslint stack, `inquirer`'s rxjs, the test harnesses and
- * prebuildify all went into the asar -- 17.1 MB of it.
- *
- * The list in include-path-in-packaged-app.js is named rather than derived,
- * deliberately. Deriving it would mean trusting the declared dependency graph,
- * and packages require things they do not declare: every bundled package with
- * "no runtime dependencies" requires event-kit. Each name was checked against
- * a require trace of a running editor -- 659 modules across 143 packages --
- * and appears in none of them.
- *
- * This test does the cheap half of that continuously: nothing in the shipped
- * tree may require one of these by name. It will not catch a module loaded
- * through a computed name, which is why the list is conservative and holds
- * only packages whose role is unambiguous.
+ * The root manifest has no devDependencies to separate the editor's
+ * dependencies from the repository's, and copy-assets copies every top-level
+ * node_modules entry. The exclusion list in include-path-in-packaged-app.js is
+ * named rather than derived; this does the cheap half of verifying it
+ * continuously -- nothing in the shipped tree may require one by name.
  *
  * Run: node --test script/ci/no-dev-tooling-in-installer.test.js
  */

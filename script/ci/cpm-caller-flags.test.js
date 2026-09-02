@@ -3,23 +3,10 @@
 /**
  * Every flag the editor passes to cpm is one cpm accepts.
  *
- * settings-view's package-manager appended --no-color to every cpm invocation,
- * an apm-era flag. cpm's `list` neither declares it nor allows unknown options,
- * so commander exits with "unknown option '--no-color'" before running
- * anything. Every call through runCommand failed: the Packages and Themes
- * panels listed nothing, and "Fetching local packages failed." was thrown on
- * every startup.
- *
- * It went unnoticed because the failure is a rejected flag, not a crash --
- * settings-view opens, the panel renders, the list is simply empty. And
- * because the one caller that kept working, src/package.js's rebuild, kept
- * working for a reason invisible from the calling side: cpm's `rebuild`
- * declares --no-color as a no-op "for Package.runRebuildProcess
- * compatibility", and `list` never got the same treatment.
- *
- * This cross-checks the two sides against each other, so a flag added on one
- * side without the other fails here rather than in a panel nobody opens during
- * review.
+ * An apm-era --no-color made commander reject every `cpm list` call, so the
+ * Packages panel listed nothing -- a rejected flag rather than a crash, so the
+ * panel still opened and simply stayed empty. Cross-checks both sides so a
+ * flag added to one without the other fails here.
  *
  * Run: node --test script/ci/cpm-caller-flags.test.js
  */

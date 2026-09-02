@@ -3,18 +3,10 @@
 /**
  * Compile every bundled stylesheet to CSS at build time.
  *
- * This replaces prebuild-less-cache.js, which compiled all 323 stylesheets
- * once per UI-theme x syntax-theme pair -- 16 passes -- because, in its own
- * words, "themes assign variables which may be used in any style sheet". That
- * was true: a package stylesheet read @text-color, so its compiled output
- * depended on which theme was active, and less-cache buckets by a hash of the
- * import paths, so every pair needed its own warmed bucket.
- *
- * It is no longer true. Themes publish their variables as CSS custom
- * properties and no stylesheet outside a theme reads a theme variable -- see
- * script/ci/theme-variables-eliminated.test.js. A package stylesheet compiles
- * to the same bytes under every theme, so it can be compiled once, here, and
- * shipped as CSS.
+ * Replaces prebuild-less-cache.js, which needed 16 passes because package
+ * stylesheets read theme variables. They now read CSS custom properties, so a
+ * stylesheet compiles to the same bytes under every theme and is compiled once.
+ * See docs/reference/theme-custom-properties.md.
  *
  * What that removes downstream: the packaged app contains no .less at all, so
  * the runtime never compiles a stylesheet, never consults a less cache, and a

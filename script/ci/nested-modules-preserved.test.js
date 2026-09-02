@@ -3,24 +3,10 @@
 /**
  * Packaging keeps the dependency versions pnpm resolved.
  *
- * pnpm nests a dependency under the package that needs it whenever the hoisted
- * copy does not satisfy that package's range. copy-assets walked the top-level
- * entries only, so those nested copies were dropped and every package fell
- * back to the single hoisted version.
- *
- * That failed silently and only in the packaged app, because the dev tree
- * resolves correctly. markdown-preview was the case that surfaced: htmlparser2
- * needs entities ^7, the app shipped 4.5.0, and opening a preview said
- * "Previewing Markdown Failed" while the same code worked in dev.
- *
- * It was being patched one casualty at a time -- tree-view/minimatch,
- * language-css/tree-sitter-css, htmlparser2/entities, parse5/entities. The
- * audit found 126 dependencies whose hoisted replacement did not satisfy the
- * declared range, 36 of them in packages the editor actually loads, so naming
- * them individually was never going to finish.
- *
- * This asserts the general property instead: for every shipped package, a
- * dependency it declares resolves to a version inside its range.
+ * pnpm nests a dependency wherever the hoisted copy does not satisfy a
+ * package's range; dropping those nested copies fails silently and only in the
+ * packaged app. Asserts the general property: every dependency a shipped
+ * package declares resolves inside its range.
  *
  * Run: node --test script/ci/nested-modules-preserved.test.js
  */
@@ -175,17 +161,8 @@ describe('packaging preserves resolved versions', () => {
 });
 
 /**
- * The reachability escape hatch is narrow on purpose.
- *
- * Dropping a nested copy is safe only when nothing that ships can require the
- * dependency. season is the case that forced this: its `csonc` CLI is the sole
- * requirer of yargs, the CLI is excluded from the installer, and the library
- * half never touches it -- so the declared range goes unsatisfied while no
- * shipped file can observe that.
- *
- * If the check ever silently returns false for everything, the guard above
- * degrades to a no-op without failing, which is the failure mode worth testing
- * for directly.
+ * The reachability escape hatch is narrow on purpose: a check that silently
+ * returned false for everything would disarm the guard above without failing.
  */
 describe('the reachability check actually detects requires', () => {
   const APP_ = path.join(ROOT, 'out', 'app');

@@ -1,27 +1,12 @@
 'use strict';
 
 /**
- * Settings can actually be constructed, and every command opens a real panel.
+ * Settings can be constructed, and every command opens a real panel.
  *
- * settings-view.js is an esbuild bundle: it ends in
- * `module.exports = __toCommonJS(...)`, so require() yields
- * { __esModule: true, default: SettingsView } rather than the class. main.js
- * did `SettingsView = require('./settings-view')` and then `new SettingsView(...)`,
- * which threw
- *
- *   TypeError: SettingsView is not a constructor
- *
- * so no Settings panel could open at all -- not Themes, not Keybindings, not
- * Core. Nothing caught it: the build compiles the bundle happily, and the smoke
- * test only proves packages activate. It never opens a UI panel.
- *
- * Two classes of failure are checked here, both statically, so this runs
- * without Electron:
- *
- *   1. a `new X` on a require() of an esbuild bundle -- the interop bug
- *   2. a command opening chevron://config/<panel> where no panel exists --
- *      which is what the Install and Updates menu entries did after #239
- *      removed their panels
+ * Two failures, both checked statically so this runs without Electron: `new X`
+ * on a require() of an esbuild bundle, which yields { default: X } rather than
+ * the class; and a command opening chevron://config/<panel> where no panel is
+ * registered, which falls through to Core in silence.
  *
  * Run: node --test script/ci/settings-view-openable.test.js
  */
