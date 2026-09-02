@@ -32,9 +32,13 @@ describe('Wave 3 gates', () => {
     // core wants it. The three user-facing readers have been converted to
     // JSON; package.js and grammar-registry.js still go through season, but
     // only to read product files that are all JSON already.
-    assert.ok(pkgJson().dependencies.season, 'season is pulled in by first-mate');
+    assert.ok(!pkgJson().dependencies.season, 'season has been dropped');
     for (const rel of ['src/package.js', 'src/grammar-registry.js']) {
-      assert.match(read(rel), /require\('season'\)/, `${rel} still uses season`);
+      assert.doesNotMatch(
+        read(rel),
+        /require\('season'\)/,
+        `${rel} reads JSON directly now`
+      );
     }
     for (const rel of [
       'src/config-file.js',

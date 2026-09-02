@@ -107,11 +107,11 @@ Not a programming-language port, or nobody will staff one. Revisit only if an ow
 
 ### PR 13c — CSON → JSON (one PR per pin)
 
-Convert shipped `grammars/` / `settings/` / `snippets/` CSON to JSON. Delete the `.cson`. Runtime already loads both extensions. **`season` stays** until this list is empty (or pack-time transpile + a documented dev-only reader). Do not convert `spec/**/*.cson`.
+Convert shipped `grammars/` / `settings/` / `snippets/` CSON to JSON. Delete the `.cson`. Runtime already loads both extensions. **`season` is gone**: nothing in the repository is CSON, and core reads JSON through `src/main-process/json-file.js`. Do not convert `spec/**/*.cson`.
 
 **Done:** `language-source` (settings JSON), `language-hyperlink` (grammar JSON), `language-text` (grammar + snippets JSON), `language-todo` (grammar + snippets JSON), `language-gfm` (settings + snippets JSON), `language-less` (TM grammar + settings JSON), `language-make` (grammar + settings JSON), `language-mustache` (grammars JSON), `language-sql` (TM grammar + settings JSON), `language-toml` (TM grammar + settings JSON), `language-yaml` (TM grammar + settings JSON), `language-clojure` (TM grammar + settings + snippets JSON), `language-coffee-script` (grammars + settings + snippets JSON), `language-perl` (TM grammars + settings + snippets JSON), `language-php` (TM grammars + settings + snippets JSON), `language-property-list` (grammars + settings + snippets JSON), `language-xml` (TM grammars + settings + snippets JSON), `language-csharp` (TM grammars + settings + snippets JSON), `language-git` (grammars + settings + snippets JSON), `language-objective-c` (grammars + settings + snippets JSON), `language-sass` (TM grammars + settings + snippets JSON), `language-ruby-on-rails` (grammars + snippets JSON).
 
-**Remaining:** none. Every bundled `language-*` pin ships JSON. **`season` stays** until PR 5b.
+**Remaining:** none. Every bundled `language-*` pin ships JSON, and `season` has been dropped.
 
 Already JSON (no 13c work): `language-c`, `language-css`, `language-go`, `language-html`, `language-java`, `language-javascript`, `language-json`, `language-python`, `language-ruby`, `language-rust-bundled`, `language-shellscript`, `language-typescript`.
 

@@ -1,0 +1,45 @@
+diff --git a/lib/grammar-registry.js b/lib/grammar-registry.js
+index ebcf62874b0e6b2f5e83f279f42a2997bedd6137..d6ef53668511f208a0d04b2e9c61cb26f9bb2847 100644
+--- a/lib/grammar-registry.js
++++ b/lib/grammar-registry.js
+@@ -3,7 +3,27 @@
+ 
+   _ = require('underscore-plus');
+ 
+-  CSON = require('season');
++  // Grammars are JSON. season's readFileSync is a bare JSON.parse for any
++  // extension but .cson, and nothing in Chevron is CSON, so this drops the
++  // season -> cson-parser -> coffee-script chain from the installer.
++  CSON = {
++    readFileSync: function(grammarPath) {
++      var contents = require('fs').readFileSync(grammarPath, 'utf8');
++      return contents.trim().length === 0 ? null : JSON.parse(contents);
++    },
++    readFile: function(grammarPath, callback) {
++      require('fs').readFile(grammarPath, 'utf8', function(error, contents) {
++        if (error != null) return callback(error);
++        var parsed;
++        try {
++          parsed = contents.trim().length === 0 ? null : JSON.parse(contents);
++        } catch (parseError) {
++          return callback(parseError);
++        }
++        callback(null, parsed);
++      });
++    }
++  };
+ 
+   _ref = require('event-kit'), Emitter = _ref.Emitter, Disposable = _ref.Disposable;
+ 
+diff --git a/package.json b/package.json
+index 4babc6b7b46bcc6a4e4d742122b59737a40096c1..9744704f64dc43247c9b2aaf000999b7b99283f5 100644
+--- a/package.json
++++ b/package.json
+@@ -23,7 +23,6 @@
+     "fs-plus": "^3.0.0",
+     "grim": "^2.0.1",
+     "oniguruma": "^7.2.3",
+-    "season": "^6.0.2",
+     "underscore-plus": "^1"
+   },
+   "devDependencies": {

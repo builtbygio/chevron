@@ -8,7 +8,6 @@ const fs = require('fs-plus');
 const sourceMapSupport = require('@atom/source-map-support');
 
 const PackageTranspilationRegistry = require('./package-transpilation-registry');
-let CSON = null;
 
 const packageTranspilationRegistry = new PackageTranspilationRegistry();
 
@@ -64,17 +63,9 @@ exports.addPathToCache = function(filePath, atomHome) {
   this.setAtomHomeDirectory(atomHome);
   const extension = path.extname(filePath);
 
-  if (extension === '.cson') {
-    if (!CSON) {
-      CSON = require('season');
-      CSON.setCacheDir(this.getCacheDirectory());
-    }
-    return CSON.readFileSync(filePath);
-  } else {
-    const compiler = COMPILERS[extension];
-    if (compiler) {
-      return compileFileAtPath(compiler, filePath, extension);
-    }
+  const compiler = COMPILERS[extension];
+  if (compiler) {
+    return compileFileAtPath(compiler, filePath, extension);
   }
 };
 

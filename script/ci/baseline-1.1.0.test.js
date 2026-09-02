@@ -34,14 +34,13 @@ describe('1.1.0 product contract', () => {
     assert.doesNotMatch(schema, /packageHostV2/);
   });
 
-  it('season stays (dual-read CSON + pin grammars)', () => {
+  it('season is gone (the condition this gated on has been met)', () => {
+    // The 1.1.0 contract kept season until pin CSON and the user dual-read
+    // were gone. Both are: nothing in the repository is CSON, core reads JSON
+    // through src/main-process/json-file.js, and first-mate is patched off it.
     assert.ok(
-      pkg.dependencies.season,
-      'season must stay until pin CSON and user dual-read are gone'
-    );
-    assert.ok(
-      String(pkg.dependencies.season).startsWith('npm:@builtbygio/season@'),
-      `season must be npm:@builtbygio/season, got ${pkg.dependencies.season}`
+      !pkg.dependencies.season,
+      'season must not be declared once nothing reads CSON'
     );
   });
 

@@ -1,6 +1,6 @@
 const _ = require('underscore-plus');
 const Grim = require('grim');
-const CSON = require('season');
+const CSON = require('./main-process/json-file');
 const { Disposable, CompositeDisposable, Emitter } = require('event-kit');
 const TextMateLanguageMode = require('./text-mate-language-mode');
 const TreeSitterLanguageMode = require('./tree-sitter-language-mode');

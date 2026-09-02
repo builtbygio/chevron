@@ -75,11 +75,11 @@ overrides:
   first-mate: npm:@builtbygio/first-mate@7.4.3
   fs-admin: npm:@builtbygio/fs-admin@0.15.0
   scrollbar-style: npm:@builtbygio/scrollbar-style@4.0.1
-  season: npm:@builtbygio/season@6.0.2
   superstring: workspace:@builtbygio/superstring@*
   text-buffer: npm:@builtbygio/text-buffer@13.18.6
 
 patchedDependencies:
+  '@builtbygio/first-mate@7.4.3': 802c6d30f67546a2498fd492a2527909603def7c897c3c0cdcea3dd97e177cf6
   dugite@1.110.0: 65930157110b31cf6b61bddb57683724eceba071a6e47fbf806c3d875b6b4c2e
   less@3.13.1: 3240ea48c1693120b37cc19bcc745ee94ab6ed9455fd93dcfd344c2edf7bca49
 
@@ -215,7 +215,7 @@ importers:
         version: 0.3.1
       first-mate:
         specifier: npm:@builtbygio/first-mate@7.4.3
-        version: '@builtbygio/first-mate@7.4.3'
+        version: '@builtbygio/first-mate@7.4.3(patch_hash=802c6d30f67546a2498fd492a2527909603def7c897c3c0cdcea3dd97e177cf6)'
       focus-trap:
         specifier: 6.3.0
         version: 6.3.0
@@ -468,9 +468,6 @@ importers:
       scrollbar-style:
         specifier: npm:@builtbygio/scrollbar-style@4.0.1
         version: '@builtbygio/scrollbar-style@4.0.1'
-      season:
-        specifier: npm:@builtbygio/season@6.0.2
-        version: '@builtbygio/season@6.0.2'
       semver:
         specifier: 7.8.5
         version: 7.8.5
@@ -634,7 +631,7 @@ importers:
     dependencies:
       first-mate:
         specifier: npm:@builtbygio/first-mate@7.4.3
-        version: '@builtbygio/first-mate@7.4.3'
+        version: '@builtbygio/first-mate@7.4.3(patch_hash=802c6d30f67546a2498fd492a2527909603def7c897c3c0cdcea3dd97e177cf6)'
       underscore-plus:
         specifier: 1.x
         version: 1.7.0
@@ -1199,9 +1196,6 @@ importers:
       marked:
         specifier: 4.3.0
         version: 4.3.0
-      season:
-        specifier: npm:@builtbygio/season@6.0.2
-        version: '@builtbygio/season@6.0.2'
       semver:
         specifier: ^7.8.5
         version: 7.8.5
@@ -1229,9 +1223,6 @@ importers:
       scoped-property-store:
         specifier: ^0.17.0
         version: 0.17.0
-      season:
-        specifier: npm:@builtbygio/season@6.0.2
-        version: '@builtbygio/season@6.0.2'
       temp:
         specifier: ^0.9.2
         version: 0.9.2
@@ -4513,7 +4504,7 @@ snapshots:
       event-stream: 3.1.7
       nan: 2.28.0
 
-  '@builtbygio/first-mate@7.4.3':
+  '@builtbygio/first-mate@7.4.3(patch_hash=802c6d30f67546a2498fd492a2527909603def7c897c3c0cdcea3dd97e177cf6)':
     dependencies:
       emissary: 1.3.3
       event-kit: 2.5.3

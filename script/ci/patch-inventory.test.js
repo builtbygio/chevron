@@ -62,11 +62,15 @@ describe('patch inventory', () => {
   });
 
   it('each entry key matches its patch filename', () => {
+    // pnpm writes a scoped name with `__` for the slash, since a filename
+    // cannot contain one: @builtbygio/first-mate@7.4.3 becomes
+    // @builtbygio__first-mate@7.4.3.patch.
     for (const [spec, file] of entries) {
+      const expected = `${spec.replace('/', '__')}.patch`;
       assert.strictEqual(
         path.basename(file),
-        `${spec}.patch`,
-        `${spec} should be patched by ${spec}.patch, not ${file}`
+        expected,
+        `${spec} should be patched by ${expected}, not ${file}`
       );
     }
   });

@@ -94,13 +94,13 @@ overrides:
   'first-mate': '$first-mate'
   'fs-admin': '$fs-admin'
   'scrollbar-style': '$scrollbar-style'
-  season: $season
   superstring: $superstring
   'text-buffer': '$text-buffer'
 
 patchedDependencies:
   less@3.13.1: patches/less@3.13.1.patch
   dugite@1.110.0: patches/dugite@1.110.0.patch
+  '@builtbygio/first-mate@7.4.3': patches/@builtbygio__first-mate@7.4.3.patch
 
 # Owned catalog is published from this repo and consumed immediately.
 # Default minimumReleaseAge (1 day) 404s just-published @builtbygio

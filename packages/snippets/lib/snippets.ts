@@ -4,7 +4,7 @@ const path = require('path')
 const {Emitter, Disposable, CompositeDisposable, File} = require('chevron')
 const _ = require('underscore-plus')
 const async = require('async')
-const CSON = require('season')
+const CSON = require('./json-file')
 const fs = require('fs-plus')
 const ScopedPropertyStore = require('scoped-property-store')
 

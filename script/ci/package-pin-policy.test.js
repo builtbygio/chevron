@@ -87,7 +87,6 @@ const OWNED_BUILTBYGIO = [
   'open-on-github',
   'pathwatcher',
   'scrollbar-style',
-  'season',
   'settings-view',
   'snippets',
   'spell-check',

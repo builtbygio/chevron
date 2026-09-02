@@ -224,7 +224,7 @@ const PROBE_EXPR = `(function() {
   }
   const byExt = ext =>
     editors.find(e => (e.getPath() || '').endsWith(ext));
-  if (!byExt('.txt') || !byExt('.ts') || !byExt('.css')) {
+  if (!byExt('.txt') || !byExt('.ts') || !byExt('.css') || !byExt('.md')) {
     return JSON.stringify({
       status: 'waiting-editors',
       count: editors.length,
@@ -403,6 +403,7 @@ const PROBE_EXPR = `(function() {
     txtText: byExt('.txt').getText(),
     tsGrammar: byExt('.ts').getGrammar() && byExt('.ts').getGrammar().name,
     cssGrammar: byExt('.css').getGrammar() && byExt('.css').getGrammar().name,
+    mdGrammar: byExt('.md') && byExt('.md').getGrammar() && byExt('.md').getGrammar().name,
     electron: process.versions.electron
   });
 })()`;
@@ -625,11 +626,15 @@ async function main() {
   const probes = {
     txt: path.join(probeDir, 'probe.txt'),
     ts: path.join(probeDir, 'probe.ts'),
-    css: path.join(probeDir, 'probe.css')
+    css: path.join(probeDir, 'probe.css'),
+    // GitHub Markdown is TextMate-only, so this is the one probe that
+    // exercises first-mate rather than tree-sitter.
+    md: path.join(probeDir, 'probe.md')
   };
   fs.writeFileSync(probes.txt, 'smoke test probe\n');
   fs.writeFileSync(probes.ts, 'const n: number = 1;\n');
   fs.writeFileSync(probes.css, 'body { color: red; }\n');
+  fs.writeFileSync(probes.md, '# heading\n\nsome **bold** text\n');
 
   const launchArgs = [
     `--remote-debugging-port=${PORT}`,
@@ -640,7 +645,7 @@ async function main() {
     console.log('smoke-test: linux flags', linuxFlags.join(' '));
     launchArgs.push(...linuxFlags);
   }
-  launchArgs.push(projectDir, probes.txt, probes.ts, probes.css);
+  launchArgs.push(projectDir, probes.txt, probes.ts, probes.css, probes.md);
 
   const app = childProcess.spawn(binary, launchArgs, {
     env: Object.assign({}, process.env, {
@@ -716,7 +721,7 @@ async function main() {
         process.exit(1);
       }
       try {
-        state = await probeWindow([probes.txt, probes.ts, probes.css]);
+        state = await probeWindow([probes.txt, probes.ts, probes.css, probes.md]);
       } catch (error) {
         state = { status: 'pending', reason: String(error.message || error) };
       }
@@ -764,6 +769,14 @@ async function main() {
       if (state.tsGrammar !== 'TypeScript') {
         failures.push(
           `probe.ts grammar: ${state.tsGrammar} (expected TypeScript)`
+        );
+      }
+      // first-mate is patched to read grammars with JSON.parse rather than
+      // season; a TextMate grammar failing to load is the way that breaks.
+      if (state.mdGrammar !== 'GitHub Markdown') {
+        failures.push(
+          `probe.md grammar: ${state.mdGrammar} (expected GitHub Markdown -- ` +
+            'the TextMate engine failed to load a grammar)'
         );
       }
       if (state.cssGrammar !== 'CSS') {

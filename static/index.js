@@ -192,11 +192,6 @@
       releaseChannel
     });
 
-    const CSON = useSnapshot
-      ? snapshotResult.customRequire('../node_modules/season/lib/cson.js')
-      : require('season');
-    CSON.setCacheDir(path.join(CompileCache.getCacheDirectory(), 'cson'));
-
     const initScriptPath = path.relative(
       entryPointDirPath,
       getWindowLoadSettings().windowInitializationScript
