@@ -497,6 +497,7 @@ jobs:
       - name: Compiled stylesheet contract
         run: |
           node --test script/ci/compiled-styles.test.js
+          node --test script/ci/user-stylesheet-compiles.test.js
           node --test script/ci/nested-modules-preserved.test.js
           node --test script/ci/dependencies-fingerprint.test.js
           node --test script/ci/socket-cleanup.test.js
