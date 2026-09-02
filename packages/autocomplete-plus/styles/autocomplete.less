@@ -50,7 +50,7 @@ autocomplete-suggestion-list.select-list.popover-list {
   .suggestion-description-more-link {
     font-size: calc(var(--font-size) + 1px);
     font-family: var(--font-family);
-    color: calc(var(--text-color) - info);
+    color: var(--text-color-info);
   }
 
   input {
@@ -85,7 +85,7 @@ autocomplete-suggestion-list.select-list.popover-list {
           color: ~"rgb(from var(--text-color-selected) r g b / calc(alpha - 0.2))";
         }
         .character-match {
-          color: calc(var(--text-color) - selected);
+          color: var(--text-color-selected);
         }
         .left-label, .right-label, .snippet-completion {
           color: ~"rgb(from var(--text-color-selected) r g b / calc(alpha - 0.5))";
@@ -114,7 +114,7 @@ autocomplete-suggestion-list {
     font-style: normal;
     font-weight: bold;
 
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
     background: ~"rgb(from var(--text-color) r g b / calc(alpha - 0.9))";
 
     &:empty { display: none; }
@@ -138,8 +138,8 @@ autocomplete-suggestion-list {
     padding-right: @item-padding;
     vertical-align: middle;
 
-    font-size: calc(var(--font-size) - small);
-    color: calc(var(--text-color) - subtle);
+    font-size: @font-size-small;
+    color: var(--text-color-subtle);
 
     &:empty {
       padding-right: 0;
@@ -148,8 +148,8 @@ autocomplete-suggestion-list {
 
   .right-label {
     padding-right: @item-padding;
-    font-size: calc(var(--font-size) - small);
-    color: calc(var(--text-color) - subtle);
+    font-size: @font-size-small;
+    color: var(--text-color-subtle);
 
     &:empty {
       padding-right: 0;
@@ -166,11 +166,11 @@ autocomplete-suggestion-list {
 
   .character-match {
     font-weight: bold;
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
   }
 
   .snippet-completion {
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
   }
 
   // Here we set the max width of the popup

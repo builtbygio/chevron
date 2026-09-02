@@ -22,7 +22,7 @@
     line-height: 1.2;
     margin-top: @margin;
     margin-bottom: @margin/3;
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
   }
 
   h1 { font-size: 1.5em; font-weight: 400; }
@@ -42,11 +42,11 @@
   // Emphasis --------------------
 
   strong {
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
   }
 
   del {
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
   }
 
 
@@ -54,7 +54,7 @@
 
   a,
   a code {
-    color: calc(var(--text-color) - info);
+    color: var(--text-color-info);
   }
 
 
@@ -107,7 +107,7 @@
     margin: @margin 0;
     padding: .25em 1em;
     font-size: inherit;
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
     border-color: var(--base-border-color);
     border-width: 3px;
   }
@@ -129,7 +129,7 @@
   }
 
   th {
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
   }
 
   th,
@@ -143,7 +143,7 @@
 
   pre,
   code {
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
     background-color: var(--background-color-highlight);
 
   }
@@ -167,7 +167,7 @@
   // KBD --------------------
 
   kbd {
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
     border: 1px solid var(--base-border-color);
     border-bottom: 2px solid ~"hsl(from var(--base-border-color) h s calc(l - 6))";
     background-color: var(--background-color-highlight);
@@ -176,7 +176,7 @@
   // Custom --------------------
 
   .issue-link {
-    color: calc(var(--text-color) - subtle); // same as .cross-referenced-event-label-number
+    color: var(--text-color-subtle); // same as .cross-referenced-event-label-number
   }
 
   .js-suggested-changes-blob { // gets used for suggested changes

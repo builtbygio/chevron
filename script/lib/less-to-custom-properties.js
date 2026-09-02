@@ -312,30 +312,46 @@ function convert(source, vars, skipDefinitions) {
         return `${lead}calc(${factor} * var(--${name}))`;
       }
     );
-    result = result.replace(
-      /@([a-zA-Z][a-zA-Z0-9-]*)\s*([*/+-])\s*(@?[a-zA-Z0-9.]+[a-z%]*)/g,
-      (whole, name, op, operand, offset) => {
-        if (!vars.has(name)) return whole;
-        if (
-          precededByExpression(offset, offset + whole.length) ||
-          followedByExpression(offset + whole.length)
-        ) {
-          unhandled.push({ line: i + 1, text: line.trim(), reason: 'chained' });
-          return whole;
-        }
-        const operandIsVar = operand.startsWith('@');
-        if (operandIsVar && !vars.has(operand.slice(1))) {
-          unhandled.push({ line: i + 1, text: line.trim(), reason: 'local-var' });
-          return whole;
-        }
-        const bareNumber = !operandIsVar && /^[0-9.]+$/.test(operand);
-        if ((op === '+' || op === '-') && bareNumber) {
-          unhandled.push({ line: i + 1, text: line.trim(), reason: 'unit-ambiguous' });
-          return whole;
-        }
-        const right = operandIsVar ? `var(--${operand.slice(1)})` : operand;
-        return `calc(var(--${name}) ${op} ${right})`;
+    const rewriteArithmetic = (whole, name, op, operand, offset) => {
+      if (!vars.has(name)) return whole;
+      if (
+        precededByExpression(offset, offset + whole.length) ||
+        followedByExpression(offset + whole.length)
+      ) {
+        unhandled.push({ line: i + 1, text: line.trim(), reason: 'chained' });
+        return whole;
       }
+      const operandIsVar = operand.startsWith('@');
+      if (operandIsVar && !vars.has(operand.slice(1))) {
+        unhandled.push({ line: i + 1, text: line.trim(), reason: 'local-var' });
+        return whole;
+      }
+      const bareNumber = !operandIsVar && /^[0-9.]+$/.test(operand);
+      if ((op === '+' || op === '-') && bareNumber) {
+        unhandled.push({ line: i + 1, text: line.trim(), reason: 'unit-ambiguous' });
+        return whole;
+      }
+      const right = operandIsVar ? `var(--${operand.slice(1)})` : operand;
+      return `calc(var(--${name}) ${op} ${right})`;
+    };
+
+    // Two patterns, not one with [*/+-]. A variable name may contain hyphens
+    // and `-` is also an operator, so a single pattern backtracks: given
+    // `@text-color-subtle` there is no operator after the full name, so the
+    // engine settles for name `text-color`, operator `-`, operand `subtle` and
+    // emits calc(var(--text-color) - subtle). That is not a colour, and the
+    // browser drops the declaration -- 209 of them across 46 stylesheets.
+    //
+    // LESS reads `@a-b` as one identifier; subtraction needs spaces around the
+    // minus. The detection above already required that, so only the rewrite
+    // was wrong.
+    result = result.replace(
+      /@([a-zA-Z][a-zA-Z0-9-]*)\s+(-)\s+(@?[a-zA-Z0-9.]+[a-z%]*)/g,
+      rewriteArithmetic
+    );
+    result = result.replace(
+      /@([a-zA-Z][a-zA-Z0-9-]*)\s*([*/+])\s*(@?[a-zA-Z0-9.]+[a-z%]*)/g,
+      rewriteArithmetic
     );
 
     // 3. plain references (skip any left inside an arithmetic expression)

@@ -16,7 +16,7 @@
   }
 
   a {
-    color: calc(var(--text-color) - info);
+    color: var(--text-color-info);
   }
 
   ul {
@@ -52,7 +52,7 @@
     width: 100%;
     max-width: 280px;
     margin: 0 auto 2em auto;
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
   }
 
   &-title {
@@ -87,18 +87,18 @@
     }
     &:before {
       width: 20px;
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
       details[open] & {
-        color: calc(var(--text-color) - highlight);
+        color: var(--text-color-highlight);
       }
     }
     details[open] & {
-      color: calc(var(--text-color) - highlight);
+      color: var(--text-color-highlight);
     }
   }
 
   &-highlight {
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
   }
 
   &-detail {
@@ -151,14 +151,14 @@
     font-size: .8em;
     line-height: 1;
     border-radius: 3px;
-    color: calc(var(--text-color) - highlight);
-    border: 1px solid calc(var(--text-color) - subtle);
+    color: var(--text-color-highlight);
+    border: 1px solid var(--text-color-subtle);
     background: hsla(0,0%,0%,.1);
   }
 
   &-love {
-    color: calc(var(--text-color) - subtle);
-    a { color: calc(var(--text-color) - subtle); }
+    color: var(--text-color-subtle);
+    a { color: var(--text-color-subtle); }
 
     .icon::before {
       // Make these octicons look good inlined with text
@@ -178,7 +178,7 @@
 
   &-note {
     font-size: .86em;
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
 
     .icon {
       margin-left: 5px;

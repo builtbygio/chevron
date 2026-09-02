@@ -83,7 +83,7 @@
   &-showDiffButton {
     background: transparent;
     border: none;
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
     font-size: 18px;
     margin-bottom: 15px;
 
@@ -313,7 +313,7 @@
     &.icons .line-number,
     &[gutter-name="github-comment-icon"] .github-editorCommentGutterIcon {
       &.github-FilePatchView-line--selected {
-        color: calc(var(--text-color) - selected);
+        color: var(--text-color-selected);
         background: var(--background-color-selected);
         &.github-editorCommentGutterIcon.empty {
           z-index: -1;
@@ -341,7 +341,7 @@
   // four shipped themes -- the selected button is never light enough to flip
   // it -- so this is a constant, not a per-theme branch.
   color: #fff;
-        background: calc(var(--button-background-color) - selected);
+        background: var(--button-background-color-selected);
         &.github-editorCommentGutterIcon.empty {
           z-index: -1;
         }

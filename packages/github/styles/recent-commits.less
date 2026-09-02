@@ -24,7 +24,7 @@
   &-message {
     padding: calc(var(--component-padding) / 2) var(--component-padding);
     text-align: center;
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
   }
 }
 
@@ -88,17 +88,17 @@
   }
 
   &-time {
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
   }
 
   &:hover {
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
     background: var(--background-color-highlight);
   }
 
   &.is-selected {
     // is selected
-    color: calc(var(--text-color) - selected);
+    color: var(--text-color-selected);
     background: var(--background-color-selected);
 
     // also has focus
@@ -107,7 +107,7 @@
   // four shipped themes -- the selected button is never light enough to flip
   // it -- so this is a constant, not a per-theme branch.
   color: #fff;
-      background: calc(var(--button-background-color) - selected);
+      background: var(--button-background-color-selected);
     }
   }
 

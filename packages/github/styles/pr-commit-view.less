@@ -36,7 +36,7 @@
     border: none;
     cursor: pointer;
     text-align: left;
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
 
     &:hover,
     &:focus {
@@ -60,13 +60,13 @@
   &-metaText {
     line-height: @avatar-dimensions;
     vertical-align: middle;
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
   }
 
   &-moreButton {
     margin: 0 auto 0 @default-padding;
     padding: 0em .2em;
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
     font-style: italic;
     font-size: .8em;
     border: 1px solid var(--base-border-color);
@@ -74,7 +74,7 @@
     background-color: var(--button-background-color);
 
     &:hover {
-      background-color: calc(var(--button-background-color) - hover)
+      background-color: var(--button-background-color-hover)
     }
   }
 
@@ -93,7 +93,7 @@
     margin-left: @default-padding;
     line-height: @avatar-dimensions;
     vertical-align: middle;
-    color: calc(var(--text-color) - info);
+    color: var(--text-color-info);
     font-family: var(--editor-font-family);
     a {
       color: inherit;

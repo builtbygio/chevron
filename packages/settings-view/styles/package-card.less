@@ -79,7 +79,7 @@
     .package-name {
       margin-right: .5em;
       font-weight: bolder;
-      color: calc(var(--text-color) - highlight);
+      color: var(--text-color-highlight);
     }
 
     .package-version {
@@ -103,7 +103,7 @@
     }
 
     .downloads {
-      color: calc(var(--text-color) - highlight);
+      color: var(--text-color-highlight);
       overflow: hidden;
       text-overflow: ellipsis;
       display: -webkit-box;
@@ -136,7 +136,7 @@
       line-height: 1.4;
 
       .css-truncate-target {
-        color: calc(var(--text-color) - success);
+        color: var(--text-color-success);
       }
     }
 
@@ -150,7 +150,7 @@
         vertical-align: top;
 
         .icon {
-          color: calc(var(--text-color) - subtle);
+          color: var(--text-color-subtle);
         }
       }
 
@@ -190,11 +190,11 @@
 
         &:hover {
           .octicon {
-            color: calc(var(--text-color) - success);
+            color: var(--text-color-success);
           }
 
           .value {
-            color: calc(var(--text-color) - success);
+            color: var(--text-color-success);
           }
         }
       }
@@ -228,7 +228,7 @@
       }
 
       .author {
-        color: calc(var(--text-color) - subtle);
+        color: var(--text-color-subtle);
         margin-left: var(--component-padding);
         &:focus {
           outline: none;
@@ -273,7 +273,7 @@
 
     &.blank-slate {
       text-align: center;
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
       height: 132px;
       line-height: 132px;
     }

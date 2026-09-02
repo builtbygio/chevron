@@ -17,11 +17,20 @@
  * bundles with no readable source, and this does not need to.
  */
 
+const path = require('path');
 const CATALOG = require('./owned-catalog');
 
-const REGISTRY_NOT_PUBLISHED =
-  'The owned catalog is not published yet, so these cannot be installed from ' +
-  'this window. Track docs/reference/package-artifact-format.md.';
+// The catalog ships as payloads under <resourcePath>/catalog, so installing
+// needs no registry. cpm copies from there into $CHEVRON_HOME/packages and
+// fetches whatever the package actually needs -- npm dependencies, or a
+// prebuilt server, or nothing when the machine already has one.
+function catalogPath(name) {
+  const env = global.chevron || global.atom;
+  const resourcePath = env && env.getLoadSettings
+    ? env.getLoadSettings().resourcePath
+    : null;
+  return resourcePath ? path.join(resourcePath, 'catalog', name) : null;
+}
 
 module.exports = class InstallPanel {
   constructor(settingsView, packageManager) {
@@ -92,10 +101,6 @@ module.exports = class InstallPanel {
     });
     container.appendChild(search);
 
-    const notice = document.createElement('div');
-    notice.classList.add('alert', 'alert-info', 'icon', 'icon-info');
-    notice.textContent = REGISTRY_NOT_PUBLISHED;
-    container.appendChild(notice);
 
     const list = document.createElement('div');
     list.classList.add('package-container');
@@ -150,19 +155,67 @@ module.exports = class InstallPanel {
 
     const button = document.createElement('button');
     button.classList.add('btn', 'icon', 'icon-cloud-download', 'install-button');
+    const source = catalogPath(entry.name);
+
     if (isInstalled) {
       button.textContent = 'Installed';
       button.classList.add('is-installed');
+      button.disabled = true;
+      button.title = `${entry.name} is already installed`;
+    } else if (!source) {
+      button.textContent = 'Install';
+      button.disabled = true;
+      button.title = 'This build ships no catalog to install from';
     } else {
       button.textContent = 'Install';
+      button.addEventListener('click', () => {
+        this.install(entry, source, button, card);
+      });
     }
-    button.disabled = true;
-    button.title = isInstalled
-      ? `${entry.name} is already installed`
-      : REGISTRY_NOT_PUBLISHED;
     controls.appendChild(button);
 
     return card;
+  }
+
+  install(entry, source, button, card) {
+    button.disabled = true;
+    button.textContent = 'Installing…';
+    this.setStatus(card, 'Installing…');
+
+    // A language server can be a large download, so say what is happening
+    // rather than leaving a button greyed out for a minute.
+    this.packageManager.runCommand(['install', source], (code, stdout, stderr) => {
+      if (code === 0) {
+        button.textContent = 'Installed';
+        button.classList.add('is-installed');
+        this.setStatus(
+          card,
+          `${entry.title} installed. Reload the window to activate it.`
+        );
+        return;
+      }
+      button.disabled = false;
+      button.textContent = 'Install';
+      const detail = String(stderr || stdout || '').trim();
+      this.setStatus(card, `Install failed: ${detail.split('\n')[0] || code}`);
+      const env = global.chevron || global.atom;
+      if (env && env.notifications) {
+        env.notifications.addError(`Installing ${entry.name} failed.`, {
+          detail: detail || `cpm exited ${code}`,
+          dismissable: true
+        });
+      }
+    });
+  }
+
+  setStatus(card, text) {
+    let status = card.querySelector('.install-status');
+    if (!status) {
+      status = document.createElement('div');
+      status.classList.add('install-status', 'text-subtle');
+      card.appendChild(status);
+    }
+    status.textContent = text;
   }
 
   focus() {

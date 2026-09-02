@@ -67,16 +67,16 @@
 
     &-name {
       font-weight: bold;
-      color: calc(var(--text-color) - info);
+      color: var(--text-color-info);
       margin-right: 0.5em;
     }
 
     &-context {
       flex: 1;
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
       strong {
         margin-right: .5em;
-        color: calc(var(--text-color) - highlight);
+        color: var(--text-color-highlight);
       }
     }
 
@@ -91,9 +91,9 @@
 
     &-details-link {
       margin-left: .5em;
-      color: calc(var(--text-color) - info);
+      color: var(--text-color-info);
       a {
-        color: calc(var(--text-color) - info);
+        color: var(--text-color-info);
       }
     }
   }
@@ -114,6 +114,6 @@
   }
 
   &--neutral {
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
   }
 }

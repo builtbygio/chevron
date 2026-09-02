@@ -13,7 +13,7 @@
     padding: 0 @breadcrumb-padding;
     font-size: 1.125em;
     line-height: 3rem;
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
     list-style: none;
     border-bottom: 1px solid var(--base-border-color);
     background-color: var(--base-background-color);
@@ -36,7 +36,7 @@
 
     > .active a {
       font-weight: 600;
-      color: calc(var(--text-color) - highlight);
+      color: var(--text-color-highlight);
     }
 
   }
@@ -99,7 +99,7 @@
     &:hover,
     &:focus {
       box-shadow: none;
-      background-color: calc(var(--button-background-color) - hover);
+      background-color: var(--button-background-color-hover);
     }
   }
 
@@ -224,7 +224,7 @@
   section .section-heading,
   .section .section-heading {
     margin-bottom: calc(var(--component-padding) * 2);
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
     font-size: 1.75em;
     font-weight: bold;
     line-height: 1;
@@ -256,7 +256,7 @@
       font-size: 1.4em;
       font-weight: bold;
       line-height: 1;
-      color: calc(var(--text-color) - highlight);
+      color: var(--text-color-highlight);
       background-color: var(--base-background-color);
       -webkit-user-select: none;
 
@@ -266,11 +266,11 @@
         &::before {
           .icon(20px);
           content: @chevron-down;
-          color: calc(var(--text-color) - subtle);
+          color: var(--text-color-subtle);
         }
 
         &:hover:after {
-          color: calc(var(--text-color) - highlight);
+          color: var(--text-color-highlight);
         }
       }
     }
@@ -305,7 +305,7 @@
   }
 
   .setting-description {
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
     -webkit-user-select: none;
     cursor: default;
 
@@ -315,7 +315,7 @@
   }
 
   .link {
-    color: calc(var(--text-color) - info);
+    color: var(--text-color-info);
 
     &:hover, &:focus {
       color: ~"hsl(from var(--text-color-info) h s calc(l + 4))";
@@ -402,14 +402,14 @@
         white-space: nowrap;
 
         &:hover {
-          color: calc(var(--text-color) - highlight);
+          color: var(--text-color-highlight);
           background-color: var(--background-color-highlight);
         }
       }
     }
 
     .nav > li.active > a {
-      color: calc(var(--text-color) - selected);
+      color: var(--text-color-selected);
       background-color: var(--background-color-selected);
     }
   }
@@ -731,7 +731,7 @@
   }
 
   .keybinding-panel .is-user {
-    color: calc(var(--text-color) - selected);
+    color: var(--text-color-selected);
     background-color: var(--background-color-selected);
   }
 

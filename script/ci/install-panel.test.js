@@ -104,6 +104,65 @@ describe('owned catalog', () => {
   });
 });
 
+describe('the catalog ships as installable payloads', () => {
+  const APP = path.join(ROOT, 'out', 'app');
+  const describeApp = fs.existsSync(APP) ? describe : describe.skip;
+
+  it('the build copies them', () => {
+    const src = fs.readFileSync(
+      path.join(ROOT, 'script', 'lib', 'copy-assets.js'),
+      'utf8'
+    );
+    assert.match(src, /copyOwnedCatalog/);
+    assert.match(src, /'catalog'/);
+  });
+
+  describeApp('in the built app', () => {
+    it('every catalog entry has a payload to install from', () => {
+      const dir = path.join(APP, 'catalog');
+      assert.ok(fs.existsSync(dir), 'catalog/ must ship');
+      for (const entry of catalog) {
+        const manifest = path.join(dir, entry.name, 'package.json');
+        assert.ok(
+          fs.existsSync(manifest),
+          `${entry.name} is listed but has no payload; Install would fail`
+        );
+      }
+    });
+
+    it('payloads carry no node_modules or downloaded server', () => {
+      // Those arrive at install time. Shipping them would be the 228 MB this
+      // whole arrangement exists to avoid.
+      for (const entry of catalog) {
+        for (const heavy of ['node_modules', 'server']) {
+          assert.ok(
+            !fs.existsSync(path.join(APP, 'catalog', entry.name, heavy)),
+            `${entry.name}/${heavy} must not ship`
+          );
+        }
+      }
+    });
+
+    it('the catalog stays small', () => {
+      const size = dir => {
+        let total = 0;
+        for (const name of fs.readdirSync(dir)) {
+          const full = path.join(dir, name);
+          const stat = fs.statSync(full);
+          total += stat.isDirectory() ? size(full) : stat.size;
+        }
+        return total;
+      };
+      const bytes = size(path.join(APP, 'catalog'));
+      assert.ok(
+        bytes < 2 * 1024 * 1024,
+        `catalog payloads are ${(bytes / 1024).toFixed(0)} KB; they are meant ` +
+          'to be sources only'
+      );
+    });
+  });
+});
+
 describe('the panel is registered', () => {
   const settingsView = fs.readFileSync(
     path.join(LIB, 'settings-view.js'),
@@ -127,11 +186,24 @@ describe('the panel is registered', () => {
     }
   });
 
-  it('offers no button that cannot work yet', () => {
-    // cpm has no install command and no index is published, so an enabled
-    // Install button would fail. It says so instead.
+  it('installs through cpm rather than inventing its own path', () => {
     const src = fs.readFileSync(path.join(LIB, 'install-panel.js'), 'utf8');
-    assert.match(src, /button\.disabled = true/);
-    assert.match(src, /not published yet/i);
+    assert.match(src, /runCommand\(\['install', source\]/);
+    assert.match(src, /catalog/, 'installs from the shipped catalog payloads');
+  });
+
+  it('disables the button when there is nothing to install from', () => {
+    // A build without the catalog directory must not offer a button that
+    // fails on click.
+    const src = fs.readFileSync(path.join(LIB, 'install-panel.js'), 'utf8');
+    assert.match(src, /if \(!source\)/);
+    assert.match(src, /ships no catalog to install from/);
+  });
+
+  it('reports failure rather than leaving the button spinning', () => {
+    const src = fs.readFileSync(path.join(LIB, 'install-panel.js'), 'utf8');
+    assert.match(src, /Install failed:/);
+    assert.match(src, /addError/);
+    assert.match(src, /button\.disabled = false/);
   });
 });

@@ -93,7 +93,50 @@ module.exports = function() {
     fs.copySync(primaryIcon, path.join(appResourcesDir, 'atom.png'));
     fs.copySync(primaryIcon, path.join(appResourcesDir, 'chevron.png'));
   }
+
+  copyOwnedCatalog();
 };
+
+// The owned catalog, shipped as payloads rather than as packages.
+//
+// These are not in packageDependencies and are not loaded: nothing activates
+// them and nothing requires them. They are here so the Install panel has
+// something to install from, because there is no published registry yet and a
+// packaged app has no packages/ directory to point cpm at.
+//
+// The cost is the source only -- about 100 KB for all six. What makes a
+// language server large arrives at install time: npm dependencies, or a
+// prebuilt binary, or nothing at all when the machine already has one.
+function copyOwnedCatalog() {
+  const source = path.join(CONFIG.repositoryRootPath, 'packages');
+  const destination = path.join(CONFIG.intermediateAppPath, 'catalog');
+  let entries;
+  try {
+    entries = fs.readdirSync(source);
+  } catch (error) {
+    return;
+  }
+
+  const shipped = new Set(
+    Object.keys(CONFIG.appMetadata.packageDependencies || {})
+  );
+  let copied = 0;
+  for (const name of entries) {
+    if (!/^chevron-lsp-/.test(name)) continue;
+    // A bundled package is already in the app; offering to install it would
+    // be wrong, and the catalog test asserts none of these is bundled.
+    if (shipped.has(name)) continue;
+    if (!fs.existsSync(path.join(source, name, 'package.json'))) continue;
+    fs.copySync(path.join(source, name), path.join(destination, name), {
+      filter: src =>
+        !['node_modules', 'server', 'bin'].includes(path.basename(src))
+    });
+    copied++;
+  }
+  if (copied) {
+    console.log(`Copied ${copied} owned catalog packages to catalog/`);
+  }
+}
 
 function materializeExternalSymlinks(rootDir) {
   if (!fs.existsSync(rootDir)) {

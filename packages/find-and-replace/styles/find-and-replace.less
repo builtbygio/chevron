@@ -13,7 +13,7 @@ atom-text-editor {
 
   .current-result .region {
     border-radius: var(--component-border-radius);
-    border: 1px solid calc(var(--syntax-result-marker-color) - selected);
+    border: 1px solid var(--syntax-result-marker-color-selected);
     box-sizing: border-box;
     z-index: 0;
   }
@@ -87,9 +87,9 @@ atom-workspace.find-visible {
   .close-button {
     margin-left: var(--component-padding);
     cursor: pointer;
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
     &:hover {
-      color: calc(var(--text-color) - highlight);
+      color: var(--text-color-highlight);
     }
     .icon::before {
       margin-right: 0;
@@ -102,7 +102,7 @@ atom-workspace.find-visible {
     display: inline-block;
     .subtle-info-message {
       padding-left: 5px;
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
       .highlight {
         color: var(--text-color);
         font-weight: normal;
@@ -111,7 +111,7 @@ atom-workspace.find-visible {
   }
 
   .options-label {
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
     position: relative;
     .options {
       margin-right: .5em;
@@ -315,25 +315,25 @@ atom-workspace.find-visible {
       display: inline-block;
     }
     .match-row.selected .line-number {
-      color: calc(var(--text-color) - selected);
+      color: var(--text-color-selected);
     }
 
     .path-match-number {
       padding-left: var(--component-padding);
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
     }
 
     .preview {
       word-break: break-all;
       white-space: pre;
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
     }
 
     .match-row .preview {
-      color: calc(var(--text-color) - highlight);
+      color: var(--text-color-highlight);
     }
     .match-row.selected .preview {
-      color: calc(var(--text-color) - selected);
+      color: var(--text-color-selected);
     }
 
 
@@ -357,10 +357,10 @@ atom-workspace.find-visible {
   // Styles for regular expression highlighting
   .syntax--regexp {
     .syntax--escape {
-      color: calc(var(--text-color) - info);
+      color: var(--text-color-info);
     }
     .syntax--range, .syntax--character-class, .syntax--wildcard {
-      color: calc(var(--text-color) - success);
+      color: var(--text-color-success);
     }
     .syntax--wildcard {
       font-weight: bold;
@@ -369,12 +369,12 @@ atom-workspace.find-visible {
       color: inherit;
     }
     .syntax--keyword, .syntax--punctuation {
-      color: calc(var(--text-color) - error);
+      color: var(--text-color-error);
       font-weight: normal;
     }
 
     .syntax--replacement.syntax--variable {
-      color: calc(var(--text-color) - warning);
+      color: var(--text-color-warning);
     }
   }
 }
