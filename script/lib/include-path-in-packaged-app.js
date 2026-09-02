@@ -198,7 +198,27 @@ for (const devTool of [
   // installed and not shipped.
   'season',
   'cson-parser',
-  'coffee-script'
+  'coffee-script',
+
+  // Packages that ship, depend on something already excluded above, and are
+  // required by nothing in the shipped tree. Leaving them is incoherent: they
+  // could only ever throw MODULE_NOT_FOUND if anything did load them. All are
+  // the lint and test stack -- the es-abstract consumers arrive through
+  // eslint-plugin-import, table is the eslint formatter, espree its parser --
+  // except coffeestack, which formats CoffeeScript stack traces and lost its
+  // reason to exist when season went.
+
+  'array-includes',
+  'array.prototype.flatmap',
+  'arraybuffer.prototype.slice',
+  'coffeestack',
+  'eslint-plugin-es',
+  'espree',
+  'inquirer',
+  'object.fromentries',
+  'reflect.getprototypeof',
+  'string.prototype.trim',
+  'table'
 ]) {
   EXCLUDE_REGEXPS_SOURCES.push(
     '^' +
