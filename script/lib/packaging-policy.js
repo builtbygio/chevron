@@ -122,7 +122,12 @@ function asarUnpackGlobs() {
     path.join('**', 'node_modules', '@vscode', 'ripgrep', 'bin', '**'),
     path.join('**', 'resources', 'atom.png'),
     path.join('**', 'resources', 'chevron.png'),
-    path.join('**', 'resources', 'icons', '**')
+    path.join('**', 'resources', 'icons', '**'),
+    // cpm installs catalog packages by copying a directory, and it is a
+    // separate process: it cannot opendir inside the archive. Left packed,
+    // clicking Install fails with
+    //   ENOTDIR: not a directory, opendir '…/app.asar/catalog/chevron-lsp-c'
+    path.join('**', 'catalog', '**')
   ];
 }
 
