@@ -4,11 +4,11 @@
   "description": "View the files and folders inside archive files",
   "main": "./lib/archive-editor",
   "dependencies": {
-    "etch": "0.9.0",
+    "etch": "^0.14.1",
     "fs-plus": "^3.0.0",
     "humanize-plus": "~1.8.2",
     "ls-archive": "git+https://github.com/builtbygio/ls-archive.git#b0ff32ec3cc363b3a86a55a48ee02ec28b6a8ac5",
-    "temp": "~0.8.1"
+    "temp": "^0.9.2"
   },
   "standard": {
     "env": {
