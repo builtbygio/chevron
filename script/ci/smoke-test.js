@@ -288,18 +288,76 @@ const PROBE_EXPR = `(function() {
           // the overlay's render frame are both slower on a loaded CI runner
           // than locally, and a fixed sleep turns that into a flaky assertion.
           var tries = 0;
+          var everSeen = false;
+          var seenAtTry = null;
           (function settle() {
             var el = document.querySelector('autocomplete-suggestion-list');
+            if (el && !everSeen) {
+              everSeen = true;
+              seenAtTry = tries;
+            }
             var rect = el ? el.getBoundingClientRect() : null;
             var ready = el && rect && rect.width > 0 && rect.height > 0 &&
                         el.querySelectorAll('li').length > 0;
             if (ready || tries >= 40) {
+              var diag = {};
+              try {
+                var ap = chevron.packages.getActivePackage('autocomplete-plus');
+                var mod = ap && ap.mainModule;
+                var mgr = mod && mod.autocompleteManager;
+                diag.pkgActive = !!ap;
+                diag.hasManager = !!mgr;
+                if (mgr) {
+                  diag.shouldDisplay = mgr.shouldDisplaySuggestions;
+                  diag.hideTimeout = mgr.hideTimeout != null;
+                  diag.delayTimeout = mgr.delayTimeout != null;
+                  diag.hasPromise = mgr.currentSuggestionsPromise != null;
+                  diag.providerCount = mgr.providerManager &&
+                    mgr.providerManager.providers
+                    ? mgr.providerManager.providers.size ||
+                      mgr.providerManager.providers.length
+                    : null;
+                  var sl = mgr.suggestionList;
+                  diag.listActive = sl && sl.isActive ? sl.isActive() : null;
+                  diag.itemsLength = sl && sl.items ? sl.items.length : null;
+                  diag.activeEditorIsProbe = sl ? sl.activeEditor === acEditor : null;
+                  diag.hasOverlayDecoration = sl ? sl.overlayDecoration != null : null;
+                  var sle = sl && sl._suggestionListElement;
+                  diag.elementCreated = !!sle;
+                  var node = sle && (sle.element || sle);
+                  diag.elementIsNode = !!(node && node.nodeType);
+                  diag.elementConnected = node && node.isConnected != null
+                    ? node.isConnected
+                    : null;
+                  diag.elementParent = node && node.parentElement
+                    ? node.parentElement.className.slice(0, 40)
+                    : null;
+                  if (sl && sl.overlayDecoration && sl.overlayDecoration.getMarker) {
+                    var mk = sl.overlayDecoration.getMarker();
+                    diag.markerValid = mk && mk.isValid ? mk.isValid() : null;
+                    diag.markerDestroyed = mk && mk.isDestroyed ? mk.isDestroyed() : null;
+                  }
+                }
+                diag.editorText = acEditor.getText().slice(-20);
+                diag.cursor = JSON.stringify(acEditor.getCursorBufferPosition());
+                diag.focused = document.activeElement
+                  ? document.activeElement.tagName
+                  : null;
+                diag.anyOverlay = document.querySelectorAll('atom-overlay').length;
+              } catch (e) {
+                diag.error = String(e && e.message);
+              }
               window.__acProbe.result = {
                 popup: !!el,
                 items: el ? el.querySelectorAll('li').length : 0,
                 width: rect ? Math.round(rect.width) : 0,
                 height: rect ? Math.round(rect.height) : 0,
-                waitedMs: tries * 250
+                waitedMs: tries * 250,
+                // Distinguishes "never rendered" from "rendered then went
+                // away", which point at different faults.
+                everSeen: everSeen,
+                seenAtMs: seenAtTry == null ? null : seenAtTry * 250,
+                diag: diag
               };
               // Now the same thing inside a project folder. This is the case
               // the loose-file check above cannot see: with a project root,
@@ -322,10 +380,17 @@ const PROBE_EXPR = `(function() {
                   pPane.activateItem(pEd);
                   chevron.views.getView(pEd).focus();
                   setTimeout(function() {
+                    // Type at the end, as the loose-file probe does. Typing at
+                    // position 0 splices the prefix into the first line --
+                    // 'proj' + 'export const projectAlpha' -- which is not the
+                    // "prefix with matches" case this is meant to exercise.
+                    pEd.moveToBottom();
                     'proj'.split('').forEach(function(ch) { pEd.insertText(ch); });
                     var pTries = 0;
+                    var pEverSeen = false;
                     (function pSettle() {
                       var pEl = document.querySelector('autocomplete-suggestion-list');
+                      if (pEl) pEverSeen = true;
                       var pRect = pEl ? pEl.getBoundingClientRect() : null;
                       var pReady = pEl && pRect && pRect.width > 0 &&
                                    pEl.querySelectorAll('li').length > 0;
@@ -335,9 +400,45 @@ const PROBE_EXPR = `(function() {
                       // bare file -- one local run needed the full 10s, which
                       // would have failed on a loaded CI runner.
                       if (pReady || pTries >= 80) {
+                        var pdiag = {};
+                        try {
+                          var pap = chevron.packages.getActivePackage('autocomplete-plus');
+                          var pmgr = pap && pap.mainModule && pap.mainModule.autocompleteManager;
+                          if (pmgr) {
+                            pdiag.shouldDisplay = pmgr.shouldDisplaySuggestions;
+                            pdiag.hasPromise = pmgr.currentSuggestionsPromise != null;
+                            pdiag.hideTimeout = pmgr.hideTimeout != null;
+                            var psl = pmgr.suggestionList;
+                            pdiag.listActive = psl && psl.isActive ? psl.isActive() : null;
+                            pdiag.items = psl && psl.items ? psl.items.length : null;
+                            pdiag.activeIsProjectEditor = psl ? psl.activeEditor === pEd : null;
+                            pdiag.hasOverlay = psl ? psl.overlayDecoration != null : null;
+                            if (psl && psl.suggestionMarker) {
+                              pdiag.markerDestroyed = psl.suggestionMarker.isDestroyed
+                                ? psl.suggestionMarker.isDestroyed()
+                                : null;
+                            } else {
+                              pdiag.markerDestroyed = 'no-marker';
+                            }
+                          }
+                          pdiag.text = pEd.getText().slice(-16);
+                          pdiag.cursor = JSON.stringify(pEd.getCursorBufferPosition());
+                          pdiag.focused = document.activeElement
+                            ? document.activeElement.tagName
+                            : null;
+                          pdiag.activePaneItem = chevron.workspace.getActivePaneItem() === pEd;
+                          var lsp = chevron.lsp;
+                          pdiag.lspServerId = lsp && lsp.getServerIdForEditor
+                            ? String(lsp.getServerIdForEditor(pEd))
+                            : 'no-api';
+                        } catch (e) {
+                          pdiag.error = String(e && e.message);
+                        }
                         window.__acProbe.project = {
                           popup: !!pEl,
                           items: pEl ? pEl.querySelectorAll('li').length : 0,
+                          everSeenP: pEverSeen,
+                          diag: pdiag,
                           rootCount: chevron.project.getPaths().length,
                           waitedMs: pTries * 250
                         };

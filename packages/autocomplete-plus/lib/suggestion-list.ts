@@ -234,6 +234,16 @@ class SuggestionList {
     return (this.activeEditor != null)
   }
 
+  // Whether the decoration this list believes it has is still real.
+  hasLiveOverlay () {
+    const marker = this.suggestionMarker
+    if (marker == null) return false
+    if (typeof marker.isDestroyed === 'function' && marker.isDestroyed()) {
+      return false
+    }
+    return this.overlayDecoration != null
+  }
+
   show (editor, options) {
     if (chevron.config.get('autocomplete-plus.suggestionListFollows') === 'Cursor') {
       return this.showAtCursorPosition(editor, options)
@@ -261,12 +271,17 @@ class SuggestionList {
       }
     }
 
-    if (this.activeEditor === editor) {
+    // Reusing the overlay requires the marker to still be alive, not merely
+    // for activeEditor to match. Atom destroys a marker as a side effect of
+    // buffer changes, and when it does it drops the decoration with it -- the
+    // list leaves the DOM while activeEditor and suggestionMarker stay set.
+    // Keying only on the editor then takes this branch forever, calls
+    // setBufferRange on a dead marker, and never rebuilds the decoration, so
+    // completions stop appearing in that editor until something calls hide().
+    if (this.activeEditor === editor && this.hasLiveOverlay()) {
       if (!bufferPosition.isEqual(this.displayBufferPosition)) {
         this.displayBufferPosition = bufferPosition
-        if (this.suggestionMarker) {
-          this.suggestionMarker.setBufferRange([bufferPosition, bufferPosition])
-        }
+        this.suggestionMarker.setBufferRange([bufferPosition, bufferPosition])
       }
     } else {
       this.destroyOverlay()
@@ -286,7 +301,11 @@ class SuggestionList {
   }
 
   showAtCursorPosition (editor) {
-    if (this.activeEditor === editor || (editor == null)) { return }
+    if (editor == null) { return }
+    // Same reasoning as showAtBeginningOfPrefix: matching editors is not
+    // enough, the decoration has to still exist. This mode reuses the cursor's
+    // own marker rather than making one, so it checks the decoration.
+    if (this.activeEditor === editor && this.overlayDecoration != null) { return }
     this.destroyOverlay()
 
     let marker
@@ -303,6 +322,11 @@ class SuggestionList {
       this.overlayDecoration = editor.decorateMarker(marker, {type: 'overlay', item: this.suggestionListElement, class: 'autocomplete-plus'})
       return this.addBindings(editor)
     }
+
+    // No marker: the overlay is already destroyed, so leaving activeEditor
+    // pointing at the previous editor would strand the list in the same
+    // active-but-invisible state this method just guarded against.
+    this.activeEditor = null
   }
 
   hide () {
