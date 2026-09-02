@@ -27,7 +27,10 @@ function excludedNames() {
   );
   const block = src.match(/for \(const devTool of \[([\s\S]*?)\]\)/);
   assert.ok(block, 'the dev-tooling exclusion list must still be a literal');
-  return [...block[1].matchAll(/'([^']+)'/g)].map(m => m[1]);
+  // Strip comments first: an apostrophe in prose ("the eslint's formatter")
+  // otherwise opens a quote and the text after it reads as a package name.
+  const entries = block[1].replace(/^\s*\/\/.*$/gm, '');
+  return [...entries.matchAll(/'([^']+)'/g)].map(m => m[1]);
 }
 
 describe('no dev tooling in the installer', () => {
