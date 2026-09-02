@@ -12,19 +12,19 @@
     h3 { font-size: 1.5em;  margin-top: 1.75em; }
     h4 { font-size: 1.25em; margin-top: 1.25em; }
     h1, h2, h3, h4 {
-      color: calc(var(--text-color) - highlight);
+      color: var(--text-color-highlight);
     }
 
     a {
-      color: calc(var(--text-color) - info);
+      color: var(--text-color-info);
     }
 
     hr {
-      border-color: calc(var(--text-color) - subtle);
+      border-color: var(--text-color-subtle);
     }
 
     blockquote {
-      border-left-color: calc(var(--text-color) - subtle);
+      border-left-color: var(--text-color-subtle);
     }
 
     pre {
@@ -66,7 +66,7 @@
       padding: .3em .4em;
       font-size: .8em;
       line-height: 1;
-      color: calc(var(--text-color) - highlight);
+      color: var(--text-color-highlight);
       vertical-align: middle;
       background-color: ~"hsl(from var(--base-background-color) h s calc(l + 10))";
       border: solid 1px var(--base-border-color);

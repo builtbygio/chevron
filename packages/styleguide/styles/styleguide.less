@@ -27,7 +27,7 @@
   h1 {
     font-size: 2em;
     margin: 0 0 .5em 0;
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
   }
   p {
     font-size: 1.2em;
@@ -59,7 +59,7 @@
         padding-bottom: @styleguide-spacing;
         color: var(--text-color);
         &:hover {
-          color: calc(var(--text-color) - highlight);
+          color: var(--text-color-highlight);
           background-color: var(--background-color-highlight);
         }
         &:active {
@@ -77,14 +77,14 @@
     cursor: pointer;
     font-weight: normal;
     font-size: 1.8em;
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
   }
 
   section > h2 {
     font-size: 1.5em;
     line-height: 1.2;
     margin: 1em @styleguide-spacing 0 @styleguide-spacing;
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
   }
 
   section > p {

@@ -23,17 +23,17 @@
       position: relative;
       flex: 1 0 200px;
       padding: 10px 0 10px 40px;
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
       &:before {
         position: absolute;
         margin-left: -32px;
-        color: calc(var(--text-color) - highlight);
+        color: var(--text-color-highlight);
         text-align: center;
       }
       &:hover {
-        color: calc(var(--text-color) - highlight);
+        color: var(--text-color-highlight);
         &:before {
-          color: calc(var(--text-color) - selected);
+          color: var(--text-color-selected);
           font-size: 32px;
           width: 32px;
           height: 32px;

@@ -5,15 +5,15 @@ atom-text-editor {
     .markup {
       &.git-commit {
         &.changed {
-          color: @syntax-color-modified;
+          color: var(--syntax-color-modified);
         }
 
         &.deleted {
-          color: @syntax-color-removed;
+          color: var(--syntax-color-removed);
         }
 
         &.inserted {
-          color: @syntax-color-added;
+          color: var(--syntax-color-added);
         }
       }
     }
@@ -24,7 +24,7 @@ atom-text-editor {
 .define-selection-flash-color-if-not-defined();
 
 @keyframes flash {
-  from { background-color: @syntax-selection-flash-color; }
+  from { background-color: var(--syntax-selection-flash-color); }
   to { background-color: null; }
 }
 

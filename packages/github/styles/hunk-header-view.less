@@ -1,6 +1,6 @@
 @import "variables";
 
-@hunk-fg-color: ~"calc(var(--text-color) - subtle)";
+@hunk-fg-color: ~"var(--text-color-subtle)";
 @hunk-bg-color: ~"color-mix(in srgb, var(--syntax-text-color) 0%, var(--syntax-background-color))";
 @hunk-bg-color-hover: ~"color-mix(in srgb, var(--syntax-text-color) 4%, var(--syntax-background-color))";
 @hunk-bg-color-active: ~"color-mix(in srgb, var(--syntax-text-color) 2%, var(--syntax-background-color))";
@@ -18,7 +18,7 @@
     flex: 1;
     line-height: 2.4;
     padding: 0 var(--component-padding);
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -68,7 +68,7 @@
 
 // Selected
 .github-HunkHeaderView--isSelected {
-  color: calc(var(--text-color) - selected);
+  color: var(--text-color-selected);
   background-color: var(--background-color-selected);
   border-color: transparent;
   .github-HunkHeaderView-title {
@@ -90,7 +90,7 @@
   // four shipped themes -- the selected button is never light enough to flip
   // it -- so this is a constant, not a per-theme branch.
   color: #fff;
-    background-color: calc(var(--button-background-color) - selected);
+    background-color: var(--button-background-color-selected);
     .github-HunkHeaderView-title,
     .github-HunkHeaderView-stageButton,
     .github-HunkHeaderView-discardButton {

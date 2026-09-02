@@ -7,8 +7,8 @@
 @inset-traffic-lights-width: 78px;
 
 @title-bar-text-size: 13px;
-@title-bar-background-color: @base-background-color;
-@title-bar-border-color: @base-border-color;
+@title-bar-background-color: ~"var(--base-background-color)";
+@title-bar-border-color: ~"var(--base-border-color)";
 
 
 // Title Bar -------------------------------
@@ -35,7 +35,7 @@
   }
 
   .is-blurred & {
-    color: @text-color-subtle;
+    color: var(--text-color-subtle);
   }
 }
 

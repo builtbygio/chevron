@@ -56,7 +56,7 @@
     font-size: 1.25em;
     font-weight: 500;
     line-height: 1.3;
-    color: calc(var(--text-color) - highlight);
+    color: var(--text-color-highlight);
     &:hover,
     &:focus {
       text-decoration: none;
@@ -70,7 +70,7 @@
   }
 
   &-headerLink {
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
   }
 
   &-headerStatus {
@@ -88,7 +88,7 @@
   &-headerRefreshButton {
     display: inline-block;
     margin-right: var(--component-padding);
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
     cursor: pointer;
 
     &::before {
@@ -117,7 +117,7 @@
   // Meta ------------------------
 
   &-meta {
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
 
     &Author {
       color: inherit;
@@ -134,7 +134,7 @@
     background-color: var(--app-background-color);
 
     &Link.icon {
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
       &:before {
         vertical-align: -2px;
       }

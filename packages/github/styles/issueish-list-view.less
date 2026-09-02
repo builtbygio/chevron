@@ -20,7 +20,7 @@
 
     &--number {
       font-size: .9em;
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
     }
 
     &--status {
@@ -32,13 +32,13 @@
         width: @size;
       }
       &.icon-check {
-        color: calc(var(--text-color) - success);
+        color: var(--text-color-success);
       }
       &.icon-x {
-        color: calc(var(--text-color) - error);
+        color: var(--text-color-error);
       }
       &.icon-dash {
-        color: calc(var(--text-color) - subtle);
+        color: var(--text-color-subtle);
       }
       svg& {
         height: @size;
@@ -54,7 +54,7 @@
     }
 
     &--age {
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
       font-size: .9em;
 
       // Better balance for 3 characters (10M)
@@ -64,7 +64,7 @@
     }
 
     &--menu {
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
       line-height: 1;
     }
 
@@ -78,7 +78,7 @@
     border-top: 1px solid var(--base-border-color);
     a {
       font-style: italic;
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
     }
   }
 
@@ -87,7 +87,7 @@
     min-height: 29px; // Magic number: Prevents jumping.
     font-style: italic;
     text-align: center;
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
   }
 }
 
@@ -119,7 +119,7 @@
 .github-QueryErrorTile {
   padding: var(--component-padding);
   display: flex;
-  color: calc(var(--text-color) - error);
+  color: var(--text-color-error);
 
   &-messages {
     display: flex;

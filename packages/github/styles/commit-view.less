@@ -73,7 +73,7 @@
       fill: var(--text-color);
 
       &.focused {
-        fill: calc(var(--button-background-color) - selected);
+        fill: var(--button-background-color-selected);
       }
     }
   }
@@ -112,7 +112,7 @@
     .Select-placeholder {
       line-height: var(--component-line-height);
       padding: 0;
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
     }
 
     .Select-input {
@@ -190,10 +190,10 @@
 
       &> span:first-child {
         font-weight: 600;
-        color: calc(var(--text-color) - highlight);
+        color: var(--text-color-highlight);
       }
       &> span {
-        color: calc(var(--text-color) - subtle);
+        color: var(--text-color-subtle);
         margin-right: .75em;
       }
       &> span:last-child {
@@ -252,10 +252,10 @@
     width: 1.25em;
     text-align: right;
     margin-left: var(--component-padding);
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
 
-    &.is-warning { color: calc(var(--text-color) - warning); }
-    &.is-error   { color: calc(var(--text-color) - error); }
+    &.is-warning { color: var(--text-color-warning); }
+    &.is-error   { color: var(--text-color-error); }
   }
 
 

@@ -43,7 +43,7 @@ atom-dock {
 
 .atom-dock-mask {
   position: relative;
-  background-color: @tool-panel-background-color;
+  background-color: var(--tool-panel-background-color);
   overflow: hidden; // Mask the content.
 
   // One of these will be overridden by the component with an explicit size.
@@ -158,8 +158,8 @@ atom-dock {
   }
 
   .atom-dock-toggle-button-inner {
-    background-color: @tool-panel-background-color;
-    border: 1px solid @pane-item-border-color;
+    background-color: var(--tool-panel-background-color);
+    border: 1px solid var(--pane-item-border-color);
     transition: transform 0.2s ease-out 0s; // intro
   }
 

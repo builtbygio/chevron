@@ -90,15 +90,15 @@
     top: 0;
     bottom: 0;
     border: none;
-    color: calc(var(--text-color) - subtle);
+    color: var(--text-color-subtle);
     cursor: pointer;
 
     &:hover {
-      color: calc(var(--text-color) - highlight);
+      color: var(--text-color-highlight);
     }
 
     &:focus {
-      border: solid 1px calc(var(--button-background-color) - selected);
+      border: solid 1px var(--button-background-color-selected);
       border-radius: 4px;
     }
   }
@@ -124,7 +124,7 @@
     margin: 0;
 
     &[readOnly] {
-      color: calc(var(--text-color) - subtle);
+      color: var(--text-color-subtle);
     }
   }
 
@@ -169,11 +169,11 @@
       color: var(--text-color);
 
       &.is-focused {
-        background: calc(var(--button-background-color) - selected);
+        background: var(--button-background-color-selected);
       }
 
       &.is-disabled {
-        color: calc(var(--text-color) - subtle);
+        color: var(--text-color-subtle);
       }
     }
 
@@ -216,7 +216,7 @@
       margin: var(--component-padding) 0;
 
       &:focus {
-        border: solid 1px calc(var(--button-background-color) - selected);
+        border: solid 1px var(--button-background-color-selected);
         border-radius: 4px;
       }
     }
@@ -242,7 +242,7 @@
       margin-right: var(--component-padding);
 
       &:focus-within {
-        border: solid 1px calc(var(--button-background-color) - selected);
+        border: solid 1px var(--button-background-color-selected);
         border-radius: 4px;
       }
     }
@@ -281,7 +281,7 @@
       margin-right: var(--component-padding);
 
       &:focus-within {
-        border: solid 1px calc(var(--button-background-color) - selected);
+        border: solid 1px var(--button-background-color-selected);
         border-radius: 4px;
       }
 

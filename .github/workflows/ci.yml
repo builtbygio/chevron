@@ -504,6 +504,7 @@ jobs:
           node --test script/ci/package-main-resolution.test.js
           node --test script/ci/prebuild-archives.test.js
           node --test script/ci/find-clangd.test.js
+          node --test script/ci/theme-variable-conversion.test.js
           node --test script/ci/nested-modules-preserved.test.js
           node --test script/ci/dependencies-fingerprint.test.js
           node --test script/ci/socket-cleanup.test.js
