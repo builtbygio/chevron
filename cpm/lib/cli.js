@@ -6,6 +6,7 @@ const { doctor } = require('./commands/doctor');
 const { rebuildPackages } = require('./commands/rebuild');
 const { uninstallPackage } = require('./commands/uninstall');
 const { linkPackage, unlinkPackage } = require('./commands/link');
+const { installPackage } = require('./commands/install');
 
 async function main(argv = process.argv) {
   const program = new Command();
@@ -59,6 +60,16 @@ async function main(argv = process.argv) {
   program.command('remove <name>').action(async name => {
     process.exitCode = await uninstallPackage(name);
   });
+
+  program
+    .command('install <path>')
+    .description(
+      'install an owned package from a directory into $CHEVRON_HOME/packages'
+    )
+    .option('--force', 'replace an installed package even with an older version')
+    .action(async (p, opts) => {
+      process.exitCode = await installPackage(p, opts);
+    });
 
   program.command('link [path]').action(async p => {
     process.exitCode = await linkPackage(p);
