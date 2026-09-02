@@ -3,23 +3,13 @@
 /**
  * The trust dialog picks readable text for the background it is drawn on.
  *
- * TrustView paints its own colours after attach, choosing dark or light ink
- * from the luminance of the panel's background. Two ways that went wrong:
+ * Two ways that went wrong: a fully transparent panel computes as
+ * `rgba(0, 0, 0, 0)`, not the keyword, so it parsed as black and the dialog
+ * painted pale text on a light theme; and relative colour syntax computes to
+ * `color(srgb ...)`, which an rgb()-only parser misses.
  *
- *   - a fully transparent panel computes as `rgba(0, 0, 0, 0)`, not the
- *     keyword `transparent`, so the guard missed it and the colour parsed as
- *     black. The dialog concluded "dark background" and painted pale text --
- *     which happens to look right on a dark theme and is unreadable on a light
- *     one. atom-panel.modal is `background-color: transparent` in one-light-ui,
- *     so switching to One Light made the dialog unreadable.
- *
- *   - relative colour syntax and color-mix() compute to
- *     `color(srgb 0.1 0.2 0.3)`, which the rgb()-only parser did not match.
- *     Stylesheets converted to CSS custom properties produce these.
- *
- * The parser and the ancestor walk are re-implemented here from the module's
- * own source so the assertions run without Electron; the shapes are checked
- * against the real file so they cannot drift apart silently.
+ * The parser and ancestor walk are re-implemented here so the assertions run
+ * without Electron, and checked against the real file so they cannot drift.
  *
  * Run: node --test script/ci/trust-view-contrast.test.js
  */

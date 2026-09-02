@@ -108,16 +108,9 @@ const EXCLUDE_REGEXPS_SOURCES = [
     'spec' +
     escapeRegExp(path.sep),
 
-  // season ships a `csonc` command-line tool that the editor never invokes.
-  // It is the only thing in the package that requires yargs, and it pulls a
-  // whole yargs 3.x tree (cliui, string-width, wrap-ansi, y18n,
-  // is-fullwidth-code-point) nested beside the hoisted yargs 16 -- six of the
-  // repository's nested version conflicts, 304 KB, for a binary with no
-  // caller. season's main is lib/cson.js and nothing there reaches csonc, so
-  // dropping the CLI leaves the library intact.
-  //
-  // docs/decisions/retiring-textmate-grammars.md removes season outright; this
-  // is the part that need not wait for it.
+  // season's csonc CLI has no caller and is the only thing requiring yargs,
+  // which it nests a whole 3.x tree for. main is lib/cson.js, which the
+  // library half still needs. docs/decisions/retiring-textmate-grammars.md.
   escapeRegExp(path.join('node_modules', 'season', 'bin')),
   escapeRegExp(path.join('node_modules', 'season', 'lib', 'csonc.js')),
   escapeRegExp(path.join('node_modules', 'season', 'node_modules')),
@@ -152,21 +145,13 @@ for (let packageName in CONFIG.appMetadata.packageDependencies) {
   );
 }
 
-// Lint, test and build tooling. These are dependencies of the repository, not
-// of the editor: `standard` pulls eslint and its plugins, `inquirer` pulls
-// rxjs, and the rest are test harnesses and native-build helpers. The root
-// package.json has 152 dependencies and no devDependencies, so nothing in the
-// manifest distinguishes them -- and copy-assets copies every top-level entry.
-//
-// Named individually rather than derived. Deriving would mean trusting the
-// declared dependency graph, and packages require things they do not declare:
-// every bundled package with "no runtime dependencies" requires event-kit.
-// Each name here was checked against a require trace of a running editor --
-// 659 modules across 143 packages -- and appears in none of them.
-//
-// script/ci/no-dev-tooling-in-installer.test.js re-checks that nothing in the
-// shipped tree requires them, so adding a real dependency on one fails rather
-// than shipping broken.
+// Lint, test and build tooling: the repository's dependencies, not the
+// editor's. The root manifest has no devDependencies to distinguish them and
+// copy-assets copies every top-level entry, so they are named individually --
+// deriving the list would mean trusting declared dependencies, and packages
+// require things they do not declare. Each was checked against a require trace
+// of a running editor. script/ci/no-dev-tooling-in-installer.test.js enforces
+// that nothing shipped requires them.
 for (const devTool of [
   'acorn',
   'ajv',
@@ -184,16 +169,9 @@ for (const devTool of [
   'rxjs',
   'test-until',
 
-  // Test harnesses and the lint stack. Same standard as the names above:
-  // each was traced to its consumers, and every consumer is itself test or
-  // lint tooling. The jasmine cluster is closed --
-  // jasmine-tagged -> jasmine-focused -> jasmine-node -> jasmine-reporters,
-  // with gaze and fileset reached only from jasmine-node -- and the mocha and
-  // standard clusters likewise.
-  //
-  // chai, espree and eslint-visitor-keys are deliberately NOT here: their
-  // consumer sets include packages whose role is not unambiguous, and this
-  // list is only safe while every entry is.
+  // Test harnesses and the lint stack; every consumer of each is itself test
+  // or lint tooling. chai, espree and eslint-visitor-keys are deliberately
+  // absent -- their consumers are not unambiguously tooling.
   'deglob',
   'fileset',
   'gaze',
@@ -220,18 +198,10 @@ for (const devTool of [
   );
 }
 
-// Language servers are not part of the product installer.
-// docs/reference/lsp-server-distribution.md: "Chevron does not ship
-// language-server binaries in the product installer." These arrive anyway
-// because they are hoisted into the repository's node_modules and copy-assets
-// copies every top-level entry.
-//
-// Nothing can reach them. resolveInstalledPackageCommand searches
-// $CHEVRON_HOME/packages and <resourcePath>/packages, which() searches PATH,
-// and the last resort is `npx --yes typescript-language-server` -- which would
-// download a second copy rather than use the one being shipped. The
-// TypeScript support that does work comes from node_modules/typescript's
-// tsserver.js, resolved explicitly by resolveTsserverPath, and that stays.
+// Language servers are not shipped in the installer
+// (docs/reference/lsp-server-distribution.md); they arrive only because they
+// are hoisted. Nothing can reach them at run time. The TypeScript support that
+// does work is node_modules/typescript's tsserver.js, which stays.
 for (const serverPackage of [
   'pyright',
   'typescript-language-server',

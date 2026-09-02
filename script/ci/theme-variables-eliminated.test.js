@@ -1,39 +1,16 @@
 'use strict';
 
 /**
- * No package stylesheet needs a theme in scope any more.
+ * No package stylesheet needs a theme in scope, which is what lets every
+ * stylesheet compile once instead of per UI x syntax pair.
  *
- * This is the invariant that lets prebuild-less-cache.js and the 16x UI x
- * syntax compile matrix go away: if no stylesheet outside a theme reads an
- * overridden theme variable, every stylesheet compiles once and a theme switch
- * is a stylesheet swap rather than a recompile.
+ * Checks two things the converter cannot check itself: that no theme variable
+ * survives in the catalog (the converter skips definitions, so
+ * `@default-padding: @component-padding;` reads as clean while still pinning
+ * the compile to a theme), and that no build-time LESS function is handed a
+ * var(), which LESS cannot evaluate.
  *
- * Two things are checked, because the converter cannot check either one itself.
- *
- * 1. No theme variable is left in the catalog.
- *
- *    The converter reports how many lines *it* would rewrite. That is not the
- *    same question: it skips variable definitions by design, so a file full of
- *
- *      @default-padding: @component-padding;
- *
- *    reported as clean while still pinning the whole compile to a theme. This
- *    asks the question the matrix actually depends on.
- *
- * 2. No LESS build-time function is handed a var().
- *
- *    contrast(), darken(), lightness() and friends need a real colour at build
- *    time. A var() reference is not one -- LESS either fails outright or emits
- *    something the browser drops in silence.
- *
- *    This class survives conversion, which is why it needs its own check: the
- *    converter's guard fires on seeing an unconverted @theme-variable on the
- *    line, so once a half-converted line reads
- *
- *      contrast(var(--syntax-background-color), ~"hsl(...)", ~"hsl(...)")
- *
- *    there is no @name left to notice and the converter calls the file clean
- *    forever. One of these did reach master that way.
+ * See docs/reference/theme-custom-properties.md.
  *
  * Run: node --test script/ci/theme-variables-eliminated.test.js
  */

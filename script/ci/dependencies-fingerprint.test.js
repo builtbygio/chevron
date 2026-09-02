@@ -3,22 +3,14 @@
 /**
  * The bootstrap fingerprint notices a changed workspace manifest.
  *
- * script/bootstrap-modern skips `pnpm install` when the dependencies
- * fingerprint still matches, so that a warm CI cache is not rewritten and
- * built .node files are not wiped. That skip is only safe if the fingerprint
- * actually covers everything that can change resolution.
+ * bootstrap-modern skips pnpm install when the fingerprint matches, which is
+ * only safe if it covers everything that changes resolution. Editing a
+ * package's dependencies does not touch the lockfile until an install runs, so
+ * a lockfile-only fingerprint still matched and the install never happened.
  *
- * It did not. compute() hashed the Electron minor, the lockfile, and the host
- * Node -- but no manifest. Editing a package's dependencies does not change
- * pnpm-lock.yaml until an install runs, so the fingerprint still matched,
- * bootstrap skipped the install, and the install that would have updated the
- * lockfile never ran. Bootstrap then reported success while packages/git-diff
- * declared temp@^0.9.2 and the lockfile still recorded `specifier: ~0.8.1`.
- * It survived three bootstrap runs that way.
- *
- * The tests below drive the real module against real files, restoring them in
- * a finally block, because the failure mode here is precisely a fingerprint
- * that looks plausible and does not move.
+ * Drives the real module against real files, restoring them in a finally
+ * block, because the failure mode is a fingerprint that looks plausible and
+ * does not move.
  *
  * Run: node --test script/ci/dependencies-fingerprint.test.js
  */

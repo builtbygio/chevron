@@ -4,9 +4,8 @@
  * autocomplete.provider v4.0 adapter for LSP textDocument/completion.
  *
  * Ranking strategy (docs/reference/lsp-design.md §5.7 / §12.9):
- * - inclusionPriority 1 + excludeLowerPriority true → drops subsequence (0)
- *   but keeps snippets (1)
- * - high suggestionPriority so LSP list sorts above peers
+ * - high suggestionPriority so LSP results sort above peers; never
+ *   excludeLowerPriority (see below)
  * - filterSuggestions false; preserve server order (sortText lives server-side)
  * - isIncomplete → re-query each keystroke (autocomplete-plus still re-asks)
  * - cancel via generation counter (stale responses discarded)
@@ -136,24 +135,11 @@ function createAutocompleteProvider(client) {
       '.source.ts, .source.tsx, .source.js, .source.js.jsx, .source.jsx, .source.flow, .source.rust, .source.python',
     disableForSelector: '.comment, .string',
     inclusionPriority: 1,
-    // Deliberately NOT excludeLowerPriority.
-    //
-    // This provider used to declare `excludeLowerPriority: true`, which
-    // autocomplete-plus reads at filter time to drop every lower-priority
-    // provider -- including the built-in word provider at priority 0. That is
-    // only safe if this provider always answers, and it does not: it returns
-    // [] when no server is running, when the project is untrusted, while a
-    // server is still initialising, and whenever the server has nothing for
-    // the prefix. Each of those became "no completions at all" in
-    // .ts/.tsx/.js/.jsx/.flow/.rust/.python.
-    //
-    // Making it conditional on getServerIdForEditor was not enough: once a
-    // session exists the exclusion comes back, so an untitled file completed
-    // and the same text in a project file did not.
-    //
-    // suggestionPriority below already sorts server results above their peers,
-    // which is the actual goal. Word matches now appear underneath instead of
-    // instead-of-nothing. A slightly longer list beats an empty one.
+    // Deliberately NOT excludeLowerPriority: it drops the built-in word
+    // provider at filter time, which is only safe if this provider always
+    // answers. It returns [] with no server, an untrusted project, during
+    // initialisation, and whenever the server has nothing. suggestionPriority
+    // does the ranking instead.
     suggestionPriority: 5,
     // Server order is semantic; do not re-fuzzy locally.
     filterSuggestions: false,

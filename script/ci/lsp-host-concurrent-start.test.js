@@ -3,24 +3,11 @@
 /**
  * A second ensureHost() during boot resolves when the host boots.
  *
- * lsp-worker-manager assigns `host` synchronously after utilityProcess.fork(),
- * so any caller arriving before the host-booted message lands in the
- * "host && !hostReady" branch. That branch used to do
+ * Callers arriving before the host-booted message were parked on a callback
+ * nothing invoked, so each waited the full ten seconds and rejected. ensureHost
+ * has four call sites, so overlapping calls are the normal case.
  *
- *   const t = setTimeout(() => reject(new Error('LSP host start timeout')), 10000)
- *   host._waitReady = onReady
- *
- * and nothing ever called `_waitReady`. So every concurrent caller waited the
- * full ten seconds and then rejected, which surfaced to the user as
- *
- *   Language server failed to start: Error invoking remote method
- *   'lsp:start-server': Error: LSP host start timeout
- *
- * ensureHost has four call sites, so overlapping calls are the normal case,
- * not an edge one.
- *
- * The manager requires electron, so this exercises the same waiter-queue logic
- * against a stub rather than booting a real utilityProcess.
+ * Exercises the waiter queue against a stub, since the manager needs electron.
  *
  * Run: node --test script/ci/lsp-host-concurrent-start.test.js
  */

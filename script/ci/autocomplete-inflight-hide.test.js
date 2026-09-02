@@ -3,39 +3,11 @@
 /**
  * A cursor move during the provider round trip must not drop the popup.
  *
- * autocomplete-manager guards the final display with a single mutable flag:
- *
- *   displaySuggestions(suggestions, options) {
- *     if (this.shouldDisplaySuggestions && suggestions.length) showSuggestionList(...)
- *     else hideSuggestionList()
- *   }
- *
- * and requestHideSuggestionList() lowers that flag SYNCHRONOUSLY -- only the
- * hide itself is deferred to a timeout:
- *
- *   requestHideSuggestionList() {
- *     if (this.hideTimeout == null) this.hideTimeout = setTimeout(...)
- *     this.shouldDisplaySuggestions = false      // immediate, not deferred
- *   }
- *
- * cancelHideSuggestionListRequest() clears the timeout but does not restore
- * the flag. In the synchronous path that is harmless: bufferChanged calls
- * cancelHideSuggestionListRequest() and then requestNewSuggestions(), which
- * sets the flag back to true.
- *
- * It is not harmless across the async gap. Providers are promises, and the LSP
- * provider is an IPC round trip to a utility process. Any cursorMoved with
- * textChanged: false arriving while that is in flight lowers the flag, and
- * nothing raises it again, so when the suggestions finally resolve the request
- * is discarded -- even though the promise-identity check
- * (currentSuggestionsPromise !== suggestionsPromise) says it is still current.
- *
- * The manager therefore has two different notions of "is this request still
- * wanted": a generation check for the promise, and a global boolean for the
- * display. The first is correct; the second is what drops the popup.
- *
- * This is latency-proportional, which is why it shows up as a CI smoke flake
- * and never locally.
+ * autocomplete-manager has two notions of whether a request is still wanted: a
+ * generation check on the promise, and shouldDisplaySuggestions, a global
+ * boolean that requestHideSuggestionList lowers synchronously and nothing
+ * restores. A cursorMoved landing mid-flight discards a request the generation
+ * check still considers current. Latency-proportional, hence a CI-only flake.
  *
  * Run: node --test script/ci/autocomplete-inflight-hide.test.js
  */

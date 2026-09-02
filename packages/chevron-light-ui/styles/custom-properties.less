@@ -10,9 +10,7 @@
 
 @import "ui-variables";
 
-// Legibility band for colours drawn on overlays. 40 is the minimum lightness
-// separation from the overlay background; clamp(min, l, max) leaves a colour
-// alone when it already sits outside the band.
+// 40 is the minimum lightness separation from the overlay background.
 .chevron-overlay-contrast-band() when (lightness(@overlay-background-color) < 50) {
   --overlay-contrast-l-min: unit(lightness(@overlay-background-color) + 40);
   --overlay-contrast-l-max: 100;
@@ -22,13 +20,8 @@
   --overlay-contrast-l-max: unit(lightness(@overlay-background-color) - 40);
 }
 
-// Which way this theme moves a colour to increase contrast: +1 on a dark
-// theme (lighten), -1 on a light one (darken). LESS's contrast(bg, a, b)
-// picks a branch from bg's luminance at build time, which needs both theme
-// halves in scope; multiplying a lightness delta by this sign expresses the
-// same choice at runtime from the UI theme alone.
-//   contrast(bg, darken(c, N%), lighten(c, N%))
-//     -> hsl(from var(--c) h s calc(l + (var(--contrast-shift-sign) * N)))
+// +1 on a dark theme (lighten), -1 on a light one (darken): expresses at
+// runtime the branch LESS's contrast() picked at build time.
 .chevron-contrast-sign() when (lightness(@base-background-color) < 50) {
   --contrast-shift-sign: 1;
 }
