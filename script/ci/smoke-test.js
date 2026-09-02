@@ -379,11 +379,19 @@ const PROBE_EXPR = `(function() {
                   pPane.activate();
                   pPane.activateItem(pEd);
                   chevron.views.getView(pEd).focus();
-                  setTimeout(function() {
-                    // Type at the end, as the loose-file probe does. Typing at
-                    // position 0 splices the prefix into the first line --
-                    // 'proj' + 'export const projectAlpha' -- which is not the
-                    // "prefix with matches" case this is meant to exercise.
+                  // workspace.open() can resolve before the buffer has its
+                  // contents, and typing then lands at row 0 of an empty
+                  // editor -- the file arrives afterwards and the prefix ends
+                  // up spliced into the first line, with nothing to complete.
+                  // Passing runs showed the cursor at row 3, failing ones at
+                  // row 0, which is the whole difference between them.
+                  var waitForContent = function(attempt, then) {
+                    if (pEd.getText().indexOf('projectGamma') !== -1) return then();
+                    if (attempt >= 60) return then();
+                    setTimeout(function() { waitForContent(attempt + 1, then); }, 100);
+                  };
+                  waitForContent(0, function() {
+                    // Type at the end, as the loose-file probe does.
                     pEd.moveToBottom();
                     'proj'.split('').forEach(function(ch) { pEd.insertText(ch); });
                     var pTries = 0;
@@ -448,7 +456,7 @@ const PROBE_EXPR = `(function() {
                       pTries++;
                       setTimeout(pSettle, 250);
                     })();
-                  }, 500);
+                  });
                 })
                 .catch(function(error) {
                   window.__acProbe.project = {
