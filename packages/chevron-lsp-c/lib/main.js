@@ -19,13 +19,20 @@
  * T2 user package.
  */
 
+const { findClangd } = require('./find-clangd');
+
 const SCOPES = ['source.c', 'source.cpp', 'source.objc', 'source.objcpp'];
 
 const INSTALL_HINT = {
-  darwin: 'brew install llvm, or install Xcode command line tools',
+  darwin:
+    'xcode-select --install, or brew install llvm (Homebrew keeps llvm ' +
+    'keg-only, so clangd will not be on PATH -- this package looks in the ' +
+    'usual Homebrew and Xcode locations anyway)',
   linux:
     'apt install clangd, dnf install clang-tools-extra, or pacman -S clang',
-  win32: 'winget install LLVM.LLVM, or scoop install llvm'
+  win32:
+    'winget install LLVM.LLVM, or scoop install llvm (the installer does not ' +
+    'always add it to PATH -- this package looks in Program Files as well)'
 };
 
 let registration = null;
@@ -42,31 +49,41 @@ module.exports = {
 
   consumeLsp(lsp) {
     if (!lsp || typeof lsp.registerServer !== 'function') return;
+    // Resolve here rather than leaving it to the registry's which(): that
+    // only searches PATH, which finds clangd on most Linux installs and
+    // misses the Xcode, Homebrew and LLVM-installer locations that hold it on
+    // macOS and Windows.
+    const found = findClangd();
+    const env = global.chevron || global.atom;
+
+    if (!found) {
+      if (env && env.notifications) {
+        const hint = INSTALL_HINT[process.platform] || 'install clangd';
+        env.notifications.addInfo(
+          'chevron-lsp-c is installed, but no clangd was found.',
+          {
+            detail:
+              `${hint}\n\nNo binary is downloaded: the official clangd ` +
+              'build is 218 MB unpacked, against about 13 MB from a package ' +
+              'manager.',
+            dismissable: true
+          }
+        );
+      }
+      return;
+    }
+
     try {
       registration = lsp.registerServer({
         id: 'clangd',
         scopes: SCOPES,
-        command: 'clangd',
+        command: found.command,
         args: ['--background-index']
       });
     } catch (err) {
       if (typeof console !== 'undefined' && console.warn) {
         console.warn('[chevron-lsp-c]', err && err.message);
       }
-      return;
-    }
-
-    // Say so once, rather than leaving the user with a package that appears
-    // installed and does nothing.
-    const env = global.chevron || global.atom;
-    const resolved =
-      lsp.resolveRegistration && lsp.resolveRegistration('source.c');
-    if (!resolved && env && env.notifications) {
-      const hint = INSTALL_HINT[process.platform] || 'install clangd';
-      env.notifications.addInfo(
-        'chevron-lsp-c is installed, but clangd is not on your PATH.',
-        { detail: `${hint}\n\nNo binary is downloaded: the official clangd build is 228 MB.`, dismissable: true }
-      );
     }
   }
 };
