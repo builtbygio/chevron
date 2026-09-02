@@ -92,7 +92,18 @@ function versionedLlvmDirectories() {
   return found.sort((a, b) => b.version - a.version).map(entry => entry.dir);
 }
 
+// A clangd this package downloaded, at <package>/server/bin/clangd. Preferred
+// over PATH: if it is there, cpm put it there because the machine had none,
+// and a clangd that appeared on PATH afterwards may well be older.
+function fromPackage() {
+  const candidate = path.join(__dirname, '..', 'server', 'bin', EXE);
+  return isExecutableFile(candidate) ? candidate : null;
+}
+
 function findClangd() {
+  const downloaded = fromPackage();
+  if (downloaded) return { command: downloaded, source: 'package' };
+
   const onPath = fromPath();
   if (onPath) return { command: onPath, source: 'PATH' };
 
@@ -107,4 +118,9 @@ function findClangd() {
   return null;
 }
 
-module.exports = { findClangd, wellKnownDirectories, versionedLlvmDirectories };
+module.exports = {
+  findClangd,
+  fromPackage,
+  wellKnownDirectories,
+  versionedLlvmDirectories
+};

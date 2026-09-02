@@ -39,8 +39,8 @@ module.exports = [
     version: '0.1.0',
     title: 'C / C++ language server',
     description:
-      'C, C++ and Objective-C through a clangd already on your PATH. No ' +
-      'binary is downloaded: the official build is 228 MB.',
+      'C, C++ and Objective-C through clangd. Uses one already on your ' +
+      'machine; downloads it only if there is none.',
     scopes: ['source.c', 'source.cpp', 'source.objc', 'source.objcpp']
   },
   {

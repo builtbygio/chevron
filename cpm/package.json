@@ -1,7 +1,7 @@
 {
   "name": "@chevron/cpm",
   "version": "0.2.0",
-  "description": "Chevron Package Manager \u2014 Electron-as-Node installer for Atom-compatible packages",
+  "description": "Chevron Package Manager — Electron-as-Node installer for Atom-compatible packages",
   "main": "lib/cli.js",
   "bin": {
     "cpm": "bin/cpm"
@@ -25,6 +25,7 @@
     "fs-extra": "^11.2.0",
     "node-gyp-build": "^4.8.4",
     "pacote": "^22.0.0",
-    "semver": "^7.6.3"
+    "semver": "^7.6.3",
+    "yauzl": "^3.2.0"
   }
 }

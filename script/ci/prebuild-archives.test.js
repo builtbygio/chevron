@@ -95,6 +95,107 @@ function zipWith(memberPath) {
   return buffer;
 }
 
+describe('a server the machine already has', () => {
+  it('is used instead of downloading', async () => {
+    const dir = makeTempDir('prebuild-system-');
+    try {
+      // `node` is on PATH wherever this runs, so it stands in for clangd.
+      makePackage(dir, { systemCommand: 'node' });
+      let fetched = false;
+      const out = await ensureLanguageServerBinary(dir, {
+        fetchImpl: async () => {
+          fetched = true;
+          throw new Error('should not have been called');
+        }
+      });
+      assert.equal(out.ok, true, out.reason);
+      assert.equal(out.strategy, 'system');
+      assert.equal(fetched, false, 'a present server must not be downloaded');
+    } finally {
+      removeTempDir(dir);
+    }
+  });
+
+  it('falls through to the download when it is absent', async () => {
+    const dir = makeTempDir('prebuild-absent-');
+    try {
+      makePackage(dir, { systemCommand: 'definitely-not-a-real-command-xyz' });
+      const out = await ensureLanguageServerBinary(dir, {
+        fetchImpl: fetchReturning(Buffer.from(SCRIPT))
+      });
+      assert.equal(out.ok, true, out.reason);
+      assert.equal(out.strategy, 'download');
+    } finally {
+      removeTempDir(dir);
+    }
+  });
+});
+
+describe('tree extraction', () => {
+  it('keeps files beside the executable', async () => {
+    // clangd needs lib/clang next to bin/clangd; extracting only the binary
+    // yields something that starts and cannot find its builtin headers.
+    const dir = makeTempDir('prebuild-tree-');
+    try {
+      makePackage(dir, { command: 'server/bin/fixture-ls', extract: 'tree' });
+      const staging = makeTempDir('tree-src-');
+      const root = path.join(staging, 'fixture_1.0');
+      fs.mkdirSync(path.join(root, 'bin'), { recursive: true });
+      fs.mkdirSync(path.join(root, 'lib'), { recursive: true });
+      fs.writeFileSync(path.join(root, 'bin', 'fixture-ls'), SCRIPT, { mode: 0o755 });
+      fs.writeFileSync(path.join(root, 'lib', 'headers.h'), '#define X 1\n');
+      const archive = path.join(staging, 'out.tar');
+      tar.c({ file: archive, cwd: staging, sync: true }, ['fixture_1.0']);
+      const gz = zlib.gzipSync(fs.readFileSync(archive));
+      removeTempDir(staging);
+
+      const out = await ensureLanguageServerBinary(dir, {
+        fetchImpl: fetchReturning(gz)
+      });
+      assert.equal(out.ok, true, out.reason);
+      assert.ok(
+        fs.existsSync(path.join(dir, 'server', 'bin', 'fixture-ls')),
+        'the executable must land under the named root'
+      );
+      assert.ok(
+        fs.existsSync(path.join(dir, 'server', 'lib', 'headers.h')),
+        'its neighbours must come with it'
+      );
+      assert.ok(
+        !fs.existsSync(path.join(dir, 'server', 'fixture_1.0')),
+        'the top-level archive directory is stripped, so the command path ' +
+          'does not have to name a version'
+      );
+    } finally {
+      removeTempDir(dir);
+    }
+  });
+
+  it('unpacks outside the root it is about to replace', async () => {
+    // The scratch directory used to sit under <package>/server, which the
+    // move wipes first -- deleting the extracted files and failing with ENOENT.
+    const src = fs.readFileSync(
+      path.join(ROOT, 'cpm', 'lib', 'language-server-prebuild.js'),
+      'utf8'
+    );
+    assert.match(src, /path\.join\(packagePath, '\.cpm-unpack'\)/);
+  });
+
+  it('refuses a command with no directory to unpack into', async () => {
+    const dir = makeTempDir('prebuild-badroot-');
+    try {
+      makePackage(dir, { command: 'fixture-ls', extract: 'tree' });
+      const out = await ensureLanguageServerBinary(dir, {
+        fetchImpl: fetchReturning(tarGzWith(path.join('x-1.0', 'fixture-ls')))
+      });
+      assert.equal(out.ok, false, 'a one-level command would overwrite the package');
+      assert.match(String(out.reason), /needs command to start with a directory/);
+    } finally {
+      removeTempDir(dir);
+    }
+  });
+});
+
 describe('prebuild archive shapes', () => {
   it('writes a raw binary', async () => {
     const dir = makeTempDir('prebuild-raw-');

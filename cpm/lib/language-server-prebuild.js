@@ -33,7 +33,7 @@ const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path');
 const tar = require('tar');
-const { spawnSync } = require('child_process');
+const yauzl = require('yauzl');
 const zlib = require('zlib');
 const { pipeline } = require('stream/promises');
 const { createWriteStream, createReadStream } = require('fs');
@@ -149,6 +149,17 @@ async function ensureLanguageServerBinary(packagePath, opts = {}) {
     return { ok: true, strategy: 'present', path: existing };
   }
 
+  // Some servers are commonly installed already -- clangd arrives with Xcode,
+  // Homebrew, apt and the LLVM installer. Downloading 110 MB next to a copy
+  // the machine already has is waste, so a package may name the command to
+  // look for and the download is skipped when it is found.
+  if (ls.systemCommand) {
+    const onSystem = findSystemCommand(ls.systemCommand, opts);
+    if (onSystem) {
+      return { ok: true, strategy: 'system', path: onSystem };
+    }
+  }
+
   // npm-bin style: after arborist, node_modules/.bin may appear later;
   // without prebuilds we cannot invent a binary.
   const tmpl = pickPrebuildUrl(ls, opts.platform, opts.arch);
@@ -193,7 +204,7 @@ async function ensureLanguageServerBinary(packagePath, opts = {}) {
     }
     const buf = Buffer.from(await res.arrayBuffer());
 
-    const extracted = await unpackDownload(buf, destAbs, ls);
+    const extracted = await unpackDownload(buf, destAbs, ls, packagePath);
     if (extracted.ok === false) return extracted;
 
     // Ensure executable bit on POSIX
@@ -272,7 +283,102 @@ function findInTree(root, wanted) {
   return walk(root) || fallback;
 }
 
-async function unpackDownload(buf, destAbs, ls) {
+// yauzl rather than spawning `unzip`: Windows has no unzip, and Windows is
+// exactly where a downloaded clangd matters most -- it is the one platform
+// that ships nothing. Spawning also meant an empty PATH turned a missing tool
+// into "unzip failed: null", which says nothing useful.
+//
+// Entry names are checked against the destination before writing: a zip can
+// name ../../.. and walk out of the directory it is being expanded into.
+function extractZip(zipPath, destDir) {
+  return new Promise((resolve, reject) => {
+    yauzl.open(zipPath, { lazyEntries: true, autoClose: true }, (error, zip) => {
+      if (error) return reject(error);
+
+      zip.on('error', reject);
+      zip.on('end', resolve);
+      zip.readEntry();
+
+      zip.on('entry', entry => {
+        const target = path.resolve(destDir, entry.fileName);
+        const within =
+          target === path.resolve(destDir) ||
+          target.startsWith(path.resolve(destDir) + path.sep);
+        if (!within) {
+          return reject(new Error(`entry escapes the archive root: ${entry.fileName}`));
+        }
+
+        if (/\/$/.test(entry.fileName)) {
+          fse.ensureDir(target).then(() => zip.readEntry(), reject);
+          return;
+        }
+
+        zip.openReadStream(entry, (streamError, readStream) => {
+          if (streamError) return reject(streamError);
+          fse
+            .ensureDir(path.dirname(target))
+            .then(() => {
+              const out = createWriteStream(target);
+              readStream.pipe(out);
+              out.on('error', reject);
+              out.on('close', () => {
+                // Keep the executable bit: it lives in the high bits of the
+                // external attributes, and a clangd without it cannot run.
+                const mode = (entry.externalFileAttributes >>> 16) & 0o7777;
+                if (mode && process.platform !== 'win32') {
+                  fs.chmod(target, mode, () => zip.readEntry());
+                } else {
+                  zip.readEntry();
+                }
+              });
+            })
+            .catch(reject);
+        });
+      });
+    });
+  });
+}
+
+// PATH plus the locations a package may name, for servers that are usually
+// installed by something other than us.
+function findSystemCommand(command, opts = {}) {
+  const exe = (opts.platform || process.platform) === 'win32'
+    ? command + '.exe'
+    : command;
+  const dirs = (process.env.PATH || '').split(path.delimiter).filter(Boolean);
+  for (const dir of dirs) {
+    const candidate = path.join(dir, exe);
+    try {
+      const stat = fs.statSync(candidate);
+      if (stat.isFile()) return candidate;
+    } catch (error) {
+      /* keep looking */
+    }
+  }
+  return null;
+}
+
+// Some servers are a tree, not a file. clangd needs lib/clang beside
+// bin/clangd -- the resource headers it reads at run time -- so extracting
+// only the executable produces something that starts and then cannot find its
+// builtin includes.
+//
+// The archive's single top-level directory is stripped, so clangd_22.1.6/bin
+// becomes <root>/bin and the command path does not have to name a version.
+async function installTree(unpackDir, rootAbs) {
+  let entries = await fse.readdir(unpackDir);
+  entries = entries.filter(name => name !== '__MACOSX');
+  let source = unpackDir;
+  if (entries.length === 1) {
+    const only = path.join(unpackDir, entries[0]);
+    if ((await fse.stat(only)).isDirectory()) source = only;
+  }
+  await fse.remove(rootAbs).catch(() => {});
+  await fse.ensureDir(path.dirname(rootAbs));
+  await fse.move(source, rootAbs, { overwrite: true });
+}
+
+async function unpackDownload(buf, destAbs, ls, packagePath) {
   const isGzip = buf[0] === 0x1f && buf[1] === 0x8b;
   const isZip = buf[0] === 0x50 && buf[1] === 0x4b;
 
@@ -281,7 +387,13 @@ async function unpackDownload(buf, destAbs, ls) {
     return { ok: true };
   }
 
-  const unpackDir = destAbs + '.unpack';
+  // Outside the destination, not beside it. With extract: 'tree' the root is
+  // wiped before the move, and an unpack directory under <package>/server
+  // would be deleted along with it -- taking the extracted files with it and
+  // failing the move with ENOENT.
+  const unpackDir = packagePath
+    ? path.join(packagePath, '.cpm-unpack')
+    : destAbs + '.unpack';
   await fse.remove(unpackDir).catch(() => {});
   await fse.ensureDir(unpackDir);
 
@@ -304,16 +416,35 @@ async function unpackDownload(buf, destAbs, ls) {
     } else {
       const zipPath = path.join(unpackDir, 'download.zip');
       await fse.writeFile(zipPath, buf);
-      const result = spawnSync('unzip', ['-o', '-q', zipPath, '-d', unpackDir], {
-        encoding: 'utf8'
-      });
+      try {
+        await extractZip(zipPath, unpackDir);
+      } catch (error) {
+        return { ok: false, reason: `zip extraction failed: ${error.message}` };
+      }
       await fse.remove(zipPath).catch(() => {});
-      if (result.status !== 0) {
+    }
+
+    // extract: 'tree' keeps the whole archive, for a server that needs files
+    // beside its executable. The root is the first segment of `command`, so
+    // `server/bin/clangd` unpacks to <package>/server -- named rather than
+    // derived by walking dirname twice, which would land on the package
+    // itself for a one-level command and overwrite it.
+    if (ls && ls.extract === 'tree') {
+      const segments = String(ls.command || '').split(/[\\/]/).filter(Boolean);
+      const rootRel = segments[0];
+      // Needs a directory and a file inside it. With one segment the root
+      // would be the command itself, so the path the command names becomes a
+      // directory and nothing can run it.
+      if (segments.length < 2 || rootRel === '.' || rootRel === '..') {
         return {
           ok: false,
-          reason: `unzip failed: ${result.stderr || result.stdout || result.status}`
+          reason:
+            'extract: tree needs command to start with a directory, got ' +
+            `${ls.command}`
         };
       }
+      await installTree(unpackDir, path.join(packagePath, rootRel));
+      return { ok: true };
     }
 
     const wanted = path.basename(destAbs);

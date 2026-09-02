@@ -63,9 +63,10 @@ module.exports = {
           'chevron-lsp-c is installed, but no clangd was found.',
           {
             detail:
-              `${hint}\n\nNo binary is downloaded: the official clangd ` +
-              'build is 218 MB unpacked, against about 13 MB from a package ' +
-              'manager.',
+              `${hint}\n\ncpm downloads clangd when the machine has none, ` +
+              'so reaching this means the download did not complete. ' +
+              'Installing clangd yourself is smaller anyway: about 13 MB ' +
+              'from a package manager, against 218 MB for the official build.',
             dismissable: true
           }
         );
