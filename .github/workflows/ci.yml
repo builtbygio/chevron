@@ -498,6 +498,7 @@ jobs:
         run: |
           node --test script/ci/compiled-styles.test.js
           node --test script/ci/user-stylesheet-compiles.test.js
+          node --test script/ci/lsp-no-server-notice.test.js
           node --test script/ci/nested-modules-preserved.test.js
           node --test script/ci/dependencies-fingerprint.test.js
           node --test script/ci/socket-cleanup.test.js
