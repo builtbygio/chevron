@@ -1,3 +1,4 @@
+const InstallPanel = require("./install-panel");
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -135,7 +136,7 @@ class SettingsView {
       this.addCorePanel("System", "device-desktop", () => new SystemPanel());
     }
     this.addCorePanel("Keybindings", "keyboard", () => new import_keybindings_panel.default());
-    this.addCorePanel("Packages", "package", () => new import_installed_packages_panel.default(this, this.packageManager));
+    this.addCorePanel("Install", "cloud-download", () => new InstallPanel(this, this.packageManager)); this.addCorePanel("Packages", "package", () => new import_installed_packages_panel.default(this, this.packageManager));
     this.addCorePanel("Themes", "paintcan", () => new import_themes_panel.default(this, this.packageManager));
     this.showDeferredPanel();
     if (!this.activePanel) {

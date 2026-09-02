@@ -222,6 +222,63 @@ const PROBE_EXPR = `(function() {
       packagesActive: packagesActive
     });
   }
+  // Settings panels render nothing when a panel name is unregistered --
+  // showPanel just defers it -- so a missing panel is invisible from the
+  // command side. settings-view has shipped broken twice this way.
+  if (!window.__settingsProbe) {
+    window.__settingsProbe = { phase: 'starting', result: null };
+    setTimeout(function() {
+      if (window.__settingsProbe.phase === 'done') return;
+      window.__settingsProbe.phase = 'done';
+      if (!window.__settingsProbe.result) {
+        window.__settingsProbe.result = { error: 'settings probe never settled' };
+      }
+    }, 45000);
+    // Opening a settings tab takes focus, which makes the autocomplete probe
+    // above report no popup. Wait for it to finish before touching the
+    // workspace.
+    // Must wait for the probe to EXIST as well as finish: this block runs
+    // before __acProbe is created, so treating "not there yet" as done opened
+    // the settings tab before any typing had happened.
+    var waitForAutocomplete = function(next) {
+      if (window.__acProbe && window.__acProbe.phase === 'done') return next();
+      setTimeout(function() { waitForAutocomplete(next); }, 250);
+    };
+    waitForAutocomplete(function() {
+    chevron.workspace
+      .open('chevron://config/install')
+      .then(function(item) {
+        window.__settingsProbe.phase = 'opened';
+        var tries = 0;
+        (function settle() {
+          var root = item && item.element;
+          var menu = root ? root.querySelectorAll('.panels-menu li') : [];
+          var names = [];
+          for (var i = 0; i < menu.length; i++) {
+            if (menu[i].name) names.push(menu[i].name);
+          }
+          var heading = root ? root.querySelector('.section-heading') : null;
+          var cards = root ? root.querySelectorAll('.package-card').length : 0;
+          if ((names.length && heading) || tries >= 40) {
+            window.__settingsProbe.result = {
+              panels: names,
+              heading: heading ? heading.textContent : null,
+              cards: cards
+            };
+            window.__settingsProbe.phase = 'done';
+            return;
+          }
+          tries++;
+          setTimeout(settle, 250);
+        })();
+      })
+      .catch(function(error) {
+        window.__settingsProbe.result = { error: String(error && error.message) };
+        window.__settingsProbe.phase = 'done';
+      });
+    });
+  }
+
   const byExt = ext =>
     editors.find(e => (e.getPath() || '').endsWith(ext));
   if (!byExt('.txt') || !byExt('.ts') || !byExt('.css') || !byExt('.md')) {
@@ -404,6 +461,8 @@ const PROBE_EXPR = `(function() {
     tsGrammar: byExt('.ts').getGrammar() && byExt('.ts').getGrammar().name,
     cssGrammar: byExt('.css').getGrammar() && byExt('.css').getGrammar().name,
     mdGrammar: byExt('.md') && byExt('.md').getGrammar() && byExt('.md').getGrammar().name,
+    settings: window.__settingsProbe.result,
+    settingsPhase: window.__settingsProbe.phase,
     electron: process.versions.electron
   });
 })()`;
@@ -778,6 +837,25 @@ async function main() {
           `probe.md grammar: ${state.mdGrammar} (expected GitHub Markdown -- ` +
             'the TextMate engine failed to load a grammar)'
         );
+      }
+      const settings = state.settings;
+      if (!settings) {
+        failures.push(
+          `settings probe did not report (phase: ${state.settingsPhase})`
+        );
+      } else if (settings.error) {
+        failures.push(`settings probe error: ${settings.error}`);
+      } else {
+        if (!settings.panels || !settings.panels.includes('Install')) {
+          failures.push(
+            `settings has no Install panel (panels: ${
+              settings.panels ? settings.panels.join(', ') : 'none'
+            })`
+          );
+        }
+        if (!settings.cards) {
+          failures.push('the Install panel rendered no catalog entries');
+        }
       }
       if (state.cssGrammar !== 'CSS') {
         failures.push(
