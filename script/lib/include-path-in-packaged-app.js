@@ -108,6 +108,20 @@ const EXCLUDE_REGEXPS_SOURCES = [
     'spec' +
     escapeRegExp(path.sep),
 
+  // season ships a `csonc` command-line tool that the editor never invokes.
+  // It is the only thing in the package that requires yargs, and it pulls a
+  // whole yargs 3.x tree (cliui, string-width, wrap-ansi, y18n,
+  // is-fullwidth-code-point) nested beside the hoisted yargs 16 -- six of the
+  // repository's nested version conflicts, 304 KB, for a binary with no
+  // caller. season's main is lib/cson.js and nothing there reaches csonc, so
+  // dropping the CLI leaves the library intact.
+  //
+  // docs/decisions/retiring-textmate-grammars.md removes season outright; this
+  // is the part that need not wait for it.
+  escapeRegExp(path.join('node_modules', 'season', 'bin')),
+  escapeRegExp(path.join('node_modules', 'season', 'lib', 'csonc.js')),
+  escapeRegExp(path.join('node_modules', 'season', 'node_modules')),
+
   // babel-core spec
   'node_modules' +
     escapeRegExp(path.sep) +
@@ -168,7 +182,34 @@ for (const devTool of [
   'prebuildify',
   'regexpp',
   'rxjs',
-  'test-until'
+  'test-until',
+
+  // Test harnesses and the lint stack. Same standard as the names above:
+  // each was traced to its consumers, and every consumer is itself test or
+  // lint tooling. The jasmine cluster is closed --
+  // jasmine-tagged -> jasmine-focused -> jasmine-node -> jasmine-reporters,
+  // with gaze and fileset reached only from jasmine-node -- and the mocha and
+  // standard clusters likewise.
+  //
+  // chai, espree and eslint-visitor-keys are deliberately NOT here: their
+  // consumer sets include packages whose role is not unambiguous, and this
+  // list is only safe while every entry is.
+  'deglob',
+  'fileset',
+  'gaze',
+  'jasmine-focused',
+  'jasmine-node',
+  'jasmine-reporters',
+  'jasmine-tagged',
+  'mocha',
+  'mocha-junit-reporter',
+  'mocha-multi-reporters',
+  'sinon',
+  'standard',
+  'standard-engine',
+  'eslint-import-resolver-node',
+  'eslint-module-utils',
+  'eslint-scope'
 ]) {
   EXCLUDE_REGEXPS_SOURCES.push(
     '^' +
