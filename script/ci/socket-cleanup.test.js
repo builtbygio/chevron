@@ -18,7 +18,7 @@ const assert = require('assert');
 const fs = require('fs');
 const net = require('net');
 const { spawn } = require('child_process');
-const os = require('os');
+const { makeTempDir } = require('../lib/temp-dir');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -60,11 +60,12 @@ const sweep = async (dir, ownPath) => {
   return removed.sort();
 };
 
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'sock-test-'));
+// makeTempDir, not mkdtempSync: it registers the directory for removal on
+// exit and on a signal. script/ci/temp-dir-hygiene.test.js enforces this.
+const scratch = makeTempDir('sock-test-');
 const servers = [];
 after(() => {
   for (const server of servers) server.close();
-  fs.rmSync(scratch, { recursive: true, force: true });
 });
 
 // A stale socket is one whose owner died: close() would remove the file, which
