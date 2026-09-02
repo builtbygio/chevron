@@ -1,0 +1,39 @@
+{
+  "name": "@builtbygio/chevron-lsp-markdown",
+  "version": "0.1.0",
+  "description": "Optional prose language server (harper-ls) for Chevron via cpm (not bundled in the app)",
+  "main": "./lib/main",
+  "repository": "https://github.com/builtbygio/chevron",
+  "license": "MIT",
+  "engines": {
+    "chevron": ">=0.6.0"
+  },
+  "chevron": {
+    "languageServer": {
+      "id": "harper-ls",
+      "scopes": [
+        "source.gfm",
+        "text.plain"
+      ],
+      "command": "bin/harper-ls",
+      "args": [
+        "--stdio"
+      ],
+      "tag": "v2.9.1",
+      "prebuilds": {
+        "linux-x64": "https://github.com/Automattic/harper/releases/download/{tag}/harper-ls-x86_64-unknown-linux-gnu.tar.gz",
+        "linux-arm64": "https://github.com/Automattic/harper/releases/download/{tag}/harper-ls-aarch64-unknown-linux-gnu.tar.gz",
+        "darwin-x64": "https://github.com/Automattic/harper/releases/download/{tag}/harper-ls-x86_64-apple-darwin.tar.gz",
+        "darwin-arm64": "https://github.com/Automattic/harper/releases/download/{tag}/harper-ls-aarch64-apple-darwin.tar.gz",
+        "win32-x64": "https://github.com/Automattic/harper/releases/download/{tag}/harper-ls-x86_64-pc-windows-msvc.zip"
+      }
+    }
+  },
+  "consumedServices": {
+    "chevron.lsp": {
+      "versions": {
+        "1.0.0": "consumeLsp"
+      }
+    }
+  }
+}

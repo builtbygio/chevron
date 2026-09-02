@@ -35,6 +35,15 @@ module.exports = [
     scopes: ['source.python']
   },
   {
+    name: 'chevron-lsp-c',
+    version: '0.1.0',
+    title: 'C / C++ language server',
+    description:
+      'C, C++ and Objective-C through clangd. Uses one already on your ' +
+      'machine; downloads it only if there is none.',
+    scopes: ['source.c', 'source.cpp', 'source.objc', 'source.objcpp']
+  },
+  {
     name: 'chevron-lsp-json',
     version: '0.1.0',
     title: 'JSON language server',
@@ -42,6 +51,15 @@ module.exports = [
       'JSON support through vscode-json-languageserver: schema validation, ' +
       'completions and hovers.',
     scopes: ['source.json']
+  },
+  {
+    name: 'chevron-lsp-markdown',
+    version: '0.1.0',
+    title: 'Prose language server',
+    description:
+      'Grammar, spelling and style for Markdown and plain text, offline, ' +
+      'through harper-ls.',
+    scopes: ['source.gfm', 'text.plain']
   },
   {
     name: 'chevron-lsp-rust',

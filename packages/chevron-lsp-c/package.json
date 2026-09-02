@@ -1,0 +1,42 @@
+{
+  "name": "@builtbygio/chevron-lsp-c",
+  "version": "0.1.0",
+  "description": "C/C++/Objective-C support: uses a clangd already on the machine, and downloads one only if there is none",
+  "main": "./lib/main",
+  "repository": "https://github.com/builtbygio/chevron",
+  "license": "MIT",
+  "engines": {
+    "chevron": ">=0.6.0"
+  },
+  "chevron": {
+    "languageServer": {
+      "id": "clangd",
+      "scopes": [
+        "source.c",
+        "source.cpp",
+        "source.objc",
+        "source.objcpp"
+      ],
+      "command": "server/bin/clangd",
+      "args": [
+        "--background-index"
+      ],
+      "systemCommand": "clangd",
+      "extract": "tree",
+      "tag": "22.1.6",
+      "prebuilds": {
+        "linux-x64": "https://github.com/clangd/clangd/releases/download/{tag}/clangd-linux-{tag}.zip",
+        "darwin-x64": "https://github.com/clangd/clangd/releases/download/{tag}/clangd-mac-{tag}.zip",
+        "darwin-arm64": "https://github.com/clangd/clangd/releases/download/{tag}/clangd-mac-{tag}.zip",
+        "win32-x64": "https://github.com/clangd/clangd/releases/download/{tag}/clangd-windows-{tag}.zip"
+      }
+    }
+  },
+  "consumedServices": {
+    "chevron.lsp": {
+      "versions": {
+        "1.0.0": "consumeLsp"
+      }
+    }
+  }
+}
