@@ -44,6 +44,15 @@ module.exports = [
     scopes: ['source.json']
   },
   {
+    name: 'chevron-lsp-markdown',
+    version: '0.1.0',
+    title: 'Prose language server',
+    description:
+      'Grammar, spelling and style for Markdown and plain text, offline, ' +
+      'through harper-ls.',
+    scopes: ['source.gfm', 'text.plain']
+  },
+  {
     name: 'chevron-lsp-rust',
     version: '0.1.0',
     title: 'Rust language server',

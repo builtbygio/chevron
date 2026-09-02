@@ -502,6 +502,7 @@ jobs:
           node --test script/ci/install-panel.test.js
           node --test script/ci/autocomplete-stale-marker.test.js
           node --test script/ci/package-main-resolution.test.js
+          node --test script/ci/prebuild-archives.test.js
           node --test script/ci/nested-modules-preserved.test.js
           node --test script/ci/dependencies-fingerprint.test.js
           node --test script/ci/socket-cleanup.test.js
