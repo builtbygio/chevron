@@ -170,13 +170,13 @@ describe('the reachability check actually detects requires', () => {
 
   describeApp('against the built app', () => {
     it('finds a require that is really there', () => {
-      // first-mate genuinely requires season; the check must say so.
+      // first-mate genuinely requires oniguruma; the check must say so.
       const firstMate = path.join(APP_, 'node_modules', 'first-mate');
       if (!fs.existsSync(firstMate)) return;
       assert.ok(
-        shippedCodeRequires(firstMate, 'season'),
-        'first-mate requires season in lib/grammar-registry.js; a check that ' +
-          'misses this would let the guard pass on anything'
+        shippedCodeRequires(firstMate, 'oniguruma'),
+        'first-mate requires oniguruma; a check that misses this would let ' +
+          'the guard pass on anything'
       );
     });
 
@@ -189,17 +189,12 @@ describe('the reachability check actually detects requires', () => {
       );
     });
 
-    it('season ships its library and no requirer of yargs', () => {
-      const season = path.join(APP_, 'node_modules', 'season');
-      if (!fs.existsSync(season)) return;
+    it('season does not ship at all', () => {
+      // first-mate is patched off season and core reads JSON directly, so the
+      // whole CSON chain is excluded from the installer.
       assert.ok(
-        fs.existsSync(path.join(season, 'lib', 'cson.js')),
-        'the library half must still ship'
-      );
-      assert.ok(
-        !shippedCodeRequires(season, 'yargs'),
-        'if something in the shipped season starts requiring yargs, the ' +
-          'nested copy has to come back'
+        !fs.existsSync(path.join(APP_, 'node_modules', 'season')),
+        'season is excluded from the installer'
       );
     });
   });

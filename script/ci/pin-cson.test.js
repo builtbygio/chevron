@@ -69,13 +69,13 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     'utf8'
   );
 
-  it('documents the 13c stream and does not delete season', () => {
+  it('documents the 13c stream, which finished by dropping season', () => {
     assert.match(doc, /PR 13c/);
-    assert.match(doc, /`season` stays/i);
+    assert.match(doc, /`season` is gone/i);
     const seasonDep = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     ).dependencies.season;
-    assert.ok(seasonDep, 'season must stay until remaining pins convert');
+    assert.ok(!seasonDep, 'season is no longer a dependency');
   });
 
   it('language-source ships JSON settings and no CSON', () => {
@@ -711,23 +711,21 @@ describe('pin CSON inventory (Wave 1)', () => {
       );
     }
 
-    // season is still installed, and not by choice: first-mate's
-    // grammar-registry requires it, so the TextMate fallback keeps
-    // season -> cson-parser -> coffee-script in the tree. Removing it means
-    // forking first-mate or dropping TextMate grammars -- a separate
-    // decision, recorded here so the dependency is not mistaken for one core
-    // still wants.
+    // first-mate was the last requirer of season, which is what kept
+    // season -> cson-parser -> coffee-script in the tree. It is patched off it
+    // (patches/@builtbygio__first-mate@7.4.3.patch), so the chain is gone from
+    // the manifest and excluded from the installer.
     const seasonDep = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     ).dependencies.season;
-    assert.ok(seasonDep, 'season is still pulled in by first-mate');
-    assert.match(
+    assert.ok(!seasonDep, 'season is no longer declared');
+    assert.doesNotMatch(
       fs.readFileSync(
         path.join(ROOT, 'node_modules', 'first-mate', 'lib', 'grammar-registry.js'),
         'utf8'
-      ),
+      ).replace(/^\s*\/\/.*$/gm, ''),
       /require\('season'\)/,
-      'if first-mate stops requiring season, the whole chain can go'
+      'the first-mate patch must keep it off season'
     );
 
     const langDoc = fs.readFileSync(

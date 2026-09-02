@@ -85,7 +85,7 @@ function readUserConfig() {
     if (filePath.endsWith('.json')) {
       return JSON.parse(fs.readFileSync(filePath, 'utf8'));
     }
-    return require('season').readFileSync(filePath);
+    return require('./json-file').readFileSync(filePath);
   } catch (_) {
     /* unreadable/malformed config → treat as no user servers */
   }

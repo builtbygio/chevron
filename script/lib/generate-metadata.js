@@ -1,6 +1,6 @@
 'use strict';
 
-const CSON = require('season');
+const CSON = require('../../src/main-process/json-file');
 const deprecatedPackagesMetadata = require('../deprecated-packages');
 const fs = require('fs-plus');
 const normalizePackageData = require('normalize-package-data');

@@ -1,6 +1,6 @@
 const path = require('path');
 const asyncEach = require('async/each');
-const CSON = require('season');
+const CSON = require('./main-process/json-file');
 const fs = require('fs-plus');
 const { Emitter, CompositeDisposable } = require('event-kit');
 const dedent = require('dedent');

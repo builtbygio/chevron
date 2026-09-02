@@ -187,7 +187,18 @@ for (const devTool of [
   'standard-engine',
   'eslint-import-resolver-node',
   'eslint-module-utils',
-  'eslint-scope'
+  'eslint-scope',
+
+  // The CSON chain, now unreachable. first-mate was the last requirer of
+  // season and is patched off it (patches/@builtbygio__first-mate@7.4.3.patch);
+  // core reads JSON through src/main-process/json-file.js. pnpm still
+  // installs these because a patch cannot change dependency resolution -- the
+  // graph comes from registry metadata, not the patched package.json -- so
+  // dropping them for real needs a first-mate release. Until then they are
+  // installed and not shipped.
+  'season',
+  'cson-parser',
+  'coffee-script'
 ]) {
   EXCLUDE_REGEXPS_SOURCES.push(
     '^' +

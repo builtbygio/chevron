@@ -23,7 +23,7 @@ describe('compile-cache after Coffee/Babel stub delete', () => {
     );
   });
 
-  it('compile-cache only wraps TypeScript; CSON stays on season', () => {
+  it('compile-cache only wraps TypeScript, and knows nothing of CSON', () => {
     const src = fs.readFileSync(
       path.join(ROOT, 'src', 'compile-cache.js'),
       'utf8'
@@ -34,7 +34,7 @@ describe('compile-cache after Coffee/Babel stub delete', () => {
     assert.ok(!src.includes("require('./babel')"));
     assert.ok(!src.includes("require('./coffee-script')"));
     assert.ok(!/\.coffee['"]/.test(src));
-    assert.ok(src.includes("extension === '.cson'"));
-    assert.ok(src.includes("require('season')"));
+    assert.ok(!src.includes("'.cson'"), 'nothing in the repository is CSON');
+    assert.ok(!src.includes("require('season')"), 'season is gone');
   });
 });

@@ -8,7 +8,7 @@ StartupTime.setStartTime();
 
 const path = require('path');
 const fs = require('fs-plus');
-const CSON = require('season');
+const CSON = require('./json-file');
 const yargs = require('yargs');
 const { app } = require('electron');
 

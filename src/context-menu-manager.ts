@@ -9,7 +9,7 @@
  */
 let ContextMenuManager;
 const path = require('path');
-const CSON = require('season');
+const CSON = require('./main-process/json-file');
 const fs = require('fs-plus');
 const {calculateSpecificity, validateSelector} = require('clear-cut');
 const {Disposable} = require('event-kit');

@@ -74,7 +74,7 @@ describe('dependencies fingerprint', () => {
     const base = fingerprint.compute();
     const moved = withEdit(
       ROOT_MANIFEST,
-      src => src.replace(/"season"\s*:\s*"[^"]+"/, '"season": "npm:@builtbygio/season@6.0.1"'),
+      src => src.replace(/"etch"\s*:\s*"[^"]+"/, '"etch": "0.14.0"'),
       () => fingerprint.compute()
     );
     assert.notEqual(moved, base, 'the root manifest is a workspace manifest too');

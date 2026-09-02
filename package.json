@@ -141,7 +141,6 @@
     "resolve": "1.22.10",
     "scoped-property-store": "^0.17.0",
     "scrollbar-style": "npm:@builtbygio/scrollbar-style@4.0.1",
-    "season": "npm:@builtbygio/season@6.0.2",
     "semver": "7.8.5",
     "settings-view": "workspace:@builtbygio/settings-view@*",
     "sinon": "9.2.1",
@@ -326,7 +325,6 @@
     "first-mate": "$first-mate",
     "fs-admin": "$fs-admin",
     "scrollbar-style": "$scrollbar-style",
-    "season": "$season",
     "superstring": "$superstring",
     "text-buffer": "$text-buffer"
   },
