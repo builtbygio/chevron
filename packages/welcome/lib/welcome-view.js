@@ -125,28 +125,7 @@ class WelcomeView {
         onclick: this.didClickInstallShellCommands
       },
       "Install Shell Commands"
-    ) : null), showShellNudge ? /* @__PURE__ */ import_etch.default.dom("p", { className: "welcome-note" }, /* @__PURE__ */ import_etch.default.dom("strong", null, "Shell commands:"), " installs", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "chevron"), ", ", /* @__PURE__ */ import_etch.default.dom("code", null, "atom"), ", ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), ", and", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "apm"), " on your PATH (same as Chevron → Install Shell Commands). ", /* @__PURE__ */ import_etch.default.dom("code", null, "apm"), " is a shim to ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), ". Also available later from the application menu.") : /* @__PURE__ */ import_etch.default.dom("p", { className: "welcome-note" }, /* @__PURE__ */ import_etch.default.dom("strong", null, "Tip:"), " On macOS you can install", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "chevron"), " / ", /* @__PURE__ */ import_etch.default.dom("code", null, "atom"), " / ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), " /", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "apm"), " on PATH from the application menu. On Linux/Windows, use your package install or PATH setup from the build docs.")), /* @__PURE__ */ import_etch.default.dom("section", { className: "welcome-panel" }, /* @__PURE__ */ import_etch.default.dom("h2", { className: "welcome-title", style: { fontSize: "1.25em" } }, "What works / what is early"), /* @__PURE__ */ import_etch.default.dom("ul", null, /* @__PURE__ */ import_etch.default.dom("li", null, /* @__PURE__ */ import_etch.default.dom("strong", null, "Works today:"), " multi-platform builds, Electron 43, Chevron-only API (", /* @__PURE__ */ import_etch.default.dom("code", null, "require('chevron')"), ", ", /* @__PURE__ */ import_etch.default.dom("code", null, "engines.chevron"), "),", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), ", owned bundled packages."), /* @__PURE__ */ import_etch.default.dom("li", null, /* @__PURE__ */ import_etch.default.dom("strong", null, "1.0 unsigned preview:"), " not codesigned. Owned catalog only — no community store. Downloads:", " ", /* @__PURE__ */ import_etch.default.dom("a", { href: "https://github.com/builtbygio/chevron/releases" }, "GitHub Releases"), "."), /* @__PURE__ */ import_etch.default.dom("li", null, "Docs and issues:", " ", /* @__PURE__ */ import_etch.default.dom(
-      "a",
-      {
-        href: "https://github.com/builtbygio/chevron",
-        dataset: { event: "chevron-repo" }
-      },
-      "builtbygio/chevron"
-    ), "."))), /* @__PURE__ */ import_etch.default.dom("section", { className: "welcome-panel" }, /* @__PURE__ */ import_etch.default.dom("p", null, "For help"), /* @__PURE__ */ import_etch.default.dom("ul", null, /* @__PURE__ */ import_etch.default.dom("li", null, "The", " ", /* @__PURE__ */ import_etch.default.dom(
-      "a",
-      {
-        href: "https://github.com/builtbygio/chevron",
-        dataset: { event: "chevron-repo-help" }
-      },
-      "Chevron repository"
-    ), " ", "for docs, issues, and releases."), /* @__PURE__ */ import_etch.default.dom("li", null, "Community packages use the Atom package API (", /* @__PURE__ */ import_etch.default.dom("code", null, "global.atom"), ", ", /* @__PURE__ */ import_etch.default.dom("code", null, "engines.atom"), "). Install with ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), " (or the ", /* @__PURE__ */ import_etch.default.dom("code", null, "apm"), " shim)."), /* @__PURE__ */ import_etch.default.dom("li", null, "Historical Atom references:", " ", /* @__PURE__ */ import_etch.default.dom(
-      "a",
-      {
-        href: "https://github.com/atom/atom",
-        dataset: { event: "atom-archive" }
-      },
-      "atom/atom archive"
-    ), "."))), /* @__PURE__ */ import_etch.default.dom("section", { className: "welcome-panel" }, /* @__PURE__ */ import_etch.default.dom("label", null, /* @__PURE__ */ import_etch.default.dom(
+    ) : null), showShellNudge ? /* @__PURE__ */ import_etch.default.dom("p", { className: "welcome-note" }, /* @__PURE__ */ import_etch.default.dom("strong", null, "Shell commands:"), " installs", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "chevron"), ", ", /* @__PURE__ */ import_etch.default.dom("code", null, "atom"), ", ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), ", and", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "apm"), " on your PATH (same as Chevron → Install Shell Commands). ", /* @__PURE__ */ import_etch.default.dom("code", null, "apm"), " is a shim to ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), ". Also available later from the application menu.") : /* @__PURE__ */ import_etch.default.dom("p", { className: "welcome-note" }, /* @__PURE__ */ import_etch.default.dom("strong", null, "Tip:"), " On macOS you can install", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "chevron"), " / ", /* @__PURE__ */ import_etch.default.dom("code", null, "atom"), " / ", /* @__PURE__ */ import_etch.default.dom("code", null, "cpm"), " /", " ", /* @__PURE__ */ import_etch.default.dom("code", null, "apm"), " on PATH from the application menu. On Linux/Windows, use your package install or PATH setup from the build docs.")), /* @__PURE__ */ import_etch.default.dom("section", { className: "welcome-panel" }, /* @__PURE__ */ import_etch.default.dom("label", null, /* @__PURE__ */ import_etch.default.dom(
       "input",
       {
         className: "input-checkbox",
