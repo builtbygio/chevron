@@ -79,6 +79,52 @@ const getSocketPath = socketSecret => {
   }
 };
 
+// A socket file outlives a process that was killed or crashed, and the name is
+// derived from a per-ATOM_HOME secret, so runs with a throwaway home leave a
+// new one behind each time. Nothing ever removed those.
+//
+// Liveness is decided by connecting, not by checking for the file: only the
+// owning process can answer. A refused connection means the owner is gone.
+const sweepStaleSockets = async ownPath => {
+  if (process.platform === 'win32') return;
+
+  const dir = os.tmpdir();
+  let entries;
+  try {
+    entries = fs.readdirSync(dir);
+  } catch (error) {
+    return;
+  }
+
+  await Promise.all(
+    entries
+      .filter(entry => /^atom-[0-9a-f]{12}\.sock$/.test(entry))
+      .map(entry => path.join(dir, entry))
+      .filter(candidate => candidate !== ownPath)
+      .map(
+        candidate =>
+          new Promise(resolve => {
+            const client = net.connect({ path: candidate });
+            const done = alive => {
+              client.destroy();
+              if (!alive) {
+                try {
+                  fs.unlinkSync(candidate);
+                } catch (error) {
+                  // Raced with another instance sweeping the same file.
+                }
+              }
+              resolve();
+            };
+            client.once('connect', () => done(true));
+            client.once('error', () => done(false));
+            // Never let a wedged socket hold up startup.
+            client.setTimeout(250, () => done(true));
+          })
+      )
+  );
+};
+
 const getExistingSocketSecret = atomVersion => {
   const socketSecretPath = getSocketSecretPath(atomVersion);
 
@@ -491,6 +537,7 @@ module.exports = class AtomApplication extends EventEmitter {
     this.socketPath = getSocketPath(this.socketSecret);
 
     await this.deleteSocketFile();
+    await sweepStaleSockets(this.socketPath);
 
     const server = net.createServer(connection => {
       let data = '';
@@ -533,6 +580,24 @@ module.exports = class AtomApplication extends EventEmitter {
         // which is why this check is here.
         if (error.code !== 'ENOENT') throw error;
       }
+    }
+  }
+
+  deleteSocketFileSync() {
+    if (process.platform === 'win32' || !this.socketPath) return;
+    try {
+      fs.unlinkSync(this.socketPath);
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+  }
+
+  deleteSocketSecretFileSync() {
+    if (!this.socketSecret) return;
+    try {
+      fs.unlinkSync(getSocketSecretPath(this.version));
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
     }
   }
 
@@ -777,11 +842,10 @@ module.exports = class AtomApplication extends EventEmitter {
     this.disposable.add(
       ipcHelpers.on(app, 'will-quit', () => {
         this.killAllProcesses();
-
-        return Promise.all([
-          this.deleteSocketFile(),
-          this.deleteSocketSecretFile()
-        ]);
+        // Synchronous: Electron does not wait for a promise returned from
+        // will-quit, so an async unlink loses the race with process exit.
+        this.deleteSocketFileSync();
+        this.deleteSocketSecretFileSync();
       })
     );
 
