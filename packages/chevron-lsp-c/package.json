@@ -1,0 +1,33 @@
+{
+  "name": "@builtbygio/chevron-lsp-c",
+  "version": "0.1.0",
+  "description": "C/C++/Objective-C support through a clangd already on PATH (no binary shipped)",
+  "main": "./lib/main",
+  "repository": "https://github.com/builtbygio/chevron",
+  "license": "MIT",
+  "engines": {
+    "chevron": ">=0.6.0"
+  },
+  "chevron": {
+    "languageServer": {
+      "id": "clangd",
+      "scopes": [
+        "source.c",
+        "source.cpp",
+        "source.objc",
+        "source.objcpp"
+      ],
+      "command": "clangd",
+      "args": [
+        "--background-index"
+      ]
+    }
+  },
+  "consumedServices": {
+    "chevron.lsp": {
+      "versions": {
+        "1.0.0": "consumeLsp"
+      }
+    }
+  }
+}

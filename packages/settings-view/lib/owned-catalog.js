@@ -35,6 +35,15 @@ module.exports = [
     scopes: ['source.python']
   },
   {
+    name: 'chevron-lsp-c',
+    version: '0.1.0',
+    title: 'C / C++ language server',
+    description:
+      'C, C++ and Objective-C through a clangd already on your PATH. No ' +
+      'binary is downloaded: the official build is 228 MB.',
+    scopes: ['source.c', 'source.cpp', 'source.objc', 'source.objcpp']
+  },
+  {
     name: 'chevron-lsp-json',
     version: '0.1.0',
     title: 'JSON language server',
