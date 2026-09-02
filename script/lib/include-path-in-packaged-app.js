@@ -1,5 +1,6 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const CONFIG = require('../config');
 const { isForeignPrebuildPath } = require('./packaging-policy');
@@ -230,15 +231,64 @@ for (const devTool of [
 }
 
 // Language servers are not shipped in the installer
-// (docs/reference/lsp-server-distribution.md); they arrive only because they
-// are hoisted. Nothing can reach them at run time. The TypeScript support that
-// does work is node_modules/typescript's tsserver.js, which stays.
-for (const serverPackage of [
-  'pyright',
-  'typescript-language-server',
-  'vscode-languageserver-protocol',
-  'vscode-languageserver-types'
-]) {
+// (docs/reference/lsp-server-distribution.md); they arrive only because the
+// optional chevron-lsp-* packages are workspace members and their npm
+// dependencies hoist to the root. Nothing can reach them at run time.
+//
+// Derived rather than listed. One server drags in a closure -- adding
+// chevron-lsp-json put thirteen packages into the app, only one of them named
+// vscode-json-languageserver -- so a hand-kept list is wrong the day a server
+// is added. This walks what the chevron-lsp-* packages depend on and subtracts
+// anything the shipped app can also reach, so a package shared with the editor
+// (typescript, which ships for tsserver.js) stays.
+function languageServerOnlyPackages() {
+  const modules = path.join(CONFIG.repositoryRootPath, 'node_modules');
+  const packagesDir = path.join(CONFIG.repositoryRootPath, 'packages');
+
+  const manifestAt = dir => {
+    try {
+      return JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const walk = (names, seen) => {
+    for (const name of names) {
+      if (seen.has(name)) continue;
+      const manifest = manifestAt(path.join(modules, name));
+      if (!manifest) continue;
+      seen.add(name);
+      walk(Object.keys(manifest.dependencies || {}), seen);
+    }
+    return seen;
+  };
+
+  let serverRoots = [];
+  try {
+    for (const entry of fs.readdirSync(packagesDir)) {
+      if (!/^chevron-lsp-/.test(entry)) continue;
+      const manifest = manifestAt(path.join(packagesDir, entry));
+      if (manifest) {
+        serverRoots = serverRoots.concat(Object.keys(manifest.dependencies || {}));
+      }
+    }
+  } catch (error) {
+    return [];
+  }
+
+  const serverClosure = walk(serverRoots, new Set());
+  const shipped = walk(
+    [
+      ...Object.keys(CONFIG.appMetadata.dependencies || {}),
+      ...Object.keys(CONFIG.appMetadata.packageDependencies || {})
+    ],
+    new Set()
+  );
+  return [...serverClosure].filter(name => !shipped.has(name)).sort();
+}
+
+for (const serverPackage of languageServerOnlyPackages()) {
   EXCLUDE_REGEXPS_SOURCES.push(
     '^' +
       escapeRegExp(

@@ -35,6 +35,15 @@ module.exports = [
     scopes: ['source.python']
   },
   {
+    name: 'chevron-lsp-json',
+    version: '0.1.0',
+    title: 'JSON language server',
+    description:
+      'JSON support through vscode-json-languageserver: schema validation, ' +
+      'completions and hovers.',
+    scopes: ['source.json']
+  },
+  {
     name: 'chevron-lsp-rust',
     version: '0.1.0',
     title: 'Rust language server',
