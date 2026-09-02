@@ -10,6 +10,28 @@ const LessCompileCache = require('./less-compile-cache');
 // Extended: Handles loading and activating available themes.
 //
 // An instance of this class is always available as the `atom.themes` global.
+// less-cache compiles with `syncImport: true` because cssForFile is
+// synchronous, and on that path Less reports a Syntax error with `message`
+// undefined rather than the real one -- the same stylesheet through the
+// promise API gives `type: 'File'` and "'x' wasn't found". So the notification
+// said only "Line number: 0" and "undefined".
+//
+// Nothing recovers the original text, but the fields that survive say enough
+// to act on.
+function describeLessError(error) {
+  if (typeof error.message === 'string' && error.message.length > 0) {
+    return error.message;
+  }
+  const parts = [];
+  parts.push(`${error.type || 'Error'} error while compiling Less`);
+  if (error.filename) parts.push(`in ${error.filename}`);
+  const source = Array.isArray(error.extract)
+    ? error.extract.filter(line => line != null && String(line).trim() !== '')
+    : [];
+  if (source.length) parts.push(`\n${source.join('\n')}`);
+  return parts.join(' ');
+}
+
 module.exports = class ThemeManager {
   constructor({
     packageManager,
@@ -359,10 +381,10 @@ On linux there are currently problems with watch sizes. See
         }
 
         message = `Error compiling Less stylesheet: \`${lessStylesheetPath}\``;
-        detail = `Line number: ${error.line}\n${error.message}`;
+        detail = `Line number: ${error.line}\n${describeLessError(error)}`;
       } else {
         message = `Error loading Less stylesheet: \`${lessStylesheetPath}\``;
-        detail = error.message;
+        detail = describeLessError(error);
       }
 
       this.notificationManager.addError(message, { detail, dismissable: true });

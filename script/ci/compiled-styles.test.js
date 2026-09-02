@@ -120,8 +120,19 @@ describe('stylesheets are compiled at build time', () => {
           if (fs.existsSync(pkg) && fs.statSync(pkg).isDirectory()) walk(pkg, 0);
         }
       }
+      // static/variables is definitions, not stylesheets. It has to stay Less:
+      // theme-manager prepends `@import "variables/ui-variables"` to the user
+      // stylesheet and to package stylesheets compiled at run time, so without
+      // it those cannot compile in a packaged build.
       if (fs.existsSync(path.join(APP, 'static'))) {
-        walk(path.join(APP, 'static'), 1);
+        for (const entry of fs.readdirSync(path.join(APP, 'static'), {
+          withFileTypes: true
+        })) {
+          if (entry.name === 'variables') continue;
+          const full = path.join(APP, 'static', entry.name);
+          if (entry.isDirectory()) walk(full, 2);
+          else if (entry.name.endsWith('.less')) found.push(full);
+        }
       }
       return found.map(f => path.relative(APP, f));
     }
@@ -177,6 +188,51 @@ describe('stylesheets are compiled at build time', () => {
       assert.ok(
         /--contrast-shift-sign:\s*1\b/.test(source),
         'One Dark is a dark theme, so its contrast sign is +1'
+      );
+    });
+  });
+});
+
+/**
+ * The user stylesheet compiles in a packaged build.
+ *
+ * theme-manager prepends the two base variable imports to the user stylesheet
+ * and to any package stylesheet compiled at run time. The build used to
+ * compile static/variables/*.less to 0-byte .css files -- definitions emit no
+ * CSS -- and delete the originals with the rest, so those imports resolved to
+ * nothing and every user stylesheet failed on launch with "Line number: 0" and
+ * an undefined message.
+ *
+ * Run: node --test script/ci/compiled-styles.test.js
+ */
+describe('runtime Less compilation still has its variables', () => {
+  const APP_ = path.join(ROOT, 'out', 'app');
+  const describeApp = fs.existsSync(APP_) ? describe : describe.skip;
+
+  describeApp('in the built app', () => {
+    it('ships the base variable definitions as Less', () => {
+      const dir = path.join(APP_, 'static', 'variables');
+      for (const name of ['ui-variables.less', 'syntax-variables.less']) {
+        assert.ok(
+          fs.existsSync(path.join(dir, name)),
+          `static/variables/${name} must ship; theme-manager imports it into ` +
+            'every stylesheet compiled at run time'
+        );
+      }
+    });
+
+    it('does not ship the empty compiled forms', () => {
+      const dir = path.join(APP_, 'static', 'variables');
+      if (!fs.existsSync(dir)) return;
+      const empty = fs
+        .readdirSync(dir)
+        .filter(f => f.endsWith('.css'))
+        .filter(f => fs.statSync(path.join(dir, f)).size === 0);
+      assert.deepEqual(
+        empty,
+        [],
+        'compiling a definitions file emits nothing; these are artefacts:\n  ' +
+          empty.join('\n  ')
       );
     });
   });

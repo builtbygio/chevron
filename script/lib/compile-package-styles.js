@@ -132,9 +132,25 @@ module.exports = function() {
     results.push({ lessFilePath, css });
   };
 
+  // static/variables holds definitions, not stylesheets: compiling
+  // ui-variables.less on its own emits nothing, so all four produced 0-byte
+  // .css files and the .less originals were deleted with the rest.
+  //
+  // They have to survive. theme-manager prepends
+  //   @import "variables/ui-variables";
+  //   @import "variables/syntax-variables";
+  // to the user stylesheet and to any package stylesheet compiled at run time,
+  // so with the .less gone every one of those failed to compile in a packaged
+  // build -- the user stylesheet on every launch.
+  const isVariableDefinition = file =>
+    normalize(path.resolve(file)).includes(
+      normalize(path.join(appPath, 'static', 'variables')) + path.sep
+    );
+
   for (const lessFilePath of glob
     .sync(pattern(path.join(appPath, 'static', '**', '*.less')))
-    .map(file => path.resolve(file))) {
+    .map(file => path.resolve(file))
+    .filter(file => !isVariableDefinition(file))) {
     compileTo(lessFilePath, staticPaths, false);
   }
 
