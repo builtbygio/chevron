@@ -62,11 +62,10 @@ describe('settings-view is openable', () => {
     );
   });
 
-  // Kept deliberately ahead of their panels: the Installer is the entry point
-  // for the owned-package registry (docs/decisions/build-architecture.md), and
-  // Updates goes with it. Opening either currently falls through to the Core
-  // panel rather than erroring. Anything else in this position is a typo.
-  const PLANNED_PANELS = new Set(['install', 'updates']);
+  // Updates is still ahead of its panel: it goes with the Installer, and
+  // opening it renders nothing rather than erroring. Anything else in this
+  // position is a typo. Install now has a real panel and has left this set.
+  const PLANNED_PANELS = new Set(['updates']);
 
   it('every settings-view command opens a panel that exists or is planned', () => {
     const src = fs.readFileSync(MAIN, 'utf8');
