@@ -158,10 +158,9 @@ async function ensureServerForEditor(editor) {
         scope,
         projectRoot,
         message:
-          `No language server for ${scope}. Install chevron-lsp-typescript, ` +
-          `chevron-lsp-rust, or chevron-lsp-python with cpm ` +
-          `(see docs/reference/lsp-server-distribution.md), or put the server on PATH. ` +
-          `Then run "Chevron Lsp: Trust Project".`
+          `No language server for ${scope}. Use "Install packages" to ` +
+          `install the appropriate package. Then run ` +
+          `"Chevron Lsp: Trust Project".`
       };
       emitter.emit('did-no-server', lastNotice);
     }

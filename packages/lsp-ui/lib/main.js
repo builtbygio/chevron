@@ -194,7 +194,21 @@ module.exports = {
       if (!e || !e.notifications) return;
       e.notifications.addInfo(
         (notice && notice.message) || 'No language server for this file.',
-        { dismissable: true }
+        {
+          dismissable: true,
+          buttons: [
+            {
+              text: 'Install packages',
+              onDidClick: () => {
+                const target = e.views.getView(e.workspace);
+                e.commands.dispatch(
+                  target,
+                  'settings-view:install-packages-and-themes'
+                );
+              }
+            }
+          ]
+        }
       );
     };
 
