@@ -974,8 +974,19 @@ module.exports = class Package {
       const mainModulePath = this.metadata.main
         ? path.join(this.path, this.metadata.main)
         : path.join(this.path, 'index');
+      // .js and .json first, and independent of CompileCache: that list is
+      // the extensions needing a compiler, which is not the same question as
+      // which extensions can be loaded. It held '.js' while babel was a
+      // compiler; once the only compilers were TypeScript it became
+      // ['.ts', '.tsx'], and `main: "./lib/main"` stopped resolving to
+      // lib/main.js. Bundled packages were unaffected because they take the
+      // packagesCache branch above, so this only broke installed packages --
+      // every one of them, silently, with mainModulePath undefined and no
+      // error raised.
       this.mainModulePath = fs.resolveExtension(mainModulePath, [
         '',
+        '.js',
+        '.json',
         ...CompileCache.supportedExtensions
       ]);
     }
