@@ -70,6 +70,8 @@ A package is **both** when it ships at least one `type: tree-sitter` grammar *an
 
 Named owner for every row: **`builtbygio`**. “keep TextMate” is a valid owner decision. These packages **are** why first-mate stays.
 
+What it would cost to shrink this list, priced per PR: [textmate-retirement-plan.md](../process/textmate-retirement-plan.md).
+
 ### Port — first tranche (PR 13b, one PR each)
 
 **Done:** yaml, xml, php, toml, sql. SQL uses `@derekstride/tree-sitter-sql@0.3.11` (no official `tree-sitter/tree-sitter-sql`; this is the maintained grammar). That package ships `src/parser.c` and builds an N-API addon via `node-gyp-build` — no npm prebuilds. **13c:** sql, toml, yaml, php, and xml TM grammars + settings JSON (php and xml also snippets).
