@@ -406,7 +406,13 @@ module.exports = class AtomWindow extends EventEmitter {
       if (result.response === 0) this.browserWindow.destroy();
     });
 
-    this.browserWindow.webContents.on('render-process-gone', async () => {
+    this.browserWindow.webContents.on('render-process-gone', async details => {
+      // Electron's own warning names neither the reason nor the exit code, and
+      // on macOS nothing else is written down at all (chevron#310).
+      console.error(
+        `Renderer process gone: reason=${details && details.reason} ` +
+          `exitCode=${details && details.exitCode}`
+      );
       if (this.headless) {
         console.log('Renderer process crashed, exiting');
         this.atomApplication.exit(100);
