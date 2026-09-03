@@ -9,7 +9,9 @@
     "pch",
     "x",
     "xm",
-    "xmi"
+    "xmi",
+    "mm",
+    "M"
   ],
   "contentRegex": "(@interface|@implementation|@protocol|#import\\s+<)",
   "injectionRegExp": "^(objc|objective-c|obj-c)$",
