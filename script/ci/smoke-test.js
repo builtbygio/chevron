@@ -208,6 +208,18 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Evaluated inside the app (isolated world). Returns JSON with status:
 //   pending | no-atom | no-workspace | waiting-editors | ready
+// After a reload: is there a working workspace again? Deliberately does not
+// re-run the autocomplete probe -- this asks whether the window survived.
+const RELOAD_EXPR = `(function() {
+  if (typeof chevron === 'undefined') return JSON.stringify({status:'no-chevron'});
+  if (!chevron.workspace) return JSON.stringify({status:'no-workspace'});
+  const active = chevron.packages.getActivePackages().length;
+  return JSON.stringify({
+    status: active >= ${MIN_ACTIVE_PACKAGES} ? 'ready' : 'waiting-editors',
+    packagesActive: active
+  });
+})()`;
+
 const PROBE_EXPR = `(function() {
   if (typeof chevron === 'undefined') return JSON.stringify({status:'no-chevron'});
   if (!chevron.workspace) return JSON.stringify({status:'no-workspace'});
@@ -727,6 +739,64 @@ async function probeWindow(probePaths, expression = PROBE_EXPR) {
   }
 }
 
+// macOS crashes on reload for a second reason, not the nsfw stop callback that
+// Linux hit: chevron#310. Reported loudly rather than failing, so the Linux and
+// Windows gate stays real until someone on a Mac can read a crash report.
+function reportKnownReloadCrash(reload) {
+  console.error(`smoke-test: KNOWN FAILURE (chevron#310) — ${reload.reason}`);
+}
+
+// macOS logs a renderer abort to ~/Library/Logs/DiagnosticReports, not stderr.
+// Without this a Mac failure reads only "Renderer process crashed", which names
+// neither the signal nor the frame that raised it.
+async function printLatestMacCrashReport(since) {
+  if (process.platform !== 'darwin') return;
+  const dir = path.join(os.homedir(), 'Library', 'Logs', 'DiagnosticReports');
+  const newest = () => {
+    let best = null;
+    let entries = [];
+    try {
+      entries = fs.readdirSync(dir);
+    } catch (error) {
+      return null;
+    }
+    for (const name of entries) {
+      if (!/\.(ips|crash)$/.test(name)) continue;
+      if (!/chevron|Chevron|Electron/i.test(name)) continue;
+      const file = path.join(dir, name);
+      let stats;
+      try {
+        stats = fs.statSync(file);
+      } catch (error) {
+        continue;
+      }
+      if (stats.mtimeMs < since) continue;
+      if (!best || stats.mtimeMs > best.mtimeMs) {
+        best = { file, mtimeMs: stats.mtimeMs };
+      }
+    }
+    return best;
+  };
+  // The report is written after the process dies, so it is not there yet.
+  let report = null;
+  for (let attempt = 0; attempt < 20 && !report; attempt++) {
+    report = newest();
+    if (!report) await delay(1000);
+  }
+  if (!report) {
+    console.error(`smoke-test: no crash report under ${dir}`);
+    return;
+  }
+  console.error(`smoke-test: crash report ${report.file}`);
+  try {
+    const text = fs.readFileSync(report.file, 'utf8');
+    // Enough for the exception, the signal, and the crashing thread.
+    console.error(text.split('\n').slice(0, 120).join('\n'));
+  } catch (error) {
+    console.error(`smoke-test: could not read it: ${error.message}`);
+  }
+}
+
 function linuxNeedsNoSandbox(binaryPath) {
   if (process.platform !== 'linux') return false;
   // Chromium aborts if chrome-sandbox exists but is not root-owned mode 4755
@@ -865,6 +935,64 @@ async function main() {
     });
   }
   process.once('exit', shutdown);
+
+  // Reloading the window tears down the renderer's Node environment while
+  // native workers may still hold a callback. nsfw's StopWorker did exactly
+  // that -- `node::InternalMakeCallback ... Assertion failed: (env) != nullptr`
+  // aborted the renderer on every reload, and nothing here reloaded, so a
+  // crash on one of the most common commands in the editor stayed invisible.
+  const assertReloadSurvives = async () => {
+    const before = appOutput.length;
+    const reloadStartedAt = Date.now();
+    console.log('smoke-test: reloading the window');
+    await probeWindow(
+      [],
+      `(function(){ chevron.reload(); return JSON.stringify({status:'ready'}); })()`
+    );
+    await delay(4000);
+    const deadline = Date.now() + 90 * 1000;
+    let state = null;
+    while (Date.now() < deadline) {
+      if (appExited) {
+        return { ok: false, reason: 'the app exited during a window reload' };
+      }
+      try {
+        state = await probeWindow([], RELOAD_EXPR);
+      } catch (error) {
+        state = { status: 'pending', reason: String(error.message || error) };
+      }
+      if (state && state.status === 'ready') break;
+      await delay(2000);
+    }
+    const since = appOutput.slice(before);
+    if (/Assertion failed/.test(since) || /process crashed/i.test(since)) {
+      const line = (since
+        .split('\n')
+        .find(l => /Assertion failed|process crashed/i.test(l)) || '').trim();
+      // The line alone does not say which native called back after teardown,
+      // and this is the only place that output exists on a CI runner.
+      console.error('smoke-test: app output during the reload:');
+      console.error(since.slice(-6000));
+      // macOS writes the renderer's abort to a crash report rather than to
+      // stderr, so the message above is all a Mac runner would otherwise say.
+      await printLatestMacCrashReport(reloadStartedAt);
+      return {
+        ok: false,
+        known: process.platform === 'darwin',
+        reason: `the renderer crashed on reload: ${line}`
+      };
+    }
+    if (!state || state.status !== 'ready') {
+      return {
+        ok: false,
+        reason: `no workspace after reload: ${JSON.stringify(state)}`
+      };
+    }
+    console.log(
+      `smoke-test: reload survived (${state.packagesActive} packages active)`
+    );
+    return { ok: true };
+  };
 
   try {
     const deadline = Date.now() + STARTUP_TIMEOUT_MS;
@@ -1022,6 +1150,9 @@ async function main() {
           `autocomplete in project showed ${acp.items} items (expected 2+)`
         );
       }
+      const reload = await assertReloadSurvives();
+      if (!reload.ok && reload.known) reportKnownReloadCrash(reload);
+      else if (!reload.ok) failures.push(reload.reason);
       if (failures.length > 0) {
         console.error('smoke-test: FAILED');
         for (const failure of failures) console.error(`  - ${failure}`);
@@ -1056,6 +1187,14 @@ async function main() {
             'smoke-test: FAILED error notifications during boot:',
             bestBoot.notifications.join('; ')
           );
+          process.exit(1);
+        }
+        const reload = await assertReloadSurvives();
+        if (!reload.ok && reload.known) {
+          reportKnownReloadCrash(reload);
+        } else if (!reload.ok) {
+          console.error('smoke-test: FAILED');
+          console.error(`  - ${reload.reason}`);
           process.exit(1);
         }
         console.log(

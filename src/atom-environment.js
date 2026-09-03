@@ -50,6 +50,7 @@ const {
   resolveUserDataFile,
   strandedCsonFiles
 } = require('./user-config-path');
+const { stopAllWatchers } = require('./path-watcher');
 
 const stat = util.promisify(fs.stat);
 
@@ -1138,8 +1139,27 @@ class AtomEnvironment {
     if (closing) {
       this.unloading = true;
       await this.packages.deactivatePackages();
+      await this.stopFileSystemWatchers();
     }
     return closing;
+  }
+
+  // nsfw stops a watcher on a worker thread and then calls back into JS. If
+  // the window has already unloaded by then there is no Node environment left
+  // to call into, and the renderer aborts:
+  //
+  //   node::InternalMakeCallback ... Assertion failed: (env) != nullptr
+  //
+  // Project#destroy disposes its watchers from inside `beforeunload`, which
+  // cannot await anything, so every window reload raced that callback and lost.
+  // Stopping here -- still async, still a live window -- lets the callback
+  // land while there is something to land in.
+  async stopFileSystemWatchers() {
+    try {
+      await stopAllWatchers();
+    } catch (error) {
+      console.warn('Stopping filesystem watchers failed', error);
+    }
   }
 
   unloadEditorWindow() {
