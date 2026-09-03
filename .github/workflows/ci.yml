@@ -219,6 +219,7 @@ jobs:
           node --test script/ci/autocomplete-inflight-hide.test.js
           node --test script/ci/trust-view-contrast.test.js
           node --test script/ci/language-stack.test.js
+          node --test script/ci/grammar-inventory.test.js
           node --test script/ci/no-atom-global.test.js
           node --test script/ci/spec-harness-globals.test.js
           node --test script/ci/no-apm.test.js
