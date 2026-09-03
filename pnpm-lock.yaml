@@ -306,9 +306,6 @@ importers:
       language-html:
         specifier: workspace:@builtbygio/language-html@*
         version: link:packages/language-html
-      language-hyperlink:
-        specifier: workspace:@builtbygio/language-hyperlink@*
-        version: link:packages/language-hyperlink
       language-java:
         specifier: workspace:@builtbygio/language-java@*
         version: link:packages/language-java
@@ -366,9 +363,6 @@ importers:
       language-text:
         specifier: workspace:@builtbygio/language-text@*
         version: link:packages/language-text
-      language-todo:
-        specifier: workspace:@builtbygio/language-todo@*
-        version: link:packages/language-todo
       language-toml:
         specifier: workspace:@builtbygio/language-toml@*
         version: link:packages/language-toml
@@ -982,8 +976,6 @@ importers:
         specifier: 0.23.2
         version: 0.23.2(tree-sitter@0.25.1)
 
-  packages/language-hyperlink: {}
-
   packages/language-java:
     dependencies:
       tree-sitter-java:
@@ -1090,8 +1082,6 @@ importers:
         version: 0.3.11(tree-sitter@0.25.1)
 
   packages/language-text: {}
-
-  packages/language-todo: {}
 
   packages/language-toml:
     dependencies:

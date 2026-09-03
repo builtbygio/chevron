@@ -35,8 +35,6 @@ const KEEP_TEXTMATE = [
   'language-mustache',
   'language-make',
   'language-property-list',
-  'language-hyperlink',
-  'language-todo',
   'language-text',
   'language-source'
 ];
@@ -52,12 +50,28 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.deepStrictEqual(missing, [], 'language-stack.md missing pins');
   });
 
+  // Dropped packages the doc is expected to still name, because saying what
+  // was removed and what it cost is the point of the note.
+  const REMOVED = ['language-hyperlink', 'language-todo'];
+
   it('does not invent language-* pins that are not in packageDependencies', () => {
     const named = [...doc.matchAll(/`language-[a-z0-9-]+`/g)].map(m =>
       m[0].slice(1, -1)
     );
-    const unknown = [...new Set(named)].filter(name => !pins.includes(name));
+    const unknown = [...new Set(named)].filter(
+      name => !pins.includes(name) && !REMOVED.includes(name)
+    );
     assert.deepStrictEqual(unknown, [], 'doc names packages that are not pins');
+  });
+
+  it('the removed packages are gone from the catalog, not just the doc', () => {
+    for (const name of REMOVED) {
+      assert.ok(!pins.includes(name), `${name} is still a pin`);
+      assert.ok(
+        !fs.existsSync(path.join(ROOT, 'packages', name)),
+        `packages/${name} still exists`
+      );
+    }
   });
 
   it('first-tranche port list and keep-TextMate list are in the doc', () => {
@@ -71,10 +85,13 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /keep TextMate/);
   });
 
-  it('is an exception list, not a first-mate delete plan', () => {
-    assert.match(doc, /not a promise that first-mate dies/i);
-    assert.match(doc, /optional H3/);
-    assert.ok(!/delete first-mate in this PR/i.test(doc));
+  it('is the remaining work before first-mate is deleted', () => {
+    // The 2026-08-17 decision made this a standing exception list; the
+    // 2026-09-03 one made it a work list. Both are in the doc, the older one
+    // struck through, because the wrapping and lazy-load exist because of it.
+    assert.match(doc, /Owner decision 2026-09-03: first-mate goes/);
+    assert.match(doc, /gated on this list being empty/);
+    assert.match(doc, /textmate-retirement-plan\.md/);
   });
 
   it('grammar-registry points at the catalog and exposes getParserKindCounts', () => {
@@ -83,8 +100,9 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(registry, /first-mate is not deleted by H2/);
   });
 
-  it('counts 34 bundled language packages', () => {
-    assert.strictEqual(pins.length, 34);
+  it('counts 32 bundled language packages', () => {
+    // 34 before language-hyperlink and language-todo were dropped (PR E).
+    assert.strictEqual(pins.length, 32);
   });
 
   it('language-yaml is catalogued as both after the 13b port', () => {
@@ -143,20 +161,12 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /PR 13c/);
   });
 
-  it('language-hyperlink 13c ships JSON grammar', () => {
-    assert.match(doc, /`language-hyperlink` \| TextMate/);
-    assert.match(doc, /`text.hyperlink` \| JSON/);
-  });
 
   it('language-text 13c ships JSON grammar', () => {
     assert.match(doc, /`language-text` \| TextMate/);
     assert.match(doc, /`text.plain` \| JSON/);
   });
 
-  it('language-todo 13c ships JSON grammar', () => {
-    assert.match(doc, /`language-todo` \| TextMate/);
-    assert.match(doc, /`text.todo` \| JSON/);
-  });
 
   it('language-gfm is ported, with its TextMate grammar kept as an include', () => {
     // Ported in the retirement plan's PR C: block grammar + an inline
