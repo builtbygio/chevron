@@ -179,14 +179,21 @@ platforms first — their published peer range is `^0.22.1`, and a parser that
 needs a source build changes the bootstrap story. Spike that in the same PR
 and abandon the row if it does not hold.
 
-### PR E — drop hyperlink and todo · small · **D4 answered: drop**
+### PR E — drop hyperlink and todo · **done**
 
 These two cannot be ported: they are regex patterns injected into *other*
 grammars' scopes (`injectionSelector: "comment, text.plain"`), which
 tree-sitter has no equivalent for. Rebuilding them as decoration providers was
-the alternative; the owner call is to drop them. Both packages go, with the
-loss stated plainly: URLs in comments stop being scoped as links, and `TODO:`
-stops being highlighted.
+the alternative; the owner call was to drop them. Both packages are gone —
+the catalog is 34 language packages, now 32.
+
+What that costs, stated plainly: a URL in a code comment is no longer scoped
+`markup.underline.link`, so the `link` package's **Open Link** does not fire
+there, and `TODO:` / `FIXME:` are no longer highlighted anywhere. **Markdown
+links are unaffected** — the tree-sitter grammar from PR C scopes them itself,
+verified in the built app.
+
+With these gone, the "cannot be ported" set in the inventory gate is empty.
 
 ### PR F — the long tail: convert or drop · owner call, then one PR
 

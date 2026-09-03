@@ -1,10 +1,10 @@
 # Language stack — tree-sitter coverage and TextMate exception list
 
-**Status:** H2 PR 13 catalog + PR 13b stream. First tranche done; later tranche done (less, scss, perl, clojure, csharp). PR 13c: `language-source`, `language-hyperlink`, `language-text`, `language-todo`, `language-gfm`, `language-less`, `language-make`, `language-mustache`, `language-sql`, `language-toml`, `language-yaml`, `language-clojure`, `language-coffee-script`, `language-perl`, `language-php`, `language-property-list`, `language-xml`, `language-csharp`, `language-git`, `language-objective-c`, `language-sass`, `language-ruby-on-rails`. This is the exception list, not a promise that first-mate dies.  
+**Status:** H2 PR 13 catalog + PR 13b stream. First tranche done; later tranche done (less, scss, perl, clojure, csharp). PR 13c: `language-source`, `language-text`, `language-gfm`, `language-less`, `language-make`, `language-mustache`, `language-sql`, `language-toml`, `language-yaml`, `language-clojure`, `language-coffee-script`, `language-perl`, `language-php`, `language-property-list`, `language-xml`, `language-csharp`, `language-git`, `language-objective-c`, `language-sass`, `language-ruby-on-rails`. This is the exception list. Since the 2026-09-03 owner decision it is also the remaining work before first-mate is deleted — see the note in §3.  
 **Owner:** `builtbygio`  
 **Code:** `src/grammar-registry.js` (`getParserKindCounts()`). Runtime: official `tree-sitter@0.25.1` + first-mate / oniguruma.
 
-Tree-sitter is the highlighter whenever the catalog language ships a `type: tree-sitter` grammar — there is no setting to prefer TextMate (`core.useTreeSitterParsers` was removed). The TextMate grammar for such a scope stays registered because 26 of the grammars in §3 `include` one. TextMate is the **supported fallback** for every row in §3. Deleting first-mate is optional H3 PR 22 and is gated on this list being empty.
+Tree-sitter is the highlighter whenever the catalog language ships a `type: tree-sitter` grammar — there is no setting to prefer TextMate (`core.useTreeSitterParsers` was removed). The TextMate grammar for such a scope stays registered because 26 of the grammars in §3 `include` one. TextMate is the **supported fallback** for every row in §3. Deleting first-mate is H3 PR 22 (the retirement plan's PR G) and is gated on this list being empty.
 
 Do **not** treat a “port” decision as work started. Ports are PR 13b (one language per PR).
 
@@ -59,14 +59,19 @@ A package is **both** when it ships at least one `type: tree-sitter` grammar *an
 | `language-mustache` | TextMate | — | `text.html.mustache`, `source.sql.mustache` | JSON | **keep TextMate** |
 | `language-make` | both | `tree-sitter-make@1.1.1` | `source.makefile` | JSON | **ported** |
 | `language-property-list` | both | `@tree-sitter-grammars/tree-sitter-xml@0.7.0` | `source.plist`, `text.xml.plist` | JSON | **ported** for `text.xml.plist` (XML plists); `source.plist` is the old NeXTSTEP format and stays TextMate |
-| `language-hyperlink` | TextMate (injection) | — | `text.hyperlink` | JSON | **keep TextMate** |
-| `language-todo` | TextMate (injection) | — | `text.todo` | JSON | **keep TextMate** |
 | `language-text` | TextMate | — | `text.plain` | JSON | **keep TextMate** |
 | `language-source` | none | — | settings only (`.source` indent/comments) | JSON settings | **keep TextMate** |
 
 ---
 
 ## 3. Exception list (TextMate-only + no-grammar)
+
+**`language-hyperlink` and `language-todo` are gone** (textmate-retirement-plan.md,
+PR E). They were TextMate *injection* grammars — regex patterns matched inside
+other grammars' scopes — which tree-sitter has no equivalent for. Dropping them
+means a URL in a code comment is no longer scoped `markup.underline.link`, so
+Open Link does not fire there, and `TODO:` is no longer highlighted. Markdown
+links still work: the tree-sitter grammar scopes them itself.
 
 Named owner for every row: **`builtbygio`**. “keep TextMate” is a valid owner decision. These packages **are** why first-mate stays.
 
@@ -86,9 +91,16 @@ No remaining later-tranche ports. What is left is the keep-TextMate list.
 
 Not a programming-language port, or nobody will staff one. Revisit only if an owner says so.
 
-> **Owner decision 2026-08-17: this list is stable, and H3 PR 22 is not applicable.** first-mate + oniguruma stay in the product, wrapped behind `GrammarRegistry` and lazy-loaded (PR 14) so a tree-sitter-only session never boots the NAN addon. TextMate is a **permanent supported fallback**, not a shame state — G4/D4 already say so.
+> **Owner decision 2026-09-03: first-mate goes.** This supersedes the decision
+> below. The remaining rows are convert-or-drop, not a standing exception list,
+> and the losses are accepted: `language-hyperlink` and `language-todo` are
+> already dropped (PR E), so URLs in comments are no longer clickable and
+> `TODO:` is no longer highlighted. Plan and sequencing:
+> [textmate-retirement-plan.md](../process/textmate-retirement-plan.md).
 >
-> The 13b port stream is finished; nothing portable is queued. `language-hyperlink` and `language-todo` are **injection** grammars other packages' scopes depend on, `language-text` is plain text, and `language-source` has no grammar — none of these have a tree-sitter equivalent to port to. Deleting first-mate would regress plain-text highlighting, TODO/FIXME scopes and hyperlink injection.
+> ~~**Owner decision 2026-08-17: this list is stable, and H3 PR 22 is not applicable.**~~ first-mate + oniguruma stay in the product, wrapped behind `GrammarRegistry` and lazy-loaded (PR 14) so a tree-sitter-only session never boots the NAN addon. TextMate is a permanent supported fallback, not a shame state — G4/D4 already say so. *Superseded 2026-09-03; kept because it is why the wrapping and lazy-load exist.*
+>
+> ~~The 13b port stream is finished; nothing portable is queued.~~ Since then `language-gfm`, `language-make`, `language-objective-c` and `text.xml.plist` were ported (PRs C and D). `language-text` is plain text and `language-source` has no grammar; both still need a decision.
 
 | Package | Owner | Why keep |
 |---------|-------|----------|
@@ -100,8 +112,6 @@ Not a programming-language port, or nobody will staff one. Revisit only if an ow
 | `language-mustache` | builtbygio | Template injection. **13c:** grammars JSON. |
 | `language-make` | builtbygio | Small surface. **13c:** grammar + settings JSON. |
 | `language-property-list` | builtbygio | macOS plist; xml port may cover the XML flavour later. **13c:** grammars + settings + snippets JSON. |
-| `language-hyperlink` | builtbygio | Injection grammar (`text.hyperlink`). Snippets / gfm / comments depend on it. **13c:** grammar JSON. |
-| `language-todo` | builtbygio | Injection grammar (`text.todo`). Load-bearing for TODO/FIXME scopes. **13c:** grammar + snippets JSON. |
 | `language-text` | builtbygio | Plain text. **13c:** grammar + snippets JSON. |
 | `language-source` | builtbygio | No grammar — shared `.source` editor settings. **13c:** settings JSON. |
 
@@ -111,7 +121,7 @@ Not a programming-language port, or nobody will staff one. Revisit only if an ow
 
 Convert shipped `grammars/` / `settings/` / `snippets/` CSON to JSON. Delete the `.cson`. Runtime already loads both extensions. **`season` is gone**: nothing in the repository is CSON, and core reads JSON through `src/main-process/json-file.js`. Do not convert `spec/**/*.cson`.
 
-**Done:** `language-source` (settings JSON), `language-hyperlink` (grammar JSON), `language-text` (grammar + snippets JSON), `language-todo` (grammar + snippets JSON), `language-gfm` (settings + snippets JSON), `language-less` (TM grammar + settings JSON), `language-make` (grammar + settings JSON), `language-mustache` (grammars JSON), `language-sql` (TM grammar + settings JSON), `language-toml` (TM grammar + settings JSON), `language-yaml` (TM grammar + settings JSON), `language-clojure` (TM grammar + settings + snippets JSON), `language-coffee-script` (grammars + settings + snippets JSON), `language-perl` (TM grammars + settings + snippets JSON), `language-php` (TM grammars + settings + snippets JSON), `language-property-list` (grammars + settings + snippets JSON), `language-xml` (TM grammars + settings + snippets JSON), `language-csharp` (TM grammars + settings + snippets JSON), `language-git` (grammars + settings + snippets JSON), `language-objective-c` (grammars + settings + snippets JSON), `language-sass` (TM grammars + settings + snippets JSON), `language-ruby-on-rails` (grammars + snippets JSON).
+**Done:** `language-source` (settings JSON), `language-text` (grammar + snippets JSON), `language-gfm` (settings + snippets JSON), `language-less` (TM grammar + settings JSON), `language-make` (grammar + settings JSON), `language-mustache` (grammars JSON), `language-sql` (TM grammar + settings JSON), `language-toml` (TM grammar + settings JSON), `language-yaml` (TM grammar + settings JSON), `language-clojure` (TM grammar + settings + snippets JSON), `language-coffee-script` (grammars + settings + snippets JSON), `language-perl` (TM grammars + settings + snippets JSON), `language-php` (TM grammars + settings + snippets JSON), `language-property-list` (grammars + settings + snippets JSON), `language-xml` (TM grammars + settings + snippets JSON), `language-csharp` (TM grammars + settings + snippets JSON), `language-git` (grammars + settings + snippets JSON), `language-objective-c` (grammars + settings + snippets JSON), `language-sass` (TM grammars + settings + snippets JSON), `language-ruby-on-rails` (grammars + snippets JSON).
 
 **Remaining:** none. Every bundled `language-*` pin ships JSON, and `season` has been dropped.
 

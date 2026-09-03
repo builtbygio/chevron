@@ -33,9 +33,9 @@ const PACKAGES = path.join(ROOT, 'packages');
 
 // Baseline at the time of writing. Lower these when grammars are ported or
 // deleted; raising one is the failure this file exists to cause.
-const MAX_TEXTMATE = 66;
+const MAX_TEXTMATE = 64;
 const MAX_SHADOWED = 28;
-const MAX_UNIQUE = 38;
+const MAX_UNIQUE = 36;
 const MIN_TREE_SITTER = 35;
 
 // TextMate is the only grammar for these scopes. Every row carries an owner
@@ -71,18 +71,19 @@ const EXCEPTION_SCOPES = new Set([
   'text.html.jsp',
   'text.html.mustache',
   'text.html.ruby',
-  'text.hyperlink',
   'text.junit-test-report',
   'text.plain',
   'text.python.console',
   'text.python.traceback',
   'text.shell-session',
-  'text.todo',
   'text.xml.xsl'
 ]);
 
-// Cannot be ported: they match regexes inside other grammars' scopes.
-const INJECTION_SCOPES = new Set(['text.hyperlink', 'text.todo']);
+// Injection grammars match regexes inside other grammars' scopes, which
+// tree-sitter cannot express. Both of the ones this catalog had — hyperlink
+// and todo — were dropped rather than rebuilt as decoration providers, so a
+// new one arriving would reopen a decision that has been made.
+const INJECTION_SCOPES = new Set([]);
 
 // Shadowed grammars claiming file types their tree-sitter counterpart does
 // not. Deleting one of these without moving its file types first drops those
@@ -228,8 +229,8 @@ describe('grammar inventory', () => {
       [...found].sort(),
       [...INJECTION_SCOPES].sort(),
       'injection grammars match inside other grammars\' scopes, which ' +
-        'tree-sitter cannot express. A new one extends the work needed ' +
-        'before first-mate can go.'
+        'tree-sitter cannot express. hyperlink and todo were dropped for ' +
+        'that reason; a new one reopens a settled decision.'
     );
   });
 
