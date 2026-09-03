@@ -5,7 +5,26 @@
   "parser": "tree-sitter-bash",
   "fileTypes": [
     "sh",
-    "bash"
+    "bash",
+    "ksh",
+    "zsh",
+    "zsh-theme",
+    "zshenv",
+    "zlogin",
+    "zlogout",
+    "zprofile",
+    "zshrc",
+    "bashrc",
+    "bash_aliases",
+    "bash_profile",
+    "bash_login",
+    "bash_logout",
+    ".textmate_init",
+    "npmrc",
+    "PKGBUILD",
+    "cygport",
+    "bats",
+    "ebuild"
   ],
   "injectionRegex": "^(bash|sh|BASH|SH)$",
   "firstLineRegex": [

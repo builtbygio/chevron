@@ -410,11 +410,6 @@ const configSchema = {
           }
         ]
       },
-      useTreeSitterParsers: {
-        type: 'boolean',
-        default: true,
-        description: 'Use Tree-sitter parsers for supported languages.'
-      },
       colorProfile: {
         description:
           "Specify whether Chevron should use the operating system's color profile (recommended) or an alternative color profile.<br>Changing this setting will require a relaunch of Chevron to take effect.",

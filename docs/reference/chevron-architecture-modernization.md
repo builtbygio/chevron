@@ -890,7 +890,7 @@ No product telemetry. Observability is **local + CI**.
 
 | Knob | Default | Role in this plan |
 |------|---------|-------------------|
-| `core.useTreeSitterParsers` | existing | Keep; H2 ports add more languages |
+| ~~`core.useTreeSitterParsers`~~ | **removed** | The TextMate grammars it selected are an include library for the exception list, not an alternative to choose (textmate-retirement-plan.md, PR B) |
 | `find-and-replace.useRipgrep` | **default `true`** | UI still passes this flag; it no longer selects scandal (PR 4) |
 | Core `Workspace.scan` ripgrep | **only engine** | `CHEVRON_SEARCH_ENGINE=scandal` is ignored |
 | Config JSON writer | **default on** (PR 5) | `CHEVRON_CONFIG_CSON=1` forces CSON writer one release. Does **not** remove season |

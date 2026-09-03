@@ -5,7 +5,6 @@ const { Disposable, CompositeDisposable, Emitter } = require('event-kit');
 const TextMateLanguageMode = require('./text-mate-language-mode');
 const TreeSitterLanguageMode = require('./tree-sitter-language-mode');
 const TreeSitterGrammar = require('./tree-sitter-grammar');
-const ScopeDescriptor = require('./scope-descriptor');
 const Token = require('./token');
 const NullGrammar = require('./null-grammar');
 const { loadFirstMate } = require('./load-first-mate');
@@ -20,9 +19,12 @@ const PATH_SPLIT_REGEX = new RegExp('[/.]');
 // An instance of this class is always available as the `atom.grammars` global.
 //
 // Two engines share this facade:
-//   - first-mate + oniguruma (TextMate) — supported fallback
-//   - official tree-sitter@0.25 (N-API) — default when
-//     `core.useTreeSitterParsers` is on and a `type: tree-sitter` grammar exists
+//   - official tree-sitter@0.25 (N-API) — chosen whenever the language has a
+//     `type: tree-sitter` grammar
+//   - first-mate + oniguruma (TextMate) — the only engine for the scopes on
+//     the exception list, and the library the grammars on it are built from:
+//     26 of them `include` a scope whose TextMate grammar also has a
+//     tree-sitter one (source.gfm alone includes 21, for fenced code)
 //
 // Catalog + TextMate exception list: docs/reference/language-stack.md.
 // first-mate is not deleted by H2. Optional H3 only if that list is empty.
@@ -71,15 +73,6 @@ module.exports = class GrammarRegistry {
     this.textMateScopeNamesByTreeSitterLanguageId = new Map();
     this.treeSitterLanguageIdsByTextMateScopeName = new Map();
 
-    this.subscriptions.add(
-      this.config.onDidChange('core.useTreeSitterParsers', () => {
-        this.grammarScoresByBuffer.forEach((score, buffer) => {
-          if (!this.languageOverridesByBufferId.has(buffer.id)) {
-            this.autoAssignLanguageMode(buffer);
-          }
-        });
-      })
-    );
   }
 
   serialize() {
@@ -282,14 +275,10 @@ module.exports = class GrammarRegistry {
     if (score > 0) {
       const isTreeSitter = grammar instanceof TreeSitterGrammar;
 
-      // Prefer either TextMate or Tree-sitter grammars based on the user's settings.
-      if (isTreeSitter) {
-        if (this.shouldUseTreeSitterParser(grammar.scopeName)) {
-          score += 0.1;
-        } else {
-          return -Infinity;
-        }
-      }
+      // Tree-sitter wins a tie. The TextMate grammar for the same scope is
+      // kept as a library other TextMate grammars include, not as an
+      // alternative to choose between.
+      if (isTreeSitter) score += 0.1;
 
       // Prefer grammars with matching content regexes. Prefer a grammar with no content regex
       // over one with a non-matching content regex.
@@ -387,17 +376,10 @@ module.exports = class GrammarRegistry {
 
   grammarForId(languageId) {
     if (!languageId) return null;
-    if (this.shouldUseTreeSitterParser(languageId)) {
-      return (
-        this.treeSitterGrammarsById[languageId] ||
-        this.textMateGrammarForScopeName(languageId)
-      );
-    } else {
-      return (
-        this.textMateGrammarForScopeName(languageId) ||
-        this.treeSitterGrammarsById[languageId]
-      );
-    }
+    return (
+      this.treeSitterGrammarsById[languageId] ||
+      this.textMateGrammarForScopeName(languageId)
+    );
   }
 
   // Deprecated: Get the grammar override for the given file path.
@@ -741,11 +723,6 @@ module.exports = class GrammarRegistry {
     return grammarWithLongestMatch;
   }
 
-  shouldUseTreeSitterParser(languageId) {
-    return this.config.get('core.useTreeSitterParsers', {
-      scope: new ScopeDescriptor({ scopes: [languageId] })
-    });
-  }
 };
 
 function getGrammarSelectionContent(buffer) {

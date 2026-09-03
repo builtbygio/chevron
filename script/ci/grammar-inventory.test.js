@@ -33,8 +33,8 @@ const PACKAGES = path.join(ROOT, 'packages');
 
 // Baseline at the time of writing. Lower these when grammars are ported or
 // deleted; raising one is the failure this file exists to cause.
-const MAX_TEXTMATE = 69;
-const MAX_SHADOWED = 27;
+const MAX_TEXTMATE = 66;
+const MAX_SHADOWED = 24;
 const MAX_UNIQUE = 42;
 const MIN_TREE_SITTER = 30;
 
@@ -91,18 +91,26 @@ const INJECTION_SCOPES = new Set(['text.hyperlink', 'text.todo']);
 // Shadowed grammars claiming file types their tree-sitter counterpart does
 // not. Deleting one of these without moving its file types first drops those
 // files to plain text.
-const SHADOWED_WITH_EXTRA_FILE_TYPES = new Set([
-  'source.c',
-  'source.clojure',
-  'source.css',
-  'source.java',
-  'source.js',
-  'source.python',
-  'source.ruby',
-  'source.shell',
-  'text.html.basic',
-  'text.html.erb'
-]);
+// Emptied by moving those file types onto the tree-sitter grammars. The two
+// shell entries below stay behind deliberately: PHP's tree-sitter grammar
+// already claims `install` and `profile` (Drupal), and it wins them today.
+const SHADOWED_WITH_EXTRA_FILE_TYPES = new Set(['source.shell']);
+
+// File types that used to reach a TextMate grammar and now must be claimed by
+// the tree-sitter one. Deleting a fallback without this is how `foo.cjs` ends
+// up as plain text.
+const MOVED_FILE_TYPES = {
+  'source.c': ['xpm'],
+  'source.clojure': ['org'],
+  'source.css': ['css.erb'],
+  'source.java': ['bsh'],
+  'source.js': ['cjs', 'mjs', 'es6', 'jsm', 'pac'],
+  'source.python': ['Snakefile', 'kv', 'rpy', 'tac', 'wscript'],
+  'source.ruby': ['Fastfile', 'Vagrantfile', 'gemspec', 'podspec', 'Capfile'],
+  'source.shell': ['PKGBUILD', 'bashrc', 'zshrc', 'ksh', 'bats'],
+  'text.html.basic': ['htm', 'xhtml', 'shtml'],
+  'text.html.erb': ['rhtml']
+};
 
 function readGrammars() {
   const grammars = [];
@@ -146,6 +154,38 @@ const unique = textMate.filter(g => !treeSitterScopes.has(g.scopeName));
 const list = items => items.map(g => `${g.scopeName} (${g.file})`).join('\n  ');
 
 describe('grammar inventory', () => {
+  it('compiles every regex a tree-sitter grammar declares', () => {
+    // tree-sitter grammars build these with `new RegExp(value)`, which has no
+    // inline flags: a TextMate-style `(?i)` throws at construction and takes
+    // the whole grammar with it, silently handing the language to TextMate.
+    for (const grammar of grammars.filter(g => g.treeSitter)) {
+      const data = JSON.parse(
+        fs.readFileSync(path.join(ROOT, grammar.file), 'utf8')
+      );
+      for (const key of ['firstLineRegex', 'contentRegex', 'injectionRegExp']) {
+        const value = data[key];
+        if (typeof value !== 'string') continue;
+        assert.doesNotThrow(
+          () => new RegExp(value),
+          `${grammar.file}: ${key} is not a JavaScript regex`
+        );
+      }
+    }
+  });
+
+  it('offers no way to choose the TextMate engine', () => {
+    // core.useTreeSitterParsers implied the shadowed grammars were a
+    // maintained alternative. They are a library the exception list includes,
+    // and ten of them had drifted on file types while nobody was choosing.
+    for (const rel of ['src/config-schema.js', 'src/grammar-registry.js']) {
+      const source = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+      assert.ok(
+        !source.includes('useTreeSitterParsers'),
+        `${rel} still references core.useTreeSitterParsers`
+      );
+    }
+  });
+
   it('ships fewer TextMate grammars than the recorded high-water mark', () => {
     assert.ok(
       textMate.length <= MAX_TEXTMATE,
@@ -194,6 +234,58 @@ describe('grammar inventory', () => {
       'injection grammars match inside other grammars\' scopes, which ' +
         'tree-sitter cannot express. A new one extends the work needed ' +
         'before first-mate can go.'
+    );
+  });
+
+  it('claims the file types the deleted fallbacks used to answer for', () => {
+    for (const [scopeName, types] of Object.entries(MOVED_FILE_TYPES)) {
+      const grammar = grammars.find(
+        g => g.treeSitter && g.scopeName === scopeName
+      );
+      assert.ok(grammar, `no tree-sitter grammar for ${scopeName}`);
+      for (const type of types) {
+        assert.ok(
+          grammar.fileTypes.has(type),
+          `${scopeName} must claim "${type}" — it used to reach the TextMate ` +
+            'grammar, which is no longer selectable for this scope'
+        );
+      }
+    }
+  });
+
+  it('keeps every TextMate grammar the surviving ones include', () => {
+    // 26 of the 42 TextMate-only grammars build on a grammar whose scope also
+    // has a tree-sitter version: source.gfm alone includes 21 of them for
+    // fenced code blocks. first-mate resolves `include` through its own
+    // registry, so a tree-sitter grammar cannot answer for one of these.
+    // Known gap, pre-dating this gate: language-rust-bundled ships only a
+    // tree-sitter grammar, so ```rust fences in Markdown have no highlighting.
+    // Closing it means a TextMate Rust grammar or a tree-sitter Markdown
+    // grammar (retirement plan, PR C) — not another fallback.
+    const KNOWN_UNRESOLVED = new Set(['source.rust']);
+    const present = new Set(textMate.map(g => g.scopeName));
+    const missing = [];
+    for (const grammar of textMate) {
+      const raw = fs.readFileSync(path.join(ROOT, grammar.file), 'utf8');
+      for (const [, scope] of raw.matchAll(/"include"\s*:\s*"([^"#$][^"]*)"/g)) {
+        const target = scope.split('#')[0];
+        if (!target || target.startsWith('$')) continue;
+        // Only scopes this catalog is supposed to provide.
+        if (!EXCEPTION_SCOPES.has(target) && !treeSitterScopes.has(target)) {
+          continue;
+        }
+        if (KNOWN_UNRESOLVED.has(target)) continue;
+        if (!present.has(target)) {
+          missing.push(`${grammar.scopeName} includes ${target}`);
+        }
+      }
+    }
+    assert.deepEqual(
+      missing,
+      [],
+      'a TextMate grammar was deleted while another one still includes it. ' +
+        'Highlighting inside the includer (fenced code, embedded scripts) ' +
+        'silently degrades:\n  ' + missing.join('\n  ')
     );
   });
 

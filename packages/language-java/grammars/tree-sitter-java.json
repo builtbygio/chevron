@@ -4,7 +4,8 @@
   "type": "tree-sitter",
   "parser": "tree-sitter-java",
   "fileTypes": [
-    "java"
+    "java",
+    "bsh"
   ],
   "folds": [
     {

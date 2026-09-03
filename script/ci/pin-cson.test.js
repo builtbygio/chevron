@@ -263,11 +263,9 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   it('language-php ships JSON TextMate grammars settings and snippets and no shipped CSON', () => {
     const cson = shippedCson('language-php');
     assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
-    const html = path.join(
-      packageRoot('language-php'),
-      'grammars',
-      'html.json'
-    );
+    // grammars/html.json (text.html.php) was deleted with the shadowed
+    // TextMate fallbacks: a tree-sitter grammar owns that scope and nothing
+    // includes it. The conversion it recorded still holds for php.json.
     const php = path.join(
       packageRoot('language-php'),
       'grammars',
@@ -293,14 +291,11 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
       'grammars',
       'tree-sitter-php-only.json'
     );
-    assert.ok(fs.existsSync(html), 'grammars/html.json');
     assert.ok(fs.existsSync(php), 'grammars/php.json');
     assert.ok(fs.existsSync(settings), 'settings/language-php.json');
     assert.ok(fs.existsSync(snippets), 'snippets/language-php.json');
     assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-php.json');
     assert.ok(fs.existsSync(tsOnly), 'grammars/tree-sitter-php-only.json');
-    const parsed = JSON.parse(fs.readFileSync(html, 'utf8'));
-    assert.strictEqual(parsed.scopeName, 'text.html.php');
     const phpParsed = JSON.parse(fs.readFileSync(php, 'utf8'));
     assert.strictEqual(phpParsed.scopeName, 'source.php');
   });
