@@ -26,6 +26,7 @@
     "bats",
     "ebuild"
   ],
+  "injectionRegExp": "^(sh|bash|shell|zsh|console)$",
   "injectionRegex": "^(bash|sh|BASH|SH)$",
   "firstLineRegex": [
     "^#!.*\\b(bash|sh)\\r?\\n",

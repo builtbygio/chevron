@@ -23,6 +23,7 @@
     "tcc",
     "tpp"
   ],
+  "injectionRegExp": "^(cc|cpp|c\\+\\+|cxx)$",
   "contentRegex": "\n\\s*(namespace|class|template)\\s+",
   "folds": [
     {

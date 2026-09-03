@@ -34,9 +34,9 @@ const PACKAGES = path.join(ROOT, 'packages');
 // Baseline at the time of writing. Lower these when grammars are ported or
 // deleted; raising one is the failure this file exists to cause.
 const MAX_TEXTMATE = 66;
-const MAX_SHADOWED = 24;
-const MAX_UNIQUE = 42;
-const MIN_TREE_SITTER = 30;
+const MAX_SHADOWED = 25;
+const MAX_UNIQUE = 41;
+const MIN_TREE_SITTER = 32;
 
 // TextMate is the only grammar for these scopes. Every row carries an owner
 // decision in docs/reference/language-stack.md §3.
@@ -44,7 +44,6 @@ const EXCEPTION_SCOPES = new Set([
   'source.cake',
   'source.coffee',
   'source.csx',
-  'source.gfm',
   'source.git-config',
   'source.gotemplate',
   'source.java-properties',

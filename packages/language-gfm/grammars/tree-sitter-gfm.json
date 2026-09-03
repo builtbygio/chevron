@@ -1,0 +1,51 @@
+{
+  "name": "GitHub Markdown",
+  "scopeName": "source.gfm",
+  "type": "tree-sitter",
+  "parser": "@tree-sitter-grammars/tree-sitter-markdown",
+  "fileTypes": [
+    "markdown",
+    "md",
+    "mdown",
+    "mdwn",
+    "mkd",
+    "mkdn",
+    "mkdown",
+    "rmd",
+    "ron",
+    "workbook"
+  ],
+  "injectionRegExp": "^(md|markdown|gfm|rmd)$",
+  "folds": [
+    {
+      "type": "fenced_code_block"
+    },
+    {
+      "type": [
+        "list",
+        "block_quote"
+      ]
+    }
+  ],
+  "comments": {
+    "start": "<!-- ",
+    "end": " -->"
+  },
+  "scopes": {
+    "atx_heading, setext_heading": "markup.heading.gfm",
+    "atx_h1_marker, atx_h2_marker, atx_h3_marker, atx_h4_marker, atx_h5_marker, atx_h6_marker": "markup.heading.marker.gfm",
+    "setext_h1_underline, setext_h2_underline": "markup.heading.marker.gfm",
+    "list_marker_minus, list_marker_plus, list_marker_star": "markup.list.punctuation.unordered.gfm",
+    "list_marker_dot, list_marker_parenthesis": "markup.list.punctuation.ordered.gfm",
+    "block_quote": "markup.quote.gfm",
+    "block_quote_marker": "punctuation.definition.quote.gfm",
+    "fenced_code_block, indented_code_block": "markup.raw.gfm",
+    "fenced_code_block_delimiter": "punctuation.definition.raw.gfm",
+    "info_string": "entity.name.type.gfm",
+    "thematic_break": "comment.hr.gfm",
+    "link_reference_definition > link_label": "markup.underline.link.gfm",
+    "link_reference_definition > link_destination": "markup.underline.link.gfm",
+    "pipe_table_delimiter_row": "punctuation.separator.table.gfm",
+    "pipe_table_header": "markup.bold.table.gfm"
+  }
+}

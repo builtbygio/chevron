@@ -33,6 +33,7 @@
     "webapp",
     "webmanifest"
   ],
+  "injectionRegExp": "^(json|jsonc)$",
   "folds": [
     {
       "start": {

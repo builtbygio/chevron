@@ -90,6 +90,7 @@
     "xul",
     "ui"
   ],
+  "injectionRegExp": "^(xml)$",
   "comments": {
     "start": "<!--",
     "end": "-->"
