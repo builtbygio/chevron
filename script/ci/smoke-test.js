@@ -910,6 +910,10 @@ async function main() {
       const line = since
         .split('\n')
         .find(l => /Assertion failed|process crashed/i.test(l));
+      // The line alone does not say which native called back after teardown,
+      // and this is the only place that output exists on a CI runner.
+      console.error('smoke-test: app output during the reload:');
+      console.error(since.slice(-6000));
       return { ok: false, reason: `the renderer crashed on reload: ${line}` };
     }
     if (!state || state.status !== 'ready') {

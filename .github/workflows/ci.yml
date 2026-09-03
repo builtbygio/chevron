@@ -230,7 +230,6 @@ jobs:
           node --test script/ci/no-atom-uri.test.js
           node --test script/ci/shell-commands.test.js
           node --test script/ci/reload-watcher-shutdown.test.js
-          node --test script/ci/lsp-late-registration.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64
@@ -477,6 +476,7 @@ jobs:
         run: |
           node --test script/ci/github-8b.test.js
           node --test script/ci/lsp-builtin-discover.test.js
+          node --test script/ci/lsp-late-registration.test.js
           node --test script/ci/lazy-first-mate.test.js
           node --test script/ci/jasmine-node-coffee.test.js
           node --test script/ci/patch-inventory.test.js
