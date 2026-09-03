@@ -407,8 +407,27 @@ function getAutocompleteProvider() {
   return createAutocompleteProvider(clientApi);
 }
 
+// A package registers its server from consumeLsp, which runs after the editors
+// were already observed: the open files had asked for a server, been told there
+// was none, and nothing asked again. Installing a language server and reloading
+// -- exactly what the Install panel tells you to do -- still left the editor
+// saying "No language server for source.gfm".
+function registerServerAndStart(spec) {
+  const disposable = registerServer(spec);
+  const scopes =
+    (spec && spec.scopes) || (spec && spec.scope ? [spec.scope] : []);
+  for (const scope of scopes) {
+    for (const key of Array.from(noticedNoServer)) {
+      if (key.startsWith(`${scope}::`)) noticedNoServer.delete(key);
+    }
+  }
+  startServersForOpenEditors().catch(() => {});
+  return disposable;
+}
+
 function getLspService() {
-  return createLspService();
+  const service = createLspService();
+  return Object.assign({}, service, { registerServer: registerServerAndStart });
 }
 
 function getDiagnosticsService() {
@@ -754,7 +773,7 @@ module.exports = {
   formatSignatureHelp,
   getAutocompleteProvider,
   getLspService,
-  registerServer,
+  registerServer: registerServerAndStart,
   listRegistrations,
   getCompletionLatencyStats,
   request,

@@ -208,6 +208,18 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Evaluated inside the app (isolated world). Returns JSON with status:
 //   pending | no-atom | no-workspace | waiting-editors | ready
+// After a reload: is there a working workspace again? Deliberately does not
+// re-run the autocomplete probe -- this asks whether the window survived.
+const RELOAD_EXPR = `(function() {
+  if (typeof chevron === 'undefined') return JSON.stringify({status:'no-chevron'});
+  if (!chevron.workspace) return JSON.stringify({status:'no-workspace'});
+  const active = chevron.packages.getActivePackages().length;
+  return JSON.stringify({
+    status: active >= ${MIN_ACTIVE_PACKAGES} ? 'ready' : 'waiting-editors',
+    packagesActive: active
+  });
+})()`;
+
 const PROBE_EXPR = `(function() {
   if (typeof chevron === 'undefined') return JSON.stringify({status:'no-chevron'});
   if (!chevron.workspace) return JSON.stringify({status:'no-workspace'});
@@ -866,6 +878,52 @@ async function main() {
   }
   process.once('exit', shutdown);
 
+  // Reloading the window tears down the renderer's Node environment while
+  // native workers may still hold a callback. nsfw's StopWorker did exactly
+  // that -- `node::InternalMakeCallback ... Assertion failed: (env) != nullptr`
+  // aborted the renderer on every reload, and nothing here reloaded, so a
+  // crash on one of the most common commands in the editor stayed invisible.
+  const assertReloadSurvives = async () => {
+    const before = appOutput.length;
+    console.log('smoke-test: reloading the window');
+    await probeWindow(
+      [],
+      `(function(){ chevron.reload(); return JSON.stringify({status:'ready'}); })()`
+    );
+    await delay(4000);
+    const deadline = Date.now() + 90 * 1000;
+    let state = null;
+    while (Date.now() < deadline) {
+      if (appExited) {
+        return { ok: false, reason: 'the app exited during a window reload' };
+      }
+      try {
+        state = await probeWindow([], RELOAD_EXPR);
+      } catch (error) {
+        state = { status: 'pending', reason: String(error.message || error) };
+      }
+      if (state && state.status === 'ready') break;
+      await delay(2000);
+    }
+    const since = appOutput.slice(before);
+    if (/Assertion failed/.test(since) || /process crashed/i.test(since)) {
+      const line = since
+        .split('\n')
+        .find(l => /Assertion failed|process crashed/i.test(l));
+      return { ok: false, reason: `the renderer crashed on reload: ${line}` };
+    }
+    if (!state || state.status !== 'ready') {
+      return {
+        ok: false,
+        reason: `no workspace after reload: ${JSON.stringify(state)}`
+      };
+    }
+    console.log(
+      `smoke-test: reload survived (${state.packagesActive} packages active)`
+    );
+    return { ok: true };
+  };
+
   try {
     const deadline = Date.now() + STARTUP_TIMEOUT_MS;
     let state = { status: 'pending' };
@@ -1022,6 +1080,8 @@ async function main() {
           `autocomplete in project showed ${acp.items} items (expected 2+)`
         );
       }
+      const reload = await assertReloadSurvives();
+      if (!reload.ok) failures.push(reload.reason);
       if (failures.length > 0) {
         console.error('smoke-test: FAILED');
         for (const failure of failures) console.error(`  - ${failure}`);
@@ -1056,6 +1116,12 @@ async function main() {
             'smoke-test: FAILED error notifications during boot:',
             bestBoot.notifications.join('; ')
           );
+          process.exit(1);
+        }
+        const reload = await assertReloadSurvives();
+        if (!reload.ok) {
+          console.error('smoke-test: FAILED');
+          console.error(`  - ${reload.reason}`);
           process.exit(1);
         }
         console.log(

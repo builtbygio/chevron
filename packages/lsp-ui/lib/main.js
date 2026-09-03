@@ -160,6 +160,9 @@ module.exports = {
         const state = await client.getTrustState(projectRoot);
         if (state === 'trusted' || state === 'declined') return;
       }
+      // deactivate() nulls the view, and a queued prompt can drain after it:
+      // reloading a window with a prompt pending logged a null dereference.
+      if (!trustView) return;
       const trusted = await trustView.prompt(projectRoot, e);
       await applyTrustDecision(projectRoot, trusted);
     };
