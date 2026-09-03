@@ -623,8 +623,15 @@ function onMessage(msg) {
 }
 
 if (process.parentPort && typeof process.parentPort.on === 'function') {
-  process.parentPort.on('message', onMessage);
+  // utilityProcess delivers a MessageEvent, not the message: without the
+  // unwrap every branch of handleMessage misses and the host answers nothing.
+  // It still posts host-booted, so the manager believed it was talking to a
+  // live host and every request timed out.
+  process.parentPort.on('message', event => {
+    onMessage(event && event.data !== undefined ? event.data : event);
+  });
 } else {
+  // node:child_process fork, in tests.
   process.on('message', onMessage);
 }
 
