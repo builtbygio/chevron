@@ -236,7 +236,13 @@ const PROBE_EXPR = `(function() {
   }
   const byExt = ext =>
     editors.find(e => (e.getPath() || '').endsWith(ext));
-  if (!byExt('.txt') || !byExt('.ts') || !byExt('.css') || !byExt('.md')) {
+  if (
+    !byExt('.txt') ||
+    !byExt('.ts') ||
+    !byExt('.css') ||
+    !byExt('.md') ||
+    !byExt('Makefile')
+  ) {
     return JSON.stringify({
       status: 'waiting-editors',
       count: editors.length,
@@ -525,6 +531,18 @@ const PROBE_EXPR = `(function() {
     tsGrammar: byExt('.ts').getGrammar() && byExt('.ts').getGrammar().name,
     cssGrammar: byExt('.css').getGrammar() && byExt('.css').getGrammar().name,
     mdGrammar: byExt('.md') && byExt('.md').getGrammar() && byExt('.md').getGrammar().name,
+    mdEngine:
+      byExt('.md') &&
+      byExt('.md').getBuffer().getLanguageMode() &&
+      byExt('.md').getBuffer().getLanguageMode().constructor.name,
+    makeGrammar:
+      byExt('Makefile') &&
+      byExt('Makefile').getGrammar() &&
+      byExt('Makefile').getGrammar().name,
+    makeEngine:
+      byExt('Makefile') &&
+      byExt('Makefile').getBuffer().getLanguageMode() &&
+      byExt('Makefile').getBuffer().getLanguageMode().constructor.name,
     electron: process.versions.electron
   });
 })()`;
@@ -854,14 +872,16 @@ async function main() {
     txt: path.join(probeDir, 'probe.txt'),
     ts: path.join(probeDir, 'probe.ts'),
     css: path.join(probeDir, 'probe.css'),
-    // GitHub Markdown is TextMate-only, so this is the one probe that
-    // exercises first-mate rather than tree-sitter.
-    md: path.join(probeDir, 'probe.md')
+    md: path.join(probeDir, 'probe.md'),
+    // Makefile has no tree-sitter grammar, so this is the one probe that
+    // exercises first-mate. Markdown used to be it, until it was ported.
+    make: path.join(probeDir, 'Makefile')
   };
   fs.writeFileSync(probes.txt, 'smoke test probe\n');
   fs.writeFileSync(probes.ts, 'const n: number = 1;\n');
   fs.writeFileSync(probes.css, 'body { color: red; }\n');
   fs.writeFileSync(probes.md, '# heading\n\nsome **bold** text\n');
+  fs.writeFileSync(probes.make, 'all:\n\techo hi\n');
 
   const launchArgs = [
     `--remote-debugging-port=${PORT}`,
@@ -872,7 +892,14 @@ async function main() {
     console.log('smoke-test: linux flags', linuxFlags.join(' '));
     launchArgs.push(...linuxFlags);
   }
-  launchArgs.push(projectDir, probes.txt, probes.ts, probes.css, probes.md);
+  launchArgs.push(
+    projectDir,
+    probes.txt,
+    probes.ts,
+    probes.css,
+    probes.md,
+    probes.make
+  );
 
   const app = childProcess.spawn(binary, launchArgs, {
     env: Object.assign({}, process.env, {
@@ -1006,7 +1033,13 @@ async function main() {
         process.exit(1);
       }
       try {
-        state = await probeWindow([probes.txt, probes.ts, probes.css, probes.md]);
+        state = await probeWindow([
+          probes.txt,
+          probes.ts,
+          probes.css,
+          probes.md,
+          probes.make
+        ]);
       } catch (error) {
         state = { status: 'pending', reason: String(error.message || error) };
       }
@@ -1041,7 +1074,7 @@ async function main() {
         let settingsState;
         try {
           settingsState = await probeWindow(
-            [probes.txt, probes.ts, probes.css, probes.md],
+            [probes.txt, probes.ts, probes.css, probes.md, probes.make],
             SETTINGS_EXPR
           );
         } catch (error) {
@@ -1076,12 +1109,28 @@ async function main() {
           `probe.ts grammar: ${state.tsGrammar} (expected TypeScript)`
         );
       }
+      if (state.mdGrammar !== 'GitHub Markdown') {
+        failures.push(`probe.md grammar: ${state.mdGrammar} (expected GitHub Markdown)`);
+      }
+      // Markdown parses in two passes and injects a second grammar for inline
+      // text; falling back to TextMate is how that breaks without erroring.
+      if (state.mdEngine !== 'TreeSitterLanguageMode') {
+        failures.push(
+          `probe.md is on ${state.mdEngine} (expected TreeSitterLanguageMode)`
+        );
+      }
       // first-mate is patched to read grammars with JSON.parse rather than
       // season; a TextMate grammar failing to load is the way that breaks.
-      if (state.mdGrammar !== 'GitHub Markdown') {
+      // Makefile has no tree-sitter grammar, so it is the engine's only probe.
+      if (state.makeGrammar !== 'Makefile') {
         failures.push(
-          `probe.md grammar: ${state.mdGrammar} (expected GitHub Markdown -- ` +
+          `Makefile grammar: ${state.makeGrammar} (expected Makefile -- ` +
             'the TextMate engine failed to load a grammar)'
+        );
+      }
+      if (state.makeEngine !== 'TextMateLanguageMode') {
+        failures.push(
+          `Makefile is on ${state.makeEngine} (expected TextMateLanguageMode)`
         );
       }
       const settings = state.settings;

@@ -6,6 +6,7 @@
   "fileTypes": [
     "tsx"
   ],
+  "injectionRegExp": "^(tsx)$",
   "comments": {
     "start": "// "
   },

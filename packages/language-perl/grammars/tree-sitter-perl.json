@@ -16,6 +16,7 @@
     "psgi",
     "t"
   ],
+  "injectionRegExp": "^(pl|perl)$",
   "comments": {
     "start": "# "
   },

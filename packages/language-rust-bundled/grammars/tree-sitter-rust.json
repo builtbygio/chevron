@@ -7,6 +7,7 @@
   "fileTypes": [
     "rs"
   ],
+  "injectionRegExp": "^(rs|rust)$",
   "comments": {
     "start": "// "
   },

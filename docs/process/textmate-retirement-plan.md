@@ -143,7 +143,7 @@ built with `new RegExp(value)`, so a TextMate-style `(?i)` prefix throws at
 construction and takes the whole grammar with it, silently handing the language
 back to TextMate. That is exactly what a first attempt at this fix did.
 
-### PR C — Markdown on tree-sitter · large · **needs D2**
+### PR C — Markdown on tree-sitter · **done**
 
 `language-gfm` is the most-used language on the exception list. The parser is
 split (`markdown` + `markdown_inline`), so the block grammar must inject the
@@ -151,9 +151,24 @@ inline one, and fenced code blocks must inject the language they name — both
 through `addInjectionPoint`, which `language-html` already uses for ERB. The
 scope map is the work; expect a full day plus review of headings, emphasis,
 links, lists, tables and code fences against the TextMate output.
-Gate: `script/ci/smoke-test.js` currently asserts `probe.md` loads as the
-TextMate *GitHub Markdown* — it becomes the tree-sitter assertion, so the
-smoke test proves the swap in the real app.
+Gate: `script/ci/smoke-test.js` asserted `probe.md` loads as the TextMate
+*GitHub Markdown*; it now asserts the engine as well, and a `Makefile` probe
+took over as the first-mate check — markdown was the only one.
+
+**What it actually took**, beyond the scope maps:
+
+- Two grammars, not one: `source.gfm` (block) and `source.gfm.inline`, with
+  the block grammar injecting the inline one. The parser package exposes the
+  second language on a subpath, which the `parser` field already supports
+  (`tree-sitter-typescript/typescript` set the precedent).
+- `includeChildren: true` on the injection. Without it `NodeRangeSet` hands the
+  injected parser only the *gaps between* a node's children, so the inline
+  layer was created, parsed an empty tree, and every **bold** and `code` stayed
+  unhighlighted while nothing errored.
+- **22 tree-sitter grammars gained an `injectionRegExp`.** Fenced code resolves
+  the info string against that pattern, and only four grammars had one, so
+  ```` ```js ```` would have matched nothing. This is also what closes the Rust
+  fence gap PR B found: ```` ```rust ```` now parses as Rust.
 
 ### PR D — plist, make, objc · medium each, one PR per language · **needs D3**
 
@@ -198,8 +213,7 @@ Only when PR A's ratchet reads zero unique TextMate scopes. Deletes
 - ~~**D1** — Is `core.useTreeSitterParsers: false` a supported escape hatch?~~
   **Answered: leftover, removed in PR B.** It unlocked 3 deletions, not 27 —
   the rest are an include library, not a fallback.
-- **D2** — Is Markdown worth a day of scope-mapping? It is the one row on the
-  list a user meets daily.
+- ~~**D2** — Is Markdown worth a day of scope-mapping?~~ **Done in PR C.**
 - **D3** — Are `make`, `objc` and plist worth porting, or are they
   drop-or-keep-TextMate rows?
 - **D4** — Do clickable links and TODO highlighting have to survive? If not,

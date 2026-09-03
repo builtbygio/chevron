@@ -6,6 +6,7 @@
   "fileTypes": [
     "go"
   ],
+  "injectionRegExp": "^(go|golang)$",
   "comments": {
     "start": "// "
   },

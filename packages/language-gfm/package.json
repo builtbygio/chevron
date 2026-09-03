@@ -1,6 +1,7 @@
 {
   "name": "@builtbygio/language-gfm",
   "version": "0.91.1",
+  "main": "./lib/main",
   "description": "Syntax highlighting and snippets for GitHub Flavored Markdown (GFM).",
   "repository": {
     "type": "git",
@@ -10,5 +11,8 @@
   "engines": {
     "atom": "*",
     "chevron": "*"
+  },
+  "dependencies": {
+    "@tree-sitter-grammars/tree-sitter-markdown": "0.3.2"
   }
 }

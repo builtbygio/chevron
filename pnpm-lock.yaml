@@ -644,11 +644,15 @@ importers:
 
   packages/chevron-light-ui: {}
 
+  packages/chevron-lsp-c: {}
+
   packages/chevron-lsp-json:
     dependencies:
       vscode-json-languageserver:
         specifier: 1.3.4
         version: 1.3.4(supports-color@8.1.1)
+
+  packages/chevron-lsp-markdown: {}
 
   packages/chevron-lsp-python:
     dependencies:
@@ -952,7 +956,11 @@ importers:
         specifier: 0.23.2
         version: 0.23.2(tree-sitter@0.25.1)
 
-  packages/language-gfm: {}
+  packages/language-gfm:
+    dependencies:
+      '@tree-sitter-grammars/tree-sitter-markdown':
+        specifier: 0.3.2
+        version: 0.3.2(tree-sitter@0.25.1)
 
   packages/language-git: {}
 
@@ -1536,6 +1544,15 @@ packages:
     deprecated: |-
       Deprecated: no longer maintained and no longer used by Sinon packages. See
         https://github.com/sinonjs/nise/issues/243 for replacement details.
+
+  '@tree-sitter-grammars/tree-sitter-markdown@0.3.2':
+    resolution: {integrity: sha512-hQXCcDVvg2t4E8cn7zz6jjIBerzk9E9ZlHxJp5IrUOpY4s1YVpXJbMeWZks2/V7lmkPRnnkM8IrTbQ5ltwEOnA==}
+    peerDependencies:
+      tree-sitter: ^0.21.1
+      tree_sitter: '*'
+    peerDependenciesMeta:
+      tree_sitter:
+        optional: true
 
   '@tree-sitter-grammars/tree-sitter-toml@0.7.0':
     resolution: {integrity: sha512-873Kl518Qm5ghbWadISY41rwFjee0v+2bU4twwvAw2VAJcWwj2vBo3F3hOCXfbqHaFiqc4qh6eLhkMl2YZJS0g==}
@@ -4698,6 +4715,12 @@ snapshots:
       type-detect: 4.1.0
 
   '@sinonjs/text-encoding@0.7.3': {}
+
+  '@tree-sitter-grammars/tree-sitter-markdown@0.3.2(tree-sitter@0.25.1)':
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+      tree-sitter: 0.25.1
 
   '@tree-sitter-grammars/tree-sitter-toml@0.7.0(tree-sitter@0.25.1)':
     dependencies:
