@@ -195,7 +195,28 @@ verified in the built app.
 
 With these gone, the "cannot be ported" set in the inventory gate is empty.
 
-### PR F — the long tail: convert or drop · owner call, then one PR
+### PR F — the long tail: convert or drop · **in progress, one tranche landed**
+
+**Landed:** CoffeeScript dropped (dead language; its grammars moved to
+`spec/fixtures/packages/` because the TextMate specs need a TextMate grammar to
+tokenize, and they go together at PR G). Mustache and Handlebars dropped as a
+*grammar*, but `hbs`, `handlebars`, `mustache`, `mst`, `mu`, `stache`,
+`ractive` moved onto the tree-sitter **HTML** grammar — the markup highlights
+and `{{tags}}` read as plain text, which beat depending on a 0.1.x parser
+published twice. Old-style (NeXTSTEP) plists dropped: nothing emits that format
+and no tree-sitter grammar exists for it; a `.plist` still opens on the XML
+grammar ported in PR D.
+
+**Remaining, and the shape of it:** several rows are not grammars to write at
+all, but **file types to move onto a grammar already in the tree** — `csx` and
+`cake` onto C#, `mm` onto Objective-C, `xsl`/`xslt` onto XML, `Gemfile` onto
+Ruby. Several more are overlay scopes with no file types of their own
+(`source.js.regexp.replacement`, `source.regexp.python`, the rails overlays),
+which cost nothing to delete. What is left after that is a handful of real
+decisions: `text.plain`, `source.sass`, the git commit/rebase buffers, and Go's
+`go.mod` / `go.sum`.
+
+### PR F (original framing) — the long tail: convert or drop · owner call, then one PR
 
 ~30 niche scopes: `source.gotemplate`, `text.html.jsp`, `text.junit-test-report`,
 `text.python.traceback`, `text.shell-session`, `source.sassdoc`, `source.perl6`,

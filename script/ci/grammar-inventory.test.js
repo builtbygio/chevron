@@ -33,16 +33,15 @@ const PACKAGES = path.join(ROOT, 'packages');
 
 // Baseline at the time of writing. Lower these when grammars are ported or
 // deleted; raising one is the failure this file exists to cause.
-const MAX_TEXTMATE = 64;
+const MAX_TEXTMATE = 59;
 const MAX_SHADOWED = 28;
-const MAX_UNIQUE = 36;
+const MAX_UNIQUE = 31;
 const MIN_TREE_SITTER = 35;
 
 // TextMate is the only grammar for these scopes. Every row carries an owner
 // decision in docs/reference/language-stack.md §3.
 const EXCEPTION_SCOPES = new Set([
   'source.cake',
-  'source.coffee',
   'source.csx',
   'source.git-config',
   'source.gotemplate',
@@ -50,18 +49,15 @@ const EXCEPTION_SCOPES = new Set([
   'source.java.el',
   'source.js.regexp.replacement',
   'source.js.rails source.js.jquery',
-  'source.litcoffee',
   'source.mod',
   'source.objcpp',
   'source.perl6',
-  'source.plist',
   'source.regexp.python',
   'source.ruby.gemfile',
   'source.ruby.rails',
   'source.ruby.rails.rjs',
   'source.sass',
   'source.sassdoc',
-  'source.sql.mustache',
   'source.sql.ruby',
   'source.strings',
   'source.sum',
@@ -69,7 +65,6 @@ const EXCEPTION_SCOPES = new Set([
   'text.git-rebase',
   'text.html.gohtml',
   'text.html.jsp',
-  'text.html.mustache',
   'text.html.ruby',
   'text.junit-test-report',
   'text.plain',
@@ -259,7 +254,15 @@ describe('grammar inventory', () => {
     // tree-sitter grammar, so ```rust fences in Markdown have no highlighting.
     // Closing it means a TextMate Rust grammar or a tree-sitter Markdown
     // grammar (retirement plan, PR C) — not another fallback.
-    const KNOWN_UNRESOLVED = new Set(['source.rust']);
+    const KNOWN_UNRESOLVED = new Set([
+      'source.rust',
+      // CoffeeScript was dropped (PR F). The two grammars that include it —
+      // TextMate gfm and TextMate html — are both shadowed, so nothing a user
+      // opens can reach the include; only another TextMate grammar embedding
+      // html could, and a <script type="text/coffeescript"> inside a .jsp is
+      // not worth keeping a dead language for.
+      'source.coffee'
+    ]);
     const present = new Set(textMate.map(g => g.scopeName));
     const missing = [];
     for (const grammar of textMate) {

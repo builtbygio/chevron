@@ -19,12 +19,10 @@ const CONVERTED = [
   'language-gfm',
   'language-less',
   'language-make',
-  'language-mustache',
   'language-sql',
   'language-toml',
   'language-yaml',
   'language-clojure',
-  'language-coffee-script',
   'language-perl',
   'language-php',
   'language-property-list',
@@ -228,11 +226,9 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
   it('language-property-list ships JSON grammars settings and snippets and no shipped CSON', () => {
     const cson = shippedCson('language-property-list');
     assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
-    const oldStyle = path.join(
-      packageRoot('language-property-list'),
-      'grammars',
-      'property list (old-style).json'
-    );
+    // The old-style (NeXTSTEP) grammar was dropped: nothing emits that format
+    // any more and no tree-sitter grammar exists for it. XML plists are the
+    // ones people have, and they are on tree-sitter now.
     const xml = path.join(
       packageRoot('language-property-list'),
       'grammars',
@@ -248,12 +244,9 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
       'snippets',
       'language-property-list.json'
     );
-    assert.ok(fs.existsSync(oldStyle), 'grammars/property list (old-style).json');
     assert.ok(fs.existsSync(xml), 'grammars/property list (xml).json');
     assert.ok(fs.existsSync(settings), 'settings/language-property-list.json');
     assert.ok(fs.existsSync(snippets), 'snippets/language-property-list.json');
-    const parsed = JSON.parse(fs.readFileSync(oldStyle, 'utf8'));
-    assert.strictEqual(parsed.scopeName, 'source.plist');
     const xmlParsed = JSON.parse(fs.readFileSync(xml, 'utf8'));
     assert.strictEqual(xmlParsed.scopeName, 'text.xml.plist');
   });
@@ -337,38 +330,6 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.strictEqual(p6.scopeName, 'source.perl6');
   });
 
-  it('language-coffee-script ships JSON grammars settings and snippets and no shipped CSON', () => {
-    const cson = shippedCson('language-coffee-script');
-    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
-    const coffee = path.join(
-      packageRoot('language-coffee-script'),
-      'grammars',
-      'coffeescript.json'
-    );
-    const lit = path.join(
-      packageRoot('language-coffee-script'),
-      'grammars',
-      'coffeescript (literate).json'
-    );
-    const settings = path.join(
-      packageRoot('language-coffee-script'),
-      'settings',
-      'language-coffee-script.json'
-    );
-    const snippets = path.join(
-      packageRoot('language-coffee-script'),
-      'snippets',
-      'language-coffee-script.json'
-    );
-    assert.ok(fs.existsSync(coffee), 'grammars/coffeescript.json');
-    assert.ok(fs.existsSync(lit), 'grammars/coffeescript (literate).json');
-    assert.ok(fs.existsSync(settings), 'settings/language-coffee-script.json');
-    assert.ok(fs.existsSync(snippets), 'snippets/language-coffee-script.json');
-    const parsed = JSON.parse(fs.readFileSync(coffee, 'utf8'));
-    assert.strictEqual(parsed.scopeName, 'source.coffee');
-    const litParsed = JSON.parse(fs.readFileSync(lit, 'utf8'));
-    assert.strictEqual(litParsed.scopeName, 'source.litcoffee');
-  });
 
   it('language-clojure ships JSON TextMate grammar settings and snippets and no shipped CSON', () => {
     const cson = shippedCson('language-clojure');
@@ -476,26 +437,6 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.strictEqual(parsed.scopeName, 'source.sql');
   });
 
-  it('language-mustache ships JSON grammars and no shipped CSON', () => {
-    const cson = shippedCson('language-mustache');
-    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
-    const html = path.join(
-      packageRoot('language-mustache'),
-      'grammars',
-      'mustache.json'
-    );
-    const sql = path.join(
-      packageRoot('language-mustache'),
-      'grammars',
-      'sql with mustaches.json'
-    );
-    assert.ok(fs.existsSync(html), 'grammars/mustache.json');
-    assert.ok(fs.existsSync(sql), 'grammars/sql with mustaches.json');
-    const parsed = JSON.parse(fs.readFileSync(html, 'utf8'));
-    assert.strictEqual(parsed.scopeName, 'text.html.mustache');
-    const sqlParsed = JSON.parse(fs.readFileSync(sql, 'utf8'));
-    assert.strictEqual(sqlParsed.scopeName, 'source.sql.mustache');
-  });
 
   it('language-make ships JSON grammar and settings and no shipped CSON', () => {
     const cson = shippedCson('language-make');

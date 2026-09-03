@@ -10,7 +10,16 @@
     "shtml",
     "tmpl",
     "tpl",
-    "xhtml"
+    "xhtml",
+    "handlebars",
+    "hbs",
+    "hjs",
+    "mst",
+    "mu",
+    "mustache",
+    "rac",
+    "ractive",
+    "stache"
   ],
   "firstLineRegex": "^\\s*<(?:!(?:DOCTYPE|doctype|DocType)\\s*)?[Hh][Tt][Mm][Ll]",
   "injectionRegExp": "(HTML|html|Html)$",
