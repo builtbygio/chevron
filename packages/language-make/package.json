@@ -15,5 +15,8 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/atom/language-make/issues"
+  },
+  "dependencies": {
+    "tree-sitter-make": "1.1.1"
   }
 }
