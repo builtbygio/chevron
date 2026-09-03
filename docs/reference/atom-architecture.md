@@ -120,7 +120,7 @@ Packages and core talk through **`global.chevron`** (`AtomEnvironment` in `src/a
 | `chevron.packages` | Activate/deactivate packages |
 | `chevron.commands` | Keymap-bound commands |
 | `chevron.config` | Settings (JSON preferred; CSON still dual-read) |
-| `chevron.grammars` | tree-sitter first when `core.useTreeSitterParsers` is on; TextMate fallback |
+| `chevron.grammars` | tree-sitter whenever the language has one; TextMate for the rest, and as the include library they are built from |
 | `chevron.styles` / `chevron.themes` | LESS/CSS UI & syntax themes |
 | `chevron.notifications` | Toasts / errors |
 

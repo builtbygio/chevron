@@ -5,7 +5,8 @@
   "parser": "tree-sitter-embedded-template",
   "fileTypes": [
     "erb",
-    "html.erb"
+    "html.erb",
+    "rhtml"
   ],
   "injectionRegExp": "^(erb|ERB)$",
   "folds": [

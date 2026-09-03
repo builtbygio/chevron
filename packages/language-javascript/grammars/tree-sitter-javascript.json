@@ -5,7 +5,27 @@
   "parser": "tree-sitter-javascript",
   "fileTypes": [
     "js",
-    "jsx"
+    "jsx",
+    "_js",
+    "cjs",
+    "es",
+    "es6",
+    "gs",
+    "htc",
+    "jscad",
+    "jscript",
+    "jse",
+    "jslib",
+    "jsm",
+    "json5",
+    "jspre",
+    "mjs",
+    "pac",
+    "pjs",
+    "sjs",
+    "snap",
+    "xsjs",
+    "xsjslib"
   ],
   "injectionRegex": "^js$|^JS$|javascript|JavaScript",
   "firstLineRegex": [

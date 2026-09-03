@@ -92,7 +92,7 @@ Parser availability for the interesting rows:
 Sized for one sitting each unless noted. Every one carries a gate that fails
 without it, per house rule.
 
-### PR A — grammar inventory ratchet · small · no decision needed
+### PR A — grammar inventory ratchet · **done**
 
 `script/ci/grammar-inventory.test.js`: classify every shipped grammar as
 tree-sitter, TextMate-shadowed, TextMate-unique or injection-only; assert the
@@ -100,14 +100,48 @@ TextMate counts never rise. Records the 42 unique scopes with their package, so
 the exception list stops being prose. Lands whatever else is decided, and makes
 every later PR measurable.
 
-### PR B — merge file types, then delete the 27 shadowed fallbacks · medium · **needs D1**
+### PR B — merge file types, retire the flag, delete what is orphaned · **done, and not as planned**
 
-Move the TextMate-only `fileTypes` onto the matching tree-sitter grammars
-(10 scopes, table above), delete the 27 files, retire
-`core.useTreeSitterParsers` — with no fallback left it can only mislead.
-Gate: open one file per moved extension and assert the resulting grammar,
-extending `script/ci/load-tree-sitter-language.test.js`. Deletes ~27 files and
-one config surface; first-mate stays for the other 42.
+D1 was answered: remove the flag. The deletion it was supposed to unlock
+mostly cannot happen, and the reason is worth recording.
+
+**The 27 shadowed grammars are not a fallback. They are a library.** first-mate
+resolves `{"include": "source.js"}` through its own registry, so a tree-sitter
+grammar can never answer one. **26 of the 42 surviving TextMate grammars
+include a shadowed scope** — `source.gfm` alone includes 21 of them for fenced
+code blocks (`js`, `python`, `ruby`, `css`, `html`, …), `source.objc` includes
+`source.c`, `source.makefile` includes `source.shell`, `text.python.traceback`
+includes `source.python`. Delete those files and Markdown's code fences go
+plain.
+
+Only **3** were reachable from nothing and could go: `source.tsx`,
+`text.html.erb`, `text.html.php`. What landed instead:
+
+- 89 file types moved onto the tree-sitter grammars, so `cjs`, `mjs`, `es6`,
+  `PKGBUILD`, `bashrc`, `zshrc`, `Fastfile`, `gemspec`, `Vagrantfile`,
+  `Snakefile`, `htm`, `xhtml` and 77 others open on tree-sitter rather than
+  reaching a TextMate grammar that is no longer selectable. `install` and
+  `profile` deliberately stayed with PHP, which claims them for Drupal and
+  wins them today.
+- `core.useTreeSitterParsers` is gone: tree-sitter always wins a tie, and the
+  TextMate grammar for a shadowed scope survives only as an include target.
+- Two new gates in `script/ci/grammar-inventory.test.js`: the moved file types
+  must stay claimed, and **no TextMate grammar may be deleted while another
+  one includes it**.
+
+That last gate found a bug on its first run: `source.gfm` includes
+`source.rust`, and `language-rust-bundled` ships only a tree-sitter grammar —
+so ```` ```rust ```` fences in Markdown have no highlighting today. Recorded as
+a known gap; PR C closes it.
+
+Driving the built app then found a second one. **HTML was reaching TextMate for
+any file that starts with a doctype** — most real HTML. Grammar selection adds
+0.5 for a first-line match and 0.1 for being tree-sitter, and only the TextMate
+grammar declared one. The tree-sitter grammar now declares the equivalent, and
+a third gate compiles every regex a tree-sitter grammar declares: they are
+built with `new RegExp(value)`, so a TextMate-style `(?i)` prefix throws at
+construction and takes the whole grammar with it, silently handing the language
+back to TextMate. That is exactly what a first attempt at this fix did.
 
 ### PR C — Markdown on tree-sitter · large · **needs D2**
 
@@ -161,8 +195,9 @@ Only when PR A's ratchet reads zero unique TextMate scopes. Deletes
 
 ## Decisions this needs
 
-- **D1** — Is `core.useTreeSitterParsers: false` a supported escape hatch, or
-  a leftover? Deleting it unblocks PR B and 27 files.
+- ~~**D1** — Is `core.useTreeSitterParsers: false` a supported escape hatch?~~
+  **Answered: leftover, removed in PR B.** It unlocked 3 deletions, not 27 —
+  the rest are an include library, not a fallback.
 - **D2** — Is Markdown worth a day of scope-mapping? It is the one row on the
   list a user meets daily.
 - **D3** — Are `make`, `objc` and plist worth porting, or are they

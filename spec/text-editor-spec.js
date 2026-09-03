@@ -6821,10 +6821,6 @@ describe('TextEditor', () => {
   });
 
   describe("when the buffer's language mode changes", () => {
-    beforeEach(() => {
-      atom.config.set('core.useTreeSitterParsers', false);
-    });
-
     it('notifies onDidTokenize observers when retokenization is finished', async () => {
       // Exercise the full `tokenizeInBackground` code path, which bails out early if
       // `.setVisible` has not been called with `true`.
@@ -6835,9 +6831,16 @@ describe('TextEditor', () => {
       editor.onDidTokenize(event => events.push(event));
 
       await atom.packages.activatePackage('language-c');
-      expect(
-        atom.grammars.assignLanguageMode(editor.getBuffer(), 'source.c')
-      ).toBe(true);
+      // did-tokenize belongs to the TextMate tokenizer, so ask for that engine
+      // rather than whichever one wins grammar selection.
+      const buffer = editor.getBuffer();
+      buffer.setLanguageMode(
+        new TextMateLanguageMode({
+          grammar: atom.grammars.textMateGrammarForScopeName('source.c'),
+          buffer,
+          config: atom.config
+        })
+      );
       advanceClock(1);
       expect(events.length).toBe(1);
     });
@@ -7379,15 +7382,30 @@ describe('TextEditor', () => {
 
   describe("when the editor's grammar has an injection selector", () => {
     beforeEach(async () => {
-      atom.config.set('core.useTreeSitterParsers', false);
       await atom.packages.activatePackage('language-text');
       await atom.packages.activatePackage('language-javascript');
     });
 
+    const openWithTextMate = async () => {
+      const opened = await atom.workspace.open('sample.js');
+      const buffer = opened.getBuffer();
+      buffer.setLanguageMode(
+        new TextMateLanguageMode({
+          grammar: atom.grammars.textMateGrammarForScopeName('source.js'),
+          buffer,
+          config: atom.config
+        })
+      );
+      return opened;
+    };
+
+
     it("includes the grammar's patterns when the selector matches the current scope in other grammars", async () => {
       await atom.packages.activatePackage('language-hyperlink');
 
-      const grammar = atom.grammars.selectGrammar('text.js');
+      // injectionSelector is TextMate-only, so this is the TextMate grammar
+      // for source.js, not whichever engine selection would pick.
+      const grammar = atom.grammars.textMateGrammarForScopeName('source.js');
       const { line, tags } = grammar.tokenizeLine(
         'var i; // http://github.com'
       );
@@ -7405,7 +7423,7 @@ describe('TextEditor', () => {
 
     describe('when the grammar is added', () => {
       it('retokenizes existing buffers that contain tokens that match the injection selector', async () => {
-        editor = await atom.workspace.open('sample.js');
+        editor = await openWithTextMate();
         editor.setText('// http://github.com');
         let tokens = editor.tokensForScreenRow(0);
         expect(tokens).toEqual([
@@ -7457,7 +7475,7 @@ describe('TextEditor', () => {
 
       describe('when the grammar is updated', () => {
         it('retokenizes existing buffers that contain tokens that match the injection selector', async () => {
-          editor = await atom.workspace.open('sample.js');
+          editor = await openWithTextMate();
           editor.setText('// SELECT * FROM OCTOCATS');
           let tokens = editor.tokensForScreenRow(0);
           expect(tokens).toEqual([
@@ -8181,7 +8199,6 @@ describe('TextEditor', () => {
 
   describe('.syntaxTreeScopeDescriptorForBufferPosition(position)', () => {
     it('returns the result of scopeDescriptorForBufferPosition() when textmate language mode is used', async () => {
-      atom.config.set('core.useTreeSitterParsers', false);
       editor = await atom.workspace.open('sample.js', { autoIndent: false });
       await atom.packages.activatePackage('language-javascript');
 
