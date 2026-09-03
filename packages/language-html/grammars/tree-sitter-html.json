@@ -4,8 +4,15 @@
   "type": "tree-sitter",
   "parser": "tree-sitter-html",
   "fileTypes": [
-    "html"
+    "html",
+    "htm",
+    "kit",
+    "shtml",
+    "tmpl",
+    "tpl",
+    "xhtml"
   ],
+  "firstLineRegex": "^\\s*<(?:!(?:DOCTYPE|doctype|DocType)\\s*)?[Hh][Tt][Mm][Ll]",
   "injectionRegExp": "(HTML|html|Html)$",
   "folds": [
     {

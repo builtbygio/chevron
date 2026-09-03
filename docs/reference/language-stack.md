@@ -4,7 +4,7 @@
 **Owner:** `builtbygio`  
 **Code:** `src/grammar-registry.js` (`getParserKindCounts()`). Runtime: official `tree-sitter@0.25.1` + first-mate / oniguruma.
 
-Tree-sitter is the default highlighter when `core.useTreeSitterParsers` is on (product default) **and** the catalog language ships a `type: tree-sitter` grammar. TextMate is the **supported fallback** for every row in §3. Deleting first-mate is optional H3 PR 22 and is gated on this list being empty.
+Tree-sitter is the highlighter whenever the catalog language ships a `type: tree-sitter` grammar — there is no setting to prefer TextMate (`core.useTreeSitterParsers` was removed). The TextMate grammar for such a scope stays registered because 26 of the grammars in §3 `include` one. TextMate is the **supported fallback** for every row in §3. Deleting first-mate is optional H3 PR 22 and is gated on this list being empty.
 
 Do **not** treat a “port” decision as work started. Ports are PR 13b (one language per PR).
 

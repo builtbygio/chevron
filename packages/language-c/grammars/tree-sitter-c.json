@@ -7,7 +7,8 @@
   "fileTypes": [
     "h",
     "c",
-    "h.in"
+    "h.in",
+    "xpm"
   ],
   "folds": [
     {

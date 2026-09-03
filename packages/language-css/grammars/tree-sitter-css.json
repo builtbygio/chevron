@@ -4,7 +4,8 @@
   "type": "tree-sitter",
   "parser": "tree-sitter-css",
   "fileTypes": [
-    "css"
+    "css",
+    "css.erb"
   ],
   "injectionRegExp": "(css|CSS)",
   "folds": [

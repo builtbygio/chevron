@@ -20,7 +20,8 @@
     "joke",
     "joker",
     "clj.hl",
-    "cljs.hl"
+    "cljs.hl",
+    "org"
   ],
   "comments": {
     "start": "; "

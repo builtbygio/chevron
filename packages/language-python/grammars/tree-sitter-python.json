@@ -17,7 +17,14 @@
     "Sconstruct",
     "sconstruct",
     "SConscript",
-    "wsgi"
+    "wsgi",
+    "cpy",
+    "kv",
+    "rpy",
+    "Snakefile",
+    "smk",
+    "tac",
+    "wscript"
   ],
   "folds": [
     {
