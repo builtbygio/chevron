@@ -27,12 +27,10 @@ function languagePins() {
 const FIRST_TRANCHE = [];
 
 const KEEP_TEXTMATE = [
-  'language-coffee-script',
   'language-objective-c',
   'language-gfm',
   'language-git',
   'language-ruby-on-rails',
-  'language-mustache',
   'language-make',
   'language-property-list',
   'language-text',
@@ -52,7 +50,12 @@ describe('language stack catalog (H2 PR 13)', () => {
 
   // Dropped packages the doc is expected to still name, because saying what
   // was removed and what it cost is the point of the note.
-  const REMOVED = ['language-hyperlink', 'language-todo'];
+  const REMOVED = [
+    'language-hyperlink',
+    'language-todo',
+    'language-coffee-script',
+    'language-mustache'
+  ];
 
   it('does not invent language-* pins that are not in packageDependencies', () => {
     const named = [...doc.matchAll(/`language-[a-z0-9-]+`/g)].map(m =>
@@ -100,9 +103,10 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(registry, /first-mate is not deleted by H2/);
   });
 
-  it('counts 32 bundled language packages', () => {
-    // 34 before language-hyperlink and language-todo were dropped (PR E).
-    assert.strictEqual(pins.length, 32);
+  it('counts 30 bundled language packages', () => {
+    // 34 before hyperlink and todo (PR E), 32 before coffee-script and
+    // mustache (PR F).
+    assert.strictEqual(pins.length, 30);
   });
 
   it('language-yaml is catalogued as both after the 13b port', () => {
@@ -189,10 +193,6 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`source.makefile` \| JSON/);
   });
 
-  it('language-mustache 13c ships JSON grammars', () => {
-    assert.match(doc, /`language-mustache` \| TextMate/);
-    assert.match(doc, /`text.html.mustache`, `source.sql.mustache` \| JSON/);
-  });
 
   it('language-sql 13c ships JSON TextMate fallback', () => {
     assert.match(doc, /`language-sql` \| both/);
@@ -214,10 +214,6 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`source.clojure` \| JSON/);
   });
 
-  it('language-coffee-script 13c ships JSON grammars', () => {
-    assert.match(doc, /`language-coffee-script` \| TextMate/);
-    assert.match(doc, /`source.coffee`, `source.litcoffee` \| JSON/);
-  });
 
   it('language-perl 13c ships JSON TextMate fallback', () => {
     assert.match(doc, /`language-perl` \| both/);
