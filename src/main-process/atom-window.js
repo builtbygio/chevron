@@ -406,39 +406,42 @@ module.exports = class AtomWindow extends EventEmitter {
       if (result.response === 0) this.browserWindow.destroy();
     });
 
-    this.browserWindow.webContents.on('render-process-gone', async details => {
-      // Electron's own warning names neither the reason nor the exit code, and
-      // on macOS nothing else is written down at all (chevron#310).
-      console.error(
-        `Renderer process gone: reason=${details && details.reason} ` +
-          `exitCode=${details && details.exitCode}`
-      );
-      if (this.headless) {
-        console.log('Renderer process crashed, exiting');
-        this.atomApplication.exit(100);
-        return;
+    this.browserWindow.webContents.on(
+      'render-process-gone',
+      async (event, details) => {
+        // Electron's own warning names neither the reason nor the exit code,
+        // and on macOS nothing else is written down at all (chevron#310).
+        console.error(
+          `Renderer process gone: reason=${details && details.reason} ` +
+            `exitCode=${details && details.exitCode}`
+        );
+        if (this.headless) {
+          console.log('Renderer process crashed, exiting');
+          this.atomApplication.exit(100);
+          return;
+        }
+
+        await this.fileRecoveryService.didCrashWindow(this);
+
+        const result = await dialog.showMessageBox(this.browserWindow, {
+          type: 'warning',
+          buttons: ['Close Window', 'Reload', 'Keep It Open'],
+          cancelId: 2, // Canceling should be the least destructive action
+          message: 'Chevron has crashed',
+          detail:
+            'Please report this issue to https://github.com/builtbygio/chevron/issues'
+        });
+
+        switch (result.response) {
+          case 0:
+            this.browserWindow.destroy();
+            break;
+          case 1:
+            this.browserWindow.reload();
+            break;
+        }
       }
-
-      await this.fileRecoveryService.didCrashWindow(this);
-
-      const result = await dialog.showMessageBox(this.browserWindow, {
-        type: 'warning',
-        buttons: ['Close Window', 'Reload', 'Keep It Open'],
-        cancelId: 2, // Canceling should be the least destructive action
-        message: 'Chevron has crashed',
-        detail:
-          'Please report this issue to https://github.com/builtbygio/chevron/issues'
-      });
-
-      switch (result.response) {
-        case 0:
-          this.browserWindow.destroy();
-          break;
-        case 1:
-          this.browserWindow.reload();
-          break;
-      }
-    });
+    );
 
     this.browserWindow.webContents.on('will-navigate', (event, url) => {
       if (url !== this.browserWindow.webContents.getURL())
