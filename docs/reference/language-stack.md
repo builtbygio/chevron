@@ -81,6 +81,17 @@ which is the trade rather than depending on a 0.1.x parser. The old-style
 (NeXTSTEP) plist grammar went with them — nothing emits that format and no
 tree-sitter grammar exists; XML plists are ported.
 
+**Overlays folded (PR F, second tranche).** Fourteen more TextMate grammars
+went. Five were file types wearing a grammar, and the file types moved onto a
+grammar already in the tree: `csx` and `cake` → C#, `mm`/`M` → Objective-C,
+`xsl`/`xslt` → XML, `Gemfile` → Ruby (which already claimed it). Nine were
+overlays with nothing to fall back to — `source.js.regexp.replacement`,
+`source.regexp.python`, `text.python.console`, `text.python.traceback`,
+`text.shell-session`, `source.sassdoc`, `text.junit-test-report` and two
+others. **`source.gotemplate` and `source.java.el` were deliberately kept**:
+`text.html.gohtml` and `text.html.jsp` are live TextMate grammars built from
+them, and the include-graph gate caught the attempt to delete them.
+
 Named owner for every row: **`builtbygio`**. “keep TextMate” is a valid owner decision. These packages **are** why first-mate stays.
 
 What it would cost to shrink this list, priced per PR: [textmate-retirement-plan.md](../process/textmate-retirement-plan.md).

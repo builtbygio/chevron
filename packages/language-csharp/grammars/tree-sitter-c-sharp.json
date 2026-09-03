@@ -5,7 +5,9 @@
   "parser": "tree-sitter-c-sharp",
   "injectionRegex": "csharp|c-sharp|c#",
   "fileTypes": [
-    "cs"
+    "cs",
+    "cake",
+    "csx"
   ],
   "injectionRegExp": "^(cs|csharp|c#)$",
   "comments": {

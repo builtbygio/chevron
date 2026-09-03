@@ -33,31 +33,24 @@ const PACKAGES = path.join(ROOT, 'packages');
 
 // Baseline at the time of writing. Lower these when grammars are ported or
 // deleted; raising one is the failure this file exists to cause.
-const MAX_TEXTMATE = 59;
+const MAX_TEXTMATE = 47;
 const MAX_SHADOWED = 28;
-const MAX_UNIQUE = 31;
+const MAX_UNIQUE = 19;
 const MIN_TREE_SITTER = 35;
 
 // TextMate is the only grammar for these scopes. Every row carries an owner
 // decision in docs/reference/language-stack.md §3.
 const EXCEPTION_SCOPES = new Set([
-  'source.cake',
-  'source.csx',
   'source.git-config',
   'source.gotemplate',
   'source.java-properties',
   'source.java.el',
-  'source.js.regexp.replacement',
   'source.js.rails source.js.jquery',
   'source.mod',
-  'source.objcpp',
   'source.perl6',
-  'source.regexp.python',
-  'source.ruby.gemfile',
   'source.ruby.rails',
   'source.ruby.rails.rjs',
   'source.sass',
-  'source.sassdoc',
   'source.sql.ruby',
   'source.strings',
   'source.sum',
@@ -66,11 +59,7 @@ const EXCEPTION_SCOPES = new Set([
   'text.html.gohtml',
   'text.html.jsp',
   'text.html.ruby',
-  'text.junit-test-report',
   'text.plain',
-  'text.python.console',
-  'text.python.traceback',
-  'text.shell-session',
   'text.xml.xsl'
 ]);
 
@@ -261,7 +250,16 @@ describe('grammar inventory', () => {
       // opens can reach the include; only another TextMate grammar embedding
       // html could, and a <script type="text/coffeescript"> inside a .jsp is
       // not worth keeping a dead language for.
-      'source.coffee'
+      'source.coffee',
+      // Overlays deleted with their consumers: TextMate gfm's fenced-code
+      // cases for shell sessions and python consoles, and TextMate python's
+      // regex overlay. All three includers are shadowed grammars, so nothing
+      // a user opens reaches them. The two overlays that a *live* grammar
+      // includes -- source.gotemplate for gohtml, source.java.el for jsp --
+      // were kept for that reason.
+      'text.shell-session',
+      'text.python.console',
+      'source.regexp.python'
     ]);
     const present = new Set(textMate.map(g => g.scopeName));
     const missing = [];

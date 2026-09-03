@@ -129,28 +129,22 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
     const scss = path.join(packageRoot('language-sass'), 'grammars', 'scss.json');
     const sass = path.join(packageRoot('language-sass'), 'grammars', 'sass.json');
-    const sassdoc = path.join(packageRoot('language-sass'), 'grammars', 'sassdoc.json');
     const ts = path.join(packageRoot('language-sass'), 'grammars', 'tree-sitter-scss.json');
     assert.ok(fs.existsSync(scss), 'grammars/scss.json');
     assert.ok(fs.existsSync(sass), 'grammars/sass.json');
-    assert.ok(fs.existsSync(sassdoc), 'grammars/sassdoc.json');
     assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-scss.json');
     assert.strictEqual(JSON.parse(fs.readFileSync(scss, 'utf8')).scopeName, 'source.css.scss');
     assert.strictEqual(JSON.parse(fs.readFileSync(sass, 'utf8')).scopeName, 'source.sass');
-    assert.strictEqual(JSON.parse(fs.readFileSync(sassdoc, 'utf8')).scopeName, 'source.sassdoc');
   });
 
   it('language-objective-c ships JSON grammars settings and snippets and no shipped CSON', () => {
     const cson = shippedCson('language-objective-c');
     assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
     const objc = path.join(packageRoot('language-objective-c'), 'grammars', 'objective-c.json');
-    const objcpp = path.join(packageRoot('language-objective-c'), 'grammars', 'objective-c++.json');
     const strings = path.join(packageRoot('language-objective-c'), 'grammars', 'strings file.json');
     assert.ok(fs.existsSync(objc), 'grammars/objective-c.json');
-    assert.ok(fs.existsSync(objcpp), 'grammars/objective-c++.json');
     assert.ok(fs.existsSync(strings), 'grammars/strings file.json');
     assert.strictEqual(JSON.parse(fs.readFileSync(objc, 'utf8')).scopeName, 'source.objc');
-    assert.strictEqual(JSON.parse(fs.readFileSync(objcpp, 'utf8')).scopeName, 'source.objcpp');
     assert.strictEqual(JSON.parse(fs.readFileSync(strings, 'utf8')).scopeName, 'source.strings');
   });
 
@@ -172,16 +166,10 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     const cson = shippedCson('language-csharp');
     assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
     const csharp = path.join(packageRoot('language-csharp'), 'grammars', 'csharp.json');
-    const csx = path.join(packageRoot('language-csharp'), 'grammars', 'csx.json');
-    const cake = path.join(packageRoot('language-csharp'), 'grammars', 'cake.json');
     const ts = path.join(packageRoot('language-csharp'), 'grammars', 'tree-sitter-c-sharp.json');
     assert.ok(fs.existsSync(csharp), 'grammars/csharp.json');
-    assert.ok(fs.existsSync(csx), 'grammars/csx.json');
-    assert.ok(fs.existsSync(cake), 'grammars/cake.json');
     assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-c-sharp.json');
     assert.strictEqual(JSON.parse(fs.readFileSync(csharp, 'utf8')).scopeName, 'source.cs');
-    assert.strictEqual(JSON.parse(fs.readFileSync(csx, 'utf8')).scopeName, 'source.csx');
-    assert.strictEqual(JSON.parse(fs.readFileSync(cake, 'utf8')).scopeName, 'source.cake');
   });
 
   it('language-xml ships JSON TextMate grammars settings and snippets and no shipped CSON', () => {
@@ -191,11 +179,6 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
       packageRoot('language-xml'),
       'grammars',
       'xml.json'
-    );
-    const xsl = path.join(
-      packageRoot('language-xml'),
-      'grammars',
-      'xsl.json'
     );
     const settings = path.join(
       packageRoot('language-xml'),
@@ -213,14 +196,11 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
       'tree-sitter-xml.json'
     );
     assert.ok(fs.existsSync(xml), 'grammars/xml.json');
-    assert.ok(fs.existsSync(xsl), 'grammars/xsl.json');
     assert.ok(fs.existsSync(settings), 'settings/language-xml.json');
     assert.ok(fs.existsSync(snippets), 'snippets/language-xml.json');
     assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-xml.json');
     const parsed = JSON.parse(fs.readFileSync(xml, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.xml');
-    const xslParsed = JSON.parse(fs.readFileSync(xsl, 'utf8'));
-    assert.strictEqual(xslParsed.scopeName, 'text.xml.xsl');
   });
 
   it('language-property-list ships JSON grammars settings and snippets and no shipped CSON', () => {
