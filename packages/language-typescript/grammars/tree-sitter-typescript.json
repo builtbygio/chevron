@@ -6,6 +6,7 @@
   "fileTypes": [
     "ts"
   ],
+  "injectionRegExp": "^(ts|typescript)$",
   "comments": {
     "start": "// "
   },

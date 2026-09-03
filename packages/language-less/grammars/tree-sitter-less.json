@@ -8,6 +8,7 @@
     "less",
     "less.erb"
   ],
+  "injectionRegExp": "^(less)$",
   "comments": {
     "start": "/*",
     "end": "*/"

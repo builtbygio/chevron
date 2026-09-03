@@ -27,6 +27,7 @@
     "xsjs",
     "xsjslib"
   ],
+  "injectionRegExp": "^(js|jsx|javascript|node|mjs|cjs)$",
   "injectionRegex": "^js$|^JS$|javascript|JavaScript",
   "firstLineRegex": [
     "^#!.*\\b(node)\\r?\\n",

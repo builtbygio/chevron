@@ -158,8 +158,11 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`text.todo` \| JSON/);
   });
 
-  it('language-gfm 13c ships JSON grammar settings and snippets', () => {
-    assert.match(doc, /`language-gfm` \| TextMate/);
+  it('language-gfm is ported, with its TextMate grammar kept as an include', () => {
+    // Ported in the retirement plan's PR C: block grammar + an inline
+    // injection. The TextMate grammar stays because 26 other grammars
+    // include one of the shadowed scopes, gfm's fences among them.
+    assert.match(doc, /`language-gfm` \| both/);
     assert.match(doc, /`source.gfm` \| JSON/);
   });
 

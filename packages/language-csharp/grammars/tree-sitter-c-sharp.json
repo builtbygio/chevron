@@ -7,6 +7,7 @@
   "fileTypes": [
     "cs"
   ],
+  "injectionRegExp": "^(cs|csharp|c#)$",
   "comments": {
     "start": "// "
   },

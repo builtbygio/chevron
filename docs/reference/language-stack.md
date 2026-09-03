@@ -53,7 +53,7 @@ A package is **both** when it ships at least one `type: tree-sitter` grammar *an
 | `language-csharp` | both | `tree-sitter-c-sharp` (`source.cs`). TM-only siblings: `source.csx`, `source.cake` | `source.cs`, `source.csx`, `source.cake` | JSON | **ported** (13b) |
 | `language-coffee-script` | TextMate | — | `source.coffee`, `source.litcoffee` | JSON | **keep TextMate** |
 | `language-objective-c` | TextMate | — | `source.objc`, `source.objcpp`, `source.strings` | JSON | **keep TextMate** |
-| `language-gfm` | TextMate | — | `source.gfm` | JSON | **keep TextMate** |
+| `language-gfm` | both | `@tree-sitter-grammars/tree-sitter-markdown@0.3.2` | `source.gfm` | JSON | **ported** — block grammar plus a `source.gfm.inline` injection; fenced code injects the language named in the fence. The TextMate grammar stays as an include target |
 | `language-git` | TextMate | — | `text.git-commit`, `source.git-config`, `text.git-rebase` | JSON | **keep TextMate** |
 | `language-ruby-on-rails` | TextMate | — | `source.ruby.rails` + html/js/sql/rjs overlays | JSON | **keep TextMate** |
 | `language-mustache` | TextMate | — | `text.html.mustache`, `source.sql.mustache` | JSON | **keep TextMate** |
@@ -94,7 +94,7 @@ Not a programming-language port, or nobody will staff one. Revisit only if an ow
 |---------|-------|----------|
 | `language-coffee-script` | builtbygio | Architecture: exception until someone cares. **13c:** grammars + settings + snippets JSON. |
 | `language-objective-c` | builtbygio | Not in the 13b stream. **13c:** grammars + settings + snippets JSON. |
-| `language-gfm` | builtbygio | GFM-specific TextMate grammar; `tree-sitter-markdown` is a later product call, not this list. **13c:** settings + snippets JSON. |
+| `language-gfm` | builtbygio | **Ported** (textmate-retirement-plan.md, PR C). Markdown parses in two passes, so the package registers two injection points: `inline` for everything inside a paragraph, and `fenced_code_block` for the language named in the fence. Its TextMate grammar stays as an include target. |
 | `language-git` | builtbygio | Commit / rebase / config buffers, not a language engine. **13c:** grammars + settings + snippets JSON. |
 | `language-ruby-on-rails` | builtbygio | Dialect overlays on ruby/html/js/sql. Port ruby (done) covers the file types that matter. **13c:** grammars + snippets JSON. |
 | `language-mustache` | builtbygio | Template injection. **13c:** grammars JSON. |

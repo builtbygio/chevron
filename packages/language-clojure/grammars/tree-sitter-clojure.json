@@ -23,6 +23,7 @@
     "cljs.hl",
     "org"
   ],
+  "injectionRegExp": "^(clj|clojure|cljs)$",
   "comments": {
     "start": "; "
   },

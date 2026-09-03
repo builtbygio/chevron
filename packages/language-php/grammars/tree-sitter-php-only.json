@@ -42,5 +42,6 @@
     "\"if\", \"else\", \"elseif\", \"endif\", \"for\", \"foreach\", \"endfor\", \"endforeach\", \"while\", \"endwhile\", \"do\", \"switch\", \"endswitch\", \"case\", \"default\", \"break\", \"continue\", \"return\", \"try\", \"catch\", \"finally\", \"throw\", \"match\"": "keyword.control.php",
     "\"echo\", \"print\", \"include\", \"include_once\", \"require\", \"require_once\", \"yield\", \"yield from\"": "keyword.control.import.php",
     "\"new\", \"clone\", \"instanceof\", \"as\"": "keyword.operator.php"
-  }
+  },
+  "injectionRegExp": "^(php)$"
 }

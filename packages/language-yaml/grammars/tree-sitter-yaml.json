@@ -21,6 +21,7 @@
     "Boxfile",
     "ksy"
   ],
+  "injectionRegExp": "^(yml|yaml)$",
   "comments": {
     "start": "# "
   },

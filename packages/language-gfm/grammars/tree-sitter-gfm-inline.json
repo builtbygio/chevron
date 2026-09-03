@@ -1,0 +1,21 @@
+{
+  "name": "GitHub Markdown (inline)",
+  "scopeName": "source.gfm.inline",
+  "type": "tree-sitter",
+  "parser": "@tree-sitter-grammars/tree-sitter-markdown/bindings/node/inline",
+  "injectionRegExp": "^(markdown[-_]?inline|gfm[-_]?inline)$",
+  "scopes": {
+    "strong_emphasis": "markup.bold.gfm",
+    "emphasis": "markup.italic.gfm",
+    "strikethrough": "markup.strike.gfm",
+    "emphasis_delimiter": "punctuation.definition.emphasis.gfm",
+    "code_span": "markup.raw.gfm",
+    "code_span_delimiter": "punctuation.definition.raw.gfm",
+    "link_text, image_description": "markup.alt.gfm",
+    "link_destination, uri_autolink": "markup.underline.link.gfm",
+    "link_label": "markup.underline.link.gfm",
+    "backslash_escape": "constant.character.escape.gfm",
+    "entity_reference": "constant.character.entity.gfm",
+    "html_tag": "entity.name.tag.gfm"
+  }
+}
