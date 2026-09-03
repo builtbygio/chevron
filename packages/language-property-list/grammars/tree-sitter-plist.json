@@ -1,0 +1,59 @@
+{
+  "name": "Property List (XML)",
+  "scopeName": "text.xml.plist",
+  "type": "tree-sitter",
+  "parser": "@tree-sitter-grammars/tree-sitter-xml/xml",
+  "fileTypes": [
+    "plist",
+    "dict",
+    "scriptSuite",
+    "scriptTerminology",
+    "savedSearch",
+    "wflow"
+  ],
+  "firstLineRegex": "\\s*<\\?xml .*\\n\\s*<!DOCTYPE\\s*[Pp][Ll][Ii][Ss][Tt]\\s",
+  "injectionRegExp": "^(plist)$",
+  "folds": [
+    {
+      "type": "element"
+    },
+    {
+      "type": "CDSect"
+    },
+    {
+      "type": "doctypedecl"
+    },
+    {
+      "type": "Comment"
+    }
+  ],
+  "comments": {
+    "start": "<!--",
+    "end": "-->"
+  },
+  "scopes": {
+    "document": "text.xml.plist",
+    "Comment": "comment.block.xml",
+    "Name": "entity.name.tag.xml",
+    "STag > Name": "entity.name.tag.localname.xml",
+    "ETag > Name": "entity.name.tag.localname.xml",
+    "EmptyElemTag > Name": "entity.name.tag.localname.xml",
+    "Attribute > Name": "entity.other.attribute-name.localname.xml",
+    "AttValue": "string.quoted.double.xml",
+    "CharData": "text.xml",
+    "CData": "string.unquoted.cdata.xml",
+    "CDStart": "punctuation.definition.string.begin.xml",
+    "EntityRef": "constant.character.entity.xml",
+    "CharRef": "constant.character.entity.xml",
+    "PI": "meta.tag.preprocessor.xml",
+    "XMLDecl": "meta.tag.preprocessor.xml",
+    "doctypedecl": "meta.tag.sgml.doctype.xml",
+    "\"<\"": "punctuation.definition.tag.begin.xml",
+    "\"</\"": "punctuation.definition.tag.begin.xml",
+    "\">\"": "punctuation.definition.tag.end.xml",
+    "\"/>\"": "punctuation.definition.tag.end.xml",
+    "\"<?\"": "punctuation.definition.tag.begin.xml",
+    "\"?>\"": "punctuation.definition.tag.end.xml",
+    "\"=\"": "punctuation.separator.key-value.xml"
+  }
+}

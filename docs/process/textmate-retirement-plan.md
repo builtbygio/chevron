@@ -170,7 +170,7 @@ took over as the first-mate check — markdown was the only one.
   ```` ```js ```` would have matched nothing. This is also what closes the Rust
   fence gap PR B found: ```` ```rust ```` now parses as Rust.
 
-### PR D — plist, make, objc · medium each, one PR per language · **needs D3**
+### PR D — plist, make, objc · **done**
 
 Same procedure as PR C, smaller surfaces. plist first: the XML parser is
 already in the tree, so it costs a scope map and nothing else. `make` and
@@ -179,14 +179,14 @@ platforms first — their published peer range is `^0.22.1`, and a parser that
 needs a source build changes the bootstrap story. Spike that in the same PR
 and abandon the row if it does not hold.
 
-### PR E — hyperlink and todo without TextMate · medium · **needs D4**
+### PR E — drop hyperlink and todo · small · **D4 answered: drop**
 
 These two cannot be ported: they are regex patterns injected into *other*
-grammars' scopes (`injectionSelector: "comment, text.plain"`). If clickable
-links and TODO highlighting are to survive without first-mate, they become
-decoration providers over a marker layer — which is what the editor already
-does for search results. Until this lands, the exception list cannot empty,
-so PR G is blocked on it regardless of how many languages get ported.
+grammars' scopes (`injectionSelector: "comment, text.plain"`), which
+tree-sitter has no equivalent for. Rebuilding them as decoration providers was
+the alternative; the owner call is to drop them. Both packages go, with the
+loss stated plainly: URLs in comments stop being scoped as links, and `TODO:`
+stops being highlighted.
 
 ### PR F — the long tail: convert or drop · owner call, then one PR
 
@@ -214,13 +214,16 @@ Only when PR A's ratchet reads zero unique TextMate scopes. Deletes
   **Answered: leftover, removed in PR B.** It unlocked 3 deletions, not 27 —
   the rest are an include library, not a fallback.
 - ~~**D2** — Is Markdown worth a day of scope-mapping?~~ **Done in PR C.**
-- **D3** — Are `make`, `objc` and plist worth porting, or are they
-  drop-or-keep-TextMate rows?
-- **D4** — Do clickable links and TODO highlighting have to survive? If not,
-  PR E becomes two deletions and the list empties much faster.
-- **D5** — Does first-mate actually have to die, or is "lazy, wrapped, and
-  shrinking" the right resting state? H3 already allows the latter. **PR B is
-  worth doing either way**; PRs C–G only pay if the answer is yes.
+- ~~**D3** — Are `make`, `objc` and plist worth porting?~~ **Answered: port
+  all three, done in PR D.** Both new parsers ship N-API prebuilds, so neither
+  needed a source build. Two rows they do not cover stay behind:
+  `source.objcpp` and `source.strings` (no parser), and `source.plist`, which
+  is the old NeXTSTEP format, not XML.
+- ~~**D4** — Do clickable links and TODO highlighting have to survive?~~
+  **Answered: no. Both are dropped** — PR E is two deletions.
+- ~~**D5** — Does first-mate actually have to die?~~ **Answered: yes.** The
+  long tail in PR F is therefore convert-or-drop per row, not a standing
+  exception list, and PR G is the point of the exercise.
 
 ## What this does not do
 

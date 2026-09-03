@@ -171,8 +171,11 @@ describe('language stack catalog (H2 PR 13)', () => {
     assert.match(doc, /`source.css.less` \| JSON/);
   });
 
+  // make, objective-c and property-list were ported in the retirement plan's
+  // PR D, so their rows read `both`: a tree-sitter grammar plus the TextMate
+  // one, which stays as an include target.
   it('language-make 13c ships JSON grammar', () => {
-    assert.match(doc, /`language-make` \| TextMate/);
+    assert.match(doc, /`language-make` \| both/);
     assert.match(doc, /`source.makefile` \| JSON/);
   });
 
@@ -217,7 +220,7 @@ describe('language stack catalog (H2 PR 13)', () => {
   });
 
   it('language-property-list 13c ships JSON grammars', () => {
-    assert.match(doc, /`language-property-list` \| TextMate/);
+    assert.match(doc, /`language-property-list` \| both/);
     assert.match(doc, /`source.plist`, `text.xml.plist` \| JSON/);
   });
 
@@ -237,7 +240,7 @@ describe('language stack catalog (H2 PR 13)', () => {
   });
 
   it('language-objective-c 13c ships JSON grammars', () => {
-    assert.match(doc, /`language-objective-c` \| TextMate/);
+    assert.match(doc, /`language-objective-c` \| both/);
     assert.match(doc, /`source.objc`, `source.objcpp`, `source.strings` \| JSON/);
   });
 

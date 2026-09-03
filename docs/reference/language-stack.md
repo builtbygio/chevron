@@ -52,13 +52,13 @@ A package is **both** when it ships at least one `type: tree-sitter` grammar *an
 | `language-clojure` | both | `tree-sitter-clojure-orchard` (`source.clojure`) | `source.clojure` | JSON | **ported** (13b) |
 | `language-csharp` | both | `tree-sitter-c-sharp` (`source.cs`). TM-only siblings: `source.csx`, `source.cake` | `source.cs`, `source.csx`, `source.cake` | JSON | **ported** (13b) |
 | `language-coffee-script` | TextMate | — | `source.coffee`, `source.litcoffee` | JSON | **keep TextMate** |
-| `language-objective-c` | TextMate | — | `source.objc`, `source.objcpp`, `source.strings` | JSON | **keep TextMate** |
+| `language-objective-c` | both | `tree-sitter-objc@3.0.2` | `source.objc`, `source.objcpp`, `source.strings` | JSON | **ported** for `source.objc`; `objcpp` and `strings` stay TextMate |
 | `language-gfm` | both | `@tree-sitter-grammars/tree-sitter-markdown@0.3.2` | `source.gfm` | JSON | **ported** — block grammar plus a `source.gfm.inline` injection; fenced code injects the language named in the fence. The TextMate grammar stays as an include target |
 | `language-git` | TextMate | — | `text.git-commit`, `source.git-config`, `text.git-rebase` | JSON | **keep TextMate** |
 | `language-ruby-on-rails` | TextMate | — | `source.ruby.rails` + html/js/sql/rjs overlays | JSON | **keep TextMate** |
 | `language-mustache` | TextMate | — | `text.html.mustache`, `source.sql.mustache` | JSON | **keep TextMate** |
-| `language-make` | TextMate | — | `source.makefile` | JSON | **keep TextMate** |
-| `language-property-list` | TextMate | — | `source.plist`, `text.xml.plist` | JSON | **keep TextMate** |
+| `language-make` | both | `tree-sitter-make@1.1.1` | `source.makefile` | JSON | **ported** |
+| `language-property-list` | both | `@tree-sitter-grammars/tree-sitter-xml@0.7.0` | `source.plist`, `text.xml.plist` | JSON | **ported** for `text.xml.plist` (XML plists); `source.plist` is the old NeXTSTEP format and stays TextMate |
 | `language-hyperlink` | TextMate (injection) | — | `text.hyperlink` | JSON | **keep TextMate** |
 | `language-todo` | TextMate (injection) | — | `text.todo` | JSON | **keep TextMate** |
 | `language-text` | TextMate | — | `text.plain` | JSON | **keep TextMate** |

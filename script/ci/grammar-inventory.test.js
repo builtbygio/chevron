@@ -34,9 +34,9 @@ const PACKAGES = path.join(ROOT, 'packages');
 // Baseline at the time of writing. Lower these when grammars are ported or
 // deleted; raising one is the failure this file exists to cause.
 const MAX_TEXTMATE = 66;
-const MAX_SHADOWED = 25;
-const MAX_UNIQUE = 41;
-const MIN_TREE_SITTER = 32;
+const MAX_SHADOWED = 28;
+const MAX_UNIQUE = 38;
+const MIN_TREE_SITTER = 35;
 
 // TextMate is the only grammar for these scopes. Every row carries an owner
 // decision in docs/reference/language-stack.md §3.
@@ -51,9 +51,7 @@ const EXCEPTION_SCOPES = new Set([
   'source.js.regexp.replacement',
   'source.js.rails source.js.jquery',
   'source.litcoffee',
-  'source.makefile',
   'source.mod',
-  'source.objc',
   'source.objcpp',
   'source.perl6',
   'source.plist',
@@ -80,7 +78,6 @@ const EXCEPTION_SCOPES = new Set([
   'text.python.traceback',
   'text.shell-session',
   'text.todo',
-  'text.xml.plist',
   'text.xml.xsl'
 ]);
 

@@ -1014,11 +1014,19 @@ importers:
         specifier: git+https://github.com/mdovale/tree-sitter-less.git#02988c765d30adb0476657b5d220e8dfde1c07d3
         version: https://codeload.github.com/mdovale/tree-sitter-less/tar.gz/02988c765d30adb0476657b5d220e8dfde1c07d3(tree-sitter@0.25.1)
 
-  packages/language-make: {}
+  packages/language-make:
+    dependencies:
+      tree-sitter-make:
+        specifier: 1.1.1
+        version: 1.1.1(tree-sitter@0.25.1)
 
   packages/language-mustache: {}
 
-  packages/language-objective-c: {}
+  packages/language-objective-c:
+    dependencies:
+      tree-sitter-objc:
+        specifier: 3.0.2
+        version: 3.0.2(tree-sitter@0.25.1)
 
   packages/language-perl:
     dependencies:
@@ -1032,7 +1040,11 @@ importers:
         specifier: 0.24.2
         version: 0.24.2(tree-sitter@0.25.1)
 
-  packages/language-property-list: {}
+  packages/language-property-list:
+    dependencies:
+      '@tree-sitter-grammars/tree-sitter-xml':
+        specifier: 0.7.0
+        version: 0.7.0(tree-sitter@0.25.1)
 
   packages/language-python:
     dependencies:
@@ -4179,6 +4191,22 @@ packages:
     version: 1.0.0
     peerDependencies:
       tree-sitter: ^0.21.0
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
+  tree-sitter-make@1.1.1:
+    resolution: {integrity: sha512-szHESi1wObt07uM5a5mwkMjbLHOcgiS5G2YQjU8O+Tfv9RylQBA0umV25lf6gSOefwTsPBnTJGn4SFFdHAVwMg==}
+    peerDependencies:
+      tree-sitter: ^0.22.1
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
+  tree-sitter-objc@3.0.2:
+    resolution: {integrity: sha512-Hs0ohmx1u5M+0K7efoW+dv/corhBsfjftfIYLtp7dSGeJ+Zj4c33tDIboBYLs6qijRlz6wtHFxa0YX+FibLulA==}
+    peerDependencies:
+      tree-sitter: ^0.22.1
     peerDependenciesMeta:
       tree-sitter:
         optional: true
@@ -7664,6 +7692,21 @@ snapshots:
       node-addon-api: 8.9.2
       node-gyp-build: 4.8.4
       tree-sitter-css: 0.23.2(tree-sitter@0.25.1)
+    optionalDependencies:
+      tree-sitter: 0.25.1
+
+  tree-sitter-make@1.1.1(tree-sitter@0.25.1):
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+    optionalDependencies:
+      tree-sitter: 0.25.1
+
+  tree-sitter-objc@3.0.2(tree-sitter@0.25.1):
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+      tree-sitter-c: 0.23.6(tree-sitter@0.25.1)
     optionalDependencies:
       tree-sitter: 0.25.1
 

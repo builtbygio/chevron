@@ -528,6 +528,11 @@ const PROBE_EXPR = `(function() {
           (o.stack ? ' | stack: ' + String(o.stack).slice(0, 800) : '');
       }),
     txtText: byExt('.txt').getText(),
+    // Plain Text has no tree-sitter grammar, so this is what exercises
+    // first-mate. Markdown was it, then Makefile; both have been ported.
+    txtEngine:
+      byExt('.txt').getBuffer().getLanguageMode() &&
+      byExt('.txt').getBuffer().getLanguageMode().constructor.name,
     tsGrammar: byExt('.ts').getGrammar() && byExt('.ts').getGrammar().name,
     cssGrammar: byExt('.css').getGrammar() && byExt('.css').getGrammar().name,
     mdGrammar: byExt('.md') && byExt('.md').getGrammar() && byExt('.md').getGrammar().name,
@@ -873,8 +878,6 @@ async function main() {
     ts: path.join(probeDir, 'probe.ts'),
     css: path.join(probeDir, 'probe.css'),
     md: path.join(probeDir, 'probe.md'),
-    // Makefile has no tree-sitter grammar, so this is the one probe that
-    // exercises first-mate. Markdown used to be it, until it was ported.
     make: path.join(probeDir, 'Makefile')
   };
   fs.writeFileSync(probes.txt, 'smoke test probe\n');
@@ -1119,18 +1122,21 @@ async function main() {
           `probe.md is on ${state.mdEngine} (expected TreeSitterLanguageMode)`
         );
       }
-      // first-mate is patched to read grammars with JSON.parse rather than
-      // season; a TextMate grammar failing to load is the way that breaks.
-      // Makefile has no tree-sitter grammar, so it is the engine's only probe.
       if (state.makeGrammar !== 'Makefile') {
+        failures.push(`Makefile grammar: ${state.makeGrammar} (expected Makefile)`);
+      }
+      if (state.makeEngine !== 'TreeSitterLanguageMode') {
         failures.push(
-          `Makefile grammar: ${state.makeGrammar} (expected Makefile -- ` +
-            'the TextMate engine failed to load a grammar)'
+          `Makefile is on ${state.makeEngine} (expected TreeSitterLanguageMode)`
         );
       }
-      if (state.makeEngine !== 'TextMateLanguageMode') {
+      // first-mate is patched to read grammars with JSON.parse rather than
+      // season; a TextMate grammar failing to load is the way that breaks.
+      // Plain Text is the last probe here that still uses it.
+      if (state.txtEngine !== 'TextMateLanguageMode') {
         failures.push(
-          `Makefile is on ${state.makeEngine} (expected TextMateLanguageMode)`
+          `probe.txt is on ${state.txtEngine} (expected TextMateLanguageMode ` +
+            '-- the TextMate engine is meant to still load a grammar)'
         );
       }
       const settings = state.settings;
