@@ -739,6 +739,57 @@ async function probeWindow(probePaths, expression = PROBE_EXPR) {
   }
 }
 
+// macOS logs a renderer abort to ~/Library/Logs/DiagnosticReports, not stderr.
+// Without this a Mac failure reads only "Renderer process crashed", which names
+// neither the signal nor the frame that raised it.
+async function printLatestMacCrashReport(since) {
+  if (process.platform !== 'darwin') return;
+  const dir = path.join(os.homedir(), 'Library', 'Logs', 'DiagnosticReports');
+  const newest = () => {
+    let best = null;
+    let entries = [];
+    try {
+      entries = fs.readdirSync(dir);
+    } catch (error) {
+      return null;
+    }
+    for (const name of entries) {
+      if (!/\.(ips|crash)$/.test(name)) continue;
+      if (!/chevron|Chevron|Electron/i.test(name)) continue;
+      const file = path.join(dir, name);
+      let stats;
+      try {
+        stats = fs.statSync(file);
+      } catch (error) {
+        continue;
+      }
+      if (stats.mtimeMs < since) continue;
+      if (!best || stats.mtimeMs > best.mtimeMs) {
+        best = { file, mtimeMs: stats.mtimeMs };
+      }
+    }
+    return best;
+  };
+  // The report is written after the process dies, so it is not there yet.
+  let report = null;
+  for (let attempt = 0; attempt < 20 && !report; attempt++) {
+    report = newest();
+    if (!report) await delay(1000);
+  }
+  if (!report) {
+    console.error(`smoke-test: no crash report under ${dir}`);
+    return;
+  }
+  console.error(`smoke-test: crash report ${report.file}`);
+  try {
+    const text = fs.readFileSync(report.file, 'utf8');
+    // Enough for the exception, the signal, and the crashing thread.
+    console.error(text.split('\n').slice(0, 120).join('\n'));
+  } catch (error) {
+    console.error(`smoke-test: could not read it: ${error.message}`);
+  }
+}
+
 function linuxNeedsNoSandbox(binaryPath) {
   if (process.platform !== 'linux') return false;
   // Chromium aborts if chrome-sandbox exists but is not root-owned mode 4755
@@ -885,6 +936,7 @@ async function main() {
   // crash on one of the most common commands in the editor stayed invisible.
   const assertReloadSurvives = async () => {
     const before = appOutput.length;
+    const reloadStartedAt = Date.now();
     console.log('smoke-test: reloading the window');
     await probeWindow(
       [],
@@ -914,6 +966,9 @@ async function main() {
       // and this is the only place that output exists on a CI runner.
       console.error('smoke-test: app output during the reload:');
       console.error(since.slice(-6000));
+      // macOS writes the renderer's abort to a crash report rather than to
+      // stderr, so the message above is all a Mac runner would otherwise say.
+      await printLatestMacCrashReport(reloadStartedAt);
       return { ok: false, reason: `the renderer crashed on reload: ${line}` };
     }
     if (!state || state.status !== 'ready') {
