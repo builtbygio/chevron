@@ -33,37 +33,24 @@ const PACKAGES = path.join(ROOT, 'packages');
 
 // Baseline at the time of writing. Lower these when grammars are ported or
 // deleted; raising one is the failure this file exists to cause.
-const MAX_TEXTMATE = 66;
-const MAX_SHADOWED = 25;
-const MAX_UNIQUE = 41;
-const MIN_TREE_SITTER = 32;
+const MAX_TEXTMATE = 47;
+const MAX_SHADOWED = 28;
+const MAX_UNIQUE = 19;
+const MIN_TREE_SITTER = 35;
 
 // TextMate is the only grammar for these scopes. Every row carries an owner
 // decision in docs/reference/language-stack.md §3.
 const EXCEPTION_SCOPES = new Set([
-  'source.cake',
-  'source.coffee',
-  'source.csx',
   'source.git-config',
   'source.gotemplate',
   'source.java-properties',
   'source.java.el',
-  'source.js.regexp.replacement',
   'source.js.rails source.js.jquery',
-  'source.litcoffee',
-  'source.makefile',
   'source.mod',
-  'source.objc',
-  'source.objcpp',
   'source.perl6',
-  'source.plist',
-  'source.regexp.python',
-  'source.ruby.gemfile',
   'source.ruby.rails',
   'source.ruby.rails.rjs',
   'source.sass',
-  'source.sassdoc',
-  'source.sql.mustache',
   'source.sql.ruby',
   'source.strings',
   'source.sum',
@@ -71,21 +58,16 @@ const EXCEPTION_SCOPES = new Set([
   'text.git-rebase',
   'text.html.gohtml',
   'text.html.jsp',
-  'text.html.mustache',
   'text.html.ruby',
-  'text.hyperlink',
-  'text.junit-test-report',
   'text.plain',
-  'text.python.console',
-  'text.python.traceback',
-  'text.shell-session',
-  'text.todo',
-  'text.xml.plist',
   'text.xml.xsl'
 ]);
 
-// Cannot be ported: they match regexes inside other grammars' scopes.
-const INJECTION_SCOPES = new Set(['text.hyperlink', 'text.todo']);
+// Injection grammars match regexes inside other grammars' scopes, which
+// tree-sitter cannot express. Both of the ones this catalog had — hyperlink
+// and todo — were dropped rather than rebuilt as decoration providers, so a
+// new one arriving would reopen a decision that has been made.
+const INJECTION_SCOPES = new Set([]);
 
 // Shadowed grammars claiming file types their tree-sitter counterpart does
 // not. Deleting one of these without moving its file types first drops those
@@ -231,8 +213,8 @@ describe('grammar inventory', () => {
       [...found].sort(),
       [...INJECTION_SCOPES].sort(),
       'injection grammars match inside other grammars\' scopes, which ' +
-        'tree-sitter cannot express. A new one extends the work needed ' +
-        'before first-mate can go.'
+        'tree-sitter cannot express. hyperlink and todo were dropped for ' +
+        'that reason; a new one reopens a settled decision.'
     );
   });
 
@@ -261,7 +243,24 @@ describe('grammar inventory', () => {
     // tree-sitter grammar, so ```rust fences in Markdown have no highlighting.
     // Closing it means a TextMate Rust grammar or a tree-sitter Markdown
     // grammar (retirement plan, PR C) — not another fallback.
-    const KNOWN_UNRESOLVED = new Set(['source.rust']);
+    const KNOWN_UNRESOLVED = new Set([
+      'source.rust',
+      // CoffeeScript was dropped (PR F). The two grammars that include it —
+      // TextMate gfm and TextMate html — are both shadowed, so nothing a user
+      // opens can reach the include; only another TextMate grammar embedding
+      // html could, and a <script type="text/coffeescript"> inside a .jsp is
+      // not worth keeping a dead language for.
+      'source.coffee',
+      // Overlays deleted with their consumers: TextMate gfm's fenced-code
+      // cases for shell sessions and python consoles, and TextMate python's
+      // regex overlay. All three includers are shadowed grammars, so nothing
+      // a user opens reaches them. The two overlays that a *live* grammar
+      // includes -- source.gotemplate for gohtml, source.java.el for jsp --
+      // were kept for that reason.
+      'text.shell-session',
+      'text.python.console',
+      'source.regexp.python'
+    ]);
     const present = new Set(textMate.map(g => g.scopeName));
     const missing = [];
     for (const grammar of textMate) {

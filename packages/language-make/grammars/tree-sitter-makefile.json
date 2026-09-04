@@ -1,0 +1,50 @@
+{
+  "name": "Makefile",
+  "scopeName": "source.makefile",
+  "type": "tree-sitter",
+  "parser": "tree-sitter-make",
+  "fileTypes": [
+    "Makefile",
+    "makefile",
+    "GNUmakefile",
+    "OCamlMakefile",
+    "make",
+    "mak",
+    "mk",
+    "BSDmakefile",
+    "Kbuild",
+    "am",
+    "mf",
+    "mkfile",
+    "Makefile.in",
+    "imk",
+    "Makefile.cmake",
+    "Makefile2"
+  ],
+  "firstLineRegex": "^#!\\s*/usr/bin/make",
+  "injectionRegExp": "^(make|makefile)$",
+  "folds": [
+    {
+      "type": "rule"
+    },
+    {
+      "type": "conditional"
+    }
+  ],
+  "comments": {
+    "start": "# "
+  },
+  "scopes": {
+    "makefile": "source.makefile",
+    "comment": "comment.line.number-sign.makefile",
+    "rule > targets": "entity.name.function.target.makefile",
+    "prerequisites": "meta.scope.prerequisites.makefile",
+    "recipe": "meta.scope.recipe.makefile",
+    "variable_assignment > word:nth-child(0)": "variable.other.makefile",
+    "variable_reference": "variable.other.makefile",
+    "include_directive": "keyword.control.include.makefile",
+    "ifeq_directive, conditional": "keyword.control.conditional.makefile",
+    "\"=\", \":=\", \"?=\", \"+=\", \"!=\"": "keyword.operator.assignment.makefile",
+    "\":\"": "punctuation.separator.key-value.makefile"
+  }
+}

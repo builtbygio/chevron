@@ -285,9 +285,6 @@ importers:
       language-clojure:
         specifier: workspace:@builtbygio/language-clojure@*
         version: link:packages/language-clojure
-      language-coffee-script:
-        specifier: workspace:@builtbygio/language-coffee-script@*
-        version: link:packages/language-coffee-script
       language-csharp:
         specifier: workspace:@builtbygio/language-csharp@*
         version: link:packages/language-csharp
@@ -306,9 +303,6 @@ importers:
       language-html:
         specifier: workspace:@builtbygio/language-html@*
         version: link:packages/language-html
-      language-hyperlink:
-        specifier: workspace:@builtbygio/language-hyperlink@*
-        version: link:packages/language-hyperlink
       language-java:
         specifier: workspace:@builtbygio/language-java@*
         version: link:packages/language-java
@@ -324,9 +318,6 @@ importers:
       language-make:
         specifier: workspace:@builtbygio/language-make@*
         version: link:packages/language-make
-      language-mustache:
-        specifier: workspace:@builtbygio/language-mustache@*
-        version: link:packages/language-mustache
       language-objective-c:
         specifier: workspace:@builtbygio/language-objective-c@*
         version: link:packages/language-objective-c
@@ -366,9 +357,6 @@ importers:
       language-text:
         specifier: workspace:@builtbygio/language-text@*
         version: link:packages/language-text
-      language-todo:
-        specifier: workspace:@builtbygio/language-todo@*
-        version: link:packages/language-todo
       language-toml:
         specifier: workspace:@builtbygio/language-toml@*
         version: link:packages/language-toml
@@ -942,8 +930,6 @@ importers:
         specifier: 0.2.8
         version: 0.2.8(tree-sitter@0.25.1)
 
-  packages/language-coffee-script: {}
-
   packages/language-csharp:
     dependencies:
       tree-sitter-c-sharp:
@@ -982,8 +968,6 @@ importers:
         specifier: 0.23.2
         version: 0.23.2(tree-sitter@0.25.1)
 
-  packages/language-hyperlink: {}
-
   packages/language-java:
     dependencies:
       tree-sitter-java:
@@ -1014,11 +998,17 @@ importers:
         specifier: git+https://github.com/mdovale/tree-sitter-less.git#02988c765d30adb0476657b5d220e8dfde1c07d3
         version: https://codeload.github.com/mdovale/tree-sitter-less/tar.gz/02988c765d30adb0476657b5d220e8dfde1c07d3(tree-sitter@0.25.1)
 
-  packages/language-make: {}
+  packages/language-make:
+    dependencies:
+      tree-sitter-make:
+        specifier: 1.1.1
+        version: 1.1.1(tree-sitter@0.25.1)
 
-  packages/language-mustache: {}
-
-  packages/language-objective-c: {}
+  packages/language-objective-c:
+    dependencies:
+      tree-sitter-objc:
+        specifier: 3.0.2
+        version: 3.0.2(tree-sitter@0.25.1)
 
   packages/language-perl:
     dependencies:
@@ -1032,7 +1022,11 @@ importers:
         specifier: 0.24.2
         version: 0.24.2(tree-sitter@0.25.1)
 
-  packages/language-property-list: {}
+  packages/language-property-list:
+    dependencies:
+      '@tree-sitter-grammars/tree-sitter-xml':
+        specifier: 0.7.0
+        version: 0.7.0(tree-sitter@0.25.1)
 
   packages/language-python:
     dependencies:
@@ -1078,8 +1072,6 @@ importers:
         version: 0.3.11(tree-sitter@0.25.1)
 
   packages/language-text: {}
-
-  packages/language-todo: {}
 
   packages/language-toml:
     dependencies:
@@ -4179,6 +4171,22 @@ packages:
     version: 1.0.0
     peerDependencies:
       tree-sitter: ^0.21.0
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
+  tree-sitter-make@1.1.1:
+    resolution: {integrity: sha512-szHESi1wObt07uM5a5mwkMjbLHOcgiS5G2YQjU8O+Tfv9RylQBA0umV25lf6gSOefwTsPBnTJGn4SFFdHAVwMg==}
+    peerDependencies:
+      tree-sitter: ^0.22.1
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
+  tree-sitter-objc@3.0.2:
+    resolution: {integrity: sha512-Hs0ohmx1u5M+0K7efoW+dv/corhBsfjftfIYLtp7dSGeJ+Zj4c33tDIboBYLs6qijRlz6wtHFxa0YX+FibLulA==}
+    peerDependencies:
+      tree-sitter: ^0.22.1
     peerDependenciesMeta:
       tree-sitter:
         optional: true
@@ -7664,6 +7672,21 @@ snapshots:
       node-addon-api: 8.9.2
       node-gyp-build: 4.8.4
       tree-sitter-css: 0.23.2(tree-sitter@0.25.1)
+    optionalDependencies:
+      tree-sitter: 0.25.1
+
+  tree-sitter-make@1.1.1(tree-sitter@0.25.1):
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+    optionalDependencies:
+      tree-sitter: 0.25.1
+
+  tree-sitter-objc@3.0.2(tree-sitter@0.25.1):
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+      tree-sitter-c: 0.23.6(tree-sitter@0.25.1)
     optionalDependencies:
       tree-sitter: 0.25.1
 

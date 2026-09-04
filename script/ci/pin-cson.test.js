@@ -15,18 +15,14 @@ const ROOT = path.resolve(__dirname, '..', '..');
 
 const CONVERTED = [
   'language-source',
-  'language-hyperlink',
   'language-text',
-  'language-todo',
   'language-gfm',
   'language-less',
   'language-make',
-  'language-mustache',
   'language-sql',
   'language-toml',
   'language-yaml',
   'language-clojure',
-  'language-coffee-script',
   'language-perl',
   'language-php',
   'language-property-list',
@@ -133,28 +129,22 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
     const scss = path.join(packageRoot('language-sass'), 'grammars', 'scss.json');
     const sass = path.join(packageRoot('language-sass'), 'grammars', 'sass.json');
-    const sassdoc = path.join(packageRoot('language-sass'), 'grammars', 'sassdoc.json');
     const ts = path.join(packageRoot('language-sass'), 'grammars', 'tree-sitter-scss.json');
     assert.ok(fs.existsSync(scss), 'grammars/scss.json');
     assert.ok(fs.existsSync(sass), 'grammars/sass.json');
-    assert.ok(fs.existsSync(sassdoc), 'grammars/sassdoc.json');
     assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-scss.json');
     assert.strictEqual(JSON.parse(fs.readFileSync(scss, 'utf8')).scopeName, 'source.css.scss');
     assert.strictEqual(JSON.parse(fs.readFileSync(sass, 'utf8')).scopeName, 'source.sass');
-    assert.strictEqual(JSON.parse(fs.readFileSync(sassdoc, 'utf8')).scopeName, 'source.sassdoc');
   });
 
   it('language-objective-c ships JSON grammars settings and snippets and no shipped CSON', () => {
     const cson = shippedCson('language-objective-c');
     assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
     const objc = path.join(packageRoot('language-objective-c'), 'grammars', 'objective-c.json');
-    const objcpp = path.join(packageRoot('language-objective-c'), 'grammars', 'objective-c++.json');
     const strings = path.join(packageRoot('language-objective-c'), 'grammars', 'strings file.json');
     assert.ok(fs.existsSync(objc), 'grammars/objective-c.json');
-    assert.ok(fs.existsSync(objcpp), 'grammars/objective-c++.json');
     assert.ok(fs.existsSync(strings), 'grammars/strings file.json');
     assert.strictEqual(JSON.parse(fs.readFileSync(objc, 'utf8')).scopeName, 'source.objc');
-    assert.strictEqual(JSON.parse(fs.readFileSync(objcpp, 'utf8')).scopeName, 'source.objcpp');
     assert.strictEqual(JSON.parse(fs.readFileSync(strings, 'utf8')).scopeName, 'source.strings');
   });
 
@@ -176,16 +166,10 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     const cson = shippedCson('language-csharp');
     assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
     const csharp = path.join(packageRoot('language-csharp'), 'grammars', 'csharp.json');
-    const csx = path.join(packageRoot('language-csharp'), 'grammars', 'csx.json');
-    const cake = path.join(packageRoot('language-csharp'), 'grammars', 'cake.json');
     const ts = path.join(packageRoot('language-csharp'), 'grammars', 'tree-sitter-c-sharp.json');
     assert.ok(fs.existsSync(csharp), 'grammars/csharp.json');
-    assert.ok(fs.existsSync(csx), 'grammars/csx.json');
-    assert.ok(fs.existsSync(cake), 'grammars/cake.json');
     assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-c-sharp.json');
     assert.strictEqual(JSON.parse(fs.readFileSync(csharp, 'utf8')).scopeName, 'source.cs');
-    assert.strictEqual(JSON.parse(fs.readFileSync(csx, 'utf8')).scopeName, 'source.csx');
-    assert.strictEqual(JSON.parse(fs.readFileSync(cake, 'utf8')).scopeName, 'source.cake');
   });
 
   it('language-xml ships JSON TextMate grammars settings and snippets and no shipped CSON', () => {
@@ -195,11 +179,6 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
       packageRoot('language-xml'),
       'grammars',
       'xml.json'
-    );
-    const xsl = path.join(
-      packageRoot('language-xml'),
-      'grammars',
-      'xsl.json'
     );
     const settings = path.join(
       packageRoot('language-xml'),
@@ -217,24 +196,19 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
       'tree-sitter-xml.json'
     );
     assert.ok(fs.existsSync(xml), 'grammars/xml.json');
-    assert.ok(fs.existsSync(xsl), 'grammars/xsl.json');
     assert.ok(fs.existsSync(settings), 'settings/language-xml.json');
     assert.ok(fs.existsSync(snippets), 'snippets/language-xml.json');
     assert.ok(fs.existsSync(ts), 'grammars/tree-sitter-xml.json');
     const parsed = JSON.parse(fs.readFileSync(xml, 'utf8'));
     assert.strictEqual(parsed.scopeName, 'text.xml');
-    const xslParsed = JSON.parse(fs.readFileSync(xsl, 'utf8'));
-    assert.strictEqual(xslParsed.scopeName, 'text.xml.xsl');
   });
 
   it('language-property-list ships JSON grammars settings and snippets and no shipped CSON', () => {
     const cson = shippedCson('language-property-list');
     assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
-    const oldStyle = path.join(
-      packageRoot('language-property-list'),
-      'grammars',
-      'property list (old-style).json'
-    );
+    // The old-style (NeXTSTEP) grammar was dropped: nothing emits that format
+    // any more and no tree-sitter grammar exists for it. XML plists are the
+    // ones people have, and they are on tree-sitter now.
     const xml = path.join(
       packageRoot('language-property-list'),
       'grammars',
@@ -250,12 +224,9 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
       'snippets',
       'language-property-list.json'
     );
-    assert.ok(fs.existsSync(oldStyle), 'grammars/property list (old-style).json');
     assert.ok(fs.existsSync(xml), 'grammars/property list (xml).json');
     assert.ok(fs.existsSync(settings), 'settings/language-property-list.json');
     assert.ok(fs.existsSync(snippets), 'snippets/language-property-list.json');
-    const parsed = JSON.parse(fs.readFileSync(oldStyle, 'utf8'));
-    assert.strictEqual(parsed.scopeName, 'source.plist');
     const xmlParsed = JSON.parse(fs.readFileSync(xml, 'utf8'));
     assert.strictEqual(xmlParsed.scopeName, 'text.xml.plist');
   });
@@ -339,38 +310,6 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.strictEqual(p6.scopeName, 'source.perl6');
   });
 
-  it('language-coffee-script ships JSON grammars settings and snippets and no shipped CSON', () => {
-    const cson = shippedCson('language-coffee-script');
-    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
-    const coffee = path.join(
-      packageRoot('language-coffee-script'),
-      'grammars',
-      'coffeescript.json'
-    );
-    const lit = path.join(
-      packageRoot('language-coffee-script'),
-      'grammars',
-      'coffeescript (literate).json'
-    );
-    const settings = path.join(
-      packageRoot('language-coffee-script'),
-      'settings',
-      'language-coffee-script.json'
-    );
-    const snippets = path.join(
-      packageRoot('language-coffee-script'),
-      'snippets',
-      'language-coffee-script.json'
-    );
-    assert.ok(fs.existsSync(coffee), 'grammars/coffeescript.json');
-    assert.ok(fs.existsSync(lit), 'grammars/coffeescript (literate).json');
-    assert.ok(fs.existsSync(settings), 'settings/language-coffee-script.json');
-    assert.ok(fs.existsSync(snippets), 'snippets/language-coffee-script.json');
-    const parsed = JSON.parse(fs.readFileSync(coffee, 'utf8'));
-    assert.strictEqual(parsed.scopeName, 'source.coffee');
-    const litParsed = JSON.parse(fs.readFileSync(lit, 'utf8'));
-    assert.strictEqual(litParsed.scopeName, 'source.litcoffee');
-  });
 
   it('language-clojure ships JSON TextMate grammar settings and snippets and no shipped CSON', () => {
     const cson = shippedCson('language-clojure');
@@ -478,26 +417,6 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.strictEqual(parsed.scopeName, 'source.sql');
   });
 
-  it('language-mustache ships JSON grammars and no shipped CSON', () => {
-    const cson = shippedCson('language-mustache');
-    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
-    const html = path.join(
-      packageRoot('language-mustache'),
-      'grammars',
-      'mustache.json'
-    );
-    const sql = path.join(
-      packageRoot('language-mustache'),
-      'grammars',
-      'sql with mustaches.json'
-    );
-    assert.ok(fs.existsSync(html), 'grammars/mustache.json');
-    assert.ok(fs.existsSync(sql), 'grammars/sql with mustaches.json');
-    const parsed = JSON.parse(fs.readFileSync(html, 'utf8'));
-    assert.strictEqual(parsed.scopeName, 'text.html.mustache');
-    const sqlParsed = JSON.parse(fs.readFileSync(sql, 'utf8'));
-    assert.strictEqual(sqlParsed.scopeName, 'source.sql.mustache');
-  });
 
   it('language-make ships JSON grammar and settings and no shipped CSON', () => {
     const cson = shippedCson('language-make');
@@ -568,38 +487,7 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
     assert.ok(parsed['.source.gfm:not(.markup.code)']);
   });
 
-  it('language-todo ships JSON grammar and snippets and no shipped CSON', () => {
-    const cson = shippedCson('language-todo');
-    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
-    const grammar = path.join(
-      packageRoot('language-todo'),
-      'grammars',
-      'todo.json'
-    );
-    const snippets = path.join(
-      packageRoot('language-todo'),
-      'snippets',
-      'todo.json'
-    );
-    assert.ok(fs.existsSync(grammar), 'grammars/todo.json');
-    assert.ok(fs.existsSync(snippets), 'snippets/todo.json');
-    const parsed = JSON.parse(fs.readFileSync(grammar, 'utf8'));
-    assert.strictEqual(parsed.scopeName, 'text.todo');
-    assert.ok(parsed.injectionSelector);
-  });
 
-  it('language-hyperlink ships JSON grammar and no shipped CSON', () => {
-    const cson = shippedCson('language-hyperlink');
-    assert.deepStrictEqual(cson, [], `unexpected CSON: ${cson.join(', ')}`);
-    const json = path.join(
-      packageRoot('language-hyperlink'),
-      'grammars',
-      'hyperlink.json'
-    );
-    assert.ok(fs.existsSync(json), 'grammars/hyperlink.json');
-    const parsed = JSON.parse(fs.readFileSync(json, 'utf8'));
-    assert.strictEqual(parsed.scopeName, 'text.hyperlink');
-  });
 
   it('converted pins have no shipped CSON', () => {
     for (const name of CONVERTED) {
@@ -620,7 +508,6 @@ describe('pin CSON → JSON (H2 PR 13c)', () => {
         `${name} has no shipped CSON — move it to CONVERTED`
       );
     }
-    assert.match(doc, /language-todo/);
   });
 });
 

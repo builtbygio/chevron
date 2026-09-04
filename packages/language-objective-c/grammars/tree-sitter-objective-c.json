@@ -1,0 +1,47 @@
+{
+  "name": "Objective-C",
+  "scopeName": "source.objc",
+  "type": "tree-sitter",
+  "parser": "tree-sitter-objc",
+  "fileTypes": [
+    "m",
+    "h",
+    "pch",
+    "x",
+    "xm",
+    "xmi",
+    "mm",
+    "M"
+  ],
+  "contentRegex": "(@interface|@implementation|@protocol|#import\\s+<)",
+  "injectionRegExp": "^(objc|objective-c|obj-c)$",
+  "folds": [
+    {
+      "type": [
+        "compound_statement",
+        "class_interface",
+        "class_implementation"
+      ]
+    },
+    {
+      "type": "comment"
+    }
+  ],
+  "comments": {
+    "start": "// "
+  },
+  "scopes": {
+    "translation_unit": "source.objc",
+    "comment": "comment.block.objc",
+    "class_interface, class_implementation": "meta.interface-or-protocol.objc",
+    "type_identifier, primitive_type, sized_type_specifier": "support.class.objc",
+    "method_declaration, method_definition": "meta.function.objc",
+    "method_type": "storage.type.objc",
+    "property_attribute": "keyword.other.property.attribute.objc",
+    "string_literal": "string.quoted.double.objc",
+    "system_lib_string": "string.quoted.other.lt-gt.include.objc",
+    "preproc_include": "meta.preprocessor.include.objc",
+    "call_expression > identifier": "support.function.any-method.objc",
+    "identifier": "variable.other.objc"
+  }
+}

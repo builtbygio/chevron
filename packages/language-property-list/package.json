@@ -15,5 +15,8 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/atom/language-property-list/issues"
+  },
+  "dependencies": {
+    "@tree-sitter-grammars/tree-sitter-xml": "0.7.0"
   }
 }
