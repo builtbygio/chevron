@@ -6,9 +6,22 @@
  */
 
 const {ipcRenderer} = require('electron');
+const {profiler} = require('./package-profiler');
+
+// Blocking round trips are the expensive kind, and the call site cannot see
+// who asked, so they are attributed to whichever callback is running.
+function timed(fn) {
+  if (!profiler.enabled) return fn();
+  const started = performance.now();
+  try {
+    return fn();
+  } finally {
+    profiler.recordCurrent('ipc', performance.now() - started);
+  }
+}
 
 function call(channel, ...args) {
-  const result = ipcRenderer.sendSync(channel, ...args);
+  const result = timed(() => ipcRenderer.sendSync(channel, ...args));
   if (!result || result.ok === false) {
     const err = new Error(
       (result && result.error) || `fs ipc failed: ${channel}`
@@ -44,7 +57,9 @@ module.exports = {
   },
 
   pathKind(fullPath) {
-    return ipcRenderer.sendSync('atom-fs-path-kind-sync', fullPath);
+    // Returns a bare string rather than the {ok, value} envelope, so it does
+    // not go through call().
+    return timed(() => ipcRenderer.sendSync('atom-fs-path-kind-sync', fullPath));
   },
 
   isDirectorySync(fullPath) {

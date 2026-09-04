@@ -38,11 +38,12 @@ export function formatProfilerReport(
   );
   lines.push('');
   lines.push(
-    'Time a package spent on your behalf **after activation** — command'
+    'Time a package spent on your behalf **after activation**: command'
   );
   lines.push(
-    'handlers so far. `timecop` covers load and activate; this covers the rest.'
+    'handlers, editor and workspace subscriptions, and blocking IPC.'
   );
+  lines.push('`timecop` covers load and activate; this covers the rest.');
   lines.push('');
   lines.push(
     'A package spending 3ms four hundred times is the interesting case, so'
@@ -89,6 +90,13 @@ export function formatProfilerReport(
   );
   lines.push(
     'site was a bundle with no readable path — expected for some packages.'
+  );
+  lines.push('');
+  lines.push(
+    '`ipc` is billed to whichever callback was running when the round trip'
+  );
+  lines.push(
+    'happened, since a blocking call cannot see who asked for it.'
   );
 
   return lines.join('\n') + '\n';

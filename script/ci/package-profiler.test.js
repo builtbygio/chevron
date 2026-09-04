@@ -205,6 +205,87 @@ describe('off is free', () => {
   });
 });
 
+describe('subscriber wrapping', () => {
+  it('passes through untouched while stopped', () => {
+    const profiler = new PackageProfiler();
+    let calls = 0;
+    const wrapped = profiler.wrap('event', function(x) {
+      calls += 1;
+      return x * 2;
+    });
+    assert.strictEqual(wrapped(21), 42);
+    assert.strictEqual(calls, 1);
+    assert.deepEqual(profiler.report(), []);
+  });
+
+  it('preserves the receiver and arguments', () => {
+    const profiler = new PackageProfiler();
+    profiler.start();
+    const wrapped = profiler.wrap('event', function(a, b) {
+      return [this.tag, a, b].join('-');
+    });
+    assert.strictEqual(wrapped.call({ tag: 'ctx' }, 1, 2), 'ctx-1-2');
+  });
+
+  it('leaves a non-function alone', () => {
+    const profiler = new PackageProfiler();
+    assert.strictEqual(profiler.wrap('event', null), null);
+  });
+});
+
+describe('attribution windows', () => {
+  it('bills work with no visible caller to the callback that is running', () => {
+    // A blocking IPC round trip cannot see who asked for it. Rather than pay
+    // for a stack per call, it lands on whichever wrapped callback is open.
+    const profiler = new PackageProfiler();
+    profiler.start();
+    profiler.ownerForSite = () => 'tree-view';
+    const wrapped = profiler.wrap('event', () => {
+      profiler.recordCurrent('ipc', 7);
+    });
+    wrapped();
+
+    const entry = profiler.report()[0];
+    assert.strictEqual(entry.owner, 'tree-view');
+    assert.strictEqual(entry.byKind.ipc.count, 1);
+    assert.strictEqual(entry.byKind.ipc.total, 7);
+    assert.strictEqual(entry.byKind.event.count, 1);
+  });
+
+  it('bills work outside any callback to core', () => {
+    const profiler = new PackageProfiler();
+    profiler.start();
+    profiler.recordCurrent('ipc', 3);
+    assert.strictEqual(profiler.report()[0].owner, 'core');
+  });
+
+  it('restores the previous owner when a window closes', () => {
+    const profiler = new PackageProfiler();
+    profiler.start();
+    let owners = [];
+    profiler.ownerForSite = () => 'outer';
+    const outer = profiler.wrap('event', () => {
+      profiler.ownerForSite = () => 'inner';
+      const inner = profiler.wrap('event', () => {
+        profiler.recordCurrent('ipc', 1);
+      });
+      inner();
+      profiler.recordCurrent('ipc', 2);
+    });
+    outer();
+    owners = profiler.report().map(entry => entry.owner).sort();
+    assert.deepEqual(owners, ['inner', 'outer'], 'the inner window does not leak');
+    const outerEntry = profiler.report().find(e => e.owner === 'outer');
+    assert.strictEqual(outerEntry.byKind.ipc.total, 2, 'outer keeps its own ipc');
+  });
+
+  it('records nothing through a window while stopped', () => {
+    const profiler = new PackageProfiler();
+    profiler.recordCurrent('ipc', 5);
+    assert.deepEqual(profiler.report(), []);
+  });
+});
+
 describe('report', () => {
   it('renders a table with the running time', () => {
     const text = formatProfilerReport(

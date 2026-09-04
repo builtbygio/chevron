@@ -404,17 +404,17 @@ module.exports = class CommandRegistry {
           break;
         }
         if (profiler.enabled) {
+          const owner = profiler.ownerForSite(listener.profilerSite);
+          const previous = profiler.enter(owner);
           const started = performance.now();
-          const result = listener.didDispatch.call(
-            currentTarget,
-            dispatchedEvent
-          );
-          profiler.record(
-            'command',
-            profiler.ownerForSite(listener.profilerSite),
-            performance.now() - started
-          );
-          matched.push(result);
+          try {
+            matched.push(
+              listener.didDispatch.call(currentTarget, dispatchedEvent)
+            );
+          } finally {
+            profiler.record('command', owner, performance.now() - started);
+            profiler.leave(previous);
+          }
         } else {
           matched.push(
             listener.didDispatch.call(currentTarget, dispatchedEvent)
