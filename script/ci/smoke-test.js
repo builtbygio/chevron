@@ -726,6 +726,57 @@ const ROOT_CONFIG_EXPR = `(function() {
   });
 })()`;
 
+// The styleguide renders one of every core UI element, including
+// <atom-text-editor> written as markup rather than constructed -- the path the
+// document-register-element polyfill upgrades without running a constructor.
+// That made it the page where an element that assumes its constructor ran
+// throws, and nothing here opened it.
+const STYLEGUIDE_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__styleguideProbe) {
+    window.__styleguideProbe = { phase: 'opening', result: null };
+    var before = chevron.notifications.getNotifications().length;
+    var finish = function(result) {
+      window.__styleguideProbe.result = result;
+      window.__styleguideProbe.phase = 'done';
+    };
+    try {
+      chevron.commands.dispatch(
+        chevron.views.getView(chevron.workspace),
+        'styleguide:show'
+      );
+    } catch (error) {
+      return JSON.stringify({ status: 'ready', styleguide: { dispatchError: String(error && error.message) } });
+    }
+    setTimeout(function() {
+      var raised = chevron.notifications
+        .getNotifications()
+        .slice(before)
+        .filter(function(n) {
+          var type = n.getType();
+          return type === 'fatal' || type === 'error';
+        })
+        .map(function(n) { return n.getType() + ': ' + n.getMessage().slice(0, 120); });
+      var item = chevron.workspace.getActivePaneItem();
+      var element = item && chevron.views.getView(item);
+      finish({
+        raised: raised,
+        opened: !!(element && element.querySelector),
+        editors: element && element.querySelectorAll
+          ? element.querySelectorAll('atom-text-editor').length
+          : 0
+      });
+    }, 2500);
+  }
+  return JSON.stringify({
+    status: window.__styleguideProbe.phase === 'done' ? 'ready' : 'pending',
+    styleguide: window.__styleguideProbe.result
+  });
+})()`;
+
 function isAppWindowTarget(target) {
   if (!target || target.type !== 'page') return false;
   const url = target.url || '';
@@ -1249,6 +1300,23 @@ async function main() {
       }
     }
 
+    // The styleguide, last: it takes over the active pane.
+    if (state && state.status === 'ready') {
+      for (let attempt = 0; attempt < 40; attempt++) {
+        let sgState;
+        try {
+          sgState = await probeWindow([], STYLEGUIDE_EXPR);
+        } catch (error) {
+          sgState = { styleguide: { error: String(error.message || error) } };
+        }
+        if (sgState && sgState.styleguide) {
+          state.styleguide = sgState.styleguide;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
     if (state && state.status === 'ready') {
       console.log('smoke-test: state', JSON.stringify(state, null, 2));
       const failures = [];
@@ -1345,6 +1413,27 @@ async function main() {
       // The project-folder case. A loose file has no project root, so it never
       // reaches the code path where a provider can claim exclusivity -- which
       // is how "works in a new file, not in an existing one" shipped.
+      const styleguide = state.styleguide;
+      if (!styleguide) {
+        failures.push('styleguide probe did not report');
+      } else if (styleguide.dispatchError || styleguide.error) {
+        failures.push(
+          `styleguide: ${styleguide.dispatchError || styleguide.error}`
+        );
+      } else {
+        if (styleguide.raised && styleguide.raised.length > 0) {
+          failures.push(`styleguide raised: ${styleguide.raised.join('; ')}`);
+        }
+        if (!styleguide.opened) {
+          failures.push('styleguide did not open');
+        }
+        if (!styleguide.editors) {
+          failures.push(
+            'styleguide rendered no atom-text-editor elements (the ones written as markup are the point)'
+          );
+        }
+      }
+
       const rootConfig = state.rootConfig;
       if (!rootConfig) {
         failures.push('per-root config probe did not report');
