@@ -399,6 +399,7 @@ module.exports = class Project extends Model {
     }
 
     this.syncFsIpcProjectRoots();
+    this.syncRootConfigs();
     this.emitter.emit('did-change-paths', projectPaths);
 
     if (options.mustExist === true && missingProjectPaths.length > 0) {
@@ -482,7 +483,45 @@ module.exports = class Project extends Model {
 
     if (options.emitEvent !== false) {
       this.syncFsIpcProjectRoots();
+      this.syncRootConfigs();
       this.emitter.emit('did-change-paths', this.getPaths());
+    }
+  }
+
+  /**
+   * Load `<root>/.chevron/config.json` for each root, and forget the roots
+   * that have gone. Precedence: docs/reference/config-precedence.md.
+   *
+   * A root without the file is not an error, and neither is one that cannot be
+   * parsed: a config file somebody is halfway through editing must not take
+   * the window down with it.
+   */
+  syncRootConfigs() {
+    const config = chevron && chevron.config;
+    if (!config || typeof config.setRootSettings !== 'function') return;
+
+    const roots = this.getPaths();
+    for (const stale of config.getConfiguredRoots()) {
+      if (!roots.includes(stale)) config.setRootSettings(stale, null);
+    }
+
+    for (const root of roots) {
+      const file = path.join(root, '.chevron', 'config.json');
+      let settings = null;
+      try {
+        if (fs.existsSync(file)) {
+          settings = JSON.parse(fs.readFileSync(file, 'utf8'));
+        }
+      } catch (error) {
+        if (chevron.notifications) {
+          chevron.notifications.addWarning(
+            `Could not read ${path.join('.chevron', 'config.json')}`,
+            { detail: `${root}\n${error.message}`, dismissable: true }
+          );
+        }
+        continue;
+      }
+      config.setRootSettings(root, settings, settings ? file : null);
     }
   }
 

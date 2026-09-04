@@ -480,6 +480,7 @@ jobs:
           node --test script/ci/lsp-builtin-discover.test.js
           node --test script/ci/lsp-late-registration.test.js
           node --test script/ci/package-profiler.test.js
+          node --test script/ci/config-precedence.test.js
           node --test script/ci/jasmine-node-coffee.test.js
           node --test script/ci/patch-inventory.test.js
           node --test script/ci/wave3-gates.test.js
