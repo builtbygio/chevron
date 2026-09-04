@@ -339,6 +339,16 @@ const PROBE_EXPR = `(function() {
                   diag.listActive = sl && sl.isActive ? sl.isActive() : null;
                   diag.itemsLength = sl && sl.items ? sl.items.length : null;
                   diag.activeEditorIsProbe = sl ? sl.activeEditor === acEditor : null;
+                  // Careful with the field above: the suggestion list has no
+                  // active editor until it displays, so a null there is a
+                  // consequence of the failure and not a cause of it. The
+                  // fields below are the ones that distinguish "typed into a
+                  // background tab" from "typed into the right editor and
+                  // nothing happened".
+                  diag.suggestionListEditor =
+                    sl && sl.activeEditor && sl.activeEditor.getPath
+                      ? String(sl.activeEditor.getPath()).split('/').pop()
+                      : null;
                   diag.hasOverlayDecoration = sl ? sl.overlayDecoration != null : null;
                   var sle = sl && sl._suggestionListElement;
                   diag.elementCreated = !!sle;
@@ -356,6 +366,17 @@ const PROBE_EXPR = `(function() {
                     diag.markerDestroyed = mk && mk.isDestroyed ? mk.isDestroyed() : null;
                   }
                 }
+                var activeEditor = chevron.workspace.getActiveTextEditor();
+                diag.probeEditor = String(acEditor.getPath()).split('/').pop();
+                diag.workspaceActiveEditor = activeEditor && activeEditor.getPath
+                  ? String(activeEditor.getPath()).split('/').pop()
+                  : null;
+                diag.probeIsWorkspaceActive = activeEditor === acEditor;
+                var activeItem = chevron.workspace.getActivePaneItem();
+                diag.activeItem = activeItem && activeItem.constructor
+                  ? activeItem.constructor.name
+                  : null;
+                diag.paneItems = chevron.workspace.getPaneItems().length;
                 diag.editorText = acEditor.getText().slice(-20);
                 diag.cursor = JSON.stringify(acEditor.getCursorBufferPosition());
                 diag.focused = document.activeElement
