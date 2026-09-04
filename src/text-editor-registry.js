@@ -66,6 +66,22 @@ module.exports = class TextEditorRegistry {
     this.editorsWithMaintainedGrammar = new Set();
     this.editorGrammarOverrides = {};
     this.editorGrammarScores = new WeakMap();
+    this.paramsByEditor = new WeakMap();
+
+    if (
+      this.config &&
+      typeof this.config.onDidChangeRootSettings === 'function'
+    ) {
+      this.subscriptions.add(
+        this.config.onDidChangeRootSettings(() => {
+          if (!this.editorsWithMaintainedConfig) return;
+          this.editorsWithMaintainedConfig.forEach(editor => {
+            this.applyScopedSettings(editor);
+            this.updateSoftTabsForEditor(editor);
+          });
+        })
+      );
+    }
   }
 
   destroy() {
@@ -99,7 +115,13 @@ module.exports = class TextEditorRegistry {
       }
     }
 
-    Object.assign(params, this.textEditorParamsForScope(scope));
+    Object.assign(
+      params,
+      this.textEditorParamsForScope(
+        scope,
+        params.buffer && params.buffer.getPath && params.buffer.getPath()
+      )
+    );
 
     return new TextEditor(params);
   }
@@ -168,16 +190,7 @@ module.exports = class TextEditorRegistry {
     );
     this.subscriptions.add(languageChangeSubscription);
 
-    const updateTabTypes = () => {
-      const configOptions = { scope: editor.getRootScopeDescriptor() };
-      editor.setSoftTabs(
-        shouldEditorUseSoftTabs(
-          editor,
-          this.config.get('editor.tabType', configOptions),
-          this.config.get('editor.softTabs', configOptions)
-        )
-      );
-    };
+    const updateTabTypes = () => this.updateSoftTabsForEditor(editor);
 
     updateTabTypes();
     const tokenizeSubscription = editor.onDidTokenize(updateTabTypes);
@@ -241,13 +254,17 @@ module.exports = class TextEditorRegistry {
     const newLanguageMode = editor.buffer.getLanguageMode();
 
     if (oldLanguageMode) {
+      const root = editor.getPath();
       const newSettings = this.textEditorParamsForScope(
-        newLanguageMode.rootScopeDescriptor
+        newLanguageMode.rootScopeDescriptor,
+        root
       );
       const oldSettings = this.textEditorParamsForScope(
-        oldLanguageMode.rootScopeDescriptor
+        oldLanguageMode.rootScopeDescriptor,
+        root
       );
 
+      this.paramsByEditor.set(editor, newSettings);
       const updatedSettings = {};
       for (const [, paramName] of EDITOR_PARAMS_BY_SETTING_KEY) {
         // Update the setting only if it has changed between the two language
@@ -262,9 +279,12 @@ module.exports = class TextEditorRegistry {
         editor.update(updatedSettings);
       }
     } else {
-      editor.update(
-        this.textEditorParamsForScope(newLanguageMode.rootScopeDescriptor)
+      const settings = this.textEditorParamsForScope(
+        newLanguageMode.rootScopeDescriptor,
+        editor.getPath()
       );
+      this.paramsByEditor.set(editor, settings);
+      editor.update(settings);
     }
   }
 
@@ -278,12 +298,16 @@ module.exports = class TextEditorRegistry {
       this.scopesWithConfigSubscriptions.add(scopeChain);
       const configOptions = { scope: scopeDescriptor };
 
-      for (const [settingKey, paramName] of EDITOR_PARAMS_BY_SETTING_KEY) {
+      for (const [settingKey] of EDITOR_PARAMS_BY_SETTING_KEY) {
         this.subscriptions.add(
-          this.config.onDidChange(settingKey, configOptions, ({ newValue }) => {
+          // The event's `newValue` is resolved without a root, so it must not
+          // be applied directly: a root's config outranks the user setting
+          // that just changed. Resolve again per editor instead.
+          // docs/reference/config-precedence.md
+          this.config.onDidChange(settingKey, configOptions, () => {
             this.editorsWithMaintainedConfig.forEach(editor => {
               if (editor.getRootScopeDescriptor().isEqual(scopeDescriptor)) {
-                editor.update({ [paramName]: newValue });
+                this.applyScopedSettings(editor);
               }
             });
           })
@@ -291,13 +315,9 @@ module.exports = class TextEditorRegistry {
       }
 
       const updateTabTypes = () => {
-        const tabType = this.config.get('editor.tabType', configOptions);
-        const softTabs = this.config.get('editor.softTabs', configOptions);
         this.editorsWithMaintainedConfig.forEach(editor => {
           if (editor.getRootScopeDescriptor().isEqual(scopeDescriptor)) {
-            editor.setSoftTabs(
-              shouldEditorUseSoftTabs(editor, tabType, softTabs)
-            );
+            this.updateSoftTabsForEditor(editor);
           }
         });
       };
@@ -317,9 +337,47 @@ module.exports = class TextEditorRegistry {
     }
   }
 
-  textEditorParamsForScope(scopeDescriptor) {
+  // Re-resolve an editor's settings and apply only what actually moved. A
+  // blanket update would undo choices made in the editor itself -- soft wrap
+  // toggled by hand, say -- which is why the baseline is kept per editor.
+  applyScopedSettings(editor) {
+    const params = this.textEditorParamsForScope(
+      editor.getRootScopeDescriptor(),
+      editor.getPath()
+    );
+    const previous = this.paramsByEditor.get(editor);
+    this.paramsByEditor.set(editor, params);
+    if (!previous) return;
+
+    const updated = {};
+    for (const [, paramName] of EDITOR_PARAMS_BY_SETTING_KEY) {
+      if (!_.isEqual(params[paramName], previous[paramName])) {
+        updated[paramName] = params[paramName];
+      }
+    }
+    if (_.size(updated) > 0) editor.update(updated);
+  }
+
+  updateSoftTabsForEditor(editor) {
+    const configOptions = {
+      scope: editor.getRootScopeDescriptor(),
+      root: editor.getPath()
+    };
+    editor.setSoftTabs(
+      shouldEditorUseSoftTabs(
+        editor,
+        this.config.get('editor.tabType', configOptions),
+        this.config.get('editor.softTabs', configOptions)
+      )
+    );
+  }
+
+  // `root` is the editor's path: Config resolves it to the project root that
+  // owns the file, so a repository's config can set tab length for its own
+  // files. docs/reference/config-precedence.md.
+  textEditorParamsForScope(scopeDescriptor, root) {
     const result = {};
-    const configOptions = { scope: scopeDescriptor };
+    const configOptions = { scope: scopeDescriptor, root };
     for (const [settingKey, paramName] of EDITOR_PARAMS_BY_SETTING_KEY) {
       result[paramName] = this.config.get(settingKey, configOptions);
     }

@@ -10,6 +10,7 @@ const {
 const Color = require('./color');
 const ScopedPropertyStore = require('scoped-property-store');
 const ScopeDescriptor = require('./scope-descriptor');
+const path = require('path');
 
 const schemaEnforcers = {};
 
@@ -380,6 +381,18 @@ const schemaEnforcers = {};
 //
 // * Don't depend on (or write to) configuration keys outside of your keypath.
 //
+// A config file mixes plain keys with selector keys (".source.js"). The store
+// wants the selectors; getRawValue wants the rest.
+function splitScopedSettings(settings) {
+  const scoped = {};
+  const plain = {};
+  for (const key of Object.keys(settings || {})) {
+    if (key.startsWith('.')) scoped[key] = settings[key];
+    else plain[key] = settings[key];
+  }
+  return { scoped, plain };
+}
+
 class Config {
   static addSchemaEnforcer(typeName, enforcerFunction) {
     if (schemaEnforcers[typeName] == null) {
@@ -454,8 +467,16 @@ class Config {
     this.settings = {};
     this.projectSettings = {};
     this.projectFile = null;
+    // Per-root config: root path -> { source, settings }. Kept sorted longest
+    // first so the nearest root wins a nested lookup.
+    // docs/reference/config-precedence.md
+    this.settingsByRoot = new Map();
 
     this.scopedSettingsStore = new ScopedPropertyStore();
+    // Root scoped settings live apart from the main store. Sharing it would
+    // let `.source.js` from one repository answer a scoped lookup made with
+    // no root at all, or with a different one.
+    this.rootScopedSettingsStore = new ScopedPropertyStore();
 
     this.settingsLoaded = false;
     this.transactDepth = 0;
@@ -540,6 +561,14 @@ class Config {
   //
   // Returns a {Disposable} with the following keys on which you can call
   // `.dispose()` to unsubscribe.
+  // Extended: Call `callback` when any project root's config changes.
+  //
+  // `onDidChange` cannot stand in for this: it compares the value resolved
+  // without a root, and that value does not move when a root's config does.
+  onDidChangeRootSettings(callback) {
+    return this.emitter.on('did-change-root-settings', callback);
+  }
+
   onDidChange(...args) {
     let callback, keyPath, scopeDescriptor;
     if (args.length === 1) {
@@ -627,6 +656,25 @@ class Config {
       }
     } else {
       [keyPath] = args;
+    }
+
+    // docs/reference/config-precedence.md: root scoped, root plain, user
+    // scoped, user plain, default. The source outranks the specificity, so a
+    // plain setting in a repository's config beats a language-scoped one in
+    // the user's.
+    const rootEntry = options != null ? this.rootEntryFor(options.root) : null;
+    if (rootEntry) {
+      if (scope != null) {
+        const rootScoped = this.getRawScopedValue(
+          scope,
+          keyPath,
+          { ...options, sources: [rootEntry.source] },
+          this.rootScopedSettingsStore
+        );
+        if (rootScoped != null) return rootScoped;
+      }
+      const rootPlain = getValueAtKeyPath(rootEntry.settings, keyPath);
+      if (rootPlain !== undefined) return this.deepClone(rootPlain);
     }
 
     if (scope != null) {
@@ -1388,9 +1436,100 @@ class Config {
     return this.emitChangeEvent();
   }
 
-  getRawScopedValue(scopeDescriptor, keyPath, options) {
+  /**
+   * Settings for the root a path belongs to. Longest match wins and only that
+   * root applies — see docs/reference/config-precedence.md on nesting.
+   */
+  rootEntryFor(rootOrPath) {
+    if (!rootOrPath || this.settingsByRoot.size === 0) return null;
+    let best = null;
+    for (const [root, entry] of this.settingsByRoot) {
+      if (rootOrPath !== root && !rootOrPath.startsWith(root + path.sep)) {
+        continue;
+      }
+      if (!best || root.length > best.root.length) best = { root, ...entry };
+    }
+    return best;
+  }
+
+  /**
+   * Replace the config for one project root. Passing null settings forgets
+   * the root, which is what happens when it leaves the project.
+   */
+  setRootSettings(root, settings, sourcePath) {
+    if (!root) return;
+    const previous = this.settingsByRoot.get(root);
+    if (previous && previous.source) {
+      this.rootScopedSettingsStore.removePropertiesForSource(previous.source);
+    }
+    if (settings == null) {
+      this.settingsByRoot.delete(root);
+      this.emitRootSettingsChange();
+      return;
+    }
+    const source = sourcePath || root;
+    const { scoped, plain } = splitScopedSettings(settings);
+    this.settingsByRoot.set(root, { source, settings: plain });
+    if (Object.keys(scoped).length > 0) {
+      this.rootScopedSettingsStore.addProperties(source, scoped);
+    }
+    this.emitRootSettingsChange();
+  }
+
+  emitRootSettingsChange() {
+    this.emitChangeEvent();
+    if (this.transactDepth <= 0) {
+      this.emitter.emit('did-change-root-settings');
+    }
+  }
+
+  /** Roots that currently have config, longest path first. */
+  getConfiguredRoots() {
+    return [...this.settingsByRoot.keys()].sort((a, b) => b.length - a.length);
+  }
+
+  /**
+   * Which source answered for a key, so "why is this 2 here and 4 there" can
+   * be answered without opening four files.
+   */
+  getSourceOf(keyPath, options = {}) {
+    const entry = this.rootEntryFor(options.root);
+    if (entry) {
+      if (options.scope != null) {
+        const scoped = this.getRawScopedValue(
+          options.scope,
+          keyPath,
+          { sources: [entry.source] },
+          this.rootScopedSettingsStore
+        );
+        if (scoped != null) {
+          return { source: 'root', path: entry.source, scoped: true };
+        }
+      }
+      if (getValueAtKeyPath(entry.settings, keyPath) !== undefined) {
+        return { source: 'root', path: entry.source, scoped: false };
+      }
+    }
+    if (options.scope != null) {
+      const scoped = this.getRawScopedValue(options.scope, keyPath, options);
+      if (scoped != null) {
+        return { source: 'user', path: this.mainSource, scoped: true };
+      }
+    }
+    if (getValueAtKeyPath(this.settings, keyPath) !== undefined) {
+      return { source: 'user', path: this.mainSource, scoped: false };
+    }
+    return { source: 'default', path: null, scoped: false };
+  }
+
+  getRawScopedValue(
+    scopeDescriptor,
+    keyPath,
+    options,
+    store = this.scopedSettingsStore
+  ) {
     scopeDescriptor = ScopeDescriptor.fromObject(scopeDescriptor);
-    const result = this.scopedSettingsStore.getPropertyValue(
+    const result = store.getPropertyValue(
       scopeDescriptor.getScopeChain(),
       keyPath,
       options
@@ -1402,7 +1541,7 @@ class Config {
     if (result != null) {
       return result;
     } else if (legacyScopeDescriptor) {
-      return this.scopedSettingsStore.getPropertyValue(
+      return store.getPropertyValue(
         legacyScopeDescriptor.getScopeChain(),
         keyPath,
         options

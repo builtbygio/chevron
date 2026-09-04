@@ -601,6 +601,75 @@ const SETTINGS_EXPR = `(function() {
   });
 })()`;
 
+// Per-root config, end to end. Two editors, one scope, one of them in a
+// project folder that has asked for a different tab length.
+//
+// The regression this exists to catch is the second half: a user setting
+// changing used to push its own value to every editor sharing the scope,
+// which handed the project's editor a number its root had overridden.
+const ROOT_CONFIG_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace || !chevron.config.getSourceOf) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__rootConfigProbe) {
+    window.__rootConfigProbe = { phase: 'running', result: null };
+    var finish = function(result) {
+      window.__rootConfigProbe.result = result;
+      window.__rootConfigProbe.phase = 'done';
+    };
+    var editorEnding = function(suffix) {
+      var editors = chevron.workspace.getTextEditors();
+      for (var i = 0; i < editors.length; i++) {
+        var p = editors[i].getPath() || '';
+        if (p.slice(-suffix.length) === suffix) return editors[i];
+      }
+      return null;
+    };
+    var inRoot = editorEnding('project-probe.ts');
+    var loose = editorEnding('probe.ts');
+    if (!inRoot || !loose || inRoot === loose) {
+      finish({ error: 'expected both an in-project and a loose editor' });
+    } else {
+      var root = chevron.project.getPaths().filter(function(p) {
+        return inRoot.getPath().indexOf(p) === 0;
+      })[0];
+      var out = {
+        root: !!root,
+        inRootBefore: inRoot.getTabLength(),
+        looseBefore: loose.getTabLength(),
+        source: chevron.config.getSourceOf('editor.tabLength', {
+          root: inRoot.getPath(),
+          scope: inRoot.getRootScopeDescriptor()
+        }).source
+      };
+      var userBefore = chevron.config.get('editor.tabLength');
+      chevron.config.set('editor.tabLength', 9);
+      setTimeout(function() {
+        out.inRootAfterUserChange = inRoot.getTabLength();
+        out.looseAfterUserChange = loose.getTabLength();
+        chevron.config.set('editor.tabLength', userBefore);
+        // And a root's own config changing has to reach editors already open.
+        chevron.config.setRootSettings(root, { editor: { tabLength: 5 } }, 'smoke');
+        setTimeout(function() {
+          out.inRootAfterRootChange = inRoot.getTabLength();
+          out.looseAfterRootChange = loose.getTabLength();
+          // Reloading from disk puts it back, which exercises the loader too.
+          chevron.project.syncRootConfigs();
+          setTimeout(function() {
+            out.inRootReloaded = inRoot.getTabLength();
+            finish(out);
+          }, 300);
+        }, 300);
+      }, 300);
+    }
+  }
+  return JSON.stringify({
+    status: window.__rootConfigProbe.phase === 'done' ? 'ready' : 'pending',
+    rootConfig: window.__rootConfigProbe.result
+  });
+})()`;
+
 function isAppWindowTarget(target) {
   if (!target || target.type !== 'page') return false;
   const url = target.url || '';
@@ -874,6 +943,16 @@ async function main() {
       'export const projectBeta = 2;\n' +
       'export const projectGamma = 3;\n'
   );
+  // Per-root config. The project folder asks for a tab length of its own;
+  // probe.ts is loose, so it stays on the user's. Nothing else in this
+  // harness distinguishes the two, and the difference is the whole feature.
+  // docs/reference/config-precedence.md
+  fs.mkdirSync(path.join(projectDir, '.chevron'), { recursive: true });
+  fs.writeFileSync(
+    path.join(projectDir, '.chevron', 'config.json'),
+    JSON.stringify({ editor: { tabLength: 3 } }, null, 2)
+  );
+
   const probes = {
     txt: path.join(probeDir, 'probe.txt'),
     ts: path.join(probeDir, 'probe.ts'),
@@ -1092,6 +1171,26 @@ async function main() {
       }
     }
 
+    // Per-root config, once the editors it compares are both open.
+    if (state && state.status === 'ready') {
+      for (let attempt = 0; attempt < 40; attempt++) {
+        let rootState;
+        try {
+          rootState = await probeWindow(
+            [probes.txt, probes.ts, probes.css, probes.md, probes.make],
+            ROOT_CONFIG_EXPR
+          );
+        } catch (error) {
+          rootState = { rootConfig: { error: String(error.message || error) } };
+        }
+        if (rootState && rootState.rootConfig) {
+          state.rootConfig = rootState.rootConfig;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
     if (state && state.status === 'ready') {
       console.log('smoke-test: state', JSON.stringify(state, null, 2));
       const failures = [];
@@ -1188,6 +1287,57 @@ async function main() {
       // The project-folder case. A loose file has no project root, so it never
       // reaches the code path where a provider can claim exclusivity -- which
       // is how "works in a new file, not in an existing one" shipped.
+      const rootConfig = state.rootConfig;
+      if (!rootConfig) {
+        failures.push('per-root config probe did not report');
+      } else if (rootConfig.error) {
+        failures.push(`per-root config probe error: ${rootConfig.error}`);
+      } else {
+        if (!rootConfig.root) {
+          failures.push('per-root config: no project root contains the editor');
+        }
+        if (rootConfig.inRootBefore !== 3) {
+          failures.push(
+            `per-root config: in-project tabLength ${rootConfig.inRootBefore} (expected 3 from .chevron/config.json)`
+          );
+        }
+        if (rootConfig.looseBefore === 3) {
+          failures.push(
+            'per-root config: a loose file picked up the root config'
+          );
+        }
+        if (rootConfig.source !== 'root') {
+          failures.push(
+            `per-root config: getSourceOf said ${rootConfig.source} (expected root)`
+          );
+        }
+        if (rootConfig.looseAfterUserChange !== 9) {
+          failures.push(
+            `per-root config: loose tabLength ${rootConfig.looseAfterUserChange} after the user set 9 (the subscription is not firing at all)`
+          );
+        }
+        if (rootConfig.inRootAfterUserChange !== 3) {
+          failures.push(
+            `per-root config: a user setting overwrote the root's tabLength (${rootConfig.inRootAfterUserChange}, expected 3)`
+          );
+        }
+        if (rootConfig.inRootAfterRootChange !== 5) {
+          failures.push(
+            `per-root config: a root config change did not reach an open editor (${rootConfig.inRootAfterRootChange}, expected 5)`
+          );
+        }
+        if (rootConfig.looseAfterRootChange === 5) {
+          failures.push(
+            'per-root config: a root config change reached a loose editor'
+          );
+        }
+        if (rootConfig.inRootReloaded !== 3) {
+          failures.push(
+            `per-root config: reloading from disk gave ${rootConfig.inRootReloaded} (expected 3)`
+          );
+        }
+      }
+
       const acp = state.autocompleteInProject;
       if (!acp) {
         failures.push('autocomplete-in-project probe did not report');
