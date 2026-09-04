@@ -669,8 +669,12 @@ const ROOT_CONFIG_EXPR = `(function() {
     // own, or the answer to "I edited the config and nothing happened" is
     // "reload the window".
     function editTheConfigFile(out, root, inRoot) {
+      // Build the path the way the platform spells it: a mixed-separator
+      // path is the kind of thing that works on one OS and not the other.
+      var sep = root.indexOf('\\\\') === -1 ? '/' : '\\\\';
+      out.configPath = root + sep + '.chevron' + sep + 'config.json';
       chevron.workspace
-        .open(root + '/.chevron/config.json')
+        .open(out.configPath)
         .then(function(configEditor) {
           // No escape sequences in here: this expression is built from a
           // template literal, so a backslash-n would arrive as a real

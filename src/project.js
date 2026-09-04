@@ -7,7 +7,9 @@ const TextBuffer = require('text-buffer');
 const { watchPath } = require('./path-watcher');
 
 const DefaultDirectoryProvider = require('./default-directory-provider');
-const ROOT_CONFIG_SUFFIX = path.join('.chevron', 'config.json');
+// Either separator: a watcher on Windows can report a path in either style,
+// and matching only the native one is a bug that shows up on one platform.
+const ROOT_CONFIG_PATTERN = /[\\/]\.chevron[\\/]config\.json$/;
 
 // A did-change-files event that touches some root's config. Renames report
 // the path they came from as well, and a config file moved away is a change
@@ -15,7 +17,7 @@ const ROOT_CONFIG_SUFFIX = path.join('.chevron', 'config.json');
 function isRootConfigEvent(event) {
   if (!event) return false;
   return [event.path, event.oldPath].some(
-    candidate => typeof candidate === 'string' && candidate.endsWith(ROOT_CONFIG_SUFFIX)
+    candidate => typeof candidate === 'string' && ROOT_CONFIG_PATTERN.test(candidate)
   );
 }
 
