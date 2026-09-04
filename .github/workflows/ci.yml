@@ -181,6 +181,7 @@ jobs:
           node --test script/ci/user-config-path.test.js
           node --test script/ci/symbols-view-lsp.test.js
           node --test script/ci/smoke-probe-syntax.test.js
+          node --test script/ci/rg-search-args.test.js
           node --test script/ci/chevron-api-alias.test.js
           node --test script/ci/lsp-framing.test.js
           node --test script/ci/lsp-position.test.js

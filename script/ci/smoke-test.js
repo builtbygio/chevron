@@ -798,6 +798,71 @@ const STYLEGUIDE_EXPR = `(function() {
   });
 })()`;
 
+// Find in Project, end to end. The renderer builds an rg command line and
+// main validates it; when the two disagreed, the IPC promise rejected, the
+// rejection never reached the results model, and the panel showed nothing with
+// no error anywhere. Only a real search catches that, so this drives the panel
+// and reads the counts the model recorded.
+const PROJECT_FIND_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__projectFindProbe) {
+    window.__projectFindProbe = { phase: 'running', result: null };
+    var finish = function(result) {
+      window.__projectFindProbe.result = result;
+      window.__projectFindProbe.phase = 'done';
+    };
+    try {
+      chevron.commands.dispatch(
+        chevron.views.getView(chevron.workspace),
+        'project-find:show'
+      );
+    } catch (error) {
+      finish({ error: String(error && error.message) });
+    }
+    setTimeout(function() {
+      var panel = document.querySelector('.project-find');
+      if (!panel) return finish({ error: 'project-find panel did not open' });
+      var editors = panel.querySelectorAll('atom-text-editor');
+      if (!editors.length) return finish({ error: 'project-find has no input' });
+
+      editors[0].getModel().setText('ripgrepOnlyToken');
+      chevron.commands.dispatch(panel, 'core:confirm');
+
+      var tries = 0;
+      (function settle() {
+        var results = chevron.workspace.getPaneItems().filter(function(item) {
+          return item && item.constructor && /Results/i.test(item.constructor.name);
+        })[0];
+        var model = results && (results.model || results.resultsModel);
+        var matches = model ? model.matchCount : -1;
+        if (matches > 0 || tries >= 60) {
+          finish({
+            matchCount: model ? model.matchCount : null,
+            pathCount: model ? model.pathCount : null,
+            pattern: model ? model.lastFindPattern : null,
+            searchErrors: model && model.searchErrors
+              ? model.searchErrors.map(function(e) {
+                  return String((e && (e.message || e)) || '').slice(0, 120);
+                })
+              : null,
+            waitedMs: tries * 250
+          });
+          return;
+        }
+        tries++;
+        setTimeout(settle, 250);
+      })();
+    }, 2000);
+  }
+  return JSON.stringify({
+    status: window.__projectFindProbe.phase === 'done' ? 'ready' : 'pending',
+    projectFind: window.__projectFindProbe.result
+  });
+})()`;
+
 function isAppWindowTarget(target) {
   if (!target || target.type !== 'page') return false;
   const url = target.url || '';
@@ -1081,6 +1146,16 @@ async function main() {
     JSON.stringify({ editor: { tabLength: 3 } }, null, 2)
   );
 
+  // Searched for by the project-find phase. It must live in a file nothing
+  // opens: workspace.scan also scans modified buffers in memory, so a token
+  // that is present in an open editor is found whether or not ripgrep ran --
+  // which is exactly how the first version of that gate passed against a
+  // broken searcher.
+  fs.writeFileSync(
+    path.join(projectDir, 'on-disk-only.js'),
+    'const ripgrepOnlyToken = 1;\nmodule.exports = { ripgrepOnlyToken };\n'
+  );
+
   const probes = {
     txt: path.join(probeDir, 'probe.txt'),
     ts: path.join(probeDir, 'probe.ts'),
@@ -1321,6 +1396,23 @@ async function main() {
       }
     }
 
+    // Find in Project, before the styleguide takes the active pane.
+    if (state && state.status === 'ready') {
+      for (let attempt = 0; attempt < 120; attempt++) {
+        let findState;
+        try {
+          findState = await probeWindow([], PROJECT_FIND_EXPR);
+        } catch (error) {
+          findState = { projectFind: { error: String(error.message || error) } };
+        }
+        if (findState && findState.projectFind) {
+          state.projectFind = findState.projectFind;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
     // The styleguide, last: it takes over the active pane.
     if (state && state.status === 'ready') {
       for (let attempt = 0; attempt < 40; attempt++) {
@@ -1434,6 +1526,24 @@ async function main() {
       // The project-folder case. A loose file has no project root, so it never
       // reaches the code path where a provider can claim exclusivity -- which
       // is how "works in a new file, not in an existing one" shipped.
+      const projectFind = state.projectFind;
+      if (!projectFind) {
+        failures.push('project-find probe did not report');
+      } else if (projectFind.error) {
+        failures.push(`project-find: ${projectFind.error}`);
+      } else {
+        if (!projectFind.matchCount) {
+          failures.push(
+            `project-find found nothing for a token that is on disk in the project (matchCount ${projectFind.matchCount}, pattern ${projectFind.pattern}, after ${projectFind.waitedMs}ms) — the renderer and main disagreeing about the rg command line looks exactly like this, with no error anywhere`
+          );
+        }
+        if (projectFind.searchErrors && projectFind.searchErrors.length > 0) {
+          failures.push(
+            `project-find errors: ${projectFind.searchErrors.join('; ')}`
+          );
+        }
+      }
+
       const styleguide = state.styleguide;
       if (!styleguide) {
         failures.push('styleguide probe did not report');
