@@ -15,8 +15,10 @@ const { RenameView } = require('./rename-view');
 const { ListView } = require('./list-view');
 const { DiagnosticsView } = require('./diagnostics-view');
 const { TrustView } = require('./trust-view');
+const { InlayHints } = require('./inlay-hints');
 
 let lsp = null;
+let inlayHints = null;
 let disposables = null;
 let statusTile = null;
 let statusEl = null;
@@ -505,6 +507,12 @@ module.exports = {
       );
     }
 
+    const lspClient = ensureLsp();
+    if (lspClient && typeof lspClient.inlayHintsAt === 'function') {
+      inlayHints = new InlayHints(lspClient);
+      inlayHints.activate();
+    }
+
     // Escape dismisses hover / definition / lists
     if (e && e.commands) {
       disposables.add(
@@ -532,6 +540,10 @@ module.exports = {
   },
 
   deactivate() {
+    if (inlayHints) {
+      inlayHints.deactivate();
+      inlayHints = null;
+    }
     clearHoverTimer();
     if (hoverView) {
       hoverView.destroy();

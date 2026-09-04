@@ -402,6 +402,10 @@ class ServerSession {
           rangeFormatting: { dynamicRegistration: false },
           documentSymbol: {
             hierarchicalDocumentSymbolSupport: true
+          },
+          inlayHint: {
+            dynamicRegistration: false,
+            resolveSupport: { properties: ['tooltip', 'label.location'] }
           }
         },
         workspace: {

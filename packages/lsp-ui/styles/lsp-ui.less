@@ -220,3 +220,17 @@ atom-panel.modal .lsp-ui-trust,
 .lsp-ui-diag-warning-highlight .region {
   background: ~"rgb(from var(--background-color-warning) r g b / 25%)";
 }
+
+// Inlay hints. Dimmer than the code they sit among: they are not in the file,
+// and reading them as if they were is the failure mode.
+.inlay-hint {
+  color: var(--text-color-subtle);
+  background-color: var(--background-color-highlight);
+  border-radius: 3px;
+  padding: 0 2px;
+  font-size: 0.9em;
+  // Never take a click or a selection: the text is not in the buffer, and a
+  // cursor that can be placed inside it would be lying about where it is.
+  pointer-events: none;
+  user-select: none;
+}

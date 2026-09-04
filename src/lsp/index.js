@@ -458,6 +458,43 @@ function listSessions() {
  * @param {string} query
  * @param {{ root?: string|null, limit?: number }} [options]
  */
+let inlayProviderCache;
+function inlayProvider() {
+  if (inlayProviderCache !== undefined) return inlayProviderCache;
+  try {
+    inlayProviderCache = require('./providers/inlay-hints');
+  } catch (error) {
+    if (error && error.code === 'MODULE_NOT_FOUND') {
+      inlayProviderCache = null;
+    } else {
+      throw error;
+    }
+  }
+  return inlayProviderCache;
+}
+
+/**
+ * Inlay hints for a range of an editor. Empty when no server answers them.
+ * @param {object} editor
+ * @param {{start:{row:number,column:number}, end:{row:number,column:number}}} range
+ */
+async function inlayHintsAt(editor, range) {
+  const provider = inlayProvider();
+  if (!provider) return [];
+  return provider.inlayHintsFor(clientApi, editor, range);
+}
+
+/** Whether the server for this editor answers inlay hints. */
+function servesInlayHints(editor) {
+  const provider = inlayProvider();
+  if (!provider) return false;
+  const serverId = getServerIdForEditor(editor);
+  if (!serverId) return false;
+  return listSessions().some(
+    session => session.serverId === serverId && provider.servesInlayHints(session)
+  );
+}
+
 async function projectSymbols(query, options) {
   const provider = symbolProvider();
   if (!provider) return [];
@@ -831,6 +868,8 @@ module.exports = {
   applyCodeAction,
   documentSymbolsAt,
   projectSymbols,
+  inlayHintsAt,
+  servesInlayHints,
   listSessions,
   applyEdit,
   formatSignatureHelp,

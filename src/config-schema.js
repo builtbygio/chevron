@@ -655,6 +655,13 @@ const configSchema = {
         description:
           'User language server map (Phase 3). Keys are scope names (e.g. `source.rust`) or server ids; values are `{ command, args?, scopes?, initializationOptions? }`. Package-registered servers take precedence over user config and built-ins. Binaries must already be on PATH — Chevron does not download language servers.'
       },
+      inlayHints: {
+        type: 'boolean',
+        default: true,
+        title: 'Inlay hints',
+        description:
+          'Draw the parameter names and inferred types a language server knows and the source does not spell out. Requested for the visible rows only.'
+      },
       formatOnSave: {
         type: 'boolean',
         default: false,
