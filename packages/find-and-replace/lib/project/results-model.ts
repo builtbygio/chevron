@@ -218,7 +218,6 @@ module.exports = class ResultsModel {
     const trailingContextLineCount = chevron.config.get('find-and-replace.searchContextLineCountAfter')
 
     const startTime = Date.now()
-    const useRipgrep = chevron.config.get('find-and-replace.useRipgrep')
     const enablePCRE2 = chevron.config.get('find-and-replace.enablePCRE2')
 
     this.inProgressSearchPromise = chevron.workspace.scan(
@@ -227,7 +226,6 @@ module.exports = class ResultsModel {
         paths: searchPaths,
         onPathsSearched,
         leadingContextLineCount,
-        ripgrep: useRipgrep,
         PCRE2: enablePCRE2,
         trailingContextLineCount
       },
@@ -268,7 +266,7 @@ module.exports = class ResultsModel {
       this.metricsReporter.sendSearchEvent(
         Date.now() - startTime,
         resultsSummary.matchCount,
-        useRipgrep ? 'ripgrep' : 'standard'
+        'ripgrep'
       )
       this.inProgressSearchPromise = null
       this.emitter.emit('did-finish-searching', resultsSummary)

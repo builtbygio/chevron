@@ -51,6 +51,47 @@ describe('logScanEngineOnce', () => {
   });
 });
 
+describe('the setting that chose an engine is gone too', () => {
+  // `useRipgrep` outlived the choice it described: `scan` ignored it from
+  // PR 4 on, so turning it off changed nothing while telling the user it
+  // had. A setting whose only remaining effect was mislabelling a metric is
+  // worse than no setting.
+  it('find-and-replace does not offer useRipgrep', () => {
+    const pkg = JSON.parse(
+      fs.readFileSync(
+        path.join(ROOT, 'packages', 'find-and-replace', 'package.json'),
+        'utf8'
+      )
+    );
+    assert.ok(pkg.configSchema, 'find-and-replace still has a config schema');
+    assert.strictEqual(
+      Object.prototype.hasOwnProperty.call(pkg.configSchema, 'useRipgrep'),
+      false,
+      'useRipgrep is back in the schema'
+    );
+    // enablePCRE2 is still honoured, so it should still be there.
+    assert.ok(
+      Object.prototype.hasOwnProperty.call(pkg.configSchema, 'enablePCRE2'),
+      'enablePCRE2 should not have been removed with it'
+    );
+  });
+
+  it('nothing reads it any more', () => {
+    const searched = [
+      path.join('packages', 'find-and-replace', 'lib', 'project', 'results-model.ts'),
+      path.join('src', 'workspace.js'),
+      path.join('src', 'search-engine.js')
+    ];
+    for (const relative of searched) {
+      const source = fs.readFileSync(path.join(ROOT, relative), 'utf8');
+      assert.ok(
+        !source.includes('useRipgrep'),
+        `${relative} still reads useRipgrep`
+      );
+    }
+  });
+});
+
 describe('scandal search path is gone', () => {
   it('does not ship DefaultDirectorySearcher or scan-handler', () => {
     assert.strictEqual(
