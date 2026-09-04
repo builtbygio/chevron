@@ -1,6 +1,7 @@
 'use strict';
 
 const { Emitter, Disposable, CompositeDisposable } = require('event-kit');
+const { profiler } = require('./package-profiler');
 const { calculateSpecificity, validateSelector } = require('clear-cut');
 const _ = require('underscore-plus');
 
@@ -402,7 +403,23 @@ module.exports = class CommandRegistry {
         if (immediatePropagationStopped) {
           break;
         }
-        matched.push(listener.didDispatch.call(currentTarget, dispatchedEvent));
+        if (profiler.enabled) {
+          const started = performance.now();
+          const result = listener.didDispatch.call(
+            currentTarget,
+            dispatchedEvent
+          );
+          profiler.record(
+            'command',
+            profiler.ownerForSite(listener.profilerSite),
+            performance.now() - started
+          );
+          matched.push(result);
+        } else {
+          matched.push(
+            listener.didDispatch.call(currentTarget, dispatchedEvent)
+          );
+        }
       }
 
       if (currentTarget === window) {
@@ -435,6 +452,9 @@ module.exports = class CommandRegistry {
 // };
 class SelectorBasedListener {
   constructor(selector, commandName, listener) {
+    // Structured frames only: cheap here, formatted lazily and only if
+    // profiling is ever turned on.
+    this.profilerSite = profiler.captureSite(SelectorBasedListener);
     this.selector = selector;
     this.didDispatch = extractDidDispatch(listener);
     this.descriptor = extractDescriptor(commandName, listener);
@@ -459,6 +479,7 @@ class SelectorBasedListener {
 
 class InlineListener {
   constructor(commandName, listener) {
+    this.profilerSite = profiler.captureSite(InlineListener);
     this.didDispatch = extractDidDispatch(listener);
     this.descriptor = extractDescriptor(commandName, listener);
   }
