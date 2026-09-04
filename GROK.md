@@ -154,6 +154,18 @@ Landed with 1.0 / immediately after:
 Authoritative: **`docs/process/security-phase-s.md`** + **`docs/decisions/security-phase-s-decision.md`** (Option C).  
 Editor `sandbox: false` is intentional; utilityProcess git workers; T2 require restrict.
 
+### TextMate retirement — **complete** (2026-09-04)
+
+**One highlighter.** first-mate, oniguruma and every TextMate grammar are deleted (#311–#320): 69 TextMate grammars across 32 packages → **0**, catalog 34 → 27 language packages, ~54k lines removed. `season` and `cson-parser` left the tree with first-mate, which was their only requirer.
+
+Ported on the way: **markdown** (block + inline injection; fenced code injects the language named in the fence, which needed `injectionRegExp` on 22 grammars), **make**, **objective-c**, **XML plists**. ~90 file types moved onto tree-sitter grammars (`cjs`, `mjs`, `PKGBUILD`, `Fastfile`, `Snakefile`, `htm`, `xhtml`, `hbs`, `csx`, `mm`, `xsl`, …).
+
+**Nineteen scopes lost highlighting**, and no parser exists on npm for any of them: plain text, sass, the git buffers, `go.mod`/`go.sum`, java properties/jsp/el, perl6, objc strings, the rails overlays. They open, edit and search; they are not coloured. Also dropped: hyperlink (URLs in comments are no longer scoped, so **Open Link does not fire there**), todo, coffee-script, mustache (`.hbs` opens on the HTML grammar).
+
+Auto-indent moved off the deleted mode to `src/auto-indent.ts`, and off oniguruma onto `new RegExp`. Three things broke on the way, all of them code assuming every editor has a TextMate mode — bracket-matcher's `tokenizedLineForRow` and its `ScopeSelector`, and `TextEditor#getRootScopeDescriptor`, which `NullLanguageMode` has no answer for. **Only the packaged smoke test caught two of them**; every unit gate was green.
+
+The decision reversed three times and all three are recorded. [language-stack.md](docs/reference/language-stack.md) §3 is the live reference; [textmate-retirement-plan.md](docs/process/textmate-retirement-plan.md) has the sequencing and what each step cost.
+
 ### LSP — **phases 0–5 landed**
 
 [docs/reference/lsp-design.md](docs/reference/lsp-design.md). Host v2 / more servers later.
@@ -191,7 +203,7 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
    - A stale OS association is now **withdrawn**, not ignored: `removeAsDefaultProtocolClient('atom')` runs before registering `chevron`. And an `atom://` argv entry is dropped with a diagnostic instead of falling through to `pathsToOpen`, which would have opened a file literally named `atom://…`.  
    - Gates: `script/ci/uri-scheme.test.js`, `script/ci/no-atom-uri.test.js`, `script/ci/menu-uri-openers.test.js`. `uri-scheme-alias.test.js` deleted with the helper it tested.  
 
-5. **Do not delete** `season` / `document-register-element` / first-mate while callers remain (`Task` cleared its gate in Wave 3). **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  
+5. **Do not delete** `document-register-element` while callers remain (`Task` cleared its gate in Wave 3; **first-mate and `season` are gone** — see the TextMate note above). **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  
 6. Residual `@atom/*` **dependency keys** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — published as `@builtbygio/*`; renaming the editor key is branding, not a drive-by.  
 7. **Startup perf** — custom V8 snapshot on Linux/Windows with **stock fallback** if verify fails; Darwin stock **frozen** (Q2).  
 8. **Later:** package host v2 **routing on** (spine is off); signing. Jasmine nightly is measurement, not a merge gate ([docs/reference/jasmine-ci.md](docs/reference/jasmine-ci.md)).  
@@ -203,9 +215,9 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
 - Jasmine harness still defines `window.atom` for ~7500 spec references. Product `require('atom')` is `MODULE_NOT_FOUND`.
 
 **Catalog is vendored** (2026-08-28): all 94 editor packages live in `packages/` as
-`workspace:@builtbygio/<id>@*`. There is no publish step and no pin to drift. The 18 owned
-libs/natives (`first-mate`, `text-buffer`, `keytar`, …) stay npm pins — they are real libraries with
-native builds. The 30 `builtbygio/*` package repos are now dead; archive them.
+`workspace:@builtbygio/<id>@*`. There is no publish step and no pin to drift. The owned
+libs/natives (`text-buffer`, `keytar`, `superstring`, …) stay npm pins — they are real libraries with
+native builds. `first-mate` and `oniguruma` are no longer among them. The 30 `builtbygio/*` package repos are now dead; archive them.
 
 **Community packages: never** (owner, 2026-08-28). Not deferred — cancelled. See
 `docs/decisions/package-ecosystem-strategy.md`. This makes removable, none of it done yet: the 65
@@ -246,7 +258,7 @@ Squirrel no longer writes `apm.*` shims — an install upgraded from an older bu
 ### Explicitly out of scope unless asked
 
 - Pulsar rebase  
-- Hard-delete of the remaining Atom shims (`season`, `document-register-element`) — each failed its Wave 3 gate with a named caller; see `script/ci/wave3-gates.test.js`. (`atom://` cleared its gate in Wave 4 and is gone.)  
+- Hard-delete of `document-register-element` — it failed its Wave 3 gate with a named caller; see `script/ci/wave3-gates.test.js`. (`atom://` cleared its gate in Wave 4 and is gone; `season` and first-mate went in the TextMate retirement.)  
 
 ---
 
