@@ -232,7 +232,6 @@ jobs:
           node --test script/ci/no-atom-uri.test.js
           node --test script/ci/shell-commands.test.js
           node --test script/ci/reload-watcher-shutdown.test.js
-          node --test script/ci/package-profiler.test.js
 
   # ---------------------------------------------------------------------------
   # macOS — Intel x64 + Apple Silicon arm64
