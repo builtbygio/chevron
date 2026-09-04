@@ -14,6 +14,7 @@ const Dock = require('./dock');
 const Model = require('./model');
 const StateStore = require('./state-store');
 const TextEditor = require('./text-editor');
+const { profiler } = require('./package-profiler');
 const Panel = require('./panel');
 const PanelContainer = require('./panel-container');
 const { replaceInFiles } = require('./replace-in-files');
@@ -770,10 +771,11 @@ module.exports = class Workspace extends Model {
   //
   // Returns a {Disposable} on which `.dispose()` can be called to unsubscribe.
   observeTextEditors(callback) {
+    const observer = profiler.wrap('event', callback);
     for (let textEditor of this.getTextEditors()) {
-      callback(textEditor);
+      observer(textEditor);
     }
-    return this.onDidAddTextEditor(({ textEditor }) => callback(textEditor));
+    return this.onDidAddTextEditor(({ textEditor }) => observer(textEditor));
   }
 
   // Essential: Invoke the given callback with all current and future panes items
@@ -845,8 +847,9 @@ module.exports = class Workspace extends Model {
   //
   // Returns a {Disposable} on which `.dispose()` can be called to unsubscribe.
   observeActivePaneItem(callback) {
-    callback(this.getActivePaneItem());
-    return this.onDidChangeActivePaneItem(callback);
+    const observer = profiler.wrap('event', callback);
+    observer(this.getActivePaneItem());
+    return this.onDidChangeActivePaneItem(observer);
   }
 
   // Essential: Invoke the given callback with the current active text editor

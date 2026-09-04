@@ -115,6 +115,49 @@ describe('src/ TypeScript-on-touch (PR 16)', () => {
     );
   });
 
+  it('has no source file git would call binary', () => {
+    // A control byte in source is silently legal and silently awful: git
+    // diffs the file as "Bin 7978 -> 9815 bytes", so every review of it shows
+    // no code at all. src/package-profiler.ts shipped that way in #323,
+    // because a bucket separator was written as a literal NUL rather than a
+    // \u0000 escape. Nothing else would have caught it.
+    const offenders = [];
+    const walk = dir => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (entry.name === 'node_modules') continue;
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walk(full);
+          continue;
+        }
+        if (!/\.(js|ts|jsx|tsx|json)$/.test(entry.name)) continue;
+        const bytes = fs.readFileSync(full);
+        for (let i = 0; i < bytes.length; i++) {
+          const byte = bytes[i];
+          // Tab, newline and carriage return are the only control bytes a
+          // source file has any business containing.
+          if (byte === 9 || byte === 10 || byte === 13) continue;
+          if (byte < 32 || byte === 127) {
+            offenders.push(
+              `${path.relative(ROOT, full)}: byte 0x${byte
+                .toString(16)
+                .padStart(2, '0')} at offset ${i}`
+            );
+            break;
+          }
+        }
+      }
+    };
+    walk(SRC);
+    assert.deepStrictEqual(
+      offenders,
+      [],
+      'control bytes in source — write them as escapes, or git treats the ' +
+        'file as binary and the diff becomes unreviewable:\n' +
+        offenders.map(f => `  + ${f}`).join('\n')
+    );
+  });
+
   it('drops converted files from the grandfather list', () => {
     const missing = grandfather.filter(f => !current.includes(f));
     assert.deepStrictEqual(

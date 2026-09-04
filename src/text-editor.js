@@ -11,6 +11,7 @@ const Cursor = require('./cursor');
 const Selection = require('./selection');
 const NullGrammar = require('./null-grammar');
 const ScopeDescriptor = require('./scope-descriptor');
+const { profiler } = require('./package-profiler');
 
 
 const GutterContainer = require('./gutter-container');
@@ -928,7 +929,7 @@ module.exports = class TextEditor {
   //
   // Returns a {Disposable} on which `.dispose()` can be called to unsubscribe.
   onDidChange(callback) {
-    return this.emitter.on('did-change', callback);
+    return this.emitter.on('did-change', profiler.wrap('event', callback));
   }
 
   // Essential: Invoke `callback` when the buffer's contents change. It is
@@ -939,7 +940,7 @@ module.exports = class TextEditor {
   //
   // Returns a {Disposable} on which `.dispose()` can be called to unsubscribe.
   onDidStopChanging(callback) {
-    return this.getBuffer().onDidStopChanging(callback);
+    return this.getBuffer().onDidStopChanging(profiler.wrap('event', callback));
   }
 
   // Essential: Calls your `callback` when a {Cursor} is moved. If there are
@@ -956,7 +957,10 @@ module.exports = class TextEditor {
   //
   // Returns a {Disposable} on which `.dispose()` can be called to unsubscribe.
   onDidChangeCursorPosition(callback) {
-    return this.emitter.on('did-change-cursor-position', callback);
+    return this.emitter.on(
+      'did-change-cursor-position',
+      profiler.wrap('event', callback)
+    );
   }
 
   // Essential: Calls your `callback` when a selection's screen range changes.
@@ -971,7 +975,10 @@ module.exports = class TextEditor {
   //
   // Returns a {Disposable} on which `.dispose()` can be called to unsubscribe.
   onDidChangeSelectionRange(callback) {
-    return this.emitter.on('did-change-selection-range', callback);
+    return this.emitter.on(
+      'did-change-selection-range',
+      profiler.wrap('event', callback)
+    );
   }
 
   // Extended: Calls your `callback` when soft wrap was enabled or disabled.
