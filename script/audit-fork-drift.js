@@ -25,7 +25,6 @@ const REPO_NAME = {
   ctags: 'node-ctags',
   keytar: 'node-keytar',
   nslog: 'node-nslog',
-  oniguruma: 'node-oniguruma',
   pathwatcher: 'node-pathwatcher',
   spellchecker: 'node-spellchecker'
 };

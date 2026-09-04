@@ -209,13 +209,13 @@ if [ "$SKIP_NATIVE_REBUILD" = false ]; then
 
   echo "Force-rebuilding critical natives for Electron $ELECTRON_VERSION..."
   # keyboard-layout is required at runtime (smoke fails without keyboard-layout-manager.node).
-  # ctags / fs-admin / oniguruma are also app natives not covered by a partial list.
+  # ctags / fs-admin are also app natives not covered by a partial list.
   CRITICAL_REBUILD_FAILED=0
   for _pkg in \
     superstring \
     '@atom/watcher' '@atom/nsfw' '@atom/fuzzy-native' \
     keytar spellchecker pathwatcher git-utils scrollbar-style nslog \
-    keyboard-layout ctags fs-admin oniguruma \
+    keyboard-layout ctags fs-admin \
     '@derekstride/tree-sitter-sql' \
     tree-sitter-less \
     tree-sitter-perl \

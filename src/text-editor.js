@@ -10,7 +10,6 @@ const DecorationManager = require('./decoration-manager');
 const Cursor = require('./cursor');
 const Selection = require('./selection');
 const NullGrammar = require('./null-grammar');
-const TextMateLanguageMode = require('./text-mate-language-mode');
 const ScopeDescriptor = require('./scope-descriptor');
 
 
@@ -224,9 +223,6 @@ module.exports = class TextEditor {
           return chevron.config.get('core.closeDeletedFileTabs');
         }
       });
-      this.buffer.setLanguageMode(
-        new TextMateLanguageMode({ buffer: this.buffer, config: chevron.config })
-      );
     }
 
     const languageMode = this.buffer.getLanguageMode();
@@ -4519,7 +4515,15 @@ module.exports = class TextEditor {
   // e.g. `['.source.ruby']`, or `['.source.coffee']`. You can use this with
   // {Config::get} to get language specific config values.
   getRootScopeDescriptor() {
-    return this.buffer.getLanguageMode().rootScopeDescriptor;
+    const languageMode = this.buffer.getLanguageMode();
+    // text-buffer's NullLanguageMode has no rootScopeDescriptor, and every
+    // language without a tree-sitter grammar uses it now. Same fallback as
+    // scopeDescriptorForBufferPosition below, so config scoping resolves to
+    // the global settings rather than throwing.
+    return (
+      languageMode.rootScopeDescriptor ||
+      new ScopeDescriptor({ scopes: ['text'] })
+    );
   }
 
   // Essential: Get the syntactic {ScopeDescriptor} for the given position in buffer

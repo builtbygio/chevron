@@ -5,7 +5,7 @@ const { Emitter } = require('event-kit');
 const ScopeDescriptor = require('./scope-descriptor');
 const Token = require('./token');
 const TokenizedLine = require('./tokenized-line');
-const TextMateLanguageMode = require('./text-mate-language-mode');
+const { AutoIndent } = require('./auto-indent');
 const { matcherForSelector } = require('./selectors');
 const TreeIndenter = require('./tree-indenter');
 
@@ -52,8 +52,7 @@ class TreeSitterLanguageMode {
       .update(null)
       .then(() => this.emitter.emit('did-tokenize'));
 
-    // TODO: Remove this once TreeSitterLanguageMode implements its own auto-indentation system. This
-    // is temporarily needed in order to delegate to the TextMateLanguageMode's auto-indent system.
+    // Compiled indent patterns, cached per mode (src/auto-indent.js).
     this.regexesByPattern = {};
   }
 
@@ -1530,19 +1529,10 @@ function hasMatchingFoldSpec(specs, node) {
   );
 }
 
-// TODO: Remove this once TreeSitterLanguageMode implements its own auto-indent system.
-[
-  '_suggestedIndentForLineWithScopeAtBufferRow',
-  'suggestedIndentForEditedBufferRow',
-  'increaseIndentRegexForScopeDescriptor',
-  'decreaseIndentRegexForScopeDescriptor',
-  'decreaseNextIndentRegexForScopeDescriptor',
-  'regexForPattern',
-  'getNonWordCharacters'
-].forEach(methodName => {
-  TreeSitterLanguageMode.prototype[methodName] =
-    TextMateLanguageMode.prototype[methodName];
-});
+// Indentation is still pattern-based, not tree-based: the patterns come from
+// each package's settings. They used to be borrowed off TextMateLanguageMode's
+// prototype; src/auto-indent.js is where they live now that it is gone.
+Object.assign(TreeSitterLanguageMode.prototype, AutoIndent);
 
 TreeSitterLanguageMode.LanguageLayer = LanguageLayer;
 TreeSitterLanguageMode.prototype.syncTimeoutMicros = 1000;

@@ -60,7 +60,6 @@ overrides:
   dugite>got: '-'
   less: 3.13.1
   tree-sitter-css: 0.23.2
-  oniguruma: npm:@builtbygio/oniguruma@7.2.3
   spellchecker: npm:@builtbygio/spellchecker@3.7.1
   '@atom/fuzzy-native': npm:@builtbygio/fuzzy-native@1.2.1
   '@atom/nsfw': npm:@builtbygio/nsfw@1.0.28
@@ -72,14 +71,12 @@ overrides:
   pathwatcher: npm:@builtbygio/pathwatcher@8.1.2
   atom-pathspec: npm:@builtbygio/atom-pathspec@0.0.0
   atom-select-list: npm:@builtbygio/atom-select-list@0.8.2
-  first-mate: npm:@builtbygio/first-mate@7.4.3
   fs-admin: npm:@builtbygio/fs-admin@0.15.0
   scrollbar-style: npm:@builtbygio/scrollbar-style@4.0.1
   superstring: workspace:@builtbygio/superstring@*
   text-buffer: npm:@builtbygio/text-buffer@13.18.6
 
 patchedDependencies:
-  '@builtbygio/first-mate@7.4.3': 802c6d30f67546a2498fd492a2527909603def7c897c3c0cdcea3dd97e177cf6
   dugite@1.110.0: 65930157110b31cf6b61bddb57683724eceba071a6e47fbf806c3d875b6b4c2e
   less@3.13.1: 3240ea48c1693120b37cc19bcc745ee94ab6ed9455fd93dcfd344c2edf7bca49
 
@@ -213,9 +210,6 @@ importers:
       find-parent-dir:
         specifier: ^0.3.0
         version: 0.3.1
-      first-mate:
-        specifier: npm:@builtbygio/first-mate@7.4.3
-        version: '@builtbygio/first-mate@7.4.3(patch_hash=802c6d30f67546a2498fd492a2527909603def7c897c3c0cdcea3dd97e177cf6)'
       focus-trap:
         specifier: 6.3.0
         version: 6.3.0
@@ -294,9 +288,6 @@ importers:
       language-gfm:
         specifier: workspace:@builtbygio/language-gfm@*
         version: link:packages/language-gfm
-      language-git:
-        specifier: workspace:@builtbygio/language-git@*
-        version: link:packages/language-git
       language-go:
         specifier: workspace:@builtbygio/language-go@*
         version: link:packages/language-go
@@ -336,9 +327,6 @@ importers:
       language-ruby:
         specifier: workspace:@builtbygio/language-ruby@*
         version: link:packages/language-ruby
-      language-ruby-on-rails:
-        specifier: workspace:@builtbygio/language-ruby-on-rails@*
-        version: link:packages/language-ruby-on-rails
       language-rust-bundled:
         specifier: workspace:@builtbygio/language-rust-bundled@*
         version: link:packages/language-rust-bundled
@@ -354,9 +342,6 @@ importers:
       language-sql:
         specifier: workspace:@builtbygio/language-sql@*
         version: link:packages/language-sql
-      language-text:
-        specifier: workspace:@builtbygio/language-text@*
-        version: link:packages/language-text
       language-toml:
         specifier: workspace:@builtbygio/language-toml@*
         version: link:packages/language-toml
@@ -429,9 +414,6 @@ importers:
       one-light-ui:
         specifier: workspace:@builtbygio/one-light-ui@*
         version: link:packages/one-light-ui
-      oniguruma:
-        specifier: npm:@builtbygio/oniguruma@7.2.3
-        version: '@builtbygio/oniguruma@7.2.3'
       open-on-github:
         specifier: workspace:@builtbygio/open-on-github@*
         version: link:packages/open-on-github
@@ -617,9 +599,6 @@ importers:
 
   packages/bracket-matcher:
     dependencies:
-      first-mate:
-        specifier: npm:@builtbygio/first-mate@7.4.3
-        version: '@builtbygio/first-mate@7.4.3(patch_hash=802c6d30f67546a2498fd492a2527909603def7c897c3c0cdcea3dd97e177cf6)'
       underscore-plus:
         specifier: 1.x
         version: 1.7.0
@@ -948,8 +927,6 @@ importers:
         specifier: 0.3.2
         version: 0.3.2(tree-sitter@0.25.1)
 
-  packages/language-git: {}
-
   packages/language-go:
     dependencies:
       tree-sitter-go:
@@ -1043,8 +1020,6 @@ importers:
         specifier: 0.23.1
         version: 0.23.1(tree-sitter@0.25.1)
 
-  packages/language-ruby-on-rails: {}
-
   packages/language-rust-bundled:
     dependencies:
       tree-sitter-rust:
@@ -1070,8 +1045,6 @@ importers:
       '@derekstride/tree-sitter-sql':
         specifier: 0.3.11
         version: 0.3.11(tree-sitter@0.25.1)
-
-  packages/language-text: {}
 
   packages/language-toml:
     dependencies:
@@ -1455,9 +1428,6 @@ packages:
   '@builtbygio/ctags@3.1.0':
     resolution: {integrity: sha512-E75vEnn8C3yyl5vmIMidViTqwkN+WQ7QFYthyIKoK9QwyD/pB6mEJRYlgXs1v11Unt/SDHkgkN3eKxF1s5aUlg==}
 
-  '@builtbygio/first-mate@7.4.3':
-    resolution: {integrity: sha512-SEyaBicR7rT8xr51cjQ1pi0yx+oYE+sK02xp2k15RkDnTvKB0GF58A6qyPXPdMXBAKhHW46yCn3EW0O225KTTg==}
-
   '@builtbygio/fs-admin@0.15.0':
     resolution: {integrity: sha512-n3m+WKXcRiHft1lExwfog4RwUWaAHIEmaSnzkiAYCdt7FtX/QdMVhT22b//tnFDWbtQqsgyGPqDKC1Q2QHPRGw==}
 
@@ -1479,18 +1449,11 @@ packages:
   '@builtbygio/nslog@3.2.0':
     resolution: {integrity: sha512-OOxyxEeiGjiRbmWLu00oSeNWFe5Uc/3JGUyYz7xguvcaGOzoKzi8lq2w76Z+A+j3nA/LXvthJp30fCf4dHmB1w==}
 
-  '@builtbygio/oniguruma@7.2.3':
-    resolution: {integrity: sha512-BmHHkNgj+hh2a3hg5x8aCXWLN7/uIcn76jevFgk9S3U3VU10q3Mk49P//QY+75f4Y725lSWcayk8JWXzJ3uMkA==}
-
   '@builtbygio/pathwatcher@8.1.2':
     resolution: {integrity: sha512-bvPmxFzPA2TfdIjOXYG3MW9MJillQWhMs0Q5u9EyN11PWIveL2nnY8eUQ5kukc77jQqvCpmwEMe4cLYeMEck7g==}
 
   '@builtbygio/scrollbar-style@4.0.1':
     resolution: {integrity: sha512-oYyg+ozZSlfEGGrBLRlijmjYbNMYrO0emZH/wTF6AVUaOpdU5Y3QTQhzbypArZ6/n0M37uZS6y3qPwEI302Dmw==}
-
-  '@builtbygio/season@6.0.2':
-    resolution: {integrity: sha512-CKEsfJUpGf06tMxFKSzrMdqmIPYgNk9T0gLp1mEPAiTWDRNminaYd88w/Qv5snmBiTp7Mhl1tdHQMIhXxQ48GQ==}
-    hasBin: true
 
   '@builtbygio/spellchecker@3.7.1':
     resolution: {integrity: sha512-/aMcqq8TNPHoM4bxbwwzHmkdA8GJgj2XbI7AMq+Hohn5zeUM9ANgLism/KYsY97/TnQTJPd5sitJBQUneMqPCw==}
@@ -1805,10 +1768,6 @@ packages:
     resolution: {integrity: sha512-Zv4Dns9IbXXmPkgRRUjAaJQgfN4xX5p6+RQFhWUqscdvvK2xK/ZL8b3IXIJsj+4sD+f24NwnWy2BY8AJ82JB0A==}
     engines: {node: '>=0.10.0'}
 
-  camelcase@2.1.1:
-    resolution: {integrity: sha512-DLIsRzJVBQu72meAKPkWQOLcujdXT32hwdfnkI1frSiSRMK1MofjKHf+MEx0SB6fjEFXL8fBDv1dKymBlOp4Qw==}
-    engines: {node: '>=0.10.0'}
-
   camelcase@6.3.0:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
@@ -1896,9 +1855,6 @@ packages:
 
   cli-width@2.2.1:
     resolution: {integrity: sha512-GRMWDxpOB6Dgk2E5Uo+3eEBvtOOlimMmpbFiKuLFnQzYDavtLFY3K5ona41jgN/WdRZtG7utuVSVTL4HbZHGkw==}
-
-  cliui@3.2.0:
-    resolution: {integrity: sha512-0yayqDxWQbqk3ojkYqUKqaAQ6AfNKeKWRNA8kR0WXzAsdHpP4BIaOmMAG87JGuO6qcobyW4GjxHd9PmhEd+T9w==}
 
   cliui@7.0.4:
     resolution: {integrity: sha512-OcRE68cOsVMXp1Yvonl/fzkQOyjLSu/8bhPDfQt0e0/Eb283TKP20Fs2MqoPsr9SwA595rRCA+QMzYc9nBP+JQ==}
@@ -1991,9 +1947,6 @@ packages:
   crypt@0.0.2:
     resolution: {integrity: sha512-mCxBlsHFYh9C+HVpiEacem8FEBnMXgU9gy4zmNC+SXAZNB/1idgp/aulFJ4FgCi7GPEVbfyng092GqL2k2rmow==}
 
-  cson-parser@1.3.5:
-    resolution: {integrity: sha512-Pchz4dDkyafUL4V3xBuP9Os8Hu9VU96R+MxuTKh7NR+D866UiWrhBiSLbfuvwApEaJzpXhXTr3iPe4lFtXLzcQ==}
-
   css-select@5.2.2:
     resolution: {integrity: sha512-TizTzUddG/xYLA3NXodFM0fSbNizXjOKhqiQQwvhlspadZokn1KDy0NZFS0wuEubIYAV5/c1/lAr0TaaFXEXzw==}
 
@@ -2053,10 +2006,6 @@ packages:
     peerDependenciesMeta:
       supports-color:
         optional: true
-
-  decamelize@1.2.0:
-    resolution: {integrity: sha512-z2S+W9X73hAUUki+N+9Za2lBlun89zigOyGrsax+KUQ6wKW4ZoWpEYBkGhQjwAjjDCkWxhY0VKEhk8wzY7F5cA==}
-    engines: {node: '>=0.10.0'}
 
   decamelize@4.0.0:
     resolution: {integrity: sha512-9iE1PgSik9HeIIw2JO94IidnE3eBoQrFJ3w7sFuzSX4DpmZ3v5sZpUiV5Swcf6mQEF+Y0ru8Neo+p+nyh2J+hQ==}
@@ -2788,10 +2737,6 @@ packages:
     resolution: {integrity: sha512-4gd7VpWNQNB4UKKCFFVcp1AVv+FMOgs9NKzjHKusc8jTMhd5eL1NqQqOpE0KzMds804/yHlglp3uxgluOqAPLw==}
     engines: {node: '>= 0.4'}
 
-  invert-kv@1.0.0:
-    resolution: {integrity: sha512-xgs2NH9AE66ucSq4cNG1nhSFghr5l6tdL15Pk+jl46bmmBapgoaY/AacXyaDznAqmGL99TiLSQgO/XazFSKYeQ==}
-    engines: {node: '>=0.10.0'}
-
   is-array-buffer@3.0.5:
     resolution: {integrity: sha512-DDfANUiiG2wC1qawP66qlTugJeL5HyzMpfr8lLK+jMQirGzNod0B12cFB/9q838Ru27sBwfw78/rdoU7RERz6A==}
     engines: {node: '>= 0.4'}
@@ -3023,10 +2968,6 @@ packages:
 
   key-path-helpers@0.4.0:
     resolution: {integrity: sha512-WGl1FG6zjyXCU6YrOVrvanyN3iiLFPLr/UmZ/jGiEOd7CXQV83/Ng5aLGK/Erehtr1nxU8dOwnRjseQDGElMQw==}
-
-  lcid@1.0.0:
-    resolution: {integrity: sha512-YiGkH6EnGrDGqLMITnGjXtGmNtjoXw9SVUzcaos8RBi7Ps0VBylkq+vOcY9QE5poLasPCR849ucFUkl0UzUyOw==}
-    engines: {node: '>=0.10.0'}
 
   less-cache@1.1.0:
     resolution: {integrity: sha512-hFd0OdUMv2C4FoYVe6CfaGK2ydpT406wZiZP1h0I22hOkcdHvAvSrOsodB1OTe/FIis4NUog+7HsGdmfA3i1yg==}
@@ -3377,10 +3318,6 @@ packages:
 
   os-homedir@1.0.2:
     resolution: {integrity: sha512-B5JU3cabzk8c67mRRd3ECmROafjYMXbuzlwtqdM8IbS8ktlTix8aFGb2bAGKrSRIlnfKwovGUUr72JUPyOb6kQ==}
-    engines: {node: '>=0.10.0'}
-
-  os-locale@1.4.0:
-    resolution: {integrity: sha512-PRT7ZORmwu2MEFt4/fv3Q+mEfN4zetKxufQrkShY2oGvUms9r8otu5HfdyIFHkYXjO7laNsoVGmM2MANfuTA8g==}
     engines: {node: '>=0.10.0'}
 
   own-keys@1.0.2:
@@ -4459,11 +4396,6 @@ packages:
     resolution: {integrity: sha512-dt33rYsTYcGbB+I1ubB6ZLODibRSCW//TgY/SuajLllR9kHnHnbUMqnXIe0osYsXUdRLGs770zb3t9z/ScGUpw==}
     engines: {node: '>= 8'}
 
-  window-size@0.1.4:
-    resolution: {integrity: sha512-2thx4pB0cV3h+Bw7QmMXcEbdmOzv9t0HFplJH/Lz6yu60hXYy5RT8rUu+wlIreVxWsGN20mo+MHeCSfUpQBwPw==}
-    engines: {node: '>= 0.10.0'}
-    hasBin: true
-
   winreg@1.2.5:
     resolution: {integrity: sha512-uf7tHf+tw0B1y+x+mKTLHkykBgK2KMs3g+KlzmyMbLvICSHQyB/xOFjTT8qZ3oeTFyU7Bbj4FzXitGG6jvKhYw==}
 
@@ -4477,10 +4409,6 @@ packages:
 
   workerpool@9.3.4:
     resolution: {integrity: sha512-TmPRQYYSAnnDiEB0P/Ytip7bFGvqnSU6I2BcuSw7Hx+JSg/DsUi5ebYfc8GYaSdpuvOcEs6dXxPurOYpe9QFwg==}
-
-  wrap-ansi@2.1.0:
-    resolution: {integrity: sha512-vAaEaDM946gbNpH5pLVNR+vX2ht6n0Bt3GXwVB1AuAqZosOvHNF3P7wDnh8KLkSqgUh0uh77le7Owgoz+Z9XBw==}
-    engines: {node: '>=0.10.0'}
 
   wrap-ansi@7.0.0:
     resolution: {integrity: sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==}
@@ -4522,9 +4450,6 @@ packages:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
 
-  y18n@3.2.2:
-    resolution: {integrity: sha512-uGZHXkHnhF0XeeAPgnKfPv1bgKAYyVvmNL1xlKsPYZPaIHxGti2hHqvOCQv71XMsLxu1QjergkqogUnms5D3YQ==}
-
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
@@ -4560,9 +4485,6 @@ packages:
     resolution: {integrity: sha512-GZtjxm/J/4TSxuL3FNYjCmLktBTnIw/rVmKSIyKeYAZpmJB2ig9VauCC5xsa82GNKVKDAqpOn3KVzNt0zmrU0g==}
     engines: {node: '>=12'}
 
-  yargs@3.32.0:
-    resolution: {integrity: sha512-ONJZiimStfZzhKamYvR/xvmgW3uEkAUFSP91y2caTEPhzF6uP2JfPiVZcq66b/YR0C3uitxSV7+T1x8p5bkmMg==}
-
   yauzl@2.10.0:
     resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
 
@@ -4591,16 +4513,6 @@ snapshots:
     dependencies:
       event-stream: 3.1.7
       nan: 2.28.0
-
-  '@builtbygio/first-mate@7.4.3(patch_hash=802c6d30f67546a2498fd492a2527909603def7c897c3c0cdcea3dd97e177cf6)':
-    dependencies:
-      emissary: 1.3.3
-      event-kit: 2.5.3
-      fs-plus: 3.1.1
-      grim: 2.0.3
-      oniguruma: '@builtbygio/oniguruma@7.2.3'
-      season: '@builtbygio/season@6.0.2'
-      underscore-plus: 1.7.0
 
   '@builtbygio/fs-admin@0.15.0':
     dependencies:
@@ -4634,10 +4546,6 @@ snapshots:
     dependencies:
       nan: 2.28.0
 
-  '@builtbygio/oniguruma@7.2.3':
-    dependencies:
-      nan: 2.28.0
-
   '@builtbygio/pathwatcher@8.1.2':
     dependencies:
       async: 0.2.10
@@ -4653,12 +4561,6 @@ snapshots:
     dependencies:
       event-kit: 2.5.3
       node-addon-api: 1.7.2
-
-  '@builtbygio/season@6.0.2':
-    dependencies:
-      cson-parser: 1.3.5
-      fs-plus: 3.1.1
-      yargs: 3.32.0
 
   '@builtbygio/spellchecker@3.7.1':
     dependencies:
@@ -4982,8 +4884,6 @@ snapshots:
 
   callsites@0.2.0: {}
 
-  camelcase@2.1.1: {}
-
   camelcase@6.3.0: {}
 
   camelize@1.0.1: {}
@@ -5092,12 +4992,6 @@ snapshots:
 
   cli-width@2.2.1: {}
 
-  cliui@3.2.0:
-    dependencies:
-      string-width: 1.0.2
-      strip-ansi: 3.0.1
-      wrap-ansi: 2.1.0
-
   cliui@7.0.4:
     dependencies:
       string-width: 4.2.3
@@ -5186,10 +5080,6 @@ snapshots:
 
   crypt@0.0.2: {}
 
-  cson-parser@1.3.5:
-    dependencies:
-      coffee-script: 1.12.7
-
   css-select@5.2.2:
     dependencies:
       boolbase: 1.0.0
@@ -5254,8 +5144,6 @@ snapshots:
       ms: 2.1.3
     optionalDependencies:
       supports-color: 8.1.1
-
-  decamelize@1.2.0: {}
 
   decamelize@4.0.0: {}
 
@@ -6160,8 +6048,6 @@ snapshots:
       hasown: 2.0.4
       side-channel: 1.1.1
 
-  invert-kv@1.0.0: {}
-
   is-array-buffer@3.0.5:
     dependencies:
       call-bind: 1.0.9
@@ -6392,10 +6278,6 @@ snapshots:
   key-path-helpers@0.1.0: {}
 
   key-path-helpers@0.4.0: {}
-
-  lcid@1.0.0:
-    dependencies:
-      invert-kv: 1.0.0
 
   less-cache@1.1.0:
     dependencies:
@@ -6791,10 +6673,6 @@ snapshots:
       word-wrap: 1.2.5
 
   os-homedir@1.0.2: {}
-
-  os-locale@1.4.0:
-    dependencies:
-      lcid: 1.0.0
 
   own-keys@1.0.2:
     dependencies:
@@ -7990,8 +7868,6 @@ snapshots:
     dependencies:
       fswin: 3.25.1108
 
-  window-size@0.1.4: {}
-
   winreg@1.2.5: {}
 
   word-wrap@1.2.5: {}
@@ -7999,11 +7875,6 @@ snapshots:
   wordwrap@0.0.3: {}
 
   workerpool@9.3.4: {}
-
-  wrap-ansi@2.1.0:
-    dependencies:
-      string-width: 1.0.2
-      strip-ansi: 3.0.1
 
   wrap-ansi@7.0.0:
     dependencies:
@@ -8036,8 +7907,6 @@ snapshots:
   xregexp@3.2.0: {}
 
   xtend@4.0.2: {}
-
-  y18n@3.2.2: {}
 
   y18n@5.0.8: {}
 
@@ -8080,16 +7949,6 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
-
-  yargs@3.32.0:
-    dependencies:
-      camelcase: 2.1.1
-      cliui: 3.2.0
-      decamelize: 1.2.0
-      os-locale: 1.4.0
-      string-width: 1.0.2
-      window-size: 0.1.4
-      y18n: 3.2.2
 
   yauzl@2.10.0:
     dependencies:

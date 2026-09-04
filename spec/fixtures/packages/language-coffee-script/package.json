@@ -1,9 +1,0 @@
-{
-  "name": "language-coffee-script",
-  "version": "0.51.1",
-  "description": "Spec fixture only. CoffeeScript was dropped from the catalog (textmate-retirement-plan.md, PR F); the TextMate specs still need a TextMate grammar to tokenize, and this is it. Goes with those specs when first-mate does.",
-  "engines": {
-    "chevron": "*"
-  },
-  "license": "MIT"
-}

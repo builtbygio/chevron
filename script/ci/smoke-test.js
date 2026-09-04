@@ -528,8 +528,9 @@ const PROBE_EXPR = `(function() {
           (o.stack ? ' | stack: ' + String(o.stack).slice(0, 800) : '');
       }),
     txtText: byExt('.txt').getText(),
-    // Plain Text has no tree-sitter grammar, so this is what exercises
-    // first-mate. Markdown was it, then Makefile; both have been ported.
+    // Plain Text has no grammar at all now: first-mate is deleted and no
+    // tree-sitter parser exists for it, so the buffer falls to text-buffer's
+    // null language mode. Uncoloured, and still an editable buffer.
     txtEngine:
       byExt('.txt').getBuffer().getLanguageMode() &&
       byExt('.txt').getBuffer().getLanguageMode().constructor.name,
@@ -1130,13 +1131,13 @@ async function main() {
           `Makefile is on ${state.makeEngine} (expected TreeSitterLanguageMode)`
         );
       }
-      // first-mate is patched to read grammars with JSON.parse rather than
-      // season; a TextMate grammar failing to load is the way that breaks.
-      // Plain Text is the last probe here that still uses it.
-      if (state.txtEngine !== 'TextMateLanguageMode') {
+      // A language with no tree-sitter grammar must still open. Anything
+      // other than the null mode means something is reaching for an engine
+      // that no longer exists.
+      if (state.txtEngine !== 'NullLanguageMode') {
         failures.push(
-          `probe.txt is on ${state.txtEngine} (expected TextMateLanguageMode ` +
-            '-- the TextMate engine is meant to still load a grammar)'
+          `probe.txt is on ${state.txtEngine} (expected NullLanguageMode -- ` +
+            'first-mate is deleted and plain text has no tree-sitter grammar)'
         );
       }
       const settings = state.settings;

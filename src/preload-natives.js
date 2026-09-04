@@ -64,14 +64,6 @@ const editorNatives = [
     loadSites: ['src/tree-sitter-language-mode.js']
   },
   {
-    name: 'oniguruma',
-    usedBy:
-      'TextMate grammar regex engine (PR 14: loaded when a TM grammar is assigned, not at boot)',
-    migrationClass: 'renderer-hot',
-    processAffinity: 'editor-preload',
-    loadSites: ['src/text-mate-language-mode.js', 'node_modules/first-mate']
-  },
-  {
     name: 'scrollbar-style',
     usedBy: 'workspace-element scrollbar metrics',
     migrationClass: 'renderer',
@@ -168,7 +160,7 @@ module.exports = {
     'Packages share the preload Node world and may require natives at runtime',
     'Electron sandboxed preload cannot require arbitrary native modules',
     'Hackable package model: community/bundled code may require() natives at activate',
-    'Hot-path natives (superstring/tree-sitter/oniguruma) have no proven IPC host yet (Phase S Option A spike)'
+    'Hot-path natives (superstring/tree-sitter) have no proven IPC host yet (Phase S Option A spike)'
   ],
 
   /**
@@ -199,7 +191,7 @@ module.exports = {
     option: 'C',
     editorSandbox: false,
     rationale:
-      'Hot-path natives (superstring, tree-sitter, oniguruma, pathwatcher) remain in editor preload; Chromium sandbox would require multi-year buffer IPC rewrite (Option A). Security rests on T2 require restrict, guest lockdown, IPC allowlists, utilityProcess git workers, and fuses.'
+      'Hot-path natives (superstring, tree-sitter, pathwatcher) remain in editor preload; Chromium sandbox would require multi-year buffer IPC rewrite (Option A). Security rests on T2 require restrict, guest lockdown, IPC allowlists, utilityProcess git workers, and fuses.'
   },
 
   /** Ordered steps — prep complete under Option C. */

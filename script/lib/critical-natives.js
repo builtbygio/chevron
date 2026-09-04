@@ -23,7 +23,6 @@ const CRITICAL_REBUILD_PACKAGES = [
   'keyboard-layout',
   'ctags',
   'fs-admin',
-  'oniguruma',
   '@derekstride/tree-sitter-sql',
   'tree-sitter-less',
   'tree-sitter-perl',
@@ -48,7 +47,6 @@ const ARTIFACT_GLOBS = {
   'keyboard-layout': ['build/Release/keyboard-layout-manager.node'],
   ctags: ['build/Release/ctags.node'],
   'fs-admin': ['build/Release/fs_admin.node', 'build/Release/fs-admin.node'],
-  oniguruma: ['build/Release/onig_scanner.node', 'build/Release/oniguruma.node'],
   '@derekstride/tree-sitter-sql': [
     'build/Release/tree_sitter_sql_binding.node'
   ],

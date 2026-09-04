@@ -471,7 +471,7 @@ jobs:
           node --test script/ci/service-hub.test.js
 
       # These need a real node_modules: github-8b reads node_modules/github,
-      # lsp-builtin-discover resolves servers out of it, lazy-first-mate
+      # lsp-builtin-discover resolves servers out of it
       # requires event-kit and jasmine-node-coffee requires underscore /
       # jasmine-node. unit-and-cpm never installs the root package.json.
       - name: Installed pin contracts (github 8B, LSP discovery, first-mate)
@@ -479,7 +479,6 @@ jobs:
           node --test script/ci/github-8b.test.js
           node --test script/ci/lsp-builtin-discover.test.js
           node --test script/ci/lsp-late-registration.test.js
-          node --test script/ci/lazy-first-mate.test.js
           node --test script/ci/jasmine-node-coffee.test.js
           node --test script/ci/patch-inventory.test.js
           node --test script/ci/wave3-gates.test.js
