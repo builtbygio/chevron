@@ -102,6 +102,26 @@ Each editor is resolved again against its own root instead.
 
 ---
 
+## When a root's config is read
+
+- when the window opens, and whenever the project's roots change
+- when the file changes on disk, including a save from inside Chevron
+
+The second one has no watcher of its own: every project root is already
+watched recursively, so this is a filter on `did-change-files` events that
+arrive anyway, debounced because one save arrives as several events.
+
+A root that leaves the project takes its settings with it, in the same pass.
+
+**A file that will not parse keeps the last good settings.** Someone editing
+their config has it in a broken state for as long as they are typing, and
+snapping every editor to the user defaults halfway through would be worse than
+waiting. A warning names the file, once per distinct error rather than once per
+save. Nothing is written back: it is a file people commit, and the editor does
+not edit it silently.
+
+---
+
 ## What this does not change
 
 - **Writing.** `config.set` still writes to user config unless given an

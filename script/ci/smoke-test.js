@@ -658,10 +658,62 @@ const ROOT_CONFIG_EXPR = `(function() {
           chevron.project.syncRootConfigs();
           setTimeout(function() {
             out.inRootReloaded = inRoot.getTabLength();
-            finish(out);
+            editTheConfigFile(out, root, inRoot);
           }, 300);
         }, 300);
       }, 300);
+    }
+
+    // Editing the file the way a person does: open it, change it, save it.
+    // Nothing calls syncRootConfigs here -- the change has to arrive on its
+    // own, or the answer to "I edited the config and nothing happened" is
+    // "reload the window".
+    function editTheConfigFile(out, root, inRoot) {
+      chevron.workspace
+        .open(root + '/.chevron/config.json')
+        .then(function(configEditor) {
+          // No escape sequences in here: this expression is built from a
+          // template literal, so a backslash-n would arrive as a real
+          // newline inside a string literal and take the whole probe out
+          // with a syntax error nobody sees.
+          configEditor.setText(JSON.stringify({ editor: { tabLength: 6 } }, null, 2));
+          return configEditor.save();
+        })
+        .then(function() {
+          var tries = 0;
+          (function settle() {
+            if (inRoot.getTabLength() === 6 || tries >= 40) {
+              out.afterEditingConfigFile = inRoot.getTabLength();
+              out.editWaitedMs = tries * 250;
+              return removeTheRoot(out, root, inRoot);
+            }
+            tries++;
+            setTimeout(settle, 250);
+          })();
+        })
+        .catch(function(error) {
+          out.editError = String(error && error.message);
+          finish(out);
+        });
+    }
+
+    // And a root that leaves the project takes its settings with it.
+    function removeTheRoot(out, root, inRoot) {
+      chevron.project.removePath(root);
+      setTimeout(function() {
+        out.configuredRootsAfterRemove = chevron.config.getConfiguredRoots().length;
+        out.rootStillConfigured =
+          chevron.config.getConfiguredRoots().indexOf(root) !== -1;
+        out.resolvedAfterRemove = chevron.config.get('editor.tabLength', {
+          root: inRoot.getPath(),
+          scope: inRoot.getRootScopeDescriptor()
+        });
+        // Put it back: later phases still expect the project folder.
+        chevron.project.addPath(root);
+        setTimeout(function() {
+          finish(out);
+        }, 500);
+      }, 600);
     }
   }
   return JSON.stringify({
@@ -1171,9 +1223,11 @@ async function main() {
       }
     }
 
-    // Per-root config, once the editors it compares are both open.
+    // Per-root config, once the editors it compares are both open. This
+    // phase saves a file and waits for the change to arrive on its own, so it
+    // needs longer than the probes that only read state.
     if (state && state.status === 'ready') {
-      for (let attempt = 0; attempt < 40; attempt++) {
+      for (let attempt = 0; attempt < 160; attempt++) {
         let rootState;
         try {
           rootState = await probeWindow(
@@ -1334,6 +1388,24 @@ async function main() {
         if (rootConfig.inRootReloaded !== 3) {
           failures.push(
             `per-root config: reloading from disk gave ${rootConfig.inRootReloaded} (expected 3)`
+          );
+        }
+        if (rootConfig.editError) {
+          failures.push(`per-root config: editing the config file: ${rootConfig.editError}`);
+        }
+        if (rootConfig.afterEditingConfigFile !== 6) {
+          failures.push(
+            `per-root config: saving an edit to .chevron/config.json did not reach the editor (${rootConfig.afterEditingConfigFile}, expected 6 after ${rootConfig.editWaitedMs}ms)`
+          );
+        }
+        if (rootConfig.rootStillConfigured) {
+          failures.push(
+            'per-root config: a root removed from the project kept its config'
+          );
+        }
+        if (rootConfig.resolvedAfterRemove === 6) {
+          failures.push(
+            'per-root config: a removed root still resolved its own tabLength'
           );
         }
       }

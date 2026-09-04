@@ -7,6 +7,18 @@ const TextBuffer = require('text-buffer');
 const { watchPath } = require('./path-watcher');
 
 const DefaultDirectoryProvider = require('./default-directory-provider');
+const ROOT_CONFIG_SUFFIX = path.join('.chevron', 'config.json');
+
+// A did-change-files event that touches some root's config. Renames report
+// the path they came from as well, and a config file moved away is a change
+// to that root just as much as one moved in.
+function isRootConfigEvent(event) {
+  if (!event) return false;
+  return [event.path, event.oldPath].some(
+    candidate => typeof candidate === 'string' && candidate.endsWith(ROOT_CONFIG_SUFFIX)
+  );
+}
+
 const Model = require('./model');
 const GitRepositoryProvider = require('./git-repository-provider');
 
@@ -43,7 +55,28 @@ module.exports = class Project extends Model {
     this.retiredBufferIDs = new Set();
     this.retiredBufferPaths = new Set();
     this.subscriptions = new CompositeDisposable();
+    // The last parse error reported per root, so a broken config warns once
+    // rather than on every save.
+    this.rootConfigErrors = new Map();
+    this.watchRootConfigs();
     this.consumeServices(packageManager);
+  }
+
+  /**
+   * Reload a root's config when its file changes on disk.
+   *
+   * No watcher of its own: every root is already watched recursively for
+   * did-change-files, so this is a filter on events that arrive anyway.
+   * Debounced because a save arrives as several events, and because an editor
+   * writing the file can produce a rename plus a modify.
+   */
+  watchRootConfigs() {
+    const requestSync = _.debounce(() => this.syncRootConfigs(), 150);
+    this.subscriptions.add(
+      this.onDidChangeFiles(events => {
+        if (events.some(event => isRootConfigEvent(event))) requestSync();
+      })
+    );
   }
 
   destroyed() {
@@ -68,6 +101,7 @@ module.exports = class Project extends Model {
 
     this.subscriptions.dispose();
     this.subscriptions = new CompositeDisposable();
+    this.watchRootConfigs();
 
     for (let buffer of this.buffers) {
       if (buffer != null) buffer.destroy();
@@ -513,14 +547,19 @@ module.exports = class Project extends Model {
           settings = JSON.parse(fs.readFileSync(file, 'utf8'));
         }
       } catch (error) {
-        if (chevron.notifications) {
+        // The file is watched now, so a person typing invalid JSON into it
+        // gets one of these per save. Warn when the problem changes, not
+        // once per keystroke-and-save.
+        if (chevron.notifications && this.rootConfigErrors.get(root) !== error.message) {
           chevron.notifications.addWarning(
             `Could not read ${path.join('.chevron', 'config.json')}`,
             { detail: `${root}\n${error.message}`, dismissable: true }
           );
         }
+        this.rootConfigErrors.set(root, error.message);
         continue;
       }
+      this.rootConfigErrors.delete(root);
       config.setRootSettings(root, settings, settings ? file : null);
     }
   }
@@ -610,6 +649,7 @@ module.exports = class Project extends Model {
       }
       delete this.watcherPromisesByPath[projectPath];
       this.syncFsIpcProjectRoots();
+      this.syncRootConfigs();
       this.emitter.emit('did-change-paths', this.getPaths());
       return true;
     } else {
