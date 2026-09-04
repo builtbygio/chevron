@@ -8,6 +8,7 @@ const CSON = require('./main-process/json-file');
 
 const ServiceHub = require('./service-hub');
 const Package = require('./package');
+const { profiler } = require('./package-profiler');
 const ThemePackage = require('./theme-package');
 const ModuleCache = require('./module-cache');
 const packageJSON = require('../package.json');
@@ -86,6 +87,9 @@ module.exports = class PackageManager {
       }
       this.packageDirPaths.push(path.join(params.configDirPath, 'packages'));
     }
+    // The profiler attributes a call site to a package by path, so it needs
+    // the same directories this resolves against.
+    profiler.setPackageDirPaths(this.packageDirPaths);
   }
 
   setContextMenuManager(contextMenuManager) {

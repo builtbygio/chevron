@@ -8,8 +8,10 @@
  */
 const {ipcRenderer} = require('electron');
 const Grim = require('grim');
+const {profiler} = require('./package-profiler');
+const {formatProfilerReport} = require('./package-profiler-report');
 
-module.exports = function({commandRegistry, commandInstaller, config, notificationManager, project, clipboard}) {
+module.exports = function({commandRegistry, commandInstaller, config, notificationManager, project, clipboard, workspace}) {
   commandRegistry.add(
     'atom-workspace',
     {
@@ -108,6 +110,40 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
       false
     );
   }
+
+  // Package profiler (docs/process/next-tracks-plan.md, track 1). Off by
+  // default; `timecop` reports what boot cost, this reports what a package
+  // costs afterwards.
+  commandRegistry.add(
+    'atom-workspace',
+    {
+      'package-profiler:start'() {
+        profiler.start();
+        return notificationManager.addInfo('Package profiler started', {
+          description: 'Use the editor as usual, then run **Package Profiler: Report**.'
+        });
+      },
+      'package-profiler:stop'() {
+        profiler.stop();
+        return notificationManager.addInfo('Package profiler stopped');
+      },
+      'package-profiler:report'() {
+        const report = profiler.report();
+        if (report.length === 0) {
+          return notificationManager.addWarning('Nothing recorded yet', {
+            description: profiler.isRunning()
+              ? 'Profiling is on, but no instrumented work has run.'
+              : 'Run **Package Profiler: Start** first.'
+          });
+        }
+        return workspace.open().then(editor => {
+          editor.setText(formatProfilerReport(report, profiler.runningFor()));
+          return editor;
+        });
+      }
+    },
+    false
+  );
 
   commandRegistry.add(
     'atom-pane',

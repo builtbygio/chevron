@@ -402,7 +402,8 @@ class AtomEnvironment {
       commandInstaller: this.commandInstaller,
       notificationManager: this.notifications,
       project: this.project,
-      clipboard: this.clipboard
+      clipboard: this.clipboard,
+      workspace: this.workspace
     });
   }
 
