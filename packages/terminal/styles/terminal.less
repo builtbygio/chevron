@@ -9,7 +9,10 @@
   height: 100%;
   padding: 4px;
   box-sizing: border-box;
-  background-color: @tool-panel-background-color;
+  // Custom property, not a LESS variable: theme variables were eliminated so
+  // every stylesheet compiles once instead of per UI x syntax pair
+  // (docs/reference/theme-custom-properties.md).
+  background-color: var(--tool-panel-background-color);
 
   .xterm {
     height: 100%;
