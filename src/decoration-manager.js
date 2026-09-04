@@ -1,5 +1,6 @@
 const { Emitter } = require('event-kit');
 const Decoration = require('./decoration');
+const { profiler } = require('./package-profiler');
 const LayerDecoration = require('./layer-decoration');
 
 module.exports = class DecorationManager {
@@ -218,6 +219,11 @@ module.exports = class DecorationManager {
     if (marker == null || marker.isDestroyed()) {
       return null;
     }
+    // Decorating is cheap once and expensive four hundred times, which is why
+    // the count matters more than the duration here. Billed to whichever
+    // callback is running: most churn happens inside a package's own
+    // onDidChange or onDidStopChanging handler.
+    const started = profiler.enabled ? performance.now() : 0;
     const decoration = new Decoration(marker, this, decorationParams);
     let decorationsForMarker = this.decorationsByMarker.get(marker);
     if (!decorationsForMarker) {
@@ -230,6 +236,9 @@ module.exports = class DecorationManager {
     this.editor.didAddDecoration(decoration);
     this.emitDidUpdateDecorations();
     this.emitter.emit('did-add-decoration', decoration);
+    if (profiler.enabled) {
+      profiler.recordCurrent('decoration', performance.now() - started);
+    }
     return decoration;
   }
 
@@ -241,6 +250,7 @@ module.exports = class DecorationManager {
     if (markerLayer == null || markerLayer.isDestroyed()) {
       return null;
     }
+    const started = profiler.enabled ? performance.now() : 0;
     const decoration = new LayerDecoration(markerLayer, this, decorationParams);
     let layerDecorations = this.layerDecorationsByMarkerLayer.get(markerLayer);
     if (layerDecorations == null) {
@@ -250,6 +260,9 @@ module.exports = class DecorationManager {
     layerDecorations.add(decoration);
     this.observeDecoratedLayer(markerLayer, false);
     this.emitDidUpdateDecorations();
+    if (profiler.enabled) {
+      profiler.recordCurrent('decoration', performance.now() - started);
+    }
     return decoration;
   }
 

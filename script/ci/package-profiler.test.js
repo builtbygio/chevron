@@ -286,6 +286,45 @@ describe('attribution windows', () => {
   });
 });
 
+describe('decorations', () => {
+  it('bills a decoration to the callback that created it', () => {
+    // What matters is the count: decorating is cheap once and expensive four
+    // hundred times, which is the shape of a package redecorating on every
+    // edit.
+    const profiler = new PackageProfiler();
+    profiler.start();
+    profiler.ownerForSite = () => 'git-diff';
+    const onDidChange = profiler.wrap('event', () => {
+      for (let i = 0; i < 400; i++) profiler.recordCurrent('decoration', 0.01);
+    });
+    onDidChange();
+
+    const entry = profiler.report()[0];
+    assert.strictEqual(entry.owner, 'git-diff');
+    assert.strictEqual(entry.byKind.decoration.count, 400);
+  });
+
+  it('bills decoration outside any callback to core', () => {
+    const profiler = new PackageProfiler();
+    profiler.start();
+    profiler.recordCurrent('decoration', 0.5);
+    assert.strictEqual(profiler.report()[0].owner, 'core');
+  });
+
+  it('is guarded so a stopped profiler does no timing', () => {
+    const source = fs.readFileSync(
+      path.join(ROOT, 'src', 'decoration-manager.js'),
+      'utf8'
+    );
+    const matches = source.match(/profiler\.enabled \? performance\.now\(\) : 0/g);
+    assert.ok(
+      matches && matches.length === 2,
+      'both decorate paths must read the clock only when profiling'
+    );
+    assert.match(source, /if \(profiler\.enabled\) \{\s*\n\s*profiler\.recordCurrent\('decoration'/);
+  });
+});
+
 describe('report', () => {
   it('renders a table with the running time', () => {
     const text = formatProfilerReport(
