@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **`find-and-replace.useRipgrep`.** `Workspace.scan` has been ripgrep-only since H1 PR 4, which is what the 1.1.0 entry below records — but the setting that used to pick the engine outlived the choice. Turning it off changed nothing while telling the user it had switched to "the older scandal crawler", which is not in the tree; its one surviving effect was labelling a search metric `standard` for a search ripgrep had just run. `enablePCRE2` stays: it is still honoured. Guarded in `search-engine.test.js`, beside the ripgrep-only contract.
+
 - **cpm's package registry.** `lib/registry.js` and the `search`, `view`, `featured`, `outdated` and `install` commands, plus their tests. cpm keeps what an owned catalog needs: `rebuild`, `list`, `doctor`, `uninstall`, `link`/`unlink`. Chevron no longer talks to the Pulsar registry at all.
 - **settings-view's Install and Updates panels**, the "N package updates" status-bar indicator, and the `status-bar` entry in `consumedServices` that pointed at the handler they used. Seven panels remain: Core, Editor, URI Handling, System, Keybindings, Packages, Themes.
 
