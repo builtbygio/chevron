@@ -71,9 +71,20 @@ class SymbolsView {
     fragment.appendChild(document.createTextNode(name.substring(lastIndex)));
     return fragment;
   }
+  // Props a subclass wants SelectListView to be constructed with, for the
+  // ones its `update()` will not take later -- `didChangeQuery` above all,
+  // which is what a view needs when results come from a server rather than
+  // from a list already in memory.
+  //
+  // A method rather than a constructor argument because a subclass cannot
+  // touch `this` while it is still evaluating its own `super(...)` call, and
+  // these props are closures over the view.
+  selectListProps() {
+    return {};
+  }
   constructor(stack, emptyMessage = "No symbols found", maxResults = null) {
     this.stack = stack;
-    this.selectListView = new import_atom_select_list.default({
+    this.selectListView = new import_atom_select_list.default(Object.assign({
       maxResults,
       emptyMessage,
       items: [],
@@ -83,7 +94,7 @@ class SymbolsView {
       didConfirmSelection: this.didConfirmSelection.bind(this),
       didConfirmEmptySelection: this.didConfirmEmptySelection.bind(this),
       didCancelSelection: this.didCancelSelection.bind(this)
-    });
+    }, this.selectListProps()));
     this.element = this.selectListView.element;
     this.element.classList.add("symbols-view");
     this.panel = chevron.workspace.addModalPanel({ item: this, visible: false });
