@@ -32,6 +32,7 @@ const FINGERPRINT_PATH = path.join(
 // Must stay aligned with script/bootstrap-modern critical rebuild list.
 const CRITICAL_NATIVE_PACKAGES = [
   'superstring',
+  'node-pty',
   '@atom/watcher',
   '@atom/nsfw',
   '@atom/fuzzy-native',

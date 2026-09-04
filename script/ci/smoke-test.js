@@ -992,6 +992,93 @@ const INLINE_TEXT_EXPR = `(function() {
   });
 })()`;
 
+// A terminal, end to end: the pane opens, the pty host starts a shell, and
+// what the shell prints comes back. Every layer below this is mocked or
+// stubbed somewhere else -- the validators in pty-ipc.test.js, the protocol in
+// pty-host-integration.test.js -- so this is the only check that the packaged
+// app can actually run a command, native and asar unpacking included.
+const TERMINAL_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__terminalProbe) {
+    window.__terminalProbe = { phase: 'running', result: null };
+    var finish = function(result) {
+      window.__terminalProbe.result = result;
+      window.__terminalProbe.phase = 'done';
+    };
+    if (!chevron.pty || typeof chevron.pty.spawn !== 'function') {
+      finish({ error: 'chevron.pty is not published' });
+    } else {
+      chevron.commands.dispatch(
+        chevron.views.getView(chevron.workspace),
+        'terminal:toggle'
+      );
+      setTimeout(function() {
+        var view = chevron.workspace.getPaneItems().filter(function(item) {
+          return item && item.constructor && item.constructor.name === 'TerminalView';
+        })[0];
+        if (!view) return finish({ error: 'no terminal pane opened' });
+
+        var readBuffer = function() {
+          var buffer = view.terminal.buffer.active;
+          var lines = [];
+          for (var i = 0; i < buffer.length; i++) {
+            var line = buffer.getLine(i);
+            if (line) lines.push(line.translateToString(true));
+          }
+          return lines.join(String.fromCharCode(10));
+        };
+
+        var waited = 0;
+        (function whenStarted() {
+          if (!view.session && waited < 40) {
+            waited++;
+            return setTimeout(whenStarted, 250);
+          }
+          if (!view.session) {
+            return finish({
+              error: 'the shell never started',
+              buffer: readBuffer().slice(-200)
+            });
+          }
+          view.write('echo smoke-terminal-token' + String.fromCharCode(10));
+          var tries = 0;
+          (function settle() {
+            var text = readBuffer();
+            // The echoed command line contains the token too, so match only
+            // what the shell printed back.
+            var printed = text.split('echo smoke-terminal-token').slice(1).join('');
+            if (/smoke-terminal-token/.test(printed) || tries >= 60) {
+              var result = {
+                sawOutput: /smoke-terminal-token/.test(printed),
+                cols: view.terminal.cols,
+                rows: view.terminal.rows,
+                cwdInProject: chevron.project.getPaths().some(function(root) {
+                  return view.cwd === root;
+                }),
+                waitedMs: tries * 250,
+                buffer: text.slice(-200)
+              };
+              // Leave the workspace as it was for the phases after this one.
+              var pane = chevron.workspace.paneForItem(view);
+              if (pane) pane.destroyItem(view);
+              return finish(result);
+            }
+            tries++;
+            setTimeout(settle, 250);
+          })();
+        })();
+      }, 2500);
+    }
+  }
+  return JSON.stringify({
+    status: window.__terminalProbe.phase === 'done' ? 'ready' : 'pending',
+    terminal: window.__terminalProbe.result
+  });
+})()`;
+
 function isAppWindowTarget(target) {
   if (!target || target.type !== 'page') return false;
   const url = target.url || '';
@@ -1577,6 +1664,23 @@ async function main() {
       }
     }
 
+    // A terminal, before the styleguide takes the active pane.
+    if (state && state.status === 'ready') {
+      for (let attempt = 0; attempt < 120; attempt++) {
+        let terminalState;
+        try {
+          terminalState = await probeWindow([], TERMINAL_EXPR);
+        } catch (error) {
+          terminalState = { terminal: { error: String(error.message || error) } };
+        }
+        if (terminalState && terminalState.terminal) {
+          state.terminal = terminalState.terminal;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
     // The styleguide, last: it takes over the active pane.
     if (state && state.status === 'ready') {
       for (let attempt = 0; attempt < 40; attempt++) {
@@ -1749,6 +1853,27 @@ async function main() {
         }
         if (inlineText.removed !== 0) {
           failures.push('destroying the marker left the inline text behind');
+        }
+      }
+
+      const terminal = state.terminal;
+      if (!terminal) {
+        failures.push('terminal probe did not report');
+      } else if (terminal.error) {
+        failures.push(`terminal: ${terminal.error}${terminal.buffer ? ` — ${terminal.buffer}` : ''}`);
+      } else {
+        if (!terminal.sawOutput) {
+          failures.push(
+            `terminal ran a command and never saw its output after ${terminal.waitedMs}ms — buffer: ${terminal.buffer}`
+          );
+        }
+        if (!terminal.cols || !terminal.rows) {
+          failures.push(
+            `terminal has no size (${terminal.cols}x${terminal.rows}); a shell told its window is 0x0 wraps every line`
+          );
+        }
+        if (!terminal.cwdInProject) {
+          failures.push('terminal did not open in a project root');
         }
       }
 

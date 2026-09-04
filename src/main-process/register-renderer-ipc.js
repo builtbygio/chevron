@@ -86,6 +86,9 @@ module.exports = function registerRendererIpc(atomApplication) {
   // H1 PR 2b — ripgrep spawn lives in main, not the preload searcher.
   require('./register-rg-ipc')(atomApplication);
 
+  // Terminals. The pty host does the spawning; the renderer only asks.
+  require('./register-pty-ipc')(atomApplication);
+
   // Phase S3 / PR 9 — github git workers via utilityProcess only.
   const packageUtilityWorker = require('./package-utility-worker');
 
