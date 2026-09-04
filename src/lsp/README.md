@@ -46,6 +46,26 @@ Not in the product installer (N1). Trust the project after install.
 | `lsp.diagnostics` | 1.0.0 | `lsp-ui` → core diagnostics map |
 | `autocomplete.provider` | 4.0.0 | `lsp-ui` → LSP completion adapter |
 
+### Project-shaped context
+
+Everything above is file-shaped: it starts from an editor and asks the one
+server that owns the file. `workspace/symbol` starts from nothing and asks
+every server running for the project.
+
+```js
+await chevron.lsp.projectSymbols('parse', { root, limit });
+// [{ name, kind, kindName, containerName, path, uri, range, serverId, projectRoot }]
+chevron.lsp.listSessions();  // the servers it would ask
+```
+
+`range` is `null` when a server sends an LSP 3.17 `WorkspaceSymbol` carrying
+only a URI — the symbol names a file but not a line. Servers that fail or time
+out are dropped rather than thrown, because a symbol list missing one language
+still answers the question. Results are merged, deduplicated and ranked here,
+since servers match on their own terms and are not required to agree.
+
+Background: docs/process/next-tracks-plan.md, track 3.
+
 ## Commands
 
 | Command | Default binding |

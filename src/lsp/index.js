@@ -33,6 +33,29 @@ const {
   executeCommand
 } = require('./providers/code-action');
 const { documentSymbols } = require('./providers/document-symbols');
+/**
+ * The workspace-symbols provider is TypeScript, and `require` only resolves a
+ * `.ts` once compile-cache is registered -- true in the app, not in a plain
+ * `node --test` that loads this module. Requiring it at the top made every
+ * node-side test of the client fail to load it at all
+ * (script/ci/lsp-late-registration.test.js is the one that says so), so it is
+ * loaded on demand. Only a missing module degrades: anything else the
+ * provider throws is a real fault and travels.
+ */
+let symbolProviderCache;
+function symbolProvider() {
+  if (symbolProviderCache !== undefined) return symbolProviderCache;
+  try {
+    symbolProviderCache = require('./providers/workspace-symbols');
+  } catch (error) {
+    if (error && error.code === 'MODULE_NOT_FOUND') {
+      symbolProviderCache = null;
+    } else {
+      throw error;
+    }
+  }
+  return symbolProviderCache;
+}
 const { applyWorkspaceEdit } = require('./workspace-edit');
 const { createDiagnosticsService } = require('./diagnostics-service');
 
@@ -63,7 +86,8 @@ const clientApi = {
   request,
   getServerIdForEditor,
   getPositionEncoding,
-  recordCompletionLatency
+  recordCompletionLatency,
+  listSessions
 };
 
 function getResourcePath() {
@@ -401,6 +425,43 @@ async function applyCodeAction(editor, action) {
 
 async function documentSymbolsAt(editor) {
   return documentSymbols(clientApi, editor);
+}
+
+/**
+ * Every running server session. The file-shaped providers reach a server
+ * through the editor that owns the file; workspace/symbol has no editor to
+ * start from, so it needs the sessions themselves.
+ */
+function listSessions() {
+  return [...startedSessions.values()].map(session => {
+    const entry = {
+      serverId: session.serverId,
+      projectRoot: session.projectRoot,
+      regId: session.regId,
+      capabilities: session.capabilities || null
+    };
+    // Carried rather than left to callers: "does this server answer workspace
+    // symbols" is `true | WorkspaceSymbolOptions`, and a package checking the
+    // raw capability itself will read an options object as no.
+    const provider = symbolProvider();
+    entry.servesWorkspaceSymbols = provider
+      ? provider.servesWorkspaceSymbols(entry)
+      : false;
+    return entry;
+  });
+}
+
+/**
+ * Symbols across the project rather than the open file. Asks every server
+ * that advertises workspaceSymbolProvider and merges.
+ *
+ * @param {string} query
+ * @param {{ root?: string|null, limit?: number }} [options]
+ */
+async function projectSymbols(query, options) {
+  const provider = symbolProvider();
+  if (!provider) return [];
+  return provider.workspaceSymbols(clientApi, query, options);
 }
 
 function getAutocompleteProvider() {
@@ -769,6 +830,8 @@ module.exports = {
   codeActionsAtCursor,
   applyCodeAction,
   documentSymbolsAt,
+  projectSymbols,
+  listSessions,
   applyEdit,
   formatSignatureHelp,
   getAutocompleteProvider,

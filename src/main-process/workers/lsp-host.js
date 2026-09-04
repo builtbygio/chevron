@@ -409,6 +409,14 @@ class ServerSession {
           applyEdit: true,
           workspaceEdit: {
             documentChanges: true
+          },
+          // Project-shaped symbols. Some servers only answer
+          // workspace/symbol when the client asks for it by name.
+          symbol: {
+            dynamicRegistration: false,
+            symbolKind: {
+              valueSet: Array.from({ length: 26 }, (_, i) => i + 1)
+            }
           }
         }
       },

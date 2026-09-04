@@ -201,6 +201,15 @@ is placed on which agent wins.
 edit, review it, apply it, undo it — because unit tests will not catch a broken
 host (see #309, where the host looked alive and read nothing).
 
+**Started.** `workspace/symbol` is in: `chevron.lsp.projectSymbols(query)` asks
+every server running for a root and merges the answers (`src/lsp/README.md`).
+Gated by a round trip through a real host process against a mock server, which
+also asserts that `initialize` carries the client capability — a server that is
+never asked for workspace symbols returns nothing, with no error to notice.
+Next: the human surface, which needs `symbols-view` to query as you type
+rather than load one list, since most servers answer an empty query with
+nothing.
+
 ---
 
 ## 4. Remote editing over SSH — **dropped**
