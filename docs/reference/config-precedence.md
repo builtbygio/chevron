@@ -105,11 +105,17 @@ Each editor is resolved again against its own root instead.
 ## When a root's config is read
 
 - when the window opens, and whenever the project's roots change
-- when the file changes on disk, including a save from inside Chevron
+- when the file is saved in Chevron
+- when the file changes on disk underneath it
 
-The second one has no watcher of its own: every project root is already
-watched recursively, so this is a filter on `did-change-files` events that
-arrive anyway, debounced because one save arrives as several events.
+Saving in Chevron does not go through the filesystem watcher. It is the case
+people meet first — edit the config, expect it to apply — and the watcher does
+not report it dependably on every platform, so the save is wired directly.
+
+External edits are the watcher's job, and it has no watcher of its own: every
+project root is already watched recursively, so this is a filter on
+`did-change-files` events that arrive anyway, debounced because one save
+arrives as several events.
 
 A root that leaves the project takes its settings with it, in the same pass.
 

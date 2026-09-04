@@ -953,9 +953,15 @@ module.exports = class Project extends Model {
     buffer.onWillSave(async ({ path }) =>
       this.applicationDelegate.emitWillSavePath(path)
     );
-    buffer.onDidSave(({ path }) =>
-      this.applicationDelegate.emitDidSavePath(path)
-    );
+    buffer.onDidSave(({ path: savedPath }) => {
+      this.applicationDelegate.emitDidSavePath(savedPath);
+      // Saving a root's config in Chevron itself applies immediately, without
+      // waiting on the filesystem watcher. The watcher covers edits made
+      // outside the editor; it does not report this reliably on every
+      // platform, and "I edited it here and nothing happened" is the case
+      // people meet first.
+      if (isRootConfigEvent({ path: savedPath })) this.syncRootConfigs();
+    });
     buffer.onDidDestroy(() => this.removeBuffer(buffer));
     buffer.onDidChangePath(() => {
       if (!(this.getPaths().length > 0)) {
