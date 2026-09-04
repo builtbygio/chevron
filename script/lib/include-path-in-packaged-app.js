@@ -29,7 +29,6 @@ const EXCLUDE_REGEXPS_SOURCES = [
   escapeRegExp('.gitattributes'),
   escapeRegExp('.gitkeep'),
   escapeRegExp(path.join('git-utils', 'deps')),
-  escapeRegExp(path.join('oniguruma', 'deps')),
   escapeRegExp(path.join('less', 'dist')),
   escapeRegExp(path.join('npm', 'doc')),
   escapeRegExp(path.join('npm', 'html')),
@@ -104,7 +103,7 @@ const EXCLUDE_REGEXPS_SOURCES = [
   // specific spec folders hand-picked
   'node_modules' +
     escapeRegExp(path.sep) +
-    '(oniguruma|dev-live-reload|deprecation-cop|one-dark-ui|incompatible-packages|git-diff|line-ending-selector|link|grammar-selector|json-schema-traverse|exception-reporting|one-light-ui|autoflow|about|go-to-line|sylvester|apparatus)' +
+    '(dev-live-reload|deprecation-cop|one-dark-ui|incompatible-packages|git-diff|line-ending-selector|link|grammar-selector|json-schema-traverse|exception-reporting|one-light-ui|autoflow|about|go-to-line|sylvester|apparatus)' +
     escapeRegExp(path.sep) +
     'spec' +
     escapeRegExp(path.sep),
@@ -190,15 +189,10 @@ for (const devTool of [
   'eslint-module-utils',
   'eslint-scope',
 
-  // The CSON chain, now unreachable. first-mate was the last requirer of
-  // season and is patched off it (patches/@builtbygio__first-mate@7.4.3.patch);
-  // core reads JSON through src/main-process/json-file.js. pnpm still
-  // installs these because a patch cannot change dependency resolution -- the
-  // graph comes from registry metadata, not the patched package.json -- so
-  // dropping them for real needs a first-mate release. Until then they are
-  // installed and not shipped.
-  'season',
-  'cson-parser',
+  // What is left of the CSON chain. season and cson-parser left the tree
+  // entirely with first-mate, which was their only requirer; core reads JSON
+  // through src/main-process/json-file.js. coffee-script is still installed,
+  // by jasmine-node via coffeestack, and is test tooling that never ships.
   'coffee-script',
 
   // Packages that ship, depend on something already excluded above, and are

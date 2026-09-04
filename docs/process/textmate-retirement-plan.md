@@ -226,13 +226,41 @@ With community packages cancelled and the catalog owned, **dropping** a row is
 as legitimate as porting it — but it is a product decision per row, and the
 list belongs in `language-stack.md` next to the existing owner column.
 
-### PR G — delete the engine · small, and last
+### PR G — delete the engine · **done, and not small**
 
-Only when PR A's ratchet reads zero unique TextMate scopes. Deletes
-`first-mate`, `oniguruma`, `src/text-mate-language-mode.js`,
-`src/pending-text-mate-grammar.ts`, `src/tokenized-line.ts`,
-`src/load-first-mate.ts` and its gate, and drops one NAN native from
-`preload-natives.js`. This is the payoff; everything above is the price.
+Landed with the ratchet **not** at zero: the owner call was to delete the
+engine and accept that nineteen scopes lose highlighting, none of which has a
+tree-sitter parser published anywhere. `docs/reference/language-stack.md` §3
+lists every one.
+
+Deleted: `first-mate`, `oniguruma`, all 47 remaining TextMate grammars,
+`src/text-mate-language-mode.js`, `src/pending-text-mate-grammar.ts`,
+`src/load-first-mate.ts`, `src/first-mate-helpers.js`, three packages left with
+nothing (`language-git`, `language-text`, `language-ruby-on-rails`), the
+first-mate patch, and the `lazy-first-mate` gate that existed to keep the
+engine lazy. `season` and `cson-parser` left the tree with it — first-mate was
+their only requirer.
+
+**The deletion was the easy half.** Three things had been quietly relying on
+every editor getting a TextMate mode whether or not it had a grammar:
+
+- `TreeSitterLanguageMode` borrowed seven auto-indent methods off
+  `TextMateLanguageMode.prototype`, and they ran on **oniguruma** regexes.
+  They are `src/auto-indent.ts` now, on `new RegExp`; a pattern JavaScript
+  cannot compile yields no regex instead of throwing.
+- `bracket-matcher` reached for `first-mate`'s `ScopeSelector` *and* for
+  `tokenizedLineForRow`, a TextMate-only language-mode method. The first was
+  the dead TextMate half of a branch that already had a tree-sitter path; the
+  second now asks the scope descriptor, which every mode implements.
+- `TextEditor#getRootScopeDescriptor()` returned `languageMode.rootScopeDescriptor`,
+  which `NullLanguageMode` does not have. On reload it threw inside a promise
+  and package activation stopped at **zero** with no crash and nothing in the
+  log. Its sibling two lines below already guarded for exactly this.
+
+Only the smoke test found the last two — every unit gate was green while the
+packaged app failed to reload. Four build scripts also had to stop treating
+oniguruma as a critical native, `bootstrap-modern` among them with its own
+hardcoded list.
 
 ---
 

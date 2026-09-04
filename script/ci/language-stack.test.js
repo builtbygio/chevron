@@ -24,17 +24,16 @@ function languagePins() {
     .sort();
 }
 
-const FIRST_TRANCHE = [];
-
-const KEEP_TEXTMATE = [
-  'language-objective-c',
-  'language-gfm',
+// Packages deleted on the way to removing first-mate. The doc is expected to
+// still name them: saying what went and what it cost is the point of §3.
+const DELETED = [
+  'language-hyperlink',
+  'language-todo',
+  'language-coffee-script',
+  'language-mustache',
   'language-git',
-  'language-ruby-on-rails',
-  'language-make',
-  'language-property-list',
   'language-text',
-  'language-source'
+  'language-ruby-on-rails'
 ];
 
 describe('language stack catalog (H2 PR 13)', () => {
@@ -43,19 +42,14 @@ describe('language stack catalog (H2 PR 13)', () => {
   const pins = languagePins();
 
   it('names every packageDependencies language-* pin', () => {
-    assert.ok(pins.length >= 30, `expected a full catalog, got ${pins.length}`);
+    assert.ok(pins.length >= 26, `expected a full catalog, got ${pins.length}`);
     const missing = pins.filter(name => !doc.includes('`' + name + '`'));
     assert.deepStrictEqual(missing, [], 'language-stack.md missing pins');
   });
 
   // Dropped packages the doc is expected to still name, because saying what
   // was removed and what it cost is the point of the note.
-  const REMOVED = [
-    'language-hyperlink',
-    'language-todo',
-    'language-coffee-script',
-    'language-mustache'
-  ];
+  const REMOVED = DELETED;
 
   it('does not invent language-* pins that are not in packageDependencies', () => {
     const named = [...doc.matchAll(/`language-[a-z0-9-]+`/g)].map(m =>
@@ -77,186 +71,67 @@ describe('language stack catalog (H2 PR 13)', () => {
     }
   });
 
-  it('first-tranche port list and keep-TextMate list are in the doc', () => {
-    for (const name of FIRST_TRANCHE) {
-      assert.ok(doc.includes('`' + name + '`'), name);
+  it('says what lost highlighting, and that no parser exists for it', () => {
+    assert.match(doc, /## 3\. What lost highlighting/);
+    for (const scope of ['text.plain', 'source.sass', 'text.git-commit', 'source.mod']) {
+      assert.ok(doc.includes('`' + scope + '`'), `${scope} must be listed`);
     }
-    assert.match(doc, /first tranche/i);
-    for (const name of KEEP_TEXTMATE) {
-      assert.ok(doc.includes('`' + name + '`'), name);
-    }
-    assert.match(doc, /keep TextMate/);
+    assert.match(doc, /no tree-sitter parser is\s*\npublished for any of them/);
   });
 
-  it('is the remaining work before first-mate is deleted', () => {
-    // The 2026-08-17 decision made this a standing exception list; the
-    // 2026-09-03 one made it a work list. Both are in the doc, the older one
-    // struck through, because the wrapping and lazy-load exist because of it.
-    assert.match(doc, /Owner decision 2026-09-03: first-mate goes/);
-    assert.match(doc, /gated on this list being empty/);
+  it('records the decision that reversed twice, and its outcome', () => {
+    assert.match(doc, /Owner decision 2026-09-04: first-mate is deleted/);
+    // Both superseded decisions stay readable: the wrapping and lazy-load
+    // that used to exist were built for them.
+    assert.match(doc, /2026-08-17, TextMate is a permanent supported fallback/);
+    assert.match(doc, /2026-09-03, first-mate goes/);
     assert.match(doc, /textmate-retirement-plan\.md/);
   });
 
   it('grammar-registry points at the catalog and exposes getParserKindCounts', () => {
     assert.match(registry, /docs\/reference\/language-stack\.md/);
     assert.match(registry, /getParserKindCounts\s*\(/);
-    assert.match(registry, /first-mate is not deleted by H2/);
+    assert.match(registry, /TextMate and first-mate are gone/);
   });
 
-  it('counts 30 bundled language packages', () => {
-    // 34 before hyperlink and todo (PR E), 32 before coffee-script and
-    // mustache (PR F).
-    assert.strictEqual(pins.length, 30);
+  it('counts the catalog, and every row is tree-sitter', () => {
+    // 34 before the retirement; 27 after. Each per-package case that used to
+    // live here asserted `| both` for one language — a migration state that
+    // no longer exists, since the TextMate half of every row is deleted.
+    assert.strictEqual(pins.length, 27);
+    for (const name of pins) {
+      const row = doc
+        .split('\n')
+        .find(line => line.startsWith('| `' + name + '`'));
+      assert.ok(row, `no table row for ${name}`);
+      const kind = name === 'language-source' ? 'none' : 'tree-sitter';
+      assert.ok(
+        row.includes('| ' + kind + ' |'),
+        `${name} row should read "${kind}": ${row}`
+      );
+    }
   });
 
-  it('language-yaml is catalogued as both after the 13b port', () => {
-    assert.match(doc, /`language-yaml` \| both/);
-    assert.match(doc, /@tree-sitter-grammars\/tree-sitter-yaml/);
-  });
-
-  it('language-xml is catalogued as both after the 13b port', () => {
-    assert.match(doc, /`language-xml` \| both/);
-    assert.match(doc, /@tree-sitter-grammars\/tree-sitter-xml/);
-  });
-
-  it('language-php is catalogued as both after the 13b port', () => {
-    assert.match(doc, /`language-php` \| both/);
-    assert.match(doc, /tree-sitter-php/);
-  });
-
-  it('language-toml is catalogued as both after the 13b port', () => {
-    assert.match(doc, /`language-toml` \| both/);
-    assert.match(doc, /@tree-sitter-grammars\/tree-sitter-toml/);
-  });
-
-  it('language-sql is catalogued as both after the 13b port', () => {
-    assert.match(doc, /`language-sql` \| both/);
-    assert.match(doc, /@derekstride\/tree-sitter-sql/);
-  });
-
-  it('language-less is catalogued as both after the 13b port', () => {
-    assert.match(doc, /`language-less` \| both/);
-    assert.match(doc, /tree-sitter-less/);
-  });
-
-  it('language-sass is catalogued as both after the 13b port', () => {
-    assert.match(doc, /`language-sass` \| both/);
-    assert.match(doc, /tree-sitter-scss/);
-  });
-
-  it('language-perl is catalogued as both after the 13b port', () => {
-    assert.match(doc, /`language-perl` \| both/);
-    assert.match(doc, /tree-sitter-perl/);
-  });
-
-  it('language-clojure is catalogued as both after the 13b port', () => {
-    assert.match(doc, /`language-clojure` \| both/);
-    assert.match(doc, /tree-sitter-clojure-orchard/);
-  });
-
-  it('language-csharp is catalogued as both after the 13b port', () => {
-    assert.match(doc, /`language-csharp` \| both/);
-    assert.match(doc, /tree-sitter-c-sharp/);
-  });
-
-  it('language-source 13c ships JSON settings', () => {
-    assert.match(doc, /`language-source` \| none/);
-    assert.match(doc, /JSON settings/);
-    assert.match(doc, /PR 13c/);
-  });
-
-
-  it('language-text 13c ships JSON grammar', () => {
-    assert.match(doc, /`language-text` \| TextMate/);
-    assert.match(doc, /`text.plain` \| JSON/);
-  });
-
-
-  it('language-gfm is ported, with its TextMate grammar kept as an include', () => {
-    // Ported in the retirement plan's PR C: block grammar + an inline
-    // injection. The TextMate grammar stays because 26 other grammars
-    // include one of the shadowed scopes, gfm's fences among them.
-    assert.match(doc, /`language-gfm` \| both/);
-    assert.match(doc, /`source.gfm` \| JSON/);
-  });
-
-  it('language-less 13c ships JSON TextMate fallback', () => {
-    assert.match(doc, /`language-less` \| both/);
-    assert.match(doc, /`source.css.less` \| JSON/);
-  });
-
-  // make, objective-c and property-list were ported in the retirement plan's
-  // PR D, so their rows read `both`: a tree-sitter grammar plus the TextMate
-  // one, which stays as an include target.
-  it('language-make 13c ships JSON grammar', () => {
-    assert.match(doc, /`language-make` \| both/);
-    assert.match(doc, /`source.makefile` \| JSON/);
-  });
-
-
-  it('language-sql 13c ships JSON TextMate fallback', () => {
-    assert.match(doc, /`language-sql` \| both/);
-    assert.match(doc, /`source.sql` \| JSON/);
-  });
-
-  it('language-toml 13c ships JSON TextMate fallback', () => {
-    assert.match(doc, /`language-toml` \| both/);
-    assert.match(doc, /`source.toml` \| JSON/);
-  });
-
-  it('language-yaml 13c ships JSON TextMate fallback', () => {
-    assert.match(doc, /`language-yaml` \| both/);
-    assert.match(doc, /`source.yaml` \| JSON/);
-  });
-
-  it('language-clojure 13c ships JSON TextMate fallback', () => {
-    assert.match(doc, /`language-clojure` \| both/);
-    assert.match(doc, /`source.clojure` \| JSON/);
-  });
-
-
-  it('language-perl 13c ships JSON TextMate fallback', () => {
-    assert.match(doc, /`language-perl` \| both/);
-    assert.match(doc, /`source.perl`, `source.perl6` \| JSON/);
-  });
-
-  it('language-php 13c ships JSON TextMate fallback', () => {
-    assert.match(doc, /`language-php` \| both/);
-    assert.match(doc, /`text.html.php`, `source.php` \| JSON/);
-  });
-
-  it('language-property-list 13c ships JSON grammars', () => {
-    assert.match(doc, /`language-property-list` \| both/);
-    assert.match(doc, /`source.plist`, `text.xml.plist` \| JSON/);
-  });
-
-  it('language-xml 13c ships JSON TextMate fallback', () => {
-    assert.match(doc, /`language-xml` \| both/);
-    assert.match(doc, /`text.xml`, `text.xml.xsl` \| JSON/);
-  });
-
-  it('language-csharp 13c ships JSON TextMate fallback', () => {
-    assert.match(doc, /`language-csharp` \| both/);
-    assert.match(doc, /`source.cs`, `source.csx`, `source.cake` \| JSON/);
-  });
-
-  it('language-git 13c ships JSON grammars', () => {
-    assert.match(doc, /`language-git` \| TextMate/);
-    assert.match(doc, /`text.git-commit`, `source.git-config`, `text.git-rebase` \| JSON/);
-  });
-
-  it('language-objective-c 13c ships JSON grammars', () => {
-    assert.match(doc, /`language-objective-c` \| both/);
-    assert.match(doc, /`source.objc`, `source.objcpp`, `source.strings` \| JSON/);
-  });
-
-  it('language-sass 13c ships JSON TextMate fallback', () => {
-    assert.match(doc, /`language-sass` \| both/);
-    assert.match(doc, /`source.css.scss`, `source.sass`, `source.sassdoc` \| JSON/);
-  });
-
-  it('language-ruby-on-rails 13c ships JSON grammars', () => {
-    assert.match(doc, /`language-ruby-on-rails` \| TextMate/);
-    assert.match(doc, /`source.ruby.rails` \+ html\/js\/sql\/rjs overlays \| JSON/);
+  it('ships no CSON grammar, settings or snippets', () => {
+    for (const name of pins) {
+      const dir = path.join(ROOT, 'packages', name);
+      const found = [];
+      const walk = current => {
+        let entries;
+        try {
+          entries = fs.readdirSync(current, { withFileTypes: true });
+        } catch (error) {
+          return;
+        }
+        for (const entry of entries) {
+          if (entry.name === 'node_modules') continue;
+          const full = path.join(current, entry.name);
+          if (entry.isDirectory()) walk(full);
+          else if (entry.name.endsWith('.cson')) found.push(full);
+        }
+      };
+      walk(dir);
+      assert.deepEqual(found, [], `${name} ships CSON`);
+    }
   });
 });

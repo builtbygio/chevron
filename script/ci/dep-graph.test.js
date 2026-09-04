@@ -158,9 +158,10 @@ describe('root dependency graph', () => {
       `workspace count ${counts.workspace} != pinned ${pinned}`
     );
     // Editor packages moved to packages/ (workspace:). What remains on npm is
-    // the owned library/native set — first-mate, text-buffer, keytar, …
+    // the owned library/native set — text-buffer, keytar, superstring, … The
+    // floor dropped by two when first-mate and oniguruma were deleted.
     assert.ok(
-      counts['npm-builtbygio'] >= 15,
+      counts['npm-builtbygio'] >= 13,
       `npm-builtbygio count ${counts['npm-builtbygio']} (expected the owned libs)`
     );
     assert.strictEqual(

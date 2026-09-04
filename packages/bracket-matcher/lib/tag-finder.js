@@ -53,28 +53,16 @@ class TagFinder {
     return this.scopesForPositionMatchRegex(this.editor.getCursorBufferPosition(), TAG_SELECTOR_REGEX)
   }
 
+  // Walked TextMate token tags and resolved each one through
+  // grammar.scopeForId. tokenizedLineForRow belonged to the TextMate language
+  // mode, so a buffer with no grammar -- any plain-text file now -- threw here
+  // and took bracket-matcher's activation with it. The scope descriptor says
+  // the same thing and every language mode has one.
   scopesForPositionMatchRegex (position, regex) {
-    const {tokenizedBuffer, buffer} = this.editor
-    const {grammar} = tokenizedBuffer
-    let column = 0
-    const line = tokenizedBuffer.tokenizedLineForRow(position.row)
-    if (line == null) { return false }
-    const lineLength = buffer.lineLengthForRow(position.row)
-    const scopeIds = line.openScopes.slice()
-    for (let i = 0; i < line.tags.length; i++) {
-      const tag = line.tags[i]
-      if (tag >= 0) {
-        const nextColumn = column + tag
-        if ((nextColumn > position.column) || (nextColumn === lineLength)) { break }
-        column = nextColumn
-      } else if ((tag & 1) === 1) {
-        scopeIds.push(tag)
-      } else {
-        scopeIds.pop()
-      }
-    }
-
-    return scopeIds.some(scopeId => regex.test(grammar.scopeForId(scopeId)))
+    return this.editor
+      .scopeDescriptorForBufferPosition(position)
+      .getScopesArray()
+      .some(scope => regex.test(scope))
   }
 
   findStartTag (tagName, endPosition, fullRange = false) {

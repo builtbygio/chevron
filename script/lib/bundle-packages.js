@@ -42,7 +42,6 @@ const NATIVE = [
   '@atom/fuzzy-native',
   'ctags',
   'keytar',
-  'oniguruma',
   'pathwatcher',
   'spellchecker',
   'superstring'

@@ -78,8 +78,7 @@ overrides:
   # language-css pins 0.23.2 (CJS + prebuilds). Without this, pnpm hoists
   # 0.20.0 from tree-sitter-less/scss and CSS highlighting fails.
   'tree-sitter-css': 0.23.2
-  # Force nested first-mate / spell-check onto the owned git pins (Electron 43).
-  oniguruma: $oniguruma
+  # Force nested spell-check onto the owned git pins (Electron 43).
   spellchecker: $spellchecker
   '@atom/fuzzy-native': '$@atom/fuzzy-native'
   '@atom/nsfw': '$@atom/nsfw'
@@ -91,7 +90,6 @@ overrides:
   pathwatcher: $pathwatcher
   'atom-pathspec': '$atom-pathspec'
   'atom-select-list': '$atom-select-list'
-  'first-mate': '$first-mate'
   'fs-admin': '$fs-admin'
   'scrollbar-style': '$scrollbar-style'
   superstring: $superstring
@@ -100,7 +98,6 @@ overrides:
 patchedDependencies:
   less@3.13.1: patches/less@3.13.1.patch
   dugite@1.110.0: patches/dugite@1.110.0.patch
-  '@builtbygio/first-mate@7.4.3': patches/@builtbygio__first-mate@7.4.3.patch
 
 # Owned catalog is published from this repo and consumed immediately.
 # Default minimumReleaseAge (1 day) 404s just-published @builtbygio

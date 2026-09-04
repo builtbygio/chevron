@@ -1,6 +1,5 @@
 const _ = require('underscore-plus')
 const {CompositeDisposable} = require('chevron')
-const SelectorCache = require('./selector-cache')
 
 module.exports =
 class BracketMatcher {
@@ -234,24 +233,13 @@ class BracketMatcher {
         }
       }
       return false
-    } else {
-      if (this.interpolatedStringSelector == null) {
-        const segments = [
-          '*.*.*.interpolated.ruby',
-          'string.interpolated.ruby',
-          'string.regexp.interpolated.ruby',
-          'string.quoted.double.coffee',
-          'string.unquoted.heredoc.ruby',
-          'string.quoted.double.livescript',
-          'string.quoted.double.heredoc.livescript',
-          'string.quoted.double.elixir',
-          'string.quoted.double.heredoc.elixir',
-          'comment.documentation.heredoc.elixir'
-        ]
-        this.interpolatedStringSelector = SelectorCache.get(segments.join(' | '))
-      }
-      return this.interpolatedStringSelector.matches(this.editor.getLastCursor().getScopeDescriptor().getScopesArray())
     }
+
+    // The other branch matched TextMate scopes with first-mate's
+    // ScopeSelector, for Ruby, CoffeeScript, LiveScript and Elixir
+    // interpolation. Both are gone: a buffer either has a tree-sitter mode,
+    // handled above, or the null mode, which has no scopes to match.
+    return false
   }
 
   isOpeningBracket (string) {

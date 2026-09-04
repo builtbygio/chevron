@@ -2,13 +2,10 @@ const _ = require('underscore-plus');
 const Grim = require('grim');
 const CSON = require('./main-process/json-file');
 const { Disposable, CompositeDisposable, Emitter } = require('event-kit');
-const TextMateLanguageMode = require('./text-mate-language-mode');
 const TreeSitterLanguageMode = require('./tree-sitter-language-mode');
 const TreeSitterGrammar = require('./tree-sitter-grammar');
 const Token = require('./token');
 const NullGrammar = require('./null-grammar');
-const { loadFirstMate } = require('./load-first-mate');
-const { PendingTextMateGrammar } = require('./pending-text-mate-grammar');
 const fs = require('fs-plus');
 const { Point, Range } = require('text-buffer');
 
@@ -18,53 +15,20 @@ const PATH_SPLIT_REGEX = new RegExp('[/.]');
 //
 // An instance of this class is always available as the `atom.grammars` global.
 //
-// Two engines share this facade:
-//   - official tree-sitter@0.25 (N-API) — chosen whenever the language has a
-//     `type: tree-sitter` grammar
-//   - first-mate + oniguruma (TextMate) — the only engine for the scopes on
-//     the exception list, and the library the grammars on it are built from:
-//     26 of them `include` a scope whose TextMate grammar also has a
-//     tree-sitter one (source.gfm alone includes 21, for fenced code)
-//
-// Catalog + TextMate exception list: docs/reference/language-stack.md.
-// first-mate is not deleted by H2. Optional H3 only if that list is empty.
+// One engine: official tree-sitter@0.25 (N-API). A file whose language has no
+// `type: tree-sitter` grammar gets the buffer's null language mode — text,
+// editable, uncoloured. TextMate and first-mate are gone; what that cost is
+// listed in docs/reference/language-stack.md.
 module.exports = class GrammarRegistry {
   constructor({ config } = {}) {
     this.config = config;
     this.subscriptions = new CompositeDisposable();
     this.emitter = new Emitter();
-    this._textmateRegistry = null;
-    this.pendingTextMateByScope = new Map();
     this.clear();
   }
 
-  // PR 14: first-mate + oniguruma boot on first TM assignment, not at
-  // GrammarRegistry construct. first-mate is not deleted by H2.
-  ensureTextMateRegistry() {
-    if (this._textmateRegistry) return this._textmateRegistry;
-    const FirstMate = loadFirstMate();
-    this._textmateRegistry = new FirstMate.GrammarRegistry({
-      maxTokensPerLine: 100,
-      maxLineLength: 1000
-    });
-    const grammarAddedOrUpdated = this.grammarAddedOrUpdated.bind(this);
-    this._textmateRegistry.onDidAddGrammar(grammar => {
-      this.emitter.emit('did-add-grammar', grammar);
-      grammarAddedOrUpdated(grammar);
-    });
-    this._textmateRegistry.onDidUpdateGrammar(grammar => {
-      this.emitter.emit('did-update-grammar', grammar);
-      grammarAddedOrUpdated(grammar);
-    });
-    for (const stub of this.pendingTextMateByScope.values()) {
-      if (!stub.liveGrammar) stub.materialize();
-    }
-    return this._textmateRegistry;
-  }
 
   clear() {
-    this._textmateRegistry = null;
-    this.pendingTextMateByScope = new Map();
     this.treeSitterGrammarsById = {};
     if (this.subscriptions) this.subscriptions.dispose();
     this.subscriptions = new CompositeDisposable();
@@ -227,10 +191,9 @@ module.exports = class GrammarRegistry {
         grammars: this
       });
     }
-    if (grammar instanceof PendingTextMateGrammar) {
-      grammar = grammar.materialize();
-    }
-    return new TextMateLanguageMode({ grammar, buffer, config: this.config });
+    // Anything without a tree-sitter grammar gets the buffer's own null
+    // language mode: text, editable, uncoloured.
+    return null;
   }
 
   // Extended: Select a grammar for the given file path and file contents.
@@ -275,9 +238,8 @@ module.exports = class GrammarRegistry {
     if (score > 0) {
       const isTreeSitter = grammar instanceof TreeSitterGrammar;
 
-      // Tree-sitter wins a tie. The TextMate grammar for the same scope is
-      // kept as a library other TextMate grammars include, not as an
-      // alternative to choose between.
+      // Kept for grammars registered by packages at runtime, which are not
+      // necessarily tree-sitter.
       if (isTreeSitter) score += 0.1;
 
       // Prefer grammars with matching content regexes. Prefer a grammar with no content regex
@@ -376,10 +338,7 @@ module.exports = class GrammarRegistry {
 
   grammarForId(languageId) {
     if (!languageId) return null;
-    return (
-      this.treeSitterGrammarsById[languageId] ||
-      this.textMateGrammarForScopeName(languageId)
-    );
+    return this.treeSitterGrammarsById[languageId] || null;
   }
 
   // Deprecated: Get the grammar override for the given file path.
@@ -454,8 +413,7 @@ module.exports = class GrammarRegistry {
       }
 
       // text-buffer's NullLanguageMode (and any mode mid-assignment) has no
-      // injections. Lazy first-mate materialize fires this while the opening
-      // buffer is still on that default mode.
+      // injections.
       if (typeof languageMode.updateForInjection === 'function') {
         languageMode.updateForInjection(grammar);
       }
@@ -513,26 +471,11 @@ module.exports = class GrammarRegistry {
   }
 
   get nullGrammar() {
-    if (this._textmateRegistry) return this._textmateRegistry.nullGrammar;
     return NullGrammar;
   }
 
   get grammars() {
     return this.getGrammars();
-  }
-
-  textMateGrammarForScopeName(scopeName) {
-    const pending = this.pendingTextMateByScope.get(scopeName);
-    if (pending) return pending.liveGrammar || pending;
-    if (this._textmateRegistry) {
-      return this._textmateRegistry.grammarForScopeName(scopeName);
-    }
-    return null;
-  }
-
-  decodeTokens() {
-    const registry = this.ensureTextMateRegistry();
-    return registry.decodeTokens.apply(registry, arguments);
   }
 
   grammarForScopeName(scopeName) {
@@ -553,37 +496,20 @@ module.exports = class GrammarRegistry {
       this.emitter.emit('did-add-grammar', grammar);
       this.grammarAddedOrUpdated(grammar);
       return new Disposable(() => this.removeGrammar(grammar));
-    } else if (grammar instanceof PendingTextMateGrammar) {
-      if (grammar.scopeName) {
-        this.pendingTextMateByScope.set(grammar.scopeName, grammar);
-      }
-      this.emitter.emit('did-add-grammar', grammar);
-      this.grammarAddedOrUpdated(grammar);
-      return new Disposable(() => this.removeGrammar(grammar));
-    } else {
-      return this.ensureTextMateRegistry().addGrammar(grammar);
     }
+    // TextMate grammars are gone; a package shipping one is ignored rather
+    // than crashing the package on activate.
+    return new Disposable(() => {});
   }
 
   removeGrammar(grammar) {
     if (grammar instanceof TreeSitterGrammar) {
       delete this.treeSitterGrammarsById[grammar.scopeName];
-    } else if (grammar instanceof PendingTextMateGrammar) {
-      this.pendingTextMateByScope.delete(grammar.scopeName);
-      if (grammar.liveGrammar && this._textmateRegistry) {
-        this._textmateRegistry.removeGrammar(grammar.liveGrammar);
-      }
-    } else if (this._textmateRegistry) {
-      return this._textmateRegistry.removeGrammar(grammar);
     }
   }
 
   removeGrammarForScopeName(scopeName) {
-    const pending = this.pendingTextMateByScope.get(scopeName);
-    if (pending) this.removeGrammar(pending);
-    if (this._textmateRegistry) {
-      return this._textmateRegistry.removeGrammarForScopeName(scopeName);
-    }
+    delete this.treeSitterGrammarsById[scopeName];
   }
 
   // Extended: Read a grammar asynchronously and add it to the registry.
@@ -645,23 +571,14 @@ module.exports = class GrammarRegistry {
 
   createGrammar(grammarPath, params) {
     // `type: tree-sitter` comes from language-* `grammars/tree-sitter-*.json`.
-    // Everything else is TextMate and goes through first-mate. See
-    // docs/reference/language-stack.md for which bundled packages ship which kind.
-    if (params.type === 'tree-sitter') {
-      return new TreeSitterGrammar(this, grammarPath, params);
-    } else {
-      if (
-        typeof params.scopeName !== 'string' ||
-        params.scopeName.length === 0
-      ) {
-        throw new Error(
-          `Grammar missing required scopeName property: ${grammarPath}`
-        );
-      }
-      const stub = new PendingTextMateGrammar(this, grammarPath, params);
-      this.pendingTextMateByScope.set(params.scopeName, stub);
-      return stub;
+    // Nothing else is a grammar any more: TextMate went with first-mate.
+    if (params.type !== 'tree-sitter') {
+      throw new Error(
+        `Not a tree-sitter grammar, and TextMate grammars are no longer ` +
+          `supported: ${grammarPath}`
+      );
     }
+    return new TreeSitterGrammar(this, grammarPath, params);
   }
 
   // Extended: Get all the grammars in this registry.
@@ -671,37 +588,22 @@ module.exports = class GrammarRegistry {
   //     [Tree-sitter](https://github.blog/2018-10-31-atoms-new-parsing-system/) grammars
   //
   // Returns a non-empty {Array} of {Grammar} instances.
-  getGrammars(params) {
-    let tmGrammars;
-    if (this._textmateRegistry) {
-      tmGrammars = this._textmateRegistry.getGrammars();
-    } else {
-      tmGrammars = [this.nullGrammar, ...this.pendingTextMateByScope.values()];
-    }
-    if (!(params && params.includeTreeSitter)) return tmGrammars;
-
+  getGrammars() {
+    // NullGrammar is expected to be first. `includeTreeSitter` is accepted
+    // and ignored: every grammar is a tree-sitter grammar now.
     const tsGrammars = Object.values(this.treeSitterGrammarsById).filter(
       g => g.scopeName
     );
-    return tmGrammars.concat(tsGrammars); // NullGrammar is expected to be first
+    return [this.nullGrammar, ...tsGrammars];
   }
 
-  // Runtime counts for the language-stack catalog. NullGrammar is omitted
-  // from the TextMate side. Tree-sitter entries without a scopeName (stubs
-  // registered before the real grammar loads) are omitted too.
+  // Runtime counts for the language-stack catalog. Grammars registered
+  // without a scopeName (stubs, before the real grammar loads) are omitted.
   getParserKindCounts() {
-    const textMate = this.getGrammars().filter(
-      g => g && g !== this.nullGrammar && g.scopeName
-    ).length;
     const treeSitter = Object.values(this.treeSitterGrammarsById).filter(
       g => g && g.scopeName
     ).length;
-    return { textMate, treeSitter };
-  }
-
-  scopeForId(id) {
-    if (!this._textmateRegistry) return undefined;
-    return this._textmateRegistry.scopeForId(id);
+    return { textMate: 0, treeSitter };
   }
 
   treeSitterGrammarForLanguageString(languageString) {

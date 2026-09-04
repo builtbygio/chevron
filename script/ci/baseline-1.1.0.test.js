@@ -64,8 +64,21 @@ describe('1.1.0 product contract', () => {
     assert.match(ws, /replaceInFiles/);
   });
 
-  it('first-mate and document-register-element stay', () => {
-    assert.ok(pkg.dependencies['first-mate'], 'first-mate is the TextMate fallback');
+  it('first-mate is gone (PR G superseded the 1.1.0 contract here)', () => {
+    // 1.1.0 locked first-mate in as the TextMate fallback, and the exception
+    // list was meant to empty before it could go. The owner decision of
+    // 2026-09-04 deleted the engine with nineteen scopes still on that list,
+    // accepting that they lose highlighting; docs/reference/language-stack.md
+    // §3 names them, and script/ci/grammar-inventory.test.js is the live gate.
+    assert.ok(!pkg.dependencies['first-mate'], 'first-mate is deleted');
+    assert.ok(!pkg.dependencies['oniguruma'], 'oniguruma went with it');
+    assert.ok(
+      !fs.existsSync(path.join(ROOT, 'src', 'text-mate-language-mode.js')),
+      'the TextMate language mode is deleted'
+    );
+  });
+
+  it('document-register-element stays', () => {
     assert.ok(
       pkg.dependencies['document-register-element'],
       'document-register-element stays until catalog createElement is converted'

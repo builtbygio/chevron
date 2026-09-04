@@ -44,7 +44,6 @@ const CRITICAL_NATIVE_PACKAGES = [
   'keyboard-layout',
   'ctags',
   'fs-admin',
-  'oniguruma',
   '@derekstride/tree-sitter-sql',
   'tree-sitter-less',
   'tree-sitter-perl',
