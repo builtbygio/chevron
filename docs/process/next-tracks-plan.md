@@ -1,9 +1,11 @@
-# Next tracks — profiler, per-root config, agent host, and the remote question
+# Next tracks — profiler, per-root config, and the agent host
 
-**Status: open.** Scoping only; no code has moved. Four tracks in the order they
-should happen, and why that order: each one makes the next cheaper, and the
-last one is deliberately last because it depends on a decision nobody has made
-yet.
+**Status: open.** Scoping only; no code has moved. Three tracks in the order
+they should happen, and why that order: each one makes the next cheaper.
+
+A fourth — remote editing over SSH — was scoped and then **dropped** (owner,
+2026-09-04). §4 keeps the costing, because the question will come back and the
+answer should not have to be re-derived.
 
 The long-term goal this serves: **Chevron as a host for coding agents** — an
 editor where an agent is a first-class participant with project context, not a
@@ -19,7 +21,7 @@ are useful regardless and happen to be prerequisites.
 | 1 | Package profiler | Cheapest, and you cannot tell whether an agent is making the editor slow without it |
 | 2 | Per-root config | Small, and multi-root is a precondition for "agent works across my repos" |
 | 3 | Agent host protocol | The actual goal; needs 1 to measure and 2 to know what "the project" means |
-| 4 | Remote over SSH | Largest by an order of magnitude, and shares a prerequisite with 3 |
+| ~~4~~ | ~~Remote over SSH~~ | **Dropped** — see §4 for what it would have cost |
 
 ---
 
@@ -123,7 +125,8 @@ packages and language servers.
 - a **diff review** surface: propose, show, accept per hunk, undo as one step
 - **task state that survives reload** — the reload path is well understood now
   (#308), and an agent's work must not die with a window
-- a **terminal**. There is no terminal package in the tree at all
+- a **terminal**. There is no terminal package in the tree at all — decided
+  below
 - **permission prompts** for tool calls, in the shape the trust modal already has
 - **per-session context**: what the agent has read, and why
 
@@ -142,6 +145,50 @@ trust, review and undo. Run it as a `utilityProcess`, exactly like the LSP host
 *client*: upgradeable by bumping a version, and a second agent costs nothing
 architecturally.
 
+### The terminal: adopt two layers, write the third
+
+There is no terminal in the catalog, and an agent host needs one. "Custom or
+off-the-shelf" is three questions, and they have different answers.
+
+| Layer | Decision | Why |
+|-------|----------|-----|
+| Emulation + rendering | **adopt `@xterm/xterm@6.0.0`** | zero dependencies, actively published, and what VS Code and Hyper use. Writing a VT emulator means xterm escape sequences, mouse reporting, bracketed paste, unicode width and reflow — a twenty-year tail with no upside |
+| PTY | **adopt `node-pty@1.1.0`** | N-API (`node-addon-api`) and **28 prebuilt binaries** shipped, including `win32-arm64` ConPTY. That is the property that let the markdown, make and objc parsers cross all five CI platforms in #319 without a source build |
+| Panes, sessions, keymaps, lifecycle, agent hooks | **write it** | perhaps 300 lines, and the only part where the requirements are actually ours |
+
+**Do not adopt an Atom-era terminal package.** `x-terminal`,
+`platformio-ide-terminal`, `termination` are all xterm.js + node-pty inside an
+unmaintained wrapper — the exact shape of thing the catalog was just cleaned
+of. `@lydell/node-pty`, a fork that exists to solve prebuild pain, ships **zero**
+prebuilt binaries and solves nothing we have.
+
+**Verify node-pty before committing to it**, the way the markdown parser was
+verified: load it under `ELECTRON_RUN_AS_NODE` against the packaged binary and
+spawn a shell. It joins the critical-natives list either way, and that list has
+a way of biting during bootstrap.
+
+**The PTY belongs in a `utilityProcess`, not the renderer.** A terminal spawns
+arbitrary processes, which drives straight through the model Phase N and S
+built — privileged-require restriction, FS IPC roots, the trust prompt. If the
+renderer spawns shells, that model is decorative. The shape already exists
+twice: the LSP host and the git workers. The renderer holds an xterm view and a
+data channel; the host owns spawning, and can prompt, log or refuse.
+
+That boundary is also the reason to build the integration rather than adopt
+one: **an agent-drivable terminal is a different product from a human
+terminal.** It needs a readable transcript, a permission gate on each command,
+and state that survives a reload. No existing package offers that.
+
+### Where the agent client lives
+
+As a **package** — in-process, owns its UI, activates like any other. OpenCode
+does not need forking to be integrated; it needs a client.
+
+The **boundary does not** live in a package: permission prompts, diff review
+and the tool-call gate belong in core, next to the trust model. A package has
+full Node access, so a security-sensitive gate implemented there is one a
+package can bypass.
+
 ### First step that commits to nothing
 
 Make the LSP host serve **project-shaped** context rather than file-shaped:
@@ -156,9 +203,14 @@ host (see #309, where the host looked alive and read nothing).
 
 ---
 
-## Track 4 — Remote editing over SSH
+## 4. Remote editing over SSH — **dropped**
 
-Deliberately last, and the only track here that might be answered with "no".
+**Owner decision, 2026-09-04: not building this.** No personal use for it, and
+the priority is features that get used. The costing below is kept as-is
+because the question recurs, and because two of its findings outlive the
+decision: the FS abstraction in the recommendation is worth doing on its own
+merits, and "remote LSP only" remains the cheap answer if remote ever becomes
+urgent.
 
 ### Why it is hard *here* specifically
 
@@ -248,9 +300,9 @@ engineering estimate.
    with remote execution may serve the same need as remote editing, without
    the runtime split.
 
-### Recommendation
+### Recommendation, if it ever returns
 
-Do not start track 4. Do the one piece that every version of it needs and that
+Do not start with either option. Do the one piece every version needs and that
 pays for itself immediately: **route package file access through an
 abstraction, with a CI ratchet banning new raw `fs`**. That is a genuine
 improvement in auditability, it is the prerequisite for a sandboxed package
@@ -264,6 +316,7 @@ the cheapest thing that addresses the actual pain.
 
 ## What this document is not
 
-It is not a commitment to track 4, and not a plan for the agent surfaces in
-track 3 — those need their own doc once the protocol shape is decided. Tracks 1
-and 2 are ready to start as written.
+It is not a plan for the agent surfaces in track 3 — diff review, task state,
+permission prompts and the terminal each need their own scoping once the
+protocol shape is decided. §4 is a record of a closed question, not a backlog
+item. Tracks 1 and 2 are ready to start as written.
