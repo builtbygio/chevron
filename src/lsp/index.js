@@ -33,6 +33,9 @@ const {
   executeCommand
 } = require('./providers/code-action');
 const { documentSymbols } = require('./providers/document-symbols');
+const {
+  workspaceSymbols: workspaceSymbolsFor
+} = require('./providers/workspace-symbols');
 const { applyWorkspaceEdit } = require('./workspace-edit');
 const { createDiagnosticsService } = require('./diagnostics-service');
 
@@ -63,7 +66,8 @@ const clientApi = {
   request,
   getServerIdForEditor,
   getPositionEncoding,
-  recordCompletionLatency
+  recordCompletionLatency,
+  listSessions
 };
 
 function getResourcePath() {
@@ -401,6 +405,31 @@ async function applyCodeAction(editor, action) {
 
 async function documentSymbolsAt(editor) {
   return documentSymbols(clientApi, editor);
+}
+
+/**
+ * Every running server session. The file-shaped providers reach a server
+ * through the editor that owns the file; workspace/symbol has no editor to
+ * start from, so it needs the sessions themselves.
+ */
+function listSessions() {
+  return [...startedSessions.values()].map(session => ({
+    serverId: session.serverId,
+    projectRoot: session.projectRoot,
+    regId: session.regId,
+    capabilities: session.capabilities || null
+  }));
+}
+
+/**
+ * Symbols across the project rather than the open file. Asks every server
+ * that advertises workspaceSymbolProvider and merges.
+ *
+ * @param {string} query
+ * @param {{ root?: string|null, limit?: number }} [options]
+ */
+async function projectSymbols(query, options) {
+  return workspaceSymbolsFor(clientApi, query, options);
 }
 
 function getAutocompleteProvider() {
@@ -769,6 +798,8 @@ module.exports = {
   codeActionsAtCursor,
   applyCodeAction,
   documentSymbolsAt,
+  projectSymbols,
+  listSessions,
   applyEdit,
   formatSignatureHelp,
   getAutocompleteProvider,
