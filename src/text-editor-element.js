@@ -31,6 +31,24 @@ class TextEditorElement extends HTMLElement {
 
   constructor() {
     super();
+    this.ensureInitialized();
+  }
+
+  // The constructor does not always run.
+  //
+  // static/index.js keeps the document-register-element polyfill because,
+  // under contextIsolation, a native customElements.define() in the preload
+  // realm does not upgrade parser-created nodes. The polyfill does upgrade
+  // them -- but it upgrades them without calling this class's constructor, so
+  // an <atom-text-editor> written into an HTML string (which is how the
+  // styleguide and several packages build their examples) reached
+  // connectedCallback with no emitter and threw an uncaught TypeError.
+  //
+  // Everything the constructor sets up therefore has to be reachable from
+  // whichever callback runs first. Idempotent, and cheap enough to call from
+  // each of them.
+  ensureInitialized() {
+    if (this.emitter) return;
     this.emitter = new Emitter();
     this.initialText = this.textContent;
     if (this.tabIndex == null) this.tabIndex = -1;
@@ -41,11 +59,13 @@ class TextEditorElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this.ensureInitialized();
     this.getComponent().didAttach();
     this.emitter.emit('did-attach');
   }
 
   disconnectedCallback() {
+    this.ensureInitialized();
     this.emitter.emit('did-detach');
     this.getComponent().didDetach();
   }
@@ -286,6 +306,7 @@ class TextEditorElement extends HTMLElement {
   }
 
   getComponent() {
+    this.ensureInitialized();
     if (!this.component) {
       this.component = new TextEditorComponent({
         element: this,
