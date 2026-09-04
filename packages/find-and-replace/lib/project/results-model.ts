@@ -243,7 +243,22 @@ module.exports = class ResultsModel {
 
     this.emitter.emit('did-start-searching', this.inProgressSearchPromise)
 
-    const message = await this.inProgressSearchPromise
+    let message
+    try {
+      message = await this.inProgressSearchPromise
+    } catch (error) {
+      // A search that fails outright has to say so. This rejects when the
+      // search process cannot be started at all -- main refusing the rg
+      // arguments, for instance -- and the rejection used to end here as an
+      // unhandled one: no results, no error, a panel reading "0 paths
+      // searched", and nothing to search the logs for.
+      if (this.searchErrors == null) { this.searchErrors = [] }
+      this.searchErrors.push(error)
+      this.emitter.emit('did-error-for-path', error)
+      this.inProgressSearchPromise = null
+      this.emitter.emit('did-finish-searching', this.getResultsSummary())
+      return
+    }
 
     if (message === 'cancelled') {
       this.emitter.emit('did-cancel-searching')

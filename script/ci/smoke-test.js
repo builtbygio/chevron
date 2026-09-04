@@ -863,6 +863,60 @@ const PROJECT_FIND_EXPR = `(function() {
   });
 })()`;
 
+// A search that cannot run must say so. The bug this guards against was not
+// the failure itself but its silence: the scan promise rejected, nothing
+// caught it, and the panel showed "0 paths searched" with no error anywhere.
+// So: make scan reject on purpose, and check the message reaches the pane.
+const SEARCH_ERROR_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__searchErrorProbe) {
+    window.__searchErrorProbe = { phase: 'running', result: null };
+    var finish = function(result) {
+      window.__searchErrorProbe.result = result;
+      window.__searchErrorProbe.phase = 'done';
+    };
+    var realScan = chevron.workspace.scan;
+    var restore = function() { chevron.workspace.scan = realScan; };
+    chevron.workspace.scan = function() {
+      return Promise.reject(new Error('smoke-test forced search failure'));
+    };
+
+    var panel = document.querySelector('.project-find');
+    if (!panel) {
+      restore();
+      finish({ error: 'project-find panel is not open' });
+    } else {
+      var editors = panel.querySelectorAll('atom-text-editor');
+      editors[0].getModel().setText('somethingThatWillFail');
+      chevron.commands.dispatch(panel, 'core:confirm');
+      var tries = 0;
+      (function settle() {
+        var results = chevron.workspace.getPaneItems().filter(function(item) {
+          return item && item.constructor && /Results/i.test(item.constructor.name);
+        })[0];
+        var recorded = results && results.searchErrors ? results.searchErrors.length : 0;
+        // The pane renders errors into ul.error-list as li.text-error.
+        var shown = document.querySelector('.error-list');
+        var text = shown ? shown.textContent.trim().slice(0, 120) : '';
+        if ((recorded > 0 && text) || tries >= 40) {
+          restore();
+          finish({ recorded: recorded, shownText: text, waitedMs: tries * 250 });
+          return;
+        }
+        tries++;
+        setTimeout(settle, 250);
+      })();
+    }
+  }
+  return JSON.stringify({
+    status: window.__searchErrorProbe.phase === 'done' ? 'ready' : 'pending',
+    searchError: window.__searchErrorProbe.result
+  });
+})()`;
+
 function isAppWindowTarget(target) {
   if (!target || target.type !== 'page') return false;
   const url = target.url || '';
@@ -1413,6 +1467,24 @@ async function main() {
       }
     }
 
+    // A failing search, right after the working one: the panel is already open
+    // and the results pane already exists.
+    if (state && state.status === 'ready' && state.projectFind) {
+      for (let attempt = 0; attempt < 80; attempt++) {
+        let errState;
+        try {
+          errState = await probeWindow([], SEARCH_ERROR_EXPR);
+        } catch (error) {
+          errState = { searchError: { error: String(error.message || error) } };
+        }
+        if (errState && errState.searchError) {
+          state.searchError = errState.searchError;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
     // The styleguide, last: it takes over the active pane.
     if (state && state.status === 'ready') {
       for (let attempt = 0; attempt < 40; attempt++) {
@@ -1540,6 +1612,24 @@ async function main() {
         if (projectFind.searchErrors && projectFind.searchErrors.length > 0) {
           failures.push(
             `project-find errors: ${projectFind.searchErrors.join('; ')}`
+          );
+        }
+      }
+
+      const searchError = state.searchError;
+      if (!searchError) {
+        failures.push('search-error probe did not report');
+      } else if (searchError.error) {
+        failures.push(`search-error probe: ${searchError.error}`);
+      } else {
+        if (!searchError.recorded) {
+          failures.push(
+            'a search that could not run recorded no error — this is the silence that hid the rg argument bug'
+          );
+        }
+        if (!searchError.shownText) {
+          failures.push(
+            'a search that could not run showed the user nothing'
           );
         }
       }
