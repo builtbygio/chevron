@@ -95,6 +95,7 @@ holds the rest.
 | [onboarding-polish.md](./process/onboarding-polish.md) | First-run polish tracks |
 | [dogfood-1.0.md](./process/dogfood-1.0.md) | 1.0 dogfood week |
 | [textmate-retirement-plan.md](./process/textmate-retirement-plan.md) | **Open** — what emptying the TextMate exception list would cost |
+| [next-tracks-plan.md](./process/next-tracks-plan.md) | **Open** — profiler, per-root config, agent host (remote-over-SSH: dropped, costing kept) |
 | [modernization/](./process/modernization/) | Early audit + transition plans. **Superseded** — `dependency-audit.md` still describes git SHA pins; the catalog has none |
 
 ## Post-1.1.0 modernization waves
