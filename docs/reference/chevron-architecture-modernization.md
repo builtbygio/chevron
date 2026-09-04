@@ -707,7 +707,7 @@ That set survives every pillar above.
 
 No new required methods in H1. Documented preferred names:
 
-- `chevron.workspace.scan` — **ripgrep only**. find-and-replace’s `useRipgrep` (default **true**) is still what the UI passes; `false` no longer selects a second engine. `CHEVRON_SEARCH_ENGINE=scandal` is ignored.
+- `chevron.workspace.scan` — **ripgrep only**. find-and-replace’s `useRipgrep` setting has since been removed: `scan` ignored it, so it changed nothing and said it did. `CHEVRON_SEARCH_ENGINE=scandal` is ignored.
 - `chevron.grammars` — tree-sitter preferred when `core.useTreeSitterParsers` is true (already).
 - `chevron.packages` — unchanged lifecycle.
 
@@ -891,7 +891,7 @@ No product telemetry. Observability is **local + CI**.
 | Knob | Default | Role in this plan |
 |------|---------|-------------------|
 | ~~`core.useTreeSitterParsers`~~ | **removed** | The TextMate grammars it selected are an include library for the exception list, not an alternative to choose (textmate-retirement-plan.md, PR B) |
-| `find-and-replace.useRipgrep` | **default `true`** | UI still passes this flag; it no longer selects scandal (PR 4) |
+| ~~`find-and-replace.useRipgrep`~~ | **removed** | `Workspace.scan` ignored it from PR 4 on, so the setting described a choice that no longer existed |
 | Core `Workspace.scan` ripgrep | **only engine** | `CHEVRON_SEARCH_ENGINE=scandal` is ignored |
 | Config JSON writer | **default on** (PR 5) | `CHEVRON_CONFIG_CSON=1` forces CSON writer one release. Does **not** remove season |
 | `CHEVRON_SKIP_MKSNAPSHOT` | Darwin implicit skip | Unchanged |

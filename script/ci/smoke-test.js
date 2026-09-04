@@ -798,6 +798,125 @@ const STYLEGUIDE_EXPR = `(function() {
   });
 })()`;
 
+// Find in Project, end to end. The renderer builds an rg command line and
+// main validates it; when the two disagreed, the IPC promise rejected, the
+// rejection never reached the results model, and the panel showed nothing with
+// no error anywhere. Only a real search catches that, so this drives the panel
+// and reads the counts the model recorded.
+const PROJECT_FIND_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__projectFindProbe) {
+    window.__projectFindProbe = { phase: 'running', result: null };
+    var finish = function(result) {
+      window.__projectFindProbe.result = result;
+      window.__projectFindProbe.phase = 'done';
+    };
+    try {
+      chevron.commands.dispatch(
+        chevron.views.getView(chevron.workspace),
+        'project-find:show'
+      );
+    } catch (error) {
+      finish({ error: String(error && error.message) });
+    }
+    setTimeout(function() {
+      var panel = document.querySelector('.project-find');
+      if (!panel) return finish({ error: 'project-find panel did not open' });
+      var editors = panel.querySelectorAll('atom-text-editor');
+      if (!editors.length) return finish({ error: 'project-find has no input' });
+
+      editors[0].getModel().setText('ripgrepOnlyToken');
+      chevron.commands.dispatch(panel, 'core:confirm');
+
+      var tries = 0;
+      (function settle() {
+        var results = chevron.workspace.getPaneItems().filter(function(item) {
+          return item && item.constructor && /Results/i.test(item.constructor.name);
+        })[0];
+        var model = results && (results.model || results.resultsModel);
+        var matches = model ? model.matchCount : -1;
+        if (matches > 0 || tries >= 60) {
+          finish({
+            matchCount: model ? model.matchCount : null,
+            pathCount: model ? model.pathCount : null,
+            pattern: model ? model.lastFindPattern : null,
+            searchErrors: model && model.searchErrors
+              ? model.searchErrors.map(function(e) {
+                  return String((e && (e.message || e)) || '').slice(0, 120);
+                })
+              : null,
+            waitedMs: tries * 250
+          });
+          return;
+        }
+        tries++;
+        setTimeout(settle, 250);
+      })();
+    }, 2000);
+  }
+  return JSON.stringify({
+    status: window.__projectFindProbe.phase === 'done' ? 'ready' : 'pending',
+    projectFind: window.__projectFindProbe.result
+  });
+})()`;
+
+// A search that cannot run must say so. The bug this guards against was not
+// the failure itself but its silence: the scan promise rejected, nothing
+// caught it, and the panel showed "0 paths searched" with no error anywhere.
+// So: make scan reject on purpose, and check the message reaches the pane.
+const SEARCH_ERROR_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__searchErrorProbe) {
+    window.__searchErrorProbe = { phase: 'running', result: null };
+    var finish = function(result) {
+      window.__searchErrorProbe.result = result;
+      window.__searchErrorProbe.phase = 'done';
+    };
+    var realScan = chevron.workspace.scan;
+    var restore = function() { chevron.workspace.scan = realScan; };
+    chevron.workspace.scan = function() {
+      return Promise.reject(new Error('smoke-test forced search failure'));
+    };
+
+    var panel = document.querySelector('.project-find');
+    if (!panel) {
+      restore();
+      finish({ error: 'project-find panel is not open' });
+    } else {
+      var editors = panel.querySelectorAll('atom-text-editor');
+      editors[0].getModel().setText('somethingThatWillFail');
+      chevron.commands.dispatch(panel, 'core:confirm');
+      var tries = 0;
+      (function settle() {
+        var results = chevron.workspace.getPaneItems().filter(function(item) {
+          return item && item.constructor && /Results/i.test(item.constructor.name);
+        })[0];
+        var recorded = results && results.searchErrors ? results.searchErrors.length : 0;
+        // The pane renders errors into ul.error-list as li.text-error.
+        var shown = document.querySelector('.error-list');
+        var text = shown ? shown.textContent.trim().slice(0, 120) : '';
+        if ((recorded > 0 && text) || tries >= 40) {
+          restore();
+          finish({ recorded: recorded, shownText: text, waitedMs: tries * 250 });
+          return;
+        }
+        tries++;
+        setTimeout(settle, 250);
+      })();
+    }
+  }
+  return JSON.stringify({
+    status: window.__searchErrorProbe.phase === 'done' ? 'ready' : 'pending',
+    searchError: window.__searchErrorProbe.result
+  });
+})()`;
+
 function isAppWindowTarget(target) {
   if (!target || target.type !== 'page') return false;
   const url = target.url || '';
@@ -1081,6 +1200,16 @@ async function main() {
     JSON.stringify({ editor: { tabLength: 3 } }, null, 2)
   );
 
+  // Searched for by the project-find phase. It must live in a file nothing
+  // opens: workspace.scan also scans modified buffers in memory, so a token
+  // that is present in an open editor is found whether or not ripgrep ran --
+  // which is exactly how the first version of that gate passed against a
+  // broken searcher.
+  fs.writeFileSync(
+    path.join(projectDir, 'on-disk-only.js'),
+    'const ripgrepOnlyToken = 1;\nmodule.exports = { ripgrepOnlyToken };\n'
+  );
+
   const probes = {
     txt: path.join(probeDir, 'probe.txt'),
     ts: path.join(probeDir, 'probe.ts'),
@@ -1321,6 +1450,41 @@ async function main() {
       }
     }
 
+    // Find in Project, before the styleguide takes the active pane.
+    if (state && state.status === 'ready') {
+      for (let attempt = 0; attempt < 120; attempt++) {
+        let findState;
+        try {
+          findState = await probeWindow([], PROJECT_FIND_EXPR);
+        } catch (error) {
+          findState = { projectFind: { error: String(error.message || error) } };
+        }
+        if (findState && findState.projectFind) {
+          state.projectFind = findState.projectFind;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
+    // A failing search, right after the working one: the panel is already open
+    // and the results pane already exists.
+    if (state && state.status === 'ready' && state.projectFind) {
+      for (let attempt = 0; attempt < 80; attempt++) {
+        let errState;
+        try {
+          errState = await probeWindow([], SEARCH_ERROR_EXPR);
+        } catch (error) {
+          errState = { searchError: { error: String(error.message || error) } };
+        }
+        if (errState && errState.searchError) {
+          state.searchError = errState.searchError;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
     // The styleguide, last: it takes over the active pane.
     if (state && state.status === 'ready') {
       for (let attempt = 0; attempt < 40; attempt++) {
@@ -1434,6 +1598,42 @@ async function main() {
       // The project-folder case. A loose file has no project root, so it never
       // reaches the code path where a provider can claim exclusivity -- which
       // is how "works in a new file, not in an existing one" shipped.
+      const projectFind = state.projectFind;
+      if (!projectFind) {
+        failures.push('project-find probe did not report');
+      } else if (projectFind.error) {
+        failures.push(`project-find: ${projectFind.error}`);
+      } else {
+        if (!projectFind.matchCount) {
+          failures.push(
+            `project-find found nothing for a token that is on disk in the project (matchCount ${projectFind.matchCount}, pattern ${projectFind.pattern}, after ${projectFind.waitedMs}ms) — the renderer and main disagreeing about the rg command line looks exactly like this, with no error anywhere`
+          );
+        }
+        if (projectFind.searchErrors && projectFind.searchErrors.length > 0) {
+          failures.push(
+            `project-find errors: ${projectFind.searchErrors.join('; ')}`
+          );
+        }
+      }
+
+      const searchError = state.searchError;
+      if (!searchError) {
+        failures.push('search-error probe did not report');
+      } else if (searchError.error) {
+        failures.push(`search-error probe: ${searchError.error}`);
+      } else {
+        if (!searchError.recorded) {
+          failures.push(
+            'a search that could not run recorded no error — this is the silence that hid the rg argument bug'
+          );
+        }
+        if (!searchError.shownText) {
+          failures.push(
+            'a search that could not run showed the user nothing'
+          );
+        }
+      }
+
       const styleguide = state.styleguide;
       if (!styleguide) {
         failures.push('styleguide probe did not report');

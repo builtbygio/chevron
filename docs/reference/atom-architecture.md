@@ -151,7 +151,7 @@ TextBuffer (text-buffer package)
 
 Language: official **tree-sitter 0.25** where a grammar exists; **TextMate / first-mate / oniguruma** for the exception list (yaml, xml, php, sql, toml, …). first-mate is a supported fallback, not the default engine.
 
-Find-in-project: `Workspace.scan` is **ripgrep only**, spawned from main (`chevron:rg-search-start`). Packages may still provide `atom.directory-searcher` for a given directory. `CHEVRON_SEARCH_ENGINE=scandal` is ignored. The product UI is `find-and-replace` (`useRipgrep` default **true**).
+Find-in-project: `Workspace.scan` is **ripgrep only**, spawned from main (`chevron:rg-search-start`). Packages may still provide `atom.directory-searcher` for a given directory. `CHEVRON_SEARCH_ENGINE=scandal` is ignored. The product UI is `find-and-replace`, which no longer carries a `useRipgrep` setting: there is one engine, so there was nothing to choose.
 
 User config/keymaps/snippets: **JSON default** (`config.json`). Existing `*.cson` still load; first boot copies to JSON and leaves CSON. `CHEVRON_CONFIG_CSON=1` writes CSON. `season` has been dropped; readers are JSON-only.
 

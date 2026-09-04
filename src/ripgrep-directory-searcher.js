@@ -231,21 +231,22 @@ module.exports = class RipgrepDirectorySearcher {
     return promise;
   }
 
-  searchInDirectory(directory, regexp, options, numPathsFound) {
-    // Delay the require of @vscode/ripgrep to not mess with the snapshot creation.
-    if (!this.rgPath) {
-      this.rgPath = resolveRgPath();
-    }
-
-    const directoryPath = directory.getPath();
-    const regexpStr = this.prepareRegexp(regexp.source);
-
+  // The command line handed to the rg IPC.
+  //
+  // Every element must be a string: main validates the whole array and
+  // rejects it otherwise, so a number here fails the search rather than
+  // being coerced. It failed silently -- the rejected promise never reached
+  // the results model, which reported zero matches and no error.
+  // Gated by script/ci/rg-search-args.test.js, which runs this through the
+  // real validator.
+  buildArgs(directoryPath, regexp, regexpStr, options) {
     const args = ['--json', '--regexp', regexpStr];
+
     if (options.leadingContextLineCount) {
-      args.push('--before-context', options.leadingContextLineCount);
+      args.push('--before-context', String(options.leadingContextLineCount));
     }
     if (options.trailingContextLineCount) {
-      args.push('--after-context', options.trailingContextLineCount);
+      args.push('--after-context', String(options.trailingContextLineCount));
     }
     if (regexp.ignoreCase) {
       args.push('--ignore-case');
@@ -284,6 +285,18 @@ module.exports = class RipgrepDirectorySearcher {
     }
 
     args.push('.');
+    return args;
+  }
+
+  searchInDirectory(directory, regexp, options, numPathsFound) {
+    // Delay the require of @vscode/ripgrep to not mess with the snapshot creation.
+    if (!this.rgPath) {
+      this.rgPath = resolveRgPath();
+    }
+
+    const directoryPath = directory.getPath();
+    const regexpStr = this.prepareRegexp(regexp.source);
+    const args = this.buildArgs(directoryPath, regexp, regexpStr, options);
 
     const didMatch = options.didMatch || (() => {});
     let cancelled = false;
