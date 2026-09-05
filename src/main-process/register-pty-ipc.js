@@ -15,6 +15,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const guard = require('./ipc-guard');
 
 const HOST_SCRIPT = path.join(__dirname, 'workers', 'pty-host.js');
 
@@ -40,16 +41,7 @@ function validateShell(shell, { isFile } = {}) {
 }
 
 function validateArgs(args) {
-  if (args == null) return { ok: true };
-  if (!Array.isArray(args)) {
-    return { ok: false, reason: 'args must be an array' };
-  }
-  for (const arg of args) {
-    if (typeof arg !== 'string' || arg.includes('\0')) {
-      return { ok: false, reason: 'args must be nul-free strings' };
-    }
-  }
-  return { ok: true };
+  return guard.requireStringArray(args, { name: 'args' });
 }
 
 /**
@@ -58,39 +50,13 @@ function validateArgs(args) {
  * start anywhere makes the FS IPC roots meaningless.
  */
 function validateCwd(cwd, roots, { isDirectory } = {}) {
-  if (typeof cwd !== 'string' || !cwd || cwd.includes('\0')) {
-    return { ok: false, reason: 'cwd must be a nul-free string' };
-  }
-  if (!path.isAbsolute(cwd)) {
-    return { ok: false, reason: 'cwd must be absolute' };
-  }
-  const resolved = path.resolve(cwd);
-  const allowed = [...(roots || []), os.homedir()].filter(Boolean);
-  const inside = allowed.some(root => {
-    const base = path.resolve(root);
-    return resolved === base || resolved.startsWith(base + path.sep);
-  });
-  if (!inside) {
-    return { ok: false, reason: 'cwd is outside every project root' };
-  }
-  const isDir = isDirectory || (p => {
-    try {
-      return fs.statSync(p).isDirectory();
-    } catch (_) {
-      return false;
-    }
-  });
-  if (!isDir(resolved)) {
-    return { ok: false, reason: 'cwd is not a directory' };
-  }
-  return { ok: true };
+  return guard.requireDirectoryInRoots(cwd, roots, { name: 'cwd', isDirectory });
 }
 
 function validateSize(cols, rows) {
   for (const [name, value] of [['cols', cols], ['rows', rows]]) {
-    if (!Number.isInteger(value) || value < 1 || value > 5000) {
-      return { ok: false, reason: `${name} must be an integer between 1 and 5000` };
-    }
+    const check = guard.requireInt(value, { name, min: 1, max: 5000 });
+    if (!check.ok) return check;
   }
   return { ok: true };
 }
@@ -103,14 +69,7 @@ function validateSize(cols, rows) {
 const ENV_ALLOWLIST = new Set(['LANG', 'LC_ALL', 'COLORTERM']);
 
 function sanitizeEnv(env) {
-  const out = {};
-  if (!env || typeof env !== 'object') return out;
-  for (const key of Object.keys(env)) {
-    if (!ENV_ALLOWLIST.has(key)) continue;
-    const value = env[key];
-    if (typeof value === 'string' && !value.includes('\0')) out[key] = value;
-  }
-  return out;
+  return guard.sanitizeEnv(env, ENV_ALLOWLIST);
 }
 
 function createPtyManager(deps = {}) {

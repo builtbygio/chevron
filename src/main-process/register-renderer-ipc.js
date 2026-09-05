@@ -19,6 +19,8 @@ const {
   systemPreferences,
   webContents
 } = require('electron');
+const guard = require('./ipc-guard');
+const { isSafeAbsolutePath } = guard;
 
 let registered = false;
 
@@ -27,7 +29,8 @@ const SETTINGS_VIEW_CACHE_MAX_BYTES = 5 * 1024 * 1024;
 const SAFE_CACHE_BASENAME = /^[A-Za-z0-9._-]+$/;
 
 function browserWindowFromEvent(event) {
-  return BrowserWindow.fromWebContents(event.sender);
+  const owner = guard.requireOwnerWindow(event, { BrowserWindow });
+  return owner.ok ? owner.window : null;
 }
 
 // Methods remote-compat may invoke on utilityProcess git workers only.
@@ -54,12 +57,6 @@ function isAllowedExternalUrl(url) {
 
 // Absolute filesystem paths only for shell FS helpers. Rejects relative paths
 // and null bytes so a compromised renderer cannot coerce odd shell targets.
-function isSafeAbsolutePath(fullPath) {
-  if (typeof fullPath !== 'string' || fullPath.length === 0) return false;
-  if (fullPath.includes('\0')) return false;
-  return path.isAbsolute(fullPath);
-}
-
 function settingsViewCacheRoot() {
   return path.join(app.getPath('userData'), 'Cache', 'settings-view');
 }
