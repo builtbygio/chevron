@@ -133,6 +133,10 @@ module.exports = {
     return listTasks();
   },
 
+  tasksLibForTests() {
+    return require('./tasks');
+  },
+
   runTask(task) {
     return runTask(task, {
       TerminalView,

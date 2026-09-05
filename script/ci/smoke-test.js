@@ -1218,6 +1218,7 @@ const TASKS_EXPR = `(function() {
 
           var before = chevron.workspace.getPaneItems().length;
           var noticesBefore = chevron.notifications.getNotifications().length;
+          var trustAnswer = 'unset';
 
           // Discovery: the task the project declares should be found.
           var found = module.listTasksForTests
@@ -1242,6 +1243,17 @@ const TASKS_EXPR = `(function() {
 
             // Then the part that matters, without the UI in the way: running
             // a task in a folder nobody trusted must refuse and spawn nothing.
+            // Reported alongside the outcome: "not refused" and "the trust
+            // check said yes" are different failures, and telling them apart
+            // from the log saves a build.
+            var lib = module.tasksLibForTests ? module.tasksLibForTests() : null;
+            Promise.resolve(lib ? lib.isTrusted(found.tasks[0].root) : 'no-lib')
+              .then(function(answer) {
+                trustAnswer = answer;
+              })
+              .catch(function(e) {
+                trustAnswer = 'threw: ' + String(e && e.message);
+              });
             Promise.resolve(module.runTask(found.tasks[0])).then(function(view) {
               var tries = 0;
               (function settle() {
@@ -1262,6 +1274,7 @@ const TASKS_EXPR = `(function() {
                     panesBefore: before,
                     notices: notices,
                     refused: refused,
+                    trustValue: trustAnswer,
                     waitedMs: tries * 250
                   });
                 }

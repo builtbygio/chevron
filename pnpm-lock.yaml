@@ -1334,6 +1334,9 @@ importers:
       '@xterm/xterm':
         specifier: 6.0.0
         version: 6.0.0
+      atom-select-list:
+        specifier: npm:@builtbygio/atom-select-list@0.8.2
+        version: '@builtbygio/atom-select-list@0.8.2'
 
   packages/timecop:
     dependencies:
