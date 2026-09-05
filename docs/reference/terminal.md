@@ -95,6 +95,12 @@ which reads as a broken terminal and is a broken caller. xterm.js already
 sends CR for a keypress; anything writing to a session programmatically has to
 do the same.
 
+## Tasks
+
+The same pty host runs a project's declared commands — see
+[tasks.md](tasks.md). Running one requires the folder to be trusted; opening a
+terminal does not, because a terminal runs what *you* type.
+
 ## Gates
 
 | Test | Covers |

@@ -192,6 +192,11 @@ one: **an agent-drivable terminal is a different product from a human
 terminal.** It needs a readable transcript, a permission gate on each command,
 and state that survives a reload. No existing package offers that.
 
+**Shipped: a task runner on top of it.** `.chevron/tasks.json`, run through
+the pty host, gated on project trust — an agent asking to "run the tests"
+becomes a named, permissioned operation rather than a shell string
+([tasks.md](../reference/tasks.md)).
+
 **Shipped: the human one.** `packages/terminal` on the pty host, gated at three
 levels (validators, host protocol, and a shell running a command in the
 packaged app). The agent half — transcript, per-command permission, surviving a

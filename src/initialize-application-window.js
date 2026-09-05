@@ -127,6 +127,14 @@ module.exports = function({ blobStore }) {
   // Hunk arithmetic for the review surface. Pure functions, published rather
   // than reached for: a package climbing into ../../../src is the thing
   // bundled-packages.test.js exists to stop.
+  // Task definitions: parsing and validation only. Running one is the
+  // terminal package's job, and is gated on project trust there.
+  try {
+    global.chevron.tasks = require('./tasks');
+  } catch (err) {
+    console.error('[chevron-tasks] could not publish chevron.tasks', err);
+  }
+
   try {
     global.chevron.changeProposal = require('./change-proposal');
   } catch (err) {
