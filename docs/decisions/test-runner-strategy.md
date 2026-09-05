@@ -2,6 +2,7 @@
 
 **Status:** decision (2026-09-05)
 **Related:** [security-phase-s-decision.md](./security-phase-s-decision.md), [build-architecture.md](./build-architecture.md), `.github/workflows/jasmine.yml`, `script/test`
+**Executed by:** [process/test-runner-migration.md](../process/test-runner-migration.md)
 
 ## The question, and the premise behind it
 
