@@ -80,14 +80,10 @@ test('refresh collects projectRoots via getAllWindows, not missing .windows', ()
   );
 });
 
-// A symlink inside a project points wherever it likes. Checking the path as
-// it was spelled says it is inside the root; following it lands somewhere
-// else entirely. Measured in the packaged app before this was resolved: a
-// write to <project>/link/through-link.txt created a file outside every root,
-// and a read of <project>/link/secret.txt returned its contents.
+// docs/reference/security-threat-model.md
 function symlinkFixture() {
-  // Under the home directory rather than os.tmpdir(), which is an allowed
-  // root in its own right and would make an escape indistinguishable.
+  // Not os.tmpdir(): it is an allowed root itself, so an escape into it would
+  // be indistinguishable from staying put.
   const base = makeTempDir('chevron-fs-ipc-link-', { parent: os.homedir() });
   const project = path.join(base, 'project');
   const outside = path.join(base, 'outside');
@@ -114,8 +110,7 @@ test('a symlink out of the project does not carry a read with it', () => {
 });
 
 test('nor a write to a file that does not exist yet', () => {
-  // The file being created has no realpath of its own; the directory it lands
-  // in does, and that is the one that decides.
+  // The new file has no realpath; the directory it lands in does.
   const { base, project } = symlinkFixture();
   try {
     registerFsIpc.setFsIpcPolicy({ strict: true, roots: [project] });
@@ -168,11 +163,8 @@ test('a symlink that stays inside the project is still allowed', () => {
 });
 
 test('a file is allowed under either of its names', () => {
-  // On macOS /var is a symlink to /private/var, so the temp directory and
-  // ATOM_HOME are both in circulation under two spellings and either can
-  // arrive here. Requiring the spelled path to match a root as well as the
-  // resolved one denied a file by one of its own names, and took the macOS
-  // smoke run down with it.
+  // /var is a symlink to /private/var on macOS, so ATOM_HOME and the temp
+  // directory each arrive under two spellings.
   const { base } = symlinkFixture();
   try {
     const real = path.join(base, 'realdir');
@@ -197,9 +189,6 @@ test('a file is allowed under either of its names', () => {
 });
 
 test('a root that is itself a symlink still matches its own contents', () => {
-  // /var is a symlink to /private/var on macOS, so ATOM_HOME and the temp
-  // directory both arrive symlinked there. Resolving the path but not the
-  // root would deny every one of them.
   const { base, project } = symlinkFixture();
   try {
     const linkedRoot = path.join(base, 'linked-project');
@@ -219,9 +208,7 @@ test('a root that is itself a symlink still matches its own contents', () => {
 });
 
 test('a symlink pointing at something missing is still followed', () => {
-  // realpathSync gives up on a dangling link, and writing through one creates
-  // the file it points at — so falling back to the path as spelled would put
-  // a new file anywhere the link names.
+  // Writing through a dangling link creates the file it points at.
   const { base, project } = symlinkFixture();
   try {
     fs.symlinkSync(path.join(base, 'nothing-here'), path.join(project, 'dangling'));

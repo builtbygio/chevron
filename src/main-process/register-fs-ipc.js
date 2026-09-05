@@ -32,8 +32,7 @@ function setFsIpcPolicy(options = {}) {
     allowedRoots = options.roots
       .filter(r => typeof r === 'string' && r.length > 0)
       .map(r => path.resolve(r));
-    // Resolved once here rather than per call: roots change rarely, and every
-    // FS IPC message pays for this comparison.
+    // Resolved once here: every FS IPC message pays for this comparison.
     allowedRootsReal = allowedRoots.map(root => {
       try {
         return fs.realpathSync(root);
@@ -102,13 +101,10 @@ function isSafeAbsolutePath(fullPath) {
   return path.isAbsolute(fullPath);
 }
 
-/**
- * `fullPath` with every symlink in it followed.
- *
- * A file that does not exist yet has no realpath of its own, so the deepest
- * existing ancestor is resolved and the missing tail put back: the directory
- * a file lands in is what decides where it lands.
- */
+// `fullPath` with every symlink followed. A file that does not exist yet has
+// no realpath, so the deepest existing ancestor is resolved and the tail put
+// back. docs/reference/security-threat-model.md
+
 function resolveThroughLinks(fullPath, depth = 0) {
   let current = path.resolve(fullPath);
   const tail = [];
@@ -119,9 +115,8 @@ function resolveThroughLinks(fullPath, depth = 0) {
     try {
       return withTail(fs.realpathSync(current));
     } catch (error) {
-      // realpathSync gives up on a symlink whose target is missing, but the
-      // link still says where a write would land — and writing through a
-      // dangling symlink creates the file it points at.
+      // realpathSync gives up on a dangling symlink, but writing through one
+      // creates the file it points at, so read the link directly.
       let link = null;
       try {
         if (fs.lstatSync(current).isSymbolicLink()) {
@@ -131,13 +126,13 @@ function resolveThroughLinks(fullPath, depth = 0) {
         // Not a link, just absent.
       }
       if (link !== null) {
-        // A loop between links never resolves; treat it as unresolvable.
+        // A loop between links never resolves.
         if (depth >= 20) return path.resolve(fullPath);
         const target = path.resolve(path.dirname(current), link);
         return withTail(resolveThroughLinks(target, depth + 1));
       }
       const parent = path.dirname(current);
-      // Nothing on the way up exists; there is no link to follow.
+      // Nothing on the way up exists, so there is no link to follow.
       if (parent === current) return path.resolve(fullPath);
       tail.push(path.basename(current));
       current = parent;
@@ -152,14 +147,8 @@ function isAllowedFsPath(fullPath) {
     // No roots yet (very early boot) — allow absolute paths until roots exist.
     return true;
   }
-  // Where the path lands, not how it was spelled. A symlink in the project
-  // points wherever it likes, and following it takes the read or the write
-  // with it — so both sides of the comparison are resolved.
-  //
-  // Resolving only one side is worse than resolving neither: on macOS /var is
-  // a symlink to /private/var, so the temp directory and ATOM_HOME are both
-  // in circulation under two spellings, and a check that demanded the spelled
-  // path match a root would deny a file by one of its own names.
+  // Where the path lands, not how it was spelled: both sides are resolved, and
+  // resolving only one would deny a file by one of its own names.
   const real = resolveThroughLinks(path.resolve(fullPath));
   return allowedRootsReal.some(root => pathContained(root, real));
 }
