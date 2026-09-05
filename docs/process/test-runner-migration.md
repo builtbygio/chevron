@@ -26,10 +26,32 @@ Measured inputs the phases rely on:
 **Why the specs are missing.** Before #235 vendored the packages, they were
 declared as **npm tarballs** (`"tabs": "npm:@builtbygio/tabs@0.110.5"`).
 Published tarballs exclude `spec/` via `files`/`.npmignore`, so the specs
-were never in what got copied. The upstream repositories still have them.
-`git show abf24c3bc^:package.json` shows the version each package was at;
-that version's tag in `builtbygio/<pkg>` (or `atom/<pkg>` where the fork
-has none) is where the specs come from.
+were never in what got copied.
+
+> **Corrected 2026-09-05 while executing Phase 1.** Where they come *from* was
+> wrong. Measured across all 71:
+>
+> | | |
+> |---|--:|
+> | the `builtbygio/<pkg>` repository named in the vendored manifest exists | **8** |
+> | `atom/<pkg>` exists | 59 |
+> | neither exists | 12 |
+>
+> The 63 missing ones are not published as separate repositories, so the
+> primary path in this phase never worked. Nor do the tags: Chevron's forks
+> bumped versions **past** upstream's last release — `archive-view` was
+> vendored at 0.66.2 against atom's final `v0.66.0`, `autocomplete-plus` at
+> 2.42.7 against `v2.42.5` — so `v<vendored-version>` cannot exist upstream.
+>
+> The workable source is `atom/<pkg>` at the **highest tag at or below** the
+> vendored version, falling back to its default branch. That is what
+> `script/restore-package-specs.sh` does.
+>
+> The 12 with no upstream are Chevron's own: `breadcrumbs`, `sticky-scroll`,
+> `diff-review`, `lsp-ui`, `lsp-servers`, `lsp-diagnostics-stub`,
+> `autocomplete-chevron-api`, `language-rust-bundled`, and the four
+> `chevron-*` themes. They are not packages whose tests were lost; they never
+> had upstream tests to lose.
 
 Rules for every phase:
 
@@ -101,11 +123,30 @@ were vendored at.
      ./script/with-modern-env ./script/test
    ```
 
-   A spec that fails because it references upstream APIs Chevron renamed
-   (`atom.` → `chevron.`, see REBRANDING.md) is fixed in place. A spec that
-   fails for a reason that looks like a real bug is committed as-is with a
-   `// FIXME(restored-spec): <one line>` at the top and noted in the PR
-   body — the point is to *see* the failures, not to hide them.
+   **The `atom.` → `chevron.` rewrite this step anticipates is not needed.**
+   `global.atom` was removed from the application in H3 PR 23, but
+   `spec/jasmine-test-runner.js` sets `window.atom` to the environment for
+   exactly this reason, so upstream specs referring to `atom.workspace` and
+   friends run unchanged. The 9 packages restored so far carry 646 such
+   references and none of them needs touching.
+
+   A spec that fails for a reason that looks like a real bug is committed
+   as-is with a `// FIXME(restored-spec): <one line>` at the top and noted in
+   the PR body — the point is to *see* the failures, not to hide them.
+
+   **Upstream specs are partly CoffeeScript, which this repo bans** (PR 23,
+   gated by `script/ci/no-coffee-in-owned-packages.test.js`). The restore
+   script drops `.coffee` files and reports what it dropped. Where a package's
+   specs are *all* CoffeeScript it restores nothing and says
+   `no usable spec (CoffeeScript only)` — `autocomplete-css` and
+   `autocomplete-html` are both in that position. Those are a conversion
+   decision per package, not a restore.
+
+   **Running a suite locally may hang.** `archive-view` reached
+   `##[command] Executing archive-view tests` and produced nothing for nine
+   minutes. That is the same class of problem Phase 0 exists to verify, so
+   until Phase 0's acceptance holds, the nightly is the only reliable check —
+   which is what the per-PR acceptance below already asks for.
 
 **Batching:** 10 packages per PR, alphabetical. The jasmine workflow's
 shard computation already filters to packages that have specs, so restored
@@ -233,8 +274,11 @@ core-render and package suites and its test is updated in the same PR.
 
 ## Where to start
 
-Phase 0 needs no code: check the most recent `Jasmine` workflow run. If
-any job ended `cancelled`, stop and fix the harness. If not, Phase 1 step 1
-— run the command, confirm it prints 71 lines, and look at the third
-column: if most repositories are `builtbygio/*`, the restore script is
-straightforward and Phase 1 is a week of mechanical PRs.
+Phase 1 step 1 prints 71 lines, as stated. The restore script exists and
+works; run `script/restore-package-specs.sh --list` to see what is left, then
+pass it the next ten names.
+
+Phase 0 is still open: the 2026-09-05 07:58 nightly, the last before #343,
+had **6 of 9 jobs cancelled**. A `workflow_dispatch` run after #343 was
+started at 19:12 the same day; its result decides whether Phase 0's
+acceptance holds.
