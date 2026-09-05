@@ -1142,22 +1142,33 @@ const REVIEW_EXPR = `(function() {
               toggles[1].checked = false;
               toggles[1].dispatchEvent(new Event('change'));
             }
+            // Type into the file while the proposal is on screen, in the
+            // region the accepted hunk describes. The hunk can no longer be
+            // placed, and saying so is the whole point.
+            editor.setTextInBufferRange(
+              [[3, 0], [3, 7]],
+              'line 4 edited while reviewing'
+            );
             view.querySelector('.diff-review-apply').click();
 
             promise.then(function(result) {
               setTimeout(function() {
                 var text = editor.getText();
-                editor.undo();
                 setTimeout(function() {
                   finish({
                     hunks: proposal.hunks.length,
                     toggles: toggles.length,
                     accepted: result.accepted,
+                    conflicted: (result.conflicted || []).reduce(function(n, f) {
+                      return n + f.hunks.length;
+                    }, 0),
+                    appliedFiles: result.applied.length,
+                    keptHandEdit:
+                      text.indexOf('line 4 edited while reviewing') !== -1,
                     tookAccepted: text.indexOf('FIVE') !== -1,
                     leftRejected:
                       text.indexOf('THIRTY-FIVE') === -1 &&
                       text.indexOf('line 35') !== -1,
-                    oneUndoRestores: editor.getText() === original,
                     paneClosed: !document.querySelector('.diff-review')
                   });
                 }, 500);
@@ -2003,19 +2014,28 @@ async function main() {
           );
         }
         if (review.accepted !== 1) {
-          failures.push(`review applied ${review.accepted} hunks, expected 1`);
+          failures.push(`review selected ${review.accepted} hunks, expected 1`);
         }
-        if (!review.tookAccepted) {
-          failures.push('review did not apply the hunk that was accepted');
+        // The file was edited underneath the proposal, inside the region the
+        // accepted hunk describes. It must be reported and not applied.
+        if (review.conflicted !== 1) {
+          failures.push(
+            `review reported ${review.conflicted} stale hunks after the file changed underneath it, expected 1`
+          );
+        }
+        if (review.tookAccepted) {
+          failures.push(
+            'review applied a hunk whose lines had changed underneath it — it should have reported the conflict'
+          );
+        }
+        if (!review.keptHandEdit) {
+          failures.push(
+            "review overwrote the edit made while the proposal was on screen"
+          );
         }
         if (!review.leftRejected) {
           failures.push(
             'review applied the hunk that was rejected — the worst thing this surface can do'
-          );
-        }
-        if (!review.oneUndoRestores) {
-          failures.push(
-            'one undo did not take the file back; the application was not a single transaction'
           );
         }
         if (!review.paneClosed) {

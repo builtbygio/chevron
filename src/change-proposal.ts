@@ -49,6 +49,22 @@ export interface Proposal {
   hunks: Hunk[];
   /** True when the two texts are identical. */
   unchanged: boolean;
+  /**
+   * The text the hunks were computed against. Kept so that applying can tell
+   * whether the file has moved underneath the proposal.
+   */
+  baseText: string;
+}
+
+export interface ApplyResult {
+  text: string;
+  /** Hunks that were applied. */
+  applied: string[];
+  /**
+   * Hunks whose original lines are no longer where the proposal expected and
+   * cannot be located unambiguously. These are not applied.
+   */
+  conflicted: string[];
 }
 
 // The trailing empty element that `split` leaves after a final newline is
@@ -312,15 +328,130 @@ export function proposeChange(
   context: number = DEFAULT_CONTEXT
 ): Proposal {
   if (oldText === newText) {
-    return { path, hunks: [], unchanged: true };
+    return { path, hunks: [], unchanged: true, baseText: oldText };
   }
-  return { path, hunks: computeHunks(oldText, newText, context), unchanged: false };
+  return {
+    path,
+    hunks: computeHunks(oldText, newText, context),
+    unchanged: false,
+    baseText: oldText
+  };
+}
+
+/** The old-side lines a hunk expects to find: its context and its removals. */
+function expectedLines(hunk: Hunk): string[] {
+  const lines: string[] = [];
+  for (const segment of hunk.segments) {
+    if (segment.type === 'add') continue;
+    lines.push(...segment.lines);
+  }
+  return lines;
+}
+
+/** The lines a hunk leaves behind: its context and its additions. */
+function replacementLines(hunk: Hunk): string[] {
+  const lines: string[] = [];
+  for (const segment of hunk.segments) {
+    if (segment.type === 'remove') continue;
+    lines.push(...segment.lines);
+  }
+  return lines;
+}
+
+function matchesAt(lines: string[], expected: string[], at: number): boolean {
+  if (at < 0 || at + expected.length > lines.length) return false;
+  for (let i = 0; i < expected.length; i++) {
+    if (lines[at + i] !== expected[i]) return false;
+  }
+  return true;
+}
+
+/**
+ * Where a hunk's original lines are in the file as it stands now.
+ *
+ * The position it was computed at is tried first, then the whole file. A
+ * match found in more than one place is treated as no match: applying to the
+ * wrong one of two identical passages is worse than declining.
+ *
+ * Returns -1 when the hunk cannot be placed.
+ */
+export function locateHunk(currentLines: string[], hunk: Hunk): number {
+  const expected = expectedLines(hunk);
+  if (expected.length === 0) return -1;
+  if (matchesAt(currentLines, expected, hunk.oldStart)) return hunk.oldStart;
+
+  let found = -1;
+  for (let at = 0; at + expected.length <= currentLines.length; at++) {
+    if (!matchesAt(currentLines, expected, at)) continue;
+    if (found !== -1) return -1; // ambiguous
+    found = at;
+  }
+  return found;
+}
+
+/**
+ * Apply the accepted hunks to the file as it is now, rather than as it was
+ * when the proposal was made.
+ *
+ * A proposal is made against a snapshot and applied later — after the user
+ * has read it, and possibly after they or something else has typed. Applying
+ * hunks by their original line numbers would then write into the wrong place
+ * quietly, which is the one failure a review surface must not have. Each hunk
+ * is located by its own content instead, and one that cannot be placed is
+ * reported rather than guessed at.
+ */
+export function applyHunksToCurrent(
+  currentText: string,
+  hunks: Hunk[],
+  acceptedIds: string[] | Set<string>
+): ApplyResult {
+  const accepted =
+    acceptedIds instanceof Set ? acceptedIds : new Set(acceptedIds || []);
+  const currentLines = splitLines(currentText);
+
+  const placements: Array<{ hunk: Hunk; at: number }> = [];
+  const conflicted: string[] = [];
+
+  for (const hunk of hunks) {
+    if (!accepted.has(hunk.id)) continue;
+    const at = locateHunk(currentLines, hunk);
+    if (at === -1) {
+      conflicted.push(hunk.id);
+      continue;
+    }
+    placements.push({ hunk, at });
+  }
+
+  placements.sort((a, b) => a.at - b.at);
+
+  const out: string[] = [];
+  const applied: string[] = [];
+  let cursor = 0;
+
+  for (const { hunk, at } of placements) {
+    if (at < cursor) {
+      // Two hunks want the same lines. The first one won; this one is not
+      // safe to apply on top of it.
+      conflicted.push(hunk.id);
+      continue;
+    }
+    for (; cursor < at; cursor++) out.push(currentLines[cursor]);
+    out.push(...replacementLines(hunk));
+    cursor = at + expectedLines(hunk).length;
+    applied.push(hunk.id);
+  }
+
+  for (; cursor < currentLines.length; cursor++) out.push(currentLines[cursor]);
+
+  return { text: joinLines(out), applied, conflicted };
 }
 
 module.exports = {
   proposeChange,
   computeHunks,
   applyHunks,
+  applyHunksToCurrent,
+  locateHunk,
   diffSegments,
   DEFAULT_CONTEXT,
   MAX_DIFF_LINES

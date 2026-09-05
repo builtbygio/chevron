@@ -31,17 +31,24 @@ function writeText(editor, newText) {
 }
 
 async function applySelection(selection) {
-  const { applyHunks } = chevron.changeProposal;
+  const { applyHunksToCurrent } = chevron.changeProposal;
   const applied = [];
+  const conflicted = [];
   for (const file of selection) {
     if (file.acceptedIds.length === 0) continue;
     const { text, editor } = await textFor(file.path);
-    const next = applyHunks(text, file.hunks, file.acceptedIds);
-    if (next === text) continue;
-    writeText(editor, next);
-    applied.push({ path: file.path, hunks: file.acceptedIds.length });
+    // Against the file as it is now, not as it was when the proposal was
+    // made: someone may have typed while reading it. A hunk that can no
+    // longer be placed is reported, never guessed at.
+    const result = applyHunksToCurrent(text, file.hunks, file.acceptedIds);
+    if (result.conflicted.length > 0) {
+      conflicted.push({ path: file.path, hunks: result.conflicted });
+    }
+    if (result.text === text) continue;
+    writeText(editor, result.text);
+    applied.push({ path: file.path, hunks: result.applied.length });
   }
-  return applied;
+  return { applied, conflicted };
 }
 
 module.exports = {
@@ -72,12 +79,36 @@ module.exports = {
 
     return new Promise(resolve => {
       const finish = async selection => {
-        const applied = selection ? await applySelection(selection) : [];
+        const outcome = selection
+          ? await applySelection(selection)
+          : { applied: [], conflicted: [] };
         openViews.delete(view);
         const owner = chevron.workspace.paneForItem(view);
         if (owner) owner.destroyItem(view);
+
+        const staleCount = outcome.conflicted.reduce(
+          (n, file) => n + file.hunks.length,
+          0
+        );
+        if (staleCount > 0) {
+          // Silence here would be the worst outcome: the person ticked a
+          // hunk, the file changed underneath them, and nothing happened.
+          chevron.notifications.addWarning(
+            staleCount === 1
+              ? 'One change no longer matched the file and was not applied'
+              : `${staleCount} changes no longer matched the file and were not applied`,
+            {
+              detail: outcome.conflicted
+                .map(file => `${file.path}: ${file.hunks.join(', ')}`)
+                .join('\n'),
+              dismissable: true
+            }
+          );
+        }
+
         resolve({
-          applied,
+          applied: outcome.applied,
+          conflicted: outcome.conflicted,
           accepted: selection
             ? selection.reduce((n, f) => n + f.acceptedIds.length, 0)
             : 0,
