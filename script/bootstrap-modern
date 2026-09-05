@@ -213,6 +213,7 @@ if [ "$SKIP_NATIVE_REBUILD" = false ]; then
   CRITICAL_REBUILD_FAILED=0
   for _pkg in \
     superstring \
+    node-pty \
     '@atom/watcher' '@atom/nsfw' '@atom/fuzzy-native' \
     keytar spellchecker pathwatcher git-utils scrollbar-style nslog \
     keyboard-layout ctags fs-admin \

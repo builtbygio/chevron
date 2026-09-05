@@ -167,6 +167,15 @@ verified: load it under `ELECTRON_RUN_AS_NODE` against the packaged binary and
 spawn a shell. It joins the critical-natives list either way, and that list has
 a way of biting during bootstrap.
 
+**Done, and it bit as predicted.** node-pty spawns a shell under the packaged
+Electron 43 binary (`EXIT=0`, correct pty geometry). Two corrections to the
+table above: node-pty's 28 prebuilds are macOS and Windows only, so **Linux
+builds from source** and it belongs on the critical list for that reason; and
+the bite was not the list but the install — `pnpm add` puts pnpm's workspace
+symlinks back over the `superstring` and `@atom/watcher` trees bootstrap
+materialises, and the build then fails on an unrelated-looking nested module.
+Both written down in [terminal.md](../reference/terminal.md).
+
 **The PTY belongs in a `utilityProcess`, not the renderer.** A terminal spawns
 arbitrary processes, which drives straight through the model Phase N and S
 built — privileged-require restriction, FS IPC roots, the trust prompt. If the
@@ -178,6 +187,11 @@ That boundary is also the reason to build the integration rather than adopt
 one: **an agent-drivable terminal is a different product from a human
 terminal.** It needs a readable transcript, a permission gate on each command,
 and state that survives a reload. No existing package offers that.
+
+**Shipped: the human one.** `packages/terminal` on the pty host, gated at three
+levels (validators, host protocol, and a shell running a command in the
+packaged app). The agent half — transcript, per-command permission, surviving a
+reload — is deliberately not in it, on the reasoning in the paragraph above.
 
 ### Where the agent client lives
 

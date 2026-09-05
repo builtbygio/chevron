@@ -120,6 +120,13 @@ function asarUnpackGlobs() {
     path.join('**', 'src', 'main-process', 'workers', '**'),
     path.join('**', 'node_modules', 'dugite', '**'),
     path.join('**', 'node_modules', '@vscode', 'ripgrep', 'bin', '**'),
+    // node-pty ships more than a .node: on macOS it execs `spawn-helper`
+    // beside it, and node-pty rewrites that path from app.asar to
+    // app.asar.unpacked itself. The bare `*.node` glob above does not carry
+    // the helper out with it, and a helper still inside the archive is a
+    // terminal that opens and immediately dies -- on macOS only.
+    path.join('**', 'node_modules', 'node-pty', 'build', 'Release', '**'),
+    path.join('**', 'node_modules', 'node-pty', 'prebuilds', '**'),
     path.join('**', 'resources', 'atom.png'),
     path.join('**', 'resources', 'chevron.png'),
     path.join('**', 'resources', 'icons', '**'),

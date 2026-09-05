@@ -105,3 +105,9 @@ patchedDependencies:
 minimumReleaseAge: 0
 minimumReleaseAgeExclude:
   - '@builtbygio/*'
+# node-pty's own install script builds against Node. Bootstrap rebuilds it
+# against Electron immediately afterwards (it is on the critical natives
+# list), so letting the install script run costs a build and produces a
+# binary nothing loads.
+allowBuilds:
+  node-pty: false

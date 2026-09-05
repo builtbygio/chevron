@@ -1,0 +1,10 @@
+{
+  "menu": [
+    {
+      "label": "View",
+      "submenu": [
+        { "label": "Toggle Terminal", "command": "terminal:toggle" }
+      ]
+    }
+  ]
+}

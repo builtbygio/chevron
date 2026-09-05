@@ -1,0 +1,43 @@
+{
+  "name": "@builtbygio/terminal",
+  "version": "0.1.0",
+  "main": "./lib/main",
+  "description": "A terminal in a pane, backed by the pty host.",
+  "license": "MIT",
+  "repository": "https://github.com/builtbygio/chevron",
+  "engines": {
+    "chevron": "*",
+    "atom": "*"
+  },
+  "activationCommands": {
+    "atom-workspace": [
+      "terminal:open",
+      "terminal:toggle"
+    ]
+  },
+  "dependencies": {
+    "@xterm/xterm": "6.0.0"
+  },
+  "configSchema": {
+    "shell": {
+      "type": "string",
+      "default": "",
+      "title": "Shell",
+      "description": "Absolute path to the shell to run. Empty uses $SHELL, or cmd.exe on Windows."
+    },
+    "fontSize": {
+      "type": "integer",
+      "default": 13,
+      "minimum": 6,
+      "maximum": 48,
+      "title": "Font size"
+    },
+    "scrollback": {
+      "type": "integer",
+      "default": 2000,
+      "minimum": 100,
+      "maximum": 100000,
+      "title": "Scrollback lines"
+    }
+  }
+}

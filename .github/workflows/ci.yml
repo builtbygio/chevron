@@ -182,6 +182,7 @@ jobs:
           node --test script/ci/symbols-view-lsp.test.js
           node --test script/ci/smoke-probe-syntax.test.js
           node --test script/ci/rg-search-args.test.js
+          node --test script/ci/pty-ipc.test.js
           node --test script/ci/chevron-api-alias.test.js
           node --test script/ci/lsp-framing.test.js
           node --test script/ci/lsp-position.test.js
@@ -486,6 +487,7 @@ jobs:
           node --test script/ci/config-precedence.test.js
           node --test script/ci/lsp-workspace-symbols.test.js
           node --test script/ci/inlay-hints.test.js
+          node --test script/ci/pty-host-integration.test.js
           node --test script/ci/jasmine-node-coffee.test.js
           node --test script/ci/patch-inventory.test.js
           node --test script/ci/wave3-gates.test.js

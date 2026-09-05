@@ -113,6 +113,17 @@ module.exports = function({ blobStore }) {
     console.error('[chevron-lsp] could not publish chevron.lsp', err);
   }
 
+  // Terminals. Published beside chevron.lsp for the same reason: the package
+  // that draws one should not need a privileged require to reach the pty
+  // host, which owns the spawning (src/main-process/register-pty-ipc.js).
+  // Its own try/catch: a failure here is not an LSP failure, and saying so
+  // would send whoever reads the log to the wrong file.
+  try {
+    global.chevron.pty = require('./pty-client');
+  } catch (err) {
+    console.error('[chevron-pty] could not publish chevron.pty', err);
+  }
+
   return global.chevron.startEditorWindow().then(function() {
     // Workaround for focus getting cleared upon window creation
     const windowFocused = function() {

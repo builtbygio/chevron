@@ -1,0 +1,26 @@
+// The terminal pane. xterm's own stylesheet is vendored beside this one
+// (styles/xterm.css, MIT) rather than reached for in node_modules: the path
+// differs between a dev tree and the asar, and a stylesheet that resolves in
+// one and not the other is a terminal that renders as a blank rectangle.
+@import "xterm.css";
+
+.chevron-terminal {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  box-sizing: border-box;
+  // Custom property, not a LESS variable: theme variables were eliminated so
+  // every stylesheet compiles once instead of per UI x syntax pair
+  // (docs/reference/theme-custom-properties.md).
+  background-color: var(--tool-panel-background-color);
+
+  .xterm {
+    height: 100%;
+  }
+
+  .xterm-viewport {
+    // Let the editor's scrollbar styling apply rather than xterm's default.
+    background-color: transparent !important;
+    overflow-y: auto;
+  }
+}
