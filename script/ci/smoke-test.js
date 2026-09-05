@@ -917,6 +917,81 @@ const SEARCH_ERROR_EXPR = `(function() {
   });
 })()`;
 
+// Inline text decorations, which inlay hints are drawn with.
+//
+// Two properties, and the second is what makes this decoration type delicate:
+// text drawn between a line's characters must move the characters after it
+// *and* the editor's measurement of where they are. Horizontal positions are
+// cached per screen line, so a hint arriving after a line has been measured
+// once would otherwise leave the cursor landing at the position the line had
+// before it.
+//
+// No language server is involved: CI ships none, and the LSP half is gated in
+// inlay-hints.test.js. This is about the editor.
+const INLINE_TEXT_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__inlineTextProbe) {
+    window.__inlineTextProbe = { phase: 'running', result: null };
+    var finish = function(result) {
+      window.__inlineTextProbe.result = result;
+      window.__inlineTextProbe.phase = 'done';
+    };
+    var editor = chevron.workspace.getTextEditors().filter(function(e) {
+      return /probe\.ts$/.test(e.getPath() || '');
+    })[0];
+    if (!editor) {
+      finish({ error: 'probe.ts is not open' });
+    } else {
+      var el = chevron.views.getView(editor);
+      var pane = chevron.workspace.paneForItem(editor);
+      pane.activate();
+      pane.activateItem(editor);
+      editor.setText('const alpha = compute(1, 2); const beta = 3;');
+
+      var probeColumn = 30;
+      var leftAt = function() {
+        return Math.round(
+          el.pixelPositionForBufferPosition({ row: 0, column: probeColumn }).left
+        );
+      };
+
+      setTimeout(function() {
+        var before = leftAt();
+        var marker = editor.markBufferPosition([0, 11], { invalidate: 'touch' });
+        editor.decorateMarker(marker, {
+          type: 'inline-text',
+          text: ': number',
+          class: 'inlay-hint'
+        });
+
+        setTimeout(function() {
+          var spans = el.querySelectorAll('.inline-text');
+          var after = leftAt();
+          marker.destroy();
+
+          setTimeout(function() {
+            finish({
+              spanCount: spans.length,
+              spanText: spans.length ? spans[0].textContent : null,
+              before: before,
+              after: after,
+              restored: leftAt(),
+              removed: el.querySelectorAll('.inline-text').length
+            });
+          }, 600);
+        }, 900);
+      }, 400);
+    }
+  }
+  return JSON.stringify({
+    status: window.__inlineTextProbe.phase === 'done' ? 'ready' : 'pending',
+    inlineText: window.__inlineTextProbe.result
+  });
+})()`;
+
 function isAppWindowTarget(target) {
   if (!target || target.type !== 'page') return false;
   const url = target.url || '';
@@ -1485,6 +1560,23 @@ async function main() {
       }
     }
 
+    // Inline text decorations, before the styleguide takes the active pane.
+    if (state && state.status === 'ready') {
+      for (let attempt = 0; attempt < 80; attempt++) {
+        let inlineState;
+        try {
+          inlineState = await probeWindow([], INLINE_TEXT_EXPR);
+        } catch (error) {
+          inlineState = { inlineText: { error: String(error.message || error) } };
+        }
+        if (inlineState && inlineState.inlineText) {
+          state.inlineText = inlineState.inlineText;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
     // The styleguide, last: it takes over the active pane.
     if (state && state.status === 'ready') {
       for (let attempt = 0; attempt < 40; attempt++) {
@@ -1631,6 +1723,32 @@ async function main() {
           failures.push(
             'a search that could not run showed the user nothing'
           );
+        }
+      }
+
+      const inlineText = state.inlineText;
+      if (!inlineText) {
+        failures.push('inline-text probe did not report');
+      } else if (inlineText.error) {
+        failures.push(`inline-text: ${inlineText.error}`);
+      } else {
+        if (inlineText.spanCount !== 1 || inlineText.spanText !== ': number') {
+          failures.push(
+            `inline-text decoration did not render (${inlineText.spanCount} spans, text ${JSON.stringify(inlineText.spanText)})`
+          );
+        }
+        if (!(inlineText.after > inlineText.before)) {
+          failures.push(
+            `inline text did not move the characters after it (column measured at ${inlineText.before} before and ${inlineText.after} after) — the cursor would land where the line was without the hint`
+          );
+        }
+        if (inlineText.restored !== inlineText.before) {
+          failures.push(
+            `removing the decoration left a stale measurement (${inlineText.restored}, was ${inlineText.before})`
+          );
+        }
+        if (inlineText.removed !== 0) {
+          failures.push('destroying the marker left the inline text behind');
         }
       }
 

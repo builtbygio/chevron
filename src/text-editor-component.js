@@ -122,6 +122,9 @@ module.exports = class TextEditorComponent {
     this.extraRenderedScreenLines = new Map();
     this.horizontalPositionsToMeasure = new Map(); // Keys are rows with positions we want to measure, values are arrays of columns to measure
     this.horizontalPixelPositionsByScreenLineId = new Map(); // Values are maps from column to horizontal pixel positions
+    // What inline text each rendered line had last frame, so a line whose
+    // hints changed can have its cached measurements thrown away.
+    this.inlineTextSignaturesByScreenLineId = new Map();
     this.blockDecorationsToMeasure = new Set();
     this.blockDecorationsByElement = new WeakMap();
     this.blockDecorationSentinel = document.createElement('div');
@@ -405,6 +408,7 @@ module.exports = class TextEditorComponent {
     this.queryLineNumbersToRender();
     this.queryGuttersToRender();
     this.queryDecorationsToRender();
+    this.invalidateMeasurementsForChangedInlineText();
     this.queryExtraScreenLinesToRender();
     this.shouldRenderDummyScrollbars = !this.remeasureScrollbars;
     etch.updateSync(this);
@@ -681,6 +685,10 @@ module.exports = class TextEditorComponent {
               tileEndRow - startRow
             ),
             textDecorations: this.decorationsToRender.text.slice(
+              tileStartRow - startRow,
+              tileEndRow - startRow
+            ),
+            inlineTextDecorations: this.decorationsToRender.inlineTexts.slice(
               tileStartRow - startRow,
               tileEndRow - startRow
             ),
@@ -1041,6 +1049,8 @@ module.exports = class TextEditorComponent {
     this.decorationsToRender.customGutter.clear();
     this.decorationsToRender.blocks = new Map();
     this.decorationsToRender.text = [];
+    this.decorationsToRender.inlineTexts = [];
+    this.hasInlineTextDecorations = false;
     this.decorationsToMeasure.highlights.length = 0;
     this.decorationsToMeasure.cursors.clear();
     this.textDecorationsByMarker.clear();
@@ -1117,6 +1127,9 @@ module.exports = class TextEditorComponent {
           break;
         case 'text':
           this.addTextDecorationToRender(decoration, screenRange, marker);
+          break;
+        case 'inline-text':
+          this.addInlineTextDecorationToRender(decoration, screenRange);
           break;
       }
     }
@@ -1459,6 +1472,64 @@ module.exports = class TextEditorComponent {
         }
       }
     }
+  }
+
+  // Text drawn *between* the line's own characters -- an inlay hint, a blame
+  // annotation. Unlike a 'text' decoration, which styles characters that are
+  // already there, this one has content of its own and sits at a point, so an
+  // empty range is the normal case rather than something to skip.
+  // Horizontal positions are cached per screen line, and text drawn between
+  // the characters moves every column after it. A line whose inline text
+  // changed has to be measured again -- otherwise the cursor is drawn where
+  // the line was before the hint arrived, which is the whole reason this
+  // decoration type is delicate.
+  //
+  // Free for an editor that has never had one: nothing to compare against.
+  invalidateMeasurementsForChangedInlineText() {
+    if (
+      !this.hasInlineTextDecorations &&
+      this.inlineTextSignaturesByScreenLineId.size === 0
+    ) {
+      return;
+    }
+
+    for (let i = 0; i < this.renderedScreenLines.length; i++) {
+      const screenLine = this.renderedScreenLines[i];
+      if (!screenLine) continue;
+      const signature = inlineTextSignature(
+        this.decorationsToRender.inlineTexts[i]
+      );
+      const previous = this.inlineTextSignaturesByScreenLineId.get(
+        screenLine.id
+      );
+      if (previous === signature) continue;
+
+      if (signature === '') {
+        this.inlineTextSignaturesByScreenLineId.delete(screenLine.id);
+      } else {
+        this.inlineTextSignaturesByScreenLineId.set(screenLine.id, signature);
+      }
+      this.horizontalPixelPositionsByScreenLineId.delete(screenLine.id);
+    }
+  }
+
+  addInlineTextDecorationToRender(decoration, screenRange) {
+    if (decoration.text == null) return;
+    const renderedStartRow = this.getRenderedStartRow();
+    const index = screenRange.start.row - renderedStartRow;
+    if (index < 0) return;
+    this.hasInlineTextDecorations = true;
+    let inlineTexts = this.decorationsToRender.inlineTexts[index];
+    if (!inlineTexts) {
+      inlineTexts = [];
+      this.decorationsToRender.inlineTexts[index] = inlineTexts;
+    }
+    inlineTexts.push({
+      column: screenRange.start.column,
+      text: String(decoration.text),
+      className: decoration.class || null,
+      style: decoration.style || null
+    });
   }
 
   addTextDecorationStart(row, column, className, style) {
@@ -4262,6 +4333,7 @@ class LinesTileComponent {
       screenLines,
       lineDecorations,
       textDecorations,
+      inlineTextDecorations,
       nodePool,
       displayLayer,
       lineComponentsByScreenLineId
@@ -4274,6 +4346,7 @@ class LinesTileComponent {
         screenRow: tileStartRow + i,
         lineDecoration: lineDecorations[i],
         textDecorations: textDecorations[i],
+        inlineTextDecorations: inlineTextDecorations && inlineTextDecorations[i],
         displayLayer,
         nodePool,
         lineComponentsByScreenLineId
@@ -4289,6 +4362,7 @@ class LinesTileComponent {
       tileStartRow,
       lineDecorations,
       textDecorations,
+      inlineTextDecorations,
       nodePool,
       displayLayer,
       lineComponentsByScreenLineId
@@ -4315,6 +4389,8 @@ class LinesTileComponent {
           screenRow: tileStartRow + newScreenLineIndex,
           lineDecoration: lineDecorations[newScreenLineIndex],
           textDecorations: textDecorations[newScreenLineIndex],
+          inlineTextDecorations:
+            inlineTextDecorations && inlineTextDecorations[newScreenLineIndex],
           displayLayer,
           nodePool,
           lineComponentsByScreenLineId
@@ -4334,7 +4410,9 @@ class LinesTileComponent {
         lineComponent.update({
           screenRow: tileStartRow + newScreenLineIndex,
           lineDecoration: lineDecorations[newScreenLineIndex],
-          textDecorations: textDecorations[newScreenLineIndex]
+          textDecorations: textDecorations[newScreenLineIndex],
+          inlineTextDecorations:
+            inlineTextDecorations && inlineTextDecorations[newScreenLineIndex]
         });
 
         oldScreenLineIndex++;
@@ -4359,6 +4437,9 @@ class LinesTileComponent {
               screenRow: tileStartRow + newScreenLineIndex,
               lineDecoration: lineDecorations[newScreenLineIndex],
               textDecorations: textDecorations[newScreenLineIndex],
+              inlineTextDecorations:
+                inlineTextDecorations &&
+                inlineTextDecorations[newScreenLineIndex],
               displayLayer,
               nodePool,
               lineComponentsByScreenLineId
@@ -4399,6 +4480,9 @@ class LinesTileComponent {
             screenRow: tileStartRow + newScreenLineIndex,
             lineDecoration: lineDecorations[newScreenLineIndex],
             textDecorations: textDecorations[newScreenLineIndex],
+            inlineTextDecorations:
+              inlineTextDecorations &&
+              inlineTextDecorations[newScreenLineIndex],
             displayLayer,
             nodePool,
             lineComponentsByScreenLineId
@@ -4557,6 +4641,13 @@ class LinesTileComponent {
         return true;
     }
 
+    const oldInline = oldProps.inlineTextDecorations || [];
+    const newInline = newProps.inlineTextDecorations || [];
+    if (oldInline.length !== newInline.length) return true;
+    for (let i = 0; i < oldInline.length; i++) {
+      if (!inlineTextDecorationsEqual(oldInline[i], newInline[i])) return true;
+    }
+
     return false;
   }
 }
@@ -4600,10 +4691,18 @@ class LineComponent {
       !textDecorationsEqual(
         this.props.textDecorations,
         newProps.textDecorations
+      ) ||
+      !inlineTextDecorationsEqual(
+        this.props.inlineTextDecorations,
+        newProps.inlineTextDecorations
       )
     ) {
       this.props.textDecorations = newProps.textDecorations;
-      this.element.firstChild.remove();
+      this.props.inlineTextDecorations = newProps.inlineTextDecorations;
+      // appendContents appends to this.element, and an inline decoration adds
+      // siblings after the scope node, so clearing only firstChild would leave
+      // the previous hints behind.
+      while (this.element.firstChild) this.element.firstChild.remove();
       this.appendContents();
     }
   }
@@ -4699,6 +4798,68 @@ class LineComponent {
       this.element.appendChild(textNode);
       this.textNodes.push(textNode);
     }
+
+    this.appendInlineTextDecorations();
+  }
+
+  // Text that is not in the buffer, drawn between the characters that are:
+  // an inlay hint, a blame annotation. Runs after the line is built, so a line
+  // without any pays a single array check.
+  //
+  // The one rule: whatever is inserted must not join `this.textNodes`. A
+  // column is worked out by summing the lengths of the text nodes before it
+  // (screenPositionForPixelPosition), so a node that is not part of the line's
+  // own text would move every column after it -- the cursor would land in the
+  // wrong place, which is a far worse bug than a missing hint.
+  appendInlineTextDecorations() {
+    const decorations = this.props.inlineTextDecorations;
+    if (!decorations || decorations.length === 0) return;
+
+    // Descending, so inserting one cannot move the column of the next.
+    const ordered = decorations
+      .slice()
+      .sort((a, b) => b.column - a.column);
+    for (let i = 0; i < ordered.length; i++) {
+      this.insertInlineText(ordered[i]);
+    }
+  }
+
+  insertInlineText(decoration) {
+    const { nodePool } = this.props;
+    const span = nodePool.getElement(
+      'SPAN',
+      decoration.className
+        ? `inline-text ${decoration.className}`
+        : 'inline-text',
+      decoration.style
+    );
+    span.textContent = decoration.text;
+
+    let column = 0;
+    for (let i = 0; i < this.textNodes.length; i++) {
+      const textNode = this.textNodes[i];
+      const nodeEnd = column + textNode.length;
+
+      if (decoration.column <= column) {
+        textNode.parentNode.insertBefore(span, textNode);
+        return;
+      }
+
+      if (decoration.column < nodeEnd) {
+        // Inside this node: split it, and keep both halves in textNodes so
+        // they still concatenate to the line's own text.
+        const rest = textNode.splitText(decoration.column - column);
+        this.textNodes.splice(i + 1, 0, rest);
+        rest.parentNode.insertBefore(span, rest);
+        return;
+      }
+
+      column = nodeEnd;
+    }
+
+    // Past the last character: after the line's text, which is where an
+    // end-of-line hint belongs.
+    this.element.appendChild(span);
   }
 
   appendTextNode(openScopeNode, text, activeClassName, activeStyle) {
@@ -5061,6 +5222,30 @@ function textDecorationsEqual(oldDecorations, newDecorations) {
       if (!objectsEqual(oldDecorations[j].style, newDecorations[j].style))
         return false;
     }
+  }
+  return true;
+}
+
+function inlineTextSignature(decorations) {
+  if (!decorations || decorations.length === 0) return '';
+  let signature = '';
+  for (let i = 0; i < decorations.length; i++) {
+    signature += `${decorations[i].column}\u0000${decorations[i].text}\u0000`;
+  }
+  return signature;
+}
+
+function inlineTextDecorationsEqual(oldDecorations, newDecorations) {
+  if (!oldDecorations && !newDecorations) return true;
+  if (!oldDecorations || !newDecorations) return false;
+  if (oldDecorations.length !== newDecorations.length) return false;
+  for (let i = 0; i < oldDecorations.length; i++) {
+    if (oldDecorations[i].column !== newDecorations[i].column) return false;
+    if (oldDecorations[i].text !== newDecorations[i].text) return false;
+    if (oldDecorations[i].className !== newDecorations[i].className)
+      return false;
+    if (!objectsEqual(oldDecorations[i].style, newDecorations[i].style))
+      return false;
   }
   return true;
 }
