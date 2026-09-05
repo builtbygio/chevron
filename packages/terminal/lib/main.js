@@ -1,5 +1,6 @@
 const { CompositeDisposable } = require('chevron');
 const TerminalView = require('./terminal-view');
+const { listTasks, runTask } = require('./tasks');
 
 const TERMINAL_URI = 'chevron://terminal';
 
@@ -22,7 +23,8 @@ module.exports = {
     this.subscriptions.add(
       chevron.commands.add('atom-workspace', {
         'terminal:open': () => this.open(),
-        'terminal:toggle': () => this.toggle()
+        'terminal:toggle': () => this.toggle(),
+        'tasks:run': () => this.chooseTask()
       })
     );
 
@@ -69,6 +71,76 @@ module.exports = {
       if (view.element.contains(element) || view.element === element) return view;
     }
     return null;
+  },
+
+  // The tasks a project declares, offered by name. Running one is gated on
+  // the folder being trusted -- see lib/tasks.js.
+  async chooseTask() {
+    const { tasks, problems } = listTasks();
+    if (problems.length > 0) {
+      chevron.notifications.addWarning(
+        `Could not read every task (${problems.length})`,
+        { detail: problems.join('\n'), dismissable: true }
+      );
+    }
+    if (tasks.length === 0) {
+      chevron.notifications.addInfo('No tasks defined', {
+        description:
+          'Declare them in `.chevron/tasks.json`, as ' +
+          '`{ "tasks": [{ "name": "test", "command": "npm test" }] }`.'
+      });
+      return null;
+    }
+
+    const SelectListView = require('atom-select-list');
+    return new Promise(resolve => {
+      const select = new SelectListView({
+        items: tasks,
+        filterKeyForItem: task => task.name,
+        elementForItem: task => {
+          const li = document.createElement('li');
+          li.classList.add('two-lines');
+          const primary = document.createElement('div');
+          primary.classList.add('primary-line');
+          primary.textContent = task.name;
+          const secondary = document.createElement('div');
+          secondary.classList.add('secondary-line');
+          secondary.textContent = task.command;
+          li.appendChild(primary);
+          li.appendChild(secondary);
+          return li;
+        },
+        didConfirmSelection: async task => {
+          panel.destroy();
+          resolve(await this.runTask(task));
+        },
+        didCancelSelection: () => {
+          panel.destroy();
+          resolve(null);
+        }
+      });
+      // Its own class: `.select-list` alone also matches the tabs MRU
+      // switcher, which sits in the workspace unseen.
+      select.element.classList.add('tasks-picker');
+      const panel = chevron.workspace.addModalPanel({ item: select });
+      select.focus();
+    });
+  },
+
+  // Exposed for the smoke test: discovery is a pure read and worth checking
+  // separately from running, which is the part that needs trust.
+  listTasksForTests() {
+    return listTasks();
+  },
+
+  runTask(task) {
+    return runTask(task, {
+      TerminalView,
+      register: view => {
+        this.terminals.add(view);
+        view.onDidDestroy(() => this.terminals.delete(view));
+      }
+    });
   },
 
   async open() {

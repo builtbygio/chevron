@@ -10,11 +10,15 @@ const { Terminal } = require('@xterm/xterm');
 const CHARACTER_MEASURE = 'W';
 
 class TerminalView {
-  constructor({ cwd, shell } = {}) {
+  constructor({ cwd, shell, args, title } = {}) {
     this.emitter = new Emitter();
     this.subscriptions = new CompositeDisposable();
     this.cwd = cwd;
     this.shell = shell;
+    // A task runs one command rather than an interactive shell, and wants to
+    // say which in the tab.
+    this.args = args;
+    this.title = title;
     this.session = null;
     this.exited = false;
     this.pendingInput = [];
@@ -61,6 +65,7 @@ class TerminalView {
     try {
       this.session = await chevron.pty.spawn({
         shell: this.shell || chevron.config.get('terminal.shell') || undefined,
+        args: this.args,
         cwd: this.cwd,
         cols: size.cols,
         rows: size.rows
@@ -151,7 +156,7 @@ class TerminalView {
 
   // Pane item contract.
   getTitle() {
-    return 'Terminal';
+    return this.title || 'Terminal';
   }
 
   getIconName() {

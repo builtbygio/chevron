@@ -1187,6 +1187,101 @@ const REVIEW_EXPR = `(function() {
   });
 })()`;
 
+// Tasks: found, and refused to run in a folder nobody has trusted.
+//
+// The refusal is the point. A tasks.json arrives with the repository, so
+// running it on the strength of having opened the folder would turn cloning
+// into running. The smoke project is never trusted, so this is exactly the
+// case that must not spawn anything.
+const TASKS_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__tasksProbe) {
+    window.__tasksProbe = { phase: 'running', result: null };
+    var finish = function(result) {
+      window.__tasksProbe.result = result;
+      window.__tasksProbe.phase = 'done';
+    };
+    if (!chevron.tasks || typeof chevron.tasks.parseTasks !== 'function') {
+      finish({ error: 'chevron.tasks is not published' });
+    } else {
+      chevron.packages
+        .activatePackage('terminal')
+        .then(function(pkg) {
+          var module = pkg.mainModule;
+          var tasksLib = null;
+          try {
+            tasksLib = module.__tasksForTests || null;
+          } catch (e) {}
+
+          var before = chevron.workspace.getPaneItems().length;
+          var noticesBefore = chevron.notifications.getNotifications().length;
+
+          // Discovery: the task the project declares should be found.
+          var found = module.listTasksForTests
+            ? module.listTasksForTests()
+            : { tasks: [], problems: ['no test hook'] };
+
+          // The command exists and offers a choice.
+          chevron.commands.dispatch(
+            chevron.views.getView(chevron.workspace),
+            'tasks:run'
+          );
+
+          setTimeout(function() {
+            // A bare .select-list also matches the tabs MRU switcher, which
+            // sits in the workspace unseen -- matching it read as "the picker
+            // opened" when it had not. (No backticks in here: this whole
+            // expression is a template literal.)
+            var select = document.querySelector('.tasks-picker');
+            if (select) {
+              chevron.commands.dispatch(select, 'core:cancel');
+            }
+
+            // Then the part that matters, without the UI in the way: running
+            // a task in a folder nobody trusted must refuse and spawn nothing.
+            Promise.resolve(module.runTask(found.tasks[0])).then(function(view) {
+              var tries = 0;
+              (function settle() {
+                var notices = chevron.notifications
+                  .getNotifications()
+                  .slice(noticesBefore)
+                  .map(function(n) { return n.getType() + ': ' + n.getMessage().slice(0, 90); });
+                var refused = notices.some(function(n) {
+                  return /not trusted/.test(n);
+                });
+                if (refused || tries >= 20) {
+                  return finish({
+                    discovered: found.tasks.map(function(t) { return t.name; }),
+                    problems: found.problems,
+                    selectOpened: !!select,
+                    returnedView: !!view,
+                    panesAfter: chevron.workspace.getPaneItems().length,
+                    panesBefore: before,
+                    notices: notices,
+                    refused: refused,
+                    waitedMs: tries * 250
+                  });
+                }
+                tries++;
+                setTimeout(settle, 250);
+              })();
+            });
+          }, 1200);
+        })
+        .catch(function(error) {
+          finish({ error: String(error && error.message) });
+        });
+    }
+  }
+  return JSON.stringify({
+    status: window.__tasksProbe.phase === 'done' ? 'ready' : 'pending',
+    tasks: window.__tasksProbe.result
+  });
+})()`;
+
 function isAppWindowTarget(target) {
   if (!target || target.type !== 'page') return false;
   const url = target.url || '';
@@ -1469,6 +1564,18 @@ async function main() {
     path.join(projectDir, '.chevron', 'config.json'),
     JSON.stringify({ editor: { tabLength: 3 } }, null, 2)
   );
+
+  // A task the project declares. The smoke project is never trusted, which
+  // is the case that matters: discovery must work and running must not.
+  fs.writeFileSync(
+    path.join(projectDir, '.chevron', 'tasks.json'),
+    JSON.stringify(
+      { tasks: [{ name: 'smoke-task', command: 'echo smoke-task-ran' }] },
+      null,
+      2
+    )
+  );
+
 
   // Searched for by the project-find phase. It must live in a file nothing
   // opens: workspace.scan also scans modified buffers in memory, so a token
@@ -1806,6 +1913,23 @@ async function main() {
       }
     }
 
+    // Tasks, before the styleguide takes the active pane.
+    if (state && state.status === 'ready') {
+      for (let attempt = 0; attempt < 100; attempt++) {
+        let tasksState;
+        try {
+          tasksState = await probeWindow([], TASKS_EXPR);
+        } catch (error) {
+          tasksState = { tasks: { error: String(error.message || error) } };
+        }
+        if (tasksState && tasksState.tasks) {
+          state.tasks = tasksState.tasks;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
     // The styleguide, last: it takes over the active pane.
     if (state && state.status === 'ready') {
       for (let attempt = 0; attempt < 40; attempt++) {
@@ -2040,6 +2164,29 @@ async function main() {
         }
         if (!review.paneClosed) {
           failures.push('the review pane stayed open after applying');
+        }
+      }
+
+      const tasks = state.tasks;
+      if (!tasks) {
+        failures.push('tasks probe did not report');
+      } else if (tasks.error) {
+        failures.push(`tasks: ${tasks.error}`);
+      } else {
+        if (!tasks.discovered || !tasks.discovered.includes('smoke-task')) {
+          failures.push(
+            `tasks did not find the task the project declares (found ${JSON.stringify(tasks.discovered)}, problems ${JSON.stringify(tasks.problems)})`
+          );
+        }
+        if (!tasks.refused) {
+          failures.push(
+            `running a task in an untrusted folder was not refused — notices: ${JSON.stringify(tasks.notices)}`
+          );
+        }
+        if (tasks.panesAfter !== tasks.panesBefore || tasks.returnedView) {
+          failures.push(
+            'an untrusted task opened a terminal; nothing should have been spawned'
+          );
         }
       }
 

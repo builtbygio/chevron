@@ -1,6 +1,7 @@
 {
   "atom-workspace": {
-    "ctrl-`": "terminal:toggle"
+    "ctrl-`": "terminal:toggle",
+    "ctrl-shift-b": "tasks:run"
   },
   ".chevron-terminal": {
     "ctrl-shift-w": "terminal:close"

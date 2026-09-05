@@ -12,11 +12,13 @@
   "activationCommands": {
     "atom-workspace": [
       "terminal:open",
-      "terminal:toggle"
+      "terminal:toggle",
+      "tasks:run"
     ]
   },
   "dependencies": {
-    "@xterm/xterm": "6.0.0"
+    "@xterm/xterm": "6.0.0",
+    "atom-select-list": "^0.8.2"
   },
   "configSchema": {
     "shell": {

@@ -489,6 +489,7 @@ jobs:
           node --test script/ci/inlay-hints.test.js
           node --test script/ci/pty-host-integration.test.js
           node --test script/ci/change-proposal.test.js
+          node --test script/ci/tasks.test.js
           node --test script/ci/jasmine-node-coffee.test.js
           node --test script/ci/patch-inventory.test.js
           node --test script/ci/wave3-gates.test.js
