@@ -1,4 +1,4 @@
-const {Point, TextBuffer} = require('atom')
+const {Point, TextBuffer} = require('chevron')
 
 const HAS_NEW_TEXT_BUFFER_VERSION = (new TextBuffer()).getLanguageMode().bufferDidFinishTransaction
 
