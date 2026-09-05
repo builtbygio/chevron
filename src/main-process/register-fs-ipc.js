@@ -152,16 +152,15 @@ function isAllowedFsPath(fullPath) {
     // No roots yet (very early boot) — allow absolute paths until roots exist.
     return true;
   }
-  const resolved = path.resolve(fullPath);
-  if (!allowedRoots.some(root => pathContained(root, resolved))) return false;
-
-  // Spelling a path inside a root is not the same as landing inside it: a
-  // symlink in the project points wherever it likes, and following it takes
-  // the read or the write with it. Compare real to real — the roots need
-  // resolving too, or a project under a symlinked path (/var on macOS) would
-  // stop matching itself.
-  const real = resolveThroughLinks(resolved);
-  if (real === resolved) return true;
+  // Where the path lands, not how it was spelled. A symlink in the project
+  // points wherever it likes, and following it takes the read or the write
+  // with it — so both sides of the comparison are resolved.
+  //
+  // Resolving only one side is worse than resolving neither: on macOS /var is
+  // a symlink to /private/var, so the temp directory and ATOM_HOME are both
+  // in circulation under two spellings, and a check that demanded the spelled
+  // path match a root would deny a file by one of its own names.
+  const real = resolveThroughLinks(path.resolve(fullPath));
   return allowedRootsReal.some(root => pathContained(root, real));
 }
 

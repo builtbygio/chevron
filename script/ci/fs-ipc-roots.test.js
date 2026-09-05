@@ -167,6 +167,35 @@ test('a symlink that stays inside the project is still allowed', () => {
   }
 });
 
+test('a file is allowed under either of its names', () => {
+  // On macOS /var is a symlink to /private/var, so the temp directory and
+  // ATOM_HOME are both in circulation under two spellings and either can
+  // arrive here. Requiring the spelled path to match a root as well as the
+  // resolved one denied a file by one of its own names, and took the macOS
+  // smoke run down with it.
+  const { base } = symlinkFixture();
+  try {
+    const real = path.join(base, 'realdir');
+    const link = path.join(base, 'linkroot');
+    fs.mkdirSync(real);
+    fs.writeFileSync(path.join(real, 'f.txt'), 'x');
+    fs.symlinkSync(real, link);
+
+    // The root recorded in its symlinked spelling, as ATOM_HOME arrives.
+    registerFsIpc.setFsIpcPolicy({ strict: true, roots: [link] });
+    assert.equal(registerFsIpc.isAllowedFsPath(path.join(link, 'f.txt')), true);
+    assert.equal(registerFsIpc.isAllowedFsPath(path.join(real, 'f.txt')), true);
+    assert.equal(registerFsIpc.isAllowedFsPath(path.join(real, 'new.txt')), true);
+
+    // And recorded resolved, with the path arriving through the link.
+    registerFsIpc.setFsIpcPolicy({ strict: true, roots: [real] });
+    assert.equal(registerFsIpc.isAllowedFsPath(path.join(link, 'f.txt')), true);
+    assert.equal(registerFsIpc.isAllowedFsPath(path.join(link, 'new.txt')), true);
+  } finally {
+    removeTempDir(base);
+  }
+});
+
 test('a root that is itself a symlink still matches its own contents', () => {
   // /var is a symlink to /private/var on macOS, so ATOM_HOME and the temp
   // directory both arrive symlinked there. Resolving the path but not the

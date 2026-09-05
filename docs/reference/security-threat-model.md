@@ -71,9 +71,13 @@ Both are refused now. Three details the fix has to get right:
 - **A dangling symlink still says where a write would go**, and writing
   through one creates the file it points at. `realpathSync` gives up on those,
   so the link is read directly rather than falling back to the spelled path.
-- **The roots are resolved too.** `/var` is a symlink to `/private/var` on
-  macOS, so `ATOM_HOME` and the temp directory both arrive symlinked; resolving
-  the path but not the root would deny every one of them.
+- **Both sides are resolved, and only the resolved ones are compared.**
+  `/var` is a symlink to `/private/var` on macOS, so the temp directory and
+  `ATOM_HOME` are in circulation under two spellings and either can arrive.
+  Requiring the spelled path to match a root *as well as* the resolved one
+  denied a file by one of its own names — it passed on Linux and took the
+  macOS smoke run down. Resolving one side only is worse than resolving
+  neither.
 
 A symlink that stays inside the project is unaffected, which is the common
 case (`node_modules` links, a checkout linked into another).
