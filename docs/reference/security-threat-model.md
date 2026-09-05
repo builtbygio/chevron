@@ -117,6 +117,29 @@ window state, and packages that manage project lists. It needs a decision
 before it is worth building, which is why the inventory still records this
 channel as `partial` rather than `full`.
 
+## A language server session has no owner
+
+`lsp:request`, `lsp:notify`, `lsp:respond` and `lsp:stop-server` name a
+session by `serverId` and act on it. The payload is checked; who is asking is
+not, so any window can drive — or stop — a session another window started.
+
+It cannot simply be given one owner. The id is
+`${registrationId}:${projectRoot}`, deliberately identical in every window
+that has the project open, so single ownership would refuse the second window
+legitimately using the same server.
+
+The shape that works is membership with a count: a session records the windows
+that started it, a call requires membership, and `stop-server` removes the
+caller and only stops the server when the last one leaves. That also fixes a
+bug present today — one window closing a project stops the server another
+window is still using.
+
+It is not built here because it changes session lifetime, and the in-app LSP
+suite is the only thing that would catch a mistake. That suite currently hangs
+locally (see docs/process/test-runner-migration.md, Phase 0), so the change
+would ship unverified. These four channels stay `partial` until it can be
+tested.
+
 ## Residual risk
 
 A **bundled** package bug or a user who disables restrict still yields full user-equivalent code execution in the editor preload. Treat package installs as software installs; prefer Pulsar/cpm sources you trust.
