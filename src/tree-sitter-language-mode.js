@@ -12,6 +12,21 @@ const TreeIndenter = require('./tree-indenter');
 let nextId = 0;
 const MAX_RANGE = new Range(Point.ZERO, Point.INFINITY).freeze();
 const PARSER_POOL = [];
+const PARSE_CHUNK_SIZE = 4096;
+
+// Tree-sitter reads its input through this: given a character index, return
+// the text starting there, or null past the end. docs/reference/language-stack.md
+function chunkReaderForBuffer(buffer, chunkSize = PARSE_CHUNK_SIZE) {
+  const length = buffer.getMaxCharacterIndex();
+  return index => {
+    if (index >= length) return null;
+    const start = buffer.positionForCharacterIndex(index);
+    const end = buffer.positionForCharacterIndex(
+      Math.min(index + chunkSize, length)
+    );
+    return buffer.getTextInRange(new Range(start, end));
+  };
+}
 const WORD_REGEX = /\w/;
 
 class TreeSitterLanguageMode {
@@ -114,10 +129,9 @@ class TreeSitterLanguageMode {
   parse(language, oldTree, ranges) {
     const parser = PARSER_POOL.pop() || new Parser();
     parser.setLanguage(language);
-    // Official tree-sitter 0.25 has parse(string|callback), not Atom's
-    // parseTextBuffer(superstring). Copy the buffer text (sync).
-    const text = this.buffer.getText();
-    const tree = parser.parse(text, oldTree || null, {
+    // Read what the parser asks for rather than handing it the whole buffer:
+    // an incremental reparse touches a fraction of a large file.
+    const tree = parser.parse(chunkReaderForBuffer(this.buffer), oldTree || null, {
       includedRanges: ranges
     });
     PARSER_POOL.push(parser);
@@ -1536,5 +1550,7 @@ Object.assign(TreeSitterLanguageMode.prototype, AutoIndent);
 
 TreeSitterLanguageMode.LanguageLayer = LanguageLayer;
 TreeSitterLanguageMode.prototype.syncTimeoutMicros = 1000;
+
+TreeSitterLanguageMode.chunkReaderForBuffer = chunkReaderForBuffer;
 
 module.exports = TreeSitterLanguageMode;
