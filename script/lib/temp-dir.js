@@ -48,9 +48,15 @@ function installHandlers() {
 
 // `prefix` is a name fragment, not a path: 'chevron-find-app-' becomes
 // <tmpdir>/chevron-find-app-XXXXXX.
-function makeTempDir(prefix) {
+//
+// `parent` puts it somewhere other than the temp directory, and is cleaned up
+// the same way. The FS IPC root tests need it: os.tmpdir() is an allowed root
+// in its own right, so a fixture inside it cannot show whether a path escaped
+// the project.
+function makeTempDir(prefix, options = {}) {
   installHandlers();
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  const parent = options.parent || os.tmpdir();
+  const dir = fs.mkdtempSync(path.join(parent, prefix));
   created.add(dir);
   return dir;
 }

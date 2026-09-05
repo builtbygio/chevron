@@ -29,6 +29,7 @@ Module.prototype.require = function(id) {
 };
 
 const fs = require('fs');
+const { makeTempDir, removeTempDir } = require('../lib/temp-dir');
 
 const registerFsIpc = require('../../src/main-process/register-fs-ipc');
 
@@ -87,7 +88,7 @@ test('refresh collects projectRoots via getAllWindows, not missing .windows', ()
 function symlinkFixture() {
   // Under the home directory rather than os.tmpdir(), which is an allowed
   // root in its own right and would make an escape indistinguishable.
-  const base = fs.mkdtempSync(path.join(os.homedir(), 'chevron-fs-ipc-link-'));
+  const base = makeTempDir('chevron-fs-ipc-link-', { parent: os.homedir() });
   const project = path.join(base, 'project');
   const outside = path.join(base, 'outside');
   fs.mkdirSync(project);
@@ -108,7 +109,7 @@ test('a symlink out of the project does not carry a read with it', () => {
       false
     );
   } finally {
-    fs.rmSync(base, { recursive: true, force: true });
+    removeTempDir(base);
   }
 });
 
@@ -131,7 +132,7 @@ test('nor a write to a file that does not exist yet', () => {
       false
     );
   } finally {
-    fs.rmSync(base, { recursive: true, force: true });
+    removeTempDir(base);
   }
 });
 
@@ -146,7 +147,7 @@ test('ordinary paths inside the project are unaffected', () => {
     );
     assert.equal(registerFsIpc.isAllowedFsPath(project), true);
   } finally {
-    fs.rmSync(base, { recursive: true, force: true });
+    removeTempDir(base);
   }
 });
 
@@ -162,7 +163,7 @@ test('a symlink that stays inside the project is still allowed', () => {
       true
     );
   } finally {
-    fs.rmSync(base, { recursive: true, force: true });
+    removeTempDir(base);
   }
 });
 
@@ -184,7 +185,7 @@ test('a root that is itself a symlink still matches its own contents', () => {
       true
     );
   } finally {
-    fs.rmSync(base, { recursive: true, force: true });
+    removeTempDir(base);
   }
 });
 
@@ -202,7 +203,7 @@ test('a symlink pointing at something missing is still followed', () => {
       false
     );
   } finally {
-    fs.rmSync(base, { recursive: true, force: true });
+    removeTempDir(base);
   }
 });
 
@@ -213,7 +214,7 @@ test('a dangling symlink that points back inside the project is allowed', () => 
     registerFsIpc.setFsIpcPolicy({ strict: true, roots: [project] });
     assert.equal(registerFsIpc.isAllowedFsPath(path.join(project, 'pending')), true);
   } finally {
-    fs.rmSync(base, { recursive: true, force: true });
+    removeTempDir(base);
   }
 });
 
@@ -226,6 +227,6 @@ test('a loop between symlinks is refused rather than hanging', () => {
     // Whatever it decides, it has to decide it: a loop must not hang.
     assert.equal(typeof registerFsIpc.isAllowedFsPath(path.join(project, 'a')), 'boolean');
   } finally {
-    fs.rmSync(base, { recursive: true, force: true });
+    removeTempDir(base);
   }
 });
