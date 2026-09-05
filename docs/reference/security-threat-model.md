@@ -95,6 +95,28 @@ contains a symlink.
 
 Gate: `script/ci/fs-ipc-roots.test.js`.
 
+## The renderer still declares its own project roots
+
+`atom-window-set-project-roots-sync` is how a window tells main which folders
+are open, and those folders become the allowed FS roots. The renderer has to
+be able to say this — the user adds and removes project folders from inside
+the editor — so the channel cannot simply be removed.
+
+What it checks now: every entry is an absolute, nul-free path, and none of
+them is broad enough to make the boundary meaningless (the filesystem root, or
+the home directory itself). A bad entry refuses the whole payload rather than
+applying part of it, because a partial apply leaves main and the renderer
+disagreeing about the roots and that surfaces later as unexplained refusals.
+
+**What it does not check is provenance.** A package can still name any
+particular directory and have it added. Closing that means main accepting only
+roots it offered — paths it opened itself, or paths that came back from a
+main-process open dialog — and refusing anything else. That is a design change
+rather than a validation one: it would also refuse roots restored from saved
+window state, and packages that manage project lists. It needs a decision
+before it is worth building, which is why the inventory still records this
+channel as `partial` rather than `full`.
+
 ## Residual risk
 
 A **bundled** package bug or a user who disables restrict still yields full user-equivalent code execution in the editor preload. Treat package installs as software installs; prefer Pulsar/cpm sources you trust.
