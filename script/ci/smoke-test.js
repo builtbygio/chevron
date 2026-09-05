@@ -1295,6 +1295,79 @@ const TASKS_EXPR = `(function() {
   });
 })()`;
 
+// Breadcrumbs and sticky scroll, which both answer "what encloses this line".
+//
+// The arithmetic is gated in enclosing-scopes.test.js against fixed ranges.
+// What only the app can say is whether a real grammar produces folds at all —
+// the answer comes from the tree-sitter grammar, and a file whose first parse
+// has not finished has none, which is a way to look broken while being right.
+const CODE_CONTEXT_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__contextProbe) {
+    window.__contextProbe = { phase: 'running', result: null };
+    var finish = function(result) {
+      window.__contextProbe.result = result;
+      window.__contextProbe.phase = 'done';
+    };
+    var editor = chevron.workspace.getTextEditors().filter(function(e) {
+      return /probe-context\.ts$/.test(e.getPath() || '');
+    })[0];
+    if (!editor) {
+      finish({ error: 'probe-context.ts is not open' });
+    } else {
+      var pane = chevron.workspace.paneForItem(editor);
+      pane.activate();
+      pane.activateItem(editor);
+
+      // Taller than the viewport, so there is something to scroll past.
+      var body = [];
+      for (var n = 0; n < 120; n++) body.push('      const v' + n + ' = ' + n + ';');
+      editor.setText(
+        ['class Outer {', '  method(a) {', '    if (a > 0) {']
+          .concat(body)
+          .concat(['    }', '    return a;', '  }', '}', ''])
+          .join(String.fromCharCode(10))
+      );
+
+      Promise.all([
+        chevron.packages.activatePackage('breadcrumbs'),
+        chevron.packages.activatePackage('sticky-scroll')
+      ])
+        .then(function(pkgs) {
+          editor.setCursorBufferPosition([100, 0]);
+          editor.scrollToBufferPosition([100, 0], { center: true });
+          // Let the first parse finish: no tree means no folds, and no folds
+          // means both features correctly show nothing.
+          setTimeout(function() {
+            var mode = editor.getBuffer().getLanguageMode();
+            var ranges = mode.getFoldableRanges ? mode.getFoldableRanges() : [];
+            pkgs[1].mainModule.updateForTests(editor);
+            setTimeout(function() {
+              finish({
+                grammar: editor.getGrammar().name,
+                foldCount: ranges.length,
+                trail: pkgs[0].mainModule.trailForTests(),
+                pinned: pkgs[1].mainModule
+                  .pinnedForTests(editor)
+                  .map(function(t) { return t.trim(); })
+              });
+            }, 800);
+          }, 1200);
+        })
+        .catch(function(error) {
+          finish({ error: String(error && error.message) });
+        });
+    }
+  }
+  return JSON.stringify({
+    status: window.__contextProbe.phase === 'done' ? 'ready' : 'pending',
+    codeContext: window.__contextProbe.result
+  });
+})()`;
+
 function isAppWindowTarget(target) {
   if (!target || target.type !== 'page') return false;
   const url = target.url || '';
@@ -1601,12 +1674,17 @@ async function main() {
   );
 
   const probes = {
+    // Its own file: the code-context phase replaces the whole text, and
+    // sharing probe.ts with the autocomplete and inline-text phases meant
+    // pulling the buffer out from under them mid-run.
+    context: path.join(probeDir, 'probe-context.ts'),
     txt: path.join(probeDir, 'probe.txt'),
     ts: path.join(probeDir, 'probe.ts'),
     css: path.join(probeDir, 'probe.css'),
     md: path.join(probeDir, 'probe.md'),
     make: path.join(probeDir, 'Makefile')
   };
+  fs.writeFileSync(probes.context, 'const placeholder = 1;\n');
   fs.writeFileSync(probes.txt, 'smoke test probe\n');
   fs.writeFileSync(probes.ts, 'const n: number = 1;\n');
   fs.writeFileSync(probes.css, 'body { color: red; }\n');
@@ -1628,7 +1706,10 @@ async function main() {
     probes.ts,
     probes.css,
     probes.md,
-    probes.make
+    probes.make,
+    // Last, so byExt('.ts') in the other probes still finds probe.ts:
+    // adding it earlier silently handed them this file instead.
+    probes.context
   );
 
   const app = childProcess.spawn(binary, launchArgs, {
@@ -1943,6 +2024,23 @@ async function main() {
       }
     }
 
+    // Breadcrumbs and sticky scroll, before the styleguide takes the pane.
+    if (state && state.status === 'ready') {
+      for (let attempt = 0; attempt < 100; attempt++) {
+        let contextState;
+        try {
+          contextState = await probeWindow([], CODE_CONTEXT_EXPR);
+        } catch (error) {
+          contextState = { codeContext: { error: String(error.message || error) } };
+        }
+        if (contextState && contextState.codeContext) {
+          state.codeContext = contextState.codeContext;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
     // The styleguide, last: it takes over the active pane.
     if (state && state.status === 'ready') {
       for (let attempt = 0; attempt < 40; attempt++) {
@@ -2199,6 +2297,39 @@ async function main() {
         if (tasks.panesAfter !== tasks.panesBefore || tasks.returnedView) {
           failures.push(
             'an untrusted task opened a terminal; nothing should have been spawned'
+          );
+        }
+      }
+
+      const codeContext = state.codeContext;
+      if (!codeContext) {
+        failures.push('code-context probe did not report');
+      } else if (codeContext.error) {
+        failures.push(`code-context: ${codeContext.error}`);
+      } else {
+        if (!codeContext.foldCount) {
+          failures.push(
+            `the ${codeContext.grammar} grammar produced no foldable ranges; breadcrumbs and sticky scroll both rest on them`
+          );
+        }
+        const trail = codeContext.trail || [];
+        if (!trail.includes('class Outer') || !trail.includes('method(a)')) {
+          failures.push(
+            `breadcrumbs did not name the enclosing blocks: ${JSON.stringify(trail)}`
+          );
+        }
+        if (trail.indexOf('class Outer') > trail.indexOf('method(a)')) {
+          failures.push('breadcrumbs are inside-out; the trail must read outermost first');
+        }
+        const pinned = codeContext.pinned || [];
+        if (pinned.length === 0) {
+          failures.push(
+            'sticky scroll pinned nothing after scrolling past the lines that opened the blocks'
+          );
+        }
+        if (pinned.length > 0 && !/class Outer/.test(pinned[0])) {
+          failures.push(
+            `sticky scroll pinned the wrong lines: ${JSON.stringify(pinned)}`
           );
         }
       }
