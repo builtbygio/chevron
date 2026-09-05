@@ -116,6 +116,40 @@ that language gets no indent adjustment rather than an exception.
 
 ---
 
+## The parser reads the buffer, it is not handed it
+
+`TreeSitterLanguageMode.parse` gives tree-sitter a callback that returns a
+chunk of the buffer at a character index, rather than the whole file as a
+string. A parse runs on every transaction, so on a large file the old shape
+handed the parser megabytes per keystroke; the callback lets it read only what
+it needs — for `typescript/lib/_tsc.js`, 782KB of 6.2MB.
+
+Measured in the packaged app, single character insert in that file:
+
+| | |
+|--|--|
+| whole buffer as a string | 21.4 ms |
+| chunk callback | **9.2 ms** |
+
+**It is not a general speed-up.** A file small enough to be read in full costs
+the same either way. Parsed outside the editor, at a fixed chunk size of 4096:
+
+| lines | string | callback |
+|------:|-------:|---------:|
+| 200 | 0.043 ms | 0.049 ms |
+| 2,000 | 0.487 ms | 0.486 ms |
+| 20,000 | 5.28 ms | 5.35 ms |
+| 120,000 | 39.2 ms | 38.6 ms |
+
+The standalone gap is much smaller than the in-app one, so part of the win is
+in not materialising the buffer for the binding on each keystroke rather than
+in the parse itself; that split was not isolated further. `getText()` is not
+the cost — it returns in under a millisecond even straight after an edit.
+
+The reader is `chunkReaderForBuffer`, a pure function of a buffer-shaped
+object, so `script/ci/tree-sitter-chunk-reader.test.js` can drive it with a
+buffer made of a string and check reassembly at every chunk size from 1 to 40.
+
 ## 5. What this document is not
 
 It is not a plan. Ports happen when a parser exists and someone wants the
