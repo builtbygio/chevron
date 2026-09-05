@@ -14,12 +14,9 @@ const {repoForPath} = require("./helpers");
 module.exports =
 (MoveDialog = class MoveDialog extends Dialog {
   constructor(initialPath, {willMove, onMove, onMoveFailed}) {
+    // Locals first: `this` is out of reach until super() has run.
     let prompt;
-    this.initialPath = initialPath;
-    this.willMove = willMove;
-    this.onMove = onMove;
-    this.onMoveFailed = onMoveFailed;
-    if (fs.isDirectorySync(this.initialPath)) {
+    if (fs.isDirectorySync(initialPath)) {
       prompt = 'Enter the new path for the directory.';
     } else {
       prompt = 'Enter the new path for the file.';
@@ -27,10 +24,15 @@ module.exports =
 
     super({
       prompt,
-      initialPath: chevron.project.relativize(this.initialPath),
+      initialPath: chevron.project.relativize(initialPath),
       select: true,
       iconClass: 'icon-arrow-right'
     });
+
+    this.initialPath = initialPath;
+    this.willMove = willMove;
+    this.onMove = onMove;
+    this.onMoveFailed = onMoveFailed;
   }
 
   onConfirm(newPath) {
