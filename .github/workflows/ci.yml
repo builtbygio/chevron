@@ -216,6 +216,7 @@ jobs:
           node --test script/ci/derived-constructor-super.test.js
           node --test script/ci/ipc-inventory.test.js
           node --test script/ci/ipc-guard.test.js
+          node --test script/ci/lsp-start-server-payload.test.js
           node --test script/ci/autocomplete-follows-active-editor.test.js
           node --test script/ci/find-packaged-app.test.js
           node --test script/ci/ensure-ripgrep.test.js
