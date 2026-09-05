@@ -114,8 +114,50 @@ restore_one() {
     return 0
   fi
 
+  # Upstream spec helpers are ES modules behind a /** @babel */ pragma. This
+  # runner does not transpile them, and one unloadable helper fails the whole
+  # suite, so they are rewritten to CommonJS on the way in.
+  local converted=0
+  while IFS= read -r esm; do
+    [ -n "$esm" ] || continue
+    node -e '
+      const fs = require("fs");
+      const file = process.argv[1];
+      let src = fs.readFileSync(file, "utf8");
+      const names = [];
+      src = src.replace(/^export\s+(async\s+)?function\s+([A-Za-z0-9_$]+)/gm, (m, isAsync, name) => {
+        names.push(name);
+        return `${isAsync || ""}function ${name}`;
+      });
+      src = src.replace(/^\/\*\*\s*@babel\s*\*\/\s*\n/m, "");
+      if (names.length) {
+        src += `\nmodule.exports = Object.assign(module.exports || {}, { ${names.join(", ")} });\n`;
+      }
+      fs.writeFileSync(file, src);
+    ' "$esm"
+    converted=$((converted + 1))
+  done <<< "$(grep -rl '^export ' "packages/$pkg/spec" 2>/dev/null)"
+
+  # require('atom') is the upstream module name. The global `atom` is aliased
+  # by the spec runner, but the module is not — it is `chevron` here.
+  local renamed
+  renamed="$(grep -rl "require('atom')\|require(\"atom\")" "packages/$pkg/spec" 2>/dev/null | wc -l | tr -d ' ')"
+  if [ "$renamed" -gt 0 ]; then
+    grep -rl "require('atom')\|require(\"atom\")" "packages/$pkg/spec" 2>/dev/null |
+      while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        sed -i "s/require('atom')/require('chevron')/g; s/require(\"atom\")/require(\"chevron\")/g" "$f"
+      done
+  fi
+
   if [ "$coffee" -gt 0 ]; then
     label="$label, $js js kept, $coffee coffee skipped"
+  fi
+  if [ "$renamed" -gt 0 ]; then
+    label="$label, $renamed require('atom') rewritten"
+  fi
+  if [ "$converted" -gt 0 ]; then
+    label="$label, $converted esm helper(s) converted"
   fi
   printf '%-30s %s\n' "$pkg" "$label"
 }

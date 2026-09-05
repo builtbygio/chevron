@@ -6,17 +6,35 @@
  */
 
 const {ipcRenderer} = require('electron');
-const {profiler} = require('./package-profiler');
+
+// Resolved on first use, not at load. This module is reached from the preload,
+// which runs before anything teaches require about .ts — and package-profiler
+// is TypeScript. In a packaged app there is a compiled .js beside it so the
+// eager require worked; running from a source tree, as the spec runner does,
+// it threw and took the whole preload down with it.
+let profilerModule;
+function getProfiler() {
+  if (profilerModule === undefined) {
+    try {
+      profilerModule = require('./package-profiler').profiler;
+    } catch (error) {
+      profilerModule = null;
+    }
+  }
+  return profilerModule;
+}
 
 // Blocking round trips are the expensive kind, and the call site cannot see
 // who asked, so they are attributed to whichever callback is running.
 function timed(fn) {
-  if (!profiler.enabled) return fn();
+  const profiler = getProfiler();
+  if (!profiler || !profiler.enabled) return fn();
   const started = performance.now();
   try {
     return fn();
   } finally {
-    profiler.recordCurrent('ipc', performance.now() - started);
+    const profiler = getProfiler();
+    if (profiler) profiler.recordCurrent('ipc', performance.now() - started);
   }
 }
 

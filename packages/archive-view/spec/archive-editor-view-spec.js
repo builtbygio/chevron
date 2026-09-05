@@ -1,4 +1,4 @@
-const {Disposable, File} = require('atom')
+const {Disposable, File} = require('chevron')
 const getIconServices = require('../lib/get-icon-services')
 const {it, fit, ffit, fffit, beforeEach, afterEach, conditionPromise} = require('./async-spec-helpers') // eslint-disable-line no-unused-vars
 

@@ -1,7 +1,7 @@
 /* eslint-env jasmine */
 /* eslint-disable no-template-curly-in-string */
 
-const { TextEditor } = require('atom')
+const { TextEditor } = require('chevron')
 const {
   conditionPromise,
   timeoutPromise,

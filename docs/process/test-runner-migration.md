@@ -134,6 +134,16 @@ were vendored at.
    as-is with a `// FIXME(restored-spec): <one line>` at the top and noted in
    the PR body — the point is to *see* the failures, not to hide them.
 
+   **Two upstream idioms need converting on the way in**, both handled by
+   `script/restore-package-specs.sh` and reported per package:
+
+   - `spec/async-spec-helpers.js` is an ES module behind a `/** @babel */`
+     pragma. This runner does not transpile it, and one unloadable helper
+     fails the whole suite, so it is rewritten to CommonJS.
+   - `require('atom')` is the upstream module name. The *global* `atom` is
+     aliased by `spec/jasmine-test-runner.js`, but the module is not — it is
+     `chevron` here — so those requires are rewritten.
+
    **Upstream specs are partly CoffeeScript, which this repo bans** (PR 23,
    gated by `script/ci/no-coffee-in-owned-packages.test.js`). The restore
    script drops `.coffee` files and reports what it dropped. Where a package's
@@ -142,11 +152,28 @@ were vendored at.
    `autocomplete-html` are both in that position. Those are a conversion
    decision per package, not a restore.
 
-   **Running a suite locally may hang.** `archive-view` reached
-   `##[command] Executing archive-view tests` and produced nothing for nine
-   minutes. That is the same class of problem Phase 0 exists to verify, so
-   until Phase 0's acceptance holds, the nightly is the only reliable check —
-   which is what the per-PR acceptance below already asks for.
+   **The hang had a cause, and it is fixed.** Every suite — core and package
+   alike — reached `Executing … tests` and produced nothing until the watchdog
+   killed it at 900s. The 2026-09-05 19:12 nightly started 20 suites, killed
+   19, and reported no result at all.
+
+   `static/preload.js` requires `src/remote-compat` → `renderer-ipc` →
+   `fs-ipc-client`, which required `./package-profiler`. That module is
+   TypeScript. A packaged app has a compiled `.js` beside it, so the require
+   resolved; the spec runner starts with `--resource-path <repo>` where only
+   the `.ts` exists, nothing has taught `require` about `.ts` that early, and
+   the preload died. Without a preload there is no `chevron` global, so every
+   suite sat until it was killed.
+
+   The require is resolved on first use now. Restored suites run:
+
+   ```
+   background-tips   9 tests, 26 assertions, 1 failure
+   archive-view     21 tests, 38 assertions, 27 failures
+   ```
+
+   Failures are the point — they are upstream specs meeting a modernised
+   fork — but they are results rather than silence.
 
 **Batching:** 10 packages per PR, alphabetical. The jasmine workflow's
 shard computation already filters to packages that have specs, so restored
@@ -278,7 +305,8 @@ Phase 1 step 1 prints 71 lines, as stated. The restore script exists and
 works; run `script/restore-package-specs.sh --list` to see what is left, then
 pass it the next ten names.
 
-Phase 0 is still open: the 2026-09-05 07:58 nightly, the last before #343,
-had **6 of 9 jobs cancelled**. A `workflow_dispatch` run after #343 was
-started at 19:12 the same day; its result decides whether Phase 0's
-acceptance holds.
+Phase 0's cancellation half now holds: the 19:12 run after #343 had **zero
+cancelled** jobs against 6 of 9 before it. Its artefact half did not — only
+one shard of five uploaded a JUnit file, because the other four had nothing to
+upload. That was the preload failure above, and it is fixed; the next nightly
+is the one that decides Phase 0.
