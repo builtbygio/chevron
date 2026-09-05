@@ -57,6 +57,58 @@ function isAllowedExternalUrl(url) {
 
 // Absolute filesystem paths only for shell FS helpers. Rejects relative paths
 // and null bytes so a compromised renderer cannot coerce odd shell targets.
+/**
+ * What lsp:start-server will accept. The command itself is checked by
+ * lsp-command-policy; this is the shape around it, including the environment
+ * and working directory the server would be spawned with.
+ */
+function validateStartServerOptions(opts) {
+  const root = guard.requireAbsolutePath(opts && opts.projectRoot, {
+    name: 'projectRoot'
+  });
+  if (!root.ok) return root;
+
+  for (const [name, value] of [
+    ['serverId', opts.serverId],
+    ['command', opts.command]
+  ]) {
+    const check = guard.requireString(value, { name });
+    if (!check.ok) return check;
+  }
+
+  const args = guard.requireStringArray(opts.args, { name: 'args' });
+  if (!args.ok) return args;
+
+  if (opts.rootUri !== undefined) {
+    const uri = guard.requireString(opts.rootUri, { name: 'rootUri' });
+    if (!uri.ok) return uri;
+  }
+
+  if (opts.cwd !== undefined) {
+    // A server that can start anywhere makes the project root meaningless.
+    const cwd = guard.requireAbsolutePath(opts.cwd, {
+      name: 'cwd',
+      roots: [opts.projectRoot]
+    });
+    if (!cwd.ok) return cwd;
+  }
+
+  if (opts.env !== undefined) {
+    if (!opts.env || typeof opts.env !== 'object' || Array.isArray(opts.env)) {
+      return { ok: false, reason: 'env must be an object' };
+    }
+    for (const key of Object.keys(opts.env)) {
+      const check = guard.requireString(opts.env[key], {
+        name: `env.${key}`,
+        allowEmpty: true
+      });
+      if (!check.ok) return check;
+    }
+  }
+
+  return { ok: true };
+}
+
 function settingsViewCacheRoot() {
   return path.join(app.getPath('userData'), 'Cache', 'settings-view');
 }
@@ -811,17 +863,29 @@ module.exports = function registerRendererIpc(atomApplication) {
   // OS dialog) is the confirmation UI. start-server still refuses untrusted
   // roots. Revoking also records "declined" so we do not re-prompt.
   ipcMain.handle('lsp:set-trust', async (_event, { projectRoot, trusted } = {}) => {
+    const root = guard.requireAbsolutePath(projectRoot, { name: 'projectRoot' });
+    if (!root.ok) {
+      console.warn(`lsp:set-trust refused: ${root.reason}`);
+      return false;
+    }
     lspManager.setTrusted(projectRoot, Boolean(trusted));
     return Boolean(trusted);
   });
 
   // Packages declare their servers at activation so main knows which
   // commands are legitimate; see lsp-command-policy.
+  // The payload names a command; lsp-command-policy verifies an installed
+  // package declares it before recording anything.
   ipcMain.handle('lsp:register-server', async (_event, { id, command } = {}) => {
     return lspManager.recordRegistration({ id, command });
   });
 
   ipcMain.handle('lsp:unregister-server', async (_event, { id } = {}) => {
+    const check = guard.requireString(id, { name: 'id' });
+    if (!check.ok) {
+      console.warn(`lsp:unregister-server refused: ${check.reason}`);
+      return false;
+    }
     return lspManager.forgetRegistration(id);
   });
 
@@ -830,6 +894,12 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.handle('lsp:start-server', async (_event, opts = {}) => {
+    const check = validateStartServerOptions(opts);
+    if (!check.ok) {
+      const error = new Error(`lsp:start-server refused: ${check.reason}`);
+      error.code = 'LSP_PAYLOAD_REJECTED';
+      throw error;
+    }
     return lspManager.startServer(opts);
   });
 
@@ -849,6 +919,11 @@ module.exports = function registerRendererIpc(atomApplication) {
   );
 
   ipcMain.handle('lsp:stop-server', async (_event, { serverId } = {}) => {
+    const check = guard.requireString(serverId, { name: 'serverId' });
+    if (!check.ok) {
+      console.warn(`lsp:stop-server refused: ${check.reason}`);
+      return false;
+    }
     return lspManager.stopServer(serverId);
   });
 
@@ -857,3 +932,6 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
 };
+
+// Exported for script/ci/lsp-start-server-payload.test.js.
+module.exports.validateStartServerOptions = validateStartServerOptions;
