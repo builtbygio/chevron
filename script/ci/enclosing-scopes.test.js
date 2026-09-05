@@ -33,7 +33,7 @@ function loadTs(file) {
   return module.exports;
 }
 
-const { enclosingRanges, labelForLine, FoldableRangeCache } = loadTs(
+const { enclosingRanges, labelForLine, FoldableRangeCache, MAX_LINES } = loadTs(
   path.join(ROOT, 'src', 'enclosing-scopes.ts')
 );
 
@@ -181,6 +181,38 @@ describe('the foldable range cache', () => {
     cache.invalidate(editor);
     cache.get(editor);
     assert.strictEqual(counter.calls, 2);
+  });
+
+  it('refuses to walk the tree of a very large file', () => {
+    // Measured on 120,000 lines: 40,003 ranges, 2.5 seconds, renderer
+    // blocked. The cache is invalidated on every edit, so without this the
+    // next scroll after each typing pause would pay it again.
+    const counter = { calls: 0 };
+    const cache = new FoldableRangeCache({ maxLines: 100 });
+    const editor = editorWith([range(0, 5)], counter);
+    editor.getLineCount = () => 500;
+
+    assert.deepStrictEqual(cache.get(editor), []);
+    assert.strictEqual(counter.calls, 0, 'the expensive call is never made');
+  });
+
+  it('still works for a file under the limit', () => {
+    const counter = { calls: 0 };
+    const cache = new FoldableRangeCache({ maxLines: 100 });
+    const editor = editorWith([range(0, 5)], counter);
+    editor.getLineCount = () => 50;
+
+    assert.strictEqual(cache.get(editor).length, 1);
+    assert.strictEqual(counter.calls, 1);
+  });
+
+  it('has a default limit rather than relying on callers to pass one', () => {
+    assert.ok(MAX_LINES > 0 && MAX_LINES <= 50000);
+    const counter = { calls: 0 };
+    const editor = editorWith([range(0, 5)], counter);
+    editor.getLineCount = () => MAX_LINES + 1;
+    assert.deepStrictEqual(new FoldableRangeCache().get(editor), []);
+    assert.strictEqual(counter.calls, 0);
   });
 
   it('gives nothing rather than throwing when the mode has no folds', () => {

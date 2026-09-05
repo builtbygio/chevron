@@ -32,6 +32,20 @@ answer on **every scroll event**. So the ranges are cached per editor and
 invalidated on change and on grammar change; scrolling then costs a filter over
 an array.
 
+Measured in the packaged app on a **120,000 line** file:
+
+| | |
+|--|--|
+| `getFoldableRanges()`, cold | **2,533 ms** (40,003 ranges) |
+| 50 scroll queries, warm cache | 13 ms |
+
+The cache does its job — but it is invalidated on every edit, so without a
+limit each pause in typing would buy another 2.5 second freeze on the next
+scroll. Above **10,000 lines** (`MAX_LINES` in `src/enclosing-scopes.ts`) both
+features are simply off: the check is on the line count, before the call, since
+the cost is in the asking. An empty trail hides the bar and pins nothing, so
+there is nothing further to handle.
+
 ## What broke, and what it taught
 
 Sticky scroll's first version called `chevron.views.getView(editor)` and
@@ -67,7 +81,7 @@ cursor with it.
 
 | Test | Covers |
 |------|--------|
-| `script/ci/enclosing-scopes.test.js` | ordering, containment at the opening and closing lines, same-line de-duplication, label trimming, and that the cache asks the language mode once |
+| `script/ci/enclosing-scopes.test.js` | ordering, containment at the opening and closing lines, same-line de-duplication, label trimming, that the cache asks the language mode once, and that a file over the line limit is never asked at all |
 | `script/ci/smoke-test.js` | a real grammar producing folds, the trail naming the enclosing blocks outermost first, and the right lines pinned after scrolling |
 
 The smoke phase uses a file of its own. Sharing `probe.ts` meant replacing the

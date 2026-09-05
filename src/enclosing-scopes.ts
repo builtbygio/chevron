@@ -67,6 +67,17 @@ export function labelForLine(text: string, maxLength: number = 80): string {
 }
 
 /**
+ * Above this many lines, nothing is offered at all.
+ *
+ * Measured on a 120,000 line file: `getFoldableRanges()` found 40,003 ranges
+ * and took **2.5 seconds**, blocking the renderer for all of it. The cache
+ * makes a scroll cheap afterwards (0.26ms), but it is invalidated on every
+ * edit — so without a limit, each pause in typing would buy a 2.5 second
+ * freeze on the next scroll. A breadcrumb bar is not worth that.
+ */
+const MAX_LINES = 10000;
+
+/**
  * Foldable ranges for an editor, cached until the buffer stops changing.
  *
  * `getFoldableRanges()` walks the whole syntax tree, which is far too much to
@@ -76,15 +87,30 @@ export function labelForLine(text: string, maxLength: number = 80): string {
  */
 export class FoldableRangeCache {
   private cache: WeakMap<object, any[]>;
+  private maxLines: number;
 
-  constructor() {
+  constructor(options: { maxLines?: number } = {}) {
     this.cache = new WeakMap();
+    this.maxLines = options.maxLines == null ? MAX_LINES : options.maxLines;
   }
 
   get(editor: any): any[] {
     if (!editor) return [];
     const cached = this.cache.get(editor);
     if (cached) return cached;
+
+    // Checked before asking, not after: the cost is in the asking.
+    try {
+      if (
+        typeof editor.getLineCount === 'function' &&
+        editor.getLineCount() > this.maxLines
+      ) {
+        this.cache.set(editor, []);
+        return [];
+      }
+    } catch (error) {
+      return [];
+    }
 
     let ranges: any[] = [];
     try {
@@ -105,4 +131,9 @@ export class FoldableRangeCache {
   }
 }
 
-module.exports = { enclosingRanges, labelForLine, FoldableRangeCache };
+module.exports = {
+  enclosingRanges,
+  labelForLine,
+  FoldableRangeCache,
+  MAX_LINES
+};
