@@ -185,7 +185,9 @@ function createRgSearchManager(opts = {}) {
   function cancel(searchId, sender) {
     const rec = searches.get(searchId);
     if (!rec) return { ok: false };
-    if (sender && rec.sender && rec.sender !== sender) return { ok: false };
+    // Unconditional: when either side was missing this used to fall through,
+    // so a record without a sender was cancellable by any window.
+    if (rec.sender !== sender) return { ok: false };
     try {
       rec.child.kill();
     } catch (_) {

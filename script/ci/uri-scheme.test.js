@@ -51,7 +51,12 @@ describe('URI scheme (Wave 4)', () => {
     // Main must actually handle the channel, and only for known schemes.
     const main = read('src/main-process/atom-application.js');
     assert.match(main, /ipcMain\.handle\(\s*'removeAsDefaultProtocolClient'/);
-    assert.match(main, /protocol !== 'atom' && protocol !== 'chevron'/);
+    // The check moved from an inline comparison to a named set; what matters
+    // is that only these two schemes reach app.setAsDefaultProtocolClient.
+    assert.match(main, /REGISTRABLE_PROTOCOLS = new Set\(\['chevron', 'atom'\]\)/);
+    assert.match(main, /REGISTRABLE_PROTOCOLS\.has\(protocol\)/);
+    // And the executable is main's own, never one the renderer supplied.
+    assert.match(main, /execPath: process\.execPath/);
   });
 
   it('the main-process protocol handler serves only chevron', () => {

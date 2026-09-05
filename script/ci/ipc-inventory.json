@@ -34,7 +34,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "spawn",
       "ui"
@@ -55,7 +55,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
-    "validation": "partial",
+    "validation": "full",
     "effect": [
       "spawn",
       "network"
@@ -326,7 +326,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "read"
     ]
@@ -346,7 +346,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "spawn",
       "write-fs"
@@ -527,7 +527,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
-    "validation": "partial",
+    "validation": "full",
     "effect": [
       "spawn",
       "network"
@@ -629,7 +629,7 @@
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "spawn",
       "ui"
@@ -700,7 +700,7 @@
     "kind": "handle",
     "file": "src/main-process/register-rg-ipc.js",
     "scope": "owner-window",
-    "validation": "partial",
+    "validation": "full",
     "effect": [
       "spawn"
     ]
@@ -741,7 +741,7 @@
     "kind": "handle",
     "file": "src/main-process/atom-application.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "read"
     ]
@@ -891,7 +891,7 @@
     "kind": "handle",
     "file": "src/main-process/atom-application.js",
     "scope": "global",
-    "validation": "partial",
+    "validation": "full",
     "effect": [
       "write-fs"
     ]
@@ -901,7 +901,7 @@
     "kind": "handle",
     "file": "src/main-process/atom-application.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "spawn",
       "write-fs"

@@ -109,6 +109,55 @@ function validateStartServerOptions(opts) {
   return { ok: true };
 }
 
+const REGISTRABLE_PROTOCOLS = new Set(['chevron', 'atom']);
+
+/** Only this app's schemes, and only this app's binary. */
+function protocolRegistration(protocol, args) {
+  if (!REGISTRABLE_PROTOCOLS.has(protocol)) return null;
+  const check = guard.requireStringArray(args, { name: 'args' });
+  if (!check.ok) return null;
+  return { protocol, execPath: process.execPath, args: args || [] };
+}
+
+/**
+ * A jump list task names a program the OS will launch later, so the only
+ * program accepted is this application's own.
+ */
+function validateJumpList(categories) {
+  if (!Array.isArray(categories)) {
+    return { ok: false, reason: 'categories must be an array' };
+  }
+  for (const category of categories) {
+    if (!category || typeof category !== 'object') {
+      return { ok: false, reason: 'each category must be an object' };
+    }
+    if (category.items === undefined) continue;
+    if (!Array.isArray(category.items)) {
+      return { ok: false, reason: 'category items must be an array' };
+    }
+    for (const item of category.items) {
+      if (!item || typeof item !== 'object') {
+        return { ok: false, reason: 'each item must be an object' };
+      }
+      if (item.program !== undefined && item.program !== process.execPath) {
+        return {
+          ok: false,
+          reason: `item program must be this application (${String(item.program)})`
+        };
+      }
+      for (const field of ['title', 'description', 'args', 'iconPath']) {
+        if (item[field] === undefined) continue;
+        const check = guard.requireString(item[field], {
+          name: `item ${field}`,
+          allowEmpty: true
+        });
+        if (!check.ok) return check;
+      }
+    }
+  }
+  return { ok: true };
+}
+
 function settingsViewCacheRoot() {
   return path.join(app.getPath('userData'), 'Cache', 'settings-view');
 }
@@ -498,6 +547,12 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.on('atom-app-set-jump-list-sync', (event, categories) => {
+    const check = validateJumpList(categories);
+    if (!check.ok) {
+      console.warn(`atom-app-set-jump-list-sync refused: ${check.reason}`);
+      event.returnValue = false;
+      return;
+    }
     try {
       if (typeof app.setJumpList === 'function') {
         app.setJumpList(categories);
@@ -520,6 +575,11 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.handle('chevron:app-set-jump-list', (_event, categories) => {
+    const check = validateJumpList(categories);
+    if (!check.ok) {
+      console.warn(`chevron:app-set-jump-list refused: ${check.reason}`);
+      return false;
+    }
     try {
       if (typeof app.setJumpList === 'function') {
         app.setJumpList(categories);
@@ -596,12 +656,17 @@ module.exports = function registerRendererIpc(atomApplication) {
   // Protocol client (settings-view); also available via ipcMain.handle elsewhere
   ipcMain.on(
     'atom-is-default-protocol-client-sync',
-    (event, protocolName, execPath, args) => {
+    (event, protocolName, _execPath, args) => {
+      const reg = protocolRegistration(protocolName, args);
+      if (!reg) {
+        event.returnValue = false;
+        return;
+      }
       try {
         event.returnValue = app.isDefaultProtocolClient(
-          protocolName,
-          execPath,
-          args
+          reg.protocol,
+          reg.execPath,
+          reg.args
         );
       } catch (error) {
         event.returnValue = false;
@@ -611,12 +676,17 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   ipcMain.on(
     'atom-set-as-default-protocol-client-sync',
-    (event, protocolName, execPath, args) => {
+    (event, protocolName, _execPath, args) => {
+      const reg = protocolRegistration(protocolName, args);
+      if (!reg) {
+        event.returnValue = false;
+        return;
+      }
       try {
         event.returnValue = app.setAsDefaultProtocolClient(
-          protocolName,
-          execPath,
-          args
+          reg.protocol,
+          reg.execPath,
+          reg.args
         );
       } catch (error) {
         event.returnValue = false;
@@ -935,3 +1005,4 @@ module.exports = function registerRendererIpc(atomApplication) {
 
 // Exported for script/ci/lsp-start-server-payload.test.js.
 module.exports.validateStartServerOptions = validateStartServerOptions;
+module.exports.validateJumpList = validateJumpList;
