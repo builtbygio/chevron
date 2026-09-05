@@ -252,6 +252,7 @@ function resolveTypescriptLanguageServer() {
 
 module.exports = {
   which,
+  packageSearchRoots,
   resolveBuiltinRegistrations,
   resolveBuiltinServer,
   resolveTypescriptLanguageServer,

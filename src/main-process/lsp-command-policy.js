@@ -14,6 +14,7 @@
 const path = require('path');
 const fs = require('fs');
 const { resolveUserDataFile } = require('../user-config-path');
+const guard = require('./ipc-guard');
 
 /** registrationId -> command, as declared by the renderer at activation */
 const registered = new Map();
@@ -55,12 +56,80 @@ function loadBuiltinCommands() {
 }
 
 /**
- * Record a server a package registered. Called from the renderer at
- * activation via `lsp:register-server`.
- * @param {{ id: string, command: string }} reg
+ * Commands declared by an installed package's own manifest, read from disk.
+ * commandKey -> package directory name.
  */
-function recordRegistration(reg) {
-  if (!reg || !reg.id || !reg.command) return false;
+function loadDeclaredPackageCommands(context = {}) {
+  if (context.declaredCommands) return context.declaredCommands;
+  const declared = new Map();
+  let roots = [];
+  try {
+    roots = require('../lsp/builtin-servers').packageSearchRoots(
+      context.resourcePath
+    );
+  } catch (_) {
+    return declared;
+  }
+  for (const root of roots) {
+    let names = [];
+    try {
+      names = fs.readdirSync(root);
+    } catch (_) {
+      continue;
+    }
+    for (const name of names) {
+      try {
+        const manifest = JSON.parse(
+          fs.readFileSync(path.join(root, name, 'package.json'), 'utf8')
+        );
+        const server =
+          manifest && manifest.chevron && manifest.chevron.languageServer;
+        const key = commandKey(server && server.command);
+        if (key) declared.set(key, name);
+      } catch (_) {
+        /* not a package, or unreadable */
+      }
+    }
+  }
+  return declared;
+}
+
+/**
+ * Record a server a package registered, if an installed package declares that
+ * command in its own manifest.
+ *
+ * The renderer asking is not evidence: it names a command main then verifies
+ * on disk. Without that, this map is an allowlist writable by the party it
+ * constrains, and lsp:set-trust — also renderer-settable — is the only other
+ * gate before spawning.
+ *
+ * @param {{ id: string, command: string }} reg
+ * @param {{ declaredCommands?: Map, resourcePath?: string }} [context]
+ * @returns {boolean} whether it was recorded
+ */
+function recordRegistration(reg, context = {}) {
+  const id = guard.requireString(reg && reg.id, { name: 'id' });
+  if (!id.ok) {
+    console.warn(`lsp:register-server refused: ${id.reason}`);
+    return false;
+  }
+  const command = guard.requireString(reg && reg.command, { name: 'command' });
+  if (!command.ok) {
+    console.warn(`lsp:register-server refused: ${command.reason}`);
+    return false;
+  }
+  const key = commandKey(reg.command);
+  if (!key) {
+    console.warn('lsp:register-server refused: command has no basename');
+    return false;
+  }
+  const declared = loadDeclaredPackageCommands(context);
+  if (!declared.has(key)) {
+    console.warn(
+      `lsp:register-server refused: no installed package declares "${reg.command}"`
+    );
+    return false;
+  }
   registered.set(String(reg.id), String(reg.command));
   return true;
 }
@@ -144,6 +213,7 @@ function checkCommand(command, context = {}) {
 
 module.exports = {
   checkCommand,
+  loadDeclaredPackageCommands,
   readUserConfig,
   recordRegistration,
   forgetRegistration,
