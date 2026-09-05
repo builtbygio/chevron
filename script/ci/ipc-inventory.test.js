@@ -96,12 +96,43 @@ describe('the recorded IPC surface', () => {
   });
 });
 
+const SCOPES = ['owner-window', 'any-window', 'global'];
+const VALIDATIONS = ['full', 'partial', 'none'];
+const EFFECTS = ['read', 'write-fs', 'spawn', 'network', 'dialog', 'eval', 'ui'];
+
 describe('the recorded entries are well formed', () => {
-  it('carries scope and validation on every entry', () => {
+  it('classifies every entry', () => {
     for (const entry of RECORDED) {
-      assert.ok(Object.prototype.hasOwnProperty.call(entry, 'scope'), entry.channel);
-      assert.ok(Object.prototype.hasOwnProperty.call(entry, 'validation'), entry.channel);
       assert.ok(['handle', 'on'].includes(entry.kind), entry.channel);
+      assert.ok(
+        SCOPES.includes(entry.scope),
+        `${entry.channel}: scope must be one of ${SCOPES.join(', ')}`
+      );
+      assert.ok(
+        VALIDATIONS.includes(entry.validation),
+        `${entry.channel}: validation must be one of ${VALIDATIONS.join(', ')}`
+      );
+      assert.ok(
+        Array.isArray(entry.effect) && entry.effect.length > 0,
+        `${entry.channel}: effect must be a non-empty array`
+      );
+      for (const effect of entry.effect) {
+        assert.ok(
+          EFFECTS.includes(effect),
+          `${entry.channel}: unknown effect "${effect}"`
+        );
+      }
+    }
+  });
+
+  it('never lets a channel move away from full validation', () => {
+    // Phase 3 only ever tightens. A diff that relaxes one is a regression,
+    // and this is the only place that would notice.
+    const HARDENED = RECORDED.filter(e => e.validation === 'full').map(e => e.channel);
+    assert.ok(HARDENED.length > 0);
+    for (const channel of HARDENED) {
+      const entry = RECORDED.find(e => e.channel === channel);
+      assert.equal(entry.validation, 'full', `${channel} lost its validation`);
     }
   });
 
