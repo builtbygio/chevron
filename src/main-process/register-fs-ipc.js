@@ -11,7 +11,8 @@ const os = require('os');
 const path = require('path');
 const { ipcMain, app, BrowserWindow } = require('electron');
 const { pathContained } = require('./atom-protocol-path');
-const { isSafeAbsolutePath } = require('./ipc-guard');
+const guard = require('./ipc-guard');
+const { isSafeAbsolutePath } = guard;
 
 const READ_FILE_MAX_BYTES = 64 * 1024 * 1024; // 64 MiB cap for sync read/copy path
 
@@ -156,6 +157,70 @@ function isAllowedFsPathOrRefresh(fullPath) {
   return isAllowedFsPath(fullPath);
 }
 
+/**
+ * Roots too broad to be a project. Adding one of these would make the strict
+ * roots check cover the whole disk, which is the same as switching it off.
+ */
+function isOverbroadRoot(resolved) {
+  if (resolved === path.parse(resolved).root) return true;
+  let home = null;
+  try {
+    home = path.resolve(os.homedir());
+  } catch (error) {
+    home = null;
+  }
+  return home !== null && resolved === home;
+}
+
+/**
+ * What the renderer may declare as this window's project roots.
+ *
+ * The whole payload is refused rather than filtered: applying half of it
+ * would leave the window's roots disagreeing with the renderer's, and the
+ * disagreement would show up as unexplained permission errors later.
+ *
+ * This checks shape and breadth, not provenance. A package can still name any
+ * particular directory it likes; what it cannot do is name one that covers
+ * everything. Closing that properly means main accepting only roots it
+ * offered — see docs/reference/security-threat-model.md.
+ */
+function validateProjectRoots(projectRootPaths) {
+  if (!Array.isArray(projectRootPaths)) {
+    return { ok: false, reason: 'project roots must be an array' };
+  }
+  for (const candidate of projectRootPaths) {
+    const check = guard.requireAbsolutePath(candidate, { name: 'project root' });
+    if (!check.ok) return check;
+    const resolved = path.resolve(candidate);
+    if (isOverbroadRoot(resolved)) {
+      return { ok: false, reason: `${resolved} is too broad to be a project root` };
+    }
+  }
+  return { ok: true };
+}
+
+/** Node accepts these; anything else throws inside fs and reads as a bug. */
+const WRITE_ENCODINGS = new Set([
+  'utf8', 'utf-8', 'ascii', 'base64', 'base64url', 'binary',
+  'hex', 'latin1', 'ucs2', 'ucs-2', 'utf16le', 'utf-16le'
+]);
+
+function validateWriteFilePayload(data, encoding) {
+  const isBytes =
+    Buffer.isBuffer(data) ||
+    data instanceof Uint8Array ||
+    ArrayBuffer.isView(data);
+  if (!isBytes && typeof data !== 'string') {
+    return { ok: false, reason: 'data must be a string or bytes' };
+  }
+  if (encoding !== undefined && encoding !== null) {
+    if (typeof encoding !== 'string' || !WRITE_ENCODINGS.has(encoding.toLowerCase())) {
+      return { ok: false, reason: `unknown encoding ${String(encoding)}` };
+    }
+  }
+  return { ok: true };
+}
+
 function applyProjectRootsFromRenderer(event, projectRootPaths) {
   const paths = Array.isArray(projectRootPaths) ? projectRootPaths : [];
   try {
@@ -252,6 +317,19 @@ module.exports = function registerFsIpc(atomApplication) {
   // Sync: renderer Project.setPaths/addPath must update allowed roots before
   // did-change-paths listeners (tree-view) lstat the new folder.
   ipcMain.on('atom-window-set-project-roots-sync', (event, projectRootPaths) => {
+    const check = validateProjectRoots(projectRootPaths);
+    if (!check.ok) {
+      console.warn(
+        `atom-window-set-project-roots-sync: refused (${check.reason})`
+      );
+      event.returnValue = {
+        ok: false,
+        error: check.reason,
+        strict: strictMode,
+        roots: allowedRoots
+      };
+      return;
+    }
     applyProjectRootsFromRenderer(event, projectRootPaths);
     event.returnValue = { ok: true, strict: strictMode, roots: allowedRoots };
   });
@@ -359,6 +437,12 @@ module.exports = function registerFsIpc(atomApplication) {
   ipcMain.on('atom-fs-write-file-sync', (event, fullPath, data, encoding) => {
     if (!isAllowedFsPath(fullPath))
       return deny(event, 'atom-fs-write-file-sync', fullPath);
+    const payload = validateWriteFilePayload(data, encoding);
+    if (!payload.ok) {
+      console.warn(`atom-fs-write-file-sync: refused (${payload.reason})`);
+      event.returnValue = { ok: false, error: payload.reason, code: 'EINVAL' };
+      return;
+    }
     try {
       if (encoding) fs.writeFileSync(fullPath, data, encoding);
       else fs.writeFileSync(fullPath, data);
@@ -445,3 +529,5 @@ module.exports.refreshFsIpcRoots = refreshFsIpcRoots;
 module.exports.isAllowedFsPath = isAllowedFsPath;
 module.exports.isAllowedFsPathOrRefresh = isAllowedFsPathOrRefresh;
 module.exports.applyProjectRootsFromRenderer = applyProjectRootsFromRenderer;
+module.exports.validateProjectRoots = validateProjectRoots;
+module.exports.validateWriteFilePayload = validateWriteFilePayload;

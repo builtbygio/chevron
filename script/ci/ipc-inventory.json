@@ -276,7 +276,7 @@
     "kind": "on",
     "file": "src/main-process/register-fs-ipc.js",
     "scope": "any-window",
-    "validation": "partial",
+    "validation": "full",
     "effect": [
       "write-fs"
     ]
@@ -407,7 +407,7 @@
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
-    "validation": "partial",
+    "validation": "full",
     "effect": [
       "write-fs"
     ]
@@ -598,7 +598,7 @@
     "kind": "on",
     "file": "src/main-process/register-fs-ipc.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "partial",
     "effect": [
       "write-fs",
       "read"

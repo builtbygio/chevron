@@ -21,6 +21,7 @@ const {
 } = require('electron');
 const guard = require('./ipc-guard');
 const { isSafeAbsolutePath } = guard;
+const { isAllowedFsPath } = require('./register-fs-ipc');
 
 let registered = false;
 
@@ -422,7 +423,10 @@ module.exports = function registerRendererIpc(atomApplication) {
   // Move a path to the trash. Electron removed sync moveItemToTrash; use
   // async trashItem. Returns boolean success for package call sites.
   ipcMain.handle('atom-shell-move-item-to-trash', async (_event, fullPath) => {
-    if (!isSafeAbsolutePath(fullPath)) {
+    // Confined to the same roots as a write. Absolute-and-nul-free let any
+    // package trash any file, while atom-fs-write-file-sync beside it could
+    // not touch one outside a project.
+    if (!isAllowedFsPath(fullPath)) {
       console.warn(
         `atom-shell-move-item-to-trash: blocked path ${String(fullPath)}`
       );
