@@ -124,6 +124,18 @@ module.exports = function({ blobStore }) {
     console.error('[chevron-pty] could not publish chevron.pty', err);
   }
 
+  // Hunk arithmetic for the review surface. Pure functions, published rather
+  // than reached for: a package climbing into ../../../src is the thing
+  // bundled-packages.test.js exists to stop.
+  try {
+    global.chevron.changeProposal = require('./change-proposal');
+  } catch (err) {
+    console.error(
+      '[chevron-review] could not publish chevron.changeProposal',
+      err
+    );
+  }
+
   return global.chevron.startEditorWindow().then(function() {
     // Workaround for focus getting cleared upon window creation
     const windowFocused = function() {

@@ -1,0 +1,48 @@
+.diff-review {
+  padding: 12px;
+  overflow: auto;
+  height: 100%;
+  background-color: var(--tool-panel-background-color);
+
+  .diff-review-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .diff-review-title { font-weight: bold; }
+  .diff-review-count { color: var(--text-color-subtle); }
+  .diff-review-apply { margin-left: auto; }
+
+  .diff-review-path {
+    font-weight: bold;
+    margin: 12px 0 4px;
+  }
+
+  .diff-review-hunk {
+    border: 1px solid var(--base-border-color);
+    border-radius: 3px;
+    margin-bottom: 8px;
+  }
+
+  .diff-review-hunk-header {
+    display: block;
+    padding: 4px 8px;
+    background-color: var(--background-color-highlight);
+    color: var(--text-color-subtle);
+  }
+
+  .diff-review-lines {
+    margin: 0;
+    padding: 4px 0;
+    background: transparent;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .diff-review-line { padding: 0 8px; }
+  .diff-review-add { background-color: var(--background-color-success); }
+  .diff-review-remove { background-color: var(--background-color-error); }
+  .diff-review-empty { color: var(--text-color-subtle); }
+}
