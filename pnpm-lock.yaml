@@ -147,6 +147,9 @@ importers:
       bracket-matcher:
         specifier: workspace:@builtbygio/bracket-matcher@*
         version: link:packages/bracket-matcher
+      breadcrumbs:
+        specifier: workspace:@builtbygio/breadcrumbs@*
+        version: link:packages/breadcrumbs
       chai:
         specifier: 4.3.4
         version: 4.3.4
@@ -468,6 +471,9 @@ importers:
       status-bar:
         specifier: workspace:@builtbygio/status-bar@*
         version: link:packages/status-bar
+      sticky-scroll:
+        specifier: workspace:@builtbygio/sticky-scroll@*
+        version: link:packages/sticky-scroll
       styleguide:
         specifier: workspace:@builtbygio/styleguide@*
         version: link:packages/styleguide
@@ -614,6 +620,8 @@ importers:
       underscore-plus:
         specifier: 1.x
         version: 1.7.0
+
+  packages/breadcrumbs: {}
 
   packages/chevron-dark-syntax: {}
 
@@ -1258,6 +1266,8 @@ importers:
       underscore-plus:
         specifier: ^1.0.0
         version: 1.7.0
+
+  packages/sticky-scroll: {}
 
   packages/styleguide:
     dependencies:

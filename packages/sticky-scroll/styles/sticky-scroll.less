@@ -1,0 +1,26 @@
+// Deliberately no rule on atom-text-editor itself: restyling the editor's
+// own positioning context is a good way to break its measurements for
+// everything else in the editor.
+.sticky-scroll {
+  position: absolute;
+  // Below the gutter's width so the pinned text lines up with the code, and
+  // above the lines so it is readable.
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  pointer-events: auto;
+  // The lines are not where they appear to be, so they must never take a
+  // selection or put the cursor somewhere it is not.
+  user-select: none;
+
+  .sticky-scroll-line {
+    padding: 0 8px;
+    white-space: pre;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: var(--tool-panel-background-color);
+    border-bottom: 1px solid var(--base-border-color);
+    opacity: 0.97;
+  }
+}

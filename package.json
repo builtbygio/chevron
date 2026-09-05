@@ -157,7 +157,9 @@
     "wrap-guide": "workspace:@builtbygio/wrap-guide@*",
     "yargs": "16.1.0",
     "terminal": "workspace:@builtbygio/terminal@*",
-    "diff-review": "workspace:@builtbygio/diff-review@*"
+    "diff-review": "workspace:@builtbygio/diff-review@*",
+    "breadcrumbs": "workspace:@builtbygio/breadcrumbs@*",
+    "sticky-scroll": "workspace:@builtbygio/sticky-scroll@*"
   },
   "packageDependencies": {
     "one-dark-ui": "1.12.6",
@@ -240,7 +242,9 @@
     "lsp-servers": "0.1.0",
     "lsp-diagnostics-stub": "0.1.0",
     "terminal": "0.1.0",
-    "diff-review": "0.1.0"
+    "diff-review": "0.1.0",
+    "breadcrumbs": "0.1.0",
+    "sticky-scroll": "0.1.0"
   },
   "private": true,
   "overrides": {

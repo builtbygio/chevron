@@ -127,6 +127,16 @@ module.exports = function({ blobStore }) {
   // Hunk arithmetic for the review surface. Pure functions, published rather
   // than reached for: a package climbing into ../../../src is the thing
   // bundled-packages.test.js exists to stop.
+  // What encloses a line, shared by breadcrumbs and sticky scroll.
+  try {
+    global.chevron.enclosingScopes = require('./enclosing-scopes');
+  } catch (err) {
+    console.error(
+      '[chevron-context] could not publish chevron.enclosingScopes',
+      err
+    );
+  }
+
   // Task definitions: parsing and validation only. Running one is the
   // terminal package's job, and is gated on project trust there.
   try {
