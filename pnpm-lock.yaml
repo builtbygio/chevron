@@ -189,6 +189,9 @@ importers:
       devtron:
         specifier: 1.4.0
         version: 1.4.0
+      diff-review:
+        specifier: workspace:@builtbygio/diff-review@*
+        version: link:packages/diff-review
       document-register-element:
         specifier: ^1.14.10
         version: 1.14.10
@@ -688,6 +691,8 @@ importers:
       fs-plus:
         specifier: ^3.0.0
         version: 3.1.1
+
+  packages/diff-review: {}
 
   packages/encoding-selector:
     dependencies:

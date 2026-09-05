@@ -1084,6 +1084,98 @@ const TERMINAL_EXPR = `(function() {
   });
 })()`;
 
+// The review surface: propose a change, take one hunk, leave the other, and
+// have the result be one undoable step.
+//
+// The hunk arithmetic is gated in change-proposal.test.js. What only the app
+// can answer is whether accepting through the UI writes what was accepted,
+// and whether a single undo takes it back -- a review surface that applies
+// what you rejected, or that needs six undos to back out, is worse than none.
+const REVIEW_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__reviewProbe) {
+    window.__reviewProbe = { phase: 'running', result: null };
+    var finish = function(result) {
+      window.__reviewProbe.result = result;
+      window.__reviewProbe.phase = 'done';
+    };
+    if (!chevron.changeProposal) {
+      finish({ error: 'chevron.changeProposal is not published' });
+    } else {
+      chevron.packages
+        .activatePackage('diff-review')
+        .then(function() {
+          if (!chevron.review || !chevron.review.propose) {
+            return finish({ error: 'chevron.review.propose is not published' });
+          }
+          var editor = chevron.workspace.getTextEditors().filter(function(e) {
+            return /probe\.txt$/.test(e.getPath() || '');
+          })[0];
+          if (!editor) return finish({ error: 'probe.txt is not open' });
+
+          var seed = [];
+          for (var n = 1; n <= 40; n++) seed.push('line ' + n);
+          editor.setText(seed.join(String.fromCharCode(10)) + String.fromCharCode(10));
+          var original = editor.getText();
+          var proposed = original
+            .replace('line 5' + String.fromCharCode(10), 'FIVE' + String.fromCharCode(10))
+            .replace('line 35' + String.fromCharCode(10), 'THIRTY-FIVE' + String.fromCharCode(10));
+
+          var proposal = chevron.changeProposal.proposeChange(
+            editor.getPath(),
+            original,
+            proposed
+          );
+          var promise = chevron.review.propose({
+            title: 'Smoke proposal',
+            proposals: [proposal]
+          });
+
+          setTimeout(function() {
+            var view = document.querySelector('.diff-review');
+            if (!view) return finish({ error: 'review pane did not open' });
+            var toggles = view.querySelectorAll('.diff-review-hunk-toggle');
+            if (toggles.length > 1) {
+              toggles[1].checked = false;
+              toggles[1].dispatchEvent(new Event('change'));
+            }
+            view.querySelector('.diff-review-apply').click();
+
+            promise.then(function(result) {
+              setTimeout(function() {
+                var text = editor.getText();
+                editor.undo();
+                setTimeout(function() {
+                  finish({
+                    hunks: proposal.hunks.length,
+                    toggles: toggles.length,
+                    accepted: result.accepted,
+                    tookAccepted: text.indexOf('FIVE') !== -1,
+                    leftRejected:
+                      text.indexOf('THIRTY-FIVE') === -1 &&
+                      text.indexOf('line 35') !== -1,
+                    oneUndoRestores: editor.getText() === original,
+                    paneClosed: !document.querySelector('.diff-review')
+                  });
+                }, 500);
+              }, 500);
+            });
+          }, 1500);
+        })
+        .catch(function(error) {
+          finish({ error: String(error && error.message) });
+        });
+    }
+  }
+  return JSON.stringify({
+    status: window.__reviewProbe.phase === 'done' ? 'ready' : 'pending',
+    review: window.__reviewProbe.result
+  });
+})()`;
+
 function isAppWindowTarget(target) {
   if (!target || target.type !== 'page') return false;
   const url = target.url || '';
@@ -1686,6 +1778,23 @@ async function main() {
       }
     }
 
+    // The review surface, before the styleguide takes the active pane.
+    if (state && state.status === 'ready') {
+      for (let attempt = 0; attempt < 120; attempt++) {
+        let reviewState;
+        try {
+          reviewState = await probeWindow([], REVIEW_EXPR);
+        } catch (error) {
+          reviewState = { review: { error: String(error.message || error) } };
+        }
+        if (reviewState && reviewState.review) {
+          state.review = reviewState.review;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
     // The styleguide, last: it takes over the active pane.
     if (state && state.status === 'ready') {
       for (let attempt = 0; attempt < 40; attempt++) {
@@ -1879,6 +1988,38 @@ async function main() {
         }
         if (!terminal.cwdInProject) {
           failures.push('terminal did not open in a project root');
+        }
+      }
+
+      const review = state.review;
+      if (!review) {
+        failures.push('review probe did not report');
+      } else if (review.error) {
+        failures.push(`review: ${review.error}`);
+      } else {
+        if (review.hunks !== 2 || review.toggles !== 2) {
+          failures.push(
+            `review showed ${review.toggles} hunks for a two-hunk proposal (computed ${review.hunks})`
+          );
+        }
+        if (review.accepted !== 1) {
+          failures.push(`review applied ${review.accepted} hunks, expected 1`);
+        }
+        if (!review.tookAccepted) {
+          failures.push('review did not apply the hunk that was accepted');
+        }
+        if (!review.leftRejected) {
+          failures.push(
+            'review applied the hunk that was rejected — the worst thing this surface can do'
+          );
+        }
+        if (!review.oneUndoRestores) {
+          failures.push(
+            'one undo did not take the file back; the application was not a single transaction'
+          );
+        }
+        if (!review.paneClosed) {
+          failures.push('the review pane stayed open after applying');
         }
       }
 

@@ -122,7 +122,11 @@ packages and language servers.
 
 ### What is missing, and it is all the human's half
 
-- a **diff review** surface: propose, show, accept per hunk, undo as one step
+- ~~a **diff review** surface: propose, show, accept per hunk, undo as one
+  step~~ — **shipped** ([change-review.md](../reference/change-review.md)).
+  `chevron.review.propose()` over `chevron.changeProposal`, applied in one
+  transaction. Conflict detection, for a file that changes between proposal
+  and apply, is the next thing it needs
 - **task state that survives reload** — the reload path is well understood now
   (#308), and an agent's work must not die with a window
 - a **terminal**. There is no terminal package in the tree at all — decided

@@ -1,0 +1,9 @@
+{
+  "name": "@builtbygio/diff-review",
+  "version": "0.1.0",
+  "main": "./lib/main",
+  "description": "Review a proposed change hunk by hunk before it is applied.",
+  "license": "MIT",
+  "repository": "https://github.com/builtbygio/chevron",
+  "engines": { "chevron": "*", "atom": "*" }
+}
