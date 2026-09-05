@@ -483,6 +483,7 @@ jobs:
         run: |
           node --test script/ci/github-8b.test.js
           node --test script/ci/lsp-builtin-discover.test.js
+          node --test script/ci/language-server-scopes.test.js
           node --test script/ci/lsp-late-registration.test.js
           node --test script/ci/package-profiler.test.js
           node --test script/ci/config-precedence.test.js

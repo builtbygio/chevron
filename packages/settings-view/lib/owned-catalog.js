@@ -59,7 +59,7 @@ module.exports = [
     description:
       'Grammar, spelling and style for Markdown and plain text, offline, ' +
       'through harper-ls.',
-    scopes: ['source.gfm', 'text.plain']
+    scopes: ['source.gfm', 'text.plain', 'text.plain.null-grammar']
   },
   {
     name: 'chevron-lsp-rust',

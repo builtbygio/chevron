@@ -13,7 +13,8 @@
       "id": "harper-ls",
       "scopes": [
         "source.gfm",
-        "text.plain"
+        "text.plain",
+        "text.plain.null-grammar"
       ],
       "command": "bin/harper-ls",
       "args": [
