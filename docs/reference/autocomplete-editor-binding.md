@@ -56,6 +56,13 @@ An editor with no entry in the map is ignored. Mini editors in panels are
 watched with their own labels, and binding one with `workspace-center` labels
 would ask the wrong providers.
 
+The active-editor path also defers to a **focused editor outside the workspace
+centre**. A mini editor in a panel is never the active text editor, so without
+that, switching tabs would take autocomplete away from a panel the user is
+typing in. The test is on the labels rather than on focus alone: deferring to
+any focused editor would defeat the fix, because the editor left behind in the
+bug is usually the focused one.
+
 ## Gates
 
 | Test | Covers |

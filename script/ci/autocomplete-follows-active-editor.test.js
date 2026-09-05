@@ -55,9 +55,28 @@ describe('binding the manager to an editor', () => {
     // Mini editors in panels are watched with their own labels; an editor with
     // no entry must not be bound with the wrong ones.
     const idx = source.indexOf('observeActiveTextEditor');
-    const block = source.slice(idx, idx + 400);
+    const block = source.slice(idx, idx + 700);
     assert.match(block, /watchedEditors\.get\(editor\)/);
     assert.match(block, /if \(labels\)/);
+  });
+});
+
+describe('a focused mini editor keeps the manager', () => {
+  it('the active-editor path defers to one', () => {
+    // A mini editor in a panel is never the workspace active text editor, so
+    // without this, switching tabs takes autocomplete away from it.
+    const idx = source.indexOf('observeActiveTextEditor');
+    const block = source.slice(idx, idx + 500);
+    assert.match(block, /editorIsFocusedOutsideWorkspaceCenter\(\)/);
+  });
+
+  it('and the test is on the labels, not on focus alone', () => {
+    const idx = source.indexOf('editorIsFocusedOutsideWorkspaceCenter ()');
+    assert.notEqual(idx, -1);
+    const body = source.slice(idx, idx + 400);
+    assert.match(body, /editorLabels/);
+    assert.match(body, /workspace-center/);
+    assert.match(body, /hasFocus/);
   });
 });
 

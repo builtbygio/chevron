@@ -143,6 +143,12 @@ class AutocompleteManager {
     }
   }
 
+  editorIsFocusedOutsideWorkspaceCenter () {
+    if (!this.editor || !this.editorView) return false
+    if (!this.editorLabels || this.editorLabels.includes('workspace-center')) return false
+    return typeof this.editorView.hasFocus === 'function' && this.editorView.hasFocus()
+  }
+
   // Makes the autocomplete manager watch the `editor`.
   // When the watched `editor` is focused, it will provide autocompletions from
   // providers with the given `labels`.
@@ -193,6 +199,10 @@ class AutocompleteManager {
     // the previous one, and typing produces nothing at all.
     this.subscriptions.add(chevron.workspace.observeActiveTextEditor((editor) => {
       if (!editor) return
+      // A focused editor outside the workspace centre — a mini editor in a
+      // panel — keeps the manager: it is never the active text editor, so
+      // switching tabs would otherwise take autocomplete away from it.
+      if (this.editorIsFocusedOutsideWorkspaceCenter()) return
       const labels = this.watchedEditors.get(editor)
       if (labels) this.updateCurrentEditor(editor, labels)
     }))
