@@ -35,7 +35,11 @@ Module.prototype.require = function(id) {
 const {
   validateDialogOptions,
   validateMenuTemplate,
-  validateCrossWindowSend
+  validateCrossWindowSend,
+  validateLspSessionCall,
+  isClipboardType,
+  isUserDefaultQuery,
+  APP_PATH_NAMES
 } = require('../../src/main-process/register-renderer-ipc');
 
 const NUL = '\u0000';
@@ -137,5 +141,48 @@ describe('sending to another window', () => {
     assert.equal(validateCrossWindowSend(-1, 'ok').ok, false);
     assert.equal(validateCrossWindowSend(3, 5).ok, false);
     assert.equal(validateCrossWindowSend(3, '').ok, false);
+  });
+});
+
+describe('calls against a running language server session', () => {
+  it('accepts an ordinary request', () => {
+    assert.equal(validateLspSessionCall('ts:/repo', 'textDocument/hover', 1000).ok, true);
+    assert.equal(validateLspSessionCall('ts:/repo').ok, true);
+  });
+
+  it('refuses a serverId or method that is not a string', () => {
+    assert.equal(validateLspSessionCall(5).ok, false);
+    assert.equal(validateLspSessionCall('').ok, false);
+    assert.equal(validateLspSessionCall('ts:/repo', 42).ok, false);
+  });
+
+  it('bounds the timeout it will wait', () => {
+    assert.equal(validateLspSessionCall('s', 'm', 0).ok, false);
+    assert.equal(validateLspSessionCall('s', 'm', 10 ** 9).ok, false);
+    assert.equal(validateLspSessionCall('s', 'm', 60000).ok, true);
+  });
+});
+
+describe('the small read channels', () => {
+  it('accepts only the clipboard types Electron knows', () => {
+    assert.equal(isClipboardType(undefined), true);
+    assert.equal(isClipboardType('selection'), true);
+    assert.equal(isClipboardType('clipboard'), true);
+    assert.equal(isClipboardType('evil'), false);
+    assert.equal(isClipboardType(5), false);
+  });
+
+  it('accepts only a string key and a known value type for user defaults', () => {
+    assert.equal(isUserDefaultQuery('AppleLanguages', 'array'), true);
+    assert.equal(isUserDefaultQuery('x', 'nope'), false);
+    assert.equal(isUserDefaultQuery(5, 'string'), false);
+    assert.equal(isUserDefaultQuery('x', undefined), false);
+  });
+
+  it('accepts only the path names app.getPath knows', () => {
+    assert.equal(APP_PATH_NAMES.has('userData'), true);
+    assert.equal(APP_PATH_NAMES.has('home'), true);
+    assert.equal(APP_PATH_NAMES.has('../../etc'), false);
+    assert.equal(APP_PATH_NAMES.has(''), false);
   });
 });

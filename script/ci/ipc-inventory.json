@@ -14,7 +14,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "read"
     ]
@@ -76,7 +76,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "read"
     ]
@@ -86,7 +86,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "ui"
     ]
@@ -96,7 +96,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "ui"
     ]
@@ -306,7 +306,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "read"
     ]
@@ -517,7 +517,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "any-window",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "read"
     ]
@@ -650,7 +650,7 @@
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "read"
     ]
@@ -751,7 +751,7 @@
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "any-window",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "read"
     ]
@@ -761,7 +761,7 @@
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "any-window",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "read"
     ]
@@ -791,7 +791,7 @@
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "any-window",
-    "validation": "none",
+    "validation": "partial",
     "effect": [
       "read"
     ]
@@ -811,7 +811,7 @@
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "any-window",
-    "validation": "none",
+    "validation": "partial",
     "effect": [
       "read"
     ]
@@ -821,7 +821,7 @@
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "any-window",
-    "validation": "none",
+    "validation": "partial",
     "effect": [
       "read"
     ]

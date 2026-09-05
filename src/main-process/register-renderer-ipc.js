@@ -187,6 +187,53 @@ function validateCrossWindowSend(windowId, channel) {
   return { ok: true };
 }
 
+/**
+ * The shape of a call against a running language server session.
+ *
+ * This checks the payload, not who is asking. Sessions are keyed by
+ * `${registrationId}:${projectRoot}`, which is deliberately the same in every
+ * window that has the project open, so a single owner cannot be enforced
+ * without breaking the shared case — and stop-server would need refcounting
+ * before it could be. See docs/reference/security-threat-model.md.
+ */
+function validateLspSessionCall(serverId, method, timeoutMs) {
+  const id = guard.requireString(serverId, { name: 'serverId' });
+  if (!id.ok) return id;
+  if (method !== undefined) {
+    const m = guard.requireString(method, { name: 'method' });
+    if (!m.ok) return m;
+  }
+  if (timeoutMs !== undefined) {
+    const t = guard.requireInt(timeoutMs, { name: 'timeoutMs', min: 1, max: 600000 });
+    if (!t.ok) return t;
+  }
+  return { ok: true };
+}
+
+// The names Electron's app.getPath accepts. Anything else throws inside it.
+const APP_PATH_NAMES = new Set([
+  'home', 'appData', 'userData', 'sessionData', 'temp', 'exe', 'module',
+  'desktop', 'documents', 'downloads', 'music', 'pictures', 'videos',
+  'recent', 'logs', 'crashDumps'
+]);
+
+const CLIPBOARD_TYPES = new Set(['selection', 'clipboard']);
+
+function isClipboardType(type) {
+  if (type === undefined || type === null || type === '') return true;
+  return typeof type === 'string' && CLIPBOARD_TYPES.has(type);
+}
+
+/** systemPreferences.getUserDefault takes a key and a known value type. */
+const USER_DEFAULT_TYPES = new Set([
+  'string', 'boolean', 'integer', 'float', 'double', 'url', 'array', 'dictionary'
+]);
+
+function isUserDefaultQuery(key, type) {
+  if (!guard.requireString(key, { name: 'key' }).ok) return false;
+  return typeof type === 'string' && USER_DEFAULT_TYPES.has(type);
+}
+
 const REGISTRABLE_PROTOCOLS = new Set(['chevron', 'atom']);
 
 /** Only this app's schemes, and only this app's binary. */
@@ -471,6 +518,10 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.on('atom-get-user-default-sync', (event, key, type) => {
+    if (!isUserDefaultQuery(key, type)) {
+      event.returnValue = undefined;
+      return;
+    }
     try {
       if (process.platform === 'darwin' && systemPreferences) {
         event.returnValue = systemPreferences.getUserDefault(key, type);
@@ -483,6 +534,7 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.handle('chevron:get-user-default', (_event, key, type) => {
+    if (!isUserDefaultQuery(key, type)) return undefined;
     try {
       if (process.platform === 'darwin' && systemPreferences) {
         return systemPreferences.getUserDefault(key, type);
@@ -625,7 +677,13 @@ module.exports = function registerRendererIpc(atomApplication) {
     return true;
   });
 
+  // app.getPath only knows a fixed set of names; anything else throws.
   ipcMain.on('atom-app-get-path-sync', (event, name) => {
+    if (!APP_PATH_NAMES.has(name)) {
+      console.warn(`atom-app-get-path-sync: refused name ${String(name)}`);
+      event.returnValue = null;
+      return;
+    }
     try {
       event.returnValue = app.getPath(name);
     } catch (error) {
@@ -697,6 +755,11 @@ module.exports = function registerRendererIpc(atomApplication) {
   // --- Clipboard (P2) -------------------------------------------------------
 
   ipcMain.on('atom-clipboard-write-text-sync', (event, text, type) => {
+    if (!guard.requireString(text, { name: 'text', allowEmpty: true }).ok ||
+        !isClipboardType(type)) {
+      event.returnValue = false;
+      return;
+    }
     try {
       if (type) clipboard.writeText(text, type);
       else clipboard.writeText(text);
@@ -707,6 +770,10 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.on('atom-clipboard-read-text-sync', (event, type) => {
+    if (!isClipboardType(type)) {
+      event.returnValue = '';
+      return;
+    }
     try {
       event.returnValue = type ? clipboard.readText(type) : clipboard.readText();
     } catch (error) {
@@ -715,6 +782,10 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.on('atom-clipboard-write-find-text-sync', (event, text) => {
+    if (!guard.requireString(text, { name: 'text', allowEmpty: true }).ok) {
+      event.returnValue = false;
+      return;
+    }
     try {
       if (typeof clipboard.writeFindText === 'function') {
         clipboard.writeFindText(text);
@@ -923,6 +994,10 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.on('atom-utility-worker-is-destroyed-sync', (event, workerId) => {
+    if (!guard.requireInt(workerId, { name: 'workerId', min: 0 }).ok) {
+      event.returnValue = true;
+      return;
+    }
     event.returnValue = !packageUtilityWorker.isUtilityWorker(workerId);
   });
 
@@ -1047,10 +1122,12 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.handle('lsp:is-trusted', async (_event, { projectRoot } = {}) => {
+    if (!guard.requireAbsolutePath(projectRoot, { name: 'projectRoot' }).ok) return false;
     return lspManager.isTrusted(projectRoot);
   });
 
   ipcMain.handle('lsp:get-trust-state', async (_event, { projectRoot } = {}) => {
+    if (!guard.requireAbsolutePath(projectRoot, { name: 'projectRoot' }).ok) return null;
     return lspManager.getTrustState(projectRoot);
   });
 
@@ -1099,16 +1176,28 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.handle('lsp:request', async (_event, { serverId, method, params, timeoutMs } = {}) => {
+    const check = validateLspSessionCall(serverId, method, timeoutMs);
+    if (!check.ok) throw Object.assign(new Error(`lsp:request refused: ${check.reason}`), { code: 'LSP_PAYLOAD_REJECTED' });
     return lspManager.request(serverId, method, params, timeoutMs);
   });
 
   ipcMain.handle('lsp:notify', async (_event, { serverId, method, params } = {}) => {
+    const check = validateLspSessionCall(serverId, method);
+    if (!check.ok) {
+      console.warn(`lsp:notify refused: ${check.reason}`);
+      return false;
+    }
     return lspManager.notify(serverId, method, params);
   });
 
   ipcMain.handle(
     'lsp:respond',
     async (_event, { serverId, id, result, error } = {}) => {
+      const check = validateLspSessionCall(serverId);
+      if (!check.ok) {
+        console.warn(`lsp:respond refused: ${check.reason}`);
+        return false;
+      }
       return lspManager.respondToServer(serverId, id, result, error);
     }
   );
@@ -1134,3 +1223,7 @@ module.exports.validateJumpList = validateJumpList;
 module.exports.validateCrossWindowSend = validateCrossWindowSend;
 module.exports.validateDialogOptions = validateDialogOptions;
 module.exports.validateMenuTemplate = validateMenuTemplate;
+module.exports.validateLspSessionCall = validateLspSessionCall;
+module.exports.isClipboardType = isClipboardType;
+module.exports.isUserDefaultQuery = isUserDefaultQuery;
+module.exports.APP_PATH_NAMES = APP_PATH_NAMES;
