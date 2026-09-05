@@ -26,6 +26,19 @@ const argv = require('yargs')
     boolean: true,
     default: false
   })
+  .option('dry-run', {
+    describe:
+      'Print the suites this invocation would run, then exit. Needs no build.',
+    boolean: true,
+    default: false
+  })
+  .option('platform', {
+    describe:
+      'Select suites as if on this platform. Only affects which suites are ' +
+      'chosen; intended for --dry-run ("what would Linux CI run?").',
+    type: 'string',
+    default: process.platform
+  })
   .option('package', {
     describe: 'Run bundled package specs',
     boolean: true,
@@ -53,7 +66,7 @@ const executablePath = findPackagedApp({
   executableName: CONFIG.executableName,
   appName: CONFIG.appName
 });
-if (!executablePath) {
+if (!executablePath && !argv.dryRun) {
   throw new Error(
     '##[error] No Chevron build found. Run "script/build" and try again.'
   );
@@ -93,6 +106,28 @@ function spawnTest(
 ) {
   const cp = childProcess.spawn(executablePath, testArguments, options);
 
+  // Watchdog: a suite that hangs would otherwise hold the job open forever.
+  let killedByWatchdog = false;
+  const watchdog =
+    SUITE_TIMEOUT_MS > 0
+      ? setTimeout(() => {
+          killedByWatchdog = true;
+          console.error(
+            `##[error] ${testName} exceeded ${Math.round(
+              SUITE_TIMEOUT_MS / 1000
+            )}s and was killed.`
+          );
+          try {
+            cp.kill('SIGKILL');
+          } catch (_) {
+            /* already gone */
+          }
+        }, SUITE_TIMEOUT_MS)
+      : null;
+  const clearWatchdog = () => {
+    if (watchdog) clearTimeout(watchdog);
+  };
+
   // collect outputs and errors
   let stderrOutput = '';
   if (cp.stdout) {
@@ -106,6 +141,7 @@ function spawnTest(
 
   // on error
   cp.on('error', error => {
+    clearWatchdog();
     console.log(error, 'error');
     if (finalize) {
       finalize();
@@ -115,6 +151,7 @@ function spawnTest(
 
   // on close
   cp.on('close', exitCode => {
+    clearWatchdog();
     if (exitCode !== 0) {
       retryOrFailTest(
         stderrOutput,
@@ -124,7 +161,8 @@ function spawnTest(
         options,
         callback,
         testName,
-        finalize
+        finalize,
+        killedByWatchdog
       );
     } else {
       // successful test
@@ -145,6 +183,25 @@ function spawnTest(
 const retryNumber = 6; // the number of times a tests repeats
 const retriedTests = new Map(); // a cache of retried tests
 
+// A suite that never exits used to run until the CI job cap, so the whole
+// nightly was cancelled and reported nothing. Kill an overrunning suite and
+// record it as a failure instead: an attributable failure beats no result.
+// 0 disables the watchdog (useful when debugging a suite by hand).
+const SUITE_TIMEOUT_MS = Number(
+  process.env.SPEC_SUITE_TIMEOUT_MS != null
+    ? process.env.SPEC_SUITE_TIMEOUT_MS
+    : 15 * 60 * 1000
+);
+
+// Stop *starting* new suites once the run is near the job cap, so the summary
+// and JUnit still get written. 0 disables the budget.
+const TOTAL_BUDGET_MS = Number(process.env.SPEC_TOTAL_BUDGET_MS || 0);
+const runStartedAt = Date.now();
+
+function budgetExhausted() {
+  return TOTAL_BUDGET_MS > 0 && Date.now() - runStartedAt >= TOTAL_BUDGET_MS;
+}
+
 // Retries the tests if it is timed out for a number of times. Fails the rest of the tests or those that are tried enough times.
 function retryOrFailTest(
   stderrOutput,
@@ -154,10 +211,13 @@ function retryOrFailTest(
   options,
   callback,
   testName,
-  finalize
+  finalize,
+  killedByWatchdog = false
 ) {
   const testKey = createTestKey(executablePath, testArguments, testName);
-  if (isTimedOut(stderrOutput) && shouldTryAgain(testKey)) {
+  // A watchdog kill is a hang, not a flake: retrying it just burns the budget
+  // again. Only the in-suite timeouts that isTimedOut() recognises are retried.
+  if (!killedByWatchdog && isTimedOut(stderrOutput) && shouldTryAgain(testKey)) {
     // retry the timed out test
     let triedNumber = retriedTests.get(testKey) || 0;
     retriedTests.set(testKey, triedNumber + 1);
@@ -175,7 +235,11 @@ function retryOrFailTest(
     if (finalize) {
       finalize();
     } // if finalizer provided
-    console.log(`##[error] Tests for ${testName} failed.`.red);
+    console.log(
+      killedByWatchdog
+        ? `##[error] Tests for ${testName} timed out and were killed.`.red
+        : `##[error] Tests for ${testName} failed.`.red
+    );
     console.log(stderrOutput);
     callback(null, {
       exitCode,
@@ -241,6 +305,8 @@ function runCoreMainProcessTests(callback) {
   );
 }
 
+runCoreMainProcessTests.suiteName = 'core-main-process';
+
 function getCoreRenderProcessTestSuites() {
   // Build an array of functions, each running tests for a different rendering test
   const coreRenderProcessTestSuites = [];
@@ -256,7 +322,7 @@ function getCoreRenderProcessTestSuites() {
       testFile
     ]);
     // the function which runs by async:
-    coreRenderProcessTestSuites.push(function(callback) {
+    const renderSuite = function(callback) {
       const testEnv = prepareEnv('core-render-process');
       console.log(
         `##[command] Executing core render process tests for ${testFile}`.bold
@@ -269,7 +335,9 @@ function getCoreRenderProcessTestSuites() {
         callback,
         `core-render-process in ${testFile}.`
       );
-    });
+    };
+    renderSuite.suiteName = `core-render ${path.basename(testFile)}`;
+    coreRenderProcessTestSuites.push(renderSuite);
   }
 
   return coreRenderProcessTestSuites;
@@ -313,7 +381,7 @@ function getPackageTestSuites() {
     const nodeModulesPath = path.join(repositoryPackagePath, 'node_modules');
 
     // the function which runs by async:
-    packageTestSuites.push(function(callback) {
+    const packageSuite = function(callback) {
       const testEnv = prepareEnv(`bundled-package-${packageName}`);
       let finalize = () => null;
       if (require(pkgJsonPath).atomTestRunner) {
@@ -342,7 +410,9 @@ function getPackageTestSuites() {
         `${packageName} package`,
         finalize
       );
-    });
+    };
+    packageSuite.suiteName = `package ${packageName}`;
+    packageTestSuites.push(packageSuite);
   }
 
   return packageTestSuites;
@@ -363,7 +433,9 @@ function runBenchmarkTests(callback) {
   );
 }
 
-let testSuitesToRun = requestedTestSuites(process.platform);
+let testSuitesToRun = requestedTestSuites(argv.platform || process.platform);
+
+runBenchmarkTests.suiteName = 'benchmark';
 
 function requestedTestSuites(platform) {
   // env variable or argv options
@@ -380,11 +452,29 @@ function requestedTestSuites(platform) {
   let packages2 = process.env.ATOM_RUN_PACKAGE_TESTS === '2';
   let benchmark = argv.coreBenchmark;
 
-  // Operating system overrides:
+  // Operating system overrides.
+  //
+  // Historically a bare `script/test` on Linux (and win32 x86) ran the
+  // main-process suite, because that is where CI ran it. Keep that default,
+  // but only when the caller asked for nothing in particular: the CI package
+  // shards set ATOM_RUN_CORE_TESTS=false precisely so they do *not* run it,
+  // and forcing it here made every package shard run -- and fail on -- the
+  // core main-process suite, while the `core` shard ran it as well.
+  const explicitlyRequested =
+    coreAll ||
+    coreMain ||
+    coreRenderer ||
+    coreRenderer1 ||
+    coreRenderer2 ||
+    packageAll ||
+    packages1 ||
+    packages2 ||
+    benchmark;
   coreMain =
     coreMain ||
-    platform === 'linux' ||
-    (platform === 'win32' && process.arch === 'x86');
+    (!explicitlyRequested &&
+      (platform === 'linux' ||
+        (platform === 'win32' && process.arch === 'x86')));
 
   // split package tests (used for macos in CI)
   const PACKAGES_TO_TEST_IN_PARALLEL = 23;
@@ -462,12 +552,52 @@ function requestedTestSuites(platform) {
   return suites;
 }
 
-asyncSeries(testSuitesToRun, function(err, results) {
+// Guard each suite with the total budget: once it is gone, stop starting new
+// ones so the summary and JUnit below are still written. Being cancelled by
+// the CI job cap produced no output at all, which is what made the nightly
+// useless rather than merely red.
+const guardedSuites = testSuitesToRun.map((suite, index) =>
+  function guardedSuite(callback) {
+    if (budgetExhausted()) {
+      const step = `suite ${index + 1} of ${testSuitesToRun.length}`;
+      console.warn(`##[warning] Skipping ${step}: total time budget exhausted.`);
+      return callback(null, { exitCode: 0, skipped: true, step, testCommand: '' });
+    }
+    return suite(callback);
+  }
+);
+
+if (argv.dryRun) {
+  console.log(
+    `Would run ${testSuitesToRun.length} suite(s) on ${argv.platform ||
+      process.platform}:`
+  );
+  for (const suite of testSuitesToRun) {
+    console.log('  ' + (suite.suiteName || suite.name || 'anonymous suite'));
+  }
+  process.exit(0);
+}
+
+asyncSeries(guardedSuites, function(err, results) {
   if (err) {
     console.error(err);
     process.exit(1);
   } else {
-    const failedSteps = results.filter(({ exitCode }) => exitCode !== 0);
+    const skippedSteps = results.filter(({ skipped }) => skipped);
+    if (skippedSteps.length > 0) {
+      console.warn(
+        `\n##[error] ${skippedSteps.length} of ${results.length} suites did not run: ` +
+          `the ${
+            TOTAL_BUDGET_MS >= 60000
+              ? Math.round(TOTAL_BUDGET_MS / 60000) + '-minute'
+              : Math.round(TOTAL_BUDGET_MS / 1000) + '-second'
+          } budget ran out. ` +
+          'Shrink the shard or raise SPEC_TOTAL_BUDGET_MS.'
+      );
+    }
+    const failedSteps = results.filter(
+      ({ exitCode, skipped }) => !skipped && exitCode !== 0
+    );
 
     if (failedSteps.length > 0) {
       console.warn(
@@ -480,6 +610,9 @@ asyncSeries(testSuitesToRun, function(err, results) {
       }
       process.exit(1);
     }
+
+    // An incomplete run is not a passing run.
+    if (skippedSteps.length > 0) process.exit(1);
 
     process.exit(0);
   }

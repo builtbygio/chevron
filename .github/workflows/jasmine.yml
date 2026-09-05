@@ -38,9 +38,10 @@ jobs:
     # ran the full 240 minutes and was cancelled, so the suite produced no
     # result at all.
     #
-    # Three package shards was still too coarse — run 32124370522 had three of
-    # four jobs hit the 120-minute cap with 31 packages each, leaving most of
-    # the catalog unmeasured. Eight shards puts it at ~12 packages per job.
+    # Shards split the *testable* packages, not all of packageDependencies:
+    # only 12 of 83 vendored packages currently ship a spec/ or test/ dir, so
+    # eight shards left three jobs with nothing to run. Those empty jobs still
+    # failed, because script/test refuses an empty selection.
     strategy:
       fail-fast: false
       matrix:
@@ -50,10 +51,6 @@ jobs:
           - packages-2
           - packages-3
           - packages-4
-          - packages-5
-          - packages-6
-          - packages-7
-          - packages-8
 
     steps:
       - uses: actions/checkout@v5
@@ -152,27 +149,52 @@ jobs:
       # Split packageDependencies across the package shards. Deterministic
       # (sorted, strided) so a given package lands in the same shard run to run
       # and a failure is attributable.
+      # Split only the packages that actually have specs. script/test skips a
+      # package with no spec/ or test/ dir ("No test folder found"), so
+      # striding across all of packageDependencies produced shards whose whole
+      # workload was skipped — and an empty selection is a hard error.
       - name: Compute shard package list
         if: matrix.shard != 'core'
         run: |
           node -e "
+            const fs = require('fs');
+            const path = require('path');
             const SHARDS = Number(process.env.PACKAGE_SHARDS);
             const pd = Object.keys(require('./package.json').packageDependencies || {}).sort();
             const idx = Number('${{ matrix.shard }}'.split('-')[1]) - 1;
             if (!Number.isInteger(idx) || idx < 0 || idx >= SHARDS) {
               throw new Error('shard index ' + idx + ' outside PACKAGE_SHARDS=' + SHARDS);
             }
-            const mine = pd.filter((_, i) => i % SHARDS === idx);
-            console.log('shard ${{ matrix.shard }}: ' + mine.length + ' of ' + pd.length + ' packages');
-            require('fs').appendFileSync(process.env.GITHUB_ENV, 'SHARD_PACKAGES=' + mine.join(',') + '\n');
+            // Same lookup script/test uses, so the two cannot disagree.
+            const testable = pd.filter(name =>
+              ['spec', 'test'].some(sub =>
+                fs.existsSync(path.join('node_modules', name, sub))
+              )
+            );
+            const mine = testable.filter((_, i) => i % SHARDS === idx);
+            console.log(
+              'shard ${{ matrix.shard }}: ' + mine.length + ' of ' + testable.length +
+              ' testable packages (' + pd.length + ' declared)'
+            );
+            if (mine.length) console.log('  ' + mine.join(', '));
+            const out = process.env.GITHUB_ENV;
+            fs.appendFileSync(out, 'SHARD_PACKAGES=' + mine.join(',') + '\n');
+            fs.appendFileSync(out, 'SHARD_EMPTY=' + (mine.length ? 'false' : 'true') + '\n');
           "
         env:
           # Must equal the number of packages-N entries in the matrix above.
           # The step throws if a shard index falls outside it, so the two
           # cannot drift apart silently.
-          PACKAGE_SHARDS: '8'
+          PACKAGE_SHARDS: '4'
+
+      # Nothing to do when a shard drew no testable packages. script/test
+      # treats an empty selection as an error, so skip rather than fail.
+      - name: Skip empty shard
+        if: matrix.shard != 'core' && env.SHARD_EMPTY == 'true'
+        run: echo "No testable packages in ${{ matrix.shard }}; nothing to run."
 
       - name: Full Jasmine (Xvfb)
+        if: matrix.shard == 'core' || env.SHARD_EMPTY != 'true'
         env:
           CI: 'true'
           ATOM_RUN_CORE_TESTS: ${{ matrix.shard == 'core' && 'true' || 'false' }}
@@ -180,6 +202,12 @@ jobs:
           # A dispatch `packages` input overrides the shard split entirely.
           ATOM_PACKAGES_TO_TEST: ${{ inputs.packages || env.SHARD_PACKAGES }}
           TEST_JUNIT_XML_ROOT: ${{ runner.temp }}/jasmine-junit
+          # Kill a suite that hangs instead of letting it hold the job open to
+          # the cap, and stop starting new suites with ~20 minutes to spare so
+          # the summary and JUnit are still written. Both were the difference
+          # between "cancelled, no output" and an attributable result.
+          SPEC_SUITE_TIMEOUT_MS: '900000'
+          SPEC_TOTAL_BUDGET_MS: '5700000'
         run: |
           mkdir -p "$TEST_JUNIT_XML_ROOT"
           xvfb-run -a ./script/with-modern-env ./script/test
