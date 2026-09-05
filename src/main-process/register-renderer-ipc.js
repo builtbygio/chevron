@@ -22,6 +22,7 @@ const {
 const guard = require('./ipc-guard');
 const { isSafeAbsolutePath } = guard;
 const { isAllowedFsPath } = require('./register-fs-ipc');
+const { isMainOnlyChannel } = require('./main-to-renderer-channels');
 
 let registered = false;
 
@@ -107,6 +108,82 @@ function validateStartServerOptions(opts) {
     }
   }
 
+  return { ok: true };
+}
+
+/**
+ * A renderer may not send on a channel main sends on. The receiving window
+ * cannot tell the two apart, so allowing it lets one package impersonate main
+ * to another window — or to its own.
+ */
+/** Text and shape a dialog may be given. Electron throws on the rest. */
+const DIALOG_STRING_FIELDS = ['title', 'message', 'detail', 'checkboxLabel', 'defaultPath', 'buttonLabel'];
+
+function validateDialogOptions(options) {
+  if (options === undefined || options === null) return { ok: true };
+  if (typeof options !== 'object' || Array.isArray(options)) {
+    return { ok: false, reason: 'options must be an object' };
+  }
+  for (const field of DIALOG_STRING_FIELDS) {
+    if (options[field] === undefined) continue;
+    const check = guard.requireString(options[field], {
+      name: field,
+      allowEmpty: true
+    });
+    if (!check.ok) return check;
+  }
+  if (options.buttons !== undefined) {
+    const check = guard.requireStringArray(options.buttons, { name: 'buttons' });
+    if (!check.ok) return check;
+  }
+  for (const field of ['defaultId', 'cancelId']) {
+    if (options[field] === undefined) continue;
+    const check = guard.requireInt(options[field], { name: field, min: 0 });
+    if (!check.ok) return check;
+  }
+  return { ok: true };
+}
+
+/** A menu template, one level of submenus, with only strings for display. */
+function validateMenuTemplate(template, depth = 0) {
+  if (template === undefined || template === null) return { ok: true };
+  if (!Array.isArray(template)) {
+    return { ok: false, reason: 'menu template must be an array' };
+  }
+  if (depth > 8) return { ok: false, reason: 'menu template nested too deeply' };
+  for (const item of template) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      return { ok: false, reason: 'each menu item must be an object' };
+    }
+    for (const field of ['label', 'type', 'role', 'id', 'accelerator']) {
+      if (item[field] === undefined) continue;
+      const check = guard.requireString(item[field], {
+        name: `menu item ${field}`,
+        allowEmpty: true
+      });
+      if (!check.ok) return check;
+    }
+    if (item.submenu !== undefined) {
+      const check = validateMenuTemplate(item.submenu, depth + 1);
+      if (!check.ok) return check;
+    }
+  }
+  return { ok: true };
+}
+
+/**
+ * A renderer may not send on a channel main sends on. The receiving window
+ * cannot tell the two apart, so allowing it lets one package impersonate main
+ * to another window — or to its own.
+ */
+function validateCrossWindowSend(windowId, channel) {
+  const id = guard.requireInt(windowId, { name: 'window id', min: 0 });
+  if (!id.ok) return id;
+  const name = guard.requireString(channel, { name: 'channel' });
+  if (!name.ok) return name;
+  if (isMainOnlyChannel(channel)) {
+    return { ok: false, reason: `${channel} is a main-process channel` };
+  }
   return { ok: true };
 }
 
@@ -324,6 +401,11 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   // Context menu: renderer sends template; main shows it (was window.emit via remote)
   ipcMain.on('atom-context-menu', (event, menuTemplate) => {
+    const check = validateMenuTemplate(menuTemplate);
+    if (!check.ok) {
+      console.warn(`atom-context-menu refused: ${check.reason}`);
+      return;
+    }
     const win = browserWindowFromEvent(event);
     if (win) win.emit('context-menu', menuTemplate);
   });
@@ -331,11 +413,22 @@ module.exports = function registerRendererIpc(atomApplication) {
   // --- Dialogs (P1) ---------------------------------------------------------
 
   ipcMain.handle('atom-show-message-box', async (event, options) => {
+    const check = validateDialogOptions(options);
+    if (!check.ok) {
+      console.warn(`atom-show-message-box refused: ${check.reason}`);
+      return null;
+    }
     const win = browserWindowFromEvent(event);
     return dialog.showMessageBox(win || undefined, options);
   });
 
   ipcMain.on('atom-show-message-box-sync', (event, options) => {
+    const check = validateDialogOptions(options);
+    if (!check.ok) {
+      console.warn(`atom-show-message-box-sync refused: ${check.reason}`);
+      event.returnValue = 0;
+      return;
+    }
     const win = browserWindowFromEvent(event);
     try {
       event.returnValue = dialog.showMessageBoxSync(win || undefined, options);
@@ -346,6 +439,11 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   ipcMain.handle('atom-show-save-dialog', async (event, options) => {
+    const check = validateDialogOptions(options);
+    if (!check.ok) {
+      console.warn(`atom-show-save-dialog refused: ${check.reason}`);
+      return null;
+    }
     const win = browserWindowFromEvent(event);
     const atomWindow = atomApplication.atomWindowForBrowserWindow(win);
     if (atomWindow && typeof atomWindow.showSaveDialog === 'function') {
@@ -405,7 +503,8 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   // Reveal a path in the OS file manager (tree-view "Show in Finder", etc.).
   ipcMain.handle('atom-shell-show-item-in-folder', async (_event, fullPath) => {
-    if (!isSafeAbsolutePath(fullPath)) {
+    // Confined like a read: revealing a path also confirms it exists.
+    if (!isAllowedFsPath(fullPath)) {
       console.warn(
         `atom-shell-show-item-in-folder: blocked path ${String(fullPath)}`
       );
@@ -641,6 +740,13 @@ module.exports = function registerRendererIpc(atomApplication) {
   ipcMain.on(
     'atom-webcontents-send-to-window-id',
     (event, windowId, channel, ...args) => {
+      const check = validateCrossWindowSend(windowId, channel);
+      if (!check.ok) {
+        console.warn(
+          `atom-webcontents-send-to-window-id: refused (${check.reason})`
+        );
+        return;
+      }
       try {
         const win = BrowserWindow.fromId(windowId);
         if (win && !win.isDestroyed()) {
@@ -709,6 +815,11 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   ipcMain.on('atom-wc-send', (event, webContentsId, channel, ...args) => {
     // Git workers use atom-utility-worker-send. This channel is send-to-self only.
+    const nameCheck = validateCrossWindowSend(webContentsId, channel);
+    if (!nameCheck.ok) {
+      console.warn(`atom-wc-send: refused (${nameCheck.reason})`);
+      return;
+    }
     try {
       const senderId = event.sender.id;
       const targetId = webContentsId;
@@ -875,6 +986,11 @@ module.exports = function registerRendererIpc(atomApplication) {
   // --- Popup menu with click callbacks (github) -----------------------------
 
   ipcMain.on('atom-popup-menu', (event, sessionId, template) => {
+    const check = validateMenuTemplate(template);
+    if (!check.ok) {
+      console.warn(`atom-popup-menu refused: ${check.reason}`);
+      return;
+    }
     const win = browserWindowFromEvent(event);
     try {
       const menu = Menu.buildFromTemplate(
@@ -908,6 +1024,11 @@ module.exports = function registerRendererIpc(atomApplication) {
   // --- Open dialog (github DirectorySelect) ---------------------------------
 
   ipcMain.handle('atom-show-open-dialog', async (event, options) => {
+    const check = validateDialogOptions(options);
+    if (!check.ok) {
+      console.warn(`atom-show-open-dialog refused: ${check.reason}`);
+      return null;
+    }
     const win = browserWindowFromEvent(event);
     return dialog.showOpenDialog(win || undefined, options || {});
   });
@@ -1010,3 +1131,6 @@ module.exports = function registerRendererIpc(atomApplication) {
 // Exported for script/ci/lsp-start-server-payload.test.js.
 module.exports.validateStartServerOptions = validateStartServerOptions;
 module.exports.validateJumpList = validateJumpList;
+module.exports.validateCrossWindowSend = validateCrossWindowSend;
+module.exports.validateDialogOptions = validateDialogOptions;
+module.exports.validateMenuTemplate = validateMenuTemplate;

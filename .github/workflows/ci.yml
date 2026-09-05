@@ -219,6 +219,8 @@ jobs:
           node --test script/ci/lsp-start-server-payload.test.js
           node --test script/ci/ipc-spawn-payloads.test.js
           node --test script/ci/ipc-write-fs-payloads.test.js
+          node --test script/ci/ipc-ui-payloads.test.js
+          node --test script/ci/main-to-renderer-channels.test.js
           node --test script/ci/autocomplete-follows-active-editor.test.js
           node --test script/ci/find-packaged-app.test.js
           node --test script/ci/ensure-ripgrep.test.js

@@ -106,7 +106,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "ui"
     ]
@@ -336,7 +336,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "ui"
     ]
@@ -427,7 +427,7 @@
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
-    "validation": "partial",
+    "validation": "full",
     "effect": [
       "ui"
     ]
@@ -437,7 +437,7 @@
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "dialog"
     ]
@@ -447,7 +447,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "dialog"
     ]
@@ -457,7 +457,7 @@
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "dialog"
     ]
@@ -467,7 +467,7 @@
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "dialog"
     ]
@@ -558,7 +558,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
-    "validation": "partial",
+    "validation": "full",
     "effect": [
       "ui"
     ]
@@ -578,7 +578,7 @@
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "any-window",
-    "validation": "none",
+    "validation": "full",
     "effect": [
       "ui"
     ]
