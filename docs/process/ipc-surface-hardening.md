@@ -9,8 +9,15 @@ The repository audit said "91 `ipcMain` handlers, no sender validation, no
 inventory guard." Measured properly, two of those three are wrong or
 imprecise, and the plan below is built on the corrected numbers.
 
-**There are 83 registrations, not 91.** The audit counted every `ipcMain.`
+**There are 90 registrations, not 91.** The audit counted every `ipcMain.`
 line; only `ipcMain.handle(` and `ipcMain.on(` register a channel.
+
+> **Corrected 2026-09-05 while executing Phase 0.** This section first said
+> 83. That number came from a grep that only matches a channel literal on the
+> *same line* as `ipcMain.handle(`, which misses the seven registrations
+> written across two lines. The per-file table below was always right and
+> sums to 90; every prefix count further down was short by exactly those
+> seven. `script/lib/ipc-inventory.js` is now the authority.
 
 | File | Registrations |
 |---|---|
@@ -45,13 +52,13 @@ that scopes resources to it; utility-worker channels check
 `meta.managerWcId !== event.sender.id`; fs-ipc constrains paths to roots.
 The `atom-web-contents-call-sync` proxy that looked like a generic
 method-call hole is allowlisted to six clipboard/undo methods. The unaudited
-mass is the **56 `atom*` legacy channels** in `register-renderer-ipc.js`,
+mass is the **61 `atom*` legacy channels** in `register-renderer-ipc.js`,
 migrated from `electron.remote` during the Electron 14→43 ladder with
 behaviour preserved and validation added ad hoc.
 
 **"No inventory guard" is correct**, and it is the root of the rest. A new
 `ipcMain.handle` can be added in any PR with nothing that asks whether it
-validates its payload, scopes to its window, or is named consistently. Three
+validates its payload, scopes to its window, or is named consistently. Four
 channels have no namespace at all.
 
 ## The plan
@@ -83,14 +90,17 @@ without updating it fails CI.
    It walks `src/main-process/**/*.js`, and for each `ipcMain.handle(` or
    `ipcMain.on(` call returns `{ channel, kind: 'handle'|'on', file, line }`.
    Static regex is sufficient; every registration in the codebase uses a
-   string literal as the first argument. Verify that claim with:
+   string literal as the first argument. The obvious check for that claim,
 
    ```bash
    grep -rn "ipcMain\.\(handle\|on\)(" src/main-process | grep -v "ipcMain\.\(handle\|on\)(['\"]"
    ```
 
-   The expected output is empty. If it is not, those sites are the first
-   thing to fix (make the channel a literal), before anything else.
+   is **not** empty and never was: seven registrations put the literal on the
+   next line. Those are formatting, not dynamic channels. The enumerator has
+   to span lines, and its regex allows whitespace between `(` and the quote.
+   A genuinely dynamic channel would show up as an entry whose `channel` is
+   not a plain string — none exist today.
 
 2. Create `script/ci/ipc-inventory.json`: the output of step 1, sorted by
    channel, with two extra fields per entry that Phase 1 fills in and
@@ -100,8 +110,8 @@ without updating it fails CI.
    - the live enumeration equals the JSON on `channel`, `kind`, `file`
      (line numbers excluded — they churn);
    - every channel matches `/^(atom[-:]|lsp:|chevron:)/`, **except** an
-     explicit `GRANDFATHERED` set containing the three unprefixed channels
-     found today. Adding a fourth fails;
+     explicit `GRANDFATHERED` set containing the four unprefixed channels
+     found today. Adding a fifth fails;
    - no channel appears twice.
 
    The failure message for the first assertion must print the diff and the
@@ -112,7 +122,7 @@ without updating it fails CI.
 4. Add the test to the `unit-and-cpm` job's `node --test` list in
    `.github/workflows/ci.yml`.
 
-**Acceptance:** 83 entries; test green; deleting one line from the JSON
+**Acceptance:** 90 entries; test green; deleting one entry from the JSON
 turns it red with the guard message.
 
 ### Phase 1 — classify every channel
@@ -187,7 +197,7 @@ For each handler:
    `validation` never moves *away* from `"full"`.
 
 Batch size: **10 channels per PR**, one effect category per PR where
-possible. Six PRs covers the 56. Do not combine with Phase 4 renames.
+possible. Seven PRs covers the 61. Do not combine with Phase 4 renames.
 
 **Acceptance per PR:** every touched channel has a test that fails if the
 validation is removed (verify by reverting the guard locally once).
@@ -195,7 +205,7 @@ validation is removed (verify by reverting the guard locally once).
 
 ### Phase 4 — namespace, deferred until Phase 3 is done
 
-56 channels are `atom*`, 11 `chevron:*`, 13 `lsp:*`, 3 unprefixed. The
+61 channels are `atom*`, 11 `chevron:*`, 14 `lsp:*`, 4 unprefixed. The
 Chevron-only policy in REBRANDING.md says new surfaces use `chevron`; these
 predate it. Renaming is cheap in main and expensive everywhere else, because
 bundled packages call channels by string.
@@ -218,7 +228,7 @@ Not before.
 
 ## Where to start
 
-Phase 0, step 1. Run the grep, confirm it is empty, write the enumerator,
-run it, and compare its count to the table at the top of this document. If
-it says 83, the plan is on solid ground. If it does not, stop and find out
-why before writing the JSON.
+Phase 0 is done; start at Phase 1. The enumerator is
+`script/lib/ipc-inventory.js` and the guard is
+`script/ci/ipc-inventory.test.js`. Re-run `enumerateChannels` before trusting
+any count in this document — the numbers here were wrong once already.
