@@ -15,6 +15,7 @@ const { pathContained } = require('./atom-protocol-path');
 const READ_FILE_MAX_BYTES = 64 * 1024 * 1024; // 64 MiB cap for sync read/copy path
 
 let allowedRoots = [];
+let allowedRootsReal = [];
 let strictMode = true;
 let atomApplicationRef = null;
 
@@ -31,6 +32,14 @@ function setFsIpcPolicy(options = {}) {
     allowedRoots = options.roots
       .filter(r => typeof r === 'string' && r.length > 0)
       .map(r => path.resolve(r));
+    // Resolved once here: every FS IPC message pays for this comparison.
+    allowedRootsReal = allowedRoots.map(root => {
+      try {
+        return fs.realpathSync(root);
+      } catch (error) {
+        return root;
+      }
+    });
   }
 }
 
@@ -92,6 +101,45 @@ function isSafeAbsolutePath(fullPath) {
   return path.isAbsolute(fullPath);
 }
 
+// `fullPath` with every symlink followed. A file that does not exist yet has
+// no realpath, so the deepest existing ancestor is resolved and the tail put
+// back. docs/reference/security-threat-model.md
+
+function resolveThroughLinks(fullPath, depth = 0) {
+  let current = path.resolve(fullPath);
+  const tail = [];
+  const withTail = base =>
+    tail.length === 0 ? base : path.join(base, ...tail.slice().reverse());
+
+  for (;;) {
+    try {
+      return withTail(fs.realpathSync(current));
+    } catch (error) {
+      // realpathSync gives up on a dangling symlink, but writing through one
+      // creates the file it points at, so read the link directly.
+      let link = null;
+      try {
+        if (fs.lstatSync(current).isSymbolicLink()) {
+          link = fs.readlinkSync(current);
+        }
+      } catch (lstatError) {
+        // Not a link, just absent.
+      }
+      if (link !== null) {
+        // A loop between links never resolves.
+        if (depth >= 20) return path.resolve(fullPath);
+        const target = path.resolve(path.dirname(current), link);
+        return withTail(resolveThroughLinks(target, depth + 1));
+      }
+      const parent = path.dirname(current);
+      // Nothing on the way up exists, so there is no link to follow.
+      if (parent === current) return path.resolve(fullPath);
+      tail.push(path.basename(current));
+      current = parent;
+    }
+  }
+}
+
 function isAllowedFsPath(fullPath) {
   if (!isSafeAbsolutePath(fullPath)) return false;
   if (!strictMode) return true;
@@ -99,8 +147,10 @@ function isAllowedFsPath(fullPath) {
     // No roots yet (very early boot) — allow absolute paths until roots exist.
     return true;
   }
-  const resolved = path.resolve(fullPath);
-  return allowedRoots.some(root => pathContained(root, resolved));
+  // Where the path lands, not how it was spelled: both sides are resolved, and
+  // resolving only one would deny a file by one of its own names.
+  const real = resolveThroughLinks(path.resolve(fullPath));
+  return allowedRootsReal.some(root => pathContained(root, real));
 }
 
 // Tree-view / project open can race a refresh: retry once after collecting
