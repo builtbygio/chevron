@@ -27,6 +27,7 @@
 | Path traversal via `chevron://` | Path confinement (P0.1). The `atom://` alias was removed in Wave 4, so that scheme no longer reaches the resolver |
 | Renderer drives arbitrary `BrowserWindow` methods | Package-worker-only IPC allowlist (P0.2) |
 | Cross-webContents message injection | Manager↔worker / self-only `atom-wc-send` (P0.3) |
+| Symlink in a project points out of it | FS IPC compares the path with its symlinks followed, not as it was spelled (2026-09-05) |
 | Guest opens `file:///etc/passwd` | Guest file: roots (P2.4) |
 | `shell.openExternal('file://…')` | Scheme allowlist http/https/mailto |
 | Invalid TLS accepted | `certificate-error` → deny (P3.4) |
@@ -48,6 +49,41 @@
 | `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` / `core.enableExperimentalWebFeatures` | Re-enable experimental Chromium features |
 | `CHEVRON_FORCE_MKSNAPSHOT=1` | Retry custom V8 startup snapshot on Electron ≥43 |
 | `CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW=1` | **Ignored.** Node BrowserWindow git workers were removed. |
+
+## FS IPC roots follow symlinks
+
+The roots check used to compare the path as it was spelled. A symlink inside a
+project is spelled inside the project and lands wherever it points, so the
+boundary was open in both directions. Measured in the packaged app:
+
+```
+<project>/link-to-outside -> <somewhere else>
+
+read  <project>/link-to-outside/secret.txt   → returned its contents
+write <project>/link-to-outside/new.txt      → created the file outside
+```
+
+Both are refused now. Three details the fix has to get right:
+
+- **The file being created has no realpath.** The deepest existing ancestor is
+  resolved and the missing tail put back — the directory a file lands in is
+  what decides where it lands.
+- **A dangling symlink still says where a write would go**, and writing
+  through one creates the file it points at. `realpathSync` gives up on those,
+  so the link is read directly rather than falling back to the spelled path.
+- **The roots are resolved too.** `/var` is a symlink to `/private/var` on
+  macOS, so `ATOM_HOME` and the temp directory both arrive symlinked; resolving
+  the path but not the root would deny every one of them.
+
+A symlink that stays inside the project is unaffected, which is the common
+case (`node_modules` links, a checkout linked into another).
+
+This is not proof against an attacker **racing** the check by swapping a
+symlink between the check and the open; that needs `O_NOFOLLOW` at the open
+itself. It closes the case that matters in practice: a repository that
+contains a symlink.
+
+Gate: `script/ci/fs-ipc-roots.test.js`.
 
 ## Residual risk
 

@@ -15,6 +15,7 @@ const { pathContained } = require('./atom-protocol-path');
 const READ_FILE_MAX_BYTES = 64 * 1024 * 1024; // 64 MiB cap for sync read/copy path
 
 let allowedRoots = [];
+let allowedRootsReal = [];
 let strictMode = true;
 let atomApplicationRef = null;
 
@@ -31,6 +32,15 @@ function setFsIpcPolicy(options = {}) {
     allowedRoots = options.roots
       .filter(r => typeof r === 'string' && r.length > 0)
       .map(r => path.resolve(r));
+    // Resolved once here rather than per call: roots change rarely, and every
+    // FS IPC message pays for this comparison.
+    allowedRootsReal = allowedRoots.map(root => {
+      try {
+        return fs.realpathSync(root);
+      } catch (error) {
+        return root;
+      }
+    });
   }
 }
 
@@ -92,6 +102,49 @@ function isSafeAbsolutePath(fullPath) {
   return path.isAbsolute(fullPath);
 }
 
+/**
+ * `fullPath` with every symlink in it followed.
+ *
+ * A file that does not exist yet has no realpath of its own, so the deepest
+ * existing ancestor is resolved and the missing tail put back: the directory
+ * a file lands in is what decides where it lands.
+ */
+function resolveThroughLinks(fullPath, depth = 0) {
+  let current = path.resolve(fullPath);
+  const tail = [];
+  const withTail = base =>
+    tail.length === 0 ? base : path.join(base, ...tail.slice().reverse());
+
+  for (;;) {
+    try {
+      return withTail(fs.realpathSync(current));
+    } catch (error) {
+      // realpathSync gives up on a symlink whose target is missing, but the
+      // link still says where a write would land — and writing through a
+      // dangling symlink creates the file it points at.
+      let link = null;
+      try {
+        if (fs.lstatSync(current).isSymbolicLink()) {
+          link = fs.readlinkSync(current);
+        }
+      } catch (lstatError) {
+        // Not a link, just absent.
+      }
+      if (link !== null) {
+        // A loop between links never resolves; treat it as unresolvable.
+        if (depth >= 20) return path.resolve(fullPath);
+        const target = path.resolve(path.dirname(current), link);
+        return withTail(resolveThroughLinks(target, depth + 1));
+      }
+      const parent = path.dirname(current);
+      // Nothing on the way up exists; there is no link to follow.
+      if (parent === current) return path.resolve(fullPath);
+      tail.push(path.basename(current));
+      current = parent;
+    }
+  }
+}
+
 function isAllowedFsPath(fullPath) {
   if (!isSafeAbsolutePath(fullPath)) return false;
   if (!strictMode) return true;
@@ -100,7 +153,16 @@ function isAllowedFsPath(fullPath) {
     return true;
   }
   const resolved = path.resolve(fullPath);
-  return allowedRoots.some(root => pathContained(root, resolved));
+  if (!allowedRoots.some(root => pathContained(root, resolved))) return false;
+
+  // Spelling a path inside a root is not the same as landing inside it: a
+  // symlink in the project points wherever it likes, and following it takes
+  // the read or the write with it. Compare real to real — the roots need
+  // resolving too, or a project under a symlinked path (/var on macOS) would
+  // stop matching itself.
+  const real = resolveThroughLinks(resolved);
+  if (real === resolved) return true;
+  return allowedRootsReal.some(root => pathContained(root, real));
 }
 
 // Tree-view / project open can race a refresh: retry once after collecting

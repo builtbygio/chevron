@@ -28,6 +28,8 @@ Module.prototype.require = function(id) {
   return origRequire.apply(this, arguments);
 };
 
+const fs = require('fs');
+
 const registerFsIpc = require('../../src/main-process/register-fs-ipc');
 
 const tmp = os.tmpdir();
@@ -75,4 +77,155 @@ test('refresh collects projectRoots via getAllWindows, not missing .windows', ()
     registerFsIpc.isAllowedFsPath(path.join(projectDir, 'main.c')),
     true
   );
+});
+
+// A symlink inside a project points wherever it likes. Checking the path as
+// it was spelled says it is inside the root; following it lands somewhere
+// else entirely. Measured in the packaged app before this was resolved: a
+// write to <project>/link/through-link.txt created a file outside every root,
+// and a read of <project>/link/secret.txt returned its contents.
+function symlinkFixture() {
+  // Under the home directory rather than os.tmpdir(), which is an allowed
+  // root in its own right and would make an escape indistinguishable.
+  const base = fs.mkdtempSync(path.join(os.homedir(), 'chevron-fs-ipc-link-'));
+  const project = path.join(base, 'project');
+  const outside = path.join(base, 'outside');
+  fs.mkdirSync(project);
+  fs.mkdirSync(outside);
+  fs.writeFileSync(path.join(outside, 'secret.txt'), 'secret\n');
+  fs.symlinkSync(outside, path.join(project, 'link-to-outside'));
+  return { base, project, outside };
+}
+
+test('a symlink out of the project does not carry a read with it', () => {
+  const { base, project } = symlinkFixture();
+  try {
+    registerFsIpc.setFsIpcPolicy({ strict: true, roots: [project] });
+    assert.equal(
+      registerFsIpc.isAllowedFsPath(
+        path.join(project, 'link-to-outside', 'secret.txt')
+      ),
+      false
+    );
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('nor a write to a file that does not exist yet', () => {
+  // The file being created has no realpath of its own; the directory it lands
+  // in does, and that is the one that decides.
+  const { base, project } = symlinkFixture();
+  try {
+    registerFsIpc.setFsIpcPolicy({ strict: true, roots: [project] });
+    assert.equal(
+      registerFsIpc.isAllowedFsPath(
+        path.join(project, 'link-to-outside', 'new-file.txt')
+      ),
+      false
+    );
+    assert.equal(
+      registerFsIpc.isAllowedFsPath(
+        path.join(project, 'link-to-outside', 'deep', 'deeper', 'new.txt')
+      ),
+      false
+    );
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('ordinary paths inside the project are unaffected', () => {
+  const { base, project } = symlinkFixture();
+  try {
+    registerFsIpc.setFsIpcPolicy({ strict: true, roots: [project] });
+    assert.equal(registerFsIpc.isAllowedFsPath(path.join(project, 'a.txt')), true);
+    assert.equal(
+      registerFsIpc.isAllowedFsPath(path.join(project, 'src', 'deep', 'b.js')),
+      true
+    );
+    assert.equal(registerFsIpc.isAllowedFsPath(project), true);
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('a symlink that stays inside the project is still allowed', () => {
+  const { base, project } = symlinkFixture();
+  try {
+    fs.mkdirSync(path.join(project, 'real'));
+    fs.writeFileSync(path.join(project, 'real', 'file.txt'), 'x');
+    fs.symlinkSync(path.join(project, 'real'), path.join(project, 'inner-link'));
+    registerFsIpc.setFsIpcPolicy({ strict: true, roots: [project] });
+    assert.equal(
+      registerFsIpc.isAllowedFsPath(path.join(project, 'inner-link', 'file.txt')),
+      true
+    );
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('a root that is itself a symlink still matches its own contents', () => {
+  // /var is a symlink to /private/var on macOS, so ATOM_HOME and the temp
+  // directory both arrive symlinked there. Resolving the path but not the
+  // root would deny every one of them.
+  const { base, project } = symlinkFixture();
+  try {
+    const linkedRoot = path.join(base, 'linked-project');
+    fs.symlinkSync(project, linkedRoot);
+    registerFsIpc.setFsIpcPolicy({ strict: true, roots: [linkedRoot] });
+    assert.equal(
+      registerFsIpc.isAllowedFsPath(path.join(linkedRoot, 'a.txt')),
+      true
+    );
+    assert.equal(
+      registerFsIpc.isAllowedFsPath(path.join(linkedRoot, 'src', 'b.js')),
+      true
+    );
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('a symlink pointing at something missing is still followed', () => {
+  // realpathSync gives up on a dangling link, and writing through one creates
+  // the file it points at — so falling back to the path as spelled would put
+  // a new file anywhere the link names.
+  const { base, project } = symlinkFixture();
+  try {
+    fs.symlinkSync(path.join(base, 'nothing-here'), path.join(project, 'dangling'));
+    registerFsIpc.setFsIpcPolicy({ strict: true, roots: [project] });
+    assert.equal(registerFsIpc.isAllowedFsPath(path.join(project, 'dangling')), false);
+    assert.equal(
+      registerFsIpc.isAllowedFsPath(path.join(project, 'dangling', 'x.txt')),
+      false
+    );
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('a dangling symlink that points back inside the project is allowed', () => {
+  const { base, project } = symlinkFixture();
+  try {
+    fs.symlinkSync(path.join(project, 'not-yet'), path.join(project, 'pending'));
+    registerFsIpc.setFsIpcPolicy({ strict: true, roots: [project] });
+    assert.equal(registerFsIpc.isAllowedFsPath(path.join(project, 'pending')), true);
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('a loop between symlinks is refused rather than hanging', () => {
+  const { base, project } = symlinkFixture();
+  try {
+    fs.symlinkSync(path.join(project, 'b'), path.join(project, 'a'));
+    fs.symlinkSync(path.join(project, 'a'), path.join(project, 'b'));
+    registerFsIpc.setFsIpcPolicy({ strict: true, roots: [project] });
+    // Whatever it decides, it has to decide it: a loop must not hang.
+    assert.equal(typeof registerFsIpc.isAllowedFsPath(path.join(project, 'a')), 'boolean');
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
 });
