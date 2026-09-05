@@ -90,6 +90,23 @@ command path when the binary exists (package registration wins over built-ins).
 These packages are **not** in root `packageDependencies`. The default app install
 stays small. Users who want Rust/TS/Python intelligence opt in via cpm.
 
+## Scopes have to be ones a file can carry
+
+A server's `scopes` are matched against the grammar scope of the open file. A
+scope no grammar produces is not an error — the server simply never attaches.
+
+`harper-ls` declared `source.gfm` and `text.plain`, so it worked on markdown
+and never once on a text file: nothing ships a `text.plain` grammar, so a
+`.txt` falls back to the null grammar and carries
+**`text.plain.null-grammar`**. `markdown-preview` and `spell-check` both list
+the two scopes together for this reason.
+
+`script/ci/language-server-scopes.test.js` checks every declared scope against
+the scopes the shipped grammars actually produce. Three are allowed without a
+grammar (`source.jsx`, `source.js.jsx`, `source.objcpp`) because a community
+grammar may introduce them and the same server already covers those files
+under a scope that exists — `.jsx` as `source.js`, `.mm` as `source.objc`.
+
 ## Related
 
 - [lsp-design.md](./lsp-design.md) §5.5, Phase 5  
