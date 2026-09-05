@@ -3,9 +3,8 @@ const { CompositeDisposable } = require('chevron');
 // The lines that opened the blocks you have scrolled past, pinned to the top
 // of the editor.
 //
-// Drawn as an overlay rather than as decorations: these lines are not where
-// they appear to be, and a decoration that moved a line would move the cursor
-// with it. The overlay never takes a click or a selection.
+// An overlay, not decorations: a decoration that moved a line would move the
+// cursor with it. It never takes a click or a selection.
 //
 // docs/reference/code-context.md
 
@@ -13,20 +12,16 @@ let subscriptions = null;
 let cache = null;
 const overlays = new Map();
 
-// Created on first use, not when the editor opens. Putting a node into every
-// editor at boot -- before the component has measured itself -- broke position
-// arithmetic elsewhere in the editor (`Invalid Point: (NaN, 0)` from an
-// unrelated probe), and most editors never need one.
+// Created on first use: touching an editor's view at boot forces it to
+// measure before it is ready, and most editors never need one.
 function overlayFor(editor) {
   let overlay = overlays.get(editor);
   if (overlay) return overlay;
 
   const element = document.createElement('div');
   element.classList.add('sticky-scroll');
-  // Appended to the editor element, not to .scroll-view: that subtree is the
-  // editor component's, and putting a child in it disturbed the component's
-  // measurements enough to produce `Invalid Point: (NaN, 0)` in unrelated
-  // parts of the editor.
+  // The editor element, not .scroll-view: a child in the component's own
+  // subtree disturbs its measurements.
   const view = chevron.views.getView(editor);
   view.appendChild(element);
 
@@ -46,13 +41,10 @@ function update(editor) {
   const view = chevron.views.getView(editor);
   if (!view || !view.getFirstVisibleScreenRow) return;
   // Nothing to pin over an editor that is not on screen, and asking an
-  // unattached one where it is scrolled to forces the component to measure
-  // before it can -- which produced `Invalid Point: (NaN, 0)` elsewhere in
-  // the editor, in a part of the app with no connection to this feature.
+  // unattached one forces it to measure before it can.
   if (!view.isConnected) return;
 
-  // The row just below the top of the viewport: what is enclosing *that* is
-  // what has scrolled out of sight.
+  // The row below the top of the viewport: what encloses it has scrolled off.
   const firstVisible = view.getFirstVisibleScreenRow();
   if (!Number.isFinite(firstVisible)) return;
   const bufferRow = editor.bufferRowForScreenRow
@@ -113,8 +105,8 @@ function watch(editor) {
     })
   );
   subscriptions.add(editorSubscriptions);
-  // Deliberately not updating here: watch() runs as each editor opens, and
-  // reaching for its view then is what forced the early measurement.
+  // No update here: watch() runs as each editor opens, and reaching for its
+  // view then forces an early measurement.
 }
 
 module.exports = {

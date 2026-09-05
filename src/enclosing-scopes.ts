@@ -2,15 +2,7 @@
 
 /**
  * What encloses a line: the foldable ranges it sits inside, outermost first.
- *
- * Both things built on this want the same answer and would otherwise each
- * work it out. Breadcrumbs name the path to the cursor; sticky scroll pins
- * the lines that opened the blocks you have scrolled past.
- *
- * Foldable ranges rather than symbols, because every grammar is tree-sitter
- * now and declares folds, so this works without a language server — and a
- * feature that goes blank for a file whose server is not running is worse
- * than one that is slightly less clever.
+ * Shared by breadcrumbs and sticky scroll.
  *
  * docs/reference/code-context.md
  */
@@ -21,12 +13,8 @@ export interface RowRange {
 }
 
 /**
- * The ranges containing `row`, outermost first.
- *
- * A range whose first line *is* the row counts as enclosing it: standing on
- * `function foo() {` is standing in `foo`, which is what a breadcrumb should
- * say. Sticky scroll asks for the row below the top of the viewport instead,
- * so the same rule gives it what it wants without a second definition.
+ * The ranges containing `row`, outermost first. A range whose first line *is*
+ * the row counts as enclosing it.
  */
 export function enclosingRanges(ranges: any[], row: number): RowRange[] {
   if (!Array.isArray(ranges)) return [];
@@ -41,11 +29,10 @@ export function enclosingRanges(ranges: any[], row: number): RowRange[] {
     found.push({ startRow, endRow });
   }
 
-  // Outermost first, and for equal starts the one that reaches furthest.
+  // Outermost first; for equal starts, the one that reaches furthest.
   found.sort((a, b) => a.startRow - b.startRow || b.endRow - a.endRow);
 
-  // Two ranges opening on the same line describe one block between them; the
-  // inner adds nothing a reader can see.
+  // Two ranges opening on the same line read as one block.
   const distinct: RowRange[] = [];
   for (const range of found) {
     const last = distinct[distinct.length - 1];
@@ -55,10 +42,7 @@ export function enclosingRanges(ranges: any[], row: number): RowRange[] {
   return distinct;
 }
 
-/**
- * The text of a line, tidied for display: no indentation, no trailing brace
- * or comma, and cut to a length that fits a bar.
- */
+/** A line tidied for display: no indent, no trailing brace, cut to length. */
 export function labelForLine(text: string, maxLength: number = 80): string {
   if (typeof text !== 'string') return '';
   let label = text.trim().replace(/[\s{([,]+$/, '');
@@ -66,24 +50,13 @@ export function labelForLine(text: string, maxLength: number = 80): string {
   return label;
 }
 
-/**
- * Above this many lines, nothing is offered at all.
- *
- * Measured on a 120,000 line file: `getFoldableRanges()` found 40,003 ranges
- * and took **2.5 seconds**, blocking the renderer for all of it. The cache
- * makes a scroll cheap afterwards (0.26ms), but it is invalidated on every
- * edit — so without a limit, each pause in typing would buy a 2.5 second
- * freeze on the next scroll. A breadcrumb bar is not worth that.
- */
+// Above this, both features are off: the walk costs seconds on a very large
+// file and the cache is invalidated on every edit. Numbers in the doc.
 const MAX_LINES = 10000;
 
 /**
- * Foldable ranges for an editor, cached until the buffer stops changing.
- *
- * `getFoldableRanges()` walks the whole syntax tree, which is far too much to
- * do on every scroll event — and scrolling is exactly when sticky scroll asks.
- * The cache is invalidated by the caller on change and grammar change; this
- * only holds it.
+ * Foldable ranges for an editor, cached until the caller invalidates. The walk
+ * is a whole-tree one, and sticky scroll asks on every scroll.
  */
 export class FoldableRangeCache {
   private cache: WeakMap<object, any[]>;
@@ -99,7 +72,7 @@ export class FoldableRangeCache {
     const cached = this.cache.get(editor);
     if (cached) return cached;
 
-    // Checked before asking, not after: the cost is in the asking.
+    // Checked before asking: the cost is in the asking.
     try {
       if (
         typeof editor.getLineCount === 'function' &&
@@ -119,7 +92,7 @@ export class FoldableRangeCache {
         ranges = languageMode.getFoldableRanges() || [];
       }
     } catch (error) {
-      // A language mode mid-reparse is not worth an exception in a status bar.
+      // A mode mid-reparse is not worth an exception in a status bar.
       ranges = [];
     }
     this.cache.set(editor, ranges);
