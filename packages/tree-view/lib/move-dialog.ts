@@ -14,8 +14,7 @@ const {repoForPath} = require("./helpers");
 module.exports =
 (MoveDialog = class MoveDialog extends Dialog {
   constructor(initialPath, {willMove, onMove, onMoveFailed}) {
-    // `this` is out of reach until super() has run, so the prompt and the
-    // relativized path are worked out from the argument.
+    // Locals first: `this` is out of reach until super() has run.
     let prompt;
     if (fs.isDirectorySync(initialPath)) {
       prompt = 'Enter the new path for the directory.';

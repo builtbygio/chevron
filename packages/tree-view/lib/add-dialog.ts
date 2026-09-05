@@ -16,8 +16,7 @@ const {repoForPath} = require('./helpers');
 module.exports =
 (AddDialog = class AddDialog extends Dialog {
   constructor(initialPath, isCreatingFile) {
-    // Everything the super call needs is worked out in locals first: a
-    // derived constructor cannot touch `this` until super() has run.
+    // Locals first: `this` is out of reach until super() has run.
     let directoryPath;
     if (fs.isFileSync(initialPath)) {
       directoryPath = path.dirname(initialPath);

@@ -1,17 +1,10 @@
 'use strict';
 
 /**
- * The tree-view's fs shim has to behave like the fs-plus it replaced.
+ * The tree-view's fs shim has to behave like the fs-plus it replaced, which
+ * creates the destination directory for writeFileSync and copySync.
  *
- * `packages/tree-view/lib/fs-via-main.ts` routes disk work to the main
- * process so the renderer needs no `fs`. It stands in for `fs-plus`, and
- * fs-plus does more than node's `fs` in two places the tree-view relies on:
- * `writeFileSync` and `copySync` create the destination directory first.
- *
- * Dropping that broke "Add File" for any path naming a folder that did not
- * exist yet — the ordinary way to make one from that dialog — with an ENOENT
- * shown in the dialog's error line.
- *
+ * docs/reference/tree-view-file-operations.md
  * Run: node --test script/ci/tree-view-fs-shim.test.js
  */
 
@@ -68,9 +61,7 @@ afterEach(() => {
 
 describe('the shim matches what fs-plus actually did', () => {
   it('fs-plus writeFileSync creates the parent directory', () => {
-    // Pinned against the library rather than against a belief about it: if a
-    // future fs-plus stops doing this, the reason for the shim's mkdirp goes
-    // with it and this test says so.
+    // Pinned against the library, not against a belief about it.
     const dir = makeTempDir('fs-plus-contract-');
     try {
       const target = path.join(dir, 'made', 'by', 'fs-plus.txt');

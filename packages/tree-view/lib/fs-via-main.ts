@@ -1,11 +1,9 @@
 'use strict';
 
 // Disk I/O → atom.applicationDelegate (main-process IPC, absolute paths only).
-// String/path helpers remain on fs-plus (no disk).
-//
-// The generator this file once named is gone; it is maintained by hand now.
-// What it stands in for is fs-plus, so where fs-plus does more than node's fs
-// this has to do the same — see writeFileSync and copySync below.
+// String/path helpers remain on fs-plus (no disk). Stands in for fs-plus, so
+// it has to match it where fs-plus does more than node's fs.
+// Maintained by hand. docs/reference/tree-view-file-operations.md
 
 const nodePath = require('path');
 const pathFs = require('fs-plus');
@@ -49,9 +47,7 @@ module.exports = {
     return d().makeTreeSync(p);
   },
   writeFileSync(p, data, encoding) {
-    // fs-plus mkdirp'd the parent directory here, and the tree-view depends
-    // on it: naming a folder that does not exist yet is the ordinary way to
-    // make one from the Add File dialog. Without it the write is an ENOENT.
+    // fs-plus mkdirp'd the parent here, and Add File depends on it.
     d().makeTreeSync(nodePath.dirname(p));
     return d().writeFileSync(p, data, encoding);
   },
@@ -59,7 +55,7 @@ module.exports = {
     return d().readFileSync(p, encoding);
   },
   copySync(src, dest) {
-    // Same as writeFileSync: fs-plus made the destination directory first.
+    // As writeFileSync: fs-plus made the destination directory first.
     d().makeTreeSync(nodePath.dirname(dest));
     return d().copySync(src, dest);
   },

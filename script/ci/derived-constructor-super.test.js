@@ -3,20 +3,7 @@
 /**
  * A derived constructor may not touch `this` before calling `super()`.
  *
- * CoffeeScript let a subclass constructor assign its fields first and call
- * the parent afterwards, and decaffeinate carried that shape over unchanged —
- * its own header in these files says "DS002: Fix invalid constructor". As a
- * real ES6 class it is a hard error at construction time:
- *
- *   Must call super constructor in derived class before accessing 'this'
- *
- * It cost the tree-view every one of its file operations. Add file, add
- * folder, rename and duplicate each threw the moment the dialog was built,
- * and nothing noticed because nothing constructed them outside a running
- * editor. A grep is a poor substitute for running the code, but it is the
- * cheap half, and it covers every class in the repo rather than the three
- * that were found by hand.
- *
+ * docs/reference/tree-view-file-operations.md
  * Run: node --test script/ci/derived-constructor-super.test.js
  */
 
@@ -50,11 +37,9 @@ function sourceFiles() {
   return found;
 }
 
-/**
- * Comments and string literals blanked out, so `this` in prose and "super("
- * in a message are not mistaken for code. Length is preserved so offsets
- * still line up with the original.
- */
+// Comments and strings blanked out so prose is not read as code. Length is
+// preserved so offsets still line up with the original.
+
 function withoutCommentsAndStrings(source) {
   const chars = source.split('');
   const blank = (from, to) => {
@@ -110,9 +95,8 @@ function offenders(file) {
       i++;
     }
     const body = code.slice(bodyStart, i - 1);
+    // No super() at all: a base class, or one already broken more plainly.
     const superAt = body.search(/\bsuper\s*\(/);
-    // No super() at all: either a base class, or a derived one that is
-    // already broken in a way the runtime reports plainly.
     if (superAt === -1) continue;
     const before = body.slice(0, superAt);
     if (!/\bthis\b/.test(before)) continue;
@@ -141,7 +125,6 @@ test('no derived constructor touches this before super()', () => {
 });
 
 test('the scan can tell code from prose', () => {
-  // The first version of this gate flagged its own explanatory comment.
   const decoy = `
     class A extends B {
       constructor(x) {
