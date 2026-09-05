@@ -1043,7 +1043,12 @@ const TERMINAL_EXPR = `(function() {
               buffer: readBuffer().slice(-200)
             });
           }
-          view.write('echo smoke-terminal-token' + String.fromCharCode(10));
+          // Carriage return, not newline: pressing Enter in a terminal sends
+          // CR, a Unix pty turns it into NL for the shell, and cmd.exe only
+          // accepts CR. Sending LF opened a shell on Windows that printed its
+          // banner and then sat there, which reads as a broken terminal and
+          // was a broken probe.
+          view.write('echo smoke-terminal-token' + String.fromCharCode(13));
           var tries = 0;
           (function settle() {
             var text = readBuffer();

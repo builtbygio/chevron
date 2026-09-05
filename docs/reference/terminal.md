@@ -86,6 +86,15 @@ chevron_force_patched_natives "$PWD"
 chevron_resync_nested_built_natives "$PWD"
 ```
 
+## Enter is a carriage return
+
+Pressing Enter in a terminal sends CR (`\r`), not LF. A Unix pty turns it into
+NL for the shell, and **cmd.exe accepts only CR** — so writing `\n` to a
+Windows terminal opens a shell that prints its banner and then sits there,
+which reads as a broken terminal and is a broken caller. xterm.js already
+sends CR for a keypress; anything writing to a session programmatically has to
+do the same.
+
 ## Gates
 
 | Test | Covers |
