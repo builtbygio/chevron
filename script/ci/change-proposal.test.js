@@ -37,6 +37,8 @@ const {
   proposeChange,
   computeHunks,
   applyHunks,
+  applyHunksToCurrent,
+  locateHunk,
   diffSegments
 } = loadTs(path.join(ROOT, 'src', 'change-proposal.ts'));
 
@@ -214,5 +216,142 @@ describe('every subset is honest', () => {
         }
       }
     }
+  });
+});
+
+describe('applying to a file that has moved underneath the proposal', () => {
+  // A proposal is made against a snapshot and applied after someone has read
+  // it -- by which time they, or something else, may have typed. Applying by
+  // the original line numbers would write into the wrong place quietly, which
+  // is the one failure this surface must not have.
+  const before = lines(40);
+  const after = before
+    .replace('line 5\n', 'ALPHA\n')
+    .replace('line 35\n', 'OMEGA\n');
+  const hunks = computeHunks(before, after);
+  const ids = hunks.map(h => h.id);
+
+  it('is identical to the simple path when nothing moved', () => {
+    const result = applyHunksToCurrent(before, hunks, ids);
+    assert.strictEqual(result.text, applyHunks(before, hunks, ids));
+    assert.deepStrictEqual(result.conflicted, []);
+    assert.deepStrictEqual(result.applied.sort(), ids.slice().sort());
+  });
+
+  it('follows a hunk that drifted, when lines were added above it', () => {
+    const drifted = 'a new first line\nanother\n' + before;
+    const result = applyHunksToCurrent(drifted, hunks, ids);
+    assert.deepStrictEqual(result.conflicted, [], 'both hunks still placeable');
+    assert.ok(result.text.startsWith('a new first line\nanother\n'));
+    assert.ok(result.text.includes('ALPHA'));
+    assert.ok(result.text.includes('OMEGA'));
+  });
+
+  it('follows the later hunk when a line was removed between them', () => {
+    // Removed outside either hunk's context: line 20 is far from both.
+    const drifted = before.replace('line 20\n', '');
+    const result = applyHunksToCurrent(drifted, hunks, ids);
+    assert.deepStrictEqual(result.conflicted, [], 'both still placeable');
+    assert.ok(result.text.includes('ALPHA'));
+    assert.ok(result.text.includes('OMEGA'));
+    assert.ok(!result.text.includes('line 20\n'), 'the removal survived');
+  });
+
+  it('conflicts when the removal is inside the hunk the proposal describes', () => {
+    // Deleting a line the hunk expects as context is a change to the hunk's
+    // own region, not drift around it.
+    const edited = before.replace('line 4\n', '');
+    const result = applyHunksToCurrent(edited, hunks, ids);
+    assert.deepStrictEqual(result.conflicted, [hunks[0].id]);
+    assert.deepStrictEqual(result.applied, [hunks[1].id]);
+    assert.ok(!result.text.includes('ALPHA'));
+  });
+
+  it('refuses a hunk whose own lines changed, and applies the others', () => {
+    const edited = before.replace('line 35\n', 'line 35 edited by hand\n');
+    const result = applyHunksToCurrent(edited, hunks, ids);
+    assert.deepStrictEqual(result.applied, [hunks[0].id], 'the untouched hunk went in');
+    assert.deepStrictEqual(result.conflicted, [hunks[1].id]);
+    assert.ok(result.text.includes('ALPHA'), 'the applicable change was applied');
+    assert.ok(
+      result.text.includes('line 35 edited by hand'),
+      "the person's own edit survived untouched"
+    );
+    assert.ok(!result.text.includes('OMEGA'));
+  });
+
+  it('applies where it was, even if the same passage appears again later', () => {
+    // A copy elsewhere casts no doubt on the original position: the hunk
+    // still matches exactly where it was computed, which is the strongest
+    // evidence available.
+    const duplicated = before + before;
+    const result = applyHunksToCurrent(duplicated, hunks, ids);
+    assert.deepStrictEqual(result.conflicted, []);
+    assert.strictEqual(
+      result.text.indexOf('ALPHA'),
+      duplicated.indexOf('line 5'),
+      'applied to the first copy, where the hunk was computed'
+    );
+    assert.strictEqual(
+      result.text.split('ALPHA').length - 1,
+      1,
+      'and only once'
+    );
+  });
+
+  it('leaves the file untouched when every hunk conflicts', () => {
+    const rewritten = 'nothing\nlike\nthe\noriginal\n';
+    const result = applyHunksToCurrent(rewritten, hunks, ids);
+    assert.strictEqual(result.text, rewritten);
+    assert.deepStrictEqual(result.applied, []);
+    assert.strictEqual(result.conflicted.length, 2);
+  });
+
+  it('still honours the selection', () => {
+    const result = applyHunksToCurrent(before, hunks, [hunks[0].id]);
+    assert.deepStrictEqual(result.applied, [hunks[0].id]);
+    assert.ok(result.text.includes('ALPHA'));
+    assert.ok(result.text.includes('line 35\n'));
+  });
+});
+
+describe('locating a hunk', () => {
+  const before = lines(20);
+  const after = before.replace('line 10\n', 'TEN\n');
+  const [hunk] = computeHunks(before, after);
+
+  it('finds it where it was', () => {
+    assert.strictEqual(locateHunk(before.split('\n'), hunk), hunk.oldStart);
+  });
+
+  it('finds it after a shift', () => {
+    const shifted = 'extra\n' + before;
+    assert.strictEqual(locateHunk(shifted.split('\n'), hunk), hunk.oldStart + 1);
+  });
+
+  it('prefers where it was, when it still matches there', () => {
+    assert.strictEqual(
+      locateHunk((before + before).split('\n'), hunk),
+      hunk.oldStart
+    );
+  });
+
+  it('gives up when it has moved and two places match equally', () => {
+    // Now it does not match where it was, and matches twice elsewhere:
+    // choosing one would be a guess.
+    const shifted = 'extra\n' + before + before;
+    assert.strictEqual(locateHunk(shifted.split('\n'), hunk), -1);
+  });
+
+  it('gives up when it is gone', () => {
+    assert.strictEqual(locateHunk(['nothing', 'like', 'it'], hunk), -1);
+  });
+});
+
+describe('a proposal remembers what it was made against', () => {
+  it('keeps the base text, so drift can be noticed at all', () => {
+    const proposal = proposeChange('f.js', 'a\nb\n', 'a\nB\n');
+    assert.strictEqual(proposal.baseText, 'a\nb\n');
+    assert.strictEqual(proposeChange('f.js', 'x\n', 'x\n').baseText, 'x\n');
   });
 });
