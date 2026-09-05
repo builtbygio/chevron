@@ -49,7 +49,7 @@ class AutocompleteManager {
     this.showOrHideSuggestionListForBufferChanges = this.showOrHideSuggestionListForBufferChanges.bind(this)
     this.providerManager = new ProviderManager()
     this.suggestionList = new SuggestionList()
-    this.watchedEditors = new WeakSet()
+    this.watchedEditors = new WeakMap()
   }
 
   initialize () {
@@ -143,6 +143,12 @@ class AutocompleteManager {
     }
   }
 
+  editorIsFocusedOutsideWorkspaceCenter () {
+    if (!this.editor || !this.editorView) return false
+    if (!this.editorLabels || this.editorLabels.includes('workspace-center')) return false
+    return typeof this.editorView.hasFocus === 'function' && this.editorView.hasFocus()
+  }
+
   // Makes the autocomplete manager watch the `editor`.
   // When the watched `editor` is focused, it will provide autocompletions from
   // providers with the given `labels`.
@@ -153,7 +159,9 @@ class AutocompleteManager {
 
     let view = chevron.views.getView(editor)
 
-    if (view.hasFocus()) {
+    // Focus is not the only way an editor becomes the one being typed in: it
+    // can be made active without its view getting a DOM focus event.
+    if (view.hasFocus() || chevron.workspace.getActiveTextEditor() === editor) {
       this.updateCurrentEditor(editor, labels)
     }
 
@@ -169,7 +177,7 @@ class AutocompleteManager {
         this.updateCurrentEditor(null)
       }
     })
-    this.watchedEditors.add(editor)
+    this.watchedEditors.set(editor, labels)
     this.subscriptions.add(disposable)
     return new Disposable(() => {
       disposable.dispose()
@@ -184,6 +192,19 @@ class AutocompleteManager {
     this.subscriptions.add(chevron.workspace.observeTextEditors((editor) => {
       const disposable = this.watchEditor(editor, ['workspace-center'])
       editor.onDidDestroy(() => disposable.dispose())
+    }))
+
+    // Follow the active editor as well as focus. A watched editor that becomes
+    // active without a focus event would otherwise leave the manager bound to
+    // the previous one, and typing produces nothing at all.
+    this.subscriptions.add(chevron.workspace.observeActiveTextEditor((editor) => {
+      if (!editor) return
+      // A focused editor outside the workspace centre — a mini editor in a
+      // panel — keeps the manager: it is never the active text editor, so
+      // switching tabs would otherwise take autocomplete away from it.
+      if (this.editorIsFocusedOutsideWorkspaceCenter()) return
+      const labels = this.watchedEditors.get(editor)
+      if (labels) this.updateCurrentEditor(editor, labels)
     }))
 
     // Watch config values
