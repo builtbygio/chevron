@@ -10,95 +10,100 @@
  * packages. Selection is pure decision-making, so it is worth pinning here
  * rather than discovering it in a two-hour nightly.
  *
- * Uses `--dry-run`, which needs no packaged build.
+ * Exercises script/lib/select-test-suites.js directly. The CI unit job never
+ * installs script/node_modules, so spawning script/test itself is not an
+ * option here -- that is why the selection logic lives in its own module.
  */
 
 const { describe, it } = require('node:test');
 const assert = require('assert');
-const path = require('path');
-const { execFileSync } = require('child_process');
+const { selectTestSuites } = require('../../script/lib/select-test-suites');
 
-const TEST_SCRIPT = path.join(__dirname, '..', 'test');
+const coreMain = () => {};
+coreMain.suiteName = 'core-main-process';
+const render = ['a', 'b', 'c'].map(n => {
+  const f = () => {};
+  f.suiteName = `core-render ${n}`;
+  return f;
+});
+const packages = ['about', 'git-diff'].map(n => {
+  const f = () => {};
+  f.suiteName = `package ${n}`;
+  return f;
+});
+const benchmark = () => {};
+benchmark.suiteName = 'benchmark';
 
-function suitesFor(env, extraArgs = []) {
-  const out = execFileSync(
-    process.execPath,
-    [TEST_SCRIPT, '--dry-run', '--platform', 'linux', ...extraArgs],
-    {
-      encoding: 'utf8',
-      env: Object.assign({}, process.env, env),
-      cwd: path.join(__dirname, '..', '..')
+function select(env, { platform = 'linux', flags = {}, pkgs = packages } = {}) {
+  return selectTestSuites({
+    env,
+    platform,
+    arch: 'x64',
+    flags,
+    suites: {
+      coreMain,
+      coreRender: () => render,
+      packages: () => pkgs,
+      benchmark
     }
-  );
-  return out
-    .split('\n')
-    .filter(line => line.startsWith('  '))
-    .map(line => line.trim());
+  }).map(s => s.suiteName);
 }
 
 describe('script/test suite selection on linux', () => {
   it('a package shard runs package suites only, never core-main-process', () => {
-    const suites = suitesFor({
+    const suites = select({
       ATOM_RUN_CORE_TESTS: 'false',
-      ATOM_RUN_PACKAGE_TESTS: 'true',
-      ATOM_PACKAGES_TO_TEST: 'about,git-diff'
+      ATOM_RUN_PACKAGE_TESTS: 'true'
     });
-    assert.ok(suites.length > 0, 'expected at least one package suite');
-    assert.ok(
-      !suites.includes('core-main-process'),
-      `package shard must not run the core suite, got: ${suites.join(', ')}`
-    );
-    assert.ok(suites.every(s => s.startsWith('package ')), suites.join(', '));
+    assert.deepStrictEqual(suites, ['package about', 'package git-diff']);
   });
 
   it('the core shard still runs core-main-process and the render suites', () => {
-    const suites = suitesFor({
+    const suites = select({
       ATOM_RUN_CORE_TESTS: 'true',
       ATOM_RUN_PACKAGE_TESTS: 'false'
     });
-    assert.ok(
-      suites.includes('core-main-process'),
-      'core shard lost the main-process suite'
-    );
-    assert.ok(
-      suites.some(s => s.startsWith('core-render ')),
-      'core shard lost the render suites'
-    );
-    assert.ok(
-      !suites.some(s => s.startsWith('package ')),
-      'core shard should not run package suites'
-    );
+    assert.deepStrictEqual(suites, [
+      'core-main-process',
+      'core-render a',
+      'core-render b',
+      'core-render c'
+    ]);
   });
 
   it('a bare invocation on linux keeps the historical main-process default', () => {
-    const suites = suitesFor({
-      ATOM_RUN_CORE_TESTS: '',
-      ATOM_RUN_PACKAGE_TESTS: '',
-      ATOM_PACKAGES_TO_TEST: ''
-    });
-    assert.deepStrictEqual(suites, ['core-main-process']);
+    assert.deepStrictEqual(select({}), ['core-main-process']);
+  });
+
+  it('a bare invocation on darwin selects nothing and fails loudly', () => {
+    assert.throws(() => select({}, { platform: 'darwin' }), /No tests was requested/);
   });
 
   it('a shard with nothing to run fails loudly instead of running core', () => {
     // Before the fix an empty package shard quietly fell back to the core
     // main-process suite and reported its failure as a package-shard failure.
-    // Now it refuses outright, which is what makes an empty shard visible.
-    let threw = null;
-    try {
-      suitesFor({
-        ATOM_RUN_CORE_TESTS: 'false',
-        ATOM_RUN_PACKAGE_TESTS: 'true',
-        ATOM_PACKAGES_TO_TEST: 'no-such-package-exists'
-      });
-    } catch (error) {
-      threw = error;
-    }
-    assert.ok(threw, 'expected an empty shard to fail');
-    const output = String(threw.stderr || '') + String(threw.message || '');
-    assert.match(output, /No tests was requested/);
-    assert.ok(
-      !output.includes('core-main-process'),
-      'an empty shard must not fall back to the core suite'
+    assert.throws(
+      () =>
+        select(
+          { ATOM_RUN_CORE_TESTS: 'false', ATOM_RUN_PACKAGE_TESTS: 'true' },
+          { pkgs: [] }
+        ),
+      /No tests was requested/
     );
+  });
+
+  it('--skip-main removes core-main-process from a bare linux run', () => {
+    assert.throws(
+      () => select({}, { flags: { skipMainProcessTests: true } }),
+      /No tests was requested/
+    );
+  });
+
+  it('explicit main-process request is honoured on any platform', () => {
+    const suites = select(
+      { ATOM_RUN_CORE_MAIN_TESTS: 'true' },
+      { platform: 'darwin' }
+    );
+    assert.deepStrictEqual(suites, ['core-main-process']);
   });
 });

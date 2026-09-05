@@ -57,6 +57,7 @@ const CONFIG = require('./config');
 const backupNodeModules = require('./lib/backup-node-modules');
 const installPackageDepsHostNpm = require('./lib/install-package-deps-host-npm');
 const { findPackagedApp } = require('./lib/find-packaged-app');
+const { selectTestSuites } = require('./lib/select-test-suites');
 
 const resourcePath = CONFIG.repositoryRootPath;
 const executablePath = findPackagedApp({
@@ -438,118 +439,26 @@ let testSuitesToRun = requestedTestSuites(argv.platform || process.platform);
 runBenchmarkTests.suiteName = 'benchmark';
 
 function requestedTestSuites(platform) {
-  // env variable or argv options
-  let coreAll = process.env.ATOM_RUN_CORE_TESTS === 'true';
-  let coreMain =
-    process.env.ATOM_RUN_CORE_MAIN_TESTS === 'true' || argv.coreMain;
-  let coreRenderer =
-    argv.coreRenderer || process.env.ATOM_RUN_CORE_RENDER_TESTS === 'true';
-  let coreRenderer1 = process.env.ATOM_RUN_CORE_RENDER_TESTS === '1';
-  let coreRenderer2 = process.env.ATOM_RUN_CORE_RENDER_TESTS === '2';
-  let packageAll =
-    argv.package || process.env.ATOM_RUN_PACKAGE_TESTS === 'true';
-  let packages1 = process.env.ATOM_RUN_PACKAGE_TESTS === '1';
-  let packages2 = process.env.ATOM_RUN_PACKAGE_TESTS === '2';
-  let benchmark = argv.coreBenchmark;
-
-  // Operating system overrides.
-  //
-  // Historically a bare `script/test` on Linux (and win32 x86) ran the
-  // main-process suite, because that is where CI ran it. Keep that default,
-  // but only when the caller asked for nothing in particular: the CI package
-  // shards set ATOM_RUN_CORE_TESTS=false precisely so they do *not* run it,
-  // and forcing it here made every package shard run -- and fail on -- the
-  // core main-process suite, while the `core` shard ran it as well.
-  const explicitlyRequested =
-    coreAll ||
-    coreMain ||
-    coreRenderer ||
-    coreRenderer1 ||
-    coreRenderer2 ||
-    packageAll ||
-    packages1 ||
-    packages2 ||
-    benchmark;
-  coreMain =
-    coreMain ||
-    (!explicitlyRequested &&
-      (platform === 'linux' ||
-        (platform === 'win32' && process.arch === 'x86')));
-
-  // split package tests (used for macos in CI)
-  const PACKAGES_TO_TEST_IN_PARALLEL = 23;
-  // split core render test (used for windows x64 in CI)
-  const CORE_RENDER_TO_TEST_IN_PARALLEL = 45;
-
-  let suites = [];
-  // Core tess
-  if (coreAll) {
-    suites.push(
-      ...[runCoreMainProcessTests, ...getCoreRenderProcessTestSuites()]
-    );
-  } else {
-    // Core main tests
-    if (coreMain) {
-      suites.push(runCoreMainProcessTests);
+  // Pure selection lives in lib/select-test-suites.js so the CI unit job can
+  // test it without script/node_modules. This wrapper only wires the inputs.
+  return selectTestSuites({
+    env: process.env,
+    platform,
+    arch: process.arch,
+    flags: {
+      coreMain: argv.coreMain,
+      coreRenderer: argv.coreRenderer,
+      package: argv.package,
+      coreBenchmark: argv.coreBenchmark,
+      skipMainProcessTests: argv.skipMainProcessTests
+    },
+    suites: {
+      coreMain: runCoreMainProcessTests,
+      coreRender: getCoreRenderProcessTestSuites,
+      packages: getPackageTestSuites,
+      benchmark: runBenchmarkTests
     }
-
-    // Core renderer tests
-    if (coreRenderer) {
-      suites.push(...getCoreRenderProcessTestSuites());
-    } else {
-      // split
-      if (coreRenderer1) {
-        suites.push(
-          ...getCoreRenderProcessTestSuites().slice(
-            0,
-            CORE_RENDER_TO_TEST_IN_PARALLEL
-          )
-        );
-      }
-      if (coreRenderer2) {
-        suites.push(
-          ...getCoreRenderProcessTestSuites().slice(
-            CORE_RENDER_TO_TEST_IN_PARALLEL
-          )
-        );
-      }
-    }
-  }
-
-  // Package tests
-  if (packageAll) {
-    suites.push(...getPackageTestSuites());
-  } else {
-    // split
-    if (packages1) {
-      suites.push(
-        ...getPackageTestSuites().slice(0, PACKAGES_TO_TEST_IN_PARALLEL)
-      );
-    }
-    if (packages2) {
-      suites.push(
-        ...getPackageTestSuites().slice(PACKAGES_TO_TEST_IN_PARALLEL)
-      );
-    }
-  }
-
-  // Benchmark tests
-  if (benchmark) {
-    suites.push(runBenchmarkTests);
-  }
-
-  if (argv.skipMainProcessTests) {
-    suites = suites.filter(suite => suite !== runCoreMainProcessTests);
-  }
-
-  // Remove duplicates
-  suites = Array.from(new Set(suites));
-
-  if (suites.length === 0) {
-    throw new Error('No tests was requested');
-  }
-
-  return suites;
+  });
 }
 
 // Guard each suite with the total budget: once it is gone, stop starting new
