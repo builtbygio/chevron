@@ -11,6 +11,7 @@ const os = require('os');
 const path = require('path');
 const { ipcMain, app, BrowserWindow } = require('electron');
 const { pathContained } = require('./atom-protocol-path');
+const { isSafeAbsolutePath } = require('./ipc-guard');
 
 const READ_FILE_MAX_BYTES = 64 * 1024 * 1024; // 64 MiB cap for sync read/copy path
 
@@ -93,12 +94,6 @@ function refreshFsIpcRoots() {
     strict: strictMode,
     roots: collectDefaultRoots(atomApplicationRef)
   });
-}
-
-function isSafeAbsolutePath(fullPath) {
-  if (typeof fullPath !== 'string' || fullPath.length === 0) return false;
-  if (fullPath.includes('\0')) return false;
-  return path.isAbsolute(fullPath);
 }
 
 // `fullPath` with every symlink followed. A file that does not exist yet has
