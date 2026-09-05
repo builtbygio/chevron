@@ -46,29 +46,57 @@ function allocateIds() {
   return { id, webContentsId };
 }
 
-function parseWorkerLoadUrl(loadUrl) {
+// The application's own tree. A worker may only load a page from inside it.
+const APP_ROOT = path.resolve(__dirname, '..', '..');
+
+/**
+ * The file a worker is being asked to load, or null.
+ *
+ * Only a `file:` URL inside the application's own tree. The renderer names
+ * the page, so without the containment check a package could point a utility
+ * process at any local HTML file.
+ */
+function workerLoadFilePath(loadUrl) {
   if (typeof loadUrl !== 'string' || loadUrl.length === 0) return null;
+  if (!loadUrl.startsWith('file://')) return null;
+  let filePath;
   try {
-    const url = new URL(loadUrl);
-    if (url.protocol !== 'file:') return null;
-    // file:///path/to/renderer.html?js=...&managerWebContentsId=...
-    const params = url.searchParams;
-    return {
-      managerWebContentsId: parseInt(params.get('managerWebContentsId'), 10),
-      operationCountLimit: parseInt(params.get('operationCountLimit'), 10) || 10,
-      channelName: params.get('channelName') || 'github:renderer-ipc'
-    };
+    filePath = decodeURIComponent(new URL(loadUrl).pathname);
   } catch (error) {
-    // Older URL forms / missing WHATWG support edge cases
     const q = loadUrl.indexOf('?');
-    if (q < 0) return null;
-    const qs = new URLSearchParams(loadUrl.slice(q + 1));
-    return {
-      managerWebContentsId: parseInt(qs.get('managerWebContentsId'), 10),
-      operationCountLimit: parseInt(qs.get('operationCountLimit'), 10) || 10,
-      channelName: qs.get('channelName') || 'github:renderer-ipc'
-    };
+    const withoutQuery = q < 0 ? loadUrl : loadUrl.slice(0, q);
+    try {
+      filePath = decodeURIComponent(withoutQuery.slice('file://'.length));
+    } catch (decodeError) {
+      return null;
+    }
   }
+  if (!filePath) return null;
+  // Windows file URLs arrive as /C:/... — path.resolve normalises that.
+  const resolved = path.resolve(
+    process.platform === 'win32' ? filePath.replace(/^\/(?=[A-Za-z]:)/, '') : filePath
+  );
+  const base = path.resolve(APP_ROOT);
+  if (resolved !== base && !resolved.startsWith(base + path.sep)) return null;
+  return resolved;
+}
+
+function parseWorkerLoadUrl(loadUrl) {
+  if (!workerLoadFilePath(loadUrl)) return null;
+  const query = () => {
+    try {
+      return new URL(loadUrl).searchParams;
+    } catch (error) {
+      const q = loadUrl.indexOf('?');
+      return new URLSearchParams(q < 0 ? '' : loadUrl.slice(q + 1));
+    }
+  };
+  const params = query();
+  return {
+    managerWebContentsId: parseInt(params.get('managerWebContentsId'), 10),
+    operationCountLimit: parseInt(params.get('operationCountLimit'), 10) || 10,
+    channelName: params.get('channelName') || 'github:renderer-ipc'
+  };
 }
 
 function forwardToManager(meta, message) {
@@ -269,3 +297,6 @@ module.exports = {
     nextSyntheticId = -1;
   }
 };
+
+module.exports.parseWorkerLoadUrl = parseWorkerLoadUrl;
+module.exports.workerLoadFilePath = workerLoadFilePath;

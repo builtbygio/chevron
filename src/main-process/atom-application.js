@@ -182,23 +182,47 @@ const decryptOptions = (optionsMessage, secret) => {
   return JSON.parse(message);
 };
 
-ipcMain.handle('isDefaultProtocolClient', (_, { protocol, path, args }) => {
-  return app.isDefaultProtocolClient(protocol, path, args);
+// Only this app's own schemes, and only this app's own binary. The renderer
+// used to supply the executable to register, which is a way to have the OS
+// launch anything when a link is opened.
+const REGISTRABLE_PROTOCOLS = new Set(['chevron', 'atom']);
+
+function protocolRegistration(payload, channel) {
+  const { protocol, args } = payload || {};
+  if (!REGISTRABLE_PROTOCOLS.has(protocol)) {
+    console.warn(`${channel}: refused protocol ${String(protocol)}`);
+    return null;
+  }
+  if (args !== undefined && !Array.isArray(args)) {
+    console.warn(`${channel}: refused non-array args`);
+    return null;
+  }
+  if (args && args.some(a => typeof a !== 'string' || a.includes('\u0000'))) {
+    console.warn(`${channel}: refused non-string args`);
+    return null;
+  }
+  return { protocol, execPath: process.execPath, args: args || [] };
+}
+
+ipcMain.handle('isDefaultProtocolClient', (_, payload) => {
+  const reg = protocolRegistration(payload, 'isDefaultProtocolClient');
+  if (!reg) return false;
+  return app.isDefaultProtocolClient(reg.protocol, reg.execPath, reg.args);
 });
 
-ipcMain.handle('setAsDefaultProtocolClient', (_, { protocol, path, args }) => {
-  return app.setAsDefaultProtocolClient(protocol, path, args);
+ipcMain.handle('setAsDefaultProtocolClient', (_, payload) => {
+  const reg = protocolRegistration(payload, 'setAsDefaultProtocolClient');
+  if (!reg) return false;
+  return app.setAsDefaultProtocolClient(reg.protocol, reg.execPath, reg.args);
 });
 
 // Wave 4: used to withdraw the stale atom:// registration that earlier
 // versions installed. Only the schemes this app knows about are accepted.
-ipcMain.handle(
-  'removeAsDefaultProtocolClient',
-  (_, { protocol, path, args }) => {
-    if (protocol !== 'atom' && protocol !== 'chevron') return false;
-    return app.removeAsDefaultProtocolClient(protocol, path, args);
-  }
-);
+ipcMain.handle('removeAsDefaultProtocolClient', (_, payload) => {
+  const reg = protocolRegistration(payload, 'removeAsDefaultProtocolClient');
+  if (!reg) return false;
+  return app.removeAsDefaultProtocolClient(reg.protocol, reg.execPath, reg.args);
+});
 // The application's singleton class.
 //
 // It's the entry point into the Atom application and maintains the global state
