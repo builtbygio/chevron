@@ -212,6 +212,8 @@ jobs:
           node --test script/ci/git-utility-host-integration.test.js
           node --test script/ci/natives-fingerprint.test.js
           node --test script/ci/fs-ipc-roots.test.js
+          node --test script/ci/derived-constructor-super.test.js
+          node --test script/ci/tree-view-fs-shim.test.js
           node --test script/ci/find-packaged-app.test.js
           node --test script/ci/ensure-ripgrep.test.js
           node --test script/ci/deferred-startup-packages.test.js
