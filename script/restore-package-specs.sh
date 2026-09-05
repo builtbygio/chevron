@@ -71,6 +71,21 @@ restore_one() {
     return 0
   fi
 
+  # A package that declares its own runner does not join the Jasmine nightly,
+  # and atom-mocha-test-runner is itself an ES module this runner cannot load.
+  local runner
+  runner="$(node -e '
+    const fs = require("fs");
+    try {
+      const j = JSON.parse(fs.readFileSync(`packages/${process.argv[1]}/package.json`));
+      process.stdout.write(j.chevronTestRunner || j.atomTestRunner || "");
+    } catch (_) { process.stdout.write(""); }
+  ' "$pkg")"
+  if [ -n "$runner" ]; then
+    printf '%-30s %s\n' "$pkg" "skipped (declares testRunner: $runner)"
+    return 0
+  fi
+
   local version tag ref label tmp
   version="$(vendored_version "$pkg")"
   tag="$(best_tag "$pkg" "$version")"
@@ -91,13 +106,22 @@ restore_one() {
   tar -xzf "$tmp/src.tgz" -C "$tmp" 2>/dev/null || true
   local extracted
   extracted="$(find "$tmp" -maxdepth 1 -mindepth 1 -type d | head -1)"
-  if [ -z "$extracted" ] || [ ! -d "$extracted/spec" ]; then
+  # Upstream packages use spec/ or test/ — command-palette uses test/, and
+  # looking only for spec/ reported it as having none.
+  local srcdir=""
+  for candidate in spec test; do
+    if [ -n "$extracted" ] && [ -d "$extracted/$candidate" ]; then
+      srcdir="$extracted/$candidate"
+      break
+    fi
+  done
+  if [ -z "$srcdir" ]; then
     printf '%-30s %s\n' "$pkg" "no upstream spec"
     return 0
   fi
 
-  # Only spec/. Never lib/ or package.json: the vendored copies are Chevron's.
-  cp -R "$extracted/spec" "packages/$pkg/spec"
+  # Only the tests. Never lib/ or package.json: the vendored copies are ours.
+  cp -R "$srcdir" "packages/$pkg/spec"
 
   # CoffeeScript is not allowed in owned packages (PR 23), and the repo has a
   # gate for it. Upstream Atom specs are partly CoffeeScript, so drop those;
