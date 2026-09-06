@@ -52,7 +52,7 @@ Always use `./script/bootstrap-modern` (host Node 24 + Python 3.12). See root [R
 | [package-ownership-inventory.md](./reference/package-ownership-inventory.md) | Owned catalog |
 | [sca-runtime-inventory.md](./reference/sca-runtime-inventory.md) | npm audit prioritisation (runtime vs test) |
 | [remote-ipc-inventory.md](./reference/remote-ipc-inventory.md) | remote/IPC map; **§11 is the live `sendSync` inventory** |
-| [releases.md](./reference/releases.md) | 1.1.0 product contract, update URL, signing later |
+| [releases.md](./reference/releases.md) | 1.2.0 product contract, update URL, signing later |
 | [packaging.md](./reference/packaging.md) | Packaging + startup snapshot |
 | [startup-snapshot-plan.md](./reference/startup-snapshot-plan.md) | Snapshot: Linux/Windows on, Darwin stock frozen |
 | [build-modernization.md](./reference/build-modernization.md) | Bootstrap/build streams |

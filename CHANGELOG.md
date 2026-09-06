@@ -9,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.2.0] — 2026-09-06
+
+### Added
+
+- **A language-server catalog**, installed on demand rather than bundled: TypeScript/JavaScript, Python (Pyright), C/C++/Objective-C (clangd), JSON, Rust (rust-analyzer) and prose (harper-ls). The Install panel installs them from shipped payloads, because the owned catalog is not published to npm and there is no index to resolve a name against. clangd is the exception that **prefers a clangd already on the machine** and downloads one only if there is none — a clangd from a different LLVM release disagrees with your headers. Each package now carries a README saying which server it runs, how it is obtained, and the project file it needs to be useful (`compile_commands.json`, `Cargo.toml` at the root, `pyrightconfig`).
+- **`workspace/symbol`**, the first project-shaped LSP context, plus **inlay hints** and the inline text decoration they needed.
+- **A terminal**, on a pty host the renderer cannot reach.
+- **Breadcrumbs and sticky scroll**, both driven by the shared foldable-range cache.
+- **Project-declared commands**, and **hunk-by-hunk review** of a proposed change, including a proposal that says so when it no longer matches the file.
+- **The first Playwright test against the packaged app.** Not `_electron.launch`: the packaged build flips `EnableNodeCliInspectArguments: false`, so the Node-inspector attach never completes and testing an unfused build would mean not testing what ships. It attaches over CDP, the way the smoke test already did.
+- **An IPC inventory that is a test.** All 90 `ipcMain` registrations are enumerated in `script/ci/ipc-inventory.json` with a scope, validation and effect; adding a channel without classifying it fails CI.
+
+### Changed
+
+- **Theme variables are published as CSS custom properties**, and the whole catalog is converted off build-time LESS theme variables — including `mix()` → `color-mix()` and the arithmetic-bearing stylesheets. A stylesheet compiled once against the base variables is pinned to the light defaults on every theme, which is what the conversion removes.
+- **One IPC namespace.** All 90 channels are `chevron:` or `lsp:`; the 61 `atom*` names and the four unprefixed ones are gone. `src/main-process/ipc-aliases.js` answers to the 64 old names for out-of-tree callers and warns once per session per channel. **The aliases are removed the release after this one.**
+- **No channel takes its payload as received.** One guard module extracted from the handlers that already had it right, then applied outward: a package may not impersonate main, name what the OS will run later, or hand a dialog arbitrary paths.
+- **A server registration is verified against the package that declares it**, so a package cannot register a language-server command it never declared.
+- **The in-app Jasmine suite produces results at all**, and the package suites that upstream still has are restored (37 packages). The core shard is split three ways so the nightly fits inside the job cap.
+
+### Fixed
+
+- **Theme colours were dropped or pinned to the light defaults** — a hyphenated variable name split into `calc(var(--text-color) - subtle)`, which is not a colour, across 209 declarations; and `static/` was never converted. The same class was later found in `static/atom-ui/`, where `a.icon { color: #333 }` made every settings sidebar label invisible on a dark theme until hovered.
+- **Settings disagreed with itself about what was installed.** `cpm ls --json` reports npm publish names (`@builtbygio/chevron-lsp-c`) while the editor identifies packages by the unscoped id, so a card asked about a package that, under that name, did not exist. Package links pointed at a registry that does not carry these packages; they resolve against npm at click time now, falling back to the repository.
+- **Uninstall removed the package and then threw.** `PackageManager#unload` had been deleted while `uninstall` still called it, so the cleanup, the callback and the `uninstalled` event never ran.
+- **The app could outlive its windows.** The unload handshake settled on exactly one event — the renderer's reply — so a renderer that died or never answered left `before-quit` pending forever, and the zombie kept the single-instance socket that the next launch handed off to.
+- **Autocomplete**: the provider no longer suppresses word completion, only claims exclusivity when a server will answer, and no longer drops a request that a cursor move never superseded.
+- **The prose server sees a plain text file**, not only Markdown.
+
 ### Removed
 
 - **`find-and-replace.useRipgrep`.** `Workspace.scan` has been ripgrep-only since H1 PR 4, which is what the 1.1.0 entry below records — but the setting that used to pick the engine outlived the choice. Turning it off changed nothing while telling the user it had switched to "the older scandal crawler", which is not in the tree; its one surviving effect was labelling a search metric `standard` for a search ripgrep had just run. `enablePCRE2` stays: it is still honoured. Guarded in `search-engine.test.js`, beside the ripgrep-only contract.
@@ -511,7 +542,8 @@ Initial Chevron tree: Electron modernization, modern host bootstrap (`bootstrap-
 
 ---
 
-[Unreleased]: https://github.com/builtbygio/chevron/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/builtbygio/chevron/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/builtbygio/chevron/releases/tag/v1.2.0
 [1.1.0]: https://github.com/builtbygio/chevron/releases/tag/v1.1.0
 [1.0.1]: https://github.com/builtbygio/chevron/releases/tag/v1.0.1
 [1.0.0]: https://github.com/builtbygio/chevron/releases/tag/v1.0.0
