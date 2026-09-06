@@ -61,7 +61,7 @@ class AtomIoClient {
         ? baseURL
         : (process.env.CPM_REGISTRY_URL ||
             process.env.ATOM_PACKAGE_REGISTRY ||
-            'https://api.pulsar-edit.dev'
+            'https://registry.npmjs.org'
           ).replace(/\/+$/, '') + '/api/';
     this.expiry = 1000 * 60 * 60 * 12;
     this.createAvatarCache();

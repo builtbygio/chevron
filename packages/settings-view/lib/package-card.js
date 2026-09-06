@@ -30,6 +30,7 @@ __export(package_card_exports, {
   default: () => PackageCard
 });
 module.exports = __toCommonJS(package_card_exports);
+var { npmPackageUrl } = require("./npm-package-url");
 var import_atom = require("chevron");
 var import_etch = __toESM(require("etch"));
 var import_utils = require("./utils");
@@ -206,8 +207,7 @@ class PackageCard {
     }));
     const packageNameClickHandler = (event) => {
       event.stopPropagation();
-      const packageType = this.pack.theme ? "themes" : "packages";
-      chevron.applicationDelegate.openExternal(`https://packages.pulsar-edit.dev/${packageType}/${this.pack.name}`);
+      chevron.applicationDelegate.openExternal(npmPackageUrl(this.pack));
     };
     this.refs.packageName.addEventListener("click", packageNameClickHandler);
     this.disposables.add(new import_atom.Disposable(() => {

@@ -423,6 +423,16 @@ module.exports = class PackageManager {
     return this.getAvailablePackages().map(a => a.name);
   }
 
+  // Public: Returns the package id {String} for an npm publish name.
+  //
+  // Chevron identifies packages by the unscoped id; npm publishes them under
+  // `@builtbygio/`. Anything holding a name that came from npm -- `cpm ls`
+  // output above all -- has to normalise before comparing it with a loaded or
+  // available package name.
+  getPackageId(name) {
+    return packageIdFromName(name);
+  }
+
   // Public: Returns an {Array} of {String}s of all the available package metadata.
   getAvailablePackageMetadata() {
     const packages = [];

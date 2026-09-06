@@ -5,12 +5,12 @@
 // Code (inline and block)
 // --------------------------------------------------
 
-@code-color: @text-color-highlight;
-@code-bg: @background-color-highlight;
+@code-color: ~"var(--text-color-highlight)";
+@code-bg: ~"var(--background-color-highlight)";
 
 @pre-color:                   @code-color;
 @pre-bg:                      @code-bg;
-@pre-border-color:            @base-border-color;
+@pre-border-color:            ~"var(--base-border-color)";
 @pre-scrollable-max-height:   340px;
 
 // Inline and block code styles

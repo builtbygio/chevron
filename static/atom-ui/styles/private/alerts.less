@@ -30,16 +30,16 @@
 
 //## variant mixin
 
-.alert-variant(@background; @border; @text-color) {
+.alert-variant(@background; @border; @fg) {
   background-color: @background;
   border-color: @border;
-  color: @text-color;
+  color: @fg;
 
   hr {
     border-top-color: darken(@border, 5%);
   }
   .alert-link {
-    color: darken(@text-color, 10%);
+    color: darken(@fg, 10%);
   }
 }
 

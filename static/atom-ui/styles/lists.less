@@ -202,7 +202,7 @@ button.list-group-item {
 
   li:not(.list-nested-item),
   li.list-nested-item > .list-item {
-    line-height: @component-line-height;
+    line-height: var(--component-line-height);
     text-wrap: none;
     white-space: nowrap;
   }
@@ -212,11 +212,11 @@ button.list-group-item {
   // of the list item.
   .selected::before {
     content: '';
-    background-color: @background-color-selected;
+    background-color: var(--background-color-selected);
     position: absolute;
     left: 0;
     right: 0;
-    height: @component-line-height;
+    height: var(--component-line-height);
   }
 
   // Make sure the background highlight is below the content.
@@ -225,7 +225,7 @@ button.list-group-item {
   }
 
   .icon::before {
-    margin-right: @component-icon-padding;
+    margin-right: var(--component-icon-padding);
     position: relative;
     top: 1px;
   }
@@ -265,7 +265,7 @@ button.list-group-item {
       &::before{
         position: relative;
         top: -1px;
-        margin-right: @component-icon-padding;
+        margin-right: var(--component-icon-padding);
       }
     }
     .list-nested-item.collapsed > .list-item {

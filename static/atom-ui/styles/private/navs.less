@@ -52,11 +52,11 @@
       position: relative;
       display: block;
       padding: @nav-link-padding;
-      border-radius: @component-border-radius;
+      border-radius: var(--component-border-radius);
       &:hover,
       &:focus {
         text-decoration: none;
-        background-color: @background-color-highlight;
+        background-color: var(--background-color-highlight);
       }
     }
 
@@ -165,7 +165,7 @@
       &:hover,
       &:focus {
         color: @nav-pills-active-link-hover-color;
-        background-color: @background-color-selected;
+        background-color: var(--background-color-selected);
       }
     }
   }

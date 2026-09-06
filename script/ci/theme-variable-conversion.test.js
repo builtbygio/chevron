@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Two ways the LESS-to-custom-properties conversion went wrong silently.
+ * Three ways the LESS-to-custom-properties conversion went wrong silently.
  *
  * 1. A hyphenated variable name split into arithmetic.
  *
@@ -27,6 +27,19 @@
  *    the light defaults -- so the document and the workspace were pinned to
  *    #333 text on every theme, and anything that did not set its own colour
  *    inherited it.
+ *
+ * 3. static/atom-ui/ was never converted either.
+ *
+ *    Fixing (2) named the two files that had been found by hand, so the gate
+ *    only ever walked those two. The component library beside them kept 58
+ *    colour declarations reading LESS theme variables -- `a.icon { color:
+ *    @text-color }` among them, which is every icon-bearing link in the
+ *    settings sidebar. Those compile once against the base variables, so on a
+ *    dark theme the sidebar rendered #333 text on a #333 background and the
+ *    labels were legible only under :hover, which sets its own colour.
+ *
+ *    The gate below now walks all of static/ instead of a list, because the
+ *    list is what missed this.
  *
  * Run: node --test script/ci/theme-variable-conversion.test.js
  */
@@ -95,6 +108,62 @@ describe('no hyphenated name was split into arithmetic', () => {
     assert.ok(
       !/\[\*\\\/\+-\]/.test(src),
       'a single [*/+-] class lets the engine backtrack into the name'
+    );
+  });
+});
+
+// Every stylesheet under static/ compiles once, against the base variables,
+// which are the light defaults -- there is no per-theme compilation to pick up
+// the active theme's values. So a colour set from a LESS theme variable here is
+// pinned to the light default on every theme. The custom properties are
+// published per-theme on :root, which is why var() is the only correct form.
+const THEME_COLOUR_VARIABLES = fs
+  .readFileSync(path.join(ROOT, 'static', 'variables', 'ui-variables.less'), 'utf8')
+  .split('\n')
+  .map(line => (line.match(/^@([a-z0-9-]+)\s*:/) || [])[1])
+  .filter(name => name && /color/.test(name));
+
+const COLOUR_PROPERTY = /^\s*(color|background|background-color|border|border-[a-z-]*color|outline|outline-color|box-shadow|text-shadow|fill|stroke|border-image|caret-color)\s*:/;
+
+describe('static/ takes its colours from the theme, not the light defaults', () => {
+  it('no colour declaration under static/ reads a LESS theme variable', () => {
+    assert.ok(THEME_COLOUR_VARIABLES.length > 20, 'theme variable list did not parse');
+    const names = THEME_COLOUR_VARIABLES.join('|');
+    const usesThemeVariable = new RegExp(`@(${names})\\b`);
+
+    const offenders = [];
+    for (const file of lessFiles(path.join(ROOT, 'static'))) {
+      // The variable files are where these names are *defined*.
+      if (path.relative(ROOT, file).startsWith(path.join('static', 'variables'))) continue;
+      fs.readFileSync(file, 'utf8')
+        .split('\n')
+        .forEach((line, i) => {
+          if (COLOUR_PROPERTY.test(line) && usesThemeVariable.test(line)) {
+            offenders.push(`${path.relative(ROOT, file)}:${i + 1}  ${line.trim()}`);
+          }
+        });
+    }
+    assert.deepEqual(
+      offenders,
+      [],
+      'these compile against the light defaults and ignore the active theme; ' +
+        'use var(--name):\n  ' + offenders.join('\n  ')
+    );
+  });
+
+  it('a.icon is readable on a dark theme', () => {
+    // The reported symptom: the settings sidebar labels (Core, Editor,
+    // Install) are <a class="icon">, and a.icon outranks both the inherited
+    // colour and the plain `a` rule.
+    const source = fs.readFileSync(
+      path.join(ROOT, 'static', 'atom-ui', 'styles', 'icons.less'),
+      'utf8'
+    );
+    assert.match(
+      source,
+      /a\.icon\s*\{[^}]*color:\s*var\(--text-color\)/,
+      'a.icon must read the theme text colour, or every icon link is pinned ' +
+        'to the light default'
     );
   });
 });
