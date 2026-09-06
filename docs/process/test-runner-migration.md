@@ -217,9 +217,22 @@ shard list (`shard packages-N: …` line in the log). **Overall:** the
    > failure and a bare timeout.
 
 4. The first test, `script/e2e/startup.spec.js`: launch, wait for the
-   workspace (`window.locator('atom-workspace, chevron-workspace')`
-   visible), assert the title contains `Chevron`, close. That is all. It
-   proves launch, wait, assertion, teardown, and artefact capture.
+   workspace (`window.locator('atom-workspace')` visible), check the title,
+   close. That is all. It proves launch, wait, assertion, teardown, and
+   artefact capture.
+
+   > **Corrected 2026-09-06.** "assert the title contains `Chevron`" fails on
+   > macOS, and it took a red CI run to notice. `src/workspace.js` appends the
+   > application name to the title on every platform *except* darwin, where
+   > the convention leaves it to the menu bar — so the assertion encoded a
+   > Linux/Windows assumption. The test now asserts that contract per
+   > platform, which is worth more than the original check.
+   >
+   > It also disables the Welcome Guide through a config file in the fresh
+   > `CHEVRON_HOME`. A first run opens it, which changes the window title —
+   > `"Welcome Guide — Chevron"` rather than `"Project — Chevron"` — and would
+   > change whatever a later test looks at. `launchChevron` takes a
+   > `prepareHome` callback for this.
 
 5. Wire it into **each build job** in `ci.yml` as a step after
    **Launch smoke test**, Linux under `xvfb-run -a`:

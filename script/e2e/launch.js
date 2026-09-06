@@ -53,13 +53,14 @@ async function waitForEndpoint(port, deadlineMs) {
   }
 }
 
-async function launchChevron({ args = [], env = {}, timeout = 90000 } = {}) {
+async function launchChevron({ args = [], env = {}, timeout = 90000, prepareHome = null } = {}) {
   const executablePath = findPackagedApp({ outDir: OUT_DIR });
   if (!executablePath) {
     throw new Error(`no packaged application under ${OUT_DIR} — run script/build`);
   }
 
   const home = makeTempDir('chevron-e2e-');
+  if (typeof prepareHome === 'function') prepareHome(home);
   const port = await freePort();
 
   const child = childProcess.spawn(
