@@ -14,6 +14,8 @@ const {BufferedProcess, CompositeDisposable, Emitter} = require('chevron');
 const semver = require('semver');
 
 const Client = require('./atom-io-client');
+const {normalizeInstalledNames} = require('./package-identity');
+
 
 module.exports =
 (PackageManager = (function() {
@@ -68,9 +70,9 @@ module.exports =
       const {
         session
       } = chevron.getCurrentWindow().webContents;
-      return session.resolveProxy('https://api.pulsar-edit.dev', httpProxy => {
+      return session.resolveProxy('https://registry.npmjs.org', httpProxy => {
         this.applyProxyToEnv('http_proxy', httpProxy);
-        return session.resolveProxy('https://api.pulsar-edit.dev', httpsProxy => {
+        return session.resolveProxy('https://registry.npmjs.org', httpsProxy => {
           this.applyProxyToEnv('https_proxy', httpsProxy);
           return callback();
         });
@@ -78,8 +80,8 @@ module.exports =
     }
 
     setProxyServersAsync(callback) {
-      const httpProxyPromise = chevron.resolveProxy('https://api.pulsar-edit.dev').then(proxy => this.applyProxyToEnv('http_proxy', proxy));
-      const httpsProxyPromise = chevron.resolveProxy('https://api.pulsar-edit.dev').then(proxy => this.applyProxyToEnv('https_proxy', proxy));
+      const httpProxyPromise = chevron.resolveProxy('https://registry.npmjs.org').then(proxy => this.applyProxyToEnv('http_proxy', proxy));
+      const httpsProxyPromise = chevron.resolveProxy('https://registry.npmjs.org').then(proxy => this.applyProxyToEnv('https_proxy', proxy));
       return Promise.all([httpProxyPromise, httpsProxyPromise]).then(callback);
     }
 
@@ -139,7 +141,12 @@ module.exports =
             error = createJsonParseError(errorMessage, parseError, stdout);
             return callback(error);
           }
-          return callback(null, packages);
+          return callback(
+            null,
+            normalizeInstalledNames(packages, name =>
+              chevron.packages.getPackageId(name)
+            )
+          );
         } else {
           error = new Error(errorMessage);
           error.stdout = stdout;
@@ -239,6 +246,16 @@ module.exports =
       );
       if (typeof callback === 'function') callback(error);
       return error;
+    }
+
+    // #239 removed the install UI and took this with it, but uninstall still
+    // calls it: the uninstall succeeded on disk and then threw, so the card
+    // never updated and the package stayed in core.disabledPackages.
+    unload(name) {
+      if (chevron.packages.isPackageLoaded(name)) {
+        if (chevron.packages.isPackageActive(name)) { chevron.packages.deactivatePackage(name); }
+        return chevron.packages.unloadPackage(name);
+      }
     }
 
     install(pack, callback) {

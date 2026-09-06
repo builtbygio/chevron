@@ -16,15 +16,15 @@
 
   // Color ----------------------
 
-  .badge-color( @fg: @text-color-selected; @bg: @background-color-selected; ) {
+  .badge-color( @fg: var(--text-color-selected); @bg: var(--background-color-selected); ) {
     color: @fg;
     background-color: @bg;
   }
   .badge-color();
-  &.badge-info    { .badge-color(white, @background-color-info); }
-  &.badge-success { .badge-color(white, @background-color-success); }
-  &.badge-warning { .badge-color(white, @background-color-warning); }
-  &.badge-error   { .badge-color(white, @background-color-error); }
+  &.badge-info    { .badge-color(white, var(--background-color-info)); }
+  &.badge-success { .badge-color(white, var(--background-color-success)); }
+  &.badge-warning { .badge-color(white, var(--background-color-warning)); }
+  &.badge-error   { .badge-color(white, var(--background-color-error)); }
 
 
   // Size ----------------------
@@ -58,7 +58,7 @@
 
   &.icon {
     font-size: round(@component-icon-size*0.8);
-    padding: @component-icon-padding @component-icon-padding*2;
+    padding: var(--component-icon-padding) calc(var(--component-icon-padding) * 2);
   }
 
 }

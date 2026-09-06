@@ -160,6 +160,33 @@ describe('the catalog ships as installable payloads', () => {
       }
     });
 
+    it('every catalog package has a README', () => {
+      // The detail view falls back to "No README." -- accurate, and useless.
+      // These are the pages a user reads before installing a language server.
+      const missing = [];
+      for (const entry of catalog) {
+        const readme = path.join(ROOT, 'packages', entry.name, 'README.md');
+        if (!fs.existsSync(readme)) { missing.push(entry.name); continue; }
+        const text = fs.readFileSync(readme, 'utf8');
+        if (text.length < 400) missing.push(`${entry.name} (stub, ${text.length} bytes)`);
+      }
+      assert.deepEqual(missing, [], 'no README to show:\n  ' + missing.join('\n  '));
+    });
+
+    it('the README ships in the payload', () => {
+      // copy-assets filters node_modules/server/bin; a README has to survive
+      // that or the installed copy has nothing to show.
+      const src = fs.readFileSync(
+        path.join(ROOT, 'script', 'lib', 'copy-assets.js'), 'utf8'
+      );
+      const filter = src.slice(src.indexOf('function copyOwnedCatalog'));
+      assert.doesNotMatch(
+        filter.slice(0, filter.indexOf('copied++')),
+        /README/i,
+        'the catalog copy filter must not exclude README files'
+      );
+    });
+
     it('the catalog stays small', () => {
       const size = dir => {
         let total = 0;
@@ -215,6 +242,50 @@ describe('the panel is registered', () => {
     const src = fs.readFileSync(path.join(LIB, 'install-panel.js'), 'utf8');
     assert.match(src, /if \(!source\)/);
     assert.match(src, /ships no catalog to install from/);
+  });
+
+  it('announces the install so the Packages panel picks it up', () => {
+    // This panel runs cpm directly rather than through PackageManager#install,
+    // so it is the only thing that can emit the event. InstalledPackagesPanel
+    // reloads its list on 'package-installed'; without it a freshly installed
+    // package is on disk but missing from Packages until the window reloads.
+    const InstallPanel = require(path.join(LIB, 'install-panel.js'));
+    const events = [];
+    const panel = Object.create(InstallPanel.prototype);
+    panel.packageManager = {
+      runCommand: (args, callback) => callback(0, '', ''),
+      emitPackageEvent: (name, pack) => events.push([name, pack.name])
+    };
+    panel.setStatus = () => {};
+
+    panel.install(
+      { name: 'chevron-lsp-json', title: 'JSON language server' },
+      '/payloads/chevron-lsp-json',
+      { classList: { add() {} } },
+      {}
+    );
+
+    assert.deepEqual(events, [['installed', 'chevron-lsp-json']]);
+  });
+
+  it('says nothing when the install failed', () => {
+    const InstallPanel = require(path.join(LIB, 'install-panel.js'));
+    const events = [];
+    const panel = Object.create(InstallPanel.prototype);
+    panel.packageManager = {
+      runCommand: (args, callback) => callback(1, '', 'boom'),
+      emitPackageEvent: (name, pack) => events.push([name, pack.name])
+    };
+    panel.setStatus = () => {};
+
+    panel.install(
+      { name: 'chevron-lsp-json', title: 'JSON language server' },
+      '/payloads/chevron-lsp-json',
+      { classList: { add() {} } },
+      {}
+    );
+
+    assert.deepEqual(events, [], 'a failed install must not claim success');
   });
 
   it('reports failure rather than leaving the button spinning', () => {

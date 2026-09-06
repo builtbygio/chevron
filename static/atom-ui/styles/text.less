@@ -28,23 +28,23 @@
   @text-color: @@text-color-name;
   @bg-color: @@bg-color-name;
 
-  color: @text-color;
+  color: var(--text-color);
   a&:hover,
   a&:focus {
-    color: darken(@text-color, 10%);
+    color: ~"hsl(from var(--text-color) h s calc(l - 10))";
   }
 
   code {
-    color: @text-color;
+    color: var(--text-color);
     background: fadeout(@bg-color, 80%);
   }
 
   a, a code {
     text-decoration: underline;
-    color: darken(@text-color, 10%);
+    color: ~"hsl(from var(--text-color) h s calc(l - 10))";
 
     &:hover {
-      color: darken(@text-color, 15%);
+      color: ~"hsl(from var(--text-color) h s calc(l - 15))";
     }
   }
 }
@@ -143,8 +143,8 @@ mark,
 .text-capitalize     { text-transform: capitalize; }
 
 // text-classes
-.text-subtle, .text-muted { color: @text-color-subtle; }
-.text-highlight           { color: @text-color-highlight; }
+.text-subtle, .text-muted { color: var(--text-color-subtle); }
+.text-highlight           { color: var(--text-color-highlight); }
 
 // Contextual colors
 .text-info, .text-primary { .text-variant(info); }
@@ -180,27 +180,27 @@ mark,
 
 .highlight() {
   font-weight: bold;
-  border-radius: @component-border-radius;
+  border-radius: var(--component-border-radius);
 }
 
 .highlight {
   .highlight();
-  color: @text-color-highlight;
-  background-color: @background-color-highlight;
+  color: var(--text-color-highlight);
+  background-color: var(--background-color-highlight);
 }
 
-.highlight-color(@name, @color) {
+.highlight-color(@name, @variable) {
   .highlight-@{name} {
     .highlight();
     color: #fff;
-    background-color: fadeout(@color, 50%);
+    background-color: ~"hsl(from var(@{variable}) h s l / 50%)";
   }
 }
 
-.highlight-color(info,    @background-color-info);
-.highlight-color(warning, @background-color-warning);
-.highlight-color(error,   @background-color-error);
-.highlight-color(success, @background-color-success);
+.highlight-color(info,    --background-color-info);
+.highlight-color(warning, --background-color-warning);
+.highlight-color(error,   --background-color-error);
+.highlight-color(success, --background-color-success);
 
 
 // Lists

@@ -2,7 +2,7 @@
 @import "mixins/mixins";
 
 .padded {
-  padding: @component-padding;
+  padding: var(--component-padding);
 }
 
 // Blocks
@@ -16,7 +16,7 @@
 // Must be div.block so as not to affect syntax highlighting.
 ul.block,
 div.block {
-  margin-bottom: @component-padding;
+  margin-bottom: var(--component-padding);
 }
 div > ul.block:last-child,
 div > div.block:last-child {
@@ -31,10 +31,10 @@ div > div.block:last-child {
   vertical-align: middle;
 }
 .inline-block {
-  margin-right: @component-padding;
+  margin-right: var(--component-padding);
 }
 .inline-block-tight {
-  margin-right: @component-padding/2;
+  margin-right: calc(var(--component-padding) / 2);
 }
 div > .inline-block:last-child,
 div > .inline-block-tight:last-child {
@@ -63,11 +63,11 @@ div > .inline-block-tight:last-child {
 
   .inline-block {
     margin-right: 0;
-    margin-left: @component-padding;
+    margin-left: var(--component-padding);
   }
   .inline-block-tight {
     margin-right: 0;
-    margin-left: @component-padding/2;
+    margin-left: calc(var(--component-padding) / 2);
   }
 
   > .inline-block:first-child,
