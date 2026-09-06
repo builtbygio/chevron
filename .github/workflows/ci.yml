@@ -545,6 +545,7 @@ jobs:
           node --test script/ci/find-clangd.test.js
           node --test script/ci/theme-variable-conversion.test.js
           node --test script/ci/settings-view-package-identity.test.js
+          node --test script/ci/settings-view-methods.test.js
           node --test script/ci/nested-modules-preserved.test.js
           node --test script/ci/dependencies-fingerprint.test.js
           node --test script/ci/socket-cleanup.test.js

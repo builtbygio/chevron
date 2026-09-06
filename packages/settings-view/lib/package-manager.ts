@@ -248,6 +248,16 @@ module.exports =
       return error;
     }
 
+    // #239 removed the install UI and took this with it, but uninstall still
+    // calls it: the uninstall succeeded on disk and then threw, so the card
+    // never updated and the package stayed in core.disabledPackages.
+    unload(name) {
+      if (chevron.packages.isPackageLoaded(name)) {
+        if (chevron.packages.isPackageActive(name)) { chevron.packages.deactivatePackage(name); }
+        return chevron.packages.unloadPackage(name);
+      }
+    }
+
     install(pack, callback) {
       const error = new Error(
         `Chevron ships an owned catalog; '${pack && pack.name}' cannot be installed from a registry.`
