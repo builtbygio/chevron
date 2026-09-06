@@ -38,6 +38,13 @@ jobs:
     # ran the full 240 minutes and was cancelled, so the suite produced no
     # result at all.
     #
+    # `core` was split again on 2026-09-06. Once the suites actually ran (the
+    # preload fix in #361) core took 115 minutes and was cancelled at the
+    # 120-minute cap, having got through 68 suites and 270 tests. The renderer
+    # specs split at the boundary select-test-suites.js already defines, which
+    # puts text-editor-component-spec.js — the file holding the multi-minute
+    # TextEditorComponent suites — in core-render-2.
+    #
     # Shards split the *testable* packages, not all of packageDependencies:
     # only 12 of 83 vendored packages currently ship a spec/ or test/ dir, so
     # eight shards left three jobs with nothing to run. Those empty jobs still
@@ -46,7 +53,9 @@ jobs:
       fail-fast: false
       matrix:
         shard:
-          - core
+          - core-main
+          - core-render-1
+          - core-render-2
           - packages-1
           - packages-2
           - packages-3
@@ -154,7 +163,7 @@ jobs:
       # striding across all of packageDependencies produced shards whose whole
       # workload was skipped — and an empty selection is a hard error.
       - name: Compute shard package list
-        if: matrix.shard != 'core'
+        if: "!startsWith(matrix.shard, 'core')"
         run: |
           node -e "
             const fs = require('fs');
@@ -190,24 +199,32 @@ jobs:
       # Nothing to do when a shard drew no testable packages. script/test
       # treats an empty selection as an error, so skip rather than fail.
       - name: Skip empty shard
-        if: matrix.shard != 'core' && env.SHARD_EMPTY == 'true'
+        if: "!startsWith(matrix.shard, 'core') && env.SHARD_EMPTY == 'true'"
         run: echo "No testable packages in ${{ matrix.shard }}; nothing to run."
 
       - name: Full Jasmine (Xvfb)
-        if: matrix.shard == 'core' || env.SHARD_EMPTY != 'true'
+        if: startsWith(matrix.shard, 'core') || env.SHARD_EMPTY != 'true'
         env:
           CI: 'true'
-          ATOM_RUN_CORE_TESTS: ${{ matrix.shard == 'core' && 'true' || 'false' }}
-          ATOM_RUN_PACKAGE_TESTS: ${{ matrix.shard == 'core' && 'false' || 'true' }}
+          # core-main runs the main-process suite; the renderer specs split in
+          # two at the boundary select-test-suites.js defines.
+          ATOM_RUN_CORE_MAIN_TESTS: ${{ matrix.shard == 'core-main' && 'true' || 'false' }}
+          ATOM_RUN_CORE_RENDER_TESTS: ${{ matrix.shard == 'core-render-1' && '1' || (matrix.shard == 'core-render-2' && '2' || 'false') }}
+          ATOM_RUN_PACKAGE_TESTS: ${{ startsWith(matrix.shard, 'core') && 'false' || 'true' }}
           # A dispatch `packages` input overrides the shard split entirely.
           ATOM_PACKAGES_TO_TEST: ${{ inputs.packages || env.SHARD_PACKAGES }}
           TEST_JUNIT_XML_ROOT: ${{ runner.temp }}/jasmine-junit
           # Kill a suite that hangs instead of letting it hold the job open to
-          # the cap, and stop starting new suites with ~20 minutes to spare so
-          # the summary and JUnit are still written. Both were the difference
-          # between "cancelled, no output" and an attributable result.
+          # the cap, and stop starting new suites early enough that the summary
+          # and JUnit are still written. Both were the difference between
+          # "cancelled, no output" and an attributable result.
+          #
+          # The budget has to leave room for a suite that starts just under it:
+          # setup (~5) + budget (80) + one suite at the watchdog (15) = 100 of
+          # the 120-minute cap. At 95 that sum was 115 and core was cancelled
+          # with its results unwritten.
           SPEC_SUITE_TIMEOUT_MS: '900000'
-          SPEC_TOTAL_BUDGET_MS: '5700000'
+          SPEC_TOTAL_BUDGET_MS: '4800000'
         run: |
           mkdir -p "$TEST_JUNIT_XML_ROOT"
           xvfb-run -a ./script/with-modern-env ./script/test
