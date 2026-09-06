@@ -195,12 +195,26 @@ shard list (`shard packages-N: …` line in the log). **Overall:** the
    'retain-on-failure', video: 'retain-on-failure' }`. Report to a
    directory under `${RUNNER_TEMP}` in CI.
 
-3. Write `script/e2e/launch.js` exporting `launchChevron()`: uses
-   `_electron.launch({ executablePath, args: [...] , env: {...} })` with the
-   binary from `script/lib/find-packaged-app.js`, a fresh `CHEVRON_HOME`
-   from `script/lib/temp-dir.js`, and `--user-data-dir` under it — the
-   same shape `smoke-test.js` uses at L1690–1720. Return `{ app, window,
-   home }`, where `window` is `await app.firstWindow()`.
+3. Write `script/e2e/launch.js` exporting `launchChevron()`.
+
+   > **Corrected 2026-09-06 while executing Phase 2.** Not `_electron.launch`.
+   > That attaches to the Electron **main** process through the Node
+   > inspector, and this app is packaged with
+   > `EnableNodeCliInspectArguments: false`
+   > (`script/lib/flip-electron-fuses.js`), so the attach never completes —
+   > it times out with no error worth reading. Running Playwright against a
+   > build with the fuses left off would mean not testing what ships.
+   >
+   > The remote debugging port is unaffected by that fuse, and it is already
+   > how `smoke-test.js` drives the app. So `launchChevron` spawns the binary
+   > with `--remote-debugging-port`, waits for `/json/version`, and attaches
+   > with `chromium.connectOverCDP`. Playwright's locators, assertions,
+   > traces and video all work from there; only the main-process API
+   > (`app.evaluate`) is unavailable, and nothing here needs it.
+   >
+   > It returns `{ window, home, output, close }` — `output()` gives the
+   > app's stdout and stderr, which is the difference between a useful
+   > failure and a bare timeout.
 
 4. The first test, `script/e2e/startup.spec.js`: launch, wait for the
    workspace (`window.locator('atom-workspace, chevron-workspace')`
