@@ -5,10 +5,18 @@ on:
     branches: [master]
     tags: ['v*']
   pull_request:
+  # Weekly no-cache build (see build-no-cache below). The schedule runs only
+  # that job: the changes job reports code=false on schedule events.
+  schedule:
+    - cron: '0 6 * * 1'
   workflow_dispatch:
     inputs:
       run_full_core_tests:
         description: 'After bootstrap+build, also run script/test (expensive; experimental)'
+        type: boolean
+        default: false
+      no_cache_build:
+        description: 'Bootstrap and build from an empty dependency cache (macOS x64 + Linux x64)'
         type: boolean
         default: false
 
@@ -74,6 +82,10 @@ jobs:
               base='${{ github.event.before }}'
               head='${{ github.sha }}'
               ;;
+            schedule)
+              base=''; head=''
+              code=false         # the weekly run is build-no-cache only
+              ;;
             *)
               base=''; head=''   # workflow_dispatch → always build
               ;;
@@ -92,6 +104,8 @@ jobs:
             if [ "$(printf '%s\n' "$files" | ./script/ci/docs-only-changed.sh)" = "true" ]; then
               code=false
             fi
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "Scheduled run: skipping the build matrix (build-no-cache runs instead)."
           else
             echo "No usable diff range; assuming code changed."
           fi
@@ -960,3 +974,662 @@ jobs:
             artifacts/**/*.tar.gz
             artifacts/**/*.exe
             artifacts/**/*.nupkg
+
+  # ---------------------------------------------------------------------------
+  # No-cache build. Every build job above restores node_modules from
+  # actions/cache, and bootstrap skips reinstall when its fingerprint is
+  # current -- so a tree first restored through a restore-keys fallback is
+  # re-saved under each new key indefinitely. That carried a package the
+  # lockfile no longer contained for weeks (#371): the macOS jobs were green
+  # because of the cache, not because the lockfile resolved the require.
+  #
+  # This job answers one question: does a clean machine build? It restores
+  # no node_modules. The Electron binary cache is kept -- it holds
+  # downloads, not dependency resolution, and cannot hide a missing module.
+  #
+  # Weekly on master, or on demand via the no_cache_build dispatch input.
+  # macOS x64 is where #371 bit; Linux x64 is the cheapest second opinion.
+  # ---------------------------------------------------------------------------
+  build-no-cache:
+    name: No-cache build (${{ matrix.label }})
+    if: >-
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && inputs.no_cache_build)
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15-intel
+            label: macOS x64
+          - os: ubuntu-latest
+            label: Linux x64
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install system build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          set -euo pipefail
+          # Drop flaky third-party apt mirrors (e.g. Google Chrome) that break
+          # index updates when mid-sync (unexpected Packages.gz size).
+          sudo rm -f /etc/apt/sources.list.d/google-chrome*.list \
+            /etc/apt/sources.list.d/google*.list 2>/dev/null || true
+          sudo apt-get update -o Acquire::Retries=3
+          # Ubuntu 24.04+ uses t64 transitional ALSA package names
+          if apt-cache show libasound2t64 >/dev/null 2>&1; then
+            ALSA_PKG=libasound2t64
+          else
+            ALSA_PKG=libasound2
+          fi
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            libx11-dev \
+            libxkbfile-dev \
+            libsecret-1-dev \
+            libxss-dev \
+            libgtk-3-0 \
+            libnotify4 \
+            libnss3 \
+            "${ALSA_PKG}" \
+            libgbm1 \
+            libx11-xcb1 \
+            libxcb-dri3-0 \
+            libxtst6 \
+            xvfb \
+            fakeroot \
+            dpkg-dev \
+            rpm
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # package.json packageManager (pnpm@11.22.0) is the pin. `version: 11`
+          # here fails action-setup with "Multiple versions of pnpm specified".
+          run_install: false
+
+      - name: Use Node 24 (bootstrap host; app deps via pnpm)
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Use Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install setuptools (distutils for node-gyp)
+        run: python -m pip install --upgrade pip setuptools
+
+      - name: Rewrite git ssh URLs to https
+        run: |
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
+          git config --global --add url."https://github.com/".insteadOf "git://github.com/"
+
+      - name: Resolve Electron version
+        id: meta
+        run: echo "electron=$(node -p "require('./package.json').electronVersion")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Electron binaries and headers
+        uses: actions/cache@v5
+        with:
+          path: |
+            ${{ github.workspace }}/.cache/electron
+            ~/.cache/electron
+            ~/.cache/node-gyp
+          key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
+          restore-keys: |
+            electron-${{ runner.os }}-${{ runner.arch }}-
+            electron-${{ runner.os }}-
+
+      - name: Cache npm + node_modules (enables native rebuild skip)
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.local/share/pnpm/store
+            ~/Library/pnpm/store
+            node_modules
+            script/node_modules
+            cpm/node_modules
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          restore-keys: |
+            nm-${{ runner.os }}-${{ runner.arch }}-node24-
+
+      - name: Bootstrap
+        run: ./script/bootstrap-modern --ci
+
+      # Needs a real node_modules: it walks the installed builtbygio pins.
+      # Cannot live in unit-and-cpm, which never runs a root `npm ci`.
+      - name: Owned packages require chevron, not atom
+        run: node --test script/ci/owned-require-chevron.test.js
+
+      # These walk installed pins / settings-view copy. unit-and-cpm has no root install.
+      - name: Task callers, pin CSON, One Dark settings-view copy
+        run: |
+          node --test script/ci/task-callers.test.js
+          node --test script/ci/pin-cson.test.js
+          node --test script/ci/chevron-dark-themes.test.js
+          node --test script/ci/theme-migration.test.js
+          node --test script/ci/package-requires-resolve.test.js
+          node --test script/ci/accumulator-relay-prop.test.js
+          node --test script/ci/theme-custom-properties.test.js
+          node --test script/ci/theme-variables-eliminated.test.js
+          node --test script/ci/temp-dir-hygiene.test.js
+          node --test script/ci/ci-runs-every-test.test.js
+          node --test script/ci/keymap-vendored.test.js
+          node --test script/ci/bundled-packages.test.js
+          node --test script/ci/cpm-caller-flags.test.js
+          node --test script/ci/no-shipped-language-servers.test.js
+          node --test script/ci/no-dev-tooling-in-installer.test.js
+          node --test script/ci/service-hub.test.js
+
+      # These need a real node_modules: github-8b reads node_modules/github,
+      # lsp-builtin-discover resolves servers out of it
+      # requires event-kit and jasmine-node-coffee requires underscore /
+      # jasmine-node. unit-and-cpm never installs the root package.json.
+      - name: Installed pin contracts (github 8B, LSP discovery, first-mate)
+        run: |
+          node --test script/ci/github-8b.test.js
+          node --test script/ci/lsp-builtin-discover.test.js
+          node --test script/ci/language-server-scopes.test.js
+          node --test script/ci/lsp-late-registration.test.js
+          node --test script/ci/package-profiler.test.js
+          node --test script/ci/config-precedence.test.js
+          node --test script/ci/lsp-workspace-symbols.test.js
+          node --test script/ci/inlay-hints.test.js
+          node --test script/ci/pty-host-integration.test.js
+          node --test script/ci/change-proposal.test.js
+          node --test script/ci/tasks.test.js
+          node --test script/ci/enclosing-scopes.test.js
+          node --test script/ci/tree-sitter-chunk-reader.test.js
+          node --test script/ci/tree-view-fs-shim.test.js
+          node --test script/ci/jasmine-node-coffee.test.js
+          node --test script/ci/patch-inventory.test.js
+          node --test script/ci/wave3-gates.test.js
+          node --test script/ci/menu-uri-openers.test.js
+
+      - name: Build + package (deb, tar, rpm)
+        run: |
+          set -euo pipefail
+          command -v rpmbuild
+          ./script/with-modern-env ./script/build --no-bootstrap \
+            --create-debian-package \
+            --create-rpm-package \
+            --compress-artifacts
+          # Require deb + tar + rpm artifacts
+          ls -la out/*.deb out/*.tar.gz out/*.rpm
+
+      # Asserts on out/app, so it has to follow the build: no bundled package
+      # ships .less, and no per-theme-pair compile cache is warmed.
+      - name: Compiled stylesheet contract
+        run: |
+          node --test script/ci/compiled-styles.test.js
+          node --test script/ci/user-stylesheet-compiles.test.js
+          node --test script/ci/lsp-no-server-notice.test.js
+          node --test script/ci/install-panel.test.js
+          node --test script/ci/autocomplete-stale-marker.test.js
+          node --test script/ci/package-main-resolution.test.js
+          node --test script/ci/prebuild-archives.test.js
+          node --test script/ci/find-clangd.test.js
+          node --test script/ci/theme-variable-conversion.test.js
+          node --test script/ci/settings-view-package-identity.test.js
+          node --test script/ci/settings-view-methods.test.js
+          node --test script/ci/settings-view-links.test.js
+          node --test script/ci/nested-modules-preserved.test.js
+          node --test script/ci/dependencies-fingerprint.test.js
+          node --test script/ci/socket-cleanup.test.js
+          node --test script/ci/unload-handshake.test.js
+
+      - name: Launch smoke test (Xvfb)
+        run: xvfb-run -a node script/ci/smoke-test.js
+
+      - name: Playwright e2e (Xvfb)
+        run: xvfb-run -a npx --prefix script playwright test --config script/e2e/playwright.config.js
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: playwright-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/playwright-report
+          if-no-files-found: ignore
+
+      - name: Full Jasmine (opt-in)
+        if: |
+          (github.event_name == 'workflow_dispatch' && inputs.run_full_core_tests) ||
+          (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'jasmine'))
+        env:
+          CI: 'true'
+          ATOM_RUN_CORE_TESTS: 'true'
+          ATOM_RUN_PACKAGE_TESTS: 'true'
+          ELECTRON_OZONE_PLATFORM_HINT: x11
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          TEST_JUNIT_XML_ROOT: ${{ runner.temp }}/jasmine-junit
+        run: |
+          mkdir -p "$TEST_JUNIT_XML_ROOT"
+          xvfb-run -a ./script/with-modern-env ./script/test
+
+      - name: Upload Jasmine JUnit
+        if: always() && ((github.event_name == 'workflow_dispatch' && inputs.run_full_core_tests) || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'jasmine')))
+        uses: actions/upload-artifact@v6
+        with:
+          name: jasmine-junit-linux-x64-opt-in
+          path: ${{ runner.temp }}/jasmine-junit
+          if-no-files-found: ignore
+
+      - name: Upload Linux packages
+        if: success()
+        uses: actions/upload-artifact@v6
+        with:
+          name: chevron-linux-${{ runner.arch }}
+          path: |
+            out/*.deb
+            out/*.rpm
+            out/*.tar.gz
+          if-no-files-found: error
+
+      - name: Upload build output on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: build-state-linux-${{ runner.arch }}
+          path: |
+            out/startup.js
+            ${{ github.workspace }}/npm-debug.log
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Linux arm64 — deb + tar + rpm
+  # Bootstrap/build are hard gates. Smoke is soft-gated (Xvfb/renderer flakes)
+  # so packaging regressions still fail the job (audit #65).
+  # ---------------------------------------------------------------------------
+  build-and-smoke-linux-arm64:
+    name: Linux arm64 bootstrap, build, smoke & packages
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 150
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install system build dependencies
+        run: |
+          set -euo pipefail
+          # Same as x64: ignore flaky third-party apt mirrors on the image.
+          sudo rm -f /etc/apt/sources.list.d/google-chrome*.list \
+            /etc/apt/sources.list.d/google*.list 2>/dev/null || true
+          sudo apt-get update -o Acquire::Retries=3
+          if apt-cache show libasound2t64 >/dev/null 2>&1; then
+            ALSA_PKG=libasound2t64
+          else
+            ALSA_PKG=libasound2
+          fi
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            libx11-dev \
+            libxkbfile-dev \
+            libsecret-1-dev \
+            libxss-dev \
+            libgtk-3-0 \
+            libnotify4 \
+            libnss3 \
+            "${ALSA_PKG}" \
+            libgbm1 \
+            libx11-xcb1 \
+            libxcb-dri3-0 \
+            libxtst6 \
+            xvfb \
+            fakeroot \
+            dpkg-dev \
+            rpm
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # package.json packageManager (pnpm@11.22.0) is the pin. `version: 11`
+          # here fails action-setup with "Multiple versions of pnpm specified".
+          run_install: false
+
+      - name: Use Node 24
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Use Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install setuptools
+        run: python -m pip install --upgrade pip setuptools
+
+      - name: Rewrite git ssh URLs to https
+        run: |
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
+          git config --global --add url."https://github.com/".insteadOf "git://github.com/"
+
+      - name: Resolve Electron version
+        id: meta
+        run: echo "electron=$(node -p "require('./package.json').electronVersion")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Electron binaries and headers
+        uses: actions/cache@v5
+        with:
+          path: |
+            ${{ github.workspace }}/.cache/electron
+            ~/.cache/electron
+            ~/.cache/node-gyp
+          key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
+          restore-keys: |
+            electron-${{ runner.os }}-${{ runner.arch }}-
+            electron-${{ runner.os }}-
+
+      - name: Cache npm + node_modules (enables native rebuild skip)
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.local/share/pnpm/store
+            ~/Library/pnpm/store
+            node_modules
+            script/node_modules
+            cpm/node_modules
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          restore-keys: |
+            nm-${{ runner.os }}-${{ runner.arch }}-node24-
+
+      - name: Bootstrap
+        run: ./script/bootstrap-modern --ci
+
+      - name: Build + package (deb, tar, rpm)
+        run: |
+          set -euo pipefail
+          command -v rpmbuild
+          ./script/with-modern-env ./script/build --no-bootstrap \
+            --create-debian-package \
+            --create-rpm-package \
+            --compress-artifacts
+          ls -la out/*.deb out/*.tar.gz out/*.rpm
+
+      # Soft-gate only: historical Xvfb/renderer flakes before packages activate.
+      # Build/package steps above remain hard failures.
+      - name: Launch smoke test (Xvfb)
+        id: arm64_smoke
+        continue-on-error: true
+        run: xvfb-run -a node script/ci/smoke-test.js
+
+      - name: Playwright e2e (Xvfb)
+        run: xvfb-run -a npx --prefix script playwright test --config script/e2e/playwright.config.js
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: playwright-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/playwright-report
+          if-no-files-found: ignore
+
+      - name: Upload Linux arm64 packages
+        if: success()
+        uses: actions/upload-artifact@v6
+        with:
+          name: chevron-linux-arm64
+          path: |
+            out/*.deb
+            out/*.rpm
+            out/*.tar.gz
+          if-no-files-found: error
+
+      - name: Note soft smoke failure
+        if: steps.arm64_smoke.outcome == 'failure'
+        run: |
+          echo "::warning::Linux arm64 smoke failed (soft-gated). Packages still uploaded if build succeeded."
+
+      - name: Upload build output on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: build-state-linux-arm64
+          path: |
+            out/startup.js
+            ${{ github.workspace }}/npm-debug.log
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Windows x64 — bootstrap, build, smoke, zip artifact
+  # ---------------------------------------------------------------------------
+  build-and-smoke-windows:
+    name: Windows x64 bootstrap, build, smoke & packages
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    # windows-2022 ships VS 2022 that node-gyp detects reliably.
+    # windows-latest currently has VS 18/2026 which older node-gyp mis-parses.
+    runs-on: windows-2022
+    timeout-minutes: 150
+    defaults:
+      run:
+        # bootstrap-modern / with-modern-env are bash; Git Bash is on the image.
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # package.json packageManager (pnpm@11.22.0) is the pin. `version: 11`
+          # here fails action-setup with "Multiple versions of pnpm specified".
+          run_install: false
+
+      - name: Use Node 24 (bootstrap host; app deps via pnpm)
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Use Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install setuptools (distutils for node-gyp)
+        run: python -m pip install --upgrade pip setuptools
+
+      # Put cl.exe / link.exe on PATH so node-gyp (including old v5) can compile.
+      - name: Setup MSVC developer command prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Rewrite git ssh URLs to https
+        run: |
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
+          git config --global --add url."https://github.com/".insteadOf "git://github.com/"
+
+      - name: Resolve Electron version
+        id: meta
+        shell: bash
+        run: echo "electron=$(node -p "require('./package.json').electronVersion")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Electron binaries and headers
+        uses: actions/cache@v5
+        with:
+          path: |
+            ${{ github.workspace }}/.cache/electron
+            ~/AppData/Local/electron
+            ~/AppData/Local/node-gyp
+          key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
+          restore-keys: |
+            electron-${{ runner.os }}-${{ runner.arch }}-
+            electron-${{ runner.os }}-
+
+      - name: Cache npm + node_modules (enables native rebuild skip)
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.local/share/pnpm/store
+            ~/Library/pnpm/store
+            ~/AppData/Local/pnpm/store
+            node_modules
+            script/node_modules
+            cpm/node_modules
+          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
+          restore-keys: |
+            nm-${{ runner.os }}-${{ runner.arch }}-node24-
+
+      - name: Bootstrap
+        run: |
+          # Windows-style path: apm.cmd spawns git via cmd.exe, not Git Bash.
+          export GIT_EXEC_PATH="C:/Program Files/Git/mingw64/libexec/git-core"
+          export PATH="/c/Program Files/Git/mingw64/libexec/git-core:/c/Program Files/Git/cmd:$PATH"
+          ./script/bootstrap-modern --ci
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: "1"
+          GIT_EXEC_PATH: "C:/Program Files/Git/mingw64/libexec/git-core"
+
+      - name: Build + package (zip)
+        run: |
+          export GIT_EXEC_PATH="C:/Program Files/Git/mingw64/libexec/git-core"
+          export PATH="/c/Program Files/Git/mingw64/libexec/git-core:/c/Program Files/Git/cmd:$PATH"
+          ./script/with-modern-env ./script/build --no-bootstrap --compress-artifacts
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: "1"
+          GIT_EXEC_PATH: "C:/Program Files/Git/mingw64/libexec/git-core"
+
+      - name: Launch smoke test
+        run: node script/ci/smoke-test.js
+
+      - name: Playwright e2e
+        run: npx --prefix script playwright test --config script/e2e/playwright.config.js
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: playwright-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/playwright-report
+          if-no-files-found: ignore
+
+      # Architecture H1 PR 12: publish Windows cold-start numbers.
+      # Same harness as docs/reference/startup-snapshot-plan.md (§4). Five cold homes.
+      - name: Measure cold start
+        run: node script/ci/measure-startup.js --runs 5 --json out/startup-windows.json
+
+      - name: Upload startup measurement
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: startup-windows-x64
+          path: out/startup-windows.json
+          if-no-files-found: warn
+
+      - name: Upload Windows packages
+        if: success()
+        uses: actions/upload-artifact@v6
+        with:
+          name: chevron-windows-${{ runner.arch }}
+          path: |
+            out/*.zip
+          if-no-files-found: warn
+
+      - name: Upload build output on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: build-state-windows-${{ runner.arch }}
+          path: |
+            out/startup.js
+            ${{ github.workspace }}/npm-debug.log
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Tag v* → GitHub Release (UNSIGNED PREVIEW). Signing/notarization is later.
+  # ---------------------------------------------------------------------------
+  publish-unsigned-preview:
+    name: Publish unsigned preview release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - unit-and-cpm
+      - build-and-smoke-macos
+      - build-and-smoke-linux
+      - build-and-smoke-linux-arm64
+      - build-and-smoke-windows
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Use Node 24 (bootstrap host; app deps via pnpm)
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Use Python 3.12 (setuptools provides distutils for node-gyp)
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install setuptools (distutils for node-gyp)
+        run: python -m pip install --upgrade pip setuptools
+
+      - name: Rewrite git ssh URLs to https
+        run: |
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
+          git config --global --add url."https://github.com/".insteadOf "git://github.com/"
+
+      - name: Resolve Electron version
+        id: meta
+        run: echo "electron=$(node -p "require('./package.json').electronVersion")" >> "$GITHUB_OUTPUT"
+
+      # Downloads only; see the job comment for why this cache is kept.
+      - name: Cache Electron binaries and headers
+        uses: actions/cache@v5
+        with:
+          path: |
+            ${{ github.workspace }}/.cache/electron
+            ~/.cache/electron
+            ~/.cache/node-gyp
+          key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
+
+      - name: Assert no dependency tree was restored
+        run: |
+          set -euo pipefail
+          for d in node_modules script/node_modules cpm/node_modules; do
+            if [ -e "$d" ]; then
+              echo "::error::$d exists before bootstrap; this job must start clean"
+              exit 1
+            fi
+          done
+          echo "clean: no node_modules present"
+
+      - name: Bootstrap (no cache)
+        run: ./script/bootstrap-modern --ci
+
+      - name: Build
+        run: ./script/with-modern-env ./script/build --no-bootstrap
+
+      - name: Launch smoke test
+        run: |
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            xvfb-run -a node script/ci/smoke-test.js
+          else
+            node script/ci/smoke-test.js
+          fi
