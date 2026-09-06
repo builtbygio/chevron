@@ -107,3 +107,74 @@ describe('script/test suite selection on linux', () => {
     assert.deepStrictEqual(suites, ['core-main-process']);
   });
 });
+
+describe('the core shards in jasmine.yml partition the core suites', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const workflow = fs.readFileSync(
+    path.join(__dirname, '..', '..', '.github', 'workflows', 'jasmine.yml'),
+    'utf8'
+  );
+
+  const suites = {
+    coreMain: 'MAIN',
+    coreRender: () => Array.from({ length: 73 }, (_, i) => `render-${i + 1}`),
+    packages: () => ['pkg']
+  };
+  const select = env =>
+    selectTestSuites({ env, platform: 'linux', arch: 'x64', suites });
+
+  it('names the three core shards', () => {
+    for (const shard of ['core-main', 'core-render-1', 'core-render-2']) {
+      assert.ok(workflow.includes(`- ${shard}`), `${shard} must be a shard`);
+    }
+    // The single `core` shard took 115 minutes and was cancelled at the cap.
+    assert.ok(!/^\s+- core$/m.test(workflow), 'the unsplit core shard is gone');
+  });
+
+  it('gives every core suite to exactly one shard', () => {
+    const main = select({
+      ATOM_RUN_CORE_MAIN_TESTS: 'true',
+      ATOM_RUN_CORE_RENDER_TESTS: 'false',
+      ATOM_RUN_PACKAGE_TESTS: 'false'
+    });
+    const first = select({
+      ATOM_RUN_CORE_MAIN_TESTS: 'false',
+      ATOM_RUN_CORE_RENDER_TESTS: '1',
+      ATOM_RUN_PACKAGE_TESTS: 'false'
+    });
+    const second = select({
+      ATOM_RUN_CORE_MAIN_TESTS: 'false',
+      ATOM_RUN_CORE_RENDER_TESTS: '2',
+      ATOM_RUN_PACKAGE_TESTS: 'false'
+    });
+
+    assert.deepEqual(main, ['MAIN']);
+    assert.equal(first.filter(s => second.includes(s)).length, 0, 'no overlap');
+    assert.equal(
+      new Set([...first, ...second]).size,
+      suites.coreRender().length,
+      'every renderer suite is covered'
+    );
+    assert.ok(first.length > 0 && second.length > 0);
+  });
+
+  it('leaves the budget room for a suite that starts just under it', () => {
+    // setup + budget + one suite at the watchdog must fit the job cap, or the
+    // job is cancelled with its results unwritten — which is what happened.
+    const cap = Number(/timeout-minutes:\s*(\d+)/.exec(workflow)[1]);
+    const budget = Number(/SPEC_TOTAL_BUDGET_MS:\s*'(\d+)'/.exec(workflow)[1]) / 60000;
+    const watchdog = Number(/SPEC_SUITE_TIMEOUT_MS:\s*'(\d+)'/.exec(workflow)[1]) / 60000;
+
+    // Bootstrap and build before the suites (~5), then after the last suite
+    // the summary, JUnit and upload (~10). At budget 95 the sum was 125
+    // against a 120 cap, and core was cancelled with its results unwritten.
+    const SETUP = 5;
+    const REPORTING = 10;
+    assert.ok(
+      budget + watchdog + SETUP + REPORTING <= cap,
+      `budget ${budget} + watchdog ${watchdog} + setup ${SETUP} + reporting ` +
+        `${REPORTING} must fit the ${cap} minute cap`
+    );
+  });
+});

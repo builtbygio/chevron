@@ -332,6 +332,33 @@ Phase 1 step 1 prints 71 lines, as stated. The restore script exists and
 works; run `script/restore-package-specs.sh --list` to see what is left, then
 pass it the next ten names.
 
+> **2026-09-06.** With the preload fixed, the 23:00 run produced **real
+> results for the first time**: all five shards uploaded JUnit, and core alone
+> reported 68 suites, 270 tests, 94 failures. It was still cancelled — because
+> it now takes longer than the 120-minute job cap rather than dying at 900s.
+>
+> Two causes, both fixed in the workflow. `core` was a single shard while the
+> packages were already split four ways; it is now `core-main`,
+> `core-render-1` and `core-render-2`, using the boundary
+> `select-test-suites.js` already defines. And the budget arithmetic did not
+> fit the cap: setup (~5) + `SPEC_TOTAL_BUDGET_MS` (95) + one suite starting
+> just under it at `SPEC_SUITE_TIMEOUT_MS` (15) came to 115, leaving nothing
+> for writing and uploading results. The budget is 80 now, and
+> `script/ci/jasmine-suite-selection.test.js` asserts the sum fits.
+>
+> The slowest suites are worth recording for Phase 3, which converts the
+> `runs()`/`waitsFor()` specs:
+>
+> | suite | time |
+> |---|--:|
+> | `TextEditorComponent autoscroll` | 367s |
+> | `TextEditorComponent styling changes` | 130s |
+> | `TextEditorComponent rendering` | 112s |
+> | `TextEditorComponent rendering randomized tests` | 60s |
+>
+> They are all in `spec/text-editor-component-spec.js`, which lands in
+> `core-render-2`.
+
 Phase 0's cancellation half now holds: the 19:12 run after #343 had **zero
 cancelled** jobs against 6 of 9 before it. Its artefact half did not — only
 one shard of five uploaded a JUnit file, because the other four had nothing to
