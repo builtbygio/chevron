@@ -1581,6 +1581,112 @@ async function printLatestMacCrashReport(since) {
   }
 }
 
+/**
+ * Electron does not write renderer crashes to Apple's ReportCrash directory --
+ * it uses Crashpad, whose database lives under the user-data dir. Reading only
+ * ~/Library/Logs/DiagnosticReports is why chevron#310 spent weeks as "no crash
+ * report on the runner" when a symbolicatable minidump was there the whole
+ * time, naming the offending native in its top frames.
+ *
+ * Works on macOS and Linux; script/node_modules/minidump ships
+ * minidump_stackwalk for darwin-x64 and linux-x64.
+ */
+async function printLatestCrashpadReport(userDataDir, since) {
+  const dirs = [
+    path.join(userDataDir, 'Crashpad', 'completed'),
+    path.join(userDataDir, 'Crashpad', 'pending')
+  ];
+
+  const newest = () => {
+    let best = null;
+    for (const dir of dirs) {
+      let entries = [];
+      try {
+        entries = fs.readdirSync(dir);
+      } catch (error) {
+        continue;
+      }
+      for (const name of entries) {
+        if (!name.endsWith('.dmp')) continue;
+        const file = path.join(dir, name);
+        let stats;
+        try {
+          stats = fs.statSync(file);
+        } catch (error) {
+          continue;
+        }
+        if (stats.mtimeMs < since) continue;
+        if (!best || stats.mtimeMs > best.mtimeMs) {
+          best = { file, mtimeMs: stats.mtimeMs };
+        }
+      }
+    }
+    return best;
+  };
+
+  // Crashpad writes the dump after the process dies, so poll briefly.
+  let dump = null;
+  for (let attempt = 0; attempt < 15 && !dump; attempt++) {
+    dump = newest();
+    if (!dump) await delay(1000);
+  }
+  if (!dump) {
+    console.error(
+      `smoke-test: no Crashpad minidump under ${path.join(userDataDir, 'Crashpad')}`
+    );
+    return;
+  }
+  console.error(`smoke-test: Crashpad minidump ${dump.file}`);
+
+  const stackwalk = path.join(
+    __dirname,
+    '..',
+    'node_modules',
+    'minidump',
+    'bin',
+    `${process.platform}-${process.arch}`,
+    'minidump_stackwalk'
+  );
+  if (!fs.existsSync(stackwalk)) {
+    console.error(
+      `smoke-test: no minidump_stackwalk for ${process.platform}-${process.arch}; ` +
+        'the dump above is still readable locally'
+    );
+    return;
+  }
+
+  let walked;
+  try {
+    walked = childProcess.execFileSync(stackwalk, [dump.file], {
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+      timeout: 120000,
+      stdio: ['ignore', 'pipe', 'ignore']
+    });
+  } catch (error) {
+    console.error(`smoke-test: minidump_stackwalk failed: ${error.message}`);
+    return;
+  }
+
+  const lines = walked.split('\n');
+  const reason = lines.find(l => /^Crash reason:/.test(l));
+  if (reason) console.error(`smoke-test: ${reason.trim()}`);
+
+  // The crashed thread's frames are what name the module at fault.
+  const start = lines.findIndex(l => /^Thread \d+ \(crashed\)/.test(l));
+  if (start === -1) {
+    console.error(walked.split('\n').slice(0, 40).join('\n'));
+    return;
+  }
+  const frames = [];
+  for (let i = start; i < lines.length && frames.length < 30; i++) {
+    if (i > start && /^Thread \d+/.test(lines[i])) break;
+    // Frame lines only; skip the register dumps between them.
+    if (i === start || /^\s*\d+\s+\S/.test(lines[i])) frames.push(lines[i]);
+  }
+  console.error(frames.join('\n'));
+}
+
 function linuxNeedsNoSandbox(binaryPath) {
   if (process.platform !== 'linux') return false;
   // Chromium aborts if chrome-sandbox exists but is not root-owned mode 4755
@@ -1807,6 +1913,10 @@ async function main() {
       // macOS writes the renderer's abort to a crash report rather than to
       // stderr, so the message above is all a Mac runner would otherwise say.
       await printLatestMacCrashReport(reloadStartedAt);
+      await printLatestCrashpadReport(
+        path.join(atomHome, 'electronUserData'),
+        reloadStartedAt
+      );
       return {
         ok: false,
         reason: `the renderer crashed on reload: ${line}`
