@@ -14,6 +14,7 @@ const { fileURLToPath } = require('url');
 const { EventEmitter } = require('events');
 const StartupTime = require('../startup-time');
 const { pathContained } = require('./atom-protocol-path');
+const { prepareToUnloadHandshake } = require('./unload-handshake');
 
 // Linux window/taskbar icon. Prefer real filesystem paths (asar.unpacked or
 // packaged app-root copies) because nativeImage.createFromPath does not read
@@ -627,24 +628,63 @@ module.exports = class AtomWindow extends EventEmitter {
   async prepareToUnload() {
     if (this.isSpecWindow()) return true;
 
-    this.lastPrepareToUnloadPromise = new Promise(resolve => {
-      const callback = (event, result) => {
-        if (
-          BrowserWindow.fromWebContents(event.sender) === this.browserWindow
-        ) {
-          ipcMain.removeListener('chevron:did-prepare-to-unload', callback);
-          if (!result) {
-            this.unloading = false;
-            this.atomApplication.quitting = false;
+    const { webContents } = this.browserWindow;
+
+    this.lastPrepareToUnloadPromise = prepareToUnloadHandshake({
+      isGone: () =>
+        this.browserWindow.isDestroyed() || webContents.isDestroyed(),
+
+      send: () => webContents.send('prepare-to-unload'),
+
+      onReply: settle => {
+        const callback = (event, result) => {
+          if (
+            BrowserWindow.fromWebContents(event.sender) === this.browserWindow
+          ) {
+            settle(result);
           }
-          resolve(result);
-        }
-      };
-      ipcMain.on('chevron:did-prepare-to-unload', callback);
-      this.browserWindow.webContents.send('prepare-to-unload');
+        };
+        ipcMain.on('chevron:did-prepare-to-unload', callback);
+        return () =>
+          ipcMain.removeListener('chevron:did-prepare-to-unload', callback);
+      },
+
+      // A dead renderer holds nothing worth saving, and cannot answer.
+      onGone: settle => {
+        const gone = () => settle();
+        webContents.once('destroyed', gone);
+        webContents.once('render-process-gone', gone);
+        return () => {
+          if (webContents.isDestroyed()) return;
+          webContents.removeListener('destroyed', gone);
+          webContents.removeListener('render-process-gone', gone);
+        };
+      },
+
+      // Responsive but silent: the renderer may be waiting on a person, so
+      // this asks rather than closing the window on a timer.
+      onStuck: async () => {
+        if (this.browserWindow.isDestroyed()) return 'force';
+        const { response } = await dialog.showMessageBox(this.browserWindow, {
+          type: 'warning',
+          buttons: ['Force Close', 'Keep Waiting'],
+          cancelId: 1,
+          defaultId: 1,
+          message: 'This window is not finishing its shutdown',
+          detail:
+            'It has not said whether it can close. Forcing it will lose ' +
+            'anything it has not saved.'
+        });
+        return response === 0 ? 'force' : 'wait';
+      }
     });
 
-    return this.lastPrepareToUnloadPromise;
+    const result = await this.lastPrepareToUnloadPromise;
+    if (!result) {
+      this.unloading = false;
+      this.atomApplication.quitting = false;
+    }
+    return result;
   }
 
   openPath(pathToOpen, initialLine, initialColumn) {

@@ -550,6 +550,7 @@ jobs:
           node --test script/ci/nested-modules-preserved.test.js
           node --test script/ci/dependencies-fingerprint.test.js
           node --test script/ci/socket-cleanup.test.js
+          node --test script/ci/unload-handshake.test.js
 
       - name: Launch smoke test (Xvfb)
         run: xvfb-run -a node script/ci/smoke-test.js
