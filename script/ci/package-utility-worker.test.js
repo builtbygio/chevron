@@ -213,14 +213,14 @@ describe('Node BrowserWindow git workers are gone', () => {
       path.join(ROOT, 'src/main-process/register-renderer-ipc.js'),
       'utf8'
     );
-    assert.ok(ipc.includes("on('atom-create-browser-window-sync'"));
+    assert.ok(ipc.includes("on('chevron:create-browser-window-sync'"));
     assert.ok(!ipc.includes("partition: WORKER_SESSION_PARTITION"));
     assert.ok(!ipc.includes('CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW'));
     const compat = fs.readFileSync(
       path.join(ROOT, 'src/remote-compat.js'),
       'utf8'
     );
-    assert.ok(!compat.includes('atom-create-browser-window-sync'));
+    assert.ok(!compat.includes('chevron:create-browser-window-sync'));
   });
 });
 

@@ -8,11 +8,11 @@
 const { ipcRenderer } = require('electron');
 
 function windowCall(method, ...args) {
-  return ipcRenderer.sendSync('atom-browser-window-call-sync', method, ...args);
+  return ipcRenderer.sendSync('chevron:browser-window-call-sync', method, ...args);
 }
 
 function webContentsCall(method, ...args) {
-  return ipcRenderer.sendSync('atom-web-contents-call-sync', method, ...args);
+  return ipcRenderer.sendSync('chevron:web-contents-call-sync', method, ...args);
 }
 
 function createWindowProxy() {
@@ -48,13 +48,13 @@ function createWindowProxy() {
     setTitle: v => windowCall('setTitle', v),
     // loadSettingsJSON / startupMarkers for any leftover direct access
     get loadSettingsJSON() {
-      return ipcRenderer.sendSync('atom-window-load-settings-sync');
+      return ipcRenderer.sendSync('chevron:window-load-settings-sync');
     },
     get startupMarkers() {
-      return ipcRenderer.sendSync('atom-window-startup-markers-sync');
+      return ipcRenderer.sendSync('chevron:window-startup-markers-sync');
     },
     get webContents() {
-      const wcId = ipcRenderer.sendSync('atom-get-web-contents-id-sync');
+      const wcId = ipcRenderer.sendSync('chevron:get-web-contents-id-sync');
       return {
         id: wcId,
         copy: () => webContentsCall('copy'),
@@ -66,12 +66,12 @@ function createWindowProxy() {
         executeJavaScript: (code, userGesture) =>
           webContentsCall('executeJavaScript', code, userGesture),
         send: (channel, ...args) =>
-          ipcRenderer.send('atom-wc-send', wcId, channel, ...args)
+          ipcRenderer.send('chevron:wc-send', wcId, channel, ...args)
       };
     },
     // showSaveDialog was patched onto BrowserWindow by AtomWindow; use IPC
     showSaveDialog(options, callback) {
-      const promise = ipcRenderer.invoke('atom-show-save-dialog', options || {});
+      const promise = ipcRenderer.invoke('chevron:show-save-dialog', options || {});
       if (typeof callback === 'function') {
         promise.then(result => {
           // Electron returns { filePath, bookmark } or canceled
@@ -86,7 +86,7 @@ function createWindowProxy() {
     // Not fully supported; packages that emit on window should use IPC
     emit(channel, ...args) {
       if (channel === 'context-menu') {
-        ipcRenderer.send('atom-context-menu', args[0]);
+        ipcRenderer.send('chevron:context-menu', args[0]);
         return true;
       }
       console.warn(
@@ -144,11 +144,11 @@ let windowProxy = null;
 
 module.exports = {
   getLoadSettingsJSON() {
-    return ipcRenderer.sendSync('atom-window-load-settings-sync');
+    return ipcRenderer.sendSync('chevron:window-load-settings-sync');
   },
 
   getStartupMarkers() {
-    return ipcRenderer.sendSync('atom-window-startup-markers-sync');
+    return ipcRenderer.sendSync('chevron:window-startup-markers-sync');
   },
 
   getWindowProxy() {
@@ -157,19 +157,19 @@ module.exports = {
   },
 
   showMessageBox(options) {
-    return ipcRenderer.invoke('atom-show-message-box', options);
+    return ipcRenderer.invoke('chevron:show-message-box', options);
   },
 
   showMessageBoxSync(options) {
-    return ipcRenderer.sendSync('atom-show-message-box-sync', options);
+    return ipcRenderer.sendSync('chevron:show-message-box-sync', options);
   },
 
   showSaveDialog(options) {
-    return ipcRenderer.invoke('atom-show-save-dialog', options);
+    return ipcRenderer.invoke('chevron:show-save-dialog', options);
   },
 
   getPrimaryDisplayWorkAreaSize() {
-    return ipcRenderer.sendSync('atom-get-primary-display-work-area-size-sync');
+    return ipcRenderer.sendSync('chevron:get-primary-display-work-area-size-sync');
   },
 
   getPrimaryDisplayWorkAreaSizeAsync() {
@@ -177,7 +177,7 @@ module.exports = {
   },
 
   getUserDefault(key, type) {
-    return ipcRenderer.sendSync('atom-get-user-default-sync', key, type);
+    return ipcRenderer.sendSync('chevron:get-user-default-sync', key, type);
   },
 
   getUserDefaultAsync(key, type) {
@@ -185,19 +185,19 @@ module.exports = {
   },
 
   openExternal(url) {
-    return ipcRenderer.invoke('atom-shell-open-external', url);
+    return ipcRenderer.invoke('chevron:shell-open-external', url);
   },
 
   showItemInFolder(fullPath) {
-    return ipcRenderer.invoke('atom-shell-show-item-in-folder', fullPath);
+    return ipcRenderer.invoke('chevron:shell-show-item-in-folder', fullPath);
   },
 
   moveItemToTrash(fullPath) {
-    return ipcRenderer.invoke('atom-shell-move-item-to-trash', fullPath);
+    return ipcRenderer.invoke('chevron:shell-move-item-to-trash', fullPath);
   },
 
   beep() {
-    return ipcRenderer.sendSync('atom-shell-beep-sync');
+    return ipcRenderer.sendSync('chevron:shell-beep-sync');
   },
 
   beepAsync() {
@@ -205,19 +205,19 @@ module.exports = {
   },
 
   appGetPath(name) {
-    return ipcRenderer.sendSync('atom-app-get-path-sync', name);
+    return ipcRenderer.sendSync('chevron:app-get-path-sync', name);
   },
 
   appGetVersion() {
-    return ipcRenderer.sendSync('atom-app-get-version-sync');
+    return ipcRenderer.sendSync('chevron:app-get-version-sync');
   },
 
   getJumpListSettings() {
-    return ipcRenderer.sendSync('atom-app-get-jump-list-settings-sync');
+    return ipcRenderer.sendSync('chevron:app-get-jump-list-settings-sync');
   },
 
   setJumpList(categories) {
-    return ipcRenderer.sendSync('atom-app-set-jump-list-sync', categories);
+    return ipcRenderer.sendSync('chevron:app-set-jump-list-sync', categories);
   },
 
   getJumpListSettingsAsync() {
@@ -231,32 +231,32 @@ module.exports = {
   // Clipboard stays sendSync: `atom.clipboard.read()` / `readWithMetadata()`
   // are synchronous public API, and an async write would race a same-tick read.
   clipboardWriteText(text, type) {
-    return ipcRenderer.sendSync('atom-clipboard-write-text-sync', text, type);
+    return ipcRenderer.sendSync('chevron:clipboard-write-text-sync', text, type);
   },
 
   clipboardReadText(type) {
-    return ipcRenderer.sendSync('atom-clipboard-read-text-sync', type);
+    return ipcRenderer.sendSync('chevron:clipboard-read-text-sync', type);
   },
 
   clipboardWriteFindText(text) {
-    return ipcRenderer.sendSync('atom-clipboard-write-find-text-sync', text);
+    return ipcRenderer.sendSync('chevron:clipboard-write-find-text-sync', text);
   },
 
   clipboardReadFindText() {
-    return ipcRenderer.sendSync('atom-clipboard-read-find-text-sync');
+    return ipcRenderer.sendSync('chevron:clipboard-read-find-text-sync');
   },
 
   sendContextMenu(menuTemplate) {
-    ipcRenderer.send('atom-context-menu', menuTemplate);
+    ipcRenderer.send('chevron:context-menu', menuTemplate);
   },
 
   getCurrentWindowId() {
-    return ipcRenderer.sendSync('atom-get-current-window-id-sync');
+    return ipcRenderer.sendSync('chevron:get-current-window-id-sync');
   },
 
   sendToWindowId(windowId, channel, ...args) {
     ipcRenderer.send(
-      'atom-webcontents-send-to-window-id',
+      'chevron:webcontents-send-to-window-id',
       windowId,
       channel,
       ...args
@@ -265,7 +265,7 @@ module.exports = {
 
   isDefaultProtocolClient(protocolName, execPath, args) {
     return ipcRenderer.sendSync(
-      'atom-is-default-protocol-client-sync',
+      'chevron:is-default-protocol-client-sync',
       protocolName,
       execPath,
       args
@@ -274,7 +274,7 @@ module.exports = {
 
   setAsDefaultProtocolClient(protocolName, execPath, args) {
     return ipcRenderer.sendSync(
-      'atom-set-as-default-protocol-client-sync',
+      'chevron:set-as-default-protocol-client-sync',
       protocolName,
       execPath,
       args

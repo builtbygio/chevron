@@ -12,7 +12,7 @@ const {
   Menu,
   clipboard,
   dialog,
-  ipcMain,
+  ipcMain: electronIpcMain,
   screen,
   shell,
   app,
@@ -23,6 +23,7 @@ const guard = require('./ipc-guard');
 const { isSafeAbsolutePath } = guard;
 const { isAllowedFsPath } = require('./register-fs-ipc');
 const { isMainOnlyChannel } = require('./main-to-renderer-channels');
+const { withLegacyAliases } = require('./ipc-aliases');
 
 let registered = false;
 
@@ -300,6 +301,8 @@ function resolveSettingsViewCachePath(basename) {
 }
 
 module.exports = function registerRendererIpc(atomApplication) {
+  // Every registration below also answers to the name it had; see ipc-aliases.
+  const ipcMain = withLegacyAliases(electronIpcMain);
   if (registered) return;
   registered = true;
 
@@ -317,7 +320,7 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   // --- Boot / load settings (P0) ---------------------------------------------
 
-  ipcMain.on('atom-window-load-settings-sync', event => {
+  ipcMain.on('chevron:window-load-settings-sync', event => {
     const win = browserWindowFromEvent(event);
     try {
       event.returnValue =
@@ -330,7 +333,7 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-window-startup-markers-sync', event => {
+  ipcMain.on('chevron:window-startup-markers-sync', event => {
     const win = browserWindowFromEvent(event);
     try {
       // One-shot getter on BrowserWindow (see atom-window.js)
@@ -384,7 +387,7 @@ module.exports = function registerRendererIpc(atomApplication) {
     'toggleDevTools'
   ]);
 
-  ipcMain.on('atom-browser-window-call-sync', (event, method, ...args) => {
+  ipcMain.on('chevron:browser-window-call-sync', (event, method, ...args) => {
     const win = browserWindowFromEvent(event);
     if (!win || !ALLOWED_WINDOW_METHODS.has(method)) {
       event.returnValue = null;
@@ -421,7 +424,7 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-web-contents-call-sync', (event, method, ...args) => {
+  ipcMain.on('chevron:web-contents-call-sync', (event, method, ...args) => {
     // Clipboard/history editing only. executeJavaScript was previously
     // reachable here but has no consumer (getCurrentWebContents is used only
     // for its .id), so it is intentionally excluded — the renderer must not
@@ -447,7 +450,7 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   // Context menu: renderer sends template; main shows it (was window.emit via remote)
-  ipcMain.on('atom-context-menu', (event, menuTemplate) => {
+  ipcMain.on('chevron:context-menu', (event, menuTemplate) => {
     const check = validateMenuTemplate(menuTemplate);
     if (!check.ok) {
       console.warn(`atom-context-menu refused: ${check.reason}`);
@@ -459,7 +462,7 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   // --- Dialogs (P1) ---------------------------------------------------------
 
-  ipcMain.handle('atom-show-message-box', async (event, options) => {
+  ipcMain.handle('chevron:show-message-box', async (event, options) => {
     const check = validateDialogOptions(options);
     if (!check.ok) {
       console.warn(`atom-show-message-box refused: ${check.reason}`);
@@ -469,7 +472,7 @@ module.exports = function registerRendererIpc(atomApplication) {
     return dialog.showMessageBox(win || undefined, options);
   });
 
-  ipcMain.on('atom-show-message-box-sync', (event, options) => {
+  ipcMain.on('chevron:show-message-box-sync', (event, options) => {
     const check = validateDialogOptions(options);
     if (!check.ok) {
       console.warn(`atom-show-message-box-sync refused: ${check.reason}`);
@@ -485,7 +488,7 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
-  ipcMain.handle('atom-show-save-dialog', async (event, options) => {
+  ipcMain.handle('chevron:show-save-dialog', async (event, options) => {
     const check = validateDialogOptions(options);
     if (!check.ok) {
       console.warn(`atom-show-save-dialog refused: ${check.reason}`);
@@ -501,7 +504,7 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   // --- Screen / systemPreferences / shell / app (P1/P2) ---------------------
 
-  ipcMain.on('atom-get-primary-display-work-area-size-sync', event => {
+  ipcMain.on('chevron:get-primary-display-work-area-size-sync', event => {
     try {
       event.returnValue = screen.getPrimaryDisplay().workAreaSize;
     } catch (error) {
@@ -517,7 +520,7 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-get-user-default-sync', (event, key, type) => {
+  ipcMain.on('chevron:get-user-default-sync', (event, key, type) => {
     if (!isUserDefaultQuery(key, type)) {
       event.returnValue = undefined;
       return;
@@ -545,7 +548,7 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
-  ipcMain.handle('atom-shell-open-external', async (_event, url) => {
+  ipcMain.handle('chevron:shell-open-external', async (_event, url) => {
     if (!isAllowedExternalUrl(url)) {
       console.warn(`atom-shell-open-external: blocked url ${String(url)}`);
       return false;
@@ -554,7 +557,7 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   // Reveal a path in the OS file manager (tree-view "Show in Finder", etc.).
-  ipcMain.handle('atom-shell-show-item-in-folder', async (_event, fullPath) => {
+  ipcMain.handle('chevron:shell-show-item-in-folder', async (_event, fullPath) => {
     // Confined like a read: revealing a path also confirms it exists.
     if (!isAllowedFsPath(fullPath)) {
       console.warn(
@@ -566,14 +569,14 @@ module.exports = function registerRendererIpc(atomApplication) {
       shell.showItemInFolder(fullPath);
       return true;
     } catch (error) {
-      console.error('atom-shell-show-item-in-folder', error);
+      console.error('chevron:shell-show-item-in-folder', error);
       return false;
     }
   });
 
   // Move a path to the trash. Electron removed sync moveItemToTrash; use
   // async trashItem. Returns boolean success for package call sites.
-  ipcMain.handle('atom-shell-move-item-to-trash', async (_event, fullPath) => {
+  ipcMain.handle('chevron:shell-move-item-to-trash', async (_event, fullPath) => {
     // Confined to the same roots as a write. Absolute-and-nul-free let any
     // package trash any file, while atom-fs-write-file-sync beside it could
     // not touch one outside a project.
@@ -587,7 +590,7 @@ module.exports = function registerRendererIpc(atomApplication) {
       await shell.trashItem(fullPath);
       return true;
     } catch (error) {
-      console.error('atom-shell-move-item-to-trash', error);
+      console.error('chevron:shell-move-item-to-trash', error);
       return false;
     }
   });
@@ -596,18 +599,18 @@ module.exports = function registerRendererIpc(atomApplication) {
   // Renderer packages must not write arbitrary paths; only basenames under
   // userData/Cache/settings-view are accepted.
 
-  ipcMain.handle('atom-settings-view-cache-ensure', async () => {
+  ipcMain.handle('chevron:settings-view-cache-ensure', async () => {
     const root = settingsViewCacheRoot();
     try {
       fs.mkdirSync(root, { recursive: true });
       return root;
     } catch (error) {
-      console.error('atom-settings-view-cache-ensure', error);
+      console.error('chevron:settings-view-cache-ensure', error);
       return null;
     }
   });
 
-  ipcMain.handle('atom-settings-view-cache-list', async () => {
+  ipcMain.handle('chevron:settings-view-cache-list', async () => {
     const root = settingsViewCacheRoot();
     try {
       return fs
@@ -615,13 +618,13 @@ module.exports = function registerRendererIpc(atomApplication) {
         .filter(name => isSafeCacheBasename(name));
     } catch (error) {
       if (error && error.code === 'ENOENT') return [];
-      console.error('atom-settings-view-cache-list', error);
+      console.error('chevron:settings-view-cache-list', error);
       return [];
     }
   });
 
   ipcMain.handle(
-    'atom-settings-view-cache-write',
+    'chevron:settings-view-cache-write',
     async (_event, basename, data) => {
       const abs = resolveSettingsViewCachePath(basename);
       if (!abs) {
@@ -641,13 +644,13 @@ module.exports = function registerRendererIpc(atomApplication) {
         fs.writeFileSync(abs, buf);
         return { ok: true, path: abs };
       } catch (error) {
-        console.error('atom-settings-view-cache-write', error);
+        console.error('chevron:settings-view-cache-write', error);
         return { ok: false, error: String(error && error.message) };
       }
     }
   );
 
-  ipcMain.handle('atom-settings-view-cache-unlink', async (_event, basename) => {
+  ipcMain.handle('chevron:settings-view-cache-unlink', async (_event, basename) => {
     const abs = resolveSettingsViewCachePath(basename);
     if (!abs) {
       console.warn(
@@ -660,14 +663,14 @@ module.exports = function registerRendererIpc(atomApplication) {
       return true;
     } catch (error) {
       if (error && error.code === 'ENOENT') return true;
-      console.error('atom-settings-view-cache-unlink', error);
+      console.error('chevron:settings-view-cache-unlink', error);
       return false;
     }
   });
 
   // Path probes / bulk FS: see register-fs-ipc.js (N2.2–N2.3).
 
-  ipcMain.on('atom-shell-beep-sync', event => {
+  ipcMain.on('chevron:shell-beep-sync', event => {
     shell.beep();
     event.returnValue = true;
   });
@@ -678,7 +681,7 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   // app.getPath only knows a fixed set of names; anything else throws.
-  ipcMain.on('atom-app-get-path-sync', (event, name) => {
+  ipcMain.on('chevron:app-get-path-sync', (event, name) => {
     if (!APP_PATH_NAMES.has(name)) {
       console.warn(`atom-app-get-path-sync: refused name ${String(name)}`);
       event.returnValue = null;
@@ -691,12 +694,12 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-app-get-version-sync', event => {
+  ipcMain.on('chevron:app-get-version-sync', event => {
     event.returnValue = app.getVersion();
   });
 
   // Windows jump list (reopen-project-menu-manager)
-  ipcMain.on('atom-app-get-jump-list-settings-sync', event => {
+  ipcMain.on('chevron:app-get-jump-list-settings-sync', event => {
     try {
       event.returnValue =
         typeof app.getJumpListSettings === 'function'
@@ -707,7 +710,7 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-app-set-jump-list-sync', (event, categories) => {
+  ipcMain.on('chevron:app-set-jump-list-sync', (event, categories) => {
     const check = validateJumpList(categories);
     if (!check.ok) {
       console.warn(`atom-app-set-jump-list-sync refused: ${check.reason}`);
@@ -754,7 +757,7 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   // --- Clipboard (P2) -------------------------------------------------------
 
-  ipcMain.on('atom-clipboard-write-text-sync', (event, text, type) => {
+  ipcMain.on('chevron:clipboard-write-text-sync', (event, text, type) => {
     if (!guard.requireString(text, { name: 'text', allowEmpty: true }).ok ||
         !isClipboardType(type)) {
       event.returnValue = false;
@@ -769,7 +772,7 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-clipboard-read-text-sync', (event, type) => {
+  ipcMain.on('chevron:clipboard-read-text-sync', (event, type) => {
     if (!isClipboardType(type)) {
       event.returnValue = '';
       return;
@@ -781,7 +784,7 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-clipboard-write-find-text-sync', (event, text) => {
+  ipcMain.on('chevron:clipboard-write-find-text-sync', (event, text) => {
     if (!guard.requireString(text, { name: 'text', allowEmpty: true }).ok) {
       event.returnValue = false;
       return;
@@ -796,7 +799,7 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-clipboard-read-find-text-sync', event => {
+  ipcMain.on('chevron:clipboard-read-find-text-sync', event => {
     try {
       event.returnValue =
         typeof clipboard.readFindText === 'function'
@@ -809,7 +812,7 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   // Cross-window webContents.send by BrowserWindow id (tabs / tree-view DND)
   ipcMain.on(
-    'atom-webcontents-send-to-window-id',
+    'chevron:webcontents-send-to-window-id',
     (event, windowId, channel, ...args) => {
       const check = validateCrossWindowSend(windowId, channel);
       if (!check.ok) {
@@ -829,14 +832,14 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   );
 
-  ipcMain.on('atom-get-current-window-id-sync', event => {
+  ipcMain.on('chevron:get-current-window-id-sync', event => {
     const win = browserWindowFromEvent(event);
     event.returnValue = win ? win.id : -1;
   });
 
   // Protocol client (settings-view); also available via ipcMain.handle elsewhere
   ipcMain.on(
-    'atom-is-default-protocol-client-sync',
+    'chevron:is-default-protocol-client-sync',
     (event, protocolName, _execPath, args) => {
       const reg = protocolRegistration(protocolName, args);
       if (!reg) {
@@ -856,7 +859,7 @@ module.exports = function registerRendererIpc(atomApplication) {
   );
 
   ipcMain.on(
-    'atom-set-as-default-protocol-client-sync',
+    'chevron:set-as-default-protocol-client-sync',
     (event, protocolName, _execPath, args) => {
       const reg = protocolRegistration(protocolName, args);
       if (!reg) {
@@ -877,14 +880,14 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   // --- WebContents id / send (github workers, sendTo) ------------------------
 
-  ipcMain.on('atom-get-web-contents-id-sync', event => {
+  ipcMain.on('chevron:get-web-contents-id-sync', event => {
     event.returnValue = event.sender.id;
   });
 
   // Allow main→renderer channel used by utility workers (same as BW workers).
   // (No change to allowlist logic below; utility workers never call atom-wc-send.)
 
-  ipcMain.on('atom-wc-send', (event, webContentsId, channel, ...args) => {
+  ipcMain.on('chevron:wc-send', (event, webContentsId, channel, ...args) => {
     // Git workers use atom-utility-worker-send. This channel is send-to-self only.
     const nameCheck = validateCrossWindowSend(webContentsId, channel);
     if (!nameCheck.ok) {
@@ -912,7 +915,7 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-wc-is-destroyed-sync', (event, webContentsId) => {
+  ipcMain.on('chevron:wc-is-destroyed-sync', (event, webContentsId) => {
     try {
       if (webContentsId !== event.sender.id) {
         event.returnValue = true;
@@ -927,18 +930,18 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   // --- utilityProcess workers (Phase S3 / #61) ------------------------------
 
-  ipcMain.on('atom-utility-worker-enabled-sync', event => {
+  ipcMain.on('chevron:utility-worker-enabled-sync', event => {
     event.returnValue = packageUtilityWorker.isEnabled();
   });
 
-  ipcMain.handle('atom-utility-worker-capabilities', () => {
+  ipcMain.handle('chevron:utility-worker-capabilities', () => {
     return {
       utilityProcess: true,
       githubUtilityWorkers: packageUtilityWorker.isEnabled()
     };
   });
 
-  ipcMain.on('atom-utility-worker-create-sync', event => {
+  ipcMain.on('chevron:utility-worker-create-sync', event => {
     try {
       if (!packageUtilityWorker.isEnabled()) {
         event.returnValue = null;
@@ -947,12 +950,12 @@ module.exports = function registerRendererIpc(atomApplication) {
       const created = packageUtilityWorker.createWorker(event.sender);
       event.returnValue = created;
     } catch (error) {
-      console.error('atom-utility-worker-create-sync', error);
+      console.error('chevron:utility-worker-create-sync', error);
       event.returnValue = null;
     }
   });
 
-  ipcMain.on('atom-utility-worker-load-sync', (event, workerId, loadUrl) => {
+  ipcMain.on('chevron:utility-worker-load-sync', (event, workerId, loadUrl) => {
     try {
       const meta = packageUtilityWorker.getWorker(workerId);
       if (!meta || meta.managerWcId !== event.sender.id) {
@@ -961,25 +964,25 @@ module.exports = function registerRendererIpc(atomApplication) {
       }
       event.returnValue = packageUtilityWorker.loadWorkerUrl(workerId, loadUrl);
     } catch (error) {
-      console.error('atom-utility-worker-load-sync', error);
+      console.error('chevron:utility-worker-load-sync', error);
       event.returnValue = false;
     }
   });
 
   ipcMain.on(
-    'atom-utility-worker-send',
+    'chevron:utility-worker-send',
     (event, workerId, _channel, payload) => {
       try {
         const meta = packageUtilityWorker.getWorker(workerId);
         if (!meta || meta.managerWcId !== event.sender.id) return;
         packageUtilityWorker.sendToWorker(workerId, _channel, payload);
       } catch (error) {
-        console.error('atom-utility-worker-send', error);
+        console.error('chevron:utility-worker-send', error);
       }
     }
   );
 
-  ipcMain.on('atom-utility-worker-destroy-sync', (event, workerId) => {
+  ipcMain.on('chevron:utility-worker-destroy-sync', (event, workerId) => {
     try {
       const meta = packageUtilityWorker.getWorker(workerId);
       if (!meta || meta.managerWcId !== event.sender.id) {
@@ -988,12 +991,12 @@ module.exports = function registerRendererIpc(atomApplication) {
       }
       event.returnValue = packageUtilityWorker.destroy(workerId);
     } catch (error) {
-      console.error('atom-utility-worker-destroy-sync', error);
+      console.error('chevron:utility-worker-destroy-sync', error);
       event.returnValue = false;
     }
   });
 
-  ipcMain.on('atom-utility-worker-is-destroyed-sync', (event, workerId) => {
+  ipcMain.on('chevron:utility-worker-is-destroyed-sync', (event, workerId) => {
     if (!guard.requireInt(workerId, { name: 'workerId', min: 0 }).ok) {
       event.returnValue = true;
       return;
@@ -1002,14 +1005,14 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   // Node BrowserWindow git workers are gone (PR 9). Always refuse.
-  ipcMain.on('atom-create-browser-window-sync', event => {
+  ipcMain.on('chevron:create-browser-window-sync', event => {
     console.warn(
       'atom-create-browser-window-sync: refused — git workers use utilityProcess only'
     );
     event.returnValue = null;
   });
 
-  ipcMain.on('atom-bw-id-call-sync', (event, windowId, method, ...args) => {
+  ipcMain.on('chevron:bw-id-call-sync', (event, windowId, method, ...args) => {
     // P0.2: package-worker windows only + method allowlist (no BrowserWindow.fromId).
     if (!PACKAGE_WORKER_WINDOW_METHODS.has(method)) {
       console.warn(
@@ -1050,7 +1053,7 @@ module.exports = function registerRendererIpc(atomApplication) {
       method === 'isDestroyed' ? true : method === 'destroy' ? true : null;
   });
 
-  ipcMain.on('atom-destroy-own-window-sync', event => {
+  ipcMain.on('chevron:destroy-own-window-sync', event => {
     const win = browserWindowFromEvent(event);
     if (win && !win.isDestroyed()) {
       win.destroy();
@@ -1060,7 +1063,7 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   // --- Popup menu with click callbacks (github) -----------------------------
 
-  ipcMain.on('atom-popup-menu', (event, sessionId, template) => {
+  ipcMain.on('chevron:popup-menu', (event, sessionId, template) => {
     const check = validateMenuTemplate(template);
     if (!check.ok) {
       console.warn(`atom-popup-menu refused: ${check.reason}`);
@@ -1092,13 +1095,13 @@ module.exports = function registerRendererIpc(atomApplication) {
       );
       menu.popup({ window: win || undefined });
     } catch (error) {
-      console.error('atom-popup-menu', error);
+      console.error('chevron:popup-menu', error);
     }
   });
 
   // --- Open dialog (github DirectorySelect) ---------------------------------
 
-  ipcMain.handle('atom-show-open-dialog', async (event, options) => {
+  ipcMain.handle('chevron:show-open-dialog', async (event, options) => {
     const check = validateDialogOptions(options);
     if (!check.ok) {
       console.warn(`atom-show-open-dialog refused: ${check.reason}`);

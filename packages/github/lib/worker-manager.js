@@ -193,7 +193,7 @@ class Worker {
   }
 
   getWebContentsId() {
-    return require('electron').ipcRenderer.sendSync('atom-get-web-contents-id-sync');
+    return require('electron').ipcRenderer.sendSync('chevron:get-web-contents-id-sync');
   }
 
   executeOperation(operation) {

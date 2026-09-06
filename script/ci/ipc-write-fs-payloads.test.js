@@ -120,7 +120,7 @@ describe('what may be moved to the trash', () => {
       path.join(__dirname, '..', '..', 'src', 'main-process', 'register-renderer-ipc.js'),
       'utf8'
     );
-    const at = source.indexOf("'atom-shell-move-item-to-trash'");
+    const at = source.indexOf("'chevron:shell-move-item-to-trash'");
     assert.notEqual(at, -1);
     const body = source.slice(at, at + 600);
     assert.match(body, /isAllowedFsPath\(fullPath\)/);

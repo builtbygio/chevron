@@ -51,7 +51,7 @@ class AverageTracker {
 }
 
 const query = qs.parse(window.location.search.substr(1));
-const sourceWebContentsId = ipc.sendSync('atom-get-web-contents-id-sync');
+const sourceWebContentsId = ipc.sendSync('chevron:get-web-contents-id-sync');
 const operationCountLimit = parseInt(query.operationCountLimit, 10);
 const averageTracker = new AverageTracker({
   limit: operationCountLimit
@@ -63,7 +63,7 @@ const managerWebContentsId = parseInt(query.managerWebContentsId, 10);
 
 const destroyRenderer = () => {
   try {
-    ipc.sendSync('atom-destroy-own-window-sync');
+    ipc.sendSync('chevron:destroy-own-window-sync');
   } catch (e) {
     /* ignore */
   }
@@ -92,7 +92,7 @@ ipc.on(channelName, (event, {
     options.processCallback = child => {
       childPidsById.set(id, child.pid);
       child.on('error', err => {
-        ipc.send('atom-wc-send', managerWebContentsId, channelName, {
+        ipc.send('chevron:wc-send', managerWebContentsId, channelName, {
           sourceWebContentsId,
           type: 'git-spawn-error',
           data: {
@@ -102,7 +102,7 @@ ipc.on(channelName, (event, {
         });
       });
       child.stdin.on('error', err => {
-        ipc.send('atom-wc-send', managerWebContentsId, channelName, {
+        ipc.send('chevron:wc-send', managerWebContentsId, channelName, {
           sourceWebContentsId,
           type: 'git-stdin-error',
           data: {
@@ -125,7 +125,7 @@ ipc.on(channelName, (event, {
         execTime: performance.now() - spawnEnd
       };
       childPidsById.delete(id);
-      ipc.send('atom-wc-send', managerWebContentsId, channelName, {
+      ipc.send('chevron:wc-send', managerWebContentsId, channelName, {
         sourceWebContentsId,
         type: 'git-data',
         data: {
@@ -145,7 +145,7 @@ ipc.on(channelName, (event, {
         execTime: performance.now() - spawnEnd
       };
       childPidsById.delete(id);
-      ipc.send('atom-wc-send', managerWebContentsId, channelName, {
+      ipc.send('chevron:wc-send', managerWebContentsId, channelName, {
         sourceWebContentsId,
         type: 'git-data',
         data: {
@@ -164,10 +164,10 @@ ipc.on(channelName, (event, {
     const spawnEnd = performance.now();
     averageTracker.addValue(spawnEnd - spawnStart); // TODO: consider using this to avoid duplicate write operations upon crashing.
     // For now we won't do this to avoid clogging up ipc channel
-    // ipc.send('atom-wc-send', managerWebContentsId, channelName, {sourceWebContentsId, type: 'exec-started', data: {id}});
+    // ipc.send('chevron:wc-send', managerWebContentsId, channelName, {sourceWebContentsId, type: 'exec-started', data: {id}});
 
     if (averageTracker.enoughData() && averageTracker.getAverage() > 20) {
-      ipc.send('atom-wc-send', managerWebContentsId, channelName, {
+      ipc.send('chevron:wc-send', managerWebContentsId, channelName, {
         type: 'slow-spawns'
       });
     }
@@ -179,7 +179,7 @@ ipc.on(channelName, (event, {
 
     if (childPid !== undefined) {
       require('tree-kill')(childPid, 'SIGINT', () => {
-        ipc.send('atom-wc-send', managerWebContentsId, channelName, {
+        ipc.send('chevron:wc-send', managerWebContentsId, channelName, {
           sourceWebContentsId,
           type: 'git-cancelled',
           data: {
@@ -195,7 +195,7 @@ ipc.on(channelName, (event, {
     throw new Error(`Could not identify type ${type}`);
   }
 });
-ipc.send('atom-wc-send', managerWebContentsId, channelName, {
+ipc.send('chevron:wc-send', managerWebContentsId, channelName, {
   sourceWebContentsId,
   type: 'renderer-ready',
   data: {

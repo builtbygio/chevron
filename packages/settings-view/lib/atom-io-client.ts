@@ -161,7 +161,7 @@ class AtomIoClient {
     };
     const onErr = (error: any) =>
       console.warn('settings-view avatar cache ensure failed', error);
-    return ipcRenderer.invoke('atom-settings-view-cache-ensure').then(onRoot).catch(onErr);
+    return ipcRenderer.invoke('chevron:settings-view-cache-ensure').then(onRoot).catch(onErr);
   }
 
   avatarPath(login: string) {
@@ -188,7 +188,7 @@ class AtomIoClient {
       }
       return callback(null, null);
     };
-    return ipcRenderer.invoke('atom-settings-view-cache-list').then(handle).catch(callback);
+    return ipcRenderer.invoke('chevron:settings-view-cache-list').then(handle).catch(callback);
   }
 
   fetchAndCacheAvatar(login: string, callback: Function) {
@@ -205,7 +205,7 @@ class AtomIoClient {
           return callback(new Error(`avatar fetch failed: ${status}`));
         }
         return ipcRenderer
-          .invoke('atom-settings-view-cache-write', basename, body)
+          .invoke('chevron:settings-view-cache-write', basename, body)
           .then((result: any) => {
             if (result && result.ok) {
               return callback(null, result.path || imagePath);
@@ -233,20 +233,20 @@ class AtomIoClient {
         children.pop();
         for (const child of children) {
           ipcRenderer
-            .invoke('atom-settings-view-cache-unlink', child)
+            .invoke('chevron:settings-view-cache-unlink', child)
             .catch((error: any) => console.warn(`Error deleting avatar: ${child}`, error));
         }
       }
     };
     const onErr = (error: any) =>
       console.warn('settings-view avatar cache list failed', error);
-    return ipcRenderer.invoke('atom-settings-view-cache-list').then(handle).catch(onErr);
+    return ipcRenderer.invoke('chevron:settings-view-cache-list').then(handle).catch(onErr);
   }
 
   getCachePath() {
     if (this.cachePath != null) return this.cachePath;
     this.cachePath = path.join(
-      require('electron').ipcRenderer.sendSync('atom-app-get-path-sync', 'userData'),
+      require('electron').ipcRenderer.sendSync('chevron:app-get-path-sync', 'userData'),
       'Cache',
       'settings-view'
     );

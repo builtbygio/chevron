@@ -203,18 +203,39 @@ possible. Seven PRs covers the 61. Do not combine with Phase 4 renames.
 validation is removed (verify by reverting the guard locally once).
 **Acceptance overall:** `validation: "none"` count is zero.
 
-### Phase 4 — namespace, deferred until Phase 3 is done
+### Phase 4 — namespace — **done 2026-09-06**
 
-61 channels are `atom*`, 11 `chevron:*`, 14 `lsp:*`, 4 unprefixed. The
-Chevron-only policy in REBRANDING.md says new surfaces use `chevron`; these
-predate it. Renaming is cheap in main and expensive everywhere else, because
-bundled packages call channels by string.
+61 channels were `atom*`, 11 `chevron:*`, 14 `lsp:*`, 4 unprefixed. All 90 are
+`chevron:` or `lsp:` now, and `script/ci/ipc-inventory.test.js` refuses any
+other prefix — the four grandfathered names are gone rather than carried
+forward.
 
-When Phase 3 is complete: register each `atom*` channel under its
-`chevron:` name and keep the old name as an alias that logs once per
-session, for one release. The inventory test then enforces that new
-channels are `chevron:` or `lsp:` only. Remove aliases the release after.
-Not before.
+`src/main-process/ipc-aliases.js` holds the 64 old names. `withLegacyAliases`
+wraps `ipcMain` so a registration answers to both, and the old name logs once
+per session per channel:
+
+```
+[chevron] IPC channel "atom-window-load-settings-sync" is the old name for
+"chevron:window-load-settings-sync" and will be removed. Update the caller.
+```
+
+The canonical name stays a literal at the call site, because that is what the
+enumerator reads; an alias registered through a variable would be invisible to
+the inventory, which is the blind spot that made this document's first channel
+count wrong.
+
+Every caller **in this repository** moved to the canonical names — 92
+references across 13 files, core and bundled packages alike — so a normal
+session prints no warnings. The aliases exist for out-of-tree packages, which
+is the compatibility problem worth having.
+
+`chevron:did-prepare-to-unload` has no alias on purpose: `atom-window.js`
+registers and removes that listener for each unload, and an alias beside it
+would not be removed with it. Its only sender is `src/application-delegate.js`,
+which moved with the rename.
+
+**Remove the aliases the release after this one.** Not before. When they go,
+`ipc-aliases.js` and the `legacyName` field in the inventory go with them.
 
 ## What this does not do
 
@@ -228,7 +249,8 @@ Not before.
 
 ## Where to start
 
-Phase 0 is done; start at Phase 1. The enumerator is
+All five phases are done. Phase 4's aliases are the only thing left to
+retire, a release from now. The enumerator is
 `script/lib/ipc-inventory.js` and the guard is
 `script/ci/ipc-inventory.test.js`. Re-run `enumerateChannels` before trusting
 any count in this document — the numbers here were wrong once already.

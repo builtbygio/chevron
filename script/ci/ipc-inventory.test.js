@@ -24,16 +24,9 @@ const GUIDANCE =
   'New IPC channel: add it to script/ci/ipc-inventory.json with scope and ' +
   'validation filled in, and a boundary test.';
 
-// Channels that predate the naming policy. Adding a fifth is a decision, so
-// it fails here first. See REBRANDING.md.
-const GRANDFATHERED = new Set([
-  'did-prepare-to-unload',
-  'isDefaultProtocolClient',
-  'removeAsDefaultProtocolClient',
-  'setAsDefaultProtocolClient'
-]);
-
-const NAMESPACED = /^(atom[-:]|lsp:|chevron:)/;
+// Phase 4 renamed every channel. There is nothing left to grandfather, and
+// `atom*` is no longer an accepted prefix for a new one. See REBRANDING.md.
+const NAMESPACED = /^(chevron:|lsp:)/;
 
 // Compared without line numbers: they churn on every unrelated edit.
 const identity = entry => ({
@@ -71,28 +64,16 @@ describe('the recorded IPC surface', () => {
     assert.deepEqual(duplicates, [], `a channel is registered twice: ${duplicates}`);
   });
 
-  it('namespaces every channel but the grandfathered ones', () => {
+  it('namespaces every channel', () => {
     const unnamespaced = enumerateChannels(ROOT)
       .map(e => e.channel)
-      .filter(c => !NAMESPACED.test(c) && !GRANDFATHERED.has(c));
+      .filter(c => !NAMESPACED.test(c));
     assert.deepEqual(
       unnamespaced,
       [],
-      'a new channel must be namespaced chevron:, lsp: or atom-/atom: — ' +
-        `these are not: ${unnamespaced.join(', ')}`
+      'a channel must be chevron: or lsp:; an old name belongs in ' +
+        `ipc-aliases.js, not here — these are not: ${unnamespaced.join(', ')}`
     );
-  });
-
-  it('keeps the grandfathered set from growing', () => {
-    const live = new Set(enumerateChannels(ROOT).map(e => e.channel));
-    for (const channel of GRANDFATHERED) {
-      assert.ok(
-        live.has(channel),
-        `${channel} is grandfathered but no longer registered — remove it ` +
-          'from GRANDFATHERED rather than leaving the exemption behind'
-      );
-    }
-    assert.equal(GRANDFATHERED.size, 4);
   });
 });
 
@@ -143,5 +124,43 @@ describe('the recorded entries are well formed', () => {
 
   it('records every channel the main process has', () => {
     assert.equal(RECORDED.length, enumerateChannels(ROOT).length);
+  });
+
+  it('records the old name of every aliased channel', () => {
+    // The alias map is what keeps out-of-tree callers working. An alias the
+    // inventory does not record is one nobody will remember to remove.
+    const { LEGACY_ALIASES } = require(path.join(
+      ROOT, 'src', 'main-process', 'ipc-aliases'
+    ));
+    for (const [canonical, legacy] of LEGACY_ALIASES) {
+      const entry = RECORDED.find(e => e.channel === canonical);
+      assert.ok(entry, `${canonical} is aliased but not recorded`);
+      assert.equal(entry.legacyName, legacy, canonical);
+    }
+    const recorded = RECORDED.filter(e => e.legacyName).length;
+    assert.equal(recorded, LEGACY_ALIASES.size);
+  });
+
+  it('does not alias a channel that no longer exists', () => {
+    const { LEGACY_ALIASES } = require(path.join(
+      ROOT, 'src', 'main-process', 'ipc-aliases'
+    ));
+    const live = new Set(enumerateChannels(ROOT).map(e => e.channel));
+    for (const canonical of LEGACY_ALIASES.keys()) {
+      assert.ok(live.has(canonical), `${canonical} is aliased but not registered`);
+    }
+  });
+
+  it('never reuses an old name as a new channel', () => {
+    const { LEGACY_ALIASES } = require(path.join(
+      ROOT, 'src', 'main-process', 'ipc-aliases'
+    ));
+    const legacyNames = new Set(LEGACY_ALIASES.values());
+    for (const entry of enumerateChannels(ROOT)) {
+      assert.ok(
+        !legacyNames.has(entry.channel),
+        `${entry.channel} is an old name; it must not be registered directly`
+      );
+    }
   });
 });

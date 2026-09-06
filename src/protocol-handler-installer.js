@@ -11,7 +11,7 @@ module.exports = class ProtocolHandlerInstaller {
   }
 
   async isDefaultProtocolClient() {
-    return ipcRenderer.invoke('isDefaultProtocolClient', {
+    return ipcRenderer.invoke('chevron:is-default-protocol-client', {
       protocol: 'chevron',
       path: process.execPath,
       args: ['--uri-handler', '--']
@@ -27,13 +27,13 @@ module.exports = class ProtocolHandlerInstaller {
     // that registration rather than leaving the OS pointed at a scheme the app
     // no longer handles. Best effort: its failure must not fail setup.
     await ipcRenderer
-      .invoke('removeAsDefaultProtocolClient', {
+      .invoke('chevron:remove-as-default-protocol-client', {
         protocol: 'atom',
         path: process.execPath,
         args
       })
       .catch(() => {});
-    return ipcRenderer.invoke('setAsDefaultProtocolClient', {
+    return ipcRenderer.invoke('chevron:set-as-default-protocol-client', {
       protocol: 'chevron',
       path: process.execPath,
       args

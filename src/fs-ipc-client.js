@@ -71,13 +71,13 @@ function wrapStat(plain) {
 
 module.exports = {
   existsSync(fullPath) {
-    return call('atom-fs-exists-sync', fullPath);
+    return call('chevron:fs-exists-sync', fullPath);
   },
 
   pathKind(fullPath) {
     // Returns a bare string rather than the {ok, value} envelope, so it does
     // not go through call().
-    return timed(() => ipcRenderer.sendSync('atom-fs-path-kind-sync', fullPath));
+    return timed(() => ipcRenderer.sendSync('chevron:fs-path-kind-sync', fullPath));
   },
 
   isDirectorySync(fullPath) {
@@ -93,20 +93,20 @@ module.exports = {
   },
 
   realpathSync(fullPath) {
-    return ipcRenderer.sendSync('atom-fs-realpath-sync', fullPath);
+    return ipcRenderer.sendSync('chevron:fs-realpath-sync', fullPath);
   },
 
   statSync(fullPath) {
-    return wrapStat(call('atom-fs-stat-sync', fullPath, true));
+    return wrapStat(call('chevron:fs-stat-sync', fullPath, true));
   },
 
   lstatSync(fullPath) {
-    return wrapStat(call('atom-fs-stat-sync', fullPath, false));
+    return wrapStat(call('chevron:fs-stat-sync', fullPath, false));
   },
 
   lstatSyncNoException(fullPath) {
     const result = ipcRenderer.sendSync(
-      'atom-fs-stat-no-exception-sync',
+      'chevron:fs-stat-no-exception-sync',
       fullPath,
       false
     );
@@ -116,7 +116,7 @@ module.exports = {
 
   statSyncNoException(fullPath) {
     const result = ipcRenderer.sendSync(
-      'atom-fs-stat-no-exception-sync',
+      'chevron:fs-stat-no-exception-sync',
       fullPath,
       true
     );
@@ -125,38 +125,38 @@ module.exports = {
   },
 
   readdirSync(fullPath) {
-    return call('atom-fs-readdir-sync', fullPath);
+    return call('chevron:fs-readdir-sync', fullPath);
   },
 
   listSync(fullPath) {
-    return call('atom-fs-list-sync', fullPath);
+    return call('chevron:fs-list-sync', fullPath);
   },
 
   makeTreeSync(fullPath) {
-    return call('atom-fs-mkdirp-sync', fullPath);
+    return call('chevron:fs-mkdirp-sync', fullPath);
   },
 
   writeFileSync(fullPath, data, encoding) {
-    return call('atom-fs-write-file-sync', fullPath, data, encoding);
+    return call('chevron:fs-write-file-sync', fullPath, data, encoding);
   },
 
   readFileSync(fullPath, encoding) {
-    return call('atom-fs-read-file-sync', fullPath, encoding);
+    return call('chevron:fs-read-file-sync', fullPath, encoding);
   },
 
   copySync(src, dest) {
-    return call('atom-fs-copy-sync', src, dest);
+    return call('chevron:fs-copy-sync', src, dest);
   },
 
   moveSync(src, dest) {
-    return call('atom-fs-move-sync', src, dest);
+    return call('chevron:fs-move-sync', src, dest);
   },
 
   renameSync(src, dest) {
-    return call('atom-fs-rename-sync', src, dest);
+    return call('chevron:fs-rename-sync', src, dest);
   },
 
   rmdirSync(fullPath) {
-    return call('atom-fs-rmdir-sync', fullPath);
+    return call('chevron:fs-rmdir-sync', fullPath);
   }
 };

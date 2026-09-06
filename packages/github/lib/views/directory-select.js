@@ -21,7 +21,7 @@ function defaultShowOpenDialog(winOrOpts, maybeOpts) {
   } = require("electron");
 
   const options = maybeOpts !== undefined ? maybeOpts : winOrOpts;
-  return ipcRenderer.invoke('atom-show-open-dialog', options || {});
+  return ipcRenderer.invoke('chevron:show-open-dialog', options || {});
 }
 
 class DirectorySelect extends _react.default.Component {

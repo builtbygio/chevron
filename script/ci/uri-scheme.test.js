@@ -37,10 +37,10 @@ describe('URI scheme (Wave 4)', () => {
     // `atom` may appear only in the removal call — earlier versions registered
     // it, so leaving the OS pointed at a scheme we no longer handle would send
     // links into a dead end.
-    assert.match(src, /removeAsDefaultProtocolClient/);
+    assert.match(src, /chevron:remove-as-default-protocol-client/);
     const setBlock = src.slice(src.indexOf('async setAsDefaultProtocolClient'));
-    const removeIdx = setBlock.indexOf('removeAsDefaultProtocolClient');
-    const setIdx = setBlock.indexOf("invoke('setAsDefaultProtocolClient'");
+    const removeIdx = setBlock.indexOf('chevron:remove-as-default-protocol-client');
+    const setIdx = setBlock.indexOf("invoke('chevron:set-as-default-protocol-client'");
     assert.ok(removeIdx !== -1 && setIdx > removeIdx, 'remove runs before set');
     assert.doesNotMatch(
       setBlock.slice(setIdx),
@@ -50,7 +50,7 @@ describe('URI scheme (Wave 4)', () => {
 
     // Main must actually handle the channel, and only for known schemes.
     const main = read('src/main-process/atom-application.js');
-    assert.match(main, /ipcMain\.handle\(\s*'removeAsDefaultProtocolClient'/);
+    assert.match(main, /ipcMain\.handle\(\s*'chevron:remove-as-default-protocol-client'/);
     // The check moved from an inline comparison to a named set; what matters
     // is that only these two schemes reach app.setAsDefaultProtocolClient.
     assert.match(main, /REGISTRABLE_PROTOCOLS = new Set\(\['chevron', 'atom'\]\)/);
