@@ -40,7 +40,7 @@ function showSaveDialog(options) {
     ipcRenderer
   } = require("electron");
 
-  return ipcRenderer.invoke('atom-show-save-dialog', options || {});
+  return ipcRenderer.invoke('chevron:show-save-dialog', options || {});
 }
 
 function showOpenDialog(options) {
@@ -48,7 +48,7 @@ function showOpenDialog(options) {
     ipcRenderer
   } = require("electron");
 
-  return ipcRenderer.invoke('atom-show-open-dialog', options || {});
+  return ipcRenderer.invoke('chevron:show-open-dialog', options || {});
 }
 
 const genArray = (0, _lodash.default)(function genArray(interval, count) {

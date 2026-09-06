@@ -22,25 +22,25 @@ describe('S4 display invoke slice', () => {
     assert.ok(main.includes("handle('chevron:get-primary-display-work-area-size'"));
     assert.ok(main.includes("handle('chevron:get-user-default'"));
     assert.ok(
-      main.includes("on('atom-get-primary-display-work-area-size-sync'"),
+      main.includes("on('chevron:get-primary-display-work-area-size-sync'"),
       'sendSync twin stays for remote-compat'
     );
-    assert.ok(main.includes("on('atom-get-user-default-sync'"));
+    assert.ok(main.includes("on('chevron:get-user-default-sync'"));
   });
 
   it('first-party application-delegate uses the async display getters', () => {
     const delegate = read('src/application-delegate.js');
     assert.ok(delegate.includes('getPrimaryDisplayWorkAreaSizeAsync'));
     assert.ok(delegate.includes('getUserDefaultAsync'));
-    assert.ok(!delegate.includes("sendSync('atom-get-primary-display-work-area-size-sync'"));
+    assert.ok(!delegate.includes("sendSync('chevron:get-primary-display-work-area-size-sync'"));
   });
 
   it('keeps sync confirm and does not touch FS or worker create', () => {
     const ipc = read('src/renderer-ipc.js');
-    assert.ok(ipc.includes("sendSync('atom-show-message-box-sync'"));
+    assert.ok(ipc.includes("sendSync('chevron:show-message-box-sync'"));
     const main = read('src/main-process/register-renderer-ipc.js');
-    assert.ok(main.includes("on('atom-show-message-box-sync'"));
-    assert.ok(main.includes("on('atom-create-browser-window-sync'"));
+    assert.ok(main.includes("on('chevron:show-message-box-sync'"));
+    assert.ok(main.includes("on('chevron:create-browser-window-sync'"));
     assert.ok(main.includes('refused'));
     const fsIpc = read('src/main-process/register-fs-ipc.js');
     assert.ok(/atom-fs-.*-sync/.test(fsIpc));

@@ -27,9 +27,9 @@ describe('Wave 1 app/shell invoke slice', () => {
 
   it('keeps the atom-*-sync twins for remote-compat', () => {
     const main = read('src/main-process/register-renderer-ipc.js');
-    assert.ok(main.includes("on('atom-shell-beep-sync'"));
-    assert.ok(main.includes("on('atom-app-get-jump-list-settings-sync'"));
-    assert.ok(main.includes("on('atom-app-set-jump-list-sync'"));
+    assert.ok(main.includes("on('chevron:shell-beep-sync'"));
+    assert.ok(main.includes("on('chevron:app-get-jump-list-settings-sync'"));
+    assert.ok(main.includes("on('chevron:app-set-jump-list-sync'"));
 
     const remote = read('src/remote-compat.js');
     assert.ok(remote.includes('rendererIpc.getJumpListSettings()'));
@@ -57,10 +57,10 @@ describe('Wave 1 app/shell invoke slice', () => {
   it('clipboard stays sync: read() is synchronous public API', () => {
     const ipc = read('src/renderer-ipc.js');
     for (const channel of [
-      'atom-clipboard-write-text-sync',
-      'atom-clipboard-read-text-sync',
-      'atom-clipboard-write-find-text-sync',
-      'atom-clipboard-read-find-text-sync'
+      'chevron:clipboard-write-text-sync',
+      'chevron:clipboard-read-text-sync',
+      'chevron:clipboard-write-find-text-sync',
+      'chevron:clipboard-read-find-text-sync'
     ]) {
       assert.ok(
         ipc.includes(`sendSync('${channel}'`),
@@ -77,10 +77,10 @@ describe('Wave 1 app/shell invoke slice', () => {
 
   it('does not touch sync confirm, boot settings, workers or FS IPC', () => {
     const ipc = read('src/renderer-ipc.js');
-    assert.ok(ipc.includes("sendSync('atom-show-message-box-sync'"));
-    assert.ok(ipc.includes("sendSync('atom-window-load-settings-sync'"));
+    assert.ok(ipc.includes("sendSync('chevron:show-message-box-sync'"));
+    assert.ok(ipc.includes("sendSync('chevron:window-load-settings-sync'"));
     const main = read('src/main-process/register-renderer-ipc.js');
-    assert.ok(main.includes("on('atom-create-browser-window-sync'"));
+    assert.ok(main.includes("on('chevron:create-browser-window-sync'"));
     const fsIpc = read('src/main-process/register-fs-ipc.js');
     assert.ok(/atom-fs-.*-sync/.test(fsIpc));
   });

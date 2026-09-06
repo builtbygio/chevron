@@ -17,10 +17,12 @@ const {
   app,
   clipboard,
   dialog,
-  ipcMain,
+  ipcMain: electronIpcMain,
   shell,
   screen
 } = require('electron');
+const { withLegacyAliases } = require('./ipc-aliases');
+const ipcMain = withLegacyAliases(electronIpcMain);
 const { CompositeDisposable, Disposable } = require('event-kit');
 const crypto = require('crypto');
 const fs = require('fs-plus');
@@ -204,13 +206,13 @@ function protocolRegistration(payload, channel) {
   return { protocol, execPath: process.execPath, args: args || [] };
 }
 
-ipcMain.handle('isDefaultProtocolClient', (_, payload) => {
+ipcMain.handle('chevron:is-default-protocol-client', (_, payload) => {
   const reg = protocolRegistration(payload, 'isDefaultProtocolClient');
   if (!reg) return false;
   return app.isDefaultProtocolClient(reg.protocol, reg.execPath, reg.args);
 });
 
-ipcMain.handle('setAsDefaultProtocolClient', (_, payload) => {
+ipcMain.handle('chevron:set-as-default-protocol-client', (_, payload) => {
   const reg = protocolRegistration(payload, 'setAsDefaultProtocolClient');
   if (!reg) return false;
   return app.setAsDefaultProtocolClient(reg.protocol, reg.execPath, reg.args);
@@ -218,7 +220,7 @@ ipcMain.handle('setAsDefaultProtocolClient', (_, payload) => {
 
 // Wave 4: used to withdraw the stale atom:// registration that earlier
 // versions installed. Only the schemes this app knows about are accepted.
-ipcMain.handle('removeAsDefaultProtocolClient', (_, payload) => {
+ipcMain.handle('chevron:remove-as-default-protocol-client', (_, payload) => {
   const reg = protocolRegistration(payload, 'removeAsDefaultProtocolClient');
   if (!reg) return false;
   return app.removeAsDefaultProtocolClient(reg.protocol, reg.execPath, reg.args);

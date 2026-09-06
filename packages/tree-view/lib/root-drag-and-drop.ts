@@ -186,7 +186,7 @@ module.exports =
 
       if (!isNaN(fromWindowId)) {
         // Let the window where the drag started know that the tab was dropped
-        return ipcRenderer.send('atom-webcontents-send-to-window-id', fromWindowId, 'tree-view:project-folder-dropped', fromIndex);
+        return ipcRenderer.send('chevron:webcontents-send-to-window-id', fromWindowId, 'tree-view:project-folder-dropped', fromIndex);
       }
     }
   }
@@ -255,6 +255,6 @@ module.exports =
   }
 
   getWindowId() {
-    return this.processId != null ? this.processId : (this.processId = ipcRenderer.sendSync('atom-get-current-window-id-sync'));
+    return this.processId != null ? this.processId : (this.processId = ipcRenderer.sendSync('chevron:get-current-window-id-sync'));
   }
 });

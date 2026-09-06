@@ -9,7 +9,9 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { ipcMain, app, BrowserWindow } = require('electron');
+const { ipcMain: electronIpcMain, app, BrowserWindow } = require('electron');
+const { withLegacyAliases } = require('./ipc-aliases');
+const ipcMain = withLegacyAliases(electronIpcMain);
 const { pathContained } = require('./atom-protocol-path');
 const guard = require('./ipc-guard');
 const { isSafeAbsolutePath } = guard;
@@ -309,14 +311,14 @@ module.exports = function registerFsIpc(atomApplication) {
   registered = true;
 
   // Refresh roots when renderers ask (after projects open).
-  ipcMain.on('atom-fs-refresh-roots-sync', event => {
+  ipcMain.on('chevron:fs-refresh-roots-sync', event => {
     refreshFsIpcRoots();
     event.returnValue = { ok: true, strict: strictMode, roots: allowedRoots };
   });
 
   // Sync: renderer Project.setPaths/addPath must update allowed roots before
   // did-change-paths listeners (tree-view) lstat the new folder.
-  ipcMain.on('atom-window-set-project-roots-sync', (event, projectRootPaths) => {
+  ipcMain.on('chevron:window-set-project-roots-sync', (event, projectRootPaths) => {
     const check = validateProjectRoots(projectRootPaths);
     if (!check.ok) {
       console.warn(
@@ -336,9 +338,9 @@ module.exports = function registerFsIpc(atomApplication) {
 
   // --- probes ---------------------------------------------------------------
 
-  ipcMain.on('atom-fs-exists-sync', (event, fullPath) => {
+  ipcMain.on('chevron:fs-exists-sync', (event, fullPath) => {
     if (!isAllowedFsPathOrRefresh(fullPath))
-      return deny(event, 'atom-fs-exists-sync', fullPath);
+      return deny(event, 'chevron:fs-exists-sync', fullPath);
     try {
       ok(event, fs.existsSync(fullPath));
     } catch (error) {
@@ -346,7 +348,7 @@ module.exports = function registerFsIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-fs-path-kind-sync', (event, fullPath) => {
+  ipcMain.on('chevron:fs-path-kind-sync', (event, fullPath) => {
     if (!isAllowedFsPathOrRefresh(fullPath)) {
       console.warn(`atom-fs-path-kind-sync: blocked path ${String(fullPath)}`);
       event.returnValue = null;
@@ -363,7 +365,7 @@ module.exports = function registerFsIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-fs-realpath-sync', (event, fullPath) => {
+  ipcMain.on('chevron:fs-realpath-sync', (event, fullPath) => {
     if (!isAllowedFsPathOrRefresh(fullPath)) {
       console.warn(`atom-fs-realpath-sync: blocked path ${String(fullPath)}`);
       event.returnValue = null;
@@ -376,9 +378,9 @@ module.exports = function registerFsIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-fs-stat-sync', (event, fullPath, followLinks) => {
+  ipcMain.on('chevron:fs-stat-sync', (event, fullPath, followLinks) => {
     if (!isAllowedFsPathOrRefresh(fullPath))
-      return deny(event, 'atom-fs-stat-sync', fullPath);
+      return deny(event, 'chevron:fs-stat-sync', fullPath);
     try {
       const st = followLinks ? fs.statSync(fullPath) : fs.lstatSync(fullPath);
       ok(event, serializeStat(st));
@@ -387,7 +389,7 @@ module.exports = function registerFsIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-fs-stat-no-exception-sync', (event, fullPath, followLinks) => {
+  ipcMain.on('chevron:fs-stat-no-exception-sync', (event, fullPath, followLinks) => {
     if (!isAllowedFsPathOrRefresh(fullPath)) {
       event.returnValue = { ok: true, value: false };
       return;
@@ -400,9 +402,9 @@ module.exports = function registerFsIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-fs-readdir-sync', (event, fullPath) => {
+  ipcMain.on('chevron:fs-readdir-sync', (event, fullPath) => {
     if (!isAllowedFsPathOrRefresh(fullPath))
-      return deny(event, 'atom-fs-readdir-sync', fullPath);
+      return deny(event, 'chevron:fs-readdir-sync', fullPath);
     try {
       ok(event, fs.readdirSync(fullPath));
     } catch (error) {
@@ -410,9 +412,9 @@ module.exports = function registerFsIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-fs-list-sync', (event, fullPath) => {
+  ipcMain.on('chevron:fs-list-sync', (event, fullPath) => {
     if (!isAllowedFsPathOrRefresh(fullPath))
-      return deny(event, 'atom-fs-list-sync', fullPath);
+      return deny(event, 'chevron:fs-list-sync', fullPath);
     try {
       const names = fs.readdirSync(fullPath);
       ok(event, names.map(name => path.join(fullPath, name)));
@@ -423,9 +425,9 @@ module.exports = function registerFsIpc(atomApplication) {
 
   // --- mutations ------------------------------------------------------------
 
-  ipcMain.on('atom-fs-mkdirp-sync', (event, fullPath) => {
+  ipcMain.on('chevron:fs-mkdirp-sync', (event, fullPath) => {
     if (!isAllowedFsPath(fullPath))
-      return deny(event, 'atom-fs-mkdirp-sync', fullPath);
+      return deny(event, 'chevron:fs-mkdirp-sync', fullPath);
     try {
       fs.mkdirSync(fullPath, { recursive: true });
       ok(event, true);
@@ -434,9 +436,9 @@ module.exports = function registerFsIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-fs-write-file-sync', (event, fullPath, data, encoding) => {
+  ipcMain.on('chevron:fs-write-file-sync', (event, fullPath, data, encoding) => {
     if (!isAllowedFsPath(fullPath))
-      return deny(event, 'atom-fs-write-file-sync', fullPath);
+      return deny(event, 'chevron:fs-write-file-sync', fullPath);
     const payload = validateWriteFilePayload(data, encoding);
     if (!payload.ok) {
       console.warn(`atom-fs-write-file-sync: refused (${payload.reason})`);
@@ -452,9 +454,9 @@ module.exports = function registerFsIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-fs-read-file-sync', (event, fullPath, encoding) => {
+  ipcMain.on('chevron:fs-read-file-sync', (event, fullPath, encoding) => {
     if (!isAllowedFsPath(fullPath))
-      return deny(event, 'atom-fs-read-file-sync', fullPath);
+      return deny(event, 'chevron:fs-read-file-sync', fullPath);
     try {
       const st = fs.statSync(fullPath);
       if (st.size > READ_FILE_MAX_BYTES) {
@@ -470,9 +472,9 @@ module.exports = function registerFsIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-fs-copy-sync', (event, src, dest) => {
+  ipcMain.on('chevron:fs-copy-sync', (event, src, dest) => {
     if (!isAllowedFsPath(src) || !isAllowedFsPath(dest)) {
-      return deny(event, 'atom-fs-copy-sync', `${src} -> ${dest}`);
+      return deny(event, 'chevron:fs-copy-sync', `${src} -> ${dest}`);
     }
     try {
       copyPathSync(src, dest);
@@ -482,9 +484,9 @@ module.exports = function registerFsIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-fs-move-sync', (event, src, dest) => {
+  ipcMain.on('chevron:fs-move-sync', (event, src, dest) => {
     if (!isAllowedFsPath(src) || !isAllowedFsPath(dest)) {
-      return deny(event, 'atom-fs-move-sync', `${src} -> ${dest}`);
+      return deny(event, 'chevron:fs-move-sync', `${src} -> ${dest}`);
     }
     try {
       fs.renameSync(src, dest);
@@ -500,9 +502,9 @@ module.exports = function registerFsIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-fs-rename-sync', (event, src, dest) => {
+  ipcMain.on('chevron:fs-rename-sync', (event, src, dest) => {
     if (!isAllowedFsPath(src) || !isAllowedFsPath(dest)) {
-      return deny(event, 'atom-fs-rename-sync', `${src} -> ${dest}`);
+      return deny(event, 'chevron:fs-rename-sync', `${src} -> ${dest}`);
     }
     try {
       fs.renameSync(src, dest);
@@ -512,9 +514,9 @@ module.exports = function registerFsIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('atom-fs-rmdir-sync', (event, fullPath) => {
+  ipcMain.on('chevron:fs-rmdir-sync', (event, fullPath) => {
     if (!isAllowedFsPath(fullPath))
-      return deny(event, 'atom-fs-rmdir-sync', fullPath);
+      return deny(event, 'chevron:fs-rmdir-sync', fullPath);
     try {
       fs.rmdirSync(fullPath);
       ok(event, true);

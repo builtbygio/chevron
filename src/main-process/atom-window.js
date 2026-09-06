@@ -632,7 +632,7 @@ module.exports = class AtomWindow extends EventEmitter {
         if (
           BrowserWindow.fromWebContents(event.sender) === this.browserWindow
         ) {
-          ipcMain.removeListener('did-prepare-to-unload', callback);
+          ipcMain.removeListener('chevron:did-prepare-to-unload', callback);
           if (!result) {
             this.unloading = false;
             this.atomApplication.quitting = false;
@@ -640,7 +640,7 @@ module.exports = class AtomWindow extends EventEmitter {
           resolve(result);
         }
       };
-      ipcMain.on('did-prepare-to-unload', callback);
+      ipcMain.on('chevron:did-prepare-to-unload', callback);
       this.browserWindow.webContents.send('prepare-to-unload');
     });
 

@@ -67,7 +67,7 @@ class Menu {
       };
     });
     menuSessions.set(sessionId, callbacks);
-    ipcRenderer.send('atom-popup-menu', sessionId, template);
+    ipcRenderer.send('chevron:popup-menu', sessionId, template);
   }
 
   static buildFromTemplate(template) {
@@ -106,7 +106,7 @@ function createWebContentsProxy(webContentsId, windowId) {
   return {
     id: webContentsId,
     send(channel, ...args) {
-      ipcRenderer.send('atom-wc-send', webContentsId, channel, ...args);
+      ipcRenderer.send('chevron:wc-send', webContentsId, channel, ...args);
     },
     on(eventName, handler) {
       if (!windowId) return this;
@@ -130,13 +130,13 @@ function createWebContentsProxy(webContentsId, windowId) {
       return this;
     },
     isDestroyed() {
-      return ipcRenderer.sendSync('atom-wc-is-destroyed-sync', webContentsId);
+      return ipcRenderer.sendSync('chevron:wc-is-destroyed-sync', webContentsId);
     }
   };
 }
 
 function createUtilityWorkerWindow() {
-  const created = ipcRenderer.sendSync('atom-utility-worker-create-sync');
+  const created = ipcRenderer.sendSync('chevron:utility-worker-create-sync');
   if (!created) {
     throw new Error('Failed to create utilityProcess git worker via IPC');
   }
@@ -150,7 +150,7 @@ function createUtilityWorkerWindow() {
         // github WorkerManager: webContents.send(channel, { type, data })
         const payload = args[0];
         ipcRenderer.send(
-          'atom-utility-worker-send',
+          'chevron:utility-worker-send',
           windowId,
           channel,
           payload
@@ -176,14 +176,14 @@ function createUtilityWorkerWindow() {
       },
       isDestroyed() {
         return !!ipcRenderer.sendSync(
-          'atom-utility-worker-is-destroyed-sync',
+          'chevron:utility-worker-is-destroyed-sync',
           windowId
         );
       }
     },
     loadURL(url) {
       return ipcRenderer.sendSync(
-        'atom-utility-worker-load-sync',
+        'chevron:utility-worker-load-sync',
         windowId,
         url
       );
@@ -191,13 +191,13 @@ function createUtilityWorkerWindow() {
     destroy() {
       workerEventHandlers.delete(windowId);
       return ipcRenderer.sendSync(
-        'atom-utility-worker-destroy-sync',
+        'chevron:utility-worker-destroy-sync',
         windowId
       );
     },
     isDestroyed() {
       return !!ipcRenderer.sendSync(
-        'atom-utility-worker-is-destroyed-sync',
+        'chevron:utility-worker-is-destroyed-sync',
         windowId
       );
     }
@@ -219,17 +219,17 @@ function BrowserWindow(options) {
 }
 
 BrowserWindow.prototype.loadURL = function(url) {
-  return ipcRenderer.sendSync('atom-bw-id-call-sync', this.id, 'loadURL', url);
+  return ipcRenderer.sendSync('chevron:bw-id-call-sync', this.id, 'loadURL', url);
 };
 
 BrowserWindow.prototype.destroy = function() {
   workerEventHandlers.delete(this.id);
-  return ipcRenderer.sendSync('atom-bw-id-call-sync', this.id, 'destroy');
+  return ipcRenderer.sendSync('chevron:bw-id-call-sync', this.id, 'destroy');
 };
 
 BrowserWindow.prototype.isDestroyed = function() {
   return !!ipcRenderer.sendSync(
-    'atom-bw-id-call-sync',
+    'chevron:bw-id-call-sync',
     this.id,
     'isDestroyed'
   );
@@ -244,10 +244,10 @@ BrowserWindow.fromId = function(id) {
       }
     },
     isDestroyed() {
-      return !!ipcRenderer.sendSync('atom-bw-id-call-sync', id, 'isDestroyed');
+      return !!ipcRenderer.sendSync('chevron:bw-id-call-sync', id, 'isDestroyed');
     },
     destroy() {
-      return ipcRenderer.sendSync('atom-bw-id-call-sync', id, 'destroy');
+      return ipcRenderer.sendSync('chevron:bw-id-call-sync', id, 'destroy');
     }
   };
 };
@@ -286,7 +286,7 @@ function createDialogProxy() {
     },
     showOpenDialog: (winOrOpts, maybeOpts) => {
       const options = maybeOpts !== undefined ? maybeOpts : winOrOpts;
-      return ipcRenderer.invoke('atom-show-open-dialog', options || {});
+      return ipcRenderer.invoke('chevron:show-open-dialog', options || {});
     },
     showSaveDialog: (winOrOpts, maybeOpts) => {
       const options = maybeOpts !== undefined ? maybeOpts : winOrOpts;
@@ -305,7 +305,7 @@ module.exports = {
   getCurrentWindow: () => rendererIpc.getWindowProxy(),
   getCurrentWebContents: () =>
     createWebContentsProxy(
-      ipcRenderer.sendSync('atom-get-web-contents-id-sync'),
+      ipcRenderer.sendSync('chevron:get-web-contents-id-sync'),
       rendererIpc.getCurrentWindowId()
     ),
   get app() {

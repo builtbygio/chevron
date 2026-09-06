@@ -37,12 +37,12 @@ function isSupported() {
 }
 function isDefaultProtocolClient() {
   const { ipcRenderer } = require("electron");
-  return ipcRenderer.sendSync("atom-is-default-protocol-client-sync", "atom", process.execPath, ["--uri-handler", "--"]);
+  return ipcRenderer.sendSync("chevron:is-default-protocol-client-sync", "atom", process.execPath, ["--uri-handler", "--"]);
 }
 function setAsDefaultProtocolClient() {
   if (!isSupported()) return false;
   const { ipcRenderer } = require("electron");
-  return ipcRenderer.sendSync("atom-set-as-default-protocol-client-sync", "atom", process.execPath, ["--uri-handler", "--"]);
+  return ipcRenderer.sendSync("chevron:set-as-default-protocol-client-sync", "atom", process.execPath, ["--uri-handler", "--"]);
 }
 class UriHandlerPanel {
   constructor() {

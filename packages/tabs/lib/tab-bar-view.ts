@@ -516,7 +516,7 @@ module.exports =
         if (!isNaN(fromWindowId)) {
           // Let the window where the drag started know that the tab was dropped
           // (main-process relay; no electron.remote)
-          return ipcRenderer.send('atom-webcontents-send-to-window-id', fromWindowId, 'tab:dropped', fromPaneId, fromIndex);
+          return ipcRenderer.send('chevron:webcontents-send-to-window-id', fromWindowId, 'tab:dropped', fromPaneId, fromIndex);
         }
       });
 

@@ -1,620 +1,5 @@
 [
   {
-    "channel": "atom-app-get-jump-list-settings-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-app-get-path-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-app-get-version-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-app-set-jump-list-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "spawn",
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-browser-window-call-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "partial",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-bw-id-call-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "spawn",
-      "network"
-    ]
-  },
-  {
-    "channel": "atom-clipboard-read-find-text-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-clipboard-read-text-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-clipboard-write-find-text-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-clipboard-write-text-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-context-menu",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-create-browser-window-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-destroy-own-window-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-fs-copy-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "write-fs"
-    ]
-  },
-  {
-    "channel": "atom-fs-exists-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-fs-list-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-fs-mkdirp-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "write-fs"
-    ]
-  },
-  {
-    "channel": "atom-fs-move-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "write-fs"
-    ]
-  },
-  {
-    "channel": "atom-fs-path-kind-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-fs-read-file-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "partial",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-fs-readdir-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-fs-realpath-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-fs-refresh-roots-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-fs-rename-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "write-fs"
-    ]
-  },
-  {
-    "channel": "atom-fs-rmdir-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "write-fs"
-    ]
-  },
-  {
-    "channel": "atom-fs-stat-no-exception-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "partial",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-fs-stat-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "partial",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-fs-write-file-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "write-fs"
-    ]
-  },
-  {
-    "channel": "atom-get-current-window-id-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-get-primary-display-work-area-size-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-get-user-default-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-get-web-contents-id-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-is-default-protocol-client-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-popup-menu",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-set-as-default-protocol-client-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "spawn",
-      "write-fs"
-    ]
-  },
-  {
-    "channel": "atom-settings-view-cache-ensure",
-    "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "write-fs"
-    ]
-  },
-  {
-    "channel": "atom-settings-view-cache-list",
-    "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-settings-view-cache-unlink",
-    "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "write-fs"
-    ]
-  },
-  {
-    "channel": "atom-settings-view-cache-write",
-    "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "write-fs"
-    ]
-  },
-  {
-    "channel": "atom-shell-beep-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-shell-move-item-to-trash",
-    "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "write-fs"
-    ]
-  },
-  {
-    "channel": "atom-shell-open-external",
-    "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "network"
-    ]
-  },
-  {
-    "channel": "atom-shell-show-item-in-folder",
-    "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-show-message-box",
-    "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "dialog"
-    ]
-  },
-  {
-    "channel": "atom-show-message-box-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "dialog"
-    ]
-  },
-  {
-    "channel": "atom-show-open-dialog",
-    "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "dialog"
-    ]
-  },
-  {
-    "channel": "atom-show-save-dialog",
-    "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "dialog"
-    ]
-  },
-  {
-    "channel": "atom-utility-worker-capabilities",
-    "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-utility-worker-create-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "spawn"
-    ]
-  },
-  {
-    "channel": "atom-utility-worker-destroy-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "spawn"
-    ]
-  },
-  {
-    "channel": "atom-utility-worker-enabled-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-utility-worker-is-destroyed-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-utility-worker-load-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "spawn",
-      "network"
-    ]
-  },
-  {
-    "channel": "atom-utility-worker-send",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "partial",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-wc-is-destroyed-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-wc-send",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-web-contents-call-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-webcontents-send-to-window-id",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "any-window",
-    "validation": "full",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "atom-window-load-settings-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-window-set-project-roots-sync",
-    "kind": "on",
-    "file": "src/main-process/register-fs-ipc.js",
-    "scope": "global",
-    "validation": "partial",
-    "effect": [
-      "write-fs",
-      "read"
-    ]
-  },
-  {
-    "channel": "atom-window-startup-markers-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "owner-window",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
     "channel": "chevron:app-get-jump-list-settings",
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
@@ -622,7 +7,41 @@
     "validation": "full",
     "effect": [
       "read"
-    ]
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:app-get-jump-list-settings-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-app-get-jump-list-settings-sync"
+  },
+  {
+    "channel": "chevron:app-get-path-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-app-get-path-sync"
+  },
+  {
+    "channel": "chevron:app-get-version-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-app-get-version-sync"
   },
   {
     "channel": "chevron:app-set-jump-list",
@@ -633,7 +52,307 @@
     "effect": [
       "spawn",
       "ui"
-    ]
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:app-set-jump-list-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "spawn",
+      "ui"
+    ],
+    "legacyName": "atom-app-set-jump-list-sync"
+  },
+  {
+    "channel": "chevron:browser-window-call-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "partial",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": "atom-browser-window-call-sync"
+  },
+  {
+    "channel": "chevron:bw-id-call-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "spawn",
+      "network"
+    ],
+    "legacyName": "atom-bw-id-call-sync"
+  },
+  {
+    "channel": "chevron:clipboard-read-find-text-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-clipboard-read-find-text-sync"
+  },
+  {
+    "channel": "chevron:clipboard-read-text-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-clipboard-read-text-sync"
+  },
+  {
+    "channel": "chevron:clipboard-write-find-text-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": "atom-clipboard-write-find-text-sync"
+  },
+  {
+    "channel": "chevron:clipboard-write-text-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": "atom-clipboard-write-text-sync"
+  },
+  {
+    "channel": "chevron:context-menu",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": "atom-context-menu"
+  },
+  {
+    "channel": "chevron:create-browser-window-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": "atom-create-browser-window-sync"
+  },
+  {
+    "channel": "chevron:destroy-own-window-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": "atom-destroy-own-window-sync"
+  },
+  {
+    "channel": "chevron:did-prepare-to-unload",
+    "kind": "on",
+    "file": "src/main-process/atom-window.js",
+    "scope": "owner-window",
+    "validation": "partial",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:fs-copy-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": "atom-fs-copy-sync"
+  },
+  {
+    "channel": "chevron:fs-exists-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-fs-exists-sync"
+  },
+  {
+    "channel": "chevron:fs-list-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-fs-list-sync"
+  },
+  {
+    "channel": "chevron:fs-mkdirp-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": "atom-fs-mkdirp-sync"
+  },
+  {
+    "channel": "chevron:fs-move-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": "atom-fs-move-sync"
+  },
+  {
+    "channel": "chevron:fs-path-kind-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-fs-path-kind-sync"
+  },
+  {
+    "channel": "chevron:fs-read-file-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "partial",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-fs-read-file-sync"
+  },
+  {
+    "channel": "chevron:fs-readdir-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-fs-readdir-sync"
+  },
+  {
+    "channel": "chevron:fs-realpath-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-fs-realpath-sync"
+  },
+  {
+    "channel": "chevron:fs-refresh-roots-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-fs-refresh-roots-sync"
+  },
+  {
+    "channel": "chevron:fs-rename-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": "atom-fs-rename-sync"
+  },
+  {
+    "channel": "chevron:fs-rmdir-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": "atom-fs-rmdir-sync"
+  },
+  {
+    "channel": "chevron:fs-stat-no-exception-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "partial",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-fs-stat-no-exception-sync"
+  },
+  {
+    "channel": "chevron:fs-stat-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "partial",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-fs-stat-sync"
+  },
+  {
+    "channel": "chevron:fs-write-file-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": "atom-fs-write-file-sync"
+  },
+  {
+    "channel": "chevron:get-current-window-id-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-get-current-window-id-sync"
   },
   {
     "channel": "chevron:get-primary-display-work-area-size",
@@ -643,7 +362,19 @@
     "validation": "full",
     "effect": [
       "read"
-    ]
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:get-primary-display-work-area-size-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-get-primary-display-work-area-size-sync"
   },
   {
     "channel": "chevron:get-user-default",
@@ -653,7 +384,63 @@
     "validation": "full",
     "effect": [
       "read"
-    ]
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:get-user-default-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-get-user-default-sync"
+  },
+  {
+    "channel": "chevron:get-web-contents-id-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-get-web-contents-id-sync"
+  },
+  {
+    "channel": "chevron:is-default-protocol-client",
+    "kind": "handle",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "isDefaultProtocolClient"
+  },
+  {
+    "channel": "chevron:is-default-protocol-client-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-is-default-protocol-client-sync"
+  },
+  {
+    "channel": "chevron:popup-menu",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": "atom-popup-menu"
   },
   {
     "channel": "chevron:pty-kill",
@@ -663,7 +450,8 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "chevron:pty-resize",
@@ -673,7 +461,8 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "chevron:pty-spawn",
@@ -683,7 +472,8 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "chevron:pty-write",
@@ -693,7 +483,19 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ]
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:remove-as-default-protocol-client",
+    "kind": "handle",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": "removeAsDefaultProtocolClient"
   },
   {
     "channel": "chevron:rg-search-cancel",
@@ -703,7 +505,8 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "chevron:rg-search-start",
@@ -714,7 +517,76 @@
     "effect": [
       "spawn",
       "read"
-    ]
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:set-as-default-protocol-client",
+    "kind": "handle",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "spawn",
+      "write-fs"
+    ],
+    "legacyName": "setAsDefaultProtocolClient"
+  },
+  {
+    "channel": "chevron:set-as-default-protocol-client-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "spawn",
+      "write-fs"
+    ],
+    "legacyName": "atom-set-as-default-protocol-client-sync"
+  },
+  {
+    "channel": "chevron:settings-view-cache-ensure",
+    "kind": "handle",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": "atom-settings-view-cache-ensure"
+  },
+  {
+    "channel": "chevron:settings-view-cache-list",
+    "kind": "handle",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-settings-view-cache-list"
+  },
+  {
+    "channel": "chevron:settings-view-cache-unlink",
+    "kind": "handle",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": "atom-settings-view-cache-unlink"
+  },
+  {
+    "channel": "chevron:settings-view-cache-write",
+    "kind": "handle",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": "atom-settings-view-cache-write"
   },
   {
     "channel": "chevron:shell-beep",
@@ -724,27 +596,252 @@
     "validation": "full",
     "effect": [
       "ui"
-    ]
+    ],
+    "legacyName": null
   },
   {
-    "channel": "did-prepare-to-unload",
+    "channel": "chevron:shell-beep-sync",
     "kind": "on",
-    "file": "src/main-process/atom-window.js",
-    "scope": "owner-window",
-    "validation": "partial",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
     "effect": [
       "ui"
-    ]
+    ],
+    "legacyName": "atom-shell-beep-sync"
   },
   {
-    "channel": "isDefaultProtocolClient",
+    "channel": "chevron:shell-move-item-to-trash",
     "kind": "handle",
-    "file": "src/main-process/atom-application.js",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": "atom-shell-move-item-to-trash"
+  },
+  {
+    "channel": "chevron:shell-open-external",
+    "kind": "handle",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "network"
+    ],
+    "legacyName": "atom-shell-open-external"
+  },
+  {
+    "channel": "chevron:shell-show-item-in-folder",
+    "kind": "handle",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": "atom-shell-show-item-in-folder"
+  },
+  {
+    "channel": "chevron:show-message-box",
+    "kind": "handle",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "dialog"
+    ],
+    "legacyName": "atom-show-message-box"
+  },
+  {
+    "channel": "chevron:show-message-box-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "dialog"
+    ],
+    "legacyName": "atom-show-message-box-sync"
+  },
+  {
+    "channel": "chevron:show-open-dialog",
+    "kind": "handle",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "dialog"
+    ],
+    "legacyName": "atom-show-open-dialog"
+  },
+  {
+    "channel": "chevron:show-save-dialog",
+    "kind": "handle",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "dialog"
+    ],
+    "legacyName": "atom-show-save-dialog"
+  },
+  {
+    "channel": "chevron:utility-worker-capabilities",
+    "kind": "handle",
+    "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
     "validation": "full",
     "effect": [
       "read"
-    ]
+    ],
+    "legacyName": "atom-utility-worker-capabilities"
+  },
+  {
+    "channel": "chevron:utility-worker-create-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "spawn"
+    ],
+    "legacyName": "atom-utility-worker-create-sync"
+  },
+  {
+    "channel": "chevron:utility-worker-destroy-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "spawn"
+    ],
+    "legacyName": "atom-utility-worker-destroy-sync"
+  },
+  {
+    "channel": "chevron:utility-worker-enabled-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-utility-worker-enabled-sync"
+  },
+  {
+    "channel": "chevron:utility-worker-is-destroyed-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-utility-worker-is-destroyed-sync"
+  },
+  {
+    "channel": "chevron:utility-worker-load-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "spawn",
+      "network"
+    ],
+    "legacyName": "atom-utility-worker-load-sync"
+  },
+  {
+    "channel": "chevron:utility-worker-send",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "partial",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": "atom-utility-worker-send"
+  },
+  {
+    "channel": "chevron:wc-is-destroyed-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-wc-is-destroyed-sync"
+  },
+  {
+    "channel": "chevron:wc-send",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": "atom-wc-send"
+  },
+  {
+    "channel": "chevron:web-contents-call-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": "atom-web-contents-call-sync"
+  },
+  {
+    "channel": "chevron:webcontents-send-to-window-id",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": "atom-webcontents-send-to-window-id"
+  },
+  {
+    "channel": "chevron:window-load-settings-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-window-load-settings-sync"
+  },
+  {
+    "channel": "chevron:window-set-project-roots-sync",
+    "kind": "on",
+    "file": "src/main-process/register-fs-ipc.js",
+    "scope": "global",
+    "validation": "partial",
+    "effect": [
+      "write-fs",
+      "read"
+    ],
+    "legacyName": "atom-window-set-project-roots-sync"
+  },
+  {
+    "channel": "chevron:window-startup-markers-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": "atom-window-startup-markers-sync"
   },
   {
     "channel": "lsp:get-trust-state",
@@ -754,7 +851,8 @@
     "validation": "full",
     "effect": [
       "read"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:is-trusted",
@@ -764,7 +862,8 @@
     "validation": "full",
     "effect": [
       "read"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:list-servers",
@@ -774,7 +873,8 @@
     "validation": "full",
     "effect": [
       "read"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:list-trusted",
@@ -784,7 +884,8 @@
     "validation": "full",
     "effect": [
       "read"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:notify",
@@ -794,7 +895,8 @@
     "validation": "partial",
     "effect": [
       "read"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:register-server",
@@ -804,7 +906,8 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:request",
@@ -814,7 +917,8 @@
     "validation": "partial",
     "effect": [
       "read"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:respond",
@@ -824,7 +928,8 @@
     "validation": "partial",
     "effect": [
       "read"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:set-trust",
@@ -834,7 +939,8 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:start-server",
@@ -844,7 +950,8 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:stop-server",
@@ -854,7 +961,8 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:subscribe",
@@ -864,7 +972,8 @@
     "validation": "full",
     "effect": [
       "ui"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:unregister-server",
@@ -874,7 +983,8 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ]
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:unsubscribe",
@@ -884,27 +994,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ]
-  },
-  {
-    "channel": "removeAsDefaultProtocolClient",
-    "kind": "handle",
-    "file": "src/main-process/atom-application.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "write-fs"
-    ]
-  },
-  {
-    "channel": "setAsDefaultProtocolClient",
-    "kind": "handle",
-    "file": "src/main-process/atom-application.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "spawn",
-      "write-fs"
-    ]
+    ],
+    "legacyName": null
   }
 ]
