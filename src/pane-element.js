@@ -87,6 +87,11 @@ class PaneElement extends HTMLElement {
         'Must pass an applicationDelegate parameter when initializing PaneElements'
       );
     }
+    // Not left to connectedCallback: initializeContent sets the tabindex that
+    // makes a pane focusable, and the document-register-element polyfill
+    // upgrades asynchronously -- so a spec that attached a pane and focused it
+    // found an element that could not take focus. It is idempotent.
+    this.initializeContent();
     this.subscriptions.add(this.model.onDidActivate(this.activated.bind(this)));
     this.subscriptions.add(
       this.model.observeActive(this.activeStatusChanged.bind(this))

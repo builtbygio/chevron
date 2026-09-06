@@ -15,6 +15,11 @@ class PaneContainerElement extends HTMLElement {
       );
     }
     this.subscriptions.add(this.model.observeRoot(this.rootChanged.bind(this)));
+    // Not connectedCallback: the document-register-element polyfill upgrades
+    // asynchronously, so this class arrived a tick or more after the element
+    // was in the DOM -- and never at all under the spec suite's mocked clock.
+    // pane-axis-element sets its orientation classes here for the same reason.
+    this.classList.add('panes');
     return this;
   }
 
