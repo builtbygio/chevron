@@ -16,9 +16,25 @@ class PaneResizeHandleElement extends HTMLElement {
     // element has been detached, so we ignore the callback when a parent element
     // can't be found.
     if (this.parentElement) {
-      this.isHorizontal = this.parentElement.classList.contains('horizontal');
-      this.classList.add(this.isHorizontal ? 'horizontal' : 'vertical');
+      this.classList.add(this.isHorizontalAxis() ? 'horizontal' : 'vertical');
     }
+  }
+
+  // Read the axis at the moment it is needed rather than caching it here.
+  //
+  // static/index.js loads the document-register-element polyfill, and its
+  // upgrade is asynchronous: connectedCallback can run a tick or more after
+  // the element is in the DOM, and under the spec suite's mocked clock it had
+  // not run at all by the time a drag was simulated. `isHorizontal` was then
+  // undefined, the drag took the vertical branch, and resizing a row divided
+  // by a zero height.
+  //
+  // Reading it live also fixes a real case: a handle moved between axes kept
+  // whichever orientation it first saw.
+  isHorizontalAxis() {
+    return Boolean(
+      this.parentElement && this.parentElement.classList.contains('horizontal')
+    );
   }
 
   disconnectedCallback() {
@@ -58,6 +74,10 @@ class PaneResizeHandleElement extends HTMLElement {
 
   calcRatio(ratio1, ratio2, total) {
     const allRatio = ratio1 + ratio2;
+    // A pane with no extent on the axis being dragged gives 0/0. Leaving the
+    // scales alone is the only sane answer, and it keeps a NaN out of the
+    // model, which nothing downstream recovers from.
+    if (allRatio === 0) return null;
     return [(total * ratio1) / allRatio, (total * ratio2) / allRatio];
   }
 
@@ -67,6 +87,7 @@ class PaneResizeHandleElement extends HTMLElement {
     const totalScale =
       this.prevModel.getFlexScale() + this.nextModel.getFlexScale();
     const flexGrows = this.calcRatio(prevSize, nextSize, totalScale);
+    if (!flexGrows) return;
     this.prevModel.setFlexScale(flexGrows[0]);
     this.nextModel.setFlexScale(flexGrows[1]);
   }
@@ -83,7 +104,7 @@ class PaneResizeHandleElement extends HTMLElement {
       return this.resizeStopped();
     }
 
-    if (this.isHorizontal) {
+    if (this.isHorizontalAxis()) {
       const totalWidth =
         this.previousSibling.clientWidth + this.nextSibling.clientWidth;
       // get the left and right width after move the resize view

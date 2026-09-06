@@ -50,6 +50,14 @@ class StylesElement extends HTMLElement {
       );
     }
 
+    // connectedCallback also reads this, but the document-register-element
+    // polyfill upgrades asynchronously, so an element initialized and asked
+    // for its styles in the same tick had no context and filtered nothing.
+    if (this.context == null) {
+      const context = this.getAttribute('context');
+      if (context != null) this.context = context;
+    }
+
     this.subscriptions.add(
       this.styleManager.observeStyleElements(this.styleElementAdded.bind(this))
     );
