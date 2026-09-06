@@ -203,6 +203,12 @@ module.exports = class InstallPanel {
           card,
           `${entry.title} installed. Reload the window to activate it.`
         );
+        // This panel runs cpm directly rather than through
+        // PackageManager#install, so nothing else announces the install. The
+        // Packages panel reloads its list on this event; without it the
+        // package sits on disk and missing from that list until the window
+        // reloads, which is the first place anyone looks for it.
+        this.packageManager.emitPackageEvent('installed', { name: entry.name });
         return;
       }
       button.disabled = false;

@@ -30,7 +30,7 @@ __export(package_card_exports, {
   default: () => PackageCard
 });
 module.exports = __toCommonJS(package_card_exports);
-var { npmPackageUrl } = require("./npm-package-url");
+var { resolvePackageUrl } = require("./npm-package-url");
 var import_atom = require("chevron");
 var import_etch = __toESM(require("etch"));
 var import_utils = require("./utils");
@@ -205,9 +205,10 @@ class PackageCard {
     this.disposables.add(new import_atom.Disposable(() => {
       this.refs.updateButton.removeEventListener("click", updateButtonClickHandler);
     }));
-    const packageNameClickHandler = (event) => {
+    const packageNameClickHandler = async (event) => {
       event.stopPropagation();
-      chevron.applicationDelegate.openExternal(npmPackageUrl(this.pack));
+      const url = await resolvePackageUrl(this.pack);
+      if (url) chevron.applicationDelegate.openExternal(url);
     };
     this.refs.packageName.addEventListener("click", packageNameClickHandler);
     this.disposables.add(new import_atom.Disposable(() => {

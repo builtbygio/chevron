@@ -27,7 +27,11 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const LIB = path.join(ROOT, 'packages', 'settings-view', 'lib');
 
 const { normalizeInstalledNames } = require(path.join(LIB, 'package-identity'));
-const { npmPackageUrl } = require(path.join(LIB, 'npm-package-url'));
+const {
+  npmPackageUrl,
+  repositoryUrl,
+  resolvePackageUrl
+} = require(path.join(LIB, 'npm-package-url'));
 const { packageIdFromName } = require(path.join(
   ROOT, 'src', 'main-process', 'package-id'
 ));
@@ -70,15 +74,104 @@ describe('cpm publish names are normalised to package ids', () => {
 });
 
 describe('package links point at the registry Chevron actually uses', () => {
-  it('links to npm, by publish name where there is one', () => {
+  it('scopes an unscoped id', () => {
+    // chevron-lsp-typescript declares itself unscoped in its manifest and is
+    // published as @builtbygio/chevron-lsp-typescript, so the manifest name is
+    // not usable as the npm name.
+    assert.equal(
+      npmPackageUrl({ name: 'chevron-lsp-typescript' }),
+      'https://www.npmjs.com/package/@builtbygio/chevron-lsp-typescript'
+    );
+  });
+
+  it('prefers a publish name, and leaves an existing scope alone', () => {
     assert.equal(
       npmPackageUrl({ name: 'chevron-lsp-c', publishName: '@builtbygio/chevron-lsp-c' }),
       'https://www.npmjs.com/package/@builtbygio/chevron-lsp-c'
     );
     assert.equal(
-      npmPackageUrl({ name: 'chevron-lsp-typescript' }),
-      'https://www.npmjs.com/package/chevron-lsp-typescript'
+      npmPackageUrl({ name: '@scope/thing' }),
+      'https://www.npmjs.com/package/@scope/thing'
     );
+  });
+
+  it('reads a repository in either shape cpm reports it', () => {
+    assert.equal(
+      repositoryUrl({ repository: 'https://github.com/builtbygio/chevron.git' }),
+      'https://github.com/builtbygio/chevron'
+    );
+    assert.equal(
+      repositoryUrl({ metadata: { repository: { url: 'git+https://github.com/a/b.git' } } }),
+      'https://github.com/a/b'
+    );
+    assert.equal(
+      repositoryUrl({ repository: 'git@github.com:a/b.git' }),
+      'https://github.com/a/b'
+    );
+    assert.equal(repositoryUrl({}), '');
+  });
+
+  describe('the target is decided against the registry, at click time', () => {
+    const pack = {
+      name: 'chevron-lsp-c',
+      repository: 'https://github.com/builtbygio/chevron'
+    };
+    const npm = 'https://www.npmjs.com/package/@builtbygio/chevron-lsp-c';
+    const repo = 'https://github.com/builtbygio/chevron';
+
+    it('opens npm when the package is published', async () => {
+      const seen = [];
+      const url = await resolvePackageUrl(pack, {
+        fetch: async (target, options) => {
+          seen.push([target, options.method]);
+          return { ok: true };
+        }
+      });
+      assert.equal(url, npm);
+      // Scoped names are one path segment on the registry.
+      assert.deepEqual(seen, [
+        ['https://registry.npmjs.org/@builtbygio%2fchevron-lsp-c', 'HEAD']
+      ]);
+    });
+
+    it('falls back to the repository when it is not', async () => {
+      const url = await resolvePackageUrl(pack, { fetch: async () => ({ ok: false }) });
+      assert.equal(url, repo);
+    });
+
+    it('falls back to the repository when the lookup cannot be made', async () => {
+      // Offline, blocked, or slower than the timeout: a link must still open.
+      const offline = await resolvePackageUrl(pack, {
+        fetch: async () => { throw new Error('getaddrinfo ENOTFOUND'); }
+      });
+      assert.equal(offline, repo);
+
+      const slow = await resolvePackageUrl(pack, {
+        timeoutMs: 10,
+        fetch: (target, options) =>
+          new Promise((resolve, reject) => {
+            options.signal.addEventListener('abort', () => reject(new Error('aborted')));
+          })
+      });
+      assert.equal(slow, repo);
+
+      const noFetch = await resolvePackageUrl(pack, { fetch: null });
+      assert.equal(noFetch, repo);
+    });
+
+    it('does not ask when there is nothing to fall back to', async () => {
+      let asked = false;
+      const url = await resolvePackageUrl(
+        { name: 'chevron-lsp-c' },
+        { fetch: async () => { asked = true; return { ok: false }; } }
+      );
+      assert.equal(url, npm, 'npm is the only candidate, so open it');
+      assert.equal(asked, false, 'no point asking when the answer changes nothing');
+    });
+
+    it('returns null when the package offers no link at all', async () => {
+      assert.equal(await resolvePackageUrl({}), null);
+    });
   });
 
   it('nothing in settings-view still points at Pulsar', () => {

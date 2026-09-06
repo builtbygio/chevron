@@ -217,6 +217,50 @@ describe('the panel is registered', () => {
     assert.match(src, /ships no catalog to install from/);
   });
 
+  it('announces the install so the Packages panel picks it up', () => {
+    // This panel runs cpm directly rather than through PackageManager#install,
+    // so it is the only thing that can emit the event. InstalledPackagesPanel
+    // reloads its list on 'package-installed'; without it a freshly installed
+    // package is on disk but missing from Packages until the window reloads.
+    const InstallPanel = require(path.join(LIB, 'install-panel.js'));
+    const events = [];
+    const panel = Object.create(InstallPanel.prototype);
+    panel.packageManager = {
+      runCommand: (args, callback) => callback(0, '', ''),
+      emitPackageEvent: (name, pack) => events.push([name, pack.name])
+    };
+    panel.setStatus = () => {};
+
+    panel.install(
+      { name: 'chevron-lsp-json', title: 'JSON language server' },
+      '/payloads/chevron-lsp-json',
+      { classList: { add() {} } },
+      {}
+    );
+
+    assert.deepEqual(events, [['installed', 'chevron-lsp-json']]);
+  });
+
+  it('says nothing when the install failed', () => {
+    const InstallPanel = require(path.join(LIB, 'install-panel.js'));
+    const events = [];
+    const panel = Object.create(InstallPanel.prototype);
+    panel.packageManager = {
+      runCommand: (args, callback) => callback(1, '', 'boom'),
+      emitPackageEvent: (name, pack) => events.push([name, pack.name])
+    };
+    panel.setStatus = () => {};
+
+    panel.install(
+      { name: 'chevron-lsp-json', title: 'JSON language server' },
+      '/payloads/chevron-lsp-json',
+      { classList: { add() {} } },
+      {}
+    );
+
+    assert.deepEqual(events, [], 'a failed install must not claim success');
+  });
+
   it('reports failure rather than leaving the button spinning', () => {
     const src = fs.readFileSync(path.join(LIB, 'install-panel.js'), 'utf8');
     assert.match(src, /Install failed \(exit/);

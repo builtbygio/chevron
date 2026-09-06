@@ -34,7 +34,7 @@ var import_path = __toESM(require("path"));
 var import_url = __toESM(require("url"));
 var import_underscore_plus = __toESM(require("underscore-plus"));
 var import_fs_plus = __toESM(require("fs-plus"));
-var { npmPackageUrl } = require("./npm-package-url");
+var { resolvePackageUrl } = require("./npm-package-url");
 var import_atom = require("chevron");
 var import_etch = __toESM(require("etch"));
 var import_package_card = __toESM(require("./package-card"));
@@ -131,7 +131,9 @@ class PackageDetailView {
     }));
     const learnMoreButtonClickHandler = (event) => {
       event.preventDefault();
-      chevron.applicationDelegate.openExternal(npmPackageUrl(this.pack));
+      resolvePackageUrl(this.pack).then(url => {
+        if (url) chevron.applicationDelegate.openExternal(url);
+      });
     };
     this.refs.learnMoreButton.addEventListener("click", learnMoreButtonClickHandler);
     this.disposables.add(new import_atom.Disposable(() => {
