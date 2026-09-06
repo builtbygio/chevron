@@ -334,6 +334,15 @@ jobs:
       - name: Launch smoke test
         run: node script/ci/smoke-test.js
 
+      - name: Playwright e2e
+        run: npx --prefix script playwright test --config script/e2e/playwright.config.js
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: playwright-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/playwright-report
+          if-no-files-found: ignore
+
       - name: Upload macOS packages
         if: success()
         uses: actions/upload-artifact@v6
@@ -541,6 +550,15 @@ jobs:
       - name: Launch smoke test (Xvfb)
         run: xvfb-run -a node script/ci/smoke-test.js
 
+      - name: Playwright e2e (Xvfb)
+        run: xvfb-run -a npx --prefix script playwright test --config script/e2e/playwright.config.js
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: playwright-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/playwright-report
+          if-no-files-found: ignore
+
       - name: Full Jasmine (opt-in)
         if: |
           (github.event_name == 'workflow_dispatch' && inputs.run_full_core_tests) ||
@@ -708,6 +726,15 @@ jobs:
         continue-on-error: true
         run: xvfb-run -a node script/ci/smoke-test.js
 
+      - name: Playwright e2e (Xvfb)
+        run: xvfb-run -a npx --prefix script playwright test --config script/e2e/playwright.config.js
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: playwright-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/playwright-report
+          if-no-files-found: ignore
+
       - name: Upload Linux arm64 packages
         if: success()
         uses: actions/upload-artifact@v6
@@ -840,6 +867,15 @@ jobs:
 
       - name: Launch smoke test
         run: node script/ci/smoke-test.js
+
+      - name: Playwright e2e
+        run: npx --prefix script playwright test --config script/e2e/playwright.config.js
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: playwright-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/playwright-report
+          if-no-files-found: ignore
 
       # Architecture H1 PR 12: publish Windows cold-start numbers.
       # Same harness as docs/reference/startup-snapshot-plan.md (§4). Five cold homes.
