@@ -160,6 +160,33 @@ describe('the catalog ships as installable payloads', () => {
       }
     });
 
+    it('every catalog package has a README', () => {
+      // The detail view falls back to "No README." -- accurate, and useless.
+      // These are the pages a user reads before installing a language server.
+      const missing = [];
+      for (const entry of catalog) {
+        const readme = path.join(ROOT, 'packages', entry.name, 'README.md');
+        if (!fs.existsSync(readme)) { missing.push(entry.name); continue; }
+        const text = fs.readFileSync(readme, 'utf8');
+        if (text.length < 400) missing.push(`${entry.name} (stub, ${text.length} bytes)`);
+      }
+      assert.deepEqual(missing, [], 'no README to show:\n  ' + missing.join('\n  '));
+    });
+
+    it('the README ships in the payload', () => {
+      // copy-assets filters node_modules/server/bin; a README has to survive
+      // that or the installed copy has nothing to show.
+      const src = fs.readFileSync(
+        path.join(ROOT, 'script', 'lib', 'copy-assets.js'), 'utf8'
+      );
+      const filter = src.slice(src.indexOf('function copyOwnedCatalog'));
+      assert.doesNotMatch(
+        filter.slice(0, filter.indexOf('copied++')),
+        /README/i,
+        'the catalog copy filter must not exclude README files'
+      );
+    });
+
     it('the catalog stays small', () => {
       const size = dir => {
         let total = 0;

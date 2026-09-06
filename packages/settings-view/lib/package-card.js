@@ -31,6 +31,7 @@ __export(package_card_exports, {
 });
 module.exports = __toCommonJS(package_card_exports);
 var { resolvePackageUrl } = require("./npm-package-url");
+var { externalHrefFrom } = require("./external-link");
 var import_atom = require("chevron");
 var import_etch = __toESM(require("etch"));
 var import_utils = require("./utils");
@@ -129,6 +130,18 @@ class PackageCard {
       this.refs.settingsButton.style.display = "none";
     } else {
       const clickHandler = (event) => {
+        // Any click on the card opens the detail view, and stopPropagation
+        // keeps it from reaching the document -- which is where core turns an
+        // <a href> into openExternal. An anchor with no handler of its own
+        // (the author name, the avatar) therefore kept its default action, and
+        // navigating the window away from index.html takes the editor with it.
+        const href = externalHrefFrom(event.target);
+        if (href) {
+          event.stopPropagation();
+          event.preventDefault();
+          chevron.applicationDelegate.openExternal(href);
+          return;
+        }
         event.stopPropagation();
         this.settingsView.showPanel(this.pack.name, { back: options ? options.back : null, pack: this.pack });
       };
@@ -234,6 +247,9 @@ class PackageCard {
         event.preventDefault();
         if (target.href && target.href.startsWith("atom:")) {
           chevron.workspace.open(target.href);
+        } else {
+          const external = externalHrefFrom(target);
+          if (external) chevron.applicationDelegate.openExternal(external);
         }
       }
     };
