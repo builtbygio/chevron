@@ -72,7 +72,7 @@ overrides:
   atom-pathspec: npm:@builtbygio/atom-pathspec@0.0.0
   atom-select-list: npm:@builtbygio/atom-select-list@0.8.2
   fs-admin: npm:@builtbygio/fs-admin@0.15.0
-  scrollbar-style: npm:@builtbygio/scrollbar-style@4.0.1
+  scrollbar-style: workspace:@builtbygio/scrollbar-style@*
   superstring: workspace:@builtbygio/superstring@*
   text-buffer: npm:@builtbygio/text-buffer@13.18.6
 
@@ -448,8 +448,8 @@ importers:
         specifier: ^0.17.0
         version: 0.17.0
       scrollbar-style:
-        specifier: npm:@builtbygio/scrollbar-style@4.0.1
-        version: '@builtbygio/scrollbar-style@4.0.1'
+        specifier: workspace:@builtbygio/scrollbar-style@*
+        version: link:packages/scrollbar-style
       semver:
         specifier: 7.8.5
         version: 7.8.5
@@ -1171,6 +1171,19 @@ importers:
 
   packages/open-on-github: {}
 
+  packages/scrollbar-style:
+    dependencies:
+      event-kit:
+        specifier: ^2.5.3
+        version: 2.5.3
+      node-addon-api:
+        specifier: ^1.1.0
+        version: 1.7.2
+    devDependencies:
+      jasmine:
+        specifier: ^3.7.0
+        version: 3.99.0
+
   packages/settings-view:
     dependencies:
       async:
@@ -1484,9 +1497,6 @@ packages:
 
   '@builtbygio/pathwatcher@8.1.2':
     resolution: {integrity: sha512-bvPmxFzPA2TfdIjOXYG3MW9MJillQWhMs0Q5u9EyN11PWIveL2nnY8eUQ5kukc77jQqvCpmwEMe4cLYeMEck7g==}
-
-  '@builtbygio/scrollbar-style@4.0.1':
-    resolution: {integrity: sha512-oYyg+ozZSlfEGGrBLRlijmjYbNMYrO0emZH/wTF6AVUaOpdU5Y3QTQhzbypArZ6/n0M37uZS6y3qPwEI302Dmw==}
 
   '@builtbygio/spellchecker@3.7.1':
     resolution: {integrity: sha512-/aMcqq8TNPHoM4bxbwwzHmkdA8GJgj2XbI7AMq+Hohn5zeUM9ANgLism/KYsY97/TnQTJPd5sitJBQUneMqPCw==}
@@ -2926,6 +2936,9 @@ packages:
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
 
+  jasmine-core@3.99.1:
+    resolution: {integrity: sha512-Hu1dmuoGcZ7AfyynN3LsfruwMbxMALMka+YtZeGoLuDEySVmVAPaonkNoBRIw/ectu8b9tVQCJNgp4a4knp+tg==}
+
   jasmine-focused@1.0.7:
     resolution: {integrity: sha512-FYJImuqPz3O0T1aOBrRfwgGNMfp/NAa2ywmqDkKWZ1hAxXZ4ZAzfFZ8AK+yKfWpCQSjXFqPuFaKoNTJyvS2sWw==}
     hasBin: true
@@ -2943,6 +2956,10 @@ packages:
 
   jasmine-tagged@1.1.4:
     resolution: {integrity: sha512-Gw/UzbeNJibnX4Eje64Yk/6k9yxZHXpPxm/x0ooaYbSu7Uw/w6rwahf3cOryRP00sofuD8yCCxO3n6xjUauh9g==}
+    hasBin: true
+
+  jasmine@3.99.0:
+    resolution: {integrity: sha512-YIThBuHzaIIcjxeuLmPD40SjxkEcc8i//sGMDKCgkRMVgIwRJf5qyExtlJpQeh7pkeoBSOe6lQEdg+/9uKg9mw==}
     hasBin: true
 
   js-tokens@3.0.2:
@@ -4596,11 +4613,6 @@ snapshots:
       nan: 2.28.0
       underscore-plus: 1.7.0
 
-  '@builtbygio/scrollbar-style@4.0.1':
-    dependencies:
-      event-kit: 2.5.3
-      node-addon-api: 1.7.2
-
   '@builtbygio/spellchecker@3.7.1':
     dependencies:
       any-promise: 1.3.0
@@ -6237,6 +6249,8 @@ snapshots:
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
 
+  jasmine-core@3.99.1: {}
+
   jasmine-focused@1.0.7:
     dependencies:
       jasmine-node: https://codeload.github.com/kevinsawicki/jasmine-node/tar.gz/81af4f953a2b7dfb5bde8331c05362a4b464c5ef
@@ -6263,6 +6277,11 @@ snapshots:
   jasmine-tagged@1.1.4:
     dependencies:
       jasmine-focused: 1.0.7
+
+  jasmine@3.99.0:
+    dependencies:
+      glob: 7.2.3
+      jasmine-core: 3.99.1
 
   js-tokens@3.0.2: {}
 

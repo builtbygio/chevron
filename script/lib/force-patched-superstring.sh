@@ -199,6 +199,7 @@ chevron_force_patched_natives() {
   local repo_root="${1:-$(pwd)}"
   chevron_force_one_native "$repo_root" "superstring" "packages/superstring" "superstring" || return 1
   chevron_force_one_native "$repo_root" "@atom/watcher" "packages/watcher" "@atom/watcher" || return 1
+  chevron_force_one_native "$repo_root" "scrollbar-style" "packages/scrollbar-style" "scrollbar-style" || return 1
   # tree-sitter is official npm 0.25 (N-API prebuilds). Do not vendor or
   # overwrite it.
 

@@ -19,6 +19,9 @@ const pkg = JSON.parse(
 // atom-keymap is gone from this list, not missing from it: the fork was
 // vendored into src/keymap/ in the CSON-and-Atom-era cleanup. The
 // builtbygio/atom-keymap repository is now unused.
+// scrollbar-style is likewise gone rather than missing: the fork was vendored
+// into packages/scrollbar-style (chevron#310). The builtbygio/scrollbar-style
+// repository is now unused.
 const OWNED_BUILTBYGIO = [
   '@atom/fuzzy-native',
   '@atom/nsfw',
@@ -77,7 +80,6 @@ const OWNED_BUILTBYGIO = [
   'nslog',
   'open-on-github',
   'pathwatcher',
-  'scrollbar-style',
   'settings-view',
   'snippets',
   'spell-check',
