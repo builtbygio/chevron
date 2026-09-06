@@ -25,8 +25,14 @@ on:
 permissions:
   contents: read
 
+# A no-cache run (weekly schedule, or the no_cache_build dispatch input) gets
+# its own group. It shares a ref with every push to master, and the first
+# dispatched run was cancelled four minutes in by an unrelated merge -- and a
+# re-dispatch would have cancelled that merge's run in turn.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: >-
+    ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.no_cache_build))
+        && 'ci-no-cache-' || 'ci-' }}${{ github.ref }}
   cancel-in-progress: true
 
 # Electron binary cache is workspace-local (reliable for actions/cache).
