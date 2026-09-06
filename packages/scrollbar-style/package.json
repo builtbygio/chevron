@@ -1,0 +1,26 @@
+{
+  "main": "lib/binding.js",
+  "dependencies": {
+    "event-kit": "^2.5.3",
+    "node-addon-api": "^1.1.0"
+  },
+  "scripts": {
+    "test": "jasmine"
+  },
+  "gypfile": true,
+  "name": "@builtbygio/scrollbar-style",
+  "version": "4.0.2",
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "jasmine": "^3.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/builtbygio/scrollbar-style.git"
+  },
+  "engines": {
+    "chevron": "*"
+  }
+}

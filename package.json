@@ -133,7 +133,7 @@
     "property-accessors": "^1.1.3",
     "resolve": "1.22.10",
     "scoped-property-store": "^0.17.0",
-    "scrollbar-style": "npm:@builtbygio/scrollbar-style@4.0.1",
+    "scrollbar-style": "workspace:@builtbygio/scrollbar-style@*",
     "semver": "7.8.5",
     "settings-view": "workspace:@builtbygio/settings-view@*",
     "sinon": "9.2.1",
