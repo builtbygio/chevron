@@ -1,12 +1,45 @@
 'use strict';
 
-const fs = require('fs');
+/**
+ * Resolve the language server binary this package ships.
+ *
+ * No require('fs'). A cpm-installed package is community code and privileged
+ * requires are blocked (docs/reference/package-node-policy.md); this used to
+ * throw at load and take the whole package with it. Everything looked at here
+ * is inside the package root, which lives under CHEVRON_HOME and is an
+ * allowed FS IPC root, so the editor's delegate can answer.
+ */
+
 const path = require('path');
 
+function delegate() {
+  const env = global.chevron || global.atom;
+  return env && env.applicationDelegate;
+}
+
+function readJson(file) {
+  const d = delegate();
+  if (d && typeof d.readFileSync === 'function') {
+    return JSON.parse(String(d.readFileSync(file, 'utf8')));
+  }
+  // Outside the editor (unit tests, tooling) there is no delegate and no
+  // restriction either.
+  return JSON.parse(require('fs').readFileSync(file, 'utf8'));
+}
+
+function isFile(candidate) {
+  const d = delegate();
+  try {
+    if (d && typeof d.isFileSync === 'function') return Boolean(d.isFileSync(candidate));
+    const fs = require('fs');
+    return fs.existsSync(candidate) && fs.statSync(candidate).isFile();
+  } catch (error) {
+    return false;
+  }
+}
+
 function buildRegistration(packageRoot) {
-  const meta = JSON.parse(
-    fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')
-  );
+  const meta = readJson(path.join(packageRoot, 'package.json'));
   const ls = meta.chevron && meta.chevron.languageServer;
   if (!ls) throw new Error(`${meta.name}: missing chevron.languageServer`);
 
@@ -26,7 +59,7 @@ function buildRegistration(packageRoot) {
   let command = null;
   for (const c of candidates) {
     try {
-      if (fs.existsSync(c) && fs.statSync(c).isFile()) {
+      if (isFile(c)) {
         command = c;
         break;
       }

@@ -70,6 +70,8 @@ function resolveTsserverPath(resourcePath) {
  * Discovered here (main + renderer, pure Node) so T2 community restrict
  * cannot block registration — chevron-lsp-* activate() uses `fs`.
  */
+const CLANGD_EXE = process.platform === 'win32' ? 'clangd.exe' : 'clangd';
+
 const OPTIONAL_SERVER_PACKAGES = [
   {
     id: 'typescript',
@@ -100,8 +102,87 @@ const OPTIONAL_SERVER_PACKAGES = [
     bins: [path.join('node_modules', '.bin', 'pyright-langserver')],
     scopes: ['source.python'],
     args: ['--stdio']
+  },
+  {
+    id: 'clangd',
+    packageName: 'chevron-lsp-c',
+    bins: [path.join('server', 'bin', CLANGD_EXE)],
+    scopes: ['source.c', 'source.cpp', 'source.objc', 'source.objcpp'],
+    args: []
   }
 ];
+
+const CLANGD_SCOPES = ['source.c', 'source.cpp', 'source.objc', 'source.objcpp'];
+
+/**
+ * Where clangd lives when it is not on PATH.
+ *
+ * PATH alone is close to sufficient on Linux and close to useless elsewhere:
+ * Xcode and the command line tools carry clangd inside the toolchain, and
+ * Homebrew keeps llvm keg-only, so on macOS it is commonly installed and
+ * commonly not on PATH. Windows has nothing by default and the LLVM installer
+ * may not have added its bin directory.
+ *
+ * This lives here rather than in chevron-lsp-c because that package is
+ * community code once cpm installs it, and looking at /usr/bin needs `fs`.
+ */
+function clangdDirectories() {
+  const home = process.env.HOME || process.env.USERPROFILE || '';
+  if (process.platform === 'darwin') {
+    return [
+      '/Library/Developer/CommandLineTools/usr/bin',
+      '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin',
+      '/opt/homebrew/opt/llvm/bin',
+      '/usr/local/opt/llvm/bin',
+      path.join(home, 'homebrew', 'opt', 'llvm', 'bin')
+    ];
+  }
+  if (process.platform === 'win32') {
+    const programFiles = process.env.ProgramFiles || 'C:\\Program Files';
+    const programFilesX86 =
+      process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
+    const localAppData =
+      process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local');
+    return [
+      path.join(programFiles, 'LLVM', 'bin'),
+      path.join(programFilesX86, 'LLVM', 'bin'),
+      path.join(localAppData, 'Programs', 'LLVM', 'bin'),
+      path.join(home, 'scoop', 'apps', 'llvm', 'current', 'bin')
+    ];
+  }
+  return ['/usr/bin', '/usr/local/bin'];
+}
+
+/** Debian and Fedora ship versioned directories; prefer the highest. */
+function versionedLlvmDirectories() {
+  if (process.platform === 'win32') return [];
+  const found = [];
+  for (const root of ['/usr/lib', '/usr/local/lib', '/opt']) {
+    let entries = [];
+    try {
+      entries = fs.readdirSync(root);
+    } catch (error) {
+      continue;
+    }
+    for (const entry of entries) {
+      const match = /^llvm-?(\d+)/.exec(entry);
+      if (match) {
+        found.push({ dir: path.join(root, entry, 'bin'), version: Number(match[1]) });
+      }
+    }
+  }
+  return found.sort((a, b) => b.version - a.version).map(entry => entry.dir);
+}
+
+function resolveSystemClangd() {
+  const onPath = which(CLANGD_EXE);
+  if (onPath) return onPath;
+  for (const dir of [...clangdDirectories(), ...versionedLlvmDirectories()]) {
+    const hit = which(path.join(dir, CLANGD_EXE));
+    if (hit) return hit;
+  }
+  return null;
+}
 
 function packageSearchRoots(resourcePath) {
   const roots = [];
@@ -154,6 +235,21 @@ function resolveBuiltinRegistrations(options = {}) {
       initializationOptions: extra.initializationOptions || {},
       source: 'builtin'
     });
+  }
+
+  // clangd from the system when the package did not download one.
+  if (!seen.has('clangd')) {
+    const systemClangd = resolveSystemClangd();
+    if (systemClangd) {
+      push({
+        id: 'clangd',
+        scopes: CLANGD_SCOPES.slice(),
+        command: systemClangd,
+        args: [],
+        initializationOptions: {},
+        source: 'builtin'
+      });
+    }
   }
 
   // TypeScript / JavaScript family
@@ -253,6 +349,9 @@ function resolveTypescriptLanguageServer() {
 module.exports = {
   which,
   packageSearchRoots,
+  clangdDirectories,
+  versionedLlvmDirectories,
+  resolveSystemClangd,
   resolveBuiltinRegistrations,
   resolveBuiltinServer,
   resolveTypescriptLanguageServer,

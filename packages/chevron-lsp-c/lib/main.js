@@ -16,7 +16,8 @@
  * PATH" path in docs/reference/lsp-server-distribution.md.
  *
  * Binary distributor only. Do not require('event-kit') or 'fs' -- this is a
- * T2 user package.
+ * T2 user package, and privileged requires are blocked once cpm installs it.
+ * Locating clangd is the editor's job (src/lsp/builtin-servers.js).
  */
 
 const { findClangd } = require('./find-clangd');
@@ -53,7 +54,7 @@ module.exports = {
     // only searches PATH, which finds clangd on most Linux installs and
     // misses the Xcode, Homebrew and LLVM-installer locations that hold it on
     // macOS and Windows.
-    const found = findClangd();
+    const found = findClangd(lsp);
     const env = global.chevron || global.atom;
 
     if (!found) {
@@ -79,7 +80,7 @@ module.exports = {
         id: 'clangd',
         scopes: SCOPES,
         command: found.command,
-        args: ['--background-index']
+        args: found.args.length ? found.args : ['--background-index']
       });
     } catch (err) {
       if (typeof console !== 'undefined' && console.warn) {
