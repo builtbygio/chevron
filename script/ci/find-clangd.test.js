@@ -3,6 +3,11 @@
 /**
  * clangd is found on macOS and Windows too, not only where it is on PATH.
  *
+ * The lookup moved from packages/chevron-lsp-c into src/lsp/builtin-servers.js
+ * on 2026-09-06: once cpm installs that package it is community code, and
+ * looking at /usr/bin needs `fs`, which is blocked. The assertions below moved
+ * with it — the behaviour they protect is unchanged.
+ *
  * The registry resolves a bare command name with which(), which searches PATH
  * and nothing else. That finds clangd on most Linux installs and misses it on
  * the other two platforms, where it is commonly installed and commonly not on
@@ -24,23 +29,29 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const MODULE = path.join(ROOT, 'packages', 'chevron-lsp-c', 'lib', 'find-clangd.js');
-const { findClangd, wellKnownDirectories } = require(MODULE);
+const MODULE = path.join(ROOT, 'src', 'lsp', 'builtin-servers.js');
+const {
+  resolveSystemClangd,
+  clangdDirectories,
+  versionedLlvmDirectories
+} = require(MODULE);
 const source = fs.readFileSync(MODULE, 'utf8');
 
 describe('clangd lookup', () => {
   it('returns a real executable when one exists here', () => {
-    const found = findClangd();
+    const found = resolveSystemClangd();
     if (!found) return; // no clangd on this host; the absence path is tested below
-    assert.ok(fs.existsSync(found.command), `${found.command} must exist`);
-    assert.ok(fs.statSync(found.command).isFile());
+    assert.ok(fs.existsSync(found), `${found} must exist`);
+    assert.ok(fs.statSync(found).isFile());
   });
 
   it('prefers PATH before the well-known locations', () => {
     // PATH is what the user chose; a bundled Xcode copy should not win over it.
-    const pathIndex = source.indexOf('const onPath = fromPath();');
-    const wellKnownIndex = source.indexOf('for (const dir of wellKnownDirectories())');
-    assert.ok(pathIndex > -1 && wellKnownIndex > pathIndex);
+    const body = source.slice(source.indexOf('function resolveSystemClangd'));
+    const pathIndex = body.indexOf('which(CLANGD_EXE)');
+    const wellKnownIndex = body.indexOf('clangdDirectories()');
+    assert.ok(pathIndex > -1, 'PATH is searched');
+    assert.ok(wellKnownIndex > pathIndex, 'the well-known list comes after PATH');
   });
 
   it('covers the macOS locations that are not on PATH', () => {
@@ -80,7 +91,7 @@ describe('clangd lookup', () => {
   });
 
   it('lists candidate directories for the running platform', () => {
-    const dirs = wellKnownDirectories();
+    const dirs = clangdDirectories();
     assert.ok(Array.isArray(dirs) && dirs.length > 0);
     for (const dir of dirs) assert.equal(typeof dir, 'string');
   });
