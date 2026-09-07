@@ -219,9 +219,14 @@ module.exports = {
 
   loadPackageSnippets (callback) {
     const disabledPackageNames = chevron.config.get('core.packagesWithSnippetsDisabled') || []
-    const packages = chevron.packages.getLoadedPackages().sort((pack, _) => {
-      return /\/node_modules\//.test(pack.path) ? -1 : 1
-    })
+    // Bundled first, so a community package's snippets override theirs. The
+    // path test this replaces only held in the packaged app, where bundled
+    // packages sit under node_modules/; from source they are in packages/.
+    const bundled = (pack: any) =>
+      Number(chevron.packages.isBundledPackage(pack.name))
+    const packages = chevron.packages
+      .getLoadedPackages()
+      .sort((a: any, b: any) => bundled(b) - bundled(a))
 
     const snippetsDirPaths = []
     for (const pack of packages) {

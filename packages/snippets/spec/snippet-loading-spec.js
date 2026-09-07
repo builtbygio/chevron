@@ -180,59 +180,8 @@ describe("Snippet Loading", () => {
     });
   });
 
-  describe("when ~/.atom/snippets.cson exists", () => {
-    beforeEach(() => {
-      fs.writeFileSync(path.join(configDirPath, 'snippets.cson'), `\
-".foo":
-  "foo snippet":
-    "prefix": "foo"
-    "body": "bar1"\
-`
-      );
-      activateSnippetsPackage();
-    });
-
-    it("loads the snippets from that file", () => {
-      let snippet = null;
-
-      waitsFor(() => snippet = snippetsService.snippetsForScopes(['.foo'])['foo']);
-
-      runs(() => {
-        expect(snippet.name).toBe('foo snippet');
-        expect(snippet.prefix).toBe("foo");
-        expect(snippet.body).toBe("bar1");
-      });
-    });
-
-    describe("when that file changes", () => {
-      it("reloads the snippets", () => {
-        fs.writeFileSync(path.join(configDirPath, 'snippets.cson'), `\
-".foo":
-  "foo snippet":
-    "prefix": "foo"
-    "body": "bar2"\
-`
-        );
-
-        waitsFor("snippets to be changed", () => {
-          const snippet = snippetsService.snippetsForScopes(['.foo'])['foo'];
-          return snippet && snippet.body === 'bar2';
-        });
-
-        runs(() => {
-          fs.writeFileSync(path.join(configDirPath, 'snippets.cson'), "");
-        });
-
-        waitsFor("snippets to be removed", () => {
-          const snippet = snippetsService.snippetsForScopes(['.foo'])['foo'];
-          return snippet == null;
-        });
-      });
-    });
-  });
-
   it("notifies the user when the user snippets file cannot be loaded", () => {
-    fs.writeFileSync(path.join(configDirPath, 'snippets.cson'), '".junk":::');
+    fs.writeFileSync(path.join(configDirPath, 'snippets.json'), '{".junk":::}');
 
     activateSnippetsPackage();
 
