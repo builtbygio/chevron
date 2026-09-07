@@ -1,7 +1,7 @@
 {
   "name": "@builtbygio/snippets",
   "version": "1.5.6",
-  "main": "./lib/snippets",
+  "main": "./lib/main",
   "description": "Expand snippets matching the current prefix with `tab`.",
   "repository": "https://github.com/builtbygio/snippets",
   "license": "MIT",
