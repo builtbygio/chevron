@@ -474,6 +474,32 @@ describe('AtomWindow', function() {
       );
     });
   });
+
+  describe('headless renderer exit', function() {
+    function gone(details) {
+      const w = new AtomWindow(app, service, {
+        browserWindowConstructor: StubBrowserWindow,
+        headless: true
+      });
+      w.browserWindow.webContents.emit('render-process-gone', {}, details);
+      return w;
+    }
+
+    it('exits 0 when a spec window exits normally', function() {
+      gone({ reason: 'clean-exit', exitCode: 0 });
+      assert.isTrue(app.exit.calledOnceWith(0));
+    });
+
+    it('exits 100 when the renderer exits with a failure status', function() {
+      gone({ reason: 'abnormal-exit', exitCode: 256 });
+      assert.isTrue(app.exit.calledOnceWith(100));
+    });
+
+    it('exits 100 when the renderer actually crashes', function() {
+      gone({ reason: 'crashed', exitCode: 11 });
+      assert.isTrue(app.exit.calledOnceWith(100));
+    });
+  });
 });
 
 class StubApplication {
@@ -490,6 +516,7 @@ class StubApplication {
 
     this.removeWindow = sinon.spy();
     this.saveCurrentWindowOptions = sinon.spy();
+    this.exit = sinon.spy();
   }
 }
 
@@ -514,9 +541,23 @@ class StubBrowserWindow extends EventEmitter {
       this.sent.push(args);
     };
     this.webContents.setVisualZoomLevelLimits = () => {};
+    this.webContents.setWindowOpenHandler = () => {};
+    this.webContents.session = {
+      setPermissionRequestHandler: () => {},
+      setPermissionCheckHandler: () => {}
+    };
+    this.webContents.isDestroyed = () => false;
+    this.webContents.isFocused = () => false;
+    this.webContents.focus = () => {};
   }
 
   loadURL() {}
+
+  isDestroyed() {
+    return false;
+  }
+
+  setIcon() {}
 
   focusOnWebView() {
     this.behavior.focusOnWebView = true;
