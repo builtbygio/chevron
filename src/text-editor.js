@@ -5782,13 +5782,18 @@ module.exports = class TextEditor {
       return;
 
     const languageMode = this.buffer.getLanguageMode();
-    const isCommented = languageMode.isRowCommented(bufferRow);
+    // Every other languageMode call here is guarded; this one was not, and a
+    // mode without it threw rather than treating nothing as commented.
+    const isRowCommented = languageMode.isRowCommented
+      ? row => languageMode.isRowCommented(row)
+      : () => false;
+    const isCommented = isRowCommented(bufferRow);
 
     let startRow = bufferRow;
     while (startRow > 0) {
       if (!NON_WHITESPACE_REGEXP.test(this.lineTextForBufferRow(startRow - 1)))
         break;
-      if (languageMode.isRowCommented(startRow - 1) !== isCommented) break;
+      if (isRowCommented(startRow - 1) !== isCommented) break;
       startRow--;
     }
 
@@ -5797,7 +5802,7 @@ module.exports = class TextEditor {
     while (endRow + 1 < rowCount) {
       if (!NON_WHITESPACE_REGEXP.test(this.lineTextForBufferRow(endRow + 1)))
         break;
-      if (languageMode.isRowCommented(endRow + 1) !== isCommented) break;
+      if (isRowCommented(endRow + 1) !== isCommented) break;
       endRow++;
     }
 

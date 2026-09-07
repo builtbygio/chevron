@@ -4,6 +4,7 @@ const CSON = require('./main-process/json-file');
 const { Disposable, CompositeDisposable, Emitter } = require('event-kit');
 const TreeSitterLanguageMode = require('./tree-sitter-language-mode');
 const TreeSitterGrammar = require('./tree-sitter-grammar');
+const PlainTextLanguageMode = require('./plain-text-language-mode');
 const Token = require('./token');
 const NullGrammar = require('./null-grammar');
 const fs = require('fs-plus');
@@ -191,9 +192,9 @@ module.exports = class GrammarRegistry {
         grammars: this
       });
     }
-    // Anything without a tree-sitter grammar gets the buffer's own null
-    // language mode: text, editable, uncoloured.
-    return null;
+    // No tree-sitter grammar: text, editable, uncoloured — but still foldable
+    // by indentation, which needs no grammar.
+    return new PlainTextLanguageMode(buffer, grammar);
   }
 
   // Extended: Select a grammar for the given file path and file contents.
