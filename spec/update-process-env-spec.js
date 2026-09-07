@@ -1,12 +1,10 @@
-/** @babel */
-
-import path from 'path';
-import childProcess from 'child_process';
-import {
+const path = require('path');
+const childProcess = require('child_process');
+const {
   updateProcessEnv,
   shouldGetEnvFromShell
-} from '../src/update-process-env';
-import mockSpawn from 'mock-spawn';
+} = require('../src/update-process-env');
+const mockSpawn = require('mock-spawn');
 const temp = require('temp').track();
 
 describe('updateProcessEnv(launchEnv)', function() {

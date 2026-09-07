@@ -1,7 +1,6 @@
-'use babel'
 /* eslint-env jasmine */
 
-import {waitForAutocomplete, triggerAutocompletion, conditionPromise} from './spec-helper'
+const {waitForAutocomplete, triggerAutocompletion, conditionPromise} = require('./spec-helper')
 
 describe('Provider API', () => {
   let [editor, mainModule, autocompleteManager, registration, testProvider, testProvider2] = []

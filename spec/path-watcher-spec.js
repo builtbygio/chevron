@@ -1,12 +1,10 @@
-/** @babel */
+const temp = require('temp');
+const fs = require('fs-plus');
+const path = require('path');
+const { promisify } = require('util');
 
-import temp from 'temp';
-import fs from 'fs-plus';
-import path from 'path';
-import { promisify } from 'util';
-
-import { CompositeDisposable } from 'event-kit';
-import { watchPath, stopAllWatchers } from '../src/path-watcher';
+const { CompositeDisposable } = require('event-kit');
+const { watchPath, stopAllWatchers } = require('../src/path-watcher');
 
 temp.track();
 

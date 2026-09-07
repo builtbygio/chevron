@@ -1,14 +1,13 @@
-/** @babel */
 /* eslint-env jasmine */
 
-import path from 'path';
-import etch from 'etch';
-import fs from 'fs-plus';
-import temp from 'temp';
-import SymbolsView from '../lib/symbols-view';
-import TagGenerator from '../lib/tag-generator';
+const path = require('path');
+const etch = require('etch');
+const fs = require('fs-plus');
+const temp = require('temp');
+const SymbolsView = require('../lib/symbols-view');
+const TagGenerator = require('../lib/tag-generator');
 
-import {it, fit, ffit, fffit, beforeEach, afterEach, conditionPromise} from './async-spec-helpers';
+const {it, fit, ffit, fffit, beforeEach, afterEach, conditionPromise} = require('./async-spec-helpers');
 
 describe('SymbolsView', () => {
   let [symbolsView, activationPromise, editor, directory] = [];

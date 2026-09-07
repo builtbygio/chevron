@@ -1,6 +1,4 @@
-/** @babel */
-
-import etch from 'etch';
+const etch = require('etch');
 
 const Grim = require('grim');
 

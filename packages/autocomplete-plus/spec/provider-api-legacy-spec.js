@@ -1,8 +1,7 @@
-'use babel'
 /* eslint-env jasmine */
 
-import { triggerAutocompletion, waitForAutocomplete, conditionPromise } from './spec-helper'
-import grim from 'grim'
+const { triggerAutocompletion, waitForAutocomplete, conditionPromise } = require('./spec-helper')
+const grim = require('grim')
 
 describe('Provider API Legacy', () => {
   let [editor, mainModule, autocompleteManager, registration, testProvider] = []

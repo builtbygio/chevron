@@ -1,8 +1,6 @@
-/** @babel */
+const url = require('url');
 
-import url from 'url';
-
-import URIHandlerRegistry from '../src/uri-handler-registry';
+const URIHandlerRegistry = require('../src/uri-handler-registry');
 
 describe('URIHandlerRegistry', () => {
   let registry;
