@@ -1127,18 +1127,18 @@ foo\
     });
   });
 
-  describe("when atom://.atom/snippets is opened", () => {
-    it("opens ~/.atom/snippets.cson", () => {
+  describe("when chevron://.chevron/snippets is opened", () => {
+    it("opens the user snippets file", () => {
       jasmine.unspy(Snippets, 'getUserSnippetsPath');
       atom.workspace.destroyActivePaneItem();
       const configDirPath = temp.mkdirSync('atom-config-dir-');
       spyOn(atom, 'getConfigDirPath').andReturn(configDirPath);
-      atom.workspace.open('atom://.atom/snippets');
+      atom.workspace.open('chevron://.chevron/snippets');
 
       waitsFor(() => atom.workspace.getActiveTextEditor() != null);
 
       runs(() => {
-        expect(atom.workspace.getActiveTextEditor().getURI()).toBe(path.join(configDirPath, 'snippets.cson'));
+        expect(atom.workspace.getActiveTextEditor().getURI()).toBe(path.join(configDirPath, 'snippets.json'));
       });
     });
   });
