@@ -1,9 +1,7 @@
-/** @babel */
-
-import { remote } from 'electron';
-import atomPaths from '../src/atom-paths';
-import fs from 'fs-plus';
-import path from 'path';
+const { remote } = require('electron');
+const atomPaths = require('../src/atom-paths');
+const fs = require('fs-plus');
+const path = require('path');
 const app = remote.app;
 const temp = require('temp').track();
 
@@ -98,9 +96,19 @@ describe('AtomPaths', () => {
     let tempAtomHomePath = null;
     let electronUserDataPath = null;
     let defaultElectronUserDataPath = null;
+    let stubApp = null;
 
     beforeEach(() => {
+      // setUserData takes the app it configures, so a stub keeps the spec off
+      // app.setPath, which the renderer's remote-compat proxy does not carry.
       defaultElectronUserDataPath = app.getPath('userData');
+      const paths = { userData: defaultElectronUserDataPath };
+      stubApp = {
+        getPath: name => paths[name],
+        setPath: (name, value) => {
+          paths[name] = value;
+        }
+      };
       delete process.env.ATOM_HOME;
       delete process.env.CHEVRON_HOME;
       tempAtomHomePath = temp.mkdirSync('atom-paths-specs-userdata-home');
@@ -120,14 +128,13 @@ describe('AtomPaths', () => {
       } catch (e) {
         // Ignore
       }
-      app.setPath('userData', defaultElectronUserDataPath);
     });
 
     describe('when an electronUserData folder exists', () => {
       it('sets userData path to the folder if it has permission', () => {
         fs.mkdirSync(electronUserDataPath);
-        atomPaths.setUserData(app);
-        expect(app.getPath('userData')).toEqual(electronUserDataPath);
+        atomPaths.setUserData(stubApp);
+        expect(stubApp.getPath('userData')).toEqual(electronUserDataPath);
       });
 
       it('leaves userData unchanged if no write access to electronUserData folder', () => {
@@ -135,16 +142,16 @@ describe('AtomPaths', () => {
 
         fs.mkdirSync(electronUserDataPath);
         fs.chmodSync(electronUserDataPath, 444);
-        atomPaths.setUserData(app);
+        atomPaths.setUserData(stubApp);
         fs.chmodSync(electronUserDataPath, 666);
-        expect(app.getPath('userData')).toEqual(defaultElectronUserDataPath);
+        expect(stubApp.getPath('userData')).toEqual(defaultElectronUserDataPath);
       });
     });
 
     describe('when an electronUserDataPath folder does not exist', () => {
       it('leaves userData app path unchanged', () => {
-        atomPaths.setUserData(app);
-        expect(app.getPath('userData')).toEqual(defaultElectronUserDataPath);
+        atomPaths.setUserData(stubApp);
+        expect(stubApp.getPath('userData')).toEqual(defaultElectronUserDataPath);
       });
     });
   });

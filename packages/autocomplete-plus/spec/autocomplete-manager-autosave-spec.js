@@ -1,10 +1,9 @@
-'use babel'
 /* eslint-env jasmine */
 
 let temp = require('temp').track()
-import path from 'path'
-import fs from 'fs-plus'
-import { conditionPromise } from './spec-helper'
+const path = require('path')
+const fs = require('fs-plus')
+const { conditionPromise } = require('./spec-helper')
 
 describe('Autocomplete Manager', () => {
   let directory

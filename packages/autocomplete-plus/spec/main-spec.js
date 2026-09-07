@@ -1,7 +1,6 @@
-'use babel'
 /* eslint-env jasmine */
 
-import { conditionPromise, waitForAutocomplete } from './spec-helper'
+const { conditionPromise, waitForAutocomplete } = require('./spec-helper')
 
 describe('Autocomplete', () => {
   let editorView
