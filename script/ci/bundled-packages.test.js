@@ -142,6 +142,29 @@ describe('bundled packages', () => {
     assert.ok(EXTERNAL.includes('electron'), 'electron is provided');
   });
 
+  it('no data file shadows a package main', () => {
+    // Running from source, require() resolves .json before compile-cache's
+    // .ts, so a data file beside the main takes its place and the package
+    // activates with no code. The build transpiles first and hides it.
+    const problems = [];
+    for (const name of BUNDLED) {
+      const manifestPath = path.join(ROOT, 'packages', name, 'package.json');
+      if (!fs.existsSync(manifestPath)) continue;
+      const main = JSON.parse(fs.readFileSync(manifestPath, 'utf8')).main;
+      if (!main) continue;
+      const base = path
+        .join(ROOT, 'packages', name, main)
+        .replace(/\.(js|ts|tsx|json)$/, '');
+      const isCode = ['.js', '.ts', '.tsx'].some(ext =>
+        fs.existsSync(base + ext)
+      );
+      if (isCode && fs.existsSync(base + '.json')) {
+        problems.push(`${name}: ${main}.json shadows the main`);
+      }
+    }
+    assert.deepStrictEqual(problems, []);
+  });
+
   const describeApp = fs.existsSync(APP) ? describe : describe.skip;
 
   describeApp('in the packaged app', () => {

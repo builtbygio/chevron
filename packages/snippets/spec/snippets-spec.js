@@ -1,6 +1,6 @@
 const path = require('path');
 const temp = require('temp').track();
-const Snippets = require('../lib/snippets');
+const Snippets = require('../lib/main');
 const {TextEditor} = require('chevron');
 
 describe("Snippets extension", () => {
