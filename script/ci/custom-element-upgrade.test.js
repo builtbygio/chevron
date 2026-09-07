@@ -3,21 +3,19 @@
 /**
  * Core elements must not wait for connectedCallback to become usable.
  *
- * static/index.js loads the document-register-element polyfill, because under
- * contextIsolation a native customElements.define() in the preload realm does
- * not upgrade parser-created nodes. The polyfill does upgrade them -- but its
- * upgrade is asynchronous, on a timer it captured at load. Measured in the
- * spec runner:
+ * static/index.js loads a custom elements polyfill, because under
+ * contextIsolation window.customElements is null in the world the app runs in
+ * -- see docs/reference/custom-elements.md.
  *
- *   default (mocked) clock : class ""           isHorizontal undefined
- *   real clock, after 300ms: class "horizontal" isHorizontal true
+ * This gate predates the move to @webcomponents/custom-elements, whose
+ * connectedCallback is synchronous. Under the polyfill before it the callback
+ * ran on a timer the spec suite's mocked setTimeout could not drive, so no core
+ * element was built by the time a spec asserted: pane-container-element-spec
+ * alone lost 19 assertions to an unset `isHorizontal`.
  *
- * The spec suite mocks setTimeout, and advanceClock cannot drive a timer the
- * polyfill captured before the spy, so connectedCallback had not run for any
- * core element by the time a spec asserted. That is one cause behind a cluster
- * of nightly failures: pane-container-element-spec alone lost 19 assertions,
- * because an unset `isHorizontal` sent a row resize down the vertical branch
- * and divided by a zero height.
+ * The rule stands on its own merits now rather than as a workaround. An element
+ * that is usable without waiting for a callback is easier to reason about, and
+ * nothing here is expensive.
  *
  * The fix is the pattern text-editor-element.js already documents: whatever an
  * element needs has to be reachable from initialize(), idempotently, rather

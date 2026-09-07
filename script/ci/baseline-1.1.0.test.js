@@ -78,10 +78,10 @@ describe('1.1.0 product contract', () => {
     );
   });
 
-  it('document-register-element stays', () => {
+  it('a custom elements polyfill stays', () => {
     assert.ok(
-      pkg.dependencies['document-register-element'],
-      'document-register-element stays until catalog createElement is converted'
+      pkg.dependencies['@webcomponents/custom-elements'],
+      'a polyfill stays until catalog createElement is converted'
     );
   });
 
