@@ -417,8 +417,16 @@ module.exports = class AtomWindow extends EventEmitter {
             `exitCode=${details && details.exitCode}`
         );
         if (this.headless) {
-          console.log('Renderer process crashed, exiting');
-          this.atomApplication.exit(100);
+          // render-process-gone also fires when a spec window exits normally,
+          // so only a non-clean exit is a crash.
+          const cleanExit =
+            details && details.reason === 'clean-exit' && details.exitCode === 0;
+          if (cleanExit) {
+            this.atomApplication.exit(0);
+          } else {
+            console.log('Renderer process crashed, exiting');
+            this.atomApplication.exit(100);
+          }
           return;
         }
 
