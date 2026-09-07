@@ -549,9 +549,8 @@ const PROBE_EXPR = `(function() {
           (o.stack ? ' | stack: ' + String(o.stack).slice(0, 800) : '');
       }),
     txtText: byExt('.txt').getText(),
-    // Plain Text has no grammar at all now: first-mate is deleted and no
-    // tree-sitter parser exists for it, so the buffer falls to text-buffer's
-    // null language mode. Uncoloured, and still an editable buffer.
+    // Plain Text has no tree-sitter grammar, so it gets PlainTextLanguageMode:
+    // uncoloured, still editable, and foldable by indentation.
     txtEngine:
       byExt('.txt').getBuffer().getLanguageMode() &&
       byExt('.txt').getBuffer().getLanguageMode().constructor.name,
@@ -2199,13 +2198,13 @@ async function main() {
           `Makefile is on ${state.makeEngine} (expected TreeSitterLanguageMode)`
         );
       }
-      // A language with no tree-sitter grammar must still open. Anything
-      // other than the null mode means something is reaching for an engine
-      // that no longer exists.
-      if (state.txtEngine !== 'NullLanguageMode') {
+      // A language with no tree-sitter grammar must still open, on the mode
+      // that folds by indentation. text-buffer's own NullLanguageMode means
+      // grammar-registry handed back null again, and folding is gone.
+      if (state.txtEngine !== 'PlainTextLanguageMode') {
         failures.push(
-          `probe.txt is on ${state.txtEngine} (expected NullLanguageMode -- ` +
-            'first-mate is deleted and plain text has no tree-sitter grammar)'
+          `probe.txt is on ${state.txtEngine} (expected ` +
+            'PlainTextLanguageMode -- see docs/reference/language-modes.md)'
         );
       }
       const settings = state.settings;

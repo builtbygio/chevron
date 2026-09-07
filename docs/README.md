@@ -61,6 +61,7 @@ Always use `./script/bootstrap-modern` (host Node 24 + Python 3.12). See root [R
 | [dependency-graph.md](./reference/dependency-graph.md) | Install topology |
 | [jasmine-ci.md](./reference/jasmine-ci.md) | Jasmine suite: nightly measurement, not a merge gate |
 | [custom-elements.md](./reference/custom-elements.md) | Why a polyfill boots the app's custom elements, and which one |
+| [language-modes.md](./reference/language-modes.md) | Which language mode a buffer gets, and what each one answers |
 
 ## decisions — why it is this way
 
