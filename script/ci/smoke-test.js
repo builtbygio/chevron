@@ -748,10 +748,10 @@ const ROOT_CONFIG_EXPR = `(function() {
 })()`;
 
 // The styleguide renders one of every core UI element, including
-// <atom-text-editor> written as markup rather than constructed -- the path the
-// document-register-element polyfill upgrades without running a constructor.
-// That made it the page where an element that assumes its constructor ran
-// throws, and nothing here opened it.
+// <atom-text-editor> written as markup rather than constructed. The polyfill
+// this replaced upgraded that path without running the constructor, which made
+// the styleguide the page where an element assuming its constructor ran throws,
+// and nothing here opened it.
 const STYLEGUIDE_EXPR = `(function() {
   var chevron = window.chevron || window.atom;
   if (!chevron || !chevron.workspace) {

@@ -192,7 +192,7 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
 3. **Wave 3 — done. One of four passed the gate.** Evidence recorded in `script/ci/wave3-gates.test.js` so this is not re-derived:  
    - **`Task` — DELETED.** Zero callers: nothing in `src/` but the export itself, and a sweep of all 94 owned pins found only `github/lib/async-queue.js`, which declares its *own* local `class Task` with no requires. Gone: `src/task.ts`, `src/task-bootstrap.js`, the export, `spec/task-spec.js` + fixtures. Gate: `script/ci/task-callers.test.js`.  
    - **`season` — STAYS.** Not blocked on pins (Wave 1 proved zero `.cson` across the catalog *and* the app tree). Blocked on user-authored `~/.chevron/*.cson` dual-read and any installed package's data (`config-file`, `user-config-path`, `keymap-extensions`, `package`, `grammar-registry`).  
-   - **`document-register-element` — STAYS.** `document.createElement('atom-*')` under `contextIsolation`; already locked by `baseline-1.1.0` and `custom-element-factory`.  
+   - **A custom elements polyfill — STAYS.** `window.customElements` is null in the preload world under `contextIsolation`; `@webcomponents/custom-elements` since 2026-09-07 (was `document-register-element`). Locked by `baseline-1.1.0` and `custom-element-factory`; see `docs/reference/custom-elements.md`.  
    - **`atom://` — STAYS at Wave 3, DELETED in Wave 4.** The blocker was `image-view/styles/image-view.less` shipping a live `atom://image-view/images/transparent-background.png`. Wave 4 converted that pin and removed the alias.  
    - **Bug fixed on the way:** `handleLinkClick` rewrote canonical `chevron://` links *to* `atom://` before calling `uriHandlerRegistry.handleURI`, so correct links tripped the registry's "atom:// is a deprecated alias" warning. It now passes the scheme through; only `atom://` warns.  
 4. **Wave 4 — done. `atom://` is gone.** `@builtbygio/image-view@0.64.3` emits `chevron://`, clearing the last shipped emitter across all 94 pins; then the alias came out of core: the opener fallback (`alternateSchemeURI`), `atom-paths` normalization, the `atom:` branch and deprecation warning in `URIHandlerRegistry`, the `atom` scheme in `AtomProtocolHandler` / `atom-protocol-path`, the CLI URL check, the OS protocol registration, and the macOS `CFBundleURLSchemes` entry. **`chevron://` is now the only product URI scheme.**  
@@ -308,7 +308,7 @@ git status
 | Custom mksnapshot on E43 | Linux/Windows custom; Darwin stock **frozen** (`darwin-boot-crash`, Q2) |
 | Windows ASAR integrity fuse | Leave off — FATAL without packager-embedded resources |
 | FS IPC `atomApplication.windows` | Never set — use `getAllWindows()` (#108) |
-| Skip `document-register-element` | Breaks `document.createElement('atom-*')` under contextIsolation |
+| Skip the custom elements polyfill | `window.customElements` is null in the preload world under contextIsolation |
 | Tree-view tests only under `/tmp` | Temp is always an FS IPC root; real folders can still be blocked |
 
 ---

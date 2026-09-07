@@ -56,9 +56,9 @@ describe('Wave 3 gates', () => {
     }
   });
 
-  it('document-register-element stays: custom elements under contextIsolation', () => {
-    assert.ok(pkgJson().dependencies['document-register-element']);
-    assert.match(read('static/index.js'), /document-register-element/);
+  it('a custom elements polyfill stays: contextIsolation has no native registry', () => {
+    assert.ok(pkgJson().dependencies['@webcomponents/custom-elements']);
+    assert.match(read('static/index.js'), /@webcomponents\/custom-elements/);
   });
 
   it('atom:// was the one gate Wave 4 reopened and closed', () => {

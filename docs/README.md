@@ -60,12 +60,13 @@ Always use `./script/bootstrap-modern` (host Node 24 + Python 3.12). See root [R
 | [bootstrap-patch-matrix.md](./reference/bootstrap-patch-matrix.md) | Patch matrix for Electron/Node/native pin changes |
 | [dependency-graph.md](./reference/dependency-graph.md) | Install topology |
 | [jasmine-ci.md](./reference/jasmine-ci.md) | Jasmine suite: nightly measurement, not a merge gate |
+| [custom-elements.md](./reference/custom-elements.md) | Why a polyfill boots the app's custom elements, and which one |
 
 ## decisions — why it is this way
 
 Read before proposing to undo any of it. Some of these are also enforced as tests, which is
-stronger than prose: `script/ci/wave3-gates.test.js` records why `season` and
-`document-register-element` survive, and it fails rather than rotting.
+stronger than prose: `script/ci/wave3-gates.test.js` records why `season` and the custom elements
+polyfill survive, and it fails rather than rotting.
 
 | Doc | Decision |
 |-----|----------|
@@ -105,5 +106,6 @@ Waves 1–4 are complete. Plan and leftover table:
 outcome in root `GROK.md`. The waves removed `Task`, the `atom://` scheme and `.atom` host, dead
 Relay + `graphql@14` in `github`, and the `natural` log4js patch.
 
-`season` and `document-register-element` **stay** — see `script/ci/wave3-gates.test.js`.
+`season` and a custom elements polyfill (`@webcomponents/custom-elements`) **stay** — see
+`script/ci/wave3-gates.test.js` and `docs/reference/custom-elements.md`.
 

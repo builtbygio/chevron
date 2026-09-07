@@ -61,7 +61,7 @@ describe('first-party custom element factory', () => {
     // Collapsing the 65 npm-published editor packages into packages/ brought
     // them into this scan for the first time — they used to live in
     // node_modules and were invisible here. These three were already shipping;
-    // they work because document-register-element is deliberately kept. Listed
+    // they work because a custom elements polyfill is deliberately kept. Listed
     // so the guard still fails on anything new.
     const KNOWN = [
       'packages/markdown-preview/lib/markdown-preview-view.ts',
@@ -78,17 +78,17 @@ describe('first-party custom element factory', () => {
     );
   });
 
-  it('keeps document-register-element (polyfill not deleted)', () => {
+  it('keeps a custom elements polyfill (not deleted)', () => {
     const pkg = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     );
     assert.ok(
-      pkg.dependencies['document-register-element'],
-      'document-register-element must stay until catalog CE coverage (PR 7b)'
+      pkg.dependencies['@webcomponents/custom-elements'],
+      'a polyfill must stay until catalog CE coverage (PR 7b)'
     );
     const boot = fs.readFileSync(path.join(ROOT, 'static', 'index.js'), 'utf8');
     assert.ok(
-      boot.includes("require('document-register-element')"),
+      boot.includes("require('@webcomponents/custom-elements')"),
       'static/index.js must still load the polyfill'
     );
   });

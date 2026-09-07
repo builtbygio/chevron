@@ -59,7 +59,7 @@ See [CHANGELOG.md](CHANGELOG.md) and [docs/decisions/REBRANDING.md](docs/decisio
 - [x] Security Phase N + Electron best-practices shippable scope ([docs/process/security-phase-n.md](docs/process/security-phase-n.md), [docs/process/electron-best-practices-plan.md](docs/process/electron-best-practices-plan.md))
 - [x] Phase S complete under **Option C** (editor `sandbox: false` intentional; utilityProcess git workers; T2 restrict) — [docs/decisions/security-phase-s-decision.md](docs/decisions/security-phase-s-decision.md)
 - [x] Post-1.1.0 modernization Waves 1–4 — shed the Atom-era shims that had no callers left: `Task` deleted, the `atom://` URI alias and `.atom` host removed (`chevron://` is now the only product scheme), dead Relay/`graphql@14` out of `github`, and the `natural` log4js patch retired. See [docs/reference/chevron-architecture-modernization.md](docs/reference/chevron-architecture-modernization.md)
-- [ ] `season` and `document-register-element` — both still have live callers; see `script/ci/wave3-gates.test.js` for the evidence
+- [ ] `season` and the custom elements polyfill — both still have live callers; see `script/ci/wave3-gates.test.js` for the evidence
 
 ## Non-goals (for now)
 

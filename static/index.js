@@ -168,20 +168,18 @@
       ? snapshotResult.customRequire('../src/crash-reporter-start.js')
       : require('../src/crash-reporter-start');
 
-    // Keep document-register-element even though Chromium has Custom Elements
-    // v1. With contextIsolation, native customElements.define() in the preload
-    // realm does not upgrade document.createElement('atom-*') / parser-created
-    // nodes (workspace axes, pane resize handles). The polyfill patches the
-    // shared document so those tags actually become their element classes.
+    // A custom elements polyfill is required, not an optimisation: with
+    // contextIsolation the app runs in the preload world, where
+    // window.customElements is null. Every core define() goes through this.
     //
-    // Do not wrap document.registerElement with Grim.deprecate: the polyfill's
-    // customElements.define() calls registerElement, so every core define()
-    // (styles-element, pane-element, …) looked like a false deprecation.
-    useSnapshot
-      ? snapshotResult.customRequire(
-          '../node_modules/document-register-element/build/document-register-element.node.js'
-        )
-      : require('document-register-element');
+    // It patches appendChild/insertBefore/innerHTML and runs connectedCallback
+    // synchronously, the way a native implementation does. The polyfill it
+    // replaced upgraded on a timer instead, which left elements half-built --
+    // see docs/reference/custom-elements.md.
+    //
+    // Required plainly rather than through the snapshot: it has to patch the
+    // live document, and it is not reachable from the snapshot entry anyway.
+    require('@webcomponents/custom-elements');
 
     const { appVersion } = getWindowLoadSettings();
     const releaseChannel = getReleaseChannel(appVersion);

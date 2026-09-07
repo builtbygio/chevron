@@ -99,6 +99,9 @@ importers:
       '@vscode/ripgrep':
         specifier: 1.15.14
         version: 1.15.14(supports-color@8.1.1)
+      '@webcomponents/custom-elements':
+        specifier: 1.6.0
+        version: 1.6.0
       '@xterm/xterm':
         specifier: 6.0.0
         version: 6.0.0
@@ -195,9 +198,6 @@ importers:
       diff-review:
         specifier: workspace:@builtbygio/diff-review@*
         version: link:packages/diff-review
-      document-register-element:
-        specifier: ^1.14.10
-        version: 1.14.10
       electron-notarize:
         specifier: 1.0.0
         version: 1.0.0(supports-color@8.1.1)
@@ -1583,6 +1583,9 @@ packages:
   '@vscode/ripgrep@1.15.14':
     resolution: {integrity: sha512-/G1UJPYlm+trBWQ6cMO3sv6b8D1+G16WaJH1/DSqw32JOVlzgZbLkDxRyzIpTpv30AcYGMkCf5tUqGlW6HbDWw==}
 
+  '@webcomponents/custom-elements@1.6.0':
+    resolution: {integrity: sha512-CqTpxOlUCPWRNUPZDxT5v2NnHXA4oox612iUGnmTUGQFhZ1Gkj8kirtl/2wcF6MqX7+PqqicZzOCBKKfIn0dww==}
+
   '@xmldom/xmldom@0.9.11':
     resolution: {integrity: sha512-tW8bcK3hsG0/uqSnNz6TK4BkcuZSezoU7DlnYssILmZDktPnSHHuDJJFM0AJv+13gz2r0iGdrj6qqKeUnxXEDg==}
     engines: {node: '>=14.6'}
@@ -2120,10 +2123,6 @@ packages:
   doctrine@2.1.0:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
     engines: {node: '>=0.10.0'}
-
-  document-register-element@1.14.10:
-    resolution: {integrity: sha512-w5UA37hEIrs+9pruo2yR5UD13c4UHDlkqqjt4qurnp7QsBI9b1IOi8WXUim+aCqKBsENX3Z/cso7XMOuwJH1Yw==}
-    deprecated: V0 is gone and the best V1 polyfill is now @ungap/custom-elements
 
   dom-serializer@2.0.0:
     resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
@@ -4714,6 +4713,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@webcomponents/custom-elements@1.6.0': {}
+
   '@xmldom/xmldom@0.9.11': {}
 
   '@xterm/xterm@6.0.0': {}
@@ -5263,8 +5264,6 @@ snapshots:
   doctrine@2.1.0:
     dependencies:
       esutils: 2.0.3
-
-  document-register-element@1.14.10: {}
 
   dom-serializer@2.0.0:
     dependencies:
