@@ -1,9 +1,15 @@
 'use strict';
 
 /**
- * Minimal hover tooltip for LSP MarkupContent.
- * Always uses textContent — server strings never become HTML.
+ * Hover tooltip for LSP MarkupContent.
+ *
+ * Markdown is rendered to DOM nodes (see markdown-dom.js); plaintext goes in
+ * a <pre>. Either way server text lands in a text node and never becomes
+ * HTML, so tags are not stripped — inside a text node they are inert, and
+ * stripping deletes `<stdio.h>` and `std::vector<int>` from C and C++ hovers.
  */
+
+const { renderMarkdown } = require('./markdown-dom');
 
 // chevron.lsp, not a relative path into src/: a package that reaches into
 // core cannot be bundled or installed from a registry.
@@ -21,14 +27,18 @@ class HoverView {
     this.hide();
     if (!editor || !contents || !contents.value) return;
 
-    const text = chevron.lsp.stripHtml(contents.value);
-    if (!text.trim()) return;
+    const value = String(contents.value);
+    if (!value.trim()) return;
 
-    const pre = document.createElement('pre');
-    pre.classList.add('lsp-ui-hover-body');
-    pre.textContent = text;
-    this.element.innerHTML = '';
-    this.element.appendChild(pre);
+    this._clear();
+    if (contents.kind === 'markdown') {
+      this.element.appendChild(renderMarkdown(value));
+    } else {
+      const pre = document.createElement('pre');
+      pre.classList.add('lsp-ui-hover-body');
+      pre.textContent = value;
+      this.element.appendChild(pre);
+    }
 
     const bufferPoint = point || editor.getCursorBufferPosition();
     this._marker = editor.markBufferPosition(bufferPoint, {
@@ -59,7 +69,13 @@ class HoverView {
       }
       this._marker = null;
     }
-    this.element.innerHTML = '';
+    this._clear();
+  }
+
+  _clear() {
+    while (this.element.firstChild) {
+      this.element.removeChild(this.element.firstChild);
+    }
   }
 
   destroy() {
