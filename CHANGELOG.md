@@ -9,8 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The workspace-trust prompt defaults to "Don't trust".** Granting lets a project's own tooling execute — build scripts, plugins in `node_modules`, proc macros — so the modal now focuses the declining button, and Enter acts on whichever button is focused rather than always granting. Trusting still takes one click, and the native dialog in `src/main-process/lsp-trust.js` already defaulted to Cancel; this is the in-editor half of the same decision.
+
 ### Fixed
 
+- **A stray confirm could trust a workspace.** The modal bound `core:confirm` straight to granting and focused "Trust project", so any confirm that reached it said yes without anyone choosing. Found by the smoke test, where an unrelated project-find confirm granted trust to a folder nothing had trusted and a task then ran in it.
 - **LSP hover tooltips showed raw markdown.** Servers send `MarkupContent` with `kind: "markdown"`, and the tooltip put the whole string in a `<pre>` as text, so a clangd hover read `### variable \`story\``, `---` and ```` ```cpp ```` literally. Markdown is now rendered to DOM nodes — headings, horizontal rules, fenced code, inline code, bold and italic — while plaintext hovers keep their `<pre>`.
 - **LSP hovers deleted C and C++ code.** The same tooltip ran server text through an HTML tag stripper first, so `#include <stdio.h>` displayed as `#include `, `std::vector<int> v` as `std::vector v`, and `a < b && c > d` as `a  d`. Nothing is stripped now: every piece of server text becomes a text node, where a tag is inert, so the "server strings never become HTML" rule holds by construction instead of by sanitising.
 
