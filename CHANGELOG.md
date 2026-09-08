@@ -9,7 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet.
+### Changed
+
+- The custom elements polyfill is now **`@webcomponents/custom-elements`**, replacing `document-register-element` ([#384](https://github.com/builtbygio/chevron/pull/384)). A polyfill is load-bearing rather than legacy: the app boots in the preload world, where `window.customElements` is `null`, so every core `define()` goes through it. The one it replaces differed from the platform in two ways that leaked — `connectedCallback` fired asynchronously on a timer captured at load, and parser-created nodes (`innerHTML`, which is how the styleguide and several packages build their examples) were upgraded *without* running the constructor. The new one patches `appendChild`/`insertBefore`/`innerHTML` and runs the reactions inline. `docs/reference/custom-elements.md`.
+
+### Fixed
+
+- **Snippets did not work in a source checkout** ([#382](https://github.com/builtbygio/chevron/pull/382)). `packages/snippets` declared `"main": "./lib/snippets"` and shipped both `lib/snippets.ts` (the package) and `lib/snippets.json` (its built-in snippets, read by path). Running from source, `require()` resolves `.json` before the `.ts` that compile-cache registers, so the main module was the snippet data — an object with no `activate()` — and the package failed to activate outright. The packaged app was unaffected, because the build transpiles `.ts` to `.js` before resolving the main, which is why nothing caught it. The code is now `lib/main.ts`, and a gate refuses a data file sitting beside any bundled package's main.
+- **Community packages could not override a bundled package's snippets** ([#383](https://github.com/builtbygio/chevron/pull/383)). `loadPackageSnippets` ordered packages by testing `pack.path` for `/node_modules/`, which only holds in the packaged app — from source, bundled packages live in `packages/`, so the test was false for every one of them and the intended ordering was lost. Ordering is now by `isBundledPackage`, which holds in both layouts.
+- **Folding and paragraph reflow in files with no grammar** ([#385](https://github.com/builtbygio/chevron/pull/385)). A buffer without a
+  tree-sitter grammar — a `.txt`, or any unknown extension — was handed
+  text-buffer's own null language mode, which answers neither folding nor
+  comments. Folding silently did nothing, and `autoflow:reflow-selection` threw
+  `languageMode.isRowCommented is not a function`. Such buffers now get
+  `PlainTextLanguageMode`, which folds by indentation.
+  See [docs/reference/language-modes.md](docs/reference/language-modes.md).
+- **The in-app Jasmine suite reported every spec file as failing**, whatever the tests did ([#379](https://github.com/builtbygio/chevron/pull/379)). `AtomWindow`'s `render-process-gone` handler exited the app with `100` for any headless renderer exit, including a clean one, overriding the status the test window had just exited with. Files that passed, and packages with no tests at all, were reported as failures; the nightly could not go green regardless of the tests.
+- **Sixteen spec files never loaded** ([#380](https://github.com/builtbygio/chevron/pull/380)). They opened with `/** @babel */` or `'use babel'` and used ESM `import`, which nothing has compiled since the Babel runtime was removed. They threw at require time rather than failing a test, aborting the run before Jasmine saw them and taking the rest of the package's suite with them — which is what cost `autocomplete-plus` and `symbols-view` every one of their tests.
+- **`autocomplete-plus`'s specs ran against the wrong Jasmine API** ([#381](https://github.com/builtbygio/chevron/pull/381)). They called Jasmine 2's `spyOn(...).and.callFake(...)` and `spy.calls.count()`, but the in-app runner is the vendored Jasmine 1.3. The damage was concentrated: `spec-helper.js` runs in a global `beforeEach`, so every spec in the package threw before its body ran. 425 failures → 32.
 
 ## [1.2.0] — 2026-09-06
 
