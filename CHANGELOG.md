@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **LSP hover tooltips showed raw markdown.** Servers send `MarkupContent` with `kind: "markdown"`, and the tooltip put the whole string in a `<pre>` as text, so a clangd hover read `### variable \`story\``, `---` and ```` ```cpp ```` literally. Markdown is now rendered to DOM nodes — headings, horizontal rules, fenced code, inline code, bold and italic — while plaintext hovers keep their `<pre>`.
+- **LSP hovers deleted C and C++ code.** The same tooltip ran server text through an HTML tag stripper first, so `#include <stdio.h>` displayed as `#include `, `std::vector<int> v` as `std::vector v`, and `a < b && c > d` as `a  d`. Nothing is stripped now: every piece of server text becomes a text node, where a tag is inert, so the "server strings never become HTML" rule holds by construction instead of by sanitising.
+
 ### Changed
 
 - The custom elements polyfill is now **`@webcomponents/custom-elements`**, replacing `document-register-element` ([#384](https://github.com/builtbygio/chevron/pull/384)). A polyfill is load-bearing rather than legacy: the app boots in the preload world, where `window.customElements` is `null`, so every core `define()` goes through it. The one it replaces differed from the platform in two ways that leaked — `connectedCallback` fired asynchronously on a timer captured at load, and parser-created nodes (`innerHTML`, which is how the styleguide and several packages build their examples) were upgraded *without* running the constructor. The new one patches `appendChild`/`insertBefore`/`innerHTML` and runs the reactions inline. `docs/reference/custom-elements.md`.
