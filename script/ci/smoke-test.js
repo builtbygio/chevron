@@ -1274,6 +1274,11 @@ const TASKS_EXPR = `(function() {
                     notices: notices,
                     refused: refused,
                     trustValue: trustAnswer,
+                    // A trust modal open here means something raised it and
+                    // may have answered it: the prompt used to grant on any
+                    // core:confirm that reached it, so this phase depended on
+                    // whether an earlier probe's confirm landed first.
+                    trustModalOpen: !!document.querySelector('.lsp-ui-trust'),
                     waitedMs: tries * 250
                   });
                 }
@@ -2392,7 +2397,10 @@ async function main() {
         }
         if (!tasks.refused) {
           failures.push(
-            `running a task in an untrusted folder was not refused — notices: ${JSON.stringify(tasks.notices)}`
+            'running a task in an untrusted folder was not refused — ' +
+              `trustValue: ${JSON.stringify(tasks.trustValue)}, ` +
+              `trust modal open: ${tasks.trustModalOpen}, ` +
+              `notices: ${JSON.stringify(tasks.notices)}`
           );
         }
         if (tasks.panesAfter !== tasks.panesBefore || tasks.returnedView) {

@@ -177,20 +177,35 @@ class TrustView {
         autoFocus: true
       });
       if (env.commands) {
+        // Enter acts on whatever is focused, and "Don't trust" is what gets
+        // focused. Binding confirm straight to trust meant any core:confirm
+        // that reached this modal granted it — the smoke runner's project-find
+        // confirm did exactly that, and so would a stray Enter.
         this._commands = env.commands.add(this.element, {
-          'core:confirm': () => this._finish(true),
+          'core:confirm': () => this._finish(this._trustIsFocused()),
           'core:cancel': () => this._finish(false)
         });
       }
       requestAnimationFrame(() => {
         try {
           this.applyContrast();
-          this.trustBtn.focus();
+          // Granting lets the project's own tooling execute. The native
+          // dialog in src/main-process/lsp-trust.js defaults to Cancel for
+          // the same reason; this is the in-editor half of that decision.
+          this.declineBtn.focus();
         } catch (_) {
           /* ignore */
         }
       });
     });
+  }
+
+  _trustIsFocused() {
+    try {
+      return document.activeElement === this.trustBtn;
+    } catch (_) {
+      return false;
+    }
   }
 
   _finish(trusted) {
