@@ -534,11 +534,17 @@ describe('TextEditorComponent', () => {
     });
 
     it('renders cursors within the visible row range', async () => {
+      // In line heights, not pixels: the rendered range is
+      // ceil(height / lineHeight / rowsPerTile) + 1 tiles, so a literal 40px
+      // gave the three tiles this test expects only while the line height
+      // stayed under 20. It is 22.84 with the current default font.
       const { component, element, editor } = buildComponent({
-        height: 40,
+        autoHeight: false,
         rowsPerTile: 2
       });
-      await setScrollTop(component, 100);
+      element.style.height = 3 * component.measurements.lineHeight + 'px';
+      await component.getNextUpdatePromise();
+      await setScrollTop(component, 4 * component.getLineHeight());
 
       expect(component.getRenderedStartRow()).toBe(4);
       expect(component.getRenderedEndRow()).toBe(10);
@@ -609,7 +615,10 @@ describe('TextEditorComponent', () => {
       assertDocumentFocused();
       const { component, element, editor } = buildComponent();
       component.props.cursorBlinkPeriod = 30;
-      component.props.cursorBlinkResumeDelay = 30;
+      // Long enough that the assertions after the move read a paused cursor
+      // rather than whichever half of a 30ms blink they landed on. The delay
+      // is read when blinking pauses, so setting it here now takes effect.
+      component.props.cursorBlinkResumeDelay = 3000;
       editor.addCursorAtScreenPosition([1, 0]);
 
       element.focus();

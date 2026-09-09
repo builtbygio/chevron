@@ -90,10 +90,6 @@ module.exports = class TextEditorComponent {
     this.updatedSynchronously = this.props.updatedSynchronously;
     this.didScrollDummyScrollbar = this.didScrollDummyScrollbar.bind(this);
     this.didMouseDownOnContent = this.didMouseDownOnContent.bind(this);
-    this.debouncedResumeCursorBlinking = debounce(
-      this.resumeCursorBlinking.bind(this),
-      this.props.cursorBlinkResumeDelay || CURSOR_BLINK_RESUME_DELAY
-    );
     this.lineTopIndex = new LineTopIndex();
     this.lineNodesPool = new NodePool();
     this.updateScheduled = false;
@@ -1695,6 +1691,10 @@ module.exports = class TextEditorComponent {
 
   didDetach() {
     if (this.attached) {
+      if (this.cursorBlinkResumeHandle) {
+        window.clearTimeout(this.cursorBlinkResumeHandle);
+        this.cursorBlinkResumeHandle = null;
+      }
       this.intersectionObserver.disconnect();
       this.resizeObserver.disconnect();
       if (this.gutterContainerResizeObserver)
@@ -2314,7 +2314,16 @@ module.exports = class TextEditorComponent {
 
   pauseCursorBlinking() {
     this.stopCursorBlinking();
-    this.debouncedResumeCursorBlinking();
+    // Read the delay now rather than binding a debounce in the constructor:
+    // cursorBlinkPeriod is read live on every start, so a component whose
+    // cursorBlinkResumeDelay was set afterwards kept blinking on the default.
+    if (this.cursorBlinkResumeHandle) {
+      window.clearTimeout(this.cursorBlinkResumeHandle);
+    }
+    this.cursorBlinkResumeHandle = window.setTimeout(() => {
+      this.cursorBlinkResumeHandle = null;
+      this.resumeCursorBlinking();
+    }, this.props.cursorBlinkResumeDelay || CURSOR_BLINK_RESUME_DELAY);
   }
 
   resumeCursorBlinking() {
@@ -5299,24 +5308,6 @@ function constrainRangeToRows(range, startRow, endRow) {
   return range;
 }
 
-function debounce(fn, wait) {
-  let timestamp, timeout;
-
-  function later() {
-    const last = Date.now() - timestamp;
-    if (last < wait && last >= 0) {
-      timeout = setTimeout(later, wait - last);
-    } else {
-      timeout = null;
-      fn();
-    }
-  }
-
-  return function() {
-    timestamp = Date.now();
-    if (!timeout) timeout = setTimeout(later, wait);
-  };
-}
 
 class NodePool {
   constructor() {
