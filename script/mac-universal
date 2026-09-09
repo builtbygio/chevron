@@ -32,9 +32,7 @@ const argv = yargs
   .argv
 
 const CONFIG = require('./config')
-const codeSignOnMac = require('./lib/code-sign-on-mac')
 const compressArtifacts = require('./lib/compress-artifacts')
-const notarizeOnMac = require('./lib/notarize-on-mac')
 const { makeMacUniversal, adHocSign } = require('./lib/make-mac-universal')
 
 const UNIVERSAL_ARCHIVE = 'chevron-mac-universal.zip'
@@ -49,8 +47,10 @@ const outAppPath = argv.out || path.join(CONFIG.buildOutputPath, `${CONFIG.appNa
 makeMacUniversal({ x64AppPath: argv.x64, arm64AppPath: argv.arm64, outAppPath })
   .then(async () => {
     if (argv.codeSign) {
-      await codeSignOnMac(outAppPath)
-      await notarizeOnMac(outAppPath)
+      // Loaded here, not above: notarize-on-mac needs electron-notarize from
+      // the root tree, which the CI merge job does not install.
+      await require('./lib/code-sign-on-mac')(outAppPath)
+      await require('./lib/notarize-on-mac')(outAppPath)
     } else {
       console.log('Ad-hoc signing the universal bundle. Specify --code-sign for a Developer ID signature.'.gray)
       adHocSign(outAppPath)
