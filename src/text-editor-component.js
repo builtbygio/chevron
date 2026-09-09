@@ -2759,6 +2759,18 @@ module.exports = class TextEditorComponent {
     return Math.max(0, this.lineTopIndex.rowForPixelPosition(pixelPosition));
   }
 
+  // setScrollTop stores a physical-pixel boundary (de54e5587, which fixed the
+  // editor shaking under DPI scaling: an unreachable scroll position made the
+  // browser scroll back). That lands up to half a physical pixel below the row
+  // it was asked for, and the row lookup floors, so setFirstVisibleScreenRow(5)
+  // answered 4 whenever 5 * lineHeight rounded down — about half of all rows,
+  // for any fractional line height.
+  rowForScrollPosition(pixelPosition) {
+    return this.rowForPixelPosition(
+      pixelPosition + 0.5 / window.devicePixelRatio
+    );
+  }
+
   heightForBlockDecorationsBeforeRow(row) {
     return (
       this.pixelPositionAfterBlocksForRow(row) -
@@ -3220,7 +3232,7 @@ module.exports = class TextEditorComponent {
 
   getFirstVisibleRow() {
     if (this.derivedDimensionsCache.firstVisibleRow == null) {
-      this.derivedDimensionsCache.firstVisibleRow = this.rowForPixelPosition(
+      this.derivedDimensionsCache.firstVisibleRow = this.rowForScrollPosition(
         this.getScrollTop()
       );
     }
@@ -3354,7 +3366,7 @@ module.exports = class TextEditorComponent {
 
   getScrollTopRow() {
     if (this.hasInitialMeasurements) {
-      return this.rowForPixelPosition(this.getScrollTop());
+      return this.rowForScrollPosition(this.getScrollTop());
     } else {
       return this.pendingScrollTopRow || 0;
     }
