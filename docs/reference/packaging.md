@@ -13,6 +13,8 @@ The product is assembled with **`@electron/packager` 18.4.4** (script-tree dep).
 | Unpack asar | `packaging-policy.js` `asarUnpackExpression()` (`*.node`, dugite, github `lib/**`, `@vscode/ripgrep`). `include-path-in-packaged-app.js` is the **copy** filter, not unpack |
 | Fuses | `@electron/fuses` after pack (`flip-electron-fuses.js`); soft-fail if missing |
 | Linux layout | `<Name>-linux-<arch>/` (smoke + docs) |
+| Windows installer | NSIS via electron-builder from the prepackaged app (`--create-windows-installer`); writes `latest.yml` + blockmap for the updater. See [auto-update.md](./auto-update.md) |
+| Update feed | `app-update.yml` beside the app, written here; the signing step marks it signed |
 | apm | **Not shipped.** `apm` paths are **cpm shims** |
 
 ## macOS universal bundle

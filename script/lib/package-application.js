@@ -16,6 +16,7 @@ const {
   asarUnpackExpression,
   getHostArch
 } = require('./packaging-policy');
+const { writeUpdateConfig, githubRepoFromUrl } = require('./update-config-file');
 const HOST_ARCH = getHostArch();
 
 module.exports = function() {
@@ -155,6 +156,16 @@ function copyNonASARResources(packagedAppPath, bundledResourcesPath) {
       path.join(bundledResourcesPath, 'app', 'atom.sh')
     );
   }
+
+  // electron-updater's feed (docs/reference/auto-update.md). Written unsigned;
+  // the signing step marks it signed before sealing the bundle.
+  const repository = githubRepoFromUrl(
+    CONFIG.appMetadata.repository && CONFIG.appMetadata.repository.url
+  );
+  if (!repository) {
+    throw new Error('package.json repository.url must be a GitHub URL for app-update.yml');
+  }
+  writeUpdateConfig(bundledResourcesPath, { ...repository, codeSigned: false });
   if (process.platform === 'darwin') {
     fs.copySync(
       path.join(CONFIG.repositoryRootPath, 'resources', 'mac', 'file.icns'),

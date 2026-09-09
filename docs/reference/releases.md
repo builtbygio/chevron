@@ -28,7 +28,7 @@ Deferred on purpose (not blockers for this tag):
 - Custom Electron 43 V8 snapshot on Linux/Windows (#121); Darwin stock
 - Codesign / notarization / Squirrel install feed
 
-A Squirrel-style feed (`CHEVRON_UPDATE_URL_PREFIX` / legacy `ATOM_UPDATE_URL_PREFIX`) stays available for a later signed build. Do not point it at unsigned artifacts.
+In-app updates come from these releases through electron-updater once a build is signed: [auto-update.md](./auto-update.md).
 
 ## Download
 
@@ -53,7 +53,7 @@ Env overrides (advanced):
 |-----|------|
 | `CHEVRON_RELEASES_URL` | Human download page (default above) |
 | `CHEVRON_RELEASES_API_URL` | GitHub API list used by Check for Update |
-| `CHEVRON_UPDATE_URL_PREFIX` | Opt-in Squirrel feed (signed builds only) |
+| `CHEVRON_UPDATE_FEED_URL` | Point electron-updater at a generic server instead of GitHub, to test an update locally |
 
 ## How to publish a tag
 

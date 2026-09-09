@@ -1052,8 +1052,13 @@ const TERMINAL_EXPR = `(function() {
           (function settle() {
             var text = readBuffer();
             // The echoed command line contains the token too, so match only
-            // what the shell printed back.
-            var printed = text.split('echo smoke-terminal-token').slice(1).join('');
+            // what the shell printed back. Rows are joined with newlines, and
+            // a row that wrapped splits the echoed command in two (seen on
+            // Windows: "echo sm" / "oke-terminal-token"), so compare without
+            // them. Escaped twice: this template is evaluated before the
+            // renderer sees it (smoke-probe-syntax.test.js).
+            var flat = text.replace(/\\r?\\n/g, '');
+            var printed = flat.split('echo smoke-terminal-token').slice(1).join('');
             if (/smoke-terminal-token/.test(printed) || tries >= 60) {
               var result = {
                 sawOutput: /smoke-terminal-token/.test(printed),

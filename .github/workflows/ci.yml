@@ -247,6 +247,11 @@ jobs:
           node --test script/ci/theme-variants.test.js
           node --test script/ci/mac-universal.test.js
           node --test script/ci/module-cache-determinism.test.js
+          node --test script/ci/update-config.test.js
+          node --test script/ci/auto-update-manager.test.js
+          node --test script/ci/update-metadata.test.js
+          node --test script/ci/signing-env.test.js
+          node --test script/ci/electron-builder-config.test.js
           node --test script/ci/autocomplete-follows-active-editor.test.js
           node --test script/ci/find-packaged-app.test.js
           node --test script/ci/ensure-ripgrep.test.js
@@ -440,12 +445,23 @@ jobs:
             test -d "bundles/$arch/Chevron.app"
           done
 
-      - name: Merge into out/Chevron.app
+      # Signing and notarization run when the secrets exist and are skipped,
+      # saying so, when they do not (docs/reference/auto-update.md). Without
+      # them the bundle is ad-hoc signed and stays on the download-page path.
+      - name: Merge into out/Chevron.app, sign, notarize
         run: |
           ./script/mac-universal \
             --x64 bundles/x64/Chevron.app \
             --arm64 bundles/arm64/Chevron.app \
-            --compress-artifacts
+            --code-sign \
+            --compress-artifacts \
+            --update-metadata
+        env:
+          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Launch smoke test (arm64 slice)
         run: node script/ci/smoke-test.js
@@ -464,7 +480,9 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: chevron-macos-universal
-          path: out/chevron-mac-universal.zip
+          path: |
+            out/chevron-mac-universal.zip
+            out/latest-mac.yml
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
@@ -972,15 +990,21 @@ jobs:
           PYTHONUTF8: "1"
           GIT_EXEC_PATH: "C:/Program Files/Git/mingw64/libexec/git-core"
 
-      - name: Build + package (zip)
+      # --code-sign signs the exe and dlls, and electron-builder signs the NSIS
+      # installer, when WIN_CSC_LINK exists; both skip, saying so, when it does
+      # not (docs/reference/auto-update.md).
+      - name: Build + package (zip, NSIS installer, latest.yml)
         run: |
           export GIT_EXEC_PATH="C:/Program Files/Git/mingw64/libexec/git-core"
           export PATH="/c/Program Files/Git/mingw64/libexec/git-core:/c/Program Files/Git/cmd:$PATH"
-          ./script/with-modern-env ./script/build --no-bootstrap --compress-artifacts
+          ./script/with-modern-env ./script/build --no-bootstrap --compress-artifacts --code-sign --create-windows-installer
         env:
           PYTHONIOENCODING: utf-8
           PYTHONUTF8: "1"
           GIT_EXEC_PATH: "C:/Program Files/Git/mingw64/libexec/git-core"
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+          WIN_PUBLISHER_NAME: ${{ secrets.WIN_PUBLISHER_NAME }}
 
       - name: Launch smoke test
         run: node script/ci/smoke-test.js
@@ -1014,6 +1038,9 @@ jobs:
           name: chevron-windows-${{ runner.arch }}
           path: |
             out/*.zip
+            out/*.exe
+            out/*.blockmap
+            out/latest.yml
           if-no-files-found: warn
 
       - name: Upload build output on failure
@@ -1078,7 +1105,8 @@ jobs:
             artifacts/**/*.rpm
             artifacts/**/*.tar.gz
             artifacts/**/*.exe
-            artifacts/**/*.nupkg
+            artifacts/**/*.blockmap
+            artifacts/**/latest*.yml
 
   # ---------------------------------------------------------------------------
   # No-cache build. Every build job above restores node_modules from

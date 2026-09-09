@@ -1,81 +1,62 @@
 'use strict';
 
-const electronInstaller = require('@atom/electron-winstaller');
-const fs = require('fs');
-const glob = require('glob');
-const path = require('path');
+/**
+ * Windows installer: NSIS through electron-builder, from the app that
+ * package-application.js assembled (--prepackaged). Squirrel.Windows, which
+ * this used to produce, depended on an update service that no longer exists;
+ * NSIS is what electron-updater installs.
+ *
+ * Writes into out/: the setup .exe, its .blockmap, and latest.yml.
+ */
 
+const fs = require('fs-extra');
+const path = require('path');
+const spawnSync = require('./spawn-sync');
 const CONFIG = require('../config');
 
-module.exports = packagedAppPath => {
-  const archSuffix = process.arch === 'ia32' ? '' : '-' + process.arch;
-  const updateUrlPrefix =
-    process.env.ATOM_UPDATE_URL_PREFIX || 'https://atom.io';
-  const options = {
-    name: CONFIG.channelName,
-    title: CONFIG.appName,
-    exe: CONFIG.executableName,
-    appDirectory: packagedAppPath,
-    authors: 'Chevron contributors',
-    iconUrl: `https://raw.githubusercontent.com/builtbygio/chevron/master/resources/app-icons/${
-      CONFIG.channel
-    }/chevron.ico`,
-    loadingGif: path.join(
-      CONFIG.repositoryRootPath,
-      'resources',
-      'win',
-      'loading.gif'
-    ),
-    outputDirectory: CONFIG.buildOutputPath,
-    noMsi: true,
-    remoteReleases: `${updateUrlPrefix}/api/updates${archSuffix}?version=${
-      CONFIG.computedAppVersion
-    }`,
-    setupExe: `ChevronSetup${process.arch === 'x64' ? '-x64' : ''}.exe`,
-    setupIcon: path.join(
-      CONFIG.repositoryRootPath,
-      'resources',
-      'app-icons',
-      CONFIG.channel,
-      'chevron.ico'
-    )
-  };
+const INSTALLER_OUT = path.join(CONFIG.buildOutputPath, 'installer');
+const KEEP = /\.(exe|blockmap|yml)$/i;
 
-  const cleanUp = () => {
-    const releasesPath = `${CONFIG.buildOutputPath}/RELEASES`;
-    if (process.arch === 'x64' && fs.existsSync(releasesPath)) {
-      fs.renameSync(releasesPath, `${releasesPath}-x64`);
-    }
+module.exports = async function createWindowsInstaller(packagedAppPath) {
+  const cli = path.join(
+    CONFIG.scriptRootPath,
+    'node_modules',
+    'electron-builder',
+    'cli.js'
+  );
+  const config = path.join(CONFIG.scriptRootPath, 'electron-builder.config.js');
+  fs.removeSync(INSTALLER_OUT);
 
-    // Squirrel nupkg prefix follows installer "name" (channelName → chevron).
-    const nupkgPrefix = CONFIG.channelName;
-    for (let nupkgPath of glob.sync(
-      `${CONFIG.buildOutputPath}/${nupkgPrefix}-*.nupkg`
-    )) {
-      if (!nupkgPath.includes(CONFIG.computedAppVersion)) {
-        console.log(
-          `Deleting downloaded nupkg for previous version at ${nupkgPath} to prevent it from being stored as an artifact`
-        );
-        fs.unlinkSync(nupkgPath);
-      } else {
-        if (process.arch === 'x64') {
-          const newNupkgPath = nupkgPath.replace(
-            `${nupkgPrefix}-`,
-            `${nupkgPrefix}-x64-`
-          );
-          fs.renameSync(nupkgPath, newNupkgPath);
-        }
-      }
-    }
+  console.log(`Creating NSIS installer for ${packagedAppPath}`);
+  spawnSync(
+    process.execPath,
+    [
+      cli,
+      '--win',
+      'nsis',
+      '--x64',
+      '--prepackaged',
+      packagedAppPath,
+      '--config',
+      config,
+      '--publish',
+      'never'
+    ],
+    { cwd: CONFIG.repositoryRootPath, stdio: 'inherit', env: process.env }
+  );
 
-    return `${CONFIG.buildOutputPath}/${options.setupExe}`;
-  };
-
-  console.log(`Creating Windows Installer for ${packagedAppPath}`);
-  return electronInstaller
-    .createWindowsInstaller(options)
-    .then(cleanUp, error => {
-      cleanUp();
-      return Promise.reject(error);
-    });
+  let installerPath = null;
+  for (const name of fs.readdirSync(INSTALLER_OUT)) {
+    if (!KEEP.test(name)) continue;
+    const target = path.join(CONFIG.buildOutputPath, name);
+    fs.moveSync(path.join(INSTALLER_OUT, name), target, { overwrite: true });
+    if (name.endsWith('.exe')) installerPath = target;
+  }
+  if (!installerPath) {
+    throw new Error(
+      `electron-builder wrote no installer into ${INSTALLER_OUT}`
+    );
+  }
+  console.log(`Installer at ${installerPath}`);
+  return installerPath;
 };
