@@ -158,6 +158,11 @@ function loadExtensions(modulePath, rootPath, rootMetadata, moduleCache) {
     if (segments.includes('tests')) return;
     if (segments.includes('spec')) return;
     if (segments.includes('specs')) return;
+    // Per-arch prebuilt natives (prebuilds/<platform>-<arch>/*.node) are
+    // found by node-gyp-build scanning the directory, never through this
+    // cache, and listing them made the Intel and Apple Silicon builds'
+    // package.json differ, which the universal merge refuses.
+    if (segments.includes('prebuilds')) return;
     if (
       segments.length > 1 &&
       !['exports', 'lib', 'node_modules', 'src', 'static', 'vendor'].includes(
