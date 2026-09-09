@@ -164,6 +164,86 @@ describe('equaliseUnpacked', () => {
   });
 });
 
+describe('nonMachODifferences', () => {
+  const machO = arch =>
+    Buffer.concat([Buffer.from([0xcf, 0xfa, 0xed, 0xfe]), Buffer.from(arch)]);
+
+  it('recognises Mach-O by its magic, in either byte order, thin or fat', () => {
+    assert.equal(universal.isMachO(machO('x64')), true);
+    assert.equal(
+      universal.isMachO(Buffer.from([0xfe, 0xed, 0xfa, 0xcf, 0])),
+      true
+    );
+    assert.equal(
+      universal.isMachO(Buffer.from([0xca, 0xfe, 0xba, 0xbe, 0])),
+      true
+    );
+    assert.equal(
+      universal.isMachO(Buffer.from('!<arch>\nhunspell.a')),
+      false,
+      'a static archive'
+    );
+    assert.equal(universal.isMachO(Buffer.from('')), false);
+  });
+
+  it('lists every common file that differs without being Mach-O, and nothing else', () => {
+    const root = makeTempDir('chevron-universal-test-');
+    const x64 = path.join(root, 'x64');
+    const arm64 = path.join(root, 'arm64');
+    for (const [dir, arch] of [[x64, 'x64'], [arm64, 'arm64']]) {
+      fs.writeFileSync(
+        write(dir, 'node_modules/superstring/build/Release/superstring.node'),
+        machO(arch)
+      );
+      write(
+        dir,
+        'node_modules/spellchecker/build/Release/hunspell.a',
+        `!<arch>\n${arch}`
+      );
+      write(
+        dir,
+        'node_modules/spellchecker/package.json',
+        '{"name":"spellchecker"}'
+      );
+      write(dir, `node_modules/only-${arch}.txt`, arch);
+      write(
+        dir,
+        'node_modules/git-utils/build/Release/git2.a',
+        `!<arch>\n${arch}`
+      );
+    }
+    assert.deepEqual(universal.nonMachODifferences(x64, arm64), [
+      'node_modules/git-utils/build/Release/git2.a',
+      'node_modules/spellchecker/build/Release/hunspell.a'
+    ]);
+  });
+
+  it('finds the same inside two asars', async t => {
+    let asar;
+    try {
+      asar = require(require.resolve('@electron/asar', {
+        paths: [path.join(ROOT, 'script')]
+      }));
+    } catch (error) {
+      return t.skip('script dependencies are not installed');
+    }
+    const root = makeTempDir('chevron-universal-test-');
+    const archives = {};
+    for (const arch of ['x64', 'arm64']) {
+      const src = path.join(root, arch, 'app');
+      fs.writeFileSync(write(src, 'lib/native.node'), machO(arch));
+      write(src, 'lib/pcre.a', `!<arch>\n${arch}`);
+      write(src, 'lib/same.js', 'module.exports = 1;');
+      archives[arch] = path.join(root, arch, 'app.asar');
+      await asar.createPackage(src, archives[arch]);
+    }
+    assert.deepEqual(
+      universal.asarNonMachODifferences(archives.x64, archives.arm64),
+      ['lib/pcre.a']
+    );
+  });
+});
+
 describe('machOToVerify', () => {
   it('lists the binaries the merge must have made fat, and not the ones that stay thin', () => {
     const root = makeTempDir('chevron-universal-test-');

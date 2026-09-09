@@ -37,6 +37,17 @@ const spawnSync = require('./spawn-sync');
 const { makeTempDir, removeTempDir } = require('./temp-dir');
 
 const UNPACKED = path.join('Contents', 'Resources', 'app.asar.unpacked');
+const ASAR = path.join('Contents', 'Resources', 'app.asar');
+
+// Mach-O magic, either byte order, thin and fat.
+const MACHO_MAGIC = new Set([
+  0xfeedface,
+  0xfeedfacf,
+  0xcefaedfe,
+  0xcffaedfe,
+  0xcafebabe,
+  0xbebafeca
+]);
 
 // Asar entries allowed to exist in one build only: per-arch prebuild folders
 // and their contents (minimatch, matchBase).
@@ -84,6 +95,79 @@ function listFiles(root) {
   };
   if (fs.existsSync(root)) walk(root);
   return found.sort();
+}
+
+function isMachO(buffer) {
+  return (
+    Buffer.isBuffer(buffer) &&
+    buffer.length >= 4 &&
+    MACHO_MAGIC.has(buffer.readUInt32BE(0))
+  );
+}
+
+function sameBytes(a, b) {
+  return a.length === b.length && a.equals(b);
+}
+
+// Files present in both trees whose bytes differ and are not Mach-O.
+// @electron/universal stops at the first such file; this finds all of them
+// so a fix needs one CI round, not one per file.
+function nonMachODifferences(x64Root, arm64Root) {
+  const arm64 = new Set(listFiles(arm64Root));
+  const found = [];
+  for (const file of listFiles(x64Root)) {
+    if (!arm64.has(file)) continue;
+    const a = path.join(x64Root, file);
+    const b = path.join(arm64Root, file);
+    if (fs.lstatSync(a).isSymbolicLink() || fs.lstatSync(b).isSymbolicLink()) {
+      continue;
+    }
+    const x = fs.readFileSync(a);
+    if (isMachO(x)) continue;
+    if (!sameBytes(x, fs.readFileSync(b))) found.push(file);
+  }
+  return found;
+}
+
+// The same, inside the two asars, for entries stored in the archive (unpacked
+// ones are compared on disk above).
+function asarNonMachODifferences(x64Asar, arm64Asar) {
+  const asar = require('@electron/asar');
+  const list = archive =>
+    asar
+      .listPackage(archive, { isPack: false })
+      .map(f => f.replace(/^[\\/]/, ''));
+  const arm64 = new Set(list(arm64Asar));
+  const found = [];
+  for (const file of list(x64Asar)) {
+    if (!arm64.has(file)) continue;
+    const info = asar.statFile(x64Asar, file);
+    if ('files' in info || info.unpacked || info.link) continue;
+    const x = asar.extractFile(x64Asar, file);
+    if (isMachO(x)) continue;
+    if (!sameBytes(x, asar.extractFile(arm64Asar, file))) found.push(file);
+  }
+  return found;
+}
+
+function preflight(x64AppPath, arm64AppPath) {
+  const unpacked = nonMachODifferences(
+    path.join(x64AppPath, UNPACKED),
+    path.join(arm64AppPath, UNPACKED)
+  ).map(f => path.join(UNPACKED, f));
+  const inAsar = asarNonMachODifferences(
+    path.join(x64AppPath, ASAR),
+    path.join(arm64AppPath, ASAR)
+  ).map(f => path.join(ASAR, f));
+  const all = unpacked.concat(inAsar);
+  if (all.length) {
+    throw new Error(
+      'These files differ between the Intel and Apple Silicon builds but are ' +
+        'not Mach-O, so they cannot be merged. Packaging should not ship them ' +
+        '(include-path-in-packaged-app.js), or they must be made identical:\n  ' +
+        all.join('\n  ')
+    );
+  }
 }
 
 // Which unpacked files exist on one side only. Pure, for the test.
@@ -253,6 +337,7 @@ async function makeMacUniversal({
     }
 
     const diff = equaliseUnpacked(stagedX64, stagedArm64);
+    preflight(stagedX64, stagedArm64);
     log(
       `Unpacked files copied across: ${
         diff.onlyArm64.length
@@ -300,6 +385,10 @@ module.exports = {
   UNPACKED,
   parseLipoArchs,
   isUniversal,
+  isMachO,
+  nonMachODifferences,
+  asarNonMachODifferences,
+  preflight,
   listFiles,
   unpackedDifferences,
   equaliseUnpacked,
