@@ -137,7 +137,6 @@
   "src/main-process/atom-protocol-path.js",
   "src/main-process/atom-window.js",
   "src/main-process/auto-update-manager.js",
-  "src/main-process/auto-updater-win32.js",
   "src/main-process/context-menu.js",
   "src/main-process/file-recovery-service.js",
   "src/main-process/github-release-check.js",

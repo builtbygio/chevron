@@ -1,72 +1,70 @@
-const downloadFileFromGithub = require('./download-file-from-github');
-const fs = require('fs-extra');
+'use strict';
+
+/**
+ * Sign every .exe and .dll in the packaged Windows app with signtool, through
+ * @electron/windows-sign.
+ *
+ * The certificate is read from the environment under the names electron-builder
+ * uses, so the same CI secrets sign the app here and the NSIS installer there:
+ *   WIN_CSC_LINK          a .pfx/.p12 as a path, a file: URL, or base64
+ *   WIN_CSC_KEY_PASSWORD  its password
+ * Without them signing is skipped and the caller is told so.
+ */
+
+const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { spawnSync } = require('child_process');
+const { makeTempDir, removeTempDir } = require('./temp-dir');
 
-module.exports = async function(filesToSign) {
-  if (
-    !process.env.ATOM_WIN_CODE_SIGNING_CERT_DOWNLOAD_URL &&
-    !process.env.ATOM_WIN_CODE_SIGNING_CERT_PATH
-  ) {
-    console.log(
-      'Skipping code signing because the ATOM_WIN_CODE_SIGNING_CERT_DOWNLOAD_URL environment variable is not defined'
-        .gray
-    );
-    return;
-  }
+function windowsSigningFromEnv(env = process.env) {
+  const link = env.WIN_CSC_LINK || env.CSC_LINK;
+  if (!link) return null;
+  return {
+    link,
+    password: env.WIN_CSC_KEY_PASSWORD || env.CSC_KEY_PASSWORD || ''
+  };
+}
 
-  let certPath = process.env.ATOM_WIN_CODE_SIGNING_CERT_PATH;
-  if (!certPath) {
-    certPath = path.join(os.tmpdir(), 'win.p12');
-    await downloadFileFromGithub(
-      process.env.ATOM_WIN_CODE_SIGNING_CERT_DOWNLOAD_URL,
-      certPath
-    );
+// A path, a file: URL, or the certificate itself as base64 (how a CI secret
+// carries a binary file). Returns a path, materialising the base64 in `dir`.
+function materializeCertificate(link, dir) {
+  if (link.startsWith('file://')) return new URL(link).pathname;
+  if (fs.existsSync(link)) return link;
+  if (/^[A-Za-z0-9+/=\s]+$/.test(link)) {
+    const file = path.join(dir, 'signing-certificate.pfx');
+    fs.writeFileSync(file, Buffer.from(link.replace(/\s+/g, ''), 'base64'));
+    return file;
   }
+  throw new Error(
+    'WIN_CSC_LINK is neither an existing path, a file: URL, nor base64'
+  );
+}
+
+/** @returns {Promise<boolean>} whether anything was signed */
+module.exports = async function codeSignOnWindows(appDirectory) {
+  const signing = windowsSigningFromEnv();
+  if (!signing) {
+    console.log('Skipping Windows code signing: WIN_CSC_LINK is not set.');
+    return false;
+  }
+  const dir = makeTempDir('chevron-win-sign-');
   try {
-    for (const fileToSign of filesToSign) {
-      console.log(`Code-signing executable at ${fileToSign}`);
-      signFile(fileToSign);
-    }
-  } finally {
-    if (!process.env.ATOM_WIN_CODE_SIGNING_CERT_PATH) {
-      fs.removeSync(certPath);
-    }
-  }
-
-  function signFile(fileToSign) {
-    const signCommand = path.resolve(
-      __dirname,
-      '..',
-      'node_modules',
-      '@atom',
-      'electron-winstaller',
-      'vendor',
-      'signtool.exe'
-    );
-    const args = [
-      'sign',
-      `/f ${certPath}`, // Signing cert file
-      `/p ${process.env.ATOM_WIN_CODE_SIGNING_CERT_PASSWORD}`, // Signing cert password
-      '/fd sha256', // File digest algorithm
-      '/tr http://timestamp.digicert.com', // Time stamp server
-      '/td sha256', // Times stamp algorithm
-      `"${fileToSign}"`
-    ];
-    const result = spawnSync(signCommand, args, {
-      stdio: 'inherit',
-      shell: true
+    const certificateFile = materializeCertificate(signing.link, dir);
+    const { sign } = require('@electron/windows-sign');
+    console.log(`Signing executables under ${appDirectory}`);
+    await sign({
+      appDirectory,
+      certificateFile,
+      certificatePassword: signing.password,
+      hashes: ['sha256'],
+      timestampServer: 'http://timestamp.digicert.com'
     });
-    if (result.status !== 0) {
-      // Ensure we do not dump the signing password into the logs if something goes wrong
-      throw new Error(
-        `Command ${signCommand} ${args
-          .map(a =>
-            a.replace(process.env.ATOM_WIN_CODE_SIGNING_CERT_PASSWORD, '******')
-          )
-          .join(' ')} exited with code ${result.status}`
-      );
-    }
+    return true;
+  } finally {
+    removeTempDir(dir);
   }
 };
+
+module.exports.windowsSigningFromEnv = windowsSigningFromEnv;
+module.exports.materializeCertificate = materializeCertificate;
+module.exports.tmpdir = os.tmpdir;

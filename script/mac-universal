@@ -8,7 +8,7 @@
 //
 //   ./script/mac-universal --x64 path/to/x64/Chevron.app \
 //                          --arm64 path/to/arm64/Chevron.app \
-//                          [--out out/Chevron.app] [--compress-artifacts] [--code-sign]
+//                          [--out out/Chevron.app] [--code-sign] [--compress-artifacts] [--update-metadata]
 
 require('colors')
 
@@ -20,13 +20,15 @@ const argv = yargs
   .describe('x64', 'The Intel build of the app bundle')
   .describe('arm64', 'The Apple Silicon build of the app bundle')
   .describe('out', 'Where to write the universal bundle (default: out/<AppName>.app)')
-  .describe('code-sign', 'Sign with the Developer ID from the ATOM_MAC_CODE_SIGNING_* env and notarize; otherwise ad-hoc')
+  .describe('code-sign', 'Sign with the Developer ID in CSC_LINK / CSC_KEY_PASSWORD and notarize with APPLE_*; ad-hoc when those are unset')
   .describe('compress-artifacts', 'Also write out/chevron-mac-universal.zip')
+  .describe('update-metadata', 'Also write out/latest-mac.yml for electron-updater (needs --compress-artifacts)')
   .string('x64')
   .string('arm64')
   .string('out')
   .boolean('code-sign')
   .boolean('compress-artifacts')
+  .boolean('update-metadata')
   .demand(['x64', 'arm64'])
   .wrap(yargs.terminalWidth())
   .argv
@@ -34,6 +36,8 @@ const argv = yargs
 const CONFIG = require('./config')
 const compressArtifacts = require('./lib/compress-artifacts')
 const { makeMacUniversal, adHocSign } = require('./lib/make-mac-universal')
+const { markUpdateConfigSigned } = require('./lib/update-config-file')
+const { writeUpdateMetadata } = require('./lib/generate-update-metadata')
 
 const UNIVERSAL_ARCHIVE = 'chevron-mac-universal.zip'
 
@@ -46,17 +50,33 @@ const outAppPath = argv.out || path.join(CONFIG.buildOutputPath, `${CONFIG.appNa
 
 makeMacUniversal({ x64AppPath: argv.x64, arm64AppPath: argv.arm64, outAppPath })
   .then(async () => {
+    let signed = false
     if (argv.codeSign) {
-      // Loaded here, not above: notarize-on-mac needs electron-notarize from
-      // the root tree, which the CI merge job does not install.
-      await require('./lib/code-sign-on-mac')(outAppPath)
-      await require('./lib/notarize-on-mac')(outAppPath)
-    } else {
-      console.log('Ad-hoc signing the universal bundle. Specify --code-sign for a Developer ID signature.'.gray)
+      // Loaded here, not above: the CI merge job installs the script tree
+      // without lifecycle scripts, and these pull in more than the merge needs.
+      const codeSignOnMac = require('./lib/code-sign-on-mac')
+      if (codeSignOnMac.signingCertificateFromEnv()) {
+        // Before codesign: the file sits in Resources, which the signature seals.
+        markUpdateConfigSigned(path.join(outAppPath, 'Contents', 'Resources'))
+        signed = await codeSignOnMac(outAppPath)
+        await require('./lib/notarize-on-mac')(outAppPath)
+      }
+    }
+    if (!signed) {
+      console.log('Ad-hoc signing the universal bundle: no Developer ID certificate in CSC_LINK.'.gray)
       adHocSign(outAppPath)
     }
     if (argv.compressArtifacts) {
       compressArtifacts(outAppPath, { archiveName: UNIVERSAL_ARCHIVE })
+    }
+    if (argv.updateMetadata) {
+      const file = writeUpdateMetadata({
+        outDir: CONFIG.buildOutputPath,
+        platform: 'darwin',
+        version: CONFIG.computedAppVersion,
+        artifactPaths: [path.join(CONFIG.buildOutputPath, UNIVERSAL_ARCHIVE)]
+      })
+      console.log(`Update metadata at ${file}`)
     }
     console.log(`Universal bundle at ${outAppPath}`.green)
   })

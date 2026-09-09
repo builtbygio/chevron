@@ -55,6 +55,7 @@ Always use `./script/bootstrap-modern` (host Node 24 + Python 3.12). See root [R
 | [releases.md](./reference/releases.md) | 1.2.0 product contract, update URL, signing later |
 | [packaging.md](./reference/packaging.md) | Packaging + startup snapshot + macOS universal bundle |
 | [os-integration.md](./reference/os-integration.md) | Wayland default, follow-system theme, universal macOS bundle |
+| [auto-update.md](./reference/auto-update.md) | electron-updater against GitHub Releases; signing and notarization secrets |
 | [startup-snapshot-plan.md](./reference/startup-snapshot-plan.md) | Snapshot: Linux/Windows on, Darwin stock frozen |
 | [build-modernization.md](./reference/build-modernization.md) | Bootstrap/build streams |
 | [bootstrap-report.md](./reference/bootstrap-report.md) | Bootstrap current state |

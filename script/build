@@ -28,7 +28,6 @@ if (process.argv.includes('--no-bootstrap')) {
 
 require('colors')
 
-const path = require('path')
 const yargs = require('yargs')
 const argv = yargs
   .usage('Usage: $0 [options]')
@@ -36,7 +35,7 @@ const argv = yargs
   .describe('existing-binaries', 'Use existing Atom binaries (skip clean/transpile/cache)')
   .describe('code-sign', 'Code-sign executables (macOS and Windows only)')
   .describe('test-sign', 'Test-sign executables (macOS only)')
-  .describe('create-windows-installer', 'Create installer (Windows only)')
+  .describe('create-windows-installer', 'Create the NSIS installer, latest.yml and blockmap (Windows only)')
   .describe('create-debian-package', 'Create .deb package (Linux only)')
   .describe('create-rpm-package', 'Create .rpm package (Linux only)')
   .describe('compress-artifacts', 'Compress Atom binaries (and symbols on macOS)')
@@ -104,8 +103,8 @@ if (!argv.existingBinaries) {
       switch (process.platform) {
         case 'darwin': {
           if (argv.codeSign) {
-            await codeSignOnMac(packagedAppPath)
-            await notarizeOnMac(packagedAppPath)
+            // Both skip, saying so, when their credentials are not in the env.
+            if (await codeSignOnMac(packagedAppPath)) await notarizeOnMac(packagedAppPath)
           } else if (argv.testSign) {
             testSignOnMac(packagedAppPath)
           } else {
@@ -119,22 +118,16 @@ if (!argv.existingBinaries) {
           }
 
           if (argv.codeSign) {
-            const executablesToSign = [ path.join(packagedAppPath, CONFIG.executableName) ]
-            if (argv.createWindowsInstaller) {
-              executablesToSign.push(path.join(__dirname, 'node_modules', '@atom', 'electron-winstaller', 'vendor', 'Squirrel.exe'))
-            }
-            await codeSignOnWindows(executablesToSign)
+            // Skips, saying so, when WIN_CSC_LINK is not in the env.
+            await codeSignOnWindows(packagedAppPath)
           } else {
             console.log('Skipping code-signing. Specify the --code-sign option to perform code-signing'.gray)
           }
           if (argv.createWindowsInstaller) {
-            return createWindowsInstaller(packagedAppPath)
-              .then(async (installerPath) => {
-                if (argv.codeSign) await codeSignOnWindows([installerPath])
-                return packagedAppPath
-              })
+            // electron-builder signs the installer itself from the same env.
+            await createWindowsInstaller(packagedAppPath)
           } else {
-            console.log('Skipping creating installer. Specify the --create-windows-installer option to create a Squirrel-based Windows installer.'.gray)
+            console.log('Skipping creating installer. Specify the --create-windows-installer option to create the NSIS installer.'.gray)
           }
           break
         }

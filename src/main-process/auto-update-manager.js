@@ -1,6 +1,5 @@
 const { EventEmitter } = require('events');
 const https = require('https');
-const os = require('os');
 const path = require('path');
 const {
   DEFAULT_RELEASES_URL,
@@ -9,6 +8,14 @@ const {
   pickLatestRelease,
   summarizeRelease
 } = require('./github-release-check');
+const {
+  IN_APP,
+  DOWNLOAD_PAGE,
+  UNSUPPORTED,
+  readUpdateConfig,
+  chooseUpdateMode
+} = require('./update-config');
+const getReleaseChannel = require('../get-release-channel');
 
 const IdleState = 'idle';
 const CheckingState = 'checking';
@@ -18,10 +25,19 @@ const NoUpdateAvailableState = 'no-update-available';
 const UnsupportedState = 'unsupported';
 const ErrorState = 'error';
 
-let autoUpdater = null;
-
+// Updates come from GitHub Releases, through electron-updater where the build
+// can install them (docs/reference/auto-update.md). The states and the window
+// messages are the ones the about package and the application menu already
+// understand; the modes decide what happens between them:
+//
+//   in-app          electron-updater checks, downloads, and installs on
+//                   "Restart and Install Update" (or on quit).
+//   download-page   check the Releases API, open the page for the user.
+//   unsupported     dev builds and tests.
+//
+// `options.createUpdater` and `options.readUpdateConfig` exist for the tests.
 module.exports = class AutoUpdateManager extends EventEmitter {
-  constructor(version, testMode, config) {
+  constructor(version, testMode, config, options = {}) {
     super();
     this.onUpdateNotAvailable = this.onUpdateNotAvailable.bind(this);
     this.onUpdateError = this.onUpdateError.bind(this);
@@ -29,6 +45,9 @@ module.exports = class AutoUpdateManager extends EventEmitter {
     this.testMode = testMode;
     this.config = config;
     this.state = IdleState;
+    this.updater = null;
+    this.releaseVersion = null;
+    this.releasePageUrl = null;
     this.iconPath = path.resolve(
       __dirname,
       '..',
@@ -36,107 +55,94 @@ module.exports = class AutoUpdateManager extends EventEmitter {
       'resources',
       'atom.png'
     );
-    // Squirrel / electron autoUpdater feed (signed builds). Unsigned preview
-    // uses GitHub Releases instead — see docs/reference/releases.md.
-    this.updateUrlPrefix =
-      process.env.CHEVRON_UPDATE_URL_PREFIX ||
-      process.env.ATOM_UPDATE_URL_PREFIX ||
-      '';
-    this.releasesUrl =
-      process.env.CHEVRON_RELEASES_URL || DEFAULT_RELEASES_URL;
+    this.releasesUrl = process.env.CHEVRON_RELEASES_URL || DEFAULT_RELEASES_URL;
     this.releasesApiUrl =
       process.env.CHEVRON_RELEASES_API_URL || DEFAULT_API_URL;
-    this.mode = this.updateUrlPrefix ? 'squirrel' : 'github-releases';
+    this.platform = options.platform || process.platform;
+    this.env = options.env || process.env;
+    this.createUpdater = options.createUpdater || defaultCreateUpdater;
+    this.getWindows =
+      options.getWindows || (() => global.chevronApplication.getAllWindows());
+
+    const isPackaged =
+      options.isPackaged != null ? options.isPackaged : isPackagedApp();
+    const updateConfig =
+      options.updateConfig !== undefined
+        ? options.updateConfig
+        : isPackaged
+        ? readUpdateConfig(process.resourcesPath)
+        : null;
+    this.updateConfig = updateConfig;
+    this.mode = testMode
+      ? UNSUPPORTED
+      : chooseUpdateMode({
+          platform: this.platform,
+          isPackaged,
+          updateConfig,
+          env: this.env
+        });
   }
 
   initialize() {
-    if (this.mode === 'github-releases') {
-      this.setupGitHubReleaseChecks();
+    if (this.mode === UNSUPPORTED) {
+      this.setState(UnsupportedState);
       return;
     }
-
-    if (process.platform === 'win32') {
-      const archSuffix = process.arch === 'ia32' ? '' : `-${process.arch}`;
-      this.feedUrl =
-        this.updateUrlPrefix +
-        `/api/updates${archSuffix}?version=${this.version}&os_version=${
-          os.release
-        }`;
-      autoUpdater = require('./auto-updater-win32');
-    } else {
-      this.feedUrl =
-        this.updateUrlPrefix +
-        `/api/updates?version=${this.version}&os_version=${os.release}`;
-      ({ autoUpdater } = require('electron'));
+    if (this.mode === IN_APP) {
+      this.setupElectronUpdater();
     }
-
-    autoUpdater.on('error', (event, message) => {
-      this.setState(ErrorState, message);
-      this.emitWindowEvent('update-error');
-      console.error(`Error Downloading Update: ${message}`);
+    this.config.onDidChange('core.automaticallyUpdate', ({ newValue }) => {
+      if (newValue) {
+        this.scheduleUpdateCheck();
+      } else {
+        this.cancelScheduledUpdateCheck();
+      }
     });
+    if (this.config.get('core.automaticallyUpdate')) this.scheduleUpdateCheck();
+  }
 
-    autoUpdater.setFeedURL(this.feedUrl);
+  setupElectronUpdater() {
+    const updater = this.createUpdater();
+    this.updater = updater;
+    updater.autoDownload = true;
+    updater.autoInstallOnAppQuit = true;
+    // The preview releases are flagged pre-release on GitHub. A stable version
+    // would otherwise never see them; a beta/nightly build always does.
+    updater.allowPrerelease =
+      getReleaseChannel(this.version) !== 'stable' ||
+      !!this.config.get('core.allowPrereleaseUpdates');
+    if (this.env.CHEVRON_UPDATE_FEED_URL) {
+      updater.setFeedURL(this.env.CHEVRON_UPDATE_FEED_URL);
+    }
+    if (updater.logger !== undefined) updater.logger = updaterLogger();
 
-    autoUpdater.on('checking-for-update', () => {
+    updater.on('checking-for-update', () => {
       this.setState(CheckingState);
       this.emitWindowEvent('checking-for-update');
     });
-
-    autoUpdater.on('update-not-available', () => {
+    updater.on('update-not-available', () => {
       this.setState(NoUpdateAvailableState);
       this.emitWindowEvent('update-not-available');
     });
-
-    autoUpdater.on('update-available', () => {
+    updater.on('update-available', info => {
+      this.releaseVersion = info && info.version;
       this.setState(DownloadingState);
-      // We use sendMessage to send an event called 'update-available' in 'update-downloaded'
-      // once the update download is complete. This mismatch between the electron
-      // autoUpdater events is unfortunate but in the interest of not changing the
-      // one existing event handled by applicationDelegate
+      // 'did-begin-downloading-update' is the renderer's name for this; the
+      // 'update-available' message goes out once the download has finished.
       this.emitWindowEvent('did-begin-downloading-update');
       this.emit('did-begin-download');
     });
-
-    autoUpdater.on(
-      'update-downloaded',
-      (event, releaseNotes, releaseVersion) => {
-        this.releaseVersion = releaseVersion;
-        this.setState(UpdateAvailableState);
-        this.emitUpdateAvailableEvent();
-      }
-    );
-
-    this.config.onDidChange('core.automaticallyUpdate', ({ newValue }) => {
-      if (newValue) {
-        this.scheduleUpdateCheck();
-      } else {
-        this.cancelScheduledUpdateCheck();
-      }
+    updater.on('update-downloaded', info => {
+      this.releaseVersion = (info && info.version) || this.releaseVersion;
+      this.setState(UpdateAvailableState);
+      this.emitUpdateAvailableEvent();
     });
-
-    if (this.config.get('core.automaticallyUpdate')) this.scheduleUpdateCheck();
-
-    switch (process.platform) {
-      case 'win32':
-        if (!autoUpdater.supportsUpdates()) {
-          this.setState(UnsupportedState);
-        }
-        break;
-      case 'linux':
-        this.setState(UnsupportedState);
-    }
-  }
-
-  setupGitHubReleaseChecks() {
-    this.config.onDidChange('core.automaticallyUpdate', ({ newValue }) => {
-      if (newValue) {
-        this.scheduleUpdateCheck();
-      } else {
-        this.cancelScheduledUpdateCheck();
-      }
+    updater.on('error', error => {
+      const message = error && error.message ? error.message : String(error);
+      this.setState(ErrorState, message);
+      this.emitWindowEvent('update-error');
+      console.error(`Error checking for or downloading an update: ${message}`);
     });
-    if (this.config.get('core.automaticallyUpdate')) this.scheduleUpdateCheck();
   }
 
   emitUpdateAvailableEvent() {
@@ -153,7 +159,7 @@ module.exports = class AutoUpdateManager extends EventEmitter {
   }
 
   setState(state, errorMessage) {
-    if (this.state === state) return;
+    if (this.state === state && this.errorMessage === errorMessage) return;
     this.state = state;
     this.errorMessage = errorMessage;
     this.emit('state-changed', this.state);
@@ -165,6 +171,10 @@ module.exports = class AutoUpdateManager extends EventEmitter {
 
   getErrorMessage() {
     return this.errorMessage;
+  }
+
+  getMode() {
+    return this.mode;
   }
 
   scheduleUpdateCheck() {
@@ -186,32 +196,43 @@ module.exports = class AutoUpdateManager extends EventEmitter {
   }
 
   check({ hidePopups } = {}) {
-    if (this.mode === 'github-releases') {
-      return this.checkGitHubReleases({ hidePopups });
+    switch (this.mode) {
+      case IN_APP:
+        return this.checkWithElectronUpdater({ hidePopups });
+      case DOWNLOAD_PAGE:
+        return this.checkGitHubReleases({ hidePopups });
+      default:
+        if (!hidePopups) this.onUpdateNotAvailable();
+        return Promise.resolve();
     }
+  }
 
-    if (!autoUpdater) {
-      if (!hidePopups) this.onUpdateNotAvailable();
-      return;
+  async checkWithElectronUpdater({ hidePopups } = {}) {
+    if (!this.updater) return;
+    try {
+      const result = await this.updater.checkForUpdates();
+      const available =
+        result &&
+        result.updateInfo &&
+        isNewerRelease(result.updateInfo.version, this.version);
+      if (!hidePopups && !available) {
+        // The updater's own 'update-not-available' has set the state; the
+        // dialog is the manual check's answer.
+        this.onUpdateNotAvailable();
+      }
+    } catch (error) {
+      // The 'error' event has set the state and logged. A manual check gets a
+      // dialog with the way out that always works.
+      if (!hidePopups) {
+        this.onUpdateError(null, this.errorMessage || String(error));
+      }
     }
-
-    if (!hidePopups) {
-      autoUpdater.once('update-not-available', this.onUpdateNotAvailable);
-      autoUpdater.once('error', this.onUpdateError);
-    }
-
-    if (!this.testMode) autoUpdater.checkForUpdates();
   }
 
   async checkGitHubReleases({ hidePopups } = {}) {
     this.setState(CheckingState);
     this.emitWindowEvent('checking-for-update');
     try {
-      if (this.testMode) {
-        this.setState(NoUpdateAvailableState);
-        if (!hidePopups) this.onUpdateNotAvailable();
-        return;
-      }
       const releases = await this.fetchGitHubReleases();
       const latest = summarizeRelease(pickLatestRelease(releases));
       if (latest && isNewerRelease(latest.tag, this.version)) {
@@ -270,6 +291,10 @@ module.exports = class AutoUpdateManager extends EventEmitter {
 
   showGitHubUpdateAvailable(latest) {
     const { dialog, shell } = require('electron');
+    const why =
+      this.platform === 'darwin'
+        ? 'This build is not code-signed, so macOS will not let it update itself.'
+        : 'Updates for this install come from the package you installed it with.';
     dialog
       .showMessageBox({
         type: 'info',
@@ -279,9 +304,7 @@ module.exports = class AutoUpdateManager extends EventEmitter {
         icon: this.iconPath,
         message: `Chevron ${latest.tag} is available.`,
         title: 'Update Available',
-        detail:
-          `You have ${this.version}. Unsigned preview builds are not installed ` +
-          `in-app — download from GitHub Releases.\n\n${this.releasePageUrl}`
+        detail: `You have ${this.version}. ${why}\n\n${this.releasePageUrl}`
       })
       .then(({ response }) => {
         if (response === 0) {
@@ -291,21 +314,16 @@ module.exports = class AutoUpdateManager extends EventEmitter {
   }
 
   install() {
-    if (this.mode === 'github-releases') {
-      if (this.testMode) return;
-      const { shell } = require('electron');
-      shell.openExternal(
-        this.releasePageUrl || `${this.releasesUrl}/latest`
-      );
+    if (this.testMode) return;
+    if (this.mode === IN_APP && this.updater) {
+      this.updater.quitAndInstall();
       return;
     }
-    if (!this.testMode && autoUpdater) autoUpdater.quitAndInstall();
+    const { shell } = require('electron');
+    shell.openExternal(this.releasePageUrl || `${this.releasesUrl}/latest`);
   }
 
   onUpdateNotAvailable() {
-    if (autoUpdater) {
-      autoUpdater.removeListener('error', this.onUpdateError);
-    }
     const { dialog } = require('electron');
     dialog.showMessageBox({
       type: 'info',
@@ -318,24 +336,43 @@ module.exports = class AutoUpdateManager extends EventEmitter {
   }
 
   onUpdateError(event, message) {
-    if (autoUpdater) {
-      autoUpdater.removeListener(
-        'update-not-available',
-        this.onUpdateNotAvailable
-      );
-    }
-    const { dialog } = require('electron');
-    dialog.showMessageBox({
-      type: 'warning',
-      buttons: ['OK'],
-      icon: this.iconPath,
-      message: 'There was an error checking for updates.',
-      title: 'Update Error',
-      detail: message
-    });
-  }
-
-  getWindows() {
-    return global.chevronApplication.getAllWindows();
+    const { dialog, shell } = require('electron');
+    dialog
+      .showMessageBox({
+        type: 'warning',
+        buttons: ['OK', 'Open download page'],
+        defaultId: 0,
+        cancelId: 0,
+        icon: this.iconPath,
+        message: 'There was an error checking for updates.',
+        title: 'Update Error',
+        detail: message
+      })
+      .then(({ response }) => {
+        if (response === 1) shell.openExternal(this.releasesUrl);
+      });
   }
 };
+
+function isPackagedApp() {
+  try {
+    return require('electron').app.isPackaged;
+  } catch (error) {
+    return false;
+  }
+}
+
+function defaultCreateUpdater() {
+  return require('electron-updater').autoUpdater;
+}
+
+// electron-updater logs through whatever has info/warn/error/debug; console
+// here goes to nslog like the rest of the main process.
+function updaterLogger() {
+  return {
+    info: (...args) => console.log('[updater]', ...args),
+    warn: (...args) => console.warn('[updater]', ...args),
+    error: (...args) => console.error('[updater]', ...args),
+    debug: () => {}
+  };
+}

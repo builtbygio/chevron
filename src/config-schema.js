@@ -357,9 +357,15 @@ const configSchema = {
       },
       automaticallyUpdate: {
         description:
-          'Check GitHub Releases for a newer Chevron unsigned preview. In-app install is not used until builds are signed; Check for Update opens the download page. See docs/reference/releases.md.',
+          'Check GitHub Releases for a newer Chevron every four hours. Signed macOS builds and Windows installs download and install it in the background; other builds open the download page. See docs/reference/auto-update.md.',
         type: 'boolean',
         default: true
+      },
+      allowPrereleaseUpdates: {
+        description:
+          'Also update to releases marked pre-release on GitHub, such as the unsigned previews. Beta and nightly builds always do.',
+        type: 'boolean',
+        default: false
       },
       useProxySettingsWhenCallingApm: {
         title: 'Use Proxy Settings When Calling Package Manager',
