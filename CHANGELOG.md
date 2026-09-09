@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Scrolling to a row could land one row early.** `setScrollTop` stores the scroll position on a physical-pixel boundary — deliberately, because an unreachable position made the editor shake under DPI scaling — but the row was then derived from that rounded value by flooring. Whenever `row * lineHeight` rounded *down*, the answer came back one row short: with a line height of 22.84375, `setFirstVisibleScreenRow(5)` gave 4 and `(11)` gave 10. Roughly half of all rows, for any fractional line height, which is the normal case. Deriving a row from a scroll position now compensates for that half-pixel, leaving the anti-shake rounding intact.
+
 - **The spec suite modelled one clipboard where the editor uses two.** `spec/spec-helper.js` stubbed `clipboard.readText`/`writeText` ignoring their `type` argument, so a read of the `'selection'` clipboard answered with the standard one. Middle-click paste on Linux reads `'selection'`, so every middle click in a spec pasted the harness's own `'initial clipboard content'` — moving the cursor 25 columns and making the mouse-positioning tests disagree with the editor about where a click landed. The stub now keeps the two apart, and the two middle-click paste tests assert against the clipboard the editor actually writes to. `text-editor-component-spec`: 34 failed assertions → 25, and both paste tests pass. No app code changed.
 
 ### Changed
