@@ -287,33 +287,41 @@ describe('describeDifference', () => {
   });
 });
 
-describe('removeUnpackedSymlinks', () => {
-  it('drops every symlink under the unpacked tree and nothing else', () => {
+describe('overwritingSymlink', () => {
+  it('replaces an existing symlink, keeps a file, and otherwise behaves like symlink', async () => {
     const root = makeTempDir('chevron-universal-test-');
-    const app = fakeApp(root, 'x64');
-    const unpacked = path.join(app, universal.UNPACKED);
-    const gitCore = path.join(
-      unpacked,
-      'node_modules/dugite/git/libexec/git-core'
-    );
-    write(unpacked, 'node_modules/dugite/git/libexec/git-core/git', 'binary');
-    fs.symlinkSync('git', path.join(gitCore, 'git-add'));
-    fs.symlinkSync('git', path.join(gitCore, 'git-commit'));
-    fs.symlinkSync(
-      'nowhere',
-      path.join(app, 'Contents', 'Resources', 'outside-link')
+    const symlink = universal.overwritingSymlink(fs.promises.symlink);
+    fs.writeFileSync(path.join(root, 'git'), 'binary');
+    fs.symlinkSync('old-target', path.join(root, 'git-add'));
+    fs.writeFileSync(path.join(root, 'plain'), 'a regular file');
+
+    await symlink('git', path.join(root, 'git-add'));
+    assert.equal(
+      fs.readlinkSync(path.join(root, 'git-add')),
+      'git',
+      'an existing symlink is replaced'
     );
 
-    assert.equal(universal.removeUnpackedSymlinks(app), 2);
-    assert.ok(fs.existsSync(path.join(gitCore, 'git')), 'the target stays');
-    assert.equal(fs.existsSync(path.join(gitCore, 'git-add')), false);
-    assert.ok(
-      fs
-        .lstatSync(path.join(app, 'Contents', 'Resources', 'outside-link'))
-        .isSymbolicLink(),
-      'only the unpacked tree is touched'
+    await symlink('git', path.join(root, 'git-commit'));
+    assert.equal(
+      fs.readlinkSync(path.join(root, 'git-commit')),
+      'git',
+      'a new one is created'
     );
-    assert.equal(universal.removeUnpackedSymlinks(app), 0, 'idempotent');
+
+    await assert.rejects(symlink('git', path.join(root, 'plain')), {
+      code: 'EEXIST'
+    });
+    assert.equal(
+      fs.readFileSync(path.join(root, 'plain'), 'utf8'),
+      'a regular file',
+      'a file is never removed'
+    );
+
+    await assert.rejects(
+      symlink('git', path.join(root, 'no', 'such', 'dir', 'x')),
+      { code: 'ENOENT' }
+    );
   });
 });
 

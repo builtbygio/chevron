@@ -214,6 +214,49 @@ function describeDifference(x64Buffer, arm64Buffer, limit = 12) {
   return [`binary: ${x64Buffer.length} vs ${arm64Buffer.length} bytes`];
 }
 
+// @electron/asar rewrites the merged asar's unpacked tree in place over the
+// copied x64 bundle: regular files are overwritten, but symlinks are
+// recreated with symlink(2), which fails with EEXIST when one is already
+// there, and dugite's git-core is a directory of them. The symlinks cannot
+// simply be removed first: the merge's own comparison reads the unpacked
+// entries through them. So symlink(2) is made to overwrite an existing
+// symlink. asar's wrapped fs binds fs.promises.symlink when it loads, which
+// is why this has to be installed before @electron/asar is required.
+function overwritingSymlink(original) {
+  return async function symlink(target, dest, ...rest) {
+    try {
+      return await original.call(fs.promises, target, dest, ...rest);
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+      let existing;
+      try {
+        existing = fs.lstatSync(dest);
+      } catch (statError) {
+        throw error;
+      }
+      if (!existing.isSymbolicLink()) throw error;
+      fs.unlinkSync(dest);
+      return original.call(fs.promises, target, dest, ...rest);
+    }
+  };
+}
+
+function installSymlinkOverwrite() {
+  const asarLoaded = Object.keys(require.cache).some(file =>
+    /[\\/]@electron[\\/]asar[\\/]/.test(file)
+  );
+  if (asarLoaded) {
+    throw new Error(
+      'installSymlinkOverwrite must run before @electron/asar is loaded'
+    );
+  }
+  const original = fs.promises.symlink;
+  fs.promises.symlink = overwritingSymlink(original);
+  return () => {
+    fs.promises.symlink = original;
+  };
+}
+
 function preflight(x64AppPath, arm64AppPath) {
   const unpacked = nonMachODifferences(
     path.join(x64AppPath, UNPACKED),
@@ -244,26 +287,6 @@ function preflight(x64AppPath, arm64AppPath) {
         report.join('\n  ')
     );
   }
-}
-
-// @electron/asar rewrites the merged asar's unpacked tree in place: regular
-// files are overwritten, but symlinks are recreated from the archive header
-// with symlink(2), which fails with EEXIST when one is already there (dugite's
-// git-core is full of them). The x64 bundle is the one @electron/universal
-// copies as its working tree, so its unpacked symlinks are removed first; the
-// merge writes every one of them back. The file walks skip symlinks, so the
-// two bundles still compare equal.
-function removeUnpackedSymlinks(appPath) {
-  const root = path.join(appPath, UNPACKED);
-  let removed = 0;
-  for (const file of listFiles(root)) {
-    const full = path.join(root, file);
-    if (fs.lstatSync(full).isSymbolicLink()) {
-      fs.unlinkSync(full);
-      removed++;
-    }
-  }
-  return removed;
 }
 
 // Which unpacked files exist on one side only. Pure, for the test.
@@ -419,6 +442,9 @@ async function makeMacUniversal({
   assertThinBuild(x64AppPath, 'x86_64', '--x64');
   assertThinBuild(arm64AppPath, 'arm64', '--arm64');
 
+  // Before anything requires @electron/asar (the pre-flight does).
+  const restoreSymlink = installSymlinkOverwrite();
+
   // Work on copies: the inputs are CI artifacts someone may want to inspect.
   const stage = makeTempDir('chevron-universal-');
   try {
@@ -434,11 +460,6 @@ async function makeMacUniversal({
 
     const diff = equaliseUnpacked(stagedX64, stagedArm64);
     preflight(stagedX64, stagedArm64);
-    log(
-      `Unpacked symlinks removed from the x64 working copy: ${removeUnpackedSymlinks(
-        stagedX64
-      )}`
-    );
     log(
       `Unpacked files copied across: ${
         diff.onlyArm64.length
@@ -460,6 +481,7 @@ async function makeMacUniversal({
       x64ArchFiles: IDENTICAL_MACHO
     });
   } finally {
+    restoreSymlink();
     removeTempDir(stage);
   }
 
@@ -488,13 +510,14 @@ module.exports = {
   isUniversal,
   isMachO,
   describeDifference,
+  overwritingSymlink,
+  installSymlinkOverwrite,
   nonMachODifferences,
   asarNonMachODifferences,
   preflight,
   listFiles,
   unpackedDifferences,
   equaliseUnpacked,
-  removeUnpackedSymlinks,
   machOToVerify,
   verifyUniversal,
   makeMacUniversal,
