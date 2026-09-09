@@ -1,0 +1,66 @@
+#!/usr/bin/env node
+
+'use strict'
+
+// Merge the Intel and Apple Silicon builds of Chevron.app into one universal
+// bundle. See script/lib/make-mac-universal.js for what the merge has to
+// work around; CI runs this after the two macOS build jobs.
+//
+//   ./script/mac-universal --x64 path/to/x64/Chevron.app \
+//                          --arm64 path/to/arm64/Chevron.app \
+//                          [--out out/Chevron.app] [--compress-artifacts] [--code-sign]
+
+require('colors')
+
+const path = require('path')
+const yargs = require('yargs')
+const argv = yargs
+  .usage('Usage: $0 --x64 <Chevron.app> --arm64 <Chevron.app> [options]')
+  .help('help')
+  .describe('x64', 'The Intel build of the app bundle')
+  .describe('arm64', 'The Apple Silicon build of the app bundle')
+  .describe('out', 'Where to write the universal bundle (default: out/<AppName>.app)')
+  .describe('code-sign', 'Sign with the Developer ID from the ATOM_MAC_CODE_SIGNING_* env and notarize; otherwise ad-hoc')
+  .describe('compress-artifacts', 'Also write out/chevron-mac-universal.zip')
+  .string('x64')
+  .string('arm64')
+  .string('out')
+  .boolean('code-sign')
+  .boolean('compress-artifacts')
+  .demand(['x64', 'arm64'])
+  .wrap(yargs.terminalWidth())
+  .argv
+
+const CONFIG = require('./config')
+const codeSignOnMac = require('./lib/code-sign-on-mac')
+const compressArtifacts = require('./lib/compress-artifacts')
+const notarizeOnMac = require('./lib/notarize-on-mac')
+const { makeMacUniversal, adHocSign } = require('./lib/make-mac-universal')
+
+const UNIVERSAL_ARCHIVE = 'chevron-mac-universal.zip'
+
+process.on('unhandledRejection', function (e) {
+  console.error(e.stack || e)
+  process.exit(1)
+})
+
+const outAppPath = argv.out || path.join(CONFIG.buildOutputPath, `${CONFIG.appName}.app`)
+
+makeMacUniversal({ x64AppPath: argv.x64, arm64AppPath: argv.arm64, outAppPath })
+  .then(async () => {
+    if (argv.codeSign) {
+      await codeSignOnMac(outAppPath)
+      await notarizeOnMac(outAppPath)
+    } else {
+      console.log('Ad-hoc signing the universal bundle. Specify --code-sign for a Developer ID signature.'.gray)
+      adHocSign(outAppPath)
+    }
+    if (argv.compressArtifacts) {
+      compressArtifacts(outAppPath, { archiveName: UNIVERSAL_ARCHIVE })
+    }
+    console.log(`Universal bundle at ${outAppPath}`.green)
+  })
+  .catch(error => {
+    console.error(error.stack || error)
+    process.exit(1)
+  })

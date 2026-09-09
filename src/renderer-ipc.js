@@ -172,6 +172,14 @@ module.exports = {
     return ipcRenderer.sendSync('chevron:get-primary-display-work-area-size-sync');
   },
 
+  getNativeTheme() {
+    return ipcRenderer.sendSync('chevron:native-theme-sync');
+  },
+
+  getNativeThemeAsync() {
+    return ipcRenderer.invoke('chevron:native-theme');
+  },
+
   getPrimaryDisplayWorkAreaSizeAsync() {
     return ipcRenderer.invoke('chevron:get-primary-display-work-area-size');
   },

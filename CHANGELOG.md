@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Native Wayland on Linux.** Chevron now starts Chromium with `--ozone-platform-hint=auto`, so on a Wayland session it is a Wayland client rather than an XWayland one — sharp fractional scaling and correct input on mixed-DPI desktops. X11 sessions are unaffected, and an explicit `--ozone-platform`, `--ozone-platform-hint` or `ELECTRON_OZONE_PLATFORM_HINT` still wins (CI keeps `x11` for Xvfb). `docs/reference/os-integration.md`.
+
+- **Follow the system theme.** `core.followSystemTheme` (Settings › Core, default off) swaps the configured themes for their light or dark counterparts as the operating system appearance changes: One Dark on a dark desktop becomes One Light on a light one, and back, without a restart. The appearance is Electron's `nativeTheme.shouldUseDarkColors`, read over IPC and pushed to every window when it changes; a theme with no counterpart installed is left alone.
+
+- **One macOS bundle for Intel and Apple Silicon.** The release now ships a universal `chevron-mac-universal.zip` instead of `chevron-mac-x64.zip` and `chevron-mac-arm64.zip`. The two builds are still made on their own hosts and merged afterwards with `lipo` (`./script/mac-universal`, `@electron/universal`); a new CI job does the merge, smoke-tests the result and uploads it, and the release job drops the per-arch zips. `docs/reference/packaging.md`.
+
 ### Fixed
 
 - **`text-editor-component-spec` measured the editor in pixels written for a smaller font.** Several tests asked for a literal height, width or scroll offset and expected a row or column count that only followed at a line height near 15–17px and a character width under 8.4px; both are larger with the current default font. `setEditorHeightInLines` also asked for an exact multiple of a fractional line height, which the DOM rounds *up* to a whole pixel — two lines of 22.84 measured 46px, read as slightly more than two lines, and rendered an extra tile. Expressed in line heights and character widths, as the surrounding tests already do. No app code changed.

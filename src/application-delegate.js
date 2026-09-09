@@ -131,6 +131,22 @@ module.exports = class ApplicationDelegate {
     return ipcHelpers.on(ipcRenderer, 'did-leave-full-screen', callback);
   }
 
+  // Electron's nativeTheme lives in main; this is its shouldUseDarkColors.
+  shouldUseDarkColors() {
+    const theme = rendererIpc.getNativeTheme();
+    return !!(theme && theme.shouldUseDarkColors);
+  }
+
+  // The callback receives `{ shouldUseDarkColors }` whenever the OS
+  // appearance changes.
+  onDidChangeNativeTheme(callback) {
+    return ipcHelpers.on(
+      ipcRenderer,
+      'chevron:did-change-native-theme',
+      (_event, theme) => callback(theme)
+    );
+  }
+
   async openWindowDevTools() {
     await new Promise(process.nextTick);
     return ipcHelpers.call('window-method', 'openDevTools');

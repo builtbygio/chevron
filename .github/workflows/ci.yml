@@ -243,6 +243,9 @@ jobs:
           node --test script/ci/ipc-write-fs-payloads.test.js
           node --test script/ci/ipc-ui-payloads.test.js
           node --test script/ci/main-to-renderer-channels.test.js
+          node --test script/ci/ozone-platform.test.js
+          node --test script/ci/theme-variants.test.js
+          node --test script/ci/mac-universal.test.js
           node --test script/ci/autocomplete-follows-active-editor.test.js
           node --test script/ci/find-packaged-app.test.js
           node --test script/ci/ensure-ripgrep.test.js
@@ -383,6 +386,85 @@ jobs:
             out/startup.js
             ${{ github.workspace }}/npm-debug.log
           if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # macOS universal — one Chevron.app for Intel and Apple Silicon, merged
+  # from the two builds above with lipo. The natives are compiled on their
+  # own hosts, so nothing here cross-compiles. script/lib/make-mac-universal.js
+  # says what the merge has to work around. This is the macOS bundle a
+  # release ships; the per-arch zips stay as CI artifacts only.
+  # ---------------------------------------------------------------------------
+  macos-universal:
+    name: macOS universal merge & smoke
+    needs:
+      - changes
+      - build-and-smoke-macos
+    if: needs.changes.outputs.code == 'true'
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Use Node 24
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          # No pnpm here; see unit-and-cpm.
+          package-manager-cache: false
+
+      # @electron/universal, the smoke test's ws, and nothing native: the
+      # merge only rearranges what the build jobs compiled.
+      - name: Install build-script dependencies
+        working-directory: script
+        run: npm ci --ignore-scripts --legacy-peer-deps
+
+      - uses: actions/download-artifact@v6
+        with:
+          name: chevron-macos-x64
+          path: artifacts/x64
+
+      - uses: actions/download-artifact@v6
+        with:
+          name: chevron-macos-arm64
+          path: artifacts/arm64
+
+      # From the zips: an artifact upload flattens the symlinks a .app
+      # depends on (Frameworks/*/Versions/Current), the zip keeps them.
+      - name: Unpack the two bundles
+        run: |
+          set -euo pipefail
+          for arch in x64 arm64; do
+            ditto -x -k "artifacts/$arch/chevron-mac-$arch.zip" "bundles/$arch"
+            test -d "bundles/$arch/Chevron.app"
+          done
+
+      - name: Merge into out/Chevron.app
+        run: |
+          ./script/mac-universal \
+            --x64 bundles/x64/Chevron.app \
+            --arm64 bundles/arm64/Chevron.app \
+            --compress-artifacts
+
+      - name: Launch smoke test (arm64 slice)
+        run: node script/ci/smoke-test.js
+
+      - name: Launch the x86_64 slice under Rosetta
+        run: |
+          set -euo pipefail
+          if ! arch -x86_64 /usr/bin/true 2>/dev/null; then
+            echo "Rosetta is not installed on this runner; x86_64 slice not launched"
+            exit 0
+          fi
+          arch -x86_64 out/Chevron.app/Contents/MacOS/Chevron --version
+
+      - name: Upload universal macOS package
+        if: success()
+        uses: actions/upload-artifact@v6
+        with:
+          name: chevron-macos-universal
+          path: out/chevron-mac-universal.zip
+          if-no-files-found: error
 
   # ---------------------------------------------------------------------------
   # Linux x64 — deb + tar + rpm
@@ -946,6 +1028,7 @@ jobs:
     needs:
       - unit-and-cpm
       - build-and-smoke-macos
+      - macos-universal
       - build-and-smoke-linux
       - build-and-smoke-linux-arm64
       - build-and-smoke-windows
@@ -959,6 +1042,12 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
+
+      # The per-arch macOS zips are the inputs of the universal merge, not
+      # releases: one Chevron.app runs on Intel and Apple Silicon.
+      - name: Keep only the universal macOS bundle
+        run: |
+          find artifacts -type f \( -name chevron-mac-x64.zip -o -name chevron-mac-arm64.zip \) -print -delete
 
       - name: List artifacts
         run: find artifacts -type f | sort

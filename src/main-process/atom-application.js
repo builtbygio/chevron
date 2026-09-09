@@ -18,6 +18,7 @@ const {
   clipboard,
   dialog,
   ipcMain: electronIpcMain,
+  nativeTheme,
   shell,
   screen
 } = require('electron');
@@ -937,6 +938,20 @@ module.exports = class AtomApplication extends EventEmitter {
           const { webContents } = atomWindow.browserWindow;
           if (webContents !== event.sender)
             webContents.send('did-change-history-manager');
+        }
+      })
+    );
+
+    // OS appearance changed: every window re-reads it for
+    // core.followSystemTheme (theme-manager.js).
+    this.disposable.add(
+      ipcHelpers.on(nativeTheme, 'updated', () => {
+        const theme = { shouldUseDarkColors: !!nativeTheme.shouldUseDarkColors };
+        for (let atomWindow of this.getAllWindows()) {
+          const { webContents } = atomWindow.browserWindow;
+          if (!webContents.isDestroyed()) {
+            webContents.send('chevron:did-change-native-theme', theme);
+          }
         }
       })
     );

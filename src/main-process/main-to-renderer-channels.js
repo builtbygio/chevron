@@ -14,6 +14,7 @@ const MAIN_TO_RENDERER_CHANNELS = new Set([
   'atom-popup-menu-click',
   'atom-utility-worker-event',
   'atom-worker-window-event',
+  'chevron:did-change-native-theme',
   'chevron:pty-event',
   'chevron:rg-search-close',
   'chevron:rg-search-data',

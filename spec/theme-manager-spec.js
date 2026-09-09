@@ -74,6 +74,72 @@ describe('atom.themes', function() {
       ]);
     }));
 
+  describe('core.followSystemTheme', function() {
+    beforeEach(() => atom.config.set('core.themes', ['one-dark-ui', 'one-dark-syntax']));
+
+    it('leaves the configured themes alone while off', function() {
+      atom.config.set('core.followSystemTheme', false);
+      spyOn(atom.applicationDelegate, 'shouldUseDarkColors').andReturn(false);
+      expect(atom.themes.getEnabledThemeNames()).toEqual([
+        'one-dark-syntax',
+        'one-dark-ui'
+      ]);
+    });
+
+    it('activates the light counterparts on a light desktop', function() {
+      atom.config.set('core.followSystemTheme', true);
+      spyOn(atom.applicationDelegate, 'shouldUseDarkColors').andReturn(false);
+      expect(atom.themes.getEnabledThemeNames()).toEqual([
+        'one-light-syntax',
+        'one-light-ui'
+      ]);
+    });
+
+    it('keeps the dark themes on a dark desktop', function() {
+      atom.config.set('core.followSystemTheme', true);
+      spyOn(atom.applicationDelegate, 'shouldUseDarkColors').andReturn(true);
+      expect(atom.themes.getEnabledThemeNames()).toEqual([
+        'one-dark-syntax',
+        'one-dark-ui'
+      ]);
+    });
+
+    it('reloads the themes when the OS appearance changes', function() {
+      let nativeThemeListener;
+      spyOn(atom.applicationDelegate, 'onDidChangeNativeTheme').andCallFake(callback => {
+        nativeThemeListener = callback;
+        return { dispose() {} };
+      });
+      const dark = spyOn(atom.applicationDelegate, 'shouldUseDarkColors').andReturn(true);
+      spyOn(atom.styles, 'getUserStyleSheetPath').andCallFake(() => null);
+      atom.config.set('core.followSystemTheme', true);
+
+      waitsForPromise(() => atom.themes.activateThemes());
+
+      let didChangeActiveThemesHandler;
+      runs(function() {
+        expect(atom.themes.getActiveThemes().map(t => t.name).sort()).toEqual([
+          'one-dark-syntax',
+          'one-dark-ui'
+        ]);
+        atom.themes.onDidChangeActiveThemes(
+          (didChangeActiveThemesHandler = jasmine.createSpy())
+        );
+        dark.andReturn(false);
+        nativeThemeListener({ shouldUseDarkColors: false });
+      });
+
+      waitsFor(() => didChangeActiveThemesHandler.callCount === 1);
+
+      runs(function() {
+        expect(atom.themes.getActiveThemes().map(t => t.name).sort()).toEqual([
+          'one-light-syntax',
+          'one-light-ui'
+        ]);
+      });
+    });
+  });
+
   describe('::getImportPaths()', function() {
     it('returns the theme directories before the themes are loaded', function() {
       atom.config.set('core.themes', [
