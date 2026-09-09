@@ -40,7 +40,8 @@ function electronMajor(version) {
  * @param {{ force?: boolean, skip?: boolean, hostCanRun?: boolean }} [opts]
  */
 function shouldSkipCustomSnapshot(electronVersion, opts = {}) {
-  if (opts.hostCanRun === false) return { skip: true, reason: 'host-unsupported' };
+  if (opts.hostCanRun === false)
+    return { skip: true, reason: 'host-unsupported' };
   if (opts.skip && !opts.force) return { skip: true, reason: 'env-skip' };
   if (opts.force) return { skip: false, reason: 'forced' };
   const platform = opts.platform || process.platform;
@@ -103,6 +104,35 @@ function isForeignPrebuildPath(
 }
 
 /**
+ * Native modules for a platform this build is not for. text-buffer depends on
+ * winattr, used only on Windows (setting the hidden attribute on save), and
+ * winattr on fswin, which ships a prebuilt Windows DLL per arch. Every macOS
+ * and Linux build carried all three DLLs, and every Windows build the two for
+ * other archs. text-buffer requires winattr lazily, behind a platform check,
+ * so leaving the two packages out elsewhere breaks nothing.
+ */
+function isForeignPlatformNativePath(
+  filePath,
+  platform = process.platform,
+  arch = process.arch
+) {
+  if (!filePath) return false;
+  const normalized = String(filePath).replace(/\\/g, '/');
+  const match = normalized.match(
+    /\/node_modules\/(fswin|winattr)(?:\/([^/]+))?(?:\/|$)/
+  );
+  if (!match) return false;
+  if (platform !== 'win32') return true;
+  // fswin/<arch>/fswin.node: keep the host's.
+  return (
+    match[1] === 'fswin' &&
+    match[2] != null &&
+    ['ia32', 'x64', 'arm64'].includes(match[2]) &&
+    match[2] !== arch
+  );
+}
+
+/**
  * Files that must live on the real filesystem (not only inside app.asar).
  * Keep this list identical across the packager swap so rollback is a dep bump.
  */
@@ -150,6 +180,7 @@ module.exports = {
   shouldSkipCustomSnapshot,
   stockSnapshotNote,
   isForeignPrebuildPath,
+  isForeignPlatformNativePath,
   asarUnpackGlobs,
   asarUnpackExpression
 };
