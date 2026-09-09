@@ -287,6 +287,36 @@ describe('describeDifference', () => {
   });
 });
 
+describe('removeUnpackedSymlinks', () => {
+  it('drops every symlink under the unpacked tree and nothing else', () => {
+    const root = makeTempDir('chevron-universal-test-');
+    const app = fakeApp(root, 'x64');
+    const unpacked = path.join(app, universal.UNPACKED);
+    const gitCore = path.join(
+      unpacked,
+      'node_modules/dugite/git/libexec/git-core'
+    );
+    write(unpacked, 'node_modules/dugite/git/libexec/git-core/git', 'binary');
+    fs.symlinkSync('git', path.join(gitCore, 'git-add'));
+    fs.symlinkSync('git', path.join(gitCore, 'git-commit'));
+    fs.symlinkSync(
+      'nowhere',
+      path.join(app, 'Contents', 'Resources', 'outside-link')
+    );
+
+    assert.equal(universal.removeUnpackedSymlinks(app), 2);
+    assert.ok(fs.existsSync(path.join(gitCore, 'git')), 'the target stays');
+    assert.equal(fs.existsSync(path.join(gitCore, 'git-add')), false);
+    assert.ok(
+      fs
+        .lstatSync(path.join(app, 'Contents', 'Resources', 'outside-link'))
+        .isSymbolicLink(),
+      'only the unpacked tree is touched'
+    );
+    assert.equal(universal.removeUnpackedSymlinks(app), 0, 'idempotent');
+  });
+});
+
 describe('machOToVerify', () => {
   it('lists the binaries the merge must have made fat, and not the ones that stay thin', () => {
     const root = makeTempDir('chevron-universal-test-');

@@ -246,6 +246,26 @@ function preflight(x64AppPath, arm64AppPath) {
   }
 }
 
+// @electron/asar rewrites the merged asar's unpacked tree in place: regular
+// files are overwritten, but symlinks are recreated from the archive header
+// with symlink(2), which fails with EEXIST when one is already there (dugite's
+// git-core is full of them). The x64 bundle is the one @electron/universal
+// copies as its working tree, so its unpacked symlinks are removed first; the
+// merge writes every one of them back. The file walks skip symlinks, so the
+// two bundles still compare equal.
+function removeUnpackedSymlinks(appPath) {
+  const root = path.join(appPath, UNPACKED);
+  let removed = 0;
+  for (const file of listFiles(root)) {
+    const full = path.join(root, file);
+    if (fs.lstatSync(full).isSymbolicLink()) {
+      fs.unlinkSync(full);
+      removed++;
+    }
+  }
+  return removed;
+}
+
 // Which unpacked files exist on one side only. Pure, for the test.
 function unpackedDifferences(x64Files, arm64Files) {
   const x64 = new Set(x64Files);
@@ -415,6 +435,11 @@ async function makeMacUniversal({
     const diff = equaliseUnpacked(stagedX64, stagedArm64);
     preflight(stagedX64, stagedArm64);
     log(
+      `Unpacked symlinks removed from the x64 working copy: ${removeUnpackedSymlinks(
+        stagedX64
+      )}`
+    );
+    log(
       `Unpacked files copied across: ${
         diff.onlyArm64.length
       } arm64-only into the x64 build, ` +
@@ -469,6 +494,7 @@ module.exports = {
   listFiles,
   unpackedDifferences,
   equaliseUnpacked,
+  removeUnpackedSymlinks,
   machOToVerify,
   verifyUniversal,
   makeMacUniversal,
