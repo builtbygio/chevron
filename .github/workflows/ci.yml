@@ -246,6 +246,7 @@ jobs:
           node --test script/ci/ozone-platform.test.js
           node --test script/ci/theme-variants.test.js
           node --test script/ci/mac-universal.test.js
+          node --test script/ci/module-cache-determinism.test.js
           node --test script/ci/autocomplete-follows-active-editor.test.js
           node --test script/ci/find-packaged-app.test.js
           node --test script/ci/ensure-ripgrep.test.js

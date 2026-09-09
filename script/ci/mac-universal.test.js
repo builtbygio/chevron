@@ -244,6 +244,49 @@ describe('nonMachODifferences', () => {
   });
 });
 
+describe('describeDifference', () => {
+  const buf = value =>
+    Buffer.from(typeof value === 'string' ? value : JSON.stringify(value));
+
+  it('names the JSON path that differs, including array length and order', () => {
+    const lines = universal.describeDifference(
+      buf({
+        _atomModuleCache: { extensions: { '.node': ['a.node', 'b.node'] } },
+        v: 1
+      }),
+      buf({
+        _atomModuleCache: {
+          extensions: { '.node': ['b.node', 'a.node', 'c.node'] }
+        },
+        v: 1
+      })
+    );
+    assert.deepEqual(lines, [
+      '$._atomModuleCache.extensions..node: 2 vs 3 entries',
+      '$._atomModuleCache.extensions..node[0]: "a.node" vs "b.node"',
+      '$._atomModuleCache.extensions..node[1]: "b.node" vs "a.node"'
+    ]);
+  });
+
+  it('reports keys present on one side only', () => {
+    assert.deepEqual(
+      universal.describeDifference(buf({ a: 1 }), buf({ b: 1 })),
+      ['$.a: only in x64', '$.b: only in arm64']
+    );
+  });
+
+  it('diffs text by line and gives up on binary', () => {
+    assert.deepEqual(
+      universal.describeDifference(buf('one\ntwo\n'), buf('one\ndeux\n')),
+      ['x64 only: two', 'arm64 only: deux']
+    );
+    assert.deepEqual(
+      universal.describeDifference(Buffer.from([0, 1, 2]), Buffer.from([0, 1])),
+      ['binary: 3 vs 2 bytes']
+    );
+  });
+});
+
 describe('machOToVerify', () => {
   it('lists the binaries the merge must have made fat, and not the ones that stay thin', () => {
     const root = makeTempDir('chevron-universal-test-');

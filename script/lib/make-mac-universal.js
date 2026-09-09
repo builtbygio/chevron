@@ -150,6 +150,70 @@ function asarNonMachODifferences(x64Asar, arm64Asar) {
   return found;
 }
 
+// What differs, for a file the pre-flight is about to refuse: JSON compared
+// by path, text by line, so the log says which key or line rather than only
+// which file.
+function describeDifference(x64Buffer, arm64Buffer, limit = 12) {
+  const parseJson = buffer => {
+    try {
+      return { ok: true, value: JSON.parse(buffer.toString('utf8')) };
+    } catch (error) {
+      return { ok: false };
+    }
+  };
+  const a = parseJson(x64Buffer);
+  const b = parseJson(arm64Buffer);
+  if (a.ok && b.ok) {
+    const found = [];
+    const show = value => {
+      const text = JSON.stringify(value);
+      return text === undefined
+        ? 'undefined'
+        : text.length > 80
+        ? text.slice(0, 77) + '...'
+        : text;
+    };
+    const walk = (x, y, at) => {
+      if (found.length >= limit) return;
+      if (Array.isArray(x) && Array.isArray(y)) {
+        if (x.length !== y.length)
+          found.push(`${at}: ${x.length} vs ${y.length} entries`);
+        const n = Math.min(x.length, y.length);
+        for (let i = 0; i < n && found.length < limit; i++)
+          walk(x[i], y[i], `${at}[${i}]`);
+        return;
+      }
+      if (x && y && typeof x === 'object' && typeof y === 'object') {
+        const keys = new Set([...Object.keys(x), ...Object.keys(y)]);
+        for (const key of [...keys].sort()) {
+          if (found.length >= limit) return;
+          if (!(key in x)) found.push(`${at}.${key}: only in arm64`);
+          else if (!(key in y)) found.push(`${at}.${key}: only in x64`);
+          else walk(x[key], y[key], `${at}.${key}`);
+        }
+        return;
+      }
+      if (x !== y) found.push(`${at}: ${show(x)} vs ${show(y)}`);
+    };
+    walk(a.value, b.value, '$');
+    return found;
+  }
+  const isText = buffer =>
+    buffer.length < 4 * 1024 * 1024 && !buffer.includes(0);
+  if (isText(x64Buffer) && isText(arm64Buffer)) {
+    const linesA = x64Buffer.toString('utf8').split(/\r?\n/);
+    const linesB = arm64Buffer.toString('utf8').split(/\r?\n/);
+    const setA = new Set(linesA);
+    const setB = new Set(linesB);
+    const onlyA = linesA.filter(l => !setB.has(l)).slice(0, limit / 2);
+    const onlyB = linesB.filter(l => !setA.has(l)).slice(0, limit / 2);
+    return onlyA
+      .map(l => `x64 only: ${l}`)
+      .concat(onlyB.map(l => `arm64 only: ${l}`));
+  }
+  return [`binary: ${x64Buffer.length} vs ${arm64Buffer.length} bytes`];
+}
+
 function preflight(x64AppPath, arm64AppPath) {
   const unpacked = nonMachODifferences(
     path.join(x64AppPath, UNPACKED),
@@ -161,11 +225,23 @@ function preflight(x64AppPath, arm64AppPath) {
   ).map(f => path.join(ASAR, f));
   const all = unpacked.concat(inAsar);
   if (all.length) {
+    const asar = inAsar.length ? require('@electron/asar') : null;
+    const read = (appPath, file) =>
+      file.startsWith(UNPACKED)
+        ? fs.readFileSync(path.join(appPath, file))
+        : asar.extractFile(path.join(appPath, ASAR), path.relative(ASAR, file));
+    const report = all.map(file => {
+      const lines = describeDifference(
+        read(x64AppPath, file),
+        read(arm64AppPath, file)
+      );
+      return `${file}\n      ${lines.join('\n      ')}`;
+    });
     throw new Error(
       'These files differ between the Intel and Apple Silicon builds but are ' +
         'not Mach-O, so they cannot be merged. Packaging should not ship them ' +
         '(include-path-in-packaged-app.js), or they must be made identical:\n  ' +
-        all.join('\n  ')
+        report.join('\n  ')
     );
   }
 }
@@ -386,6 +462,7 @@ module.exports = {
   parseLipoArchs,
   isUniversal,
   isMachO,
+  describeDifference,
   nonMachODifferences,
   asarNonMachODifferences,
   preflight,
