@@ -1,5 +1,7 @@
 # Chevron
 
+[![CI](https://github.com/builtbygio/chevron/actions/workflows/ci.yml/badge.svg)](https://github.com/builtbygio/chevron/actions/workflows/ci.yml)
+
 <p align="center">
   <img src="resources/app-icons/stable/png/256.png" alt="Chevron icon" width="128" height="128" />
 </p>
