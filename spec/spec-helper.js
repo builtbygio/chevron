@@ -146,9 +146,19 @@ beforeEach(function() {
     );
   });
 
-  let clipboardContent = 'initial clipboard content';
-  spyOn(clipboard, 'writeText').andCallFake(text => clipboardContent = text);
-  spyOn(clipboard, 'readText').andCallFake(() => clipboardContent);
+  // Electron keeps two clipboards, and the editor uses both: middle-click
+  // paste on Linux reads 'selection'. A stub that ignored the type answered
+  // every selection read with the standard clipboard, so a middle click
+  // pasted 'initial clipboard content' and moved the cursor 25 columns.
+  const clipboardContents = {
+    standard: 'initial clipboard content',
+    selection: ''
+  };
+  const clipboardKey = type => (type === 'selection' ? 'selection' : 'standard');
+  spyOn(clipboard, 'writeText').andCallFake((text, type) => {
+    clipboardContents[clipboardKey(type)] = text;
+  });
+  spyOn(clipboard, 'readText').andCallFake(type => clipboardContents[clipboardKey(type)]);
 
   return addCustomMatchers(this);
 });
