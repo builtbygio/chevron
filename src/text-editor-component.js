@@ -2037,8 +2037,14 @@ module.exports = class TextEditorComponent {
         platform === 'linux' &&
         this.isInputEnabled() &&
         chevron.config.get('editor.selectionClipboard')
-      )
-        model.insertText(clipboard.readText('selection'));
+      ) {
+        // Nothing selected anywhere means nothing to paste. Inserting '' still
+        // runs the insertion, which autoscrolls to the cursor and opens a
+        // transaction, so a middle click meant to place the cursor moved the
+        // view instead.
+        const selectionText = clipboard.readText('selection');
+        if (selectionText) model.insertText(selectionText);
+      }
       return;
     }
 

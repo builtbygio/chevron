@@ -1404,9 +1404,17 @@ describe('TextEditorComponent', () => {
 
   describe('autoscroll', () => {
     it('automatically scrolls vertically when the requested range is within the vertical scroll margin of the top or bottom', async () => {
-      const { component, editor } = buildComponent({
-        height: 120 + horizontalScrollbarHeight
+      // In line heights, like the test below it: 120px showed eight rows only
+      // while the line height stayed near 15, and it is 22.84 with the
+      // current default font.
+      const { component, element, editor } = buildComponent({
+        autoHeight: false
       });
+      element.style.height =
+        7.5 * component.measurements.lineHeight +
+        horizontalScrollbarHeight +
+        'px';
+      await component.getNextUpdatePromise();
       expect(component.getLastVisibleRow()).toBe(7);
 
       editor.scrollToScreenRange([[4, 0], [6, 0]]);
@@ -1471,7 +1479,15 @@ describe('TextEditorComponent', () => {
     });
 
     it('autoscrolls the given range to the center of the screen if the `center` option is true', async () => {
-      const { component, editor } = buildComponent({ height: 50 });
+      // In line heights: 50px showed three rows only near a 15px line height.
+      const { component, element, editor } = buildComponent({
+        autoHeight: false
+      });
+      element.style.height =
+        2.5 * component.measurements.lineHeight +
+        horizontalScrollbarHeight +
+        'px';
+      await component.getNextUpdatePromise();
       expect(component.getLastVisibleRow()).toBe(2);
 
       editor.scrollToScreenRange([[4, 0], [6, 0]], { center: true });

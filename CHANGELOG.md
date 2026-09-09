@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Middle-clicking scrolled the editor when there was nothing to paste.** On Linux a middle click places the cursor and pastes the selection clipboard, but it pasted unconditionally: with nothing selected anywhere, inserting an empty string still ran the insertion, which autoscrolled to the cursor and opened a transaction. A middle click meant to place the cursor moved the view instead. Nothing to paste now does nothing.
+
 - **A cursor could stay invisible after being moved.** Moving a cursor pauses the blink and shows it solid until the blink resumes, but the resume delay was bound once in the component's constructor, so setting `cursorBlinkResumeDelay` afterwards had no effect — unlike `cursorBlinkPeriod`, which is read on every blink. The delay is now read when the blink pauses, and a pending resume is cancelled when the editor detaches, so a detached component cannot start blinking again.
 
 - **Scrolling to a row could land one row early.** `setScrollTop` stores the scroll position on a physical-pixel boundary — deliberately, because an unreachable position made the editor shake under DPI scaling — but the row was then derived from that rounded value by flooring. Whenever `row * lineHeight` rounded *down*, the answer came back one row short: with a line height of 22.84375, `setFirstVisibleScreenRow(5)` gave 4 and `(11)` gave 10. Roughly half of all rows, for any fractional line height, which is the normal case. Deriving a row from a scroll position now compensates for that half-pixel, leaving the anti-shake rounding intact.
