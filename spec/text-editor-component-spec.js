@@ -4809,13 +4809,15 @@ describe('TextEditorComponent', () => {
         // Middle mouse pasting.
         atom.config.set('editor.selectionClipboard', true);
         editor.setSelectedBufferRange([[1, 6], [1, 10]]);
-        await conditionPromise(() => TextEditor.clipboard.read() === 'sort');
+        await conditionPromise(
+          () => clipboard.readText('selection') === 'sort'
+        );
         component.didMouseDownOnContent({
           button: 1,
           clientX: clientLeftForCharacter(component, 10, 0),
           clientY: clientTopForLine(component, 10)
         });
-        expect(TextEditor.clipboard.read()).toBe('sort');
+        expect(clipboard.readText('selection')).toBe('sort');
         expect(editor.lineTextForBufferRow(10)).toBe('sort');
         editor.undo();
 
@@ -4827,13 +4829,15 @@ describe('TextEditorComponent', () => {
           clientX: clientLeftForCharacter(component, 10, 0),
           clientY: clientTopForLine(component, 10)
         });
-        expect(TextEditor.clipboard.read()).toBe('sort');
+        expect(clipboard.readText('selection')).toBe('sort');
         expect(editor.lineTextForBufferRow(10)).toBe('');
 
         // Ensure left clicks don't interfere.
         atom.config.set('editor.selectionClipboard', true);
         editor.setSelectedBufferRange([[1, 2], [1, 5]]);
-        await conditionPromise(() => TextEditor.clipboard.read() === 'var');
+        await conditionPromise(
+          () => clipboard.readText('selection') === 'var'
+        );
         component.didMouseDownOnContent({
           button: 0,
           detail: 1,
@@ -4865,7 +4869,9 @@ describe('TextEditorComponent', () => {
 
         // Select the word 'sort' on line 2 and copy to clipboard
         editor.setSelectedBufferRange([[1, 6], [1, 10]]);
-        await conditionPromise(() => TextEditor.clipboard.read() === 'sort');
+        await conditionPromise(
+          () => clipboard.readText('selection') === 'sort'
+        );
 
         // Middle-click in the buffer at line 11, column 1
         component.didMouseDownOnContent({
@@ -4875,7 +4881,7 @@ describe('TextEditorComponent', () => {
         });
 
         // Ensure that the correct text was copied but not pasted
-        expect(TextEditor.clipboard.read()).toBe('sort');
+        expect(clipboard.readText('selection')).toBe('sort');
         expect(editor.lineTextForBufferRow(10)).toBe('');
       });
     });

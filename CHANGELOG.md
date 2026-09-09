@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The spec suite modelled one clipboard where the editor uses two.** `spec/spec-helper.js` stubbed `clipboard.readText`/`writeText` ignoring their `type` argument, so a read of the `'selection'` clipboard answered with the standard one. Middle-click paste on Linux reads `'selection'`, so every middle click in a spec pasted the harness's own `'initial clipboard content'` — moving the cursor 25 columns and making the mouse-positioning tests disagree with the editor about where a click landed. The stub now keeps the two apart, and the two middle-click paste tests assert against the clipboard the editor actually writes to. `text-editor-component-spec`: 34 failed assertions → 25, and both paste tests pass. No app code changed.
+
 ### Changed
 
 - **The workspace-trust prompt defaults to "Don't trust".** Granting lets a project's own tooling execute — build scripts, plugins in `node_modules`, proc macros — so the modal now focuses the declining button, and Enter acts on whichever button is focused rather than always granting. Trusting still takes one click, and the native dialog in `src/main-process/lsp-trust.js` already defaulted to Cancel; this is the in-editor half of the same decision.
