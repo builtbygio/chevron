@@ -6,6 +6,7 @@ const { Emitter, CompositeDisposable } = require('event-kit');
 const { File } = require('pathwatcher');
 const fs = require('fs-plus');
 const LessCompileCache = require('./less-compile-cache');
+const { themeNamesForAppearance } = require('./theme-variants');
 
 // Extended: Handles loading and activating available themes.
 //
@@ -38,14 +39,18 @@ module.exports = class ThemeManager {
     config,
     styleManager,
     notificationManager,
-    viewRegistry
+    viewRegistry,
+    applicationDelegate
   }) {
     this.packageManager = packageManager;
     this.config = config;
     this.styleManager = styleManager;
     this.notificationManager = notificationManager;
     this.viewRegistry = viewRegistry;
+    this.applicationDelegate = applicationDelegate;
     this.emitter = new Emitter();
+    this.themeReloads = Promise.resolve();
+    this.activationSubscriptions = new CompositeDisposable();
     this.styleSheetDisposablesBySourcePath = {};
     this.lessCache = null;
     this.initialLoadComplete = false;
@@ -185,6 +190,16 @@ module.exports = class ThemeManager {
         this.packageManager.resolvePackagePath(themeName)
     );
 
+    // core.followSystemTheme: the configured names pick a family, the OS
+    // appearance picks the variant (one-dark-ui becomes one-light-ui on a
+    // light desktop). See theme-variants.js.
+    if (this.isFollowingSystemTheme()) {
+      themeNames = themeNamesForAppearance(themeNames, {
+        dark: this.shouldUseDarkColors(),
+        exists: name => !!this.packageManager.resolvePackagePath(name)
+      });
+    }
+
     // Use a built-in syntax and UI theme any time the configured themes are not
     // available.
     if (themeNames.length < 2) {
@@ -213,6 +228,22 @@ module.exports = class ThemeManager {
     // Reverse so the first (top) theme is loaded after the others. We want
     // the first/top theme to override later themes in the stack.
     return themeNames.reverse();
+  }
+
+  // Public: Whether the light/dark variant of the configured themes follows
+  // the operating system appearance (`core.followSystemTheme`).
+  isFollowingSystemTheme() {
+    return (
+      !!this.config.get('core.followSystemTheme') &&
+      !!this.applicationDelegate &&
+      typeof this.applicationDelegate.shouldUseDarkColors === 'function'
+    );
+  }
+
+  // Public: Whether the operating system currently asks for dark colors, as
+  // reported by Electron's nativeTheme in the main process.
+  shouldUseDarkColors() {
+    return !!this.applicationDelegate.shouldUseDarkColors();
   }
 
   /*
@@ -411,9 +442,45 @@ On linux there are currently problems with watch sizes. See
   }
 
   activateThemes() {
+    // Activating again (specs do) replaces the triggers rather than adding a
+    // second set. They are deliberately not dropped by deactivateThemes(),
+    // which every reload goes through.
+    this.activationSubscriptions.dispose();
+    this.activationSubscriptions = new CompositeDisposable();
     return new Promise(resolve => {
       // @config.observe runs the callback once, then on subsequent changes.
-      this.config.observe('core.themes', () => {
+      this.activationSubscriptions.add(
+        this.config.observe('core.themes', () => {
+          this.reloadThemes().then(resolve);
+        })
+      );
+
+      // The other two triggers only matter once the first load is through.
+      this.activationSubscriptions.add(
+        this.config.onDidChange('core.followSystemTheme', () => {
+          this.reloadThemes();
+        })
+      );
+      if (
+        this.applicationDelegate &&
+        typeof this.applicationDelegate.onDidChangeNativeTheme === 'function'
+      ) {
+        this.activationSubscriptions.add(
+          this.applicationDelegate.onDidChangeNativeTheme(() => {
+            if (this.isFollowingSystemTheme()) this.reloadThemes();
+          })
+        );
+      }
+    });
+  }
+
+  // Deactivate the active themes and activate the enabled ones. Reloads are
+  // serialised: a config change and an OS appearance change arriving together
+  // must not deactivate a theme the other is still activating. A failed reload
+  // is reported and does not block the next one.
+  reloadThemes() {
+    this.themeReloads = this.themeReloads
+      .then(() =>
         this.deactivateThemes().then(() => {
           this.warnForNonExistentThemes();
           this.refreshLessCache(); // Update cache for packages in core.themes config
@@ -436,11 +503,13 @@ On linux there are currently problems with watch sizes. See
             this.reloadBaseStylesheets();
             this.initialLoadComplete = true;
             this.emitter.emit('did-change-active-themes');
-            resolve();
           });
-        });
+        })
+      )
+      .catch(error => {
+        console.error('Failed to reload themes', error);
       });
-    });
+    return this.themeReloads;
   }
 
   deactivateThemes() {

@@ -51,6 +51,11 @@ const EXCLUDE_REGEXPS_SOURCES = [
   escapeRegExp(path.join('build', 'Release', 'obj.target')),
   escapeRegExp(path.join('build', 'Release', 'obj')),
   escapeRegExp(path.join('build', 'Release', '.deps')),
+  // Link-time leftovers of node-gyp: static archives and their stamp files.
+  // Nothing loads them, and they differ per arch, which the macOS universal
+  // merge refuses (make-mac-universal.js).
+  escapeRegExp(path.join('build', 'Release') + path.sep) +
+    '[^' + escapeRegExp(path.sep) + ']+\\.(a|stamp|ar-file-list)$',
   escapeRegExp(path.join('deps', 'libgit2')),
 
   // These are only required in dev-mode, when pegjs grammars aren't precompiled

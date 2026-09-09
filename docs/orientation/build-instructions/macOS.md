@@ -1,6 +1,6 @@
 # Building and installing Chevron on macOS
 
-**Status:** CI for **Intel (x64)** and **Apple Silicon (arm64)**  
+**Status:** CI builds **Intel (x64)** and **Apple Silicon (arm64)**, then merges them into one **universal** `Chevron.app`  
 **Host toolchain:** Node **24** + **pnpm 11** + Python **3.12** (+ `setuptools`) via `script/bootstrap-modern`  
 **Runtime:** Electron 43
 
@@ -15,7 +15,7 @@
 | **pnpm 11** | App deps: `corepack enable` (packageManager is `pnpm@11.22.0`) |
 | **Python 3.12** | `brew install python@3.12` + `pip install setuptools` |
 
-Native arch is used as-is: run bootstrap/build on an Apple Silicon Mac for arm64, or on Intel (or under Rosetta) for x64. CI builds both separately.
+Native arch is used as-is: run bootstrap/build on an Apple Silicon Mac for arm64, or on Intel (or under Rosetta) for x64. CI builds both separately and merges them with `./script/mac-universal` (see [packaging.md](../../reference/packaging.md#macos-universal-bundle)); a local build is single-arch.
 
 ---
 

@@ -432,6 +432,28 @@
     "legacyName": "atom-is-default-protocol-client-sync"
   },
   {
+    "channel": "chevron:native-theme",
+    "kind": "handle",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:native-theme-sync",
+    "kind": "on",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": null
+  },
+  {
     "channel": "chevron:popup-menu",
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",

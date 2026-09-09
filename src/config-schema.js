@@ -135,6 +135,13 @@ const configSchema = {
         description:
           'Names of UI and syntax themes which will be used when Chevron starts.'
       },
+      followSystemTheme: {
+        type: 'boolean',
+        default: false,
+        title: 'Follow System Theme',
+        description:
+          'Switch between the light and dark variants of the configured themes (for example One Dark and One Light) as the operating system appearance changes.'
+      },
       audioBeep: {
         type: 'boolean',
         default: true,

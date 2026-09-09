@@ -93,6 +93,14 @@ function loadDependencies(modulePath, rootPath, rootMetadata, moduleCache) {
   }
 }
 
+// Per-arch prebuilt natives (prebuilds/<platform>-<arch>/*.node) are found
+// by node-gyp-build scanning the directory, never through this cache, and
+// listing them made the Intel and Apple Silicon builds' package.json differ,
+// which the universal merge refuses.
+function isPerArchPrebuildPath(relativePath) {
+  return relativePath.split(path.sep).includes('prebuilds');
+}
+
 function loadFolderCompatibility(
   modulePath,
   rootPath,
@@ -121,6 +129,9 @@ function loadFolderCompatibility(
     const needle = path.extname(childPath);
     if (extensions.includes(needle)) {
       const relativePath = path.relative(rootPath, path.dirname(childPath));
+      // Same reason as in loadExtensions: per-arch, and nothing in there
+      // requires anything.
+      if (isPerArchPrebuildPath(relativePath)) return;
       paths[relativePath] = true;
     }
   }
@@ -158,6 +169,7 @@ function loadExtensions(modulePath, rootPath, rootMetadata, moduleCache) {
     if (segments.includes('tests')) return;
     if (segments.includes('spec')) return;
     if (segments.includes('specs')) return;
+    if (isPerArchPrebuildPath(filePath)) return;
     if (
       segments.length > 1 &&
       !['exports', 'lib', 'node_modules', 'src', 'static', 'vendor'].includes(
@@ -307,9 +319,47 @@ exports.create = function(modulePath) {
   loadFolderCompatibility(modulePath, modulePath, metadata, moduleCache);
   loadExtensions(modulePath, modulePath, metadata, moduleCache);
 
-  metadata._atomModuleCache = moduleCache;
+  metadata._atomModuleCache = sortModuleCache(moduleCache);
   fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
 };
+
+// Everything above is collected in readdir order, which APFS does not sort,
+// so two machines wrote the same cache with its arrays shuffled and the
+// Intel and Apple Silicon package.json files differed for no reason the
+// universal merge could accept. Loading turns these into sets and maps, so
+// the order is free to be alphabetical.
+function sortModuleCache(moduleCache) {
+  const byString = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+  const sortedObject = object =>
+    Object.keys(object)
+      .sort(byString)
+      .reduce((sorted, key) => {
+        sorted[key] = object[key];
+        return sorted;
+      }, {});
+
+  const extensions = {};
+  for (const extension of Object.keys(moduleCache.extensions).sort(byString)) {
+    extensions[extension] = moduleCache.extensions[extension]
+      .slice()
+      .sort(byString);
+  }
+
+  return {
+    version: moduleCache.version,
+    dependencies: moduleCache.dependencies
+      .slice()
+      .sort((a, b) => byString(a.path, b.path) || byString(a.name, b.name)),
+    extensions,
+    folders: moduleCache.folders
+      .map(folder => ({
+        paths: folder.paths.slice().sort(byString),
+        dependencies: sortedObject(folder.dependencies)
+      }))
+      .sort((a, b) => byString(a.paths.join('\n'), b.paths.join('\n')))
+  };
+}
+exports.sortModuleCache = sortModuleCache;
 
 exports.register = function({ resourcePath, devMode } = {}) {
   if (cache.registered) return;

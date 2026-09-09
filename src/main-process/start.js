@@ -11,6 +11,7 @@ const CSON = require('./json-file');
 const Config = require('../config');
 const { resolveUserDataFile } = require('../user-config-path');
 const StartupTime = require('../startup-time');
+const { ozonePlatformHintToApply } = require('./ozone-platform');
 
 StartupTime.setStartTime();
 
@@ -49,6 +50,18 @@ module.exports = function start(resourcePath, devResourcePath, startTime) {
   // (generic binary icon otherwise when launched without a desktop entry).
   if (process.platform === 'linux') {
     app.commandLine.appendSwitch('class', 'Chevron');
+  }
+
+  // Linux: run natively on Wayland when the session offers it (most desktops
+  // default to it now) instead of through XWayland. See ozone-platform.js for
+  // the overrides that win over this.
+  const ozoneHint = ozonePlatformHintToApply({
+    platform: process.platform,
+    argv: process.argv,
+    env: process.env
+  });
+  if (ozoneHint) {
+    app.commandLine.appendSwitch('ozone-platform-hint', ozoneHint);
   }
 
   const args = parseCommandLine(process.argv.slice(1));

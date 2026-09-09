@@ -7,8 +7,13 @@ const { path7za } = require('7zip-bin');
 
 const CONFIG = require('../config');
 
-module.exports = function(packagedAppPath) {
-  const appArchivePath = path.join(CONFIG.buildOutputPath, getArchiveName());
+// `archiveName` overrides the per-host name, e.g. for a universal macOS
+// bundle that script/mac-universal merged from two builds.
+module.exports = function(packagedAppPath, { archiveName } = {}) {
+  const appArchivePath = path.join(
+    CONFIG.buildOutputPath,
+    archiveName || getArchiveName()
+  );
   compress(packagedAppPath, appArchivePath);
 
   if (process.platform === 'darwin') {
