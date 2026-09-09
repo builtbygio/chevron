@@ -31,6 +31,13 @@ function write(root, file, content = '') {
 }
 
 // A minimal bundle: one binary, one framework, one helper, natives.
+// A thin Mach-O for `arch`: the magic, then the arch as a payload so the two
+// builds' bytes differ.
+const machO = arch =>
+  Buffer.concat([Buffer.from([0xcf, 0xfa, 0xed, 0xfe]), Buffer.from(arch)]);
+// A Windows DLL, as fswin ships for every platform.
+const PE = Buffer.from('MZ\x90\x00 not a mach-o');
+
 function fakeApp(root, arch) {
   const app = path.join(root, arch, 'Chevron.app');
   write(app, 'Contents/MacOS/Chevron', arch);
@@ -45,11 +52,11 @@ function fakeApp(root, arch) {
     arch
   );
   const unpacked = path.join(app, universal.UNPACKED);
-  write(
-    unpacked,
-    'node_modules/superstring/build/Release/superstring.node',
-    arch
+  fs.writeFileSync(
+    write(unpacked, 'node_modules/superstring/build/Release/superstring.node'),
+    machO(arch)
   );
+  fs.writeFileSync(write(unpacked, 'node_modules/fswin/arm64/fswin.node'), PE);
   fs.chmodSync(
     write(
       unpacked,
@@ -119,16 +126,15 @@ describe('equaliseUnpacked', () => {
       universal.listFiles(path.join(arm64, universal.UNPACKED))
     );
     // Copied, not merged: each side keeps its own bytes where both had a file.
-    assert.equal(
+    assert.deepEqual(
       fs.readFileSync(
         path.join(
           x64,
           universal.UNPACKED,
           'node_modules/superstring/build/Release/superstring.node'
-        ),
-        'utf8'
+        )
       ),
-      'x64'
+      machO('x64')
     );
     assert.equal(
       fs.readFileSync(
@@ -165,9 +171,6 @@ describe('equaliseUnpacked', () => {
 });
 
 describe('nonMachODifferences', () => {
-  const machO = arch =>
-    Buffer.concat([Buffer.from([0xcf, 0xfa, 0xed, 0xfe]), Buffer.from(arch)]);
-
   it('recognises Mach-O by its magic, in either byte order, thin or fat', () => {
     assert.equal(universal.isMachO(machO('x64')), true);
     assert.equal(
@@ -326,7 +329,7 @@ describe('overwritingSymlink', () => {
 });
 
 describe('machOToVerify', () => {
-  it('lists the binaries the merge must have made fat, and not the ones that stay thin', () => {
+  it('lists the binaries the merge must have made fat, and not the ones that stay thin or belong to another platform', () => {
     const root = makeTempDir('chevron-universal-test-');
     const app = fakeApp(root, 'x64');
     const relative = universal

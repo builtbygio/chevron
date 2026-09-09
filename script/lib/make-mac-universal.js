@@ -97,6 +97,18 @@ function listFiles(root) {
   return found.sort();
 }
 
+// The first four bytes, enough for isMachO.
+function readMagic(file) {
+  const fd = fs.openSync(file, 'r');
+  try {
+    const magic = Buffer.alloc(4);
+    const read = fs.readSync(fd, magic, 0, 4, 0);
+    return magic.subarray(0, read);
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
 function isMachO(buffer) {
   return (
     Buffer.isBuffer(buffer) &&
@@ -353,7 +365,13 @@ function machOToVerify(appPath) {
   for (const file of listFiles(unpacked)) {
     if (!file.endsWith('.node')) continue;
     if (/(^|\/)prebuilds\/darwin-[^/]+\//.test(file)) continue;
-    files.push(path.join(unpacked, file));
+    const full = path.join(unpacked, file);
+    // A .node for another platform ships too (fswin's Windows DLLs, through
+    // text-buffer's winattr). lipo has nothing to say about those.
+    if (fs.lstatSync(full).isSymbolicLink() || !isMachO(readMagic(full))) {
+      continue;
+    }
+    files.push(full);
   }
   return files;
 }
@@ -509,6 +527,7 @@ module.exports = {
   parseLipoArchs,
   isUniversal,
   isMachO,
+  readMagic,
   describeDifference,
   overwritingSymlink,
   installSymlinkOverwrite,
