@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`text-editor-component-spec` measured the editor in pixels written for a smaller font.** Several tests asked for a literal height, width or scroll offset and expected a row or column count that only followed at a line height near 15–17px and a character width under 8.4px; both are larger with the current default font. `setEditorHeightInLines` also asked for an exact multiple of a fractional line height, which the DOM rounds *up* to a whole pixel — two lines of 22.84 measured 46px, read as slightly more than two lines, and rendered an extra tile. Expressed in line heights and character widths, as the surrounding tests already do. No app code changed.
+
 - **Middle-clicking scrolled the editor when there was nothing to paste.** On Linux a middle click places the cursor and pastes the selection clipboard, but it pasted unconditionally: with nothing selected anywhere, inserting an empty string still ran the insertion, which autoscrolled to the cursor and opened a transaction. A middle click meant to place the cursor moved the view instead. Nothing to paste now does nothing.
 
 - **A cursor could stay invisible after being moved.** Moving a cursor pauses the blink and shows it solid until the blink resumes, but the resume delay was bound once in the component's constructor, so setting `cursorBlinkResumeDelay` afterwards had no effect — unlike `cursorBlinkPeriod`, which is read on every blink. The delay is now read when the blink pauses, and a pending resume is cancelled when the editor detaches, so a detached component cannot start blinking again.

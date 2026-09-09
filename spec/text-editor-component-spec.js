@@ -2648,7 +2648,10 @@ describe('TextEditorComponent', () => {
       expect(overlayElement.getBoundingClientRect().right).toBeNear(
         fakeWindow.getBoundingClientRect().right
       );
-      await setScrollLeft(component, 280);
+      // Far enough that the marker at column 25 is off the left edge. A
+      // literal 280 only managed that while the character width stayed
+      // under 8.4; it is 9.61 with the current default font.
+      await setScrollLeft(component, component.getMaxScrollLeft());
       expect(overlayElement.getBoundingClientRect().left).toBeNear(
         fakeWindow.getBoundingClientRect().left
       );
@@ -2724,7 +2727,10 @@ describe('TextEditorComponent', () => {
       expect(overlayElement.getBoundingClientRect().right).toBeGreaterThan(
         fakeWindow.getBoundingClientRect().right
       );
-      await setScrollLeft(component, 280);
+      // Far enough that the marker at column 25 is off the left edge. A
+      // literal 280 only managed that while the character width stayed
+      // under 8.4; it is 9.61 with the current default font.
+      await setScrollLeft(component, component.getMaxScrollLeft());
       expect(overlayElement.getBoundingClientRect().left).toBeLessThan(
         fakeWindow.getBoundingClientRect().left
       );
@@ -5197,7 +5203,18 @@ describe('TextEditorComponent', () => {
 
     describe('on the scrollbars', () => {
       it('delegates the mousedown events to the parent component unless the mousedown was on the actual scrollbar', async () => {
-        const { component, editor } = buildComponent({ height: 100 });
+        // In line heights: the last assertion clicks one pixel above the
+        // horizontal scrollbar and expects row 4, which needs five rows of
+        // content. 100px managed that only near a 17px line height; it is
+        // 22.84 with the current default font.
+        const { component, element, editor } = buildComponent({
+          autoHeight: false
+        });
+        element.style.height =
+          4.5 * component.measurements.lineHeight +
+          horizontalScrollbarHeight +
+          'px';
+        await component.getNextUpdatePromise();
         await setEditorWidthInCharacters(component, 6);
 
         const verticalScrollbar = component.refs.verticalScrollbar;
@@ -6223,8 +6240,12 @@ function getEditorWidthInBaseCharacters(component) {
 }
 
 async function setEditorHeightInLines(component, heightInLines) {
+  // Floor: the DOM reports offsetHeight as a whole pixel, so an exact multiple
+  // of a fractional line height rounds *up* — two lines of 22.84 asked for
+  // 45.6875px and measured 46, which reads as slightly more than two lines and
+  // renders an extra tile.
   component.element.style.height =
-    component.getLineHeight() * heightInLines + 'px';
+    Math.floor(component.getLineHeight() * heightInLines) + 'px';
   await component.getNextUpdatePromise();
 }
 
