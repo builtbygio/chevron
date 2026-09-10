@@ -20,30 +20,31 @@ module.exports = function parseCommandLine(processArgs) {
     .wrap(yargs.terminalWidth());
   const version = app.getVersion();
   options.usage(
-    dedent`Atom Editor v${version}
+    dedent`Chevron v${version}
 
     Usage:
-      atom
-      atom [options] [path ...]
-      atom file[:line[:column]]
+      chevron
+      chevron [options] [path ...]
+      chevron file[:line[:column]]
 
     One or more paths to files or folders may be specified. If there is an
-    existing Atom window that contains all of the given folders, the paths
+    existing Chevron window that contains all of the given folders, the paths
     will be opened in that window. Otherwise, they will be opened in a new
     window.
 
     A file may be opened at the desired line (and optionally column) by
-    appending the numbers right after the file name, e.g. \`atom file:5:8\`.
+    appending the numbers right after the file name, e.g. \`chevron file:5:8\`.
 
     Paths that start with \`chevron://\` will be interpreted as URLs.
 
     Environment Variables:
 
-      ATOM_DEV_RESOURCE_PATH  The path from which Atom loads source code in dev mode.
+      ATOM_DEV_RESOURCE_PATH  The path from which Chevron loads source code in dev mode.
                               Defaults to \`~/github/atom\`.
 
-      ATOM_HOME               The root path for all configuration files and folders.
-                              Defaults to \`~/.atom\`.`
+      CHEVRON_HOME            The root path for all configuration files and folders.
+                              Defaults to \`~/.chevron\`. ATOM_HOME is still read as a
+                              legacy override.`
   );
   // Deprecated 1.0 API preview flag
   options
@@ -130,7 +131,7 @@ module.exports = function parseCommandLine(processArgs) {
   options.boolean('uri-handler');
   options
     .version(
-      dedent`Atom    : ${version}
+      dedent`Chevron : ${version}
              Electron: ${process.versions.electron}
              Chrome  : ${process.versions.chrome}
              Node    : ${process.versions.node}`

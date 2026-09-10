@@ -83,7 +83,9 @@ describe('packaging policy (Stream D)', () => {
 
   it('note mentions CHEVRON_SKIP_MKSNAPSHOT', () => {
     assert.ok(
-      stockSnapshotNote('43.1.0', 'env-skip').includes('CHEVRON_SKIP_MKSNAPSHOT')
+      stockSnapshotNote('43.1.0', 'env-skip').includes(
+        'CHEVRON_SKIP_MKSNAPSHOT'
+      )
     );
     assert.ok(
       stockSnapshotNote('43.1.0', 'linux-spell-check-flake').includes(
@@ -97,7 +99,10 @@ describe('packaging policy (Stream D)', () => {
   it('getHostArch does not require @electron/get', () => {
     assert.strictEqual(getHostArch({}, 'x64'), 'x64');
     assert.strictEqual(getHostArch({}, 'arm64'), 'arm64');
-    assert.strictEqual(getHostArch({ npm_config_arch: 'arm64' }, 'x64'), 'arm64');
+    assert.strictEqual(
+      getHostArch({ npm_config_arch: 'arm64' }, 'x64'),
+      'arm64'
+    );
     assert.strictEqual(getHostArch({}, 'arm'), 'armv7l');
     const impl = fs.readFileSync(
       path.join(ROOT, 'script', 'lib', 'package-application.js'),
@@ -217,13 +222,127 @@ describe('rpm spec template', () => {
       path.join(ROOT, 'script/lib/create-rpm-package.js'),
       'utf8'
     );
-    const used = new Set([...spec.matchAll(/<%=\s*(\w+)\s*%>/g)].map(m => m[1]));
+    const used = new Set(
+      [...spec.matchAll(/<%=\s*(\w+)\s*%>/g)].map(m => m[1])
+    );
     // Keys appear as `name: value`, `name,`, or bare shorthand on the last
     // entry with no trailing comma.
     const provided = new Set(
       [...src.matchAll(/^\s*(\w+)\s*(?::|,|$)/gm)].map(m => m[1])
     );
     const missing = [...used].filter(k => !provided.has(k));
-    assert.deepStrictEqual(missing, [], `spec placeholders with no data: ${missing}`);
+    assert.deepStrictEqual(
+      missing,
+      [],
+      `spec placeholders with no data: ${missing}`
+    );
+  });
+});
+
+describe('isForeignPlatformNativePath', () => {
+  const { isForeignPlatformNativePath } = require(path.join(
+    ROOT,
+    'script',
+    'lib',
+    'packaging-policy'
+  ));
+
+  it('leaves fswin and winattr out of macOS and Linux builds', () => {
+    for (const platform of ['darwin', 'linux']) {
+      assert.equal(
+        isForeignPlatformNativePath(
+          '/app/node_modules/fswin/x64/fswin.node',
+          platform,
+          'x64'
+        ),
+        true
+      );
+      assert.equal(
+        isForeignPlatformNativePath(
+          '/app/node_modules/fswin/index.js',
+          platform,
+          'arm64'
+        ),
+        true
+      );
+      assert.equal(
+        isForeignPlatformNativePath(
+          '/app/node_modules/winattr/index.js',
+          platform,
+          'x64'
+        ),
+        true
+      );
+    }
+  });
+
+  it("keeps winattr and the host arch's fswin DLL on Windows, and drops the other archs", () => {
+    assert.equal(
+      isForeignPlatformNativePath(
+        '/app/node_modules/winattr/index.js',
+        'win32',
+        'x64'
+      ),
+      false
+    );
+    assert.equal(
+      isForeignPlatformNativePath(
+        '/app/node_modules/fswin/index.js',
+        'win32',
+        'x64'
+      ),
+      false
+    );
+    assert.equal(
+      isForeignPlatformNativePath(
+        '/app/node_modules/fswin/x64/fswin.node',
+        'win32',
+        'x64'
+      ),
+      false
+    );
+    assert.equal(
+      isForeignPlatformNativePath(
+        '/app/node_modules/fswin/ia32/fswin.node',
+        'win32',
+        'x64'
+      ),
+      true
+    );
+    assert.equal(
+      isForeignPlatformNativePath(
+        '/app/node_modules/fswin/arm64/fswin.node',
+        'win32',
+        'x64'
+      ),
+      true
+    );
+    assert.equal(
+      isForeignPlatformNativePath(
+        'C:\\app\\node_modules\\fswin\\arm64\\fswin.node',
+        'win32',
+        'arm64'
+      ),
+      false
+    );
+  });
+
+  it('does not mistake other modules or paths for them', () => {
+    assert.equal(
+      isForeignPlatformNativePath(
+        '/app/node_modules/fswin-like/index.js',
+        'darwin',
+        'x64'
+      ),
+      false
+    );
+    assert.equal(
+      isForeignPlatformNativePath('/app/src/fswin.js', 'darwin', 'x64'),
+      false
+    );
+    assert.equal(
+      isForeignPlatformNativePath(undefined, 'darwin', 'x64'),
+      false
+    );
   });
 });

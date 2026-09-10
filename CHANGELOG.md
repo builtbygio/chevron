@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`chevron --help` and `chevron --version` still introduced themselves as Atom.** The banner read `Atom Editor v1.4.0` and `Atom    : 1.4.0`, the usage examples said `atom`, and the environment section named `ATOM_HOME` with a `~/.atom` default. They now say Chevron and describe `CHEVRON_HOME`, with `ATOM_HOME` noted as the legacy override it is.
+
+- **Every build shipped fswin's Windows DLLs.** text-buffer depends on `winattr` for the hidden-file attribute on Windows saves, and `winattr` on `fswin`, which carries a prebuilt DLL for each of ia32, x64 and arm64. macOS and Linux packages carried all three, Windows the two for other archs; the universal macOS merge tripped over them. Packaging now leaves both packages out on macOS and Linux and keeps only the host arch's DLL on Windows. text-buffer only requires `winattr` behind a Windows check, so nothing else changes.
+
 - **`text-editor-component-spec` measured the editor in pixels written for a smaller font.** Several tests asked for a literal height, width or scroll offset and expected a row or column count that only followed at a line height near 15–17px and a character width under 8.4px; both are larger with the current default font. `setEditorHeightInLines` also asked for an exact multiple of a fractional line height, which the DOM rounds *up* to a whole pixel — two lines of 22.84 measured 46px, read as slightly more than two lines, and rendered an extra tile. Expressed in line heights and character widths, as the surrounding tests already do. No app code changed.
 
 - **Middle-clicking scrolled the editor when there was nothing to paste.** On Linux a middle click places the cursor and pastes the selection clipboard, but it pasted unconditionally: with nothing selected anywhere, inserting an empty string still ran the insertion, which autoscrolled to the cursor and opened a transaction. A middle click meant to place the cursor moved the view instead. Nothing to paste now does nothing.

@@ -3,10 +3,14 @@
 const fs = require('fs');
 const path = require('path');
 const CONFIG = require('../config');
-const { isForeignPrebuildPath } = require('./packaging-policy');
+const {
+  isForeignPrebuildPath,
+  isForeignPlatformNativePath
+} = require('./packaging-policy');
 
 module.exports = function(filePath) {
   if (isForeignPrebuildPath(filePath)) return false;
+  if (isForeignPlatformNativePath(filePath)) return false;
   return (
     !EXCLUDED_PATHS_REGEXP.test(filePath) ||
     INCLUDED_PATHS_REGEXP.test(filePath)
@@ -55,7 +59,9 @@ const EXCLUDE_REGEXPS_SOURCES = [
   // Nothing loads them, and they differ per arch, which the macOS universal
   // merge refuses (make-mac-universal.js).
   escapeRegExp(path.join('build', 'Release') + path.sep) +
-    '[^' + escapeRegExp(path.sep) + ']+\\.(a|stamp|ar-file-list)$',
+    '[^' +
+    escapeRegExp(path.sep) +
+    ']+\\.(a|stamp|ar-file-list)$',
   escapeRegExp(path.join('deps', 'libgit2')),
 
   // These are only required in dev-mode, when pegjs grammars aren't precompiled
@@ -222,7 +228,9 @@ for (const devTool of [
 ]) {
   EXCLUDE_REGEXPS_SOURCES.push(
     '^' +
-      escapeRegExp(path.join(CONFIG.repositoryRootPath, 'node_modules', devTool)) +
+      escapeRegExp(
+        path.join(CONFIG.repositoryRootPath, 'node_modules', devTool)
+      ) +
       '($|' +
       escapeRegExp(path.sep) +
       ')'
@@ -246,7 +254,9 @@ function languageServerOnlyPackages() {
 
   const manifestAt = dir => {
     try {
-      return JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
+      return JSON.parse(
+        fs.readFileSync(path.join(dir, 'package.json'), 'utf8')
+      );
     } catch (error) {
       return null;
     }
@@ -269,7 +279,9 @@ function languageServerOnlyPackages() {
       if (!/^chevron-lsp-/.test(entry)) continue;
       const manifest = manifestAt(path.join(packagesDir, entry));
       if (manifest) {
-        serverRoots = serverRoots.concat(Object.keys(manifest.dependencies || {}));
+        serverRoots = serverRoots.concat(
+          Object.keys(manifest.dependencies || {})
+        );
       }
     }
   } catch (error) {
