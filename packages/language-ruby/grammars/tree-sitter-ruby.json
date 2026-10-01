@@ -5,7 +5,7 @@
   "parser": "tree-sitter-ruby",
   "injectionRegex": "rb|ruby",
   "firstLineRegex": [
-    "^#!.*\\b(w*ruby|rake)\\r?\\n",
+    "^#!.*\\b(\\w*ruby|rake)\\r?\\n",
     "vim\\b.*\\bset\\b.*\\b(filetype|ft|syntax)=ruby"
   ],
   "fileTypes": [
