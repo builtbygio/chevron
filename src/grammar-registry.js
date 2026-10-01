@@ -339,7 +339,9 @@ module.exports = class GrammarRegistry {
 
   grammarForId(languageId) {
     if (!languageId) return null;
-    return this.treeSitterGrammarsById[languageId] || null;
+    const grammar = this.treeSitterGrammarsById[languageId];
+    // Not a placeholder holding injection points for a grammar not yet loaded.
+    return grammar instanceof TreeSitterGrammar ? grammar : null;
   }
 
   // Deprecated: Get the grammar override for the given file path.
@@ -467,7 +469,14 @@ module.exports = class GrammarRegistry {
     }
     return new Disposable(() => {
       const grammar = this.treeSitterGrammarsById[grammarId];
-      grammar.removeInjectionPoint(injectionPoint);
+      if (!grammar) return;
+      if (grammar.removeInjectionPoint) {
+        grammar.removeInjectionPoint(injectionPoint);
+      } else {
+        grammar.injectionPoints = grammar.injectionPoints.filter(
+          point => point !== injectionPoint
+        );
+      }
     });
   }
 

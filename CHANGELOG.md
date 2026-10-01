@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Ruby scripts with a `jruby` or `macruby` shebang were not recognised.** The Ruby grammar's first-line regex read `w*ruby` where it meant `\w*ruby` — a backslash lost converting it from CSON — so only a shebang naming plain `ruby` or `rake` selected Ruby.
+
+- **A language override could resolve to a placeholder.** When a package registers an injection point for a grammar that has not loaded yet, the registry holds a placeholder under that grammar's id. `grammarForId` returned it, so a buffer whose saved override named that language got a nameless plain-text mode until the language loaded; disposing the injection point before then threw. `grammarForId` now returns only loaded grammars, and the disposal works either way. `grammar-registry-spec` is rewritten for tree-sitter grammars (it loaded TextMate `.cson` files and could not start).
+
 - **Auto-indent was broken in ten languages.** The indent patterns in each language's settings are Oniguruma regexes, compiled with `new RegExp` since TextMate went. Twenty of them use extended mode `(?x)` or possessive quantifiers, which JavaScript rejects, and a pattern that fails to compile is silently dropped — so C, C++, Objective-C, C#, HTML, JavaScript, Ruby, Rust, Sass and TypeScript lost some or all of their indent rules — in the brace languages, Enter after `{` did not indent and a typed `}` did not outdent. Those two constructs are now rewritten before compiling, and a spec compiles every bundled pattern. `text-editor-spec` also catches up: 35 failures → 0.
 
 - **Enter in a plain-text file dropped the indentation.** Files with no tree-sitter grammar — a `.txt`, or any unknown extension — use `PlainTextLanguageMode`, which had no indent suggestion, so a new line always started at column 0 even with `editor.autoIndent` on. It now carries the preceding non-blank row's indentation, as Atom did for the null grammar.
