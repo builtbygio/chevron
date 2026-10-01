@@ -11,6 +11,10 @@
 > an `apm` name any more (`script/ci/no-apm.test.js` guards it). `PackageManager#getApmPath()` keeps
 > its name because packages call it, but resolves `cpm/bin/cpm`. Read the `apm` shim references
 > below as history.
+>
+> **The registry is gone too (#239, 2026-08-29).** With community packages cancelled, `search`,
+> `view`, `featured`, install-by-name and `CPM_REGISTRY_URL` were removed; `cpm install` takes a
+> directory. The Pulsar sections below are history.
 
 ---
 
