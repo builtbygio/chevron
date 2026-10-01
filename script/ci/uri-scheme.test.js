@@ -43,6 +43,19 @@ describe('URI scheme (Wave 4)', () => {
     assert.doesNotMatch(card, /startsWith\("atom:"\)/);
   });
 
+  it('the settings URI panel goes through core\'s installer, not atom', () => {
+    const panel = read('packages/settings-view/lib/uri-handler-panel.js');
+    assert.doesNotMatch(panel, /["']atom["']/);
+    assert.match(panel, /chevron\.protocolHandlerInstaller/);
+  });
+
+  // #408: `await !promise` negates the Promise, so the check was always false.
+  it('the installer awaits the default-client check before negating it', () => {
+    const src = read('src/protocol-handler-installer.js');
+    assert.doesNotMatch(src, /await\s*!/);
+    assert.match(src, /!\(await this\.isDefaultProtocolClient\(\)\)/);
+  });
+
   it('the deprecation warning is gone with the alias it warned about', () => {
     const src = read('src/uri-handler-registry.js');
     assert.doesNotMatch(src, /_warnedAtomScheme/);
@@ -68,10 +81,13 @@ describe('URI scheme (Wave 4)', () => {
     // Main must actually handle the channel, and only for known schemes.
     const main = read('src/main-process/atom-application.js');
     assert.match(main, /ipcMain\.handle\(\s*'chevron:remove-as-default-protocol-client'/);
-    // The check moved from an inline comparison to a named set; what matters
-    // is that only these two schemes reach app.setAsDefaultProtocolClient.
-    assert.match(main, /REGISTRABLE_PROTOCOLS = new Set\(\['chevron', 'atom'\]\)/);
-    assert.match(main, /REGISTRABLE_PROTOCOLS\.has\(protocol\)/);
+    // Only chevron may be checked or registered; atom may only be withdrawn
+    // (#407: the settings panel was registering atom).
+    assert.match(main, /REGISTRABLE_PROTOCOLS = new Set\(\['chevron'\]\)/);
+    assert.match(main, /REMOVABLE_PROTOCOLS = new Set\(\['chevron', 'atom'\]\)/);
+    assert.match(main, /'removeAsDefaultProtocolClient',\s*REMOVABLE_PROTOCOLS/);
+    const ipc = read('src/main-process/register-renderer-ipc.js');
+    assert.match(ipc, /REGISTRABLE_PROTOCOLS = new Set\(\['chevron'\]\)/);
     // And the executable is main's own, never one the renderer supplied.
     assert.match(main, /execPath: process\.execPath/);
   });

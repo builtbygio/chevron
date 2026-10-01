@@ -48,12 +48,12 @@ module.exports = class ProtocolHandlerInstaller {
     const behaviorWhenNotProtocolClient = config.get(SETTING);
     switch (behaviorWhenNotProtocolClient) {
       case PROMPT:
-        if (await !this.isDefaultProtocolClient()) {
+        if (!(await this.isDefaultProtocolClient())) {
           this.promptToBecomeProtocolClient(config, notifications);
         }
         break;
       case ALWAYS:
-        if (await !this.isDefaultProtocolClient()) {
+        if (!(await this.isDefaultProtocolClient())) {
           this.setAsDefaultProtocolClient();
         }
         break;

@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **There was no working way to register Chevron for `chevron://` links.** At startup, `core.uriHandlerRegistration` (`prompt` by default, or `always`) tested `await !this.isDefaultProtocolClient()`: `!` negated the Promise, which is always truthy, so neither the prompt nor the registration ever happened (#408). The Settings › URI Handling button registered Chevron for `atom://` instead, re-creating the registration Chevron withdraws on purpose, while its label said `chevron://` (#407). The panel now goes through core's installer, and main accepts `atom` only to remove a registration.
 - **`chevron --wait` never returned.** The launch scripts pass `--pid`, `--executed-from` and `--path-environment`, none of which the command-line parser declared. Since 1.1.0 it treats undeclared options as stray arguments (so Chromium flags cannot swallow a path), which dropped all three: `--wait` had no process to release — `git commit` with Chevron as the editor hung after the message was closed — relative paths resolved against the running app's directory rather than the shell's, and on macOS the shell's `PATH` was lost. They are declared now (hidden from `--help`).
 
 - **`chevron://` URLs from the OS or the command line did nothing.** `openUrl` still accepted only `atom:`, which Wave 4 removed, so package URL handlers and `chevron://core/open/file?…` links never ran. The `link` package and settings-view's package cards had the same `atom:` check.
