@@ -37,7 +37,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | FS IPC | Strict roots **on** by default (`core.fsIpcStrict`) |
 | Telemetry | Off — no metrics/exception-reporting; crash upload forced off |
 | Package manager | **cpm** (Electron-as-Node). The `apm` shim is retired. |
-| Registry | **None** — the registry client and install UI went in #239; cpm installs an owned package from a directory. `cpm/README.md` and settings-view's `atom-io-client.ts` still mention Pulsar |
+| Registry | **None** — the registry client and install UI went in #239; cpm installs an owned package from a directory or links a working copy |
 | Bootstrap | **pnpm workspaces** + `@electron/rebuild` via `./script/bootstrap-modern` |
 | CI | macOS x64/arm64 + universal merge, Linux x64/arm64 (packages + smoke), Windows x64. Nightly Jasmine in 7 shards — measurement, not a gate |
 | Catalog | **93** packages in `packages/`, 86 of them app dependencies as `workspace:@builtbygio/<id>@*`. **13** owned libs/natives stay `npm:@builtbygio/<id>@ver`. **0** git SHA pins |
