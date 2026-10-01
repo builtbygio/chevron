@@ -638,11 +638,14 @@ const ROOT_CONFIG_EXPR = `(function() {
       window.__rootConfigProbe.result = result;
       window.__rootConfigProbe.phase = 'done';
     };
-    var editorEnding = function(suffix) {
+    // Whole file names: project-probe.ts also ends in probe.ts, and which of
+    // the two comes first in getTextEditors() depends on startup timing.
+    var editorEnding = function(name) {
       var editors = chevron.workspace.getTextEditors();
       for (var i = 0; i < editors.length; i++) {
         var p = editors[i].getPath() || '';
-        if (p.slice(-suffix.length) === suffix) return editors[i];
+        var base = p.slice(Math.max(p.lastIndexOf('/'), p.lastIndexOf('\\\\')) + 1);
+        if (base === name) return editors[i];
       }
       return null;
     };
