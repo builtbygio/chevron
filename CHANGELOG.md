@@ -23,6 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Syntax lookups at a cursor found nothing.** `getSyntaxNodeAtPosition` searched an inverted range for an empty one, which the official tree-sitter 0.25 binding answers with no node. Bracket matching by syntax tree, autocomplete-html's tree-sitter provider, Select Larger Syntax Node from a bare cursor and `bufferRangeForScopeAtPosition` all came back empty whenever the cursor sat at the start of a node.
+
+- **HTML in JavaScript template literals was not highlighted.** `` html`…` `` and `` el.innerHTML = `…` `` inject HTML into the template's text, taken as the gaps between the template's children. Newer tree-sitter-javascript gives that text its own `string_fragment` nodes, so there were no gaps and the HTML layer discarded itself. Text nodes now count as content.
+
+- **A JSDoc comment lost its comment colour.** At the start of an injected layer the highlighter let the nested layer's boundaries hide the parent's, unless the nested cursor sat on its root node — which tree-sitter 0.25 trees no longer guarantee. A file opening with `/** … */` therefore lost `comment.block` on the comment and `source.js` on every token. The JSDoc grammar's `/` rule also coloured the comment's own delimiters; it now applies to path slashes only.
+
+- **Folding a multi-line self-closing JSX tag left its last attribute showing.** `/>` is one token now, not `/` and `>`, so the fold rule's "second to last child" landed on the last attribute. Fixed in the JavaScript, TypeScript React and Flow grammars.
+
+- **Empty highlight tokens at injection edges.** A zero-width node, such as the root of an injected layer holding only whitespace, opened and closed its scope at one point. It no longer produces scope boundaries.
+
+- `tree-sitter-language-mode-spec` and `tree-indenter-spec` catch up with the `.json` grammars and tree-sitter 0.25's trees (`document` for `fragment`, `else_clause`, roots that start at the first token). The async-parse test is gone: parsing is synchronous on the official binding.
 - **Ruby scripts with a `jruby` or `macruby` shebang were not recognised.** The Ruby grammar's first-line regex read `w*ruby` where it meant `\w*ruby` — a backslash lost converting it from CSON — so only a shebang naming plain `ruby` or `rake` selected Ruby.
 
 - **A language override could resolve to a placeholder.** When a package registers an injection point for a grammar that has not loaded yet, the registry holds a placeholder under that grammar's id. `grammarForId` returned it, so a buffer whose saved override named that language got a nameless plain-text mode until the language loaded; disposing the injection point before then threw. `grammarForId` now returns only loaded grammars, and the disposal works either way. `grammar-registry-spec` is rewritten for tree-sitter grammars (it loaded TextMate `.cson` files and could not start).

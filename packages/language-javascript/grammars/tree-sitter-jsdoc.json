@@ -11,7 +11,7 @@
     "path_expression > identifier": "string",
     "\".\"": "meta.delimiter.period",
     "\":\"": "meta.delimiter.colon",
-    "\"/\"": "meta.delimiter.slash",
+    "path_expression > \"/\"": "meta.delimiter.slash",
     "\"#\", \"~\"": "meta.delimiter"
   }
 }
