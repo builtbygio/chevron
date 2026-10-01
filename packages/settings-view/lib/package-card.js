@@ -245,7 +245,7 @@ class PackageCard {
       if (target) {
         event.stopPropagation();
         event.preventDefault();
-        if (target.href && target.href.startsWith("atom:")) {
+        if (target.href && target.href.startsWith("chevron:")) {
           chevron.workspace.open(target.href);
         } else {
           const external = externalHrefFrom(target);

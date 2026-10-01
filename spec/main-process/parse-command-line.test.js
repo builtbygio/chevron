@@ -71,6 +71,28 @@ describe('parseCommandLine', () => {
       });
     });
 
+    describe('and the launch script passes its own options', () => {
+      it('reads them rather than dropping them as unknown', () => {
+        const args = parseCommandLine([
+          '--executed-from=/home/me/project',
+          '--pid=4242',
+          '--path-environment=/usr/local/bin:/usr/bin',
+          '--wait',
+          'notes.txt'
+        ]);
+        assert.equal(args.executedFrom, '/home/me/project');
+        assert.equal(args.pidToKillWhenClosed, '4242');
+        assert.equal(args.env.PATH, '/usr/local/bin:/usr/bin');
+        assert.deepEqual(args.pathsToOpen, ['notes.txt']);
+      });
+
+      it('takes --pid as a separate argument too', () => {
+        const args = parseCommandLine(['--wait', '--pid', '101', 'notes.txt']);
+        assert.equal(args.pidToKillWhenClosed, '101');
+        assert.deepEqual(args.pathsToOpen, ['notes.txt']);
+      });
+    });
+
     describe('and a non-flag number is passed as an argument', () => {
       it('does not attempt to parse numbers as paths or URIs', () => {
         const args = parseCommandLine([

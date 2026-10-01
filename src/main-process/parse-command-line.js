@@ -119,6 +119,11 @@ module.exports = function parseCommandLine(processArgs) {
     .boolean('a')
     .describe('add', 'Open path as a new project in last used window.');
   options.string('user-data-dir');
+  // Passed by the launch scripts, not typed. Undeclared, unknown-options-as-args
+  // turns them into positional args and they are lost.
+  for (const launcherOption of ['executed-from', 'path-environment', 'pid']) {
+    options.string(launcherOption).hide(launcherOption);
+  }
   options
     .boolean('clear-window-state')
     .describe('clear-window-state', 'Delete all Atom environment state.');

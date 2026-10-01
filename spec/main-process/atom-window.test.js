@@ -548,7 +548,9 @@ class StubBrowserWindow extends EventEmitter {
     };
     this.webContents.isDestroyed = () => false;
     this.webContents.isFocused = () => false;
-    this.webContents.focus = () => {};
+    this.webContents.focus = () => {
+      this.behavior.focusOnWebView = true;
+    };
   }
 
   loadURL() {}
@@ -559,7 +561,4 @@ class StubBrowserWindow extends EventEmitter {
 
   setIcon() {}
 
-  focusOnWebView() {
-    this.behavior.focusOnWebView = true;
-  }
 }
