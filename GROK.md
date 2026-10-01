@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-09-06 (1.2.0 unsigned preview; IPC surface hardening complete; in-app suite producing results)
+**Date of this handoff:** 2026-10-01 (master **1.4.x**, last tag **v1.2.0**; auto-update, Wayland and the universal macOS bundle landed; the nightly Jasmine core specs pass locally)
 
 ---
 
@@ -12,21 +12,21 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 | Horizon | Goal |
 |---------|------|
-| **Near term** | 1.0 dogfood (#106); Jasmine nightly is wired (#57) |
-| **Medium term** | Package host v2, Git polish, optional AI |
+| **Near term** | Nightly Jasmine green (core render done, package specs next); tag the next preview; signing secrets |
+| **Medium term** | Git polish, optional AI |
 | **Long term** | Possible Avalonia rehost; keep hackable package spirit |
 
 **Do not** rebase onto Pulsar unless the owner revisits that decision.  
 **Chevron only:** product API is `global.chevron` / `require('chevron')` / `engines.chevron` / `~/.chevron`. Atom surfaces are unsupported legacy shims (may be removed). See [docs/decisions/REBRANDING.md](docs/decisions/REBRANDING.md).  
-**Packages:** **owned catalog only** for now; sandboxed community packages later (host v2). See [docs/decisions/package-ecosystem-strategy.md](docs/decisions/package-ecosystem-strategy.md).
+**Packages:** **owned catalog only**. Community packages are cancelled (owner, 2026-08-28), not deferred. See [docs/decisions/package-ecosystem-strategy.md](docs/decisions/package-ecosystem-strategy.md).
 
 ---
 
-## Current baseline (1.2.0 unsigned preview)
+## Current baseline (master 1.4.x; last tag v1.2.0)
 
 | Item | Value |
 |------|--------|
-| Version | **1.2.0** (unsigned preview — [docs/reference/releases.md](docs/reference/releases.md)) |
+| Version | **1.4.x** on master — a patch bump per fix, all under `[Unreleased]` in CHANGELOG; tagging is separate. Last published: **v1.2.0** unsigned preview ([docs/reference/releases.md](docs/reference/releases.md)) |
 | Electron | **43.1.0** (ladder complete) |
 | Package / productName | `chevron` / **Chevron** |
 | Bundle ID | `dev.builtbygio.chevron` |
@@ -37,16 +37,25 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | FS IPC | Strict roots **on** by default (`core.fsIpcStrict`) |
 | Telemetry | Off — no metrics/exception-reporting; crash upload forced off |
 | Package manager | **cpm** (Electron-as-Node). The `apm` shim is retired. |
-| Registry | **Pulsar** (`https://api.pulsar-edit.dev`); `CPM_REGISTRY_URL` override |
+| Registry | **None** — the registry client and install UI went in #239; cpm installs an owned package from a directory. `cpm/README.md` and settings-view's `atom-io-client.ts` still mention Pulsar |
 | Bootstrap | **pnpm workspaces** + `@electron/rebuild` via `./script/bootstrap-modern` |
-| CI | macOS x64/arm64, Linux x64/arm64 (packages + smoke), Windows x64 |
-| Catalog | **94** editor packages, all `workspace:@builtbygio/<id>@*` in `packages/`. **18** owned libs/natives stay `npm:@builtbygio/<id>@ver`. **0** git SHA pins |
-| Default themes | **One Dark** (`one-dark-ui` / `one-dark-syntax`). Eight themes ship: One Dark/Light + Chevron Dark/Light, UI + syntax each. Solarized and base16-tomorrow were dropped (untouched Atom-era palettes); `ThemeManager` maps their names onto the survivors |
+| CI | macOS x64/arm64 + universal merge, Linux x64/arm64 (packages + smoke), Windows x64. Nightly Jasmine in 7 shards — measurement, not a gate |
+| Catalog | **93** packages in `packages/`, 86 of them app dependencies as `workspace:@builtbygio/<id>@*`. **13** owned libs/natives stay `npm:@builtbygio/<id>@ver`. **0** git SHA pins |
+| Default themes | **One Dark** (`one-dark-ui` / `one-dark-syntax`). Eight themes ship: One Dark/Light + Chevron Dark/Light, UI + syntax each. Solarized and base16-tomorrow were dropped; `ThemeManager` maps their names onto the survivors. Theme variables reach package styles as CSS custom properties generated at build ([theme-custom-properties.md](docs/reference/theme-custom-properties.md)); `core.followSystemTheme` swaps light/dark with the OS |
 | Package host v2 | **Removed** (2026-08-28) — community packages are cancelled, so sandboxing third-party code has no subject. T2 require restrict stays |
+| Auto-update | electron-updater on GitHub Releases (#398). Signing and notarization run when the secrets exist — they don't yet, so unsigned builds open the download page. [auto-update.md](docs/reference/auto-update.md) |
+| Linux display | Native Wayland (`--ozone-platform-hint=auto`); CI pins x11 for Xvfb. [os-integration.md](docs/reference/os-integration.md) |
+| macOS artifact | One universal `chevron-mac-universal.zip`, merged with `lipo` in CI. [packaging.md](docs/reference/packaging.md) |
 
 ---
 
 ## What's done (recent epics)
+
+### Since 1.2.0 (2026-09-06 → 2026-10-01)
+
+- **Features (#396, #398):** native Wayland, follow-system theme, universal macOS bundle, auto-update through GitHub Releases with signing/notarization wiring.
+- **Editor fixes:** the custom elements polyfill is `@webcomponents/custom-elements` (#384); grammarless buffers fold and auto-indent, and `.text.plain.null-grammar` config applies (#385, #400); LSP hover renders markdown (#387); scroll-to-row rounding, cursor blink delay, middle-click paste (#391, #393, #394).
+- **Nightly Jasmine catch-up (#400–#403).** The suite had never passed: specs still loaded `season`, `first-mate`, `.cson` grammars and `require('atom')`. Fixing them surfaced real bugs — auto-indent broken in ten languages (Oniguruma-only patterns, now rewritten by `fromOniguruma()` in `src/auto-indent.ts`), syntax lookups at a cursor returning nothing (bracket-matcher's spec went 124 → 2 failures), HTML in JS template literals and JSDoc comments unhighlighted, JSX self-closing folds. Core render specs pass locally except `text-editor-element` / `text-editor-component` (timing; CI-only). **Package specs are next.** The tree-sitter 0.25 traps are listed in [language-stack.md](docs/reference/language-stack.md).
 
 ### Electron best-practices (P0–P3 shippable) — **complete in 0.6.0**
 
@@ -191,7 +200,7 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
    **Always diff `npm pack --dry-run` against the previous tarball first.** Every fork touched so far lacked an `.npmignore`, so npm fell back to `.gitignore` and a plain publish would have shipped the `test/` or `spec/` tree that the previous tarball excluded via an unrecorded manual step. Fixed in `github`, `spell-check`, `image-view`, `snippets`, `tree-view`; assume the rest still have it.  
 3. **Wave 3 — done. One of four passed the gate.** Evidence recorded in `script/ci/wave3-gates.test.js` so this is not re-derived:  
    - **`Task` — DELETED.** Zero callers: nothing in `src/` but the export itself, and a sweep of all 94 owned pins found only `github/lib/async-queue.js`, which declares its *own* local `class Task` with no requires. Gone: `src/task.ts`, `src/task-bootstrap.js`, the export, `spec/task-spec.js` + fixtures. Gate: `script/ci/task-callers.test.js`.  
-   - **`season` — STAYS.** Not blocked on pins (Wave 1 proved zero `.cson` across the catalog *and* the app tree). Blocked on user-authored `~/.chevron/*.cson` dual-read and any installed package's data (`config-file`, `user-config-path`, `keymap-extensions`, `package`, `grammar-registry`).  
+   - **`season` — stayed at Wave 3, deleted 2026-09-02 (#295).** Chevron reads JSON only; `src/main-process/json-file.js` replaced it, and `atom-keymap` was vendored as `src/keymap/` (#284) so it no longer pulled it in.  
    - **A custom elements polyfill — STAYS.** `window.customElements` is null in the preload world under `contextIsolation`; `@webcomponents/custom-elements` since 2026-09-07 (was `document-register-element`). Locked by `baseline-1.1.0` and `custom-element-factory`; see `docs/reference/custom-elements.md`.  
    - **`atom://` — STAYS at Wave 3, DELETED in Wave 4.** The blocker was `image-view/styles/image-view.less` shipping a live `atom://image-view/images/transparent-background.png`. Wave 4 converted that pin and removed the alias.  
    - **Bug fixed on the way:** `handleLinkClick` rewrote canonical `chevron://` links *to* `atom://` before calling `uriHandlerRegistry.handleURI`, so correct links tripped the registry's "atom:// is a deprecated alias" warning. It now passes the scheme through; only `atom://` warns.  
@@ -203,15 +212,15 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
    - A stale OS association is now **withdrawn**, not ignored: `removeAsDefaultProtocolClient('atom')` runs before registering `chevron`. And an `atom://` argv entry is dropped with a diagnostic instead of falling through to `pathsToOpen`, which would have opened a file literally named `atom://…`.  
    - Gates: `script/ci/uri-scheme.test.js`, `script/ci/no-atom-uri.test.js`, `script/ci/menu-uri-openers.test.js`. `uri-scheme-alias.test.js` deleted with the helper it tested.  
 
-5. **Do not delete** `document-register-element` while callers remain (`Task` cleared its gate in Wave 3; **first-mate and `season` are gone** — see the TextMate note above). **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  
+5. **Do not delete the custom elements polyfill** — `window.customElements` is null in the preload world (`document-register-element` itself was replaced in #384). **Q1 is 8B** — keep the github inbox; skip Epic 18 / PR 19. `github` **0.37.12**: React 18.3; GitHub App device-flow (`github.oauthClientId`); classic PAT fallback.  
 6. Residual `@atom/*` **dependency keys** (`@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`) — published as `@builtbygio/*`; renaming the editor key is branding, not a drive-by.  
 7. **Startup perf** — custom V8 snapshot on Linux/Windows with **stock fallback** if verify fails; Darwin stock **frozen** (Q2).  
-8. **Later:** package host v2 **routing on** (spine is off); signing. Jasmine nightly is measurement, not a merge gate ([docs/reference/jasmine-ci.md](docs/reference/jasmine-ci.md)).  
+8. **Later:** signing secrets — the pipeline is ready (#398). Jasmine nightly is measurement, not a merge gate ([docs/reference/jasmine-ci.md](docs/reference/jasmine-ci.md)).  
 9. **Build:** `./script/bootstrap-modern` then `./script/with-modern-env ./script/build --no-bootstrap`. `pnpm install` alone leaves Electron natives unbuilt.
 
 ### Known dogfood leftovers (found 2026-08-13)
 
-- **Fixed in #108:** empty tree-view — `collectDefaultRoots` used `atomApplication.windows` (never set); must use `getAllWindows()`. `/tmp` projects hid this. Keep `document-register-element` (contextIsolation); do not Grim-wrap `registerElement`.  
+- **Fixed in #108:** empty tree-view — `collectDefaultRoots` used `atomApplication.windows` (never set); must use `getAllWindows()`. `/tmp` projects hid this. Keep the custom elements polyfill (contextIsolation); do not Grim-wrap `registerElement`.  
 - Jasmine harness still defines `window.atom` for ~7500 spec references. Product `require('atom')` is `MODULE_NOT_FOUND`.
 
 **Catalog is vendored** (2026-08-28): all 94 editor packages live in `packages/` as
@@ -220,11 +229,11 @@ libs/natives (`text-buffer`, `keytar`, `superstring`, …) stay npm pins — the
 native builds. `first-mate` and `oniguruma` are no longer among them. The 30 `builtbygio/*` package repos are now dead; archive them.
 
 **Community packages: never** (owner, 2026-08-28). Not deferred — cancelled. See
-`docs/decisions/package-ecosystem-strategy.md`. This makes removable, none of it done yet: the 65
-npm-published owned packages (29 of 83 had drifted — collapse them into `packages/*`), the eight
-author-facing devtools (`dalek`, `deprecation-cop`, `incompatible-packages`, `timecop`,
-`package-generator`, `update-package-dependencies`, `styleguide`, `dev-live-reload`), the package
-host v2 spine, and cpm's Pulsar registry client.
+`docs/decisions/package-ecosystem-strategy.md`. Done since: the catalog collapsed into `packages/*`,
+the host v2 spine (#238) and the registry client (#239) are gone, and four of the eight
+author-facing devtools (`dalek`, `incompatible-packages`, `package-generator`,
+`update-package-dependencies`). Still shipping: `deprecation-cop`, `timecop`, `styleguide`,
+`dev-live-reload`.
 
 **Retired, do not resurrect:** the `apm/` tree and `--with-apm` (the installer it called was already
 deleted); `script/vsts/` Azure pipelines; the in-app **benchmarks** feature (`--benchmark`,
@@ -237,8 +246,7 @@ Squirrel no longer writes `apm.*` shims — an install upgraded from an older bu
 - `CHEVRON_AUDIT_PACKAGE_REQUIRES=1` — log privileged + native requires  
 - `CHEVRON_RESTRICT_PACKAGE_REQUIRES=0` — opt **out** of community privileged/native restrict (default is on)  
 - `CHEVRON_FS_IPC_STRICT=0` — opt out of strict FS IPC roots  
-- `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` — re-enable experimental Chromium features  
-- `CHEVRON_DISABLE_LEGACY_TRANSPILE=1` — unused (Coffee/Babel compile-cache stubs deleted)
+- `CHEVRON_EXPERIMENTAL_WEB_FEATURES=1` — re-enable experimental Chromium features
 
 
 ### Optional hygiene
@@ -258,7 +266,7 @@ Squirrel no longer writes `apm.*` shims — an install upgraded from an older bu
 ### Explicitly out of scope unless asked
 
 - Pulsar rebase  
-- Hard-delete of `document-register-element` — it failed its Wave 3 gate with a named caller; see `script/ci/wave3-gates.test.js`. (`atom://` cleared its gate in Wave 4 and is gone; `season` and first-mate went in the TextMate retirement.)  
+- Removing the custom elements polyfill — see `script/ci/wave3-gates.test.js`. (`atom://` cleared its gate in Wave 4 and is gone; `season` and first-mate are gone too.)  
 
 ---
 
@@ -298,7 +306,6 @@ git status
 |----------|------------|
 | Host Node outside 20–24 | `.nvmrc` → **24** |
 | Python without distutils | **3.12** + setuptools (CI pin) |
-| Dead atom.io Electron headers | `ATOM_ELECTRON_URL=https://www.electronjs.org/headers` |
 | Snapshot without less prebuild | Full `script/build` only |
 | Non-context-aware natives | Folded into owned `builtbygio` native forks; bootstrap rebuilds for Electron |
 | Probing `atom` from CDP | Eval in **Electron Isolated Context**, not page world |
@@ -310,6 +317,9 @@ git status
 | FS IPC `atomApplication.windows` | Never set — use `getAllWindows()` (#108) |
 | Skip the custom elements polyfill | `window.customElements` is null in the preload world under contextIsolation |
 | Tree-view tests only under `/tmp` | Temp is always an FS IPC root; real folders can still be blocked |
+| Language-settings regexes | Written for Oniguruma; one JavaScript rejects is dropped silently. `fromOniguruma()` handles `(?x)` and possessives; `spec/auto-indent-spec.js` compiles them all |
+| Atom-era tree-sitter assumptions | Official 0.25 differs (inverted ranges → `null`, roots start at the first token, string text is a node). [language-stack.md](docs/reference/language-stack.md) lists them |
+| Fake clock in specs | underscore 1.13 binds its clock at load; `spec-helper` reroutes `debounce`/`throttle`. Don't add another clock library without the same treatment |
 
 ---
 
@@ -323,7 +333,9 @@ git status
 - [x] cpm Phases 0–4 + Pulsar settings  
 - [x] Phase N + Electron BP shippable defaults (protocol/IPC/CSP/require/FS/fuses)  
 - [x] Phase S complete under Option C (editor sandbox false intentional; utilityProcess git workers)  
-- [ ] Package migration notes for community authors (Node not guaranteed long-term)  
+- [x] Auto-update via GitHub Releases  
+- [ ] Nightly Jasmine green (core render done; package specs next)  
+- [ ] Signed release builds (secrets)  
 
 
 ---
