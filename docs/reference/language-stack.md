@@ -158,6 +158,26 @@ The reader is `chunkReaderForBuffer`, a pure function of a buffer-shaped
 object, so `script/ci/tree-sitter-chunk-reader.test.js` can drive it with a
 buffer made of a string and check reassembly at every chunk size from 1 to 40.
 
+## Atom-era assumptions tree-sitter 0.25 breaks
+
+The highlighter and injection code came from Atom, written against its fork of
+node-tree-sitter. The official 0.25 binding differs in ways that fail quietly:
+
+- **Inverted ranges return no node.** `descendantForIndex(start, end)` with
+  `end < start` answered with a node before; now it is `null`. Lookups for an
+  empty range (a cursor) search `start..start`.
+- **Roots start at the first token**, not at the start of the parsed range,
+  and an injected layer holding only whitespace has a zero-width root.
+  Zero-width nodes produce no scope boundaries, and "at an injection
+  boundary" means at the injected tree's start or end, wherever the cursor is.
+- **String text is a node** (`string_fragment`, `string_content`). Injections
+  that take the gaps between a node's children keep those nodes as content.
+- **Parsing is synchronous.** `syncTimeoutMicros` is ignored; a buffer cannot
+  change mid-parse.
+- **Node shapes moved**: `fragment` → `document` (HTML), `function` →
+  `function_expression`, `else` inside `else_clause`, `/>` one token (JSX).
+  Grammar `folds` and `scopes` written against the old shapes need checking.
+
 ## 5. What this document is not
 
 It is not a plan. Ports happen when a parser exists and someone wants the

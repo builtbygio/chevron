@@ -75,7 +75,7 @@ class TreeSitterLanguageMode {
     let done = false;
     while (!done) {
       if (this.rootLanguageLayer.currentParsePromise) {
-        await this.rootLanguageLayer.currentParsePromises;
+        await this.rootLanguageLayer.currentParsePromise;
       } else {
         done = true;
         for (const marker of this.injectionsMarkerLayer.getMarkers()) {
@@ -448,7 +448,9 @@ class TreeSitterLanguageMode {
   getSyntaxNodeAndGrammarContainingRange(range, where = _ => true) {
     const startIndex = this.buffer.characterIndexForPosition(range.start);
     const endIndex = this.buffer.characterIndexForPosition(range.end);
-    const searchEndIndex = Math.max(0, endIndex - 1);
+    // Never before the start: tree-sitter 0.25 answers an inverted range
+    // (an empty one, i.e. a cursor position) with null.
+    const searchEndIndex = Math.max(startIndex, endIndex - 1);
 
     let smallestNode = null;
     let smallestNodeGrammar = this.grammar;
@@ -1241,8 +1243,14 @@ class LayerHighlightIterator {
     return this.openTags.slice();
   }
 
+  // At the start or end of this layer's tree. The cursor may already be below
+  // the root there: tree-sitter 0.25 trees put a leaf at the very start.
   isAtInjectionBoundary() {
-    return this.containingNodeTypes.length === 1;
+    if (this.containingNodeTypes.length === 1) return true;
+    const root = this.languageLayer.tree.rootNode;
+    return this.atEnd
+      ? this.offset === root.endIndex
+      : this.offset === root.startIndex;
   }
 
   // Private methods
@@ -1309,6 +1317,8 @@ class LayerHighlightIterator {
   }
 
   _currentScopeId() {
+    // A zero-width node covers no text; scoping it only emits empty tokens.
+    if (this.treeCursor.startIndex === this.treeCursor.endIndex) return;
     const value = this.languageLayer.grammar.scopeMap.get(
       this.containingNodeTypes,
       this.containingNodeChildIndices,
@@ -1394,6 +1404,10 @@ class NullLayerHighlightIterator {
   }
 }
 
+// Nodes that newer grammars use for a string's own text. Injected content is
+// the text between children, so these must not be cut out of it.
+const TEXT_CHILD_TYPES = new Set(['string_fragment', 'string_content']);
+
 class NodeRangeSet {
   constructor(previous, nodes, newlinesBetween, includeChildren) {
     this.previous = previous;
@@ -1412,6 +1426,7 @@ class NodeRangeSet {
 
       if (!this.includeChildren) {
         for (const child of node.children) {
+          if (TEXT_CHILD_TYPES.has(child.type)) continue;
           const nextIndex = child.startIndex;
           if (nextIndex > index) {
             this._pushRange(buffer, previousRanges, result, {

@@ -11,27 +11,27 @@ const TreeSitterLanguageMode = require('../src/tree-sitter-language-mode');
 const Random = require('../script/node_modules/random-seed');
 const { getRandomBufferRange, buildRandomLines } = require('./helpers/random');
 
-const cGrammarPath = require.resolve('language-c/grammars/tree-sitter-c.cson');
+const cGrammarPath = require.resolve('language-c/grammars/tree-sitter-c.json');
 const pythonGrammarPath = require.resolve(
-  'language-python/grammars/tree-sitter-python.cson'
+  'language-python/grammars/tree-sitter-python.json'
 );
 const jsGrammarPath = require.resolve(
-  'language-javascript/grammars/tree-sitter-javascript.cson'
+  'language-javascript/grammars/tree-sitter-javascript.json'
 );
 const jsdocGrammarPath = require.resolve(
-  'language-javascript/grammars/tree-sitter-jsdoc.cson'
+  'language-javascript/grammars/tree-sitter-jsdoc.json'
 );
 const htmlGrammarPath = require.resolve(
-  'language-html/grammars/tree-sitter-html.cson'
+  'language-html/grammars/tree-sitter-html.json'
 );
 const ejsGrammarPath = require.resolve(
-  'language-html/grammars/tree-sitter-ejs.cson'
+  'language-html/grammars/tree-sitter-ejs.json'
 );
 const rubyGrammarPath = require.resolve(
-  'language-ruby/grammars/tree-sitter-ruby.cson'
+  'language-ruby/grammars/tree-sitter-ruby.json'
 );
 const rustGrammarPath = require.resolve(
-  'language-rust-bundled/grammars/tree-sitter-rust.cson'
+  'language-rust-bundled/grammars/tree-sitter-rust.json'
 );
 
 describe('TreeSitterLanguageMode', () => {
@@ -459,66 +459,6 @@ describe('TreeSitterLanguageMode', () => {
       ]);
     });
 
-    describe('when the buffer changes during a parse', () => {
-      it('immediately parses again when the current parse completes', async () => {
-        const grammar = new TreeSitterGrammar(atom.grammars, jsGrammarPath, {
-          parser: 'tree-sitter-javascript',
-          scopes: {
-            identifier: 'variable',
-            'call_expression > identifier': 'function',
-            'new_expression > identifier': 'constructor'
-          }
-        });
-
-        buffer.setText('abc;');
-
-        const languageMode = new TreeSitterLanguageMode({
-          buffer,
-          grammar,
-          syncTimeoutMicros: 0
-        });
-        buffer.setLanguageMode(languageMode);
-        await nextHighlightingUpdate(languageMode);
-        await new Promise(process.nextTick);
-
-        expectTokensToEqual(editor, [
-          [{ text: 'abc', scopes: ['variable'] }, { text: ';', scopes: [] }]
-        ]);
-
-        buffer.setTextInRange([[0, 3], [0, 3]], '()');
-        expectTokensToEqual(editor, [
-          [{ text: 'abc()', scopes: ['variable'] }, { text: ';', scopes: [] }]
-        ]);
-
-        buffer.setTextInRange([[0, 0], [0, 0]], 'new ');
-        expectTokensToEqual(editor, [
-          [
-            { text: 'new ', scopes: [] },
-            { text: 'abc()', scopes: ['variable'] },
-            { text: ';', scopes: [] }
-          ]
-        ]);
-
-        await nextHighlightingUpdate(languageMode);
-        expectTokensToEqual(editor, [
-          [
-            { text: 'new ', scopes: [] },
-            { text: 'abc', scopes: ['function'] },
-            { text: '();', scopes: [] }
-          ]
-        ]);
-
-        await nextHighlightingUpdate(languageMode);
-        expectTokensToEqual(editor, [
-          [
-            { text: 'new ', scopes: [] },
-            { text: 'abc', scopes: ['constructor'] },
-            { text: '();', scopes: [] }
-          ]
-        ]);
-      });
-    });
-
     describe('when changes are small enough to be re-parsed synchronously', () => {
       it('can incorporate multiple consecutive synchronous updates', () => {
         const grammar = new TreeSitterGrammar(atom.grammars, jsGrammarPath, {
@@ -586,7 +526,7 @@ describe('TreeSitterLanguageMode', () => {
           scopeName: 'html',
           parser: 'tree-sitter-html',
           scopes: {
-            fragment: 'html',
+            document: 'html',
             tag_name: 'tag',
             attribute_name: 'attr'
           },
@@ -614,8 +554,7 @@ describe('TreeSitterLanguageMode', () => {
             { text: ' = ', scopes: [] },
             { text: 'html', scopes: ['function'] },
             { text: ' ', scopes: [] },
-            { text: '`', scopes: ['string'] },
-            { text: '', scopes: ['string', 'html'] }
+            { text: '`', scopes: ['string'] }
           ],
           [
             { text: 'a ', scopes: ['string', 'html'] },
@@ -734,8 +673,7 @@ describe('TreeSitterLanguageMode', () => {
             { text: ' = ', scopes: [] },
             { text: 'html', scopes: ['function'] },
             { text: ' ', scopes: [] },
-            { text: '`', scopes: ['string'] },
-            { text: '', scopes: ['string', 'html'] }
+            { text: '`', scopes: ['string'] }
           ],
           [
             { text: 'a ', scopes: ['string', 'html'] },
@@ -939,8 +877,7 @@ describe('TreeSitterLanguageMode', () => {
             { text: '<%', scopes: ['directive'] },
             { text: ' ', scopes: [] },
             { text: '// js comment ', scopes: ['comment'] },
-            { text: '%>', scopes: ['directive'] },
-            { text: '', scopes: ['html'] }
+            { text: '%>', scopes: ['directive'] }
           ],
           [
             { text: '<%', scopes: ['directive'] },
@@ -978,6 +915,24 @@ describe('TreeSitterLanguageMode', () => {
         ]);
       });
 
+      it('keeps the comment scope on a multi-line JSDoc comment (regression)', async () => {
+        await atom.packages.activatePackage('language-javascript');
+
+        editor.setGrammar(atom.grammars.grammarForScopeName('source.js'));
+        editor.setText('/**\n * Adds.\n */');
+        expectTokensToEqual(editor, [
+          [{ text: '/**', scopes: ['source js', 'comment block'] }],
+          [
+            { text: ' ', scopes: ['source js', 'comment block', 'leading-whitespace'] },
+            { text: '* Adds.', scopes: ['source js', 'comment block'] }
+          ],
+          [
+            { text: ' ', scopes: ['source js', 'comment block', 'leading-whitespace'] },
+            { text: '*/', scopes: ['source js', 'comment block'] }
+          ]
+        ]);
+      });
+
       it('reports scopes from shallower layers when they are at the start or end of an injection', async () => {
         await atom.packages.activatePackage('language-javascript');
 
@@ -990,11 +945,7 @@ describe('TreeSitterLanguageMode', () => {
               text: '@babel',
               scopes: ['source js', 'comment block', 'keyword control']
             },
-            { text: ' *', scopes: ['source js', 'comment block'] },
-            {
-              text: '/',
-              scopes: ['source js', 'comment block', 'meta delimiter slash']
-            }
+            { text: ' */', scopes: ['source js', 'comment block'] }
           ],
           [
             {
@@ -1231,6 +1182,19 @@ describe('TreeSitterLanguageMode', () => {
   });
 
   describe('folding', () => {
+    it("folds a self-closing JSX element up to its `/>` with the bundled grammar", async () => {
+      await atom.packages.activatePackage('language-javascript');
+      editor.setGrammar(atom.grammars.grammarForScopeName('source.js'));
+      editor.setText(dedent`
+        const element = <Element
+          className='submit'
+          id='something' />
+      `);
+
+      editor.foldBufferRow(0);
+      expect(getDisplayText(editor)).toBe('const element = <Element…/>');
+    });
+
     it('can fold nodes that start and end with specified tokens', async () => {
       const grammar = new TreeSitterGrammar(atom.grammars, jsGrammarPath, {
         parser: 'tree-sitter-javascript',
@@ -1346,11 +1310,11 @@ describe('TreeSitterLanguageMode', () => {
             end: { index: -1 }
           },
 
-          // End the fold at the *second* to last child of the self-closing tag: the `/`.
+          // End the fold at the last child of the self-closing tag: the `/>`.
           {
             type: 'jsx_self_closing_element',
             start: { index: 1 },
-            end: { index: -2 }
+            end: { index: -1 }
           }
         ]
       });
@@ -1878,7 +1842,7 @@ describe('TreeSitterLanguageMode', () => {
           scopeName: 'text.html',
           parser: 'tree-sitter-html',
           scopes: {
-            fragment: 'text.html',
+            document: 'text.html',
             script_element: 'script.tag'
           },
           injectionRegExp: 'html',
@@ -2040,15 +2004,15 @@ describe('TreeSitterLanguageMode', () => {
           .getScopesArray()
       ).toEqual([
         'text.html',
-        'fragment',
+        'document',
         'element',
         'script_element',
-        'program',
         'raw_text',
+        'program',
         'expression_statement',
         'call_expression',
         'template_string',
-        'fragment',
+        'document',
         'element',
         'template_substitution',
         'member_expression',
@@ -2288,6 +2252,21 @@ describe('TreeSitterLanguageMode', () => {
         languageMode.getSyntaxNodeAtPosition([0, 6], findFoo).range
       ).toEqual([[0, 0], [0, buffer.getText().length - 1]]);
     });
+
+    it('finds the node when the position is at its start (regression)', async () => {
+      const grammar = new TreeSitterGrammar(atom.grammars, jsGrammarPath, {
+        scopeName: 'javascript',
+        parser: 'tree-sitter-javascript'
+      });
+
+      buffer.setText('foo(bar);');
+      const languageMode = new TreeSitterLanguageMode({ buffer, grammar });
+      buffer.setLanguageMode(languageMode);
+      expect(languageMode.getSyntaxNodeAtPosition([0, 4]).range).toEqual(
+        buffer.findSync('bar')
+      );
+      expect(languageMode.getSyntaxNodeAtPosition([0, 0]).text).toBe('foo');
+    });
   });
 
   describe('.commentStringsForPosition(position)', () => {
@@ -2431,7 +2410,7 @@ describe('TreeSitterLanguageMode', () => {
           scopeName: 'html',
           parser: 'tree-sitter-html',
           scopes: {
-            fragment: 'html',
+            document: 'html',
             tag_name: 'tag',
             attribute_name: 'attr'
           },
@@ -2464,7 +2443,8 @@ describe('TreeSitterLanguageMode', () => {
       editor.selectLargerSyntaxNode();
       expect(editor.getSelectedText()).toBe('<b>c${def()}e${f}g</b>');
       editor.selectLargerSyntaxNode();
-      expect(editor.getSelectedText()).toBe(' <b>c${def()}e${f}g</b> ');
+      // tree-sitter 0.25 roots start at the first token, not the range start.
+      expect(editor.getSelectedText()).toBe('<b>c${def()}e${f}g</b> ');
       editor.selectLargerSyntaxNode();
       expect(editor.getSelectedText()).toBe('` <b>c${def()}e${f}g</b> `');
       editor.selectLargerSyntaxNode();
