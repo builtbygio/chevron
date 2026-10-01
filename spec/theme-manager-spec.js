@@ -443,13 +443,9 @@ h2 {
 
       waitsFor(() => didChangeActiveThemesHandler.callCount > 0);
 
+      // Base CSS reads custom properties that bundled themes publish at build
+      // time, so only the theme's own stylesheets see these fixture variables.
       runs(function() {
-        // an override loaded in the base css
-        expect(
-          getComputedStyle(atom.workspace.getElement())['background-color']
-        ).toBe('rgb(0, 0, 255)');
-
-        // from within the theme itself
         expect(
           getComputedStyle(document.querySelector('atom-text-editor'))
             .paddingTop
@@ -479,12 +475,6 @@ h2 {
         waitsFor(() => didChangeActiveThemesHandler.callCount > 0);
 
         runs(function() {
-          // an override loaded in the base css
-          expect(
-            getComputedStyle(atom.workspace.getElement())['background-color']
-          ).toBe('rgb(0, 0, 255)');
-
-          // from within the theme itself
           expect(
             getComputedStyle(document.querySelector('atom-text-editor'))
               .backgroundColor

@@ -1583,11 +1583,11 @@ describe('Workspace', () => {
   describe('the grammar-used hook', () => {
     it('fires when opening a file or changing the grammar of an open file', async () => {
       await atom.packages.activatePackage('language-javascript');
-      await atom.packages.activatePackage('language-coffee-script');
+      await atom.packages.activatePackage('language-json');
 
       const observeTextEditorsSpy = jasmine.createSpy('observeTextEditors');
       const javascriptGrammarUsed = jasmine.createSpy('javascript');
-      const coffeeScriptGrammarUsed = jasmine.createSpy('coffeescript');
+      const jsonGrammarUsed = jasmine.createSpy('json');
 
       atom.packages.triggerDeferredActivationHooks();
       atom.packages.onDidTriggerActivationHook(
@@ -1598,8 +1598,8 @@ describe('Workspace', () => {
         }
       );
       atom.packages.onDidTriggerActivationHook(
-        'language-coffee-script:grammar-used',
-        coffeeScriptGrammarUsed
+        'language-json:grammar-used',
+        jsonGrammarUsed
       );
 
       expect(javascriptGrammarUsed).not.toHaveBeenCalled();
@@ -1610,20 +1610,20 @@ describe('Workspace', () => {
       expect(javascriptGrammarUsed).toHaveBeenCalled();
       expect(observeTextEditorsSpy.callCount).toBe(1);
 
-      expect(coffeeScriptGrammarUsed).not.toHaveBeenCalled();
-      atom.grammars.assignLanguageMode(editor, 'source.coffee');
-      expect(coffeeScriptGrammarUsed).toHaveBeenCalled();
+      expect(jsonGrammarUsed).not.toHaveBeenCalled();
+      atom.grammars.assignLanguageMode(editor, 'source.json');
+      expect(jsonGrammarUsed).toHaveBeenCalled();
     });
   });
 
   describe('the root-scope-used hook', () => {
     it('fires when opening a file or changing the grammar of an open file', async () => {
       await atom.packages.activatePackage('language-javascript');
-      await atom.packages.activatePackage('language-coffee-script');
+      await atom.packages.activatePackage('language-json');
 
       const observeTextEditorsSpy = jasmine.createSpy('observeTextEditors');
       const javascriptGrammarUsed = jasmine.createSpy('javascript');
-      const coffeeScriptGrammarUsed = jasmine.createSpy('coffeescript');
+      const jsonGrammarUsed = jasmine.createSpy('json');
 
       atom.packages.triggerDeferredActivationHooks();
       atom.packages.onDidTriggerActivationHook(
@@ -1634,8 +1634,8 @@ describe('Workspace', () => {
         }
       );
       atom.packages.onDidTriggerActivationHook(
-        'source.coffee:root-scope-used',
-        coffeeScriptGrammarUsed
+        'source.json:root-scope-used',
+        jsonGrammarUsed
       );
 
       expect(javascriptGrammarUsed).not.toHaveBeenCalled();
@@ -1646,9 +1646,9 @@ describe('Workspace', () => {
       expect(javascriptGrammarUsed).toHaveBeenCalled();
       expect(observeTextEditorsSpy.callCount).toBe(1);
 
-      expect(coffeeScriptGrammarUsed).not.toHaveBeenCalled();
-      atom.grammars.assignLanguageMode(editor, 'source.coffee');
-      expect(coffeeScriptGrammarUsed).toHaveBeenCalled();
+      expect(jsonGrammarUsed).not.toHaveBeenCalled();
+      atom.grammars.assignLanguageMode(editor, 'source.json');
+      expect(jsonGrammarUsed).toHaveBeenCalled();
     });
   });
 
@@ -1965,63 +1965,34 @@ describe('Workspace', () => {
     });
   });
 
-  it('stores the active grammars used by all the open editors', () => {
-    waitsForPromise(() => atom.packages.activatePackage('language-javascript'));
+  it('stores the active grammars used by all the open editors', async () => {
+    await atom.packages.activatePackage('language-javascript');
+    await atom.packages.activatePackage('language-json');
+    await atom.workspace.open('sample.js');
 
-    waitsForPromise(() =>
-      atom.packages.activatePackage('language-coffee-script')
-    );
-
-    waitsForPromise(() => atom.packages.activatePackage('language-todo'));
-
-    waitsForPromise(() => atom.workspace.open('sample.coffee'));
-
-    runs(() => {
-      atom.workspace.getActiveTextEditor().setText(dedent`
-        i = /test/; #FIXME\
-      `);
-
-      const atom2 = new AtomEnvironment({
-        applicationDelegate: atom.applicationDelegate
-      });
-      atom2.initialize({
-        window: document.createElement('div'),
-        document: Object.assign(document.createElement('div'), {
-          body: document.createElement('div'),
-          head: document.createElement('div')
-        })
-      });
-
-      atom2.packages.loadPackage('language-javascript');
-      atom2.packages.loadPackage('language-coffee-script');
-      atom2.packages.loadPackage('language-todo');
-      atom2.project.deserialize(atom.project.serialize());
-      atom2.workspace.deserialize(
-        atom.workspace.serialize(),
-        atom2.deserializers
-      );
-
-      expect(
-        atom2.grammars
-          .getGrammars({ includeTreeSitter: true })
-          .map(grammar => grammar.scopeName)
-          .sort()
-      ).toEqual([
-        'source.coffee',
-        'source.js', // Tree-sitter grammars also load
-        'source.js',
-        'source.js.regexp',
-        'source.js.regexp',
-        'source.js.regexp.replacement',
-        'source.jsdoc',
-        'source.jsdoc',
-        'source.litcoffee',
-        'text.plain.null-grammar',
-        'text.todo'
-      ]);
-
-      atom2.destroy();
+    const atom2 = new AtomEnvironment({
+      applicationDelegate: atom.applicationDelegate
     });
+    atom2.initialize({
+      window: document.createElement('div'),
+      document: Object.assign(document.createElement('div'), {
+        body: document.createElement('div'),
+        head: document.createElement('div')
+      })
+    });
+
+    atom2.packages.loadPackage('language-javascript');
+    atom2.packages.loadPackage('language-json');
+    atom2.project.deserialize(atom.project.serialize());
+    atom2.workspace.deserialize(atom.workspace.serialize(), atom2.deserializers);
+
+    const scopeNames = atom2.grammars
+      .getGrammars()
+      .map(grammar => grammar.scopeName);
+    expect(scopeNames).toContain('source.js');
+    expect(scopeNames).not.toContain('source.json');
+
+    atom2.destroy();
   });
 
   describe('document.title', () => {

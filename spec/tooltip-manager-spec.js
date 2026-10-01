@@ -1,4 +1,4 @@
-const { CompositeDisposable } = require('atom');
+const { CompositeDisposable } = require('chevron');
 const TooltipManager = require('../src/tooltip-manager');
 const Tooltip = require('../src/tooltip');
 const _ = require('underscore-plus');

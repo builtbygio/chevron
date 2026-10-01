@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Enter in a plain-text file dropped the indentation.** Files with no tree-sitter grammar — a `.txt`, or any unknown extension — use `PlainTextLanguageMode`, which had no indent suggestion, so a new line always started at column 0 even with `editor.autoIndent` on. It now carries the preceding non-blank row's indentation, as Atom did for the null grammar.
+
+- **Config scoped to plain text was ignored.** A plain-text buffer reported its root scope as `text` instead of `text.plain.null-grammar`, so settings such as `".text.plain.null-grammar": editor: softWrap: true` never applied. The null grammar's scope is the root scope again.
+
+- **A torn-down window could still activate packages.** The deferred startup packages are scheduled on an idle callback that was never cancelled, so destroying the environment first let them activate afterwards, against the global `chevron` they subscribe through. The callback is now cancelled on destroy.
+
+- **The nightly Jasmine run could not pass.** Spec harness and core render specs, catching up with what changed underneath them: `spec-helper` re-routes `_.debounce`/`_.throttle` through the fake clock (underscore 1.13 binds its clock at load, so debounced code never ran under `advanceClock`) and stubs the clipboard where `chevron.clipboard` now reads it, over IPC — specs were writing the developer's real clipboard. Specs that used `require('atom')`, `season`, `atom-keymap`, CSON, `language-text`, or the old `apm` and `shell.openExternal` paths now use their replacements; `auto-update-manager-spec` is a cross-platform unit spec of the IPC relay. Grammar and indentation specs follow separately.
+
 - **`chevron --help` and `chevron --version` still introduced themselves as Atom.** The banner read `Atom Editor v1.4.0` and `Atom    : 1.4.0`, the usage examples said `atom`, and the environment section named `ATOM_HOME` with a `~/.atom` default. They now say Chevron and describe `CHEVRON_HOME`, with `ATOM_HOME` noted as the legacy override it is.
 
 - **Every build shipped fswin's Windows DLLs.** text-buffer depends on `winattr` for the hidden-file attribute on Windows saves, and `winattr` on `fswin`, which carries a prebuilt DLL for each of ia32, x64 and arm64. macOS and Linux packages carried all three, Windows the two for other archs; the universal macOS merge tripped over them. Packaging now leaves both packages out on macOS and Linux and keeps only the host arch's DLL on Windows. text-buffer only requires `winattr` behind a Windows check, so nothing else changes.

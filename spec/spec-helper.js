@@ -23,6 +23,7 @@ const TextEditor = require('../src/text-editor');
 const TextEditorElement = require('../src/text-editor-element');
 const TreeSitterLanguageMode = require('../src/tree-sitter-language-mode');
 const {clipboard} = require('electron');
+const rendererIpc = require('../src/renderer-ipc');
 
 const jasmineStyle = document.createElement('style');
 jasmineStyle.textContent = atom.themes.loadStylesheet(atom.themes.resolveStylesheet('../static/jasmine'));
@@ -98,6 +99,11 @@ beforeEach(function() {
   spyOn(Date, 'now').andCallFake(() => window.now);
   spyOn(window, "setTimeout").andCallFake(window.fakeSetTimeout);
   spyOn(window, "clearTimeout").andCallFake(window.fakeClearTimeout);
+  // underscore 1.13 binds its clock at load, out of reach of the spies above.
+  for (const target of [_, _._]) {
+    spyOn(target, 'debounce').andCallFake(clockDebounce);
+    spyOn(target, 'throttle').andCallFake(clockThrottle);
+  }
 
   const spy = spyOn(atom.packages, 'resolvePackagePath').andCallFake(function(packageName) {
     if (specPackageName && (packageName === specPackageName)) {
@@ -152,13 +158,23 @@ beforeEach(function() {
   // pasted 'initial clipboard content' and moved the cursor 25 columns.
   const clipboardContents = {
     standard: 'initial clipboard content',
-    selection: ''
+    selection: '',
+    find: ''
   };
   const clipboardKey = type => (type === 'selection' ? 'selection' : 'standard');
-  spyOn(clipboard, 'writeText').andCallFake((text, type) => {
+  const writeText = (text, type) => {
     clipboardContents[clipboardKey(type)] = text;
+  };
+  const readText = type => clipboardContents[clipboardKey(type)];
+  spyOn(clipboard, 'writeText').andCallFake(writeText);
+  spyOn(clipboard, 'readText').andCallFake(readText);
+  // atom.clipboard goes through the main process; stub that path too.
+  spyOn(rendererIpc, 'clipboardWriteText').andCallFake(writeText);
+  spyOn(rendererIpc, 'clipboardReadText').andCallFake(readText);
+  spyOn(rendererIpc, 'clipboardWriteFindText').andCallFake(text => {
+    clipboardContents.find = text;
   });
-  spyOn(clipboard, 'readText').andCallFake(type => clipboardContents[clipboardKey(type)]);
+  spyOn(rendererIpc, 'clipboardReadFindText').andCallFake(() => clipboardContents.find);
 
   return addCustomMatchers(this);
 });
@@ -380,6 +396,72 @@ window.resetTimeouts = function() {
   window.timeouts = [];
   return window.intervalTimeouts = {};
 };
+
+// underscore 1.13's debounce and throttle, reading the clock at call time.
+function clockDebounce(func, wait, immediate) {
+  let timeout, previous, args, context, result;
+  const later = function() {
+    const passed = Date.now() - previous;
+    if (wait > passed) {
+      timeout = window.setTimeout(later, wait - passed);
+    } else {
+      timeout = null;
+      if (!immediate) result = func.apply(context, args);
+      if (!timeout) args = context = null;
+    }
+  };
+  const debounced = function(...callArgs) {
+    context = this;
+    args = callArgs;
+    previous = Date.now();
+    if (!timeout) {
+      timeout = window.setTimeout(later, wait);
+      if (immediate) result = func.apply(context, args);
+    }
+    return result;
+  };
+  debounced.cancel = function() {
+    window.clearTimeout(timeout);
+    timeout = args = context = null;
+  };
+  return debounced;
+}
+
+function clockThrottle(func, wait, options = {}) {
+  let timeout, context, args, result;
+  let previous = 0;
+  const later = function() {
+    previous = options.leading === false ? 0 : Date.now();
+    timeout = null;
+    result = func.apply(context, args);
+    if (!timeout) context = args = null;
+  };
+  const throttled = function(...callArgs) {
+    const now = Date.now();
+    if (!previous && options.leading === false) previous = now;
+    const remaining = wait - (now - previous);
+    context = this;
+    args = callArgs;
+    if (remaining <= 0 || remaining > wait) {
+      if (timeout) {
+        window.clearTimeout(timeout);
+        timeout = null;
+      }
+      previous = now;
+      result = func.apply(context, args);
+      if (!timeout) context = args = null;
+    } else if (!timeout && options.trailing !== false) {
+      timeout = window.setTimeout(later, remaining);
+    }
+    return result;
+  };
+  throttled.cancel = function() {
+    window.clearTimeout(timeout);
+    previous = 0;
+    timeout = context = args = null;
+  };
+  return throttled;
+}
 
 window.fakeSetTimeout = function(callback, ms) {
   if (ms == null) { ms = 0; }

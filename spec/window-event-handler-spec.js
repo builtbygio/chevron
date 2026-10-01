@@ -1,4 +1,4 @@
-const KeymapManager = require('atom-keymap');
+const KeymapManager = require('../src/keymap/keymap-manager');
 const WindowEventHandler = require('../src/window-event-handler');
 const { conditionPromise } = require('./async-spec-helpers');
 
@@ -69,8 +69,8 @@ describe('WindowEventHandler', () => {
 
   describe('when a link is clicked', () => {
     it('opens the http/https links in an external application', () => {
-      const { shell } = require('electron');
-      spyOn(shell, 'openExternal');
+      const delegate = windowEventHandler.applicationDelegate;
+      spyOn(delegate, 'openExternal');
 
       const link = document.createElement('a');
       const linkChild = document.createElement('span');
@@ -84,24 +84,24 @@ describe('WindowEventHandler', () => {
       };
 
       windowEventHandler.handleLinkClick(fakeEvent);
-      expect(shell.openExternal).toHaveBeenCalled();
-      expect(shell.openExternal.argsForCall[0][0]).toBe('http://github.com');
-      shell.openExternal.reset();
+      expect(delegate.openExternal).toHaveBeenCalled();
+      expect(delegate.openExternal.argsForCall[0][0]).toBe('http://github.com');
+      delegate.openExternal.reset();
 
       link.href = 'https://github.com';
       windowEventHandler.handleLinkClick(fakeEvent);
-      expect(shell.openExternal).toHaveBeenCalled();
-      expect(shell.openExternal.argsForCall[0][0]).toBe('https://github.com');
-      shell.openExternal.reset();
+      expect(delegate.openExternal).toHaveBeenCalled();
+      expect(delegate.openExternal.argsForCall[0][0]).toBe('https://github.com');
+      delegate.openExternal.reset();
 
       link.href = '';
       windowEventHandler.handleLinkClick(fakeEvent);
-      expect(shell.openExternal).not.toHaveBeenCalled();
-      shell.openExternal.reset();
+      expect(delegate.openExternal).not.toHaveBeenCalled();
+      delegate.openExternal.reset();
 
       link.href = '#scroll-me';
       windowEventHandler.handleLinkClick(fakeEvent);
-      expect(shell.openExternal).not.toHaveBeenCalled();
+      expect(delegate.openExternal).not.toHaveBeenCalled();
     });
 
     it('opens the "chevron://" links with URL handler', () => {

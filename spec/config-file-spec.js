@@ -1,7 +1,6 @@
 const fs = require('fs-plus');
 const path = require('path');
 const temp = require('temp').track();
-const dedent = require('dedent');
 const ConfigFile = require('../src/config-file');
 
 describe('ConfigFile', () => {
@@ -10,7 +9,7 @@ describe('ConfigFile', () => {
   beforeEach(async () => {
     jasmine.useRealClock();
     const tempDir = fs.realpathSync(temp.mkdirSync());
-    filePath = path.join(tempDir, 'the-config.cson');
+    filePath = path.join(tempDir, 'the-config.json');
   });
 
   afterEach(() => {
@@ -34,7 +33,7 @@ describe('ConfigFile', () => {
     });
   });
 
-  describe('when the file is updated with valid CSON', () => {
+  describe('when the file is updated with valid JSON', () => {
     it('notifies onDidChange observers with the data', async () => {
       configFile = new ConfigFile(filePath);
       subscription = await configFile.watch();
@@ -43,13 +42,7 @@ describe('ConfigFile', () => {
 
       writeFileSync(
         filePath,
-        dedent`
-        '*':
-          foo: 'bar'
-
-        'javascript':
-          foo: 'baz'
-      `
+        JSON.stringify({ '*': { foo: 'bar' }, javascript: { foo: 'baz' } })
       );
 
       expect(await event).toEqual({
@@ -64,34 +57,22 @@ describe('ConfigFile', () => {
     });
   });
 
-  describe('when the file is updated with invalid CSON', () => {
+  describe('when the file is updated with invalid JSON', () => {
     it('notifies onDidError observers', async () => {
       configFile = new ConfigFile(filePath);
       subscription = await configFile.watch();
 
       const message = new Promise(resolve => configFile.onDidError(resolve));
 
-      writeFileSync(
-        filePath,
-        dedent`
-        um what?
-      `,
-        2
-      );
+      writeFileSync(filePath, 'um what?');
 
-      expect(await message).toContain('Failed to load `the-config.cson`');
+      expect(await message).toContain('Failed to load `the-config.json`');
 
       const event = new Promise(resolve => configFile.onDidChange(resolve));
 
       writeFileSync(
         filePath,
-        dedent`
-        '*':
-          foo: 'bar'
-
-        'javascript':
-          foo: 'baz'
-      `,
+        JSON.stringify({ '*': { foo: 'bar' }, javascript: { foo: 'baz' } }),
         4
       );
 
@@ -107,7 +88,7 @@ describe('ConfigFile', () => {
 
     beforeEach(() => {
       path0 = filePath;
-      path1 = path.join(fs.realpathSync(temp.mkdirSync()), 'the-config.cson');
+      path1 = path.join(fs.realpathSync(temp.mkdirSync()), 'the-config.json');
 
       configFile = ConfigFile.at(path0);
     });

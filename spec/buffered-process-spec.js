@@ -97,7 +97,7 @@ describe('BufferedProcess', function() {
       let stdout = '';
       let stderr = '';
       const exitCallback = jasmine.createSpy('exit callback');
-      const apmProcess = new BufferedProcess({
+      const cpmProcess = new BufferedProcess({
         autoStart: false,
         command: atom.packages.getApmPath(),
         args: ['-h'],
@@ -111,14 +111,14 @@ describe('BufferedProcess', function() {
         exit: exitCallback
       });
 
-      expect(apmProcess.started).not.toBe(true);
-      apmProcess.start();
-      expect(apmProcess.started).toBe(true);
+      expect(cpmProcess.started).not.toBe(true);
+      cpmProcess.start();
+      expect(cpmProcess.started).toBe(true);
 
       waitsFor(() => exitCallback.callCount === 1);
       runs(function() {
-        expect(stderr).toContain('apm - Atom Package Manager');
-        expect(stdout).toEqual('');
+        expect(stdout).toContain('Usage: cpm');
+        expect(stderr).toEqual('');
       });
     }));
 
@@ -142,8 +142,8 @@ describe('BufferedProcess', function() {
     waitsFor(() => exitCallback.callCount === 1);
 
     runs(function() {
-      expect(stderr).toContain('apm - Atom Package Manager');
-      expect(stdout).toEqual('');
+      expect(stdout).toContain('Usage: cpm');
+      expect(stderr).toEqual('');
     });
   });
 

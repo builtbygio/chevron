@@ -24,7 +24,7 @@ describe('TextEditorRegistry', function() {
 
     editor = new TextEditor({ autoHeight: false });
     expect(
-      atom.grammars.assignLanguageMode(editor, 'text.plain.null-grammar')
+      atom.grammars.assignGrammar(editor, atom.grammars.nullGrammar)
     ).toBe(true);
   });
 
@@ -181,7 +181,7 @@ describe('TextEditorRegistry', function() {
       });
       expect(editor.getEncoding()).toBe('utf16be');
 
-      atom.grammars.assignLanguageMode(editor, 'text.plain.null-grammar');
+      atom.grammars.assignGrammar(editor, atom.grammars.nullGrammar);
       await initialPackageActivation;
       expect(editor.getEncoding()).toBe('utf8');
     });
@@ -634,7 +634,6 @@ describe('TextEditorRegistry', function() {
 function getSubscriptionCount(editor) {
   return (
     editor.emitter.getTotalListenerCount() +
-    editor.tokenizedBuffer.emitter.getTotalListenerCount() +
     editor.buffer.emitter.getTotalListenerCount() +
     editor.displayLayer.emitter.getTotalListenerCount()
   );

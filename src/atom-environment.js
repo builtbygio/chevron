@@ -1100,10 +1100,17 @@ class AtomEnvironment {
       );
       this.packages.activateDeferredStartupPackages();
     };
-    if (this.window && typeof this.window.requestIdleCallback === 'function') {
-      this.window.requestIdleCallback(run, { timeout: 2000 });
+    const win = this.window;
+    if (win && typeof win.requestIdleCallback === 'function') {
+      const handle = win.requestIdleCallback(run, { timeout: 2000 });
+      this.disposables.add(
+        new Disposable(() => {
+          if (win.cancelIdleCallback) win.cancelIdleCallback(handle);
+        })
+      );
     } else {
-      setTimeout(run, 0);
+      const handle = setTimeout(run, 0);
+      this.disposables.add(new Disposable(() => clearTimeout(handle)));
     }
     this.disposables.add(
       this.workspace.observeTextEditors(editor => {

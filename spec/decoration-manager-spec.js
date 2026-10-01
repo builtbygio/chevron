@@ -61,23 +61,23 @@ describe('DecorationManager', function() {
       layer1MarkerDecoration.destroy();
     });
 
-    it('does not allow destroyed markers to be decorated', function() {
+    it('does not decorate destroyed markers', function() {
       layer1Marker.destroy();
-      expect(() =>
+      expect(
         decorationManager.decorateMarker(layer1Marker, {
           type: 'overlay',
           item: document.createElement('div')
         })
-      ).toThrow('Cannot decorate a destroyed marker');
+      ).toBeNull();
       expect(decorationManager.getOverlayDecorations()).toEqual([]);
     });
 
-    it('does not allow destroyed marker layers to be decorated', function() {
+    it('does not decorate destroyed marker layers', function() {
       const layer = editor.addMarkerLayer();
       layer.destroy();
-      expect(() =>
+      expect(
         decorationManager.decorateMarkerLayer(layer, { type: 'highlight' })
-      ).toThrow('Cannot decorate a destroyed marker layer');
+      ).toBeNull();
     });
 
     describe('when a decoration is updated via Decoration::update()', () =>
