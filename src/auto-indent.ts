@@ -8,13 +8,78 @@
  * borrow had nowhere to point, so they moved here.
  *
  * The patterns come from package `settings/` (`editor.increaseIndentPattern`
- * and friends), written for oniguruma. They compile with `new RegExp` now, so
- * one JavaScript cannot parse yields no regex rather than throwing: that
- * language gets no indent adjustment, which is what a non-matching pattern
- * did anyway.
+ * and friends), written for oniguruma. They compile with `new RegExp` after
+ * fromOniguruma() rewrites extended mode and possessive quantifiers; one that
+ * still does not parse yields no regex, so that language gets no indent
+ * adjustment.
  */
 
 const { Point } = require('text-buffer');
+
+// Rewrites the Oniguruma constructs the bundled settings use: extended mode
+// `(?x)` / `(?x:...)` (whitespace and `#` comments ignored outside classes)
+// and possessive quantifiers (`*+`, `++`, `?+`), which become greedy ones.
+function fromOniguruma(source) {
+  let out = '';
+  const extended = [false];
+  let inClass = false;
+  for (let i = 0; i < source.length; i++) {
+    const c = source[i];
+    if (c === '\\') {
+      out += c + (source[i + 1] || '');
+      i++;
+      continue;
+    }
+    if (inClass) {
+      if (c === ']') inClass = false;
+      out += c;
+      continue;
+    }
+    if (c === '[') {
+      inClass = true;
+      out += c;
+      if (source[i + 1] === '^') out += source[++i];
+      if (source[i + 1] === ']') out += source[++i];
+      continue;
+    }
+    if (c === '(') {
+      const flagGroup = /^\(\?([imx]*)(?:-([imx]*))?([:)])/.exec(source.slice(i));
+      if (flagGroup && (flagGroup[1] + (flagGroup[2] || '')).includes('x')) {
+        const on = flagGroup[1].replace('x', '');
+        const off = (flagGroup[2] || '').replace('x', '');
+        const x = flagGroup[1].includes('x');
+        i += flagGroup[0].length - 1;
+        if (flagGroup[3] === ')') {
+          // JavaScript has no standalone (?i); only (?x) is expected here.
+          if (on || off) throw new Error('unsupported inline flags');
+          extended[extended.length - 1] = x;
+        } else {
+          extended.push(x);
+          out += on || off ? `(?${on}${off ? '-' + off : ''}:` : '(?:';
+        }
+        continue;
+      }
+      extended.push(extended[extended.length - 1]);
+      out += c;
+      continue;
+    }
+    if (c === ')') {
+      if (extended.length > 1) extended.pop();
+      out += c;
+      continue;
+    }
+    if (extended[extended.length - 1]) {
+      if (/\s/.test(c)) continue;
+      if (c === '#') {
+        while (i + 1 < source.length && source[i + 1] !== '\n') i++;
+        continue;
+      }
+    }
+    out += c;
+    if ((c === '*' || c === '+' || c === '?') && source[i + 1] === '+') i++;
+  }
+  return out;
+}
 
 function compile(pattern) {
   if (!pattern) return null;
@@ -23,9 +88,9 @@ function compile(pattern) {
   const flags = Array.isArray(pattern) ? pattern[1] || '' : '';
   if (typeof source !== 'string') return null;
   try {
-    return new RegExp(source, flags);
+    return new RegExp(fromOniguruma(source), flags);
   } catch (error) {
-    // Oniguruma-only syntax: \h, a mid-pattern (?i), some lookbehind forms.
+    // Oniguruma syntax with no JavaScript equivalent: no indent adjustment.
     return null;
   }
 }
@@ -153,4 +218,4 @@ const AutoIndent = {
   }
 };
 
-module.exports = { AutoIndent, compileIndentPattern: compile };
+module.exports = { AutoIndent, compileIndentPattern: compile, fromOniguruma };

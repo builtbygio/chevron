@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Auto-indent was broken in ten languages.** The indent patterns in each language's settings are Oniguruma regexes, compiled with `new RegExp` since TextMate went. Twenty of them use extended mode `(?x)` or possessive quantifiers, which JavaScript rejects, and a pattern that fails to compile is silently dropped — so C, C++, Objective-C, C#, HTML, JavaScript, Ruby, Rust, Sass and TypeScript lost some or all of their indent rules — in the brace languages, Enter after `{` did not indent and a typed `}` did not outdent. Those two constructs are now rewritten before compiling, and a spec compiles every bundled pattern. `text-editor-spec` also catches up: 35 failures → 0.
+
 - **Enter in a plain-text file dropped the indentation.** Files with no tree-sitter grammar — a `.txt`, or any unknown extension — use `PlainTextLanguageMode`, which had no indent suggestion, so a new line always started at column 0 even with `editor.autoIndent` on. It now carries the preceding non-blank row's indentation, as Atom did for the null grammar.
 
 - **Config scoped to plain text was ignored.** A plain-text buffer reported its root scope as `text` instead of `text.plain.null-grammar`, so settings such as `".text.plain.null-grammar": editor: softWrap: true` never applied. The null grammar's scope is the root scope again.
