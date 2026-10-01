@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The Welcome guide and cpm docs still described the Pulsar registry.** The registry went in #239, but Welcome told new users that search used the Pulsar API, that they could install from a git URL, and that `apm` was a shim; `cpm/README.md` and the cutover guide listed `search`, `view`, `featured` and install-by-name. They now describe what cpm does: install from a directory, link a working copy, rebuild. Settings' package cards no longer request `registry.npmjs.org/api/packages/<name>` — an endpoint that never existed — for each package; the client's dead search and featured code is gone with it.
+
 - **Syntax lookups at a cursor found nothing.** `getSyntaxNodeAtPosition` searched an inverted range for an empty one, which the official tree-sitter 0.25 binding answers with no node. Bracket matching by syntax tree, autocomplete-html's tree-sitter provider, Select Larger Syntax Node from a bare cursor and `bufferRangeForScopeAtPosition` all came back empty whenever the cursor sat at the start of a node.
 
 - **HTML in JavaScript template literals was not highlighted.** `` html`…` `` and `` el.innerHTML = `…` `` inject HTML into the template's text, taken as the gaps between the template's children. Newer tree-sitter-javascript gives that text its own `string_fragment` nodes, so there were no gaps and the HTML layer discarded itself. Text nodes now count as content.

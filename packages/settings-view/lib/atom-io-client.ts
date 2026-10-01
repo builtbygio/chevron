@@ -16,26 +16,6 @@ function headerMap(res: Response): Record<string, string> {
   return headers;
 }
 
-async function httpGetText(
-  url: string,
-  qs?: Record<string, string>
-): Promise<{ status: number; body: string; headers: Record<string, string> }> {
-  const parsed = new URL(url);
-  if (qs) {
-    for (const [key, value] of Object.entries(qs)) {
-      parsed.searchParams.set(key, value);
-    }
-  }
-  const res = await fetch(parsed.toString(), {
-    headers: { 'User-Agent': userAgent() }
-  });
-  return {
-    status: res.status,
-    body: await res.text(),
-    headers: headerMap(res)
-  };
-}
-
 async function httpGetBuffer(
   url: string
 ): Promise<{ status: number; body: Buffer; headers: Record<string, string> }> {
@@ -48,21 +28,16 @@ async function httpGetBuffer(
   };
 }
 
+// Package cards' avatars, and the registry lookups the cards and detail view
+// still ask for. Chevron has no package registry (#239), so `package` answers
+// with an error rather than a network request.
 class AtomIoClient {
   packageManager: any;
-  baseURL: string;
   expiry: number;
   cachePath: string | undefined;
 
-  constructor(packageManager: any, baseURL?: string) {
+  constructor(packageManager: any) {
     this.packageManager = packageManager;
-    this.baseURL =
-      baseURL != null
-        ? baseURL
-        : (process.env.CPM_REGISTRY_URL ||
-            process.env.ATOM_PACKAGE_REGISTRY ||
-            'https://registry.npmjs.org'
-          ).replace(/\/+$/, '') + '/api/';
     this.expiry = 1000 * 60 * 60 * 12;
     this.createAvatarCache();
     this.expireAvatarCache();
@@ -82,56 +57,7 @@ class AtomIoClient {
   }
 
   package(name: string, callback: Function) {
-    const packagePath = `packages/${name}`;
-    const data = this.fetchFromCache(packagePath);
-    if (data) {
-      return callback(null, data);
-    }
-    return this.request(packagePath, callback);
-  }
-
-  featuredPackages(callback: Function) {
-    const data = this.fetchFromCache('packages/featured');
-    if (data) {
-      return callback(null, data);
-    }
-    return this.getFeatured(false, callback);
-  }
-
-  featuredThemes(callback: Function) {
-    const data = this.fetchFromCache('themes/featured');
-    if (data) {
-      return callback(null, data);
-    }
-    return this.getFeatured(true, callback);
-  }
-
-  getFeatured(loadThemes: boolean, callback: Function) {
-    return this.packageManager
-      .getFeatured(loadThemes)
-      .then((packages: any) => {
-        const key = loadThemes ? 'themes/featured' : 'packages/featured';
-        const cached = { data: packages, createdOn: Date.now() };
-        localStorage.setItem(this.cacheKeyForPath(key), JSON.stringify(cached));
-        return callback(null, packages);
-      })
-      .catch((error: any) => callback(error, null));
-  }
-
-  request(relPath: string, callback: Function) {
-    return httpGetText(`${this.baseURL}${relPath}`)
-      .then(({ body }) => {
-        const parsed = this.parseJSON(body);
-        delete parsed.versions;
-        const cached = { data: parsed, createdOn: Date.now() };
-        localStorage.setItem(this.cacheKeyForPath(relPath), JSON.stringify(cached));
-        return callback(null, cached.data);
-      })
-      .catch((error: any) => callback(error));
-  }
-
-  cacheKeyForPath(relPath: string) {
-    return `settings-view:${relPath}`;
+    return callback(new Error(`No package registry to look up ${name} in`));
   }
 
   online() {
@@ -140,18 +66,6 @@ class AtomIoClient {
     } catch (error) {
       return true;
     }
-  }
-
-  fetchFromCache(packagePath: string) {
-    let cached: any = localStorage.getItem(this.cacheKeyForPath(packagePath));
-    cached = cached ? this.parseJSON(cached) : undefined;
-    if (
-      cached != null &&
-      (!this.online() || Date.now() - cached.createdOn < this.expiry)
-    ) {
-      return cached.data;
-    }
-    return null;
   }
 
   createAvatarCache() {
@@ -251,36 +165,6 @@ class AtomIoClient {
       'settings-view'
     );
     return this.cachePath;
-  }
-
-  search(query: string, options: { themes?: boolean; packages?: boolean }) {
-    const qs: Record<string, string> = { q: query };
-    if (options.themes) qs.filter = 'theme';
-    else if (options.packages) qs.filter = 'package';
-
-    return httpGetText(`${this.baseURL}packages/search`, qs).then(({ body }) => {
-      const parsed = this.parseJSON(body);
-      return parsed
-        .filter((pkg: any) => pkg.releases != null && pkg.releases.latest != null)
-        .map(({ readme, metadata, downloads, stargazers_count, repository }: any) => {
-          const repositoryUrl =
-            repository != null && repository.url != null ? repository.url : repository;
-          return Object.assign(metadata, {
-            readme,
-            downloads,
-            stargazers_count,
-            repository: repositoryUrl
-          });
-        });
-    }).catch((err: any) => {
-      const error: any = new Error(`Searching for “${query}” failed.`);
-      error.stderr = err && err.message ? err.message : String(err);
-      throw error;
-    });
-  }
-
-  parseJSON(s: string) {
-    return JSON.parse(s);
   }
 }
 

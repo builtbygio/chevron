@@ -115,7 +115,7 @@ packages/     ← the installed community packages (the shelf)
 | `cpm list` | Look at the shelf |
 | `cpm rebuild` | Re-cut native keys for **this** Electron |
 | `cpm doctor` | Check paths, Electron-as-Node, headers, policy |
-| `cpm search` | Ask the package catalog (Pulsar API by default) |
+| ~~`cpm search`~~ | Removed with the registry (#239) — packages ship built in |
 
 The Settings UI and “incompatible packages” rebuild button still call “the apm path” — that path **points at cpm**.
 
