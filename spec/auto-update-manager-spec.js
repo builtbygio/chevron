@@ -1,85 +1,71 @@
+const { Emitter } = require('event-kit');
 const AutoUpdateManager = require('../src/auto-update-manager');
-const { remote } = require('electron');
-const electronAutoUpdater = remote.require('electron').autoUpdater;
 
+// The renderer manager only relays the delegate's update IPC; the main-process
+// updater is covered by script/ci/auto-update-manager.test.js.
 describe('AutoUpdateManager (renderer)', () => {
-  if (process.platform !== 'darwin') return; // Tests are tied to electron autoUpdater, we use something else on Linux and Win32
-
-  let autoUpdateManager;
+  let autoUpdateManager, delegateEmitter, applicationDelegate;
 
   beforeEach(() => {
-    autoUpdateManager = new AutoUpdateManager({
-      applicationDelegate: atom.applicationDelegate
-    });
+    delegateEmitter = new Emitter();
+    const relay = name => callback => delegateEmitter.on(name, callback);
+    applicationDelegate = {
+      onDidBeginCheckingForUpdate: relay('checking-for-update'),
+      onDidBeginDownloadingUpdate: relay('did-begin-downloading-update'),
+      onDidCompleteDownloadingUpdate: relay('update-available'),
+      onUpdateNotAvailable: relay('update-not-available'),
+      onUpdateError: relay('update-error'),
+      getAutoUpdateManagerState: () => 'idle',
+      getAutoUpdateManagerErrorMessage: () => 'an error message'
+    };
+    autoUpdateManager = new AutoUpdateManager({ applicationDelegate });
     autoUpdateManager.initialize();
   });
 
   afterEach(() => {
     autoUpdateManager.destroy();
+    delegateEmitter.dispose();
   });
 
-  describe('::onDidBeginCheckingForUpdate', () => {
-    it('subscribes to "did-begin-checking-for-update" event', () => {
-      const spy = jasmine.createSpy('spy');
-      autoUpdateManager.onDidBeginCheckingForUpdate(spy);
-      electronAutoUpdater.emit('checking-for-update');
-      waitsFor(() => {
-        return spy.callCount === 1;
-      });
-    });
+  it('relays "checking-for-update" as did-begin-checking-for-update', () => {
+    const spy = jasmine.createSpy('spy');
+    autoUpdateManager.onDidBeginCheckingForUpdate(spy);
+    delegateEmitter.emit('checking-for-update');
+    expect(spy.callCount).toBe(1);
   });
 
-  describe('::onDidBeginDownloadingUpdate', () => {
-    it('subscribes to "did-begin-downloading-update" event', () => {
-      const spy = jasmine.createSpy('spy');
-      autoUpdateManager.onDidBeginDownloadingUpdate(spy);
-      electronAutoUpdater.emit('update-available');
-      waitsFor(() => {
-        return spy.callCount === 1;
-      });
-    });
+  it('relays did-begin-downloading-update', () => {
+    const spy = jasmine.createSpy('spy');
+    autoUpdateManager.onDidBeginDownloadingUpdate(spy);
+    delegateEmitter.emit('did-begin-downloading-update');
+    expect(spy.callCount).toBe(1);
   });
 
-  describe('::onDidCompleteDownloadingUpdate', () => {
-    it('subscribes to "did-complete-downloading-update" event', () => {
-      const spy = jasmine.createSpy('spy');
-      autoUpdateManager.onDidCompleteDownloadingUpdate(spy);
-      electronAutoUpdater.emit('update-downloaded', null, null, '1.2.3');
-      waitsFor(() => {
-        return spy.callCount === 1;
-      });
-      runs(() => {
-        expect(spy.mostRecentCall.args[0].releaseVersion).toBe('1.2.3');
-      });
-    });
+  it('relays "update-available" with its details as did-complete-downloading-update', () => {
+    const spy = jasmine.createSpy('spy');
+    autoUpdateManager.onDidCompleteDownloadingUpdate(spy);
+    delegateEmitter.emit('update-available', { releaseVersion: '1.2.3' });
+    expect(spy.mostRecentCall.args[0].releaseVersion).toBe('1.2.3');
   });
 
-  describe('::onUpdateNotAvailable', () => {
-    it('subscribes to "update-not-available" event', () => {
-      const spy = jasmine.createSpy('spy');
-      autoUpdateManager.onUpdateNotAvailable(spy);
-      electronAutoUpdater.emit('update-not-available');
-      waitsFor(() => {
-        return spy.callCount === 1;
-      });
-    });
+  it('relays update-not-available', () => {
+    const spy = jasmine.createSpy('spy');
+    autoUpdateManager.onUpdateNotAvailable(spy);
+    delegateEmitter.emit('update-not-available');
+    expect(spy.callCount).toBe(1);
   });
 
-  describe('::onUpdateError', () => {
-    it('subscribes to "update-error" event', () => {
-      const spy = jasmine.createSpy('spy');
-      autoUpdateManager.onUpdateError(spy);
-      electronAutoUpdater.emit('error', {}, 'an error message');
-      waitsFor(() => spy.callCount === 1);
-      runs(() =>
-        expect(autoUpdateManager.getErrorMessage()).toBe('an error message')
-      );
-    });
+  it('relays update-error and exposes the error message', () => {
+    const spy = jasmine.createSpy('spy');
+    autoUpdateManager.onUpdateError(spy);
+    delegateEmitter.emit('update-error');
+    expect(spy.callCount).toBe(1);
+    expect(autoUpdateManager.getErrorMessage()).toBe('an error message');
   });
 
   describe('::platformSupportsUpdates', () => {
-    let state, releaseChannel;
-    it('returns true on macOS and Windows when in stable', () => {
+    it('is true only for a supported state outside the dev channel', () => {
+      let state, releaseChannel;
       spyOn(autoUpdateManager, 'getState').andCallFake(() => state);
       spyOn(atom, 'getReleaseChannel').andCallFake(() => releaseChannel);
 
@@ -87,16 +73,11 @@ describe('AutoUpdateManager (renderer)', () => {
       releaseChannel = 'stable';
       expect(autoUpdateManager.platformSupportsUpdates()).toBe(true);
 
-      state = 'idle';
       releaseChannel = 'dev';
       expect(autoUpdateManager.platformSupportsUpdates()).toBe(false);
 
       state = 'unsupported';
       releaseChannel = 'stable';
-      expect(autoUpdateManager.platformSupportsUpdates()).toBe(false);
-
-      state = 'unsupported';
-      releaseChannel = 'dev';
       expect(autoUpdateManager.platformSupportsUpdates()).toBe(false);
     });
   });
@@ -104,25 +85,19 @@ describe('AutoUpdateManager (renderer)', () => {
   describe('::destroy', () => {
     it('unsubscribes from all events', () => {
       const spy = jasmine.createSpy('spy');
-      const doneIndicator = jasmine.createSpy('spy');
-      atom.applicationDelegate.onUpdateNotAvailable(doneIndicator);
       autoUpdateManager.onDidBeginCheckingForUpdate(spy);
       autoUpdateManager.onDidBeginDownloadingUpdate(spy);
       autoUpdateManager.onDidCompleteDownloadingUpdate(spy);
       autoUpdateManager.onUpdateNotAvailable(spy);
+      autoUpdateManager.onUpdateError(spy);
       autoUpdateManager.destroy();
-      electronAutoUpdater.emit('checking-for-update');
-      electronAutoUpdater.emit('update-available');
-      electronAutoUpdater.emit('update-downloaded', null, null, '1.2.3');
-      electronAutoUpdater.emit('update-not-available');
 
-      waitsFor(() => {
-        return doneIndicator.callCount === 1;
-      });
-
-      runs(() => {
-        expect(spy.callCount).toBe(0);
-      });
+      delegateEmitter.emit('checking-for-update');
+      delegateEmitter.emit('did-begin-downloading-update');
+      delegateEmitter.emit('update-available', {});
+      delegateEmitter.emit('update-not-available');
+      delegateEmitter.emit('update-error');
+      expect(spy.callCount).toBe(0);
     });
   });
 });

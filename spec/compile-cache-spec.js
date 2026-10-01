@@ -8,7 +8,6 @@ const path = require('path');
 const fs = require('fs');
 const temp = require('temp').track();
 const TypeScriptTranspiler = require('../src/typescript');
-const CSON = require('season');
 const CompileCache = require('../src/compile-cache');
 
 describe('CompileCache', function() {
@@ -18,7 +17,6 @@ describe('CompileCache', function() {
     fixtures = atom.project.getPaths()[0];
     atomHome = temp.mkdirSync('fake-atom-home');
 
-    CSON.setCacheDir(null);
     CompileCache.resetCacheStats();
 
     return spyOn(TypeScriptTranspiler, 'compile').andReturn('the-typescript-code');
@@ -26,7 +24,6 @@ describe('CompileCache', function() {
 
   afterEach(function() {
     CompileCache.setAtomHomeDirectory(process.env.ATOM_HOME);
-    CSON.setCacheDir(CompileCache.getCacheDirectory());
     try {
       return temp.cleanupSync();
     } catch (error) {}
@@ -48,19 +45,9 @@ describe('CompileCache', function() {
       return expect(TypeScriptTranspiler.compile.callCount).toBe(1);
     }));
 
-    return describe('when the given file is CSON', () => it('compiles the file to JSON and caches it', function() {
-      spyOn(CSON, 'setCacheDir').andCallThrough();
-      spyOn(CSON, 'readFileSync').andCallThrough();
-
+    return describe('when the given file is JSON', () => it('does not compile or cache the file', function() {
       CompileCache.addPathToCache(path.join(fixtures, 'cson.json'), atomHome);
-      expect(CSON.readFileSync).toHaveBeenCalledWith(path.join(fixtures, 'cson.json'));
-      expect(CSON.setCacheDir).toHaveBeenCalledWith(path.join(atomHome, '/compile-cache'));
-
-      CSON.readFileSync.reset();
-      CSON.setCacheDir.reset();
-      CompileCache.addPathToCache(path.join(fixtures, 'cson.json'), atomHome);
-      expect(CSON.readFileSync).toHaveBeenCalledWith(path.join(fixtures, 'cson.json'));
-      return expect(CSON.setCacheDir).not.toHaveBeenCalled();
+      return expect(CompileCache.getCacheStats()['.json']).toBeUndefined();
     }));
   });
 
@@ -77,7 +64,7 @@ describe('CompileCache', function() {
       waits(1);
       return runs(function() {
         error = new Error("Oops again");
-        expect(error.stack).toContain('compile-cache-spec.coffee');
+        expect(error.stack).toContain('compile-cache-spec.js');
         return expect(Array.isArray(error.getRawStack())).toBe(true);
       });
     });
@@ -89,7 +76,7 @@ describe('CompileCache', function() {
       Error.prepareStackTrace = originalPrepareStackTrace;
 
       const error = new Error('Oops');
-      expect(error.stack).toContain('compile-cache-spec.coffee');
+      expect(error.stack).toContain('compile-cache-spec.js');
       return expect(Array.isArray(error.getRawStack())).toBe(true);
     });
 
@@ -102,7 +89,7 @@ describe('CompileCache', function() {
       };
 
       const error = new Error('Oops');
-      expect(error.stack).toContain('compile-cache-spec.coffee');
+      expect(error.stack).toContain('compile-cache-spec.js');
       expect(error.foo).toBe('bar');
       return expect(Array.isArray(error.getRawStack())).toBe(true);
     });

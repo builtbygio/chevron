@@ -2,7 +2,7 @@
   "name": "Some Language",
   "scopeName": "some-language",
   "type": "tree-sitter",
-  "parser": "./fake-parser",
+  "parser": "tree-sitter-c",
   "fileTypes": [
     "somelang"
   ],

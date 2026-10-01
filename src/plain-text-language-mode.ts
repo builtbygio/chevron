@@ -15,6 +15,7 @@
 
 const { Point, Range } = require('text-buffer');
 const { Disposable } = require('event-kit');
+const ScopeDescriptor = require('./scope-descriptor');
 
 const NON_WHITESPACE_REGEX = /\S/;
 // Not frozen: a display-layer caller assigns to .length, as it does to
@@ -25,6 +26,12 @@ module.exports = class PlainTextLanguageMode {
   constructor(buffer, grammar) {
     this.buffer = buffer;
     this.grammar = grammar;
+    // Scoped config such as `.text.plain.null-grammar` keys on this.
+    if (grammar && grammar.scopeName) {
+      this.rootScopeDescriptor = new ScopeDescriptor({
+        scopes: [grammar.scopeName]
+      });
+    }
   }
 
   // --- text-buffer's language mode interface -------------------------------
@@ -47,6 +54,10 @@ module.exports = class PlainTextLanguageMode {
 
   getGrammar() {
     return this.grammar;
+  }
+
+  scopeDescriptorForPosition() {
+    return this.rootScopeDescriptor || new ScopeDescriptor({ scopes: ['text'] });
   }
 
   // --- folding, by indentation ---------------------------------------------
@@ -136,6 +147,28 @@ module.exports = class PlainTextLanguageMode {
       }
     }
     return indentLength / tabLength;
+  }
+
+  // --- auto-indent: carry the preceding row's indentation -----------------
+
+  suggestedIndentForBufferRow(row, tabLength, options) {
+    const skipBlankLines = !options || options.skipBlankLines !== false;
+    return this.precedingIndentLevel(row, tabLength, skipBlankLines);
+  }
+
+  suggestedIndentForLineAtBufferRow(row, line, tabLength) {
+    return this.precedingIndentLevel(row, tabLength, true);
+  }
+
+  precedingIndentLevel(row, tabLength, skipBlankLines) {
+    const precedingRow = skipBlankLines
+      ? this.buffer.previousNonBlankRow(row)
+      : row - 1;
+    if (precedingRow == null || precedingRow < 0) return 0;
+    return this.indentLevelForLine(
+      this.buffer.lineForRow(precedingRow),
+      tabLength
+    );
   }
 
   // --- no grammar, so nothing is a comment ---------------------------------

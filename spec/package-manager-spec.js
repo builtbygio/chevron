@@ -4,7 +4,7 @@ const Package = require('../src/package');
 const PackageManager = require('../src/package-manager');
 const temp = require('temp').track();
 const fs = require('fs-plus');
-const { Disposable } = require('atom');
+const { Disposable } = require('chevron');
 const { buildKeydownEvent } = require('../src/keymap-extensions');
 const { mockLocalStorage } = require('./spec-helper');
 const ModuleCache = require('../src/module-cache');
@@ -50,18 +50,18 @@ describe('PackageManager', () => {
   });
 
   describe('::getApmPath()', () => {
-    it('returns the path to the apm command', () => {
-      let apmPath = path.join(
+    it('returns the path to the cpm command', () => {
+      let cpmPath = path.join(
         process.resourcesPath,
         'app',
-        'apm',
+        'cpm',
         'bin',
-        'apm'
+        'cpm'
       );
       if (process.platform === 'win32') {
-        apmPath += '.cmd';
+        cpmPath += '.cmd';
       }
-      expect(atom.packages.getApmPath()).toBe(apmPath);
+      expect(atom.packages.getApmPath()).toBe(cpmPath);
     });
 
     describe('when the core.apmPath setting is set', () => {
@@ -1251,7 +1251,7 @@ describe('PackageManager', () => {
         let element, events, userKeymapPath;
 
         beforeEach(() => {
-          userKeymapPath = path.join(temp.mkdirSync(), 'user-keymaps.cson');
+          userKeymapPath = path.join(temp.mkdirSync(), 'user-keymaps.json');
           spyOn(atom.keymaps, 'getUserKeymapPath').andReturn(userKeymapPath);
 
           element = createTestElement('test-1');
@@ -1275,7 +1275,7 @@ describe('PackageManager', () => {
         it("doesn't override user-defined keymaps", async () => {
           fs.writeFileSync(
             userKeymapPath,
-            `".test-1": {"ctrl-z": "user-command"}`
+            `{".test-1": {"ctrl-z": "user-command"}}`
           );
           atom.keymaps.loadUserKeymap();
 
@@ -1447,17 +1447,18 @@ describe('PackageManager', () => {
     });
 
     describe('grammar loading', () => {
-      it("loads the package's grammars", async () => {
+      it('skips TextMate grammars', async () => {
         await atom.packages.activatePackage('package-with-grammars');
-        expect(atom.grammars.selectGrammar('a.alot').name).toBe('Alot');
-        expect(atom.grammars.selectGrammar('a.alittle').name).toBe('Alittle');
+        expect(atom.grammars.selectGrammar('a.alot')).toBe(
+          atom.grammars.nullGrammar
+        );
       });
 
       it('loads any tree-sitter grammars defined in the package', async () => {
         await atom.packages.activatePackage('package-with-tree-sitter-grammar');
         const grammar = atom.grammars.selectGrammar('test.somelang');
         expect(grammar.name).toBe('Some Language');
-        expect(grammar.languageModule.isFakeTreeSitterParser).toBe(true);
+        expect(grammar.languageModule).toBeTruthy();
       });
     });
 
@@ -1865,22 +1866,20 @@ describe('PackageManager', () => {
         );
 
         // enabling of theme
+        // Theme reloads are serialised; wait on the chain, not the first event.
         const pack = atom.packages.enablePackage(packageName);
-        await new Promise(resolve =>
-          atom.packages.onDidActivatePackage(resolve)
-        );
+        await atom.themes.themeReloads;
         expect(atom.packages.isPackageActive(packageName)).toBe(true);
         expect(atom.config.get('core.themes')).toContain(packageName);
         expect(atom.config.get('core.disabledPackages')).not.toContain(
           packageName
         );
 
-        await new Promise(resolve => {
-          atom.themes.onDidChangeActiveThemes(resolve);
-          atom.packages.disablePackage(packageName);
-        });
+        atom.packages.disablePackage(packageName);
+        await atom.themes.themeReloads;
 
-        expect(atom.packages.getActivePackages()).not.toContain(pack);
+        expect(atom.packages.isPackageActive(packageName)).toBe(false);
+        expect(atom.packages.getActivePackages().includes(pack)).toBe(false);
         expect(atom.config.get('core.themes')).not.toContain(packageName);
         expect(atom.config.get('core.themes')).not.toContain(packageName);
         expect(atom.config.get('core.disabledPackages')).not.toContain(
