@@ -29,7 +29,7 @@ module.exports = {
     }
 
     const { protocol } = url.parse(link);
-    if (protocol === 'http:' || protocol === 'https:' || protocol === 'atom:') {
+    if (protocol === 'http:' || protocol === 'https:' || protocol === 'chevron:') {
       shell.openExternal(link);
     }
   },

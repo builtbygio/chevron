@@ -5,6 +5,18 @@ const { assert } = require('chai');
 module.exports = function(testPaths) {
   global.assert = assert;
 
+  // These specs load renderer modules from source (AtomApplication's package
+  // lookup reaches src/package-manager.js), and some are TypeScript. The app
+  // never needs this: packaging compiles them, and the main process registers
+  // no TypeScript loader by policy (script/ci/src-typescript-first.test.js).
+  if (!require.extensions['.ts']) {
+    const TypeScript = require('../../src/typescript');
+    require.extensions['.ts'] = (module, filename) => {
+      const source = fs.readFileSync(filename, 'utf8');
+      module._compile(TypeScript.compile(source, filename), filename);
+    };
+  }
+
   let reporterOptions = {
     reporterEnabled: 'list'
   };

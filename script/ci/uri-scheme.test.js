@@ -26,6 +26,23 @@ describe('URI scheme (Wave 4)', () => {
     assert.doesNotMatch(src, /protocol === 'atom:'/);
   });
 
+  // The renderer registry above was converted in Wave 4; main's openUrl was
+  // not, and every external chevron:// link was dropped (#406).
+  it('main-process URL opening accepts chevron:, not atom:', () => {
+    const src = read('src/main-process/atom-application.js');
+    const openUrl = src.slice(src.indexOf('  openUrl({'));
+    const body = openUrl.slice(0, openUrl.indexOf('\n  }\n'));
+    assert.match(body, /protocol !== 'chevron:'/);
+    assert.doesNotMatch(src, /protocol (!==|===) 'atom:'/);
+  });
+
+  it('packages that open URI links accept chevron:, not atom:', () => {
+    assert.doesNotMatch(read('packages/link/lib/link.js'), /'atom:'/);
+    assert.match(read('packages/link/lib/link.js'), /protocol === 'chevron:'/);
+    const card = read('packages/settings-view/lib/package-card.js');
+    assert.doesNotMatch(card, /startsWith\("atom:"\)/);
+  });
+
   it('the deprecation warning is gone with the alias it warned about', () => {
     const src = read('src/uri-handler-registry.js');
     assert.doesNotMatch(src, /_warnedAtomScheme/);
