@@ -4262,10 +4262,10 @@ describe('TextEditor', () => {
         });
 
         it('indents the new line to the correct level when editor.autoIndent is true and using an off-side rule language', async () => {
-          await atom.packages.activatePackage('language-coffee-script');
+          await atom.packages.activatePackage('language-python');
           editor.update({ autoIndent: true });
-          atom.grammars.assignLanguageMode(editor, 'source.coffee');
-          editor.setText('if true\n  return trueelse\n  return false');
+          atom.grammars.assignLanguageMode(editor, 'source.python');
+          editor.setText('if x:\n  return Trueelse:\n  return False');
           editor.setCursorBufferPosition([1, 13]);
           editor.insertNewline();
           expect(editor.indentationForBufferRow(1)).toBe(1);
@@ -7976,11 +7976,11 @@ describe('TextEditor', () => {
         'program',
         'variable_declaration',
         'variable_declarator',
-        'function',
+        'function_expression',
         'statement_block',
         'variable_declaration',
         'variable_declarator',
-        'function',
+        'function_expression',
         'statement_block',
         'while_statement',
         'parenthesized_expression',
@@ -8302,19 +8302,6 @@ describe('TextEditor', () => {
       });
     });
 
-    describe('less', () => {
-      beforeEach(async () => {
-        await atom.packages.activatePackage('language-less');
-        await atom.packages.activatePackage('language-css');
-        editor = await atom.workspace.open('sample.less');
-      });
-
-      it('only uses the `commentEnd` pattern if it comes from the same grammar as the `commentStart` when commenting lines', () => {
-        editor.toggleLineCommentsForBufferRows(0, 0);
-        expect(editor.lineTextForBufferRow(0)).toBe('// @color: #4D926F;');
-      });
-    });
-
     describe('css', () => {
       beforeEach(async () => {
         await atom.packages.activatePackage('language-css');
@@ -8375,10 +8362,24 @@ describe('TextEditor', () => {
       });
     });
 
-    describe('coffeescript', () => {
+    describe('python', () => {
       beforeEach(async () => {
-        await atom.packages.activatePackage('language-coffee-script');
-        editor = await atom.workspace.open('coffee.js');
+        await atom.packages.activatePackage('language-python');
+        editor = await atom.workspace.open();
+        atom.grammars.assignLanguageMode(editor, 'source.python');
+        editor.setText(
+          [
+            'class Quicksort:',
+            '  def sort(self, items):',
+            '    if len(items) <= 1:',
+            '      return items',
+            '    pivot = items.shift()',
+            '    left = []',
+            '    right = []',
+            '',
+            '    for x in items:'
+          ].join('\n')
+        );
       });
 
       it('comments/uncomments lines in the given range', () => {

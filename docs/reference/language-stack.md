@@ -110,9 +110,17 @@ including injections.
 Auto-indent is still pattern-based, from each package's
 `settings/*.json` (`editor.increaseIndentPattern` and friends). Those methods
 lived on `TextMateLanguageMode` and were borrowed by `TreeSitterLanguageMode`;
-they are `src/auto-indent.ts` now. The patterns were written for oniguruma and
-compile with `new RegExp`, so one JavaScript cannot parse yields no regex and
-that language gets no indent adjustment rather than an exception.
+they are `src/auto-indent.ts` now. The patterns were written for oniguruma;
+`fromOniguruma()` rewrites the two constructs the bundled ones use that
+JavaScript lacks — extended mode `(?x)` / `(?x:…)` and possessive quantifiers
+(`*+`) — before `new RegExp`. Lookbehind and `(?i:…)` need nothing.
+
+Without that step 20 bundled patterns did not compile, and since a pattern
+that does not compile yields no regex rather than an exception, C, C++,
+Objective-C, C#, HTML, JavaScript, Ruby, Rust, Sass and TypeScript silently
+lost auto-indent (in the brace languages, indenting after `{` and outdenting
+`}`). `spec/auto-indent-spec.js` now
+compiles every bundled pattern, so a new oniguruma-only one fails the suite.
 
 ---
 
