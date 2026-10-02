@@ -36,7 +36,7 @@ exports.conditionPromise = async function (
     condition,
     description = condition.toString()
 ) {
-    const startTime = Date.now();
+    const startTime = performance.now();
 
     while (true) {
         await exports.timeoutPromise(100);
@@ -45,7 +45,7 @@ exports.conditionPromise = async function (
             return;
         }
 
-        if (Date.now() - startTime > 120000) {
+        if (performance.now() - startTime > 120000) {
             throw new Error('Timed out waiting on ' + description);
         }
     }

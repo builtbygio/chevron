@@ -1,8 +1,10 @@
+// The timeout reads performance.now: spec-helper fakes Date.now, which stands
+// still unless a spec advances the clock, so a false condition never timed out.
 async function conditionPromise(
   condition,
   description = 'anonymous condition'
 ) {
-  const startTime = Date.now();
+  const startTime = performance.now();
 
   while (true) {
     await timeoutPromise(100);
@@ -16,7 +18,7 @@ async function conditionPromise(
       return;
     }
 
-    if (Date.now() - startTime > 5000) {
+    if (performance.now() - startTime > 5000) {
       throw new Error('Timed out waiting on ' + description);
     }
   }

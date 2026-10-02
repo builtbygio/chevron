@@ -33,7 +33,7 @@ for (const name of ['it', 'fit', 'ffit', 'fffit']) {
 }
 
 exports.conditionPromise = async function (condition, description = 'anonymous condition') {
-  const startTime = Date.now()
+  const startTime = performance.now()
 
   while (true) {
     await exports.timeoutPromise(100)
@@ -42,7 +42,7 @@ exports.conditionPromise = async function (condition, description = 'anonymous c
       return
     }
 
-    if (Date.now() - startTime > 5000) {
+    if (performance.now() - startTime > 5000) {
       throw new Error('Timed out waiting on ' + description)
     }
   }

@@ -33,7 +33,7 @@ function afterEach (fn) {
 })
 
 async function conditionPromise (condition) {
-  const startTime = Date.now()
+  const startTime = performance.now()
 
   while (true) {
     await timeoutPromise(100)
@@ -42,7 +42,7 @@ async function conditionPromise (condition) {
       return
     }
 
-    if (Date.now() - startTime > 5000) {
+    if (performance.now() - startTime > 5000) {
       throw new Error('Timed out waiting on condition')
     }
   }
