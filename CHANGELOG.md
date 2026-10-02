@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Find in Project sometimes reported no results.** The renderer learned a ripgrep search's id from main's reply to "start" and only then listened for output, but that reply is not ordered with the output messages. On a fast search the matches could arrive first and be dropped, then the close arrived and the search finished empty, with no error. The renderer now picks the id and listens before asking main to start. `script/ci/rg-search-ordering.test.js`.
+
+- **The project results list could open with the second file selected and scrolled.** Ripgrep searches files in parallel; when a later result sorted above the selected first row, the selection moved down with it. A result arriving above the top row now takes the selection. The list also rendered no rows when results arrived before its first resize callback, or when it was first drawn detached (a split copy of the results pane), because row heights were missing or measured as 0.
+
+- **The fuzzy finder skipped files after its first crawl.** The paths a crawl had emitted were kept in a module-wide set that was never reset, so a second crawl (after a folder was added, or a reload) silently left out every file the first one had found, and two overlapping crawls shared one emitter. Each crawl now has its own. A project folder that no longer exists posts an error rather than failing silently, and the recently-opened ordering refreshes when the finder is reopened.
+
+- The spell-check, fuzzy-finder and find-and-replace specs pass. find-and-replace's `sample.coffee` and `one-long-line.coffee` fixtures, missing since the package was vendored, are restored.
+
 - **Highlighting and folds that named renamed tree-sitter nodes did nothing.** The parser upgrade renamed nodes the grammars' scope maps and folds still used, and a selector for a node that never appears fails silently. Restored: HTML's `source.html` scope (on `document`), Ruby method calls and symbols, Java comments and method names, JavaScript and TypeScript named function expressions and rest parameters, `readonly`, C++ qualified function names and `nullptr`, C# `else`/`unchecked`, Bash `$'…'` strings, Rust attribute names, YAML mapping keys, JSON's root scope, and Go `case` and HTML `<script>`/`<style>` folds. Scope-map leaf rules gain `field`, matching a node by its field in the parent (a call's method versus its receiver). A new `script/ci/grammar-selectors.test.js` checks every selector against the parser's node types.
 - **CSS and SCSS offered no property-name, tag or pseudo-selector completions, and no property snippets.** autocomplete-css and the CSS snippets key on `meta.property-list` and `meta.selector.css`, which only the TextMate grammars produced. The tree-sitter grammars now scope rule blocks and selector lists with them. Property values still complete only right after the `:`.
 

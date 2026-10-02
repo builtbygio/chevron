@@ -341,8 +341,9 @@ module.exports = class ResultsModel {
     return this.matchCount
   }
 
+  // In display order; results arrive in whatever order ripgrep's threads finish.
   getPaths () {
-    return Object.keys(this.results)
+    return Object.keys(this.results).sort((a, b) => a.localeCompare(b))
   }
 
   getResult (filePath) {

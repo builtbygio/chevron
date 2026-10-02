@@ -453,6 +453,9 @@ describe('FuzzyFinder', () => {
         beforeEach(() => {
           if (fs.existsSync(rootDir1)) { rmrf(rootDir1) }
           if (fs.existsSync(rootDir2)) { rmrf(rootDir2) }
+          // Coming back to the window is what makes the finder recrawl. The
+          // activation crawl may already have handed the view its paths.
+          window.dispatchEvent(new FocusEvent('focus'))
         })
 
         it('posts an error notification', async () => {

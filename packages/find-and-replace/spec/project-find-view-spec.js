@@ -1614,7 +1614,7 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
 
       expect(projectFindView.model.getFindOptions().useRegex).toBe(true);
       expect(projectFindView.findEditor.getGrammar().scopeName).toBe('source.js.regexp');
-      expect(projectFindView.replaceEditor.getGrammar().scopeName).toBe('source.js.regexp.replacement');
+      expect(projectFindView.replaceEditor.getGrammar().scopeName).toBe('text.plain.null-grammar'); // TextMate-only grammar
     });
 
     describe("when panel is active", () => {
@@ -1634,7 +1634,7 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
 
         expect(projectFindView.model.getFindOptions().useRegex).toBe(true);
         expect(projectFindView.findEditor.getGrammar().scopeName).toBe('source.js.regexp');
-        expect(projectFindView.replaceEditor.getGrammar().scopeName).toBe('source.js.regexp.replacement');
+        expect(projectFindView.replaceEditor.getGrammar().scopeName).toBe('text.plain.null-grammar'); // TextMate-only grammar
 
         atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
 

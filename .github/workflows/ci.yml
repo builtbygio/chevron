@@ -203,6 +203,7 @@ jobs:
           node --test script/ci/symbols-view-lsp.test.js
           node --test script/ci/smoke-probe-syntax.test.js
           node --test script/ci/rg-search-args.test.js
+          node --test script/ci/rg-search-ordering.test.js
           node --test script/ci/pty-ipc.test.js
           node --test script/ci/chevron-api-alias.test.js
           node --test script/ci/lsp-framing.test.js

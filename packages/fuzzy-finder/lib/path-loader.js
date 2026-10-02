@@ -23,6 +23,20 @@ function createHandle () {
   }
 }
 
+// The realpath IPC answers null rather than throwing. A root that is gone
+// (an unmounted drive) must still throw ENOENT: ProjectView turns that into
+// the "Project path not found!" notification.
+function realProjectPath (projectPath) {
+  const real = chevron.applicationDelegate.realpathSync(projectPath)
+  if (real) return real
+  if (!chevron.applicationDelegate.statSyncNoException(projectPath)) {
+    const error = new Error(`ENOENT: no such file or directory, realpath '${projectPath}'`)
+    error.code = 'ENOENT'
+    throw error
+  }
+  return projectPath
+}
+
 module.exports = {
   startTask (callback, metricsReporter) {
     const results = []
@@ -30,7 +44,7 @@ module.exports = {
     let ignoredNames = chevron.config.get('fuzzy-finder.ignoredNames') || []
     ignoredNames = ignoredNames.concat(chevron.config.get('core.ignoredNames') || [])
     const ignoreVcsIgnores = chevron.config.get('core.excludeVcsIgnoredPaths')
-    const projectPaths = chevron.project.getPaths().map((p) => chevron.applicationDelegate.realpathSync(p) || p)
+    const projectPaths = chevron.project.getPaths().map(realProjectPath)
     const useRipGrep = chevron.config.get('fuzzy-finder.useRipGrep')
 
     const startTime = performance.now()
@@ -40,14 +54,13 @@ module.exports = {
       results.push(...(paths || []))
     })
 
-    loadPaths.setEmitFound((event, data) => handle.emit(event, data))
-
     loadPaths(
       projectPaths,
       followSymlinks,
       ignoreVcsIgnores,
       ignoredNames,
       useRipGrep,
+      (event, data) => handle.emit(event, data),
       () => {
         if (handle._dead) return
         callback(results)

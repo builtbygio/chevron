@@ -1798,7 +1798,8 @@ describe("FindView", () => {
 
       expect(findView.model.getFindOptions().useRegex).toBe(true);
       expect(findView.findEditor.getGrammar().scopeName).toBe("source.js.regexp");
-      expect(findView.replaceEditor.getGrammar().scopeName).toBe("source.js.regexp.replacement");
+      // The replacement grammar was TextMate-only; the field stays plain text.
+        expect(findView.replaceEditor.getGrammar().scopeName).toBe("text.plain.null-grammar");
     });
 
     describe("when panel is active", () => {
@@ -1817,7 +1818,8 @@ describe("FindView", () => {
         atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-regex-option");
         expect(findView.model.getFindOptions().useRegex).toBe(true);
         expect(findView.findEditor.getGrammar().scopeName).toBe("source.js.regexp");
-        expect(findView.replaceEditor.getGrammar().scopeName).toBe("source.js.regexp.replacement");
+        // The replacement grammar was TextMate-only; the field stays plain text.
+        expect(findView.replaceEditor.getGrammar().scopeName).toBe("text.plain.null-grammar");
 
         atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-regex-option");
         expect(findView.model.getFindOptions().useRegex).not.toBe(true);
