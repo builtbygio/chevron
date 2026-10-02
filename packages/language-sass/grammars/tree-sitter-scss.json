@@ -26,6 +26,9 @@
   ],
   "scopes": {
     "stylesheet": "source.css.scss",
+    "block": "meta.property-list.scss",
+    "selectors": "meta.selector.css",
+    "extend_statement": "meta.at-rule.extend.scss",
     "comment, js_comment": "comment.block.css",
     "tag_name": "entity.name.tag.css",
     "class_name": "entity.other.attribute-name.class.css",

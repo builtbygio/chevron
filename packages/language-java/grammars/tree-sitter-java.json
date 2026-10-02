@@ -11,7 +11,7 @@
   "folds": [
     {
       "type": [
-        "comment",
+        "block_comment",
         "class_body",
         "enum_body",
         "interface_body",
@@ -28,9 +28,9 @@
   },
   "scopes": {
     "program": "source.java",
-    "comment": "comment.block",
+    "line_comment": "comment.line.double-slash",
+    "block_comment": "comment.block",
     "\"assert\",\n\"break\",\n\"case\",\n\"catch\",\n\"continue\",\n\"default\",\n\"do\",\n\"else\",\n\"finally\",\n\"for\",\n\"if\",\n\"new\",\n\"return\",\n\"switch\",\n\"throw\",\n\"try\",\n\"while\"": "keyword.control",
-    "\"const\",\n\"goto\"": "keyword.reserved",
     "ternary_expression > \"?\",\nternary_expression > \":\"": "keyword.control.ternary",
     "\"instanceof\"": "keyword.operator.instanceof",
     "\"=\"": "keyword.operator.assignment",
@@ -61,7 +61,7 @@
     "type_arguments > wildcard > super": "storage.modifier.super",
     "type_bound > \"extends\"": "storage.modifier.extends",
     "type_bound > \"&\"": "punctuation.separator.types",
-    "\"public\",\n\"protected\",\n\"private\",\n\"abstract\",\n\"static\",\n\"final\",\n\"strictfp\",\n\"default\",\n\"synchronized\",\n\"native\",\n\"transient\",\n\"volatile\",\n\"threadsafe\"": "storage.modifier",
+    "\"public\",\n\"protected\",\n\"private\",\n\"abstract\",\n\"static\",\n\"final\",\n\"strictfp\",\n\"default\",\n\"synchronized\",\n\"native\",\n\"transient\",\n\"volatile\"": "storage.modifier",
     "superclass > \"extends\"": "storage.modifier.extends",
     "extends_interfaces > \"extends\"": "storage.modifier.extends",
     "super_interfaces > \"implements\"": "storage.modifier.implements",
@@ -103,10 +103,23 @@
     "constructor_body": "meta.constructor.body",
     "throws > \"throws\"": "storage.modifier.throws",
     "spread_parameter > \"...\"": "punctuation.definition.parameters.varargs",
-    "method_invocation > method_invocation_name > identifier": "entity.name.function",
     "method_reference > \"::\"": "keyword.control.method",
     "method_reference > \"new\",\nmethod_reference > identifier:nth-child(2)": "entity.name.function",
-    "field_access > identifier,\nmethod_reference > identifier,\nmethod_invocation > identifier": [
+    "method_invocation > identifier": [
+      {
+        "field": "name",
+        "scopes": "entity.name.function"
+      },
+      {
+        "match": "^[A-Z][A-Z0-9_\\$]+$",
+        "scopes": "constant.other"
+      },
+      {
+        "match": "^[A-Z]",
+        "scopes": "storage.type"
+      }
+    ],
+    "field_access > identifier,\nmethod_reference > identifier": [
       {
         "match": "^[A-Z][A-Z0-9_\\$]+$",
         "scopes": "constant.other"

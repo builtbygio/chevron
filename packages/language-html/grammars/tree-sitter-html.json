@@ -27,7 +27,6 @@
     {
       "type": [
         "start_tag",
-        "raw_start_tag",
         "self_closing_tag"
       ],
       "start": {
@@ -40,7 +39,8 @@
     {
       "type": [
         "element",
-        "raw_element"
+        "script_element",
+        "style_element"
       ],
       "start": {
         "index": 0
@@ -55,7 +55,7 @@
     "end": "-->"
   },
   "scopes": {
-    "fragment": "source.html",
+    "document": "source.html",
     "tag_name": "entity.name.tag",
     "erroneous_end_tag_name": "invalid.illegal",
     "doctype": "meta.tag.doctype.html",

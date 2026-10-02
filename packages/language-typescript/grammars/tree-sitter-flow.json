@@ -105,7 +105,7 @@
         "scopes": "support.type"
       }
     ],
-    "function > identifier": "entity.name.function",
+    "function_expression > identifier": "entity.name.function",
     "generator_function > identifier": "entity.name.function",
     "call_expression > identifier": [
       {
@@ -253,7 +253,7 @@
     "\"public\"": "keyword.modifier",
     "\"private\"": "keyword.modifier",
     "\"protected\"": "keyword.modifier",
-    "readonly": "keyword.modifier",
+    "\"readonly\"": "keyword.modifier",
     "\"type\"": "keyword.modifier"
   }
 }

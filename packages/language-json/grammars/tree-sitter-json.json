@@ -57,7 +57,7 @@
     }
   ],
   "scopes": {
-    "value": "source.json",
+    "document": "source.json",
     "object": "meta.structure.dictionary.json",
     "string": "string.quoted.double",
     "string_content": [

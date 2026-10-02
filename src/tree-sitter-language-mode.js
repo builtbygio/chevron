@@ -1357,12 +1357,32 @@ const applyLeafRules = (rules, cursor) => {
         ? applyLeafRules(rules.scopes, cursor)
         : undefined;
     }
+    // The node's field in its parent, e.g. a call's `method` versus its
+    // `receiver`, which share a node type and a parent.
+    if (rules.field) {
+      return cursor.currentFieldName === rules.field
+        ? applyLeafRules(rules.scopes, cursor)
+        : undefined;
+    }
   }
 };
 
 class NodeCursorAdaptor {
   get nodeText() {
     return this.node.text;
+  }
+
+  get currentFieldName() {
+    const { node } = this;
+    const { parent } = node;
+    if (!parent) return null;
+    for (let i = 0, n = parent.childCount; i < n; i++) {
+      const child = parent.child(i);
+      if (child.startIndex === node.startIndex && child.endIndex === node.endIndex && child.type === node.type) {
+        return parent.fieldNameForChild(i);
+      }
+    }
+    return null;
   }
 }
 
