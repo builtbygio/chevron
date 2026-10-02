@@ -106,7 +106,7 @@ function createRgSearchManager(opts = {}) {
   let nextId = 1;
   const searches = new Map();
 
-  function start({ args, cwd, sender }) {
+  function start({ args, cwd, sender, searchId: requestedId }) {
     const check = validateArgs(args);
     if (!check.ok) {
       const err = new Error(`chevron:rg-search-start: ${check.reason}`);
@@ -125,7 +125,19 @@ function createRgSearchManager(opts = {}) {
       throw err;
     }
 
-    const searchId = nextId++;
+    // The renderer picks the id so its listeners exist before any output:
+    // the invoke reply and these sends are not ordered with each other.
+    let searchId;
+    if (requestedId !== undefined) {
+      if (typeof requestedId !== 'string' || !/^[\w-]{1,64}$/.test(requestedId) || searches.has(requestedId)) {
+        const err = new Error('chevron:rg-search-start: invalid searchId');
+        err.code = 'RG_ID_REJECTED';
+        throw err;
+      }
+      searchId = requestedId;
+    } else {
+      searchId = nextId++;
+    }
     const child = spawnFn(rgPath, args, {
       cwd,
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -207,6 +219,7 @@ function registerRgIpc(_atomApplication, deps = {}) {
     return manager.start({
       args: payload.args,
       cwd: payload.cwd,
+      searchId: payload.searchId,
       sender: event.sender
     });
   });

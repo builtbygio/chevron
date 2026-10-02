@@ -119,6 +119,10 @@ class ProjectView extends FuzzyFinderView {
           })
         }
       }
+    } else if (this.paths) {
+      // No recrawl, but the last-opened file may have changed since the list
+      // was built: re-sort the paths already loaded.
+      await this.populate()
     }
   }
 

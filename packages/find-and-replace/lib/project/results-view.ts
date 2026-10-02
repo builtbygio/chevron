@@ -98,6 +98,8 @@ class ResultsView {
   }
 
   getRowHeight(resultRow) {
+    // The ResizeObserver measures on the next frame; results can arrive first.
+    if (!this.matchRowHeight) this.measureRowHeights()
     if (resultRow instanceof LeadingContextRow) {
       return this.contextRowHeight
     } else if (resultRow instanceof TrailingContextRow) {
@@ -168,6 +170,15 @@ class ResultsView {
     );
   }
 
+  measureRowHeights() {
+    const {dummyResultPathRowView, dummyMatchRowView, dummyContextRowView} = this.refs;
+    // Detached (a pane copy, a results pane not yet shown) measures 0.
+    if (!dummyMatchRowView || dummyMatchRowView.element.offsetHeight === 0) return
+    this.pathRowHeight = dummyResultPathRowView.element.offsetHeight
+    this.matchRowHeight = dummyMatchRowView.element.offsetHeight
+    this.contextRowHeight = dummyContextRowView.element.offsetHeight
+  }
+
   async invalidateItemHeights() {
     const {
       dummyResultPathRowView,
@@ -199,7 +210,10 @@ class ResultsView {
   spliceRows(start, deleteCount, rows) {
     this.resultRows.splice(start, deleteCount, ...rows)
 
-    if (this.selectedRowIndex >= start + deleteCount) {
+    // Results stream in out of order; one inserted above the top row takes
+    // the selection rather than pushing it down.
+    const insertedAtTop = start === 0 && deleteCount === 0 && this.selectedRowIndex === 0
+    if (this.selectedRowIndex >= start + deleteCount && !insertedAtTop) {
       this.selectedRowIndex += rows.length - deleteCount
       this.scrollToSelectedMatch()
     } else if (this.selectedRowIndex >= start + rows.length) {

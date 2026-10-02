@@ -24,7 +24,6 @@ describe('Spell check', function () {
         jasmine.useRealClock();
 
         workspaceElement = atom.views.getView(atom.workspace);
-        await atom.packages.activatePackage('language-text');
         await atom.packages.activatePackage('language-javascript');
         await atom.workspace.open(`${__dirname}${sep}sample.js`);
         const package = await atom.packages.activatePackage('spell-check');

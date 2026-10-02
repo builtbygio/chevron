@@ -300,96 +300,94 @@ module.exports = class RipgrepDirectorySearcher {
 
     const didMatch = options.didMatch || (() => {});
     let cancelled = false;
-    let searchId = null;
+    // Chosen here, not by main, so the listeners exist before any output
+    // arrives: the invoke reply and main's sends are not ordered.
+    const searchId = require('crypto').randomUUID();
 
     const ipcRenderer = getIpcRenderer();
-    const start = ipcRenderer.invoke('chevron:rg-search-start', {
-      args,
-      cwd: directoryPath
-    });
+    const returnedPromise = new Promise((resolve, reject) => {
+      let buffer = '';
+      let pendingEvent;
+      let pendingLeadingContext;
+      let pendingTrailingContexts;
 
-    const returnedPromise = start.then(({ searchId: id }) => {
-      searchId = id;
-      if (cancelled) {
-        return ipcRenderer.invoke('chevron:rg-search-cancel', { searchId });
-      }
+      const onData = (_event, msg) => {
+        if (!msg || msg.searchId !== searchId || cancelled) return;
+        buffer += msg.chunk || '';
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          const message = JSON.parse(line);
+          updateTrailingContexts(message, pendingTrailingContexts, options);
 
-      return new Promise((resolve, reject) => {
-        let buffer = '';
-        let pendingEvent;
-        let pendingLeadingContext;
-        let pendingTrailingContexts;
+          if (message.type === 'begin') {
+            pendingEvent = {
+              filePath: path.join(directoryPath, getText(message.data.path)),
+              matches: []
+            };
+            pendingLeadingContext = [];
+            pendingTrailingContexts = new Set();
+          } else if (message.type === 'match') {
+            const trailingContextLines = [];
+            pendingTrailingContexts.add(trailingContextLines);
 
-        const onData = (_event, msg) => {
-          if (!msg || msg.searchId !== searchId || cancelled) return;
-          buffer += msg.chunk || '';
-          const lines = buffer.split('\n');
-          buffer = lines.pop();
-          for (const line of lines) {
-            const message = JSON.parse(line);
-            updateTrailingContexts(message, pendingTrailingContexts, options);
+            processUnicodeMatch(message.data);
 
-            if (message.type === 'begin') {
-              pendingEvent = {
-                filePath: path.join(directoryPath, getText(message.data.path)),
-                matches: []
-              };
-              pendingLeadingContext = [];
-              pendingTrailingContexts = new Set();
-            } else if (message.type === 'match') {
-              const trailingContextLines = [];
-              pendingTrailingContexts.add(trailingContextLines);
+            for (const submatch of message.data.submatches) {
+              const { lineText, range } = processSubmatch(
+                submatch,
+                getText(message.data.lines),
+                message.data.line_number - 1
+              );
 
-              processUnicodeMatch(message.data);
-
-              for (const submatch of message.data.submatches) {
-                const { lineText, range } = processSubmatch(
-                  submatch,
-                  getText(message.data.lines),
-                  message.data.line_number - 1
-                );
-
-                pendingEvent.matches.push({
-                  matchText: getText(submatch.match),
-                  lineText,
-                  lineTextOffset: 0,
-                  range,
-                  leadingContextLines: [...pendingLeadingContext],
-                  trailingContextLines
-                });
-              }
-            } else if (message.type === 'end') {
-              options.didSearchPaths(++numPathsFound.num);
-              didMatch(pendingEvent);
-              pendingEvent = null;
+              pendingEvent.matches.push({
+                matchText: getText(submatch.match),
+                lineText,
+                lineTextOffset: 0,
+                range,
+                leadingContextLines: [...pendingLeadingContext],
+                trailingContextLines
+              });
             }
-
-            updateLeadingContext(message, pendingLeadingContext, options);
+          } else if (message.type === 'end') {
+            options.didSearchPaths(++numPathsFound.num);
+            didMatch(pendingEvent);
+            pendingEvent = null;
           }
-        };
 
-        const onClose = (_event, msg) => {
-          if (!msg || msg.searchId !== searchId) return;
-          ipcRenderer.removeListener('chevron:rg-search-data', onData);
-          ipcRenderer.removeListener('chevron:rg-search-close', onClose);
-          // code 1 is used when no results are found.
-          if (msg.code !== null && msg.code > 1) {
-            reject(new Error(msg.stderr || 'ripgrep failed'));
-          } else {
-            resolve();
-          }
-        };
+          updateLeadingContext(message, pendingLeadingContext, options);
+        }
+      };
 
-        ipcRenderer.on('chevron:rg-search-data', onData);
-        ipcRenderer.on('chevron:rg-search-close', onClose);
+      const onClose = (_event, msg) => {
+        if (!msg || msg.searchId !== searchId) return;
+        ipcRenderer.removeListener('chevron:rg-search-data', onData);
+        ipcRenderer.removeListener('chevron:rg-search-close', onClose);
+        // code 1 is used when no results are found.
+        if (msg.code !== null && msg.code > 1) {
+          reject(new Error(msg.stderr || 'ripgrep failed'));
+        } else {
+          resolve();
+        }
+      };
+
+      ipcRenderer.on('chevron:rg-search-data', onData);
+      ipcRenderer.on('chevron:rg-search-close', onClose);
+
+      ipcRenderer.invoke('chevron:rg-search-start', {
+        args,
+        cwd: directoryPath,
+        searchId
+      }).catch(error => {
+        ipcRenderer.removeListener('chevron:rg-search-data', onData);
+        ipcRenderer.removeListener('chevron:rg-search-close', onClose);
+        reject(error);
       });
     });
 
     returnedPromise.cancel = () => {
       cancelled = true;
-      if (searchId != null) {
-        ipcRenderer.invoke('chevron:rg-search-cancel', { searchId });
-      }
+      ipcRenderer.invoke('chevron:rg-search-cancel', { searchId });
     };
 
     return returnedPromise;

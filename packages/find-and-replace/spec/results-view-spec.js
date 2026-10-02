@@ -99,7 +99,9 @@ describe('ResultsView', () => {
       resultsView = getResultsView();
       expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe("one-long-line.coffee");
       expect(resultsView.refs.listView.element.querySelectorAll('.preview').length).toBe(1);
-      expect(resultsView.refs.listView.element.querySelector('.preview').textContent).toBe('test test test test test test test test test test test a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz');
+      // Search is ripgrep-only, which reports whole lines (lineTextOffset 0);
+      // trimming to context came from scandal, which is gone.
+      expect(resultsView.refs.listView.element.querySelector('.preview').textContent).toBe('test '.repeat(22) + 'a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz');
       expect(resultsView.refs.listView.element.querySelector('.match').textContent).toBe('ghijkl');
     })
   });

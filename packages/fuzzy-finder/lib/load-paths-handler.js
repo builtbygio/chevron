@@ -1,6 +1,3 @@
-/* global emit */
-
-let emitFound = null
 
 const async = require('async')
 const fs = require('fs')
@@ -20,11 +17,13 @@ const realRgPath = rgPath.replace(/\bapp\.asar\b/, 'app.asar.unpacked')
 // with a maximum value of 8 and minimum of 1.
 const MaxConcurrentCrawls = Math.min(Math.max(os.cpus().length - 1, 8), 1)
 
-const emittedPaths = new Set()
 
+// One crawl's state is its own: this runs in-process now (it was a Task), so
+// two crawls can overlap, and module-level state would mix their results.
 class PathLoader {
-  constructor (rootPath, ignoreVcsIgnores, traverseSymlinkDirectories, ignoredNames, useRipGrep) {
+  constructor (rootPath, ignoreVcsIgnores, traverseSymlinkDirectories, ignoredNames, useRipGrep, crawl) {
     this.rootPath = rootPath
+    this.crawl = crawl
     this.ignoreVcsIgnores = ignoreVcsIgnores
     this.traverseSymlinkDirectories = traverseSymlinkDirectories
     this.ignoredNames = ignoredNames
@@ -108,9 +107,9 @@ class PathLoader {
   }
 
   pathLoaded (loadedPath, done) {
-    if (!emittedPaths.has(loadedPath)) {
+    if (!this.crawl.emittedPaths.has(loadedPath)) {
       this.paths.push(loadedPath)
-      emittedPaths.add(loadedPath)
+      this.crawl.emittedPaths.add(loadedPath)
     }
 
     if (this.paths.length === PathsChunkSize) {
@@ -120,9 +119,7 @@ class PathLoader {
   }
 
   flushPaths () {
-    const emitFn =
-      emitFound || (typeof emit === 'function' ? emit : null)
-    if (emitFn) emitFn('load-paths:paths-found', this.paths)
+    this.crawl.emit('load-paths:paths-found', this.paths)
     this.paths = []
   }
 
@@ -178,7 +175,9 @@ class PathLoader {
   }
 }
 
-function runLoadPaths (rootPaths, followSymlinks, ignoreVcsIgnores, ignores, useRipGrep, done) {
+function runLoadPaths (rootPaths, followSymlinks, ignoreVcsIgnores, ignores, useRipGrep, emit, done) {
+  // Dedupes paths across this crawl's roots.
+  const crawl = {emit, emittedPaths: new Set()}
   const ignoredNames = []
   for (let ignore of ignores) {
     if (ignore) {
@@ -199,17 +198,12 @@ function runLoadPaths (rootPaths, followSymlinks, ignoreVcsIgnores, ignores, use
         ignoreVcsIgnores,
         followSymlinks,
         ignoredNames,
-        useRipGrep
+        useRipGrep,
+        crawl
       ).load(next)
     ,
-    (typeof this !== 'undefined' && this && typeof this.async === 'function'
-      ? this.async()
-      : done)
+    done
   )
-}
-
-runLoadPaths.setEmitFound = fn => {
-  emitFound = fn
 }
 
 module.exports = runLoadPaths
