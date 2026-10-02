@@ -254,6 +254,7 @@ jobs:
           node --test script/ci/module-cache-determinism.test.js
           node --test script/ci/update-config.test.js
           node --test script/ci/auto-update-manager.test.js
+          node --test script/ci/update-notification.test.js
           node --test script/ci/update-metadata.test.js
           node --test script/ci/signing-env.test.js
           node --test script/ci/electron-builder-config.test.js

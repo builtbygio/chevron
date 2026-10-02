@@ -169,10 +169,16 @@ module.exports = class AutoUpdateManager extends EventEmitter {
     });
   }
 
-  emitUpdateAvailableEvent() {
+  // installable: downloaded and applied on quit (in-app mode); otherwise the
+  // user gets the release page. alreadyShown: a manual check's dialog has
+  // said it, so the window should not announce it again.
+  emitUpdateAvailableEvent({ alreadyShown = false } = {}) {
     if (this.releaseVersion == null) return;
     this.emitWindowEvent('update-available', {
-      releaseVersion: this.releaseVersion
+      releaseVersion: this.releaseVersion,
+      installable: this.mode === IN_APP,
+      releasePageUrl: this.releasePageUrl || `${this.releasesUrl}/latest`,
+      alreadyShown
     });
   }
 
@@ -267,7 +273,7 @@ module.exports = class AutoUpdateManager extends EventEmitter {
         this.releaseVersion = latest.tag;
         this.releasePageUrl = latest.htmlUrl || `${this.releasesUrl}/latest`;
         this.setState(UpdateAvailableState);
-        this.emitUpdateAvailableEvent();
+        this.emitUpdateAvailableEvent({ alreadyShown: !hidePopups });
         if (!hidePopups) this.showGitHubUpdateAvailable(latest);
         return;
       }
