@@ -176,10 +176,9 @@ jobs:
               throw new Error('shard index ' + idx + ' outside PACKAGE_SHARDS=' + SHARDS);
             }
             // Same lookup script/test uses, so the two cannot disagree.
+            const { packageTestDir } = require('./script/lib/package-test-dir');
             const testable = pd.filter(name =>
-              ['spec', 'test'].some(sub =>
-                fs.existsSync(path.join('node_modules', name, sub))
-              )
+              packageTestDir(path.join('node_modules', name))
             );
             const mine = testable.filter((_, i) => i % SHARDS === idx);
             console.log(

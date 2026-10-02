@@ -19,6 +19,8 @@ let NodeTypeText = 3
 describe('Autocomplete Manager', () => {
   let autocompleteManager, editor, editorView, gutterWidth, mainModule, workspaceElement
 
+  // Compared with toHaveNearPixels: the overlay decoration rounds the
+  // fractional character position its own way, a pixel off at some widths.
   let pixelLeftForBufferPosition = (bufferPosition) => {
     let gutter = editorView.querySelector('.gutter')
     if (!gutter) {
@@ -1142,7 +1144,7 @@ describe('Autocomplete Manager', () => {
 
         let overlayElement = editorView.querySelector('.autocomplete-plus')
         expect(overlayElement).toExist()
-        expect(overlayElement.style.left).toBe(pixelLeftForBufferPosition([0, 10]))
+        expect(overlayElement.style.left).toHaveNearPixels(pixelLeftForBufferPosition([0, 10]))
 
         let suggestionList = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
         expect(suggestionList.style['margin-left']).toBeFalsy()
@@ -1191,7 +1193,7 @@ describe('Autocomplete Manager', () => {
 
         let overlayElement = editorView.querySelector('.autocomplete-plus')
         expect(overlayElement).toExist()
-        expect(overlayElement.style.left).toBe(pixelLeftForBufferPosition([0, 12]))
+        expect(overlayElement.style.left).toHaveNearPixels(pixelLeftForBufferPosition([0, 12]))
       })
 
       it('displays the suggestion list taking into account the passed back replacementPrefix', async () => {
@@ -1203,7 +1205,7 @@ describe('Autocomplete Manager', () => {
 
         let overlayElement = editorView.querySelector('.autocomplete-plus')
         expect(overlayElement).toExist()
-        expect(overlayElement.style.left).toBe(pixelLeftForBufferPosition([0, 14]))
+        expect(overlayElement.style.left).toHaveNearPixels(pixelLeftForBufferPosition([0, 14]))
       })
 
       it('displays the suggestion list with a negative margin to align the prefix with the word-container', async () => {
@@ -1228,27 +1230,27 @@ describe('Autocomplete Manager', () => {
         await waitForAutocomplete(editor)
 
         overlayElement = editorView.querySelector('.autocomplete-plus')
-        expect(overlayElement.style.left).toBe(pixelLeftForBufferPosition([0, 14]))
+        expect(overlayElement.style.left).toHaveNearPixels(pixelLeftForBufferPosition([0, 14]))
         editor.insertText('a')
         await waitForAutocomplete(editor)
 
-        expect(overlayElement.style.left).toBe(pixelLeftForBufferPosition([0, 14]))
+        expect(overlayElement.style.left).toHaveNearPixels(pixelLeftForBufferPosition([0, 14]))
 
         editor.insertText('b')
         await waitForAutocomplete(editor)
 
-        expect(overlayElement.style.left).toBe(pixelLeftForBufferPosition([0, 14]))
+        expect(overlayElement.style.left).toHaveNearPixels(pixelLeftForBufferPosition([0, 14]))
 
         editor.backspace()
         editor.backspace()
         await waitForAutocomplete(editor)
 
-        expect(overlayElement.style.left).toBe(pixelLeftForBufferPosition([0, 14]))
+        expect(overlayElement.style.left).toHaveNearPixels(pixelLeftForBufferPosition([0, 14]))
 
         editor.backspace()
         await waitForAutocomplete(editor)
 
-        expect(overlayElement.style.left).toBe(pixelLeftForBufferPosition([0, 12]))
+        expect(overlayElement.style.left).toHaveNearPixels(pixelLeftForBufferPosition([0, 12]))
 
         editor.insertText(' ')
         editor.insertText('a')
@@ -1256,7 +1258,7 @@ describe('Autocomplete Manager', () => {
         editor.insertText('c')
         await waitForAutocomplete(editor)
 
-        expect(overlayElement.style.left).toBe(pixelLeftForBufferPosition([0, 14]))
+        expect(overlayElement.style.left).toHaveNearPixels(pixelLeftForBufferPosition([0, 14]))
       })
 
       it('when broken by a non-word character, the suggestion list is positioned at the beginning of the new word', async () => {
@@ -1268,21 +1270,21 @@ describe('Autocomplete Manager', () => {
 
         overlayElement = editorView.querySelector('.autocomplete-plus')
 
-        expect(overlayElement.style.left).toBe(pixelLeftForBufferPosition([0, 12]))
+        expect(overlayElement.style.left).toHaveNearPixels(pixelLeftForBufferPosition([0, 12]))
 
         editor.insertText(' ')
         editor.insertText('a')
         editor.insertText('b')
         await waitForAutocomplete(editor)
 
-        expect(overlayElement.style.left).toBe(pixelLeftForBufferPosition([0, 17]))
+        expect(overlayElement.style.left).toHaveNearPixels(pixelLeftForBufferPosition([0, 17]))
 
         editor.backspace()
         editor.backspace()
         editor.backspace()
         await waitForAutocomplete(editor)
 
-        expect(overlayElement.style.left).toBe(pixelLeftForBufferPosition([0, 12]))
+        expect(overlayElement.style.left).toHaveNearPixels(pixelLeftForBufferPosition([0, 12]))
       })
     })
 
@@ -1988,30 +1990,40 @@ defm`
     })
 
     describe('Keybind to navigate to descriptionMoreLink', () => {
-      it('triggers openExternal on keybind if there is a description', async () => {
-        spyOn(provider, 'getSuggestions').andCallFake(() => [{text: 'ab', description: 'it is ab'}])
-        let shell = require('electron').shell
-        spyOn(shell, 'openExternal')
+      // The command opens through the application delegate, not electron.shell.
+      it('triggers openExternal on keybind if there is a description with a link', async () => {
+        spyOn(provider, 'getSuggestions').andCallFake(() => [{text: 'ab', description: 'it is ab', descriptionMoreURL: 'https://example.com/ab'}])
+        spyOn(atom.applicationDelegate, 'openExternal')
 
         triggerAutocompletion(editor, true, 'a')
         await waitForAutocomplete(editor)
 
         expect(editorView.querySelector('.autocomplete-plus')).toExist()
         atom.commands.dispatch(editorView, 'autocomplete-plus:navigate-to-description-more-link')
-        expect(shell.openExternal).toHaveBeenCalled()
+        expect(atom.applicationDelegate.openExternal).toHaveBeenCalledWith('https://example.com/ab')
+      })
+
+      it('does not trigger openExternal on keybind if the description has no link', async () => {
+        spyOn(provider, 'getSuggestions').andCallFake(() => [{text: 'ab', description: 'it is ab'}])
+        spyOn(atom.applicationDelegate, 'openExternal')
+
+        triggerAutocompletion(editor, true, 'a')
+        await waitForAutocomplete(editor)
+
+        atom.commands.dispatch(editorView, 'autocomplete-plus:navigate-to-description-more-link')
+        expect(atom.applicationDelegate.openExternal).not.toHaveBeenCalled()
       })
 
       it('does not trigger openExternal on keybind if there is not a description', async () => {
         spyOn(provider, 'getSuggestions').andCallFake(() => [{text: 'ab'}])
-        let shell = require('electron').shell
-        spyOn(shell, 'openExternal')
+        spyOn(atom.applicationDelegate, 'openExternal')
 
         triggerAutocompletion(editor, true, 'a')
         await waitForAutocomplete(editor)
 
         expect(editorView.querySelector('.autocomplete-plus')).toExist()
         atom.commands.dispatch(editorView, 'autocomplete-plus:navigate-to-description-more-link')
-        expect(shell.openExternal).not.toHaveBeenCalled()
+        expect(atom.applicationDelegate.openExternal).not.toHaveBeenCalled()
       })
     })
   })
@@ -2020,8 +2032,6 @@ defm`
     beforeEach(async () => {
       editor = await atom.workspace.open('')
       editorView = atom.views.getView(editor)
-
-      await atom.packages.activatePackage('language-text')
 
       // Activate the package
       mainModule = (await atom.packages.activatePackage('autocomplete-plus')).mainModule

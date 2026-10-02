@@ -250,7 +250,11 @@ class AutocompleteManager {
         let descriptionContainer = suggestionListView.querySelector('.suggestion-description')
         if (descriptionContainer !== null && descriptionContainer.style.display === 'block') {
           let descriptionMoreLink = descriptionContainer.querySelector('.suggestion-description-more-link')
-          chevron.applicationDelegate.openExternal(descriptionMoreLink.href)
+          // Without a descriptionMoreURL the link is a hidden '#', which
+          // resolved to the app's own file:// URL.
+          if (descriptionMoreLink.getAttribute('href') !== '#') {
+            chevron.applicationDelegate.openExternal(descriptionMoreLink.href)
+          }
         }
       }
     }))

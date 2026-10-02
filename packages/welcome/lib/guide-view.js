@@ -319,6 +319,9 @@ class GuideView {
     chevron.workspace.open("chevron://.chevron/snippets", { split: "left" });
   }
   didExpandOrCollapseSection(event) {
+    // Only the summary toggles a section; a click on a section's button
+    // bubbles here too and was reported as an expand or collapse.
+    if (!event.target.closest("summary")) return;
     const sectionName = event.currentTarget.closest("details").dataset.section;
     const action = event.currentTarget.hasAttribute("open") ? "collapse" : "expand";
     this.props.reporterProxy.sendEvent(`${action}-${sectionName}-section`);

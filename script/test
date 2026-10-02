@@ -58,6 +58,8 @@ const backupNodeModules = require('./lib/backup-node-modules');
 const installPackageDepsHostNpm = require('./lib/install-package-deps-host-npm');
 const { findPackagedApp } = require('./lib/find-packaged-app');
 const { selectTestSuites } = require('./lib/select-test-suites');
+const { jasmineSummaryProblem } = require('./lib/jasmine-summary');
+const { packageTestDir } = require('./lib/package-test-dir');
 
 const resourcePath = CONFIG.repositoryRootPath;
 const executablePath = findPackagedApp({
@@ -153,6 +155,17 @@ function spawnTest(
   // on close
   cp.on('close', exitCode => {
     clearWatchdog();
+    // The main-process suite is mocha; every other suite is Jasmine.
+    const summaryProblem =
+      exitCode === 0 && !testArguments.includes('--main-process')
+        ? jasmineSummaryProblem(stderrOutput)
+        : null;
+    if (summaryProblem) {
+      console.error(
+        `##[error] ${testName} exited 0, but ${summaryProblem}; counting it as failed.`
+      );
+      exitCode = 1;
+    }
     if (exitCode !== 0) {
       retryOrFailTest(
         stderrOutput,
@@ -360,12 +373,10 @@ function getPackageTestSuites() {
       'node_modules',
       packageName
     );
-    const testSubdir = ['spec', 'test'].find(subdir =>
-      fs.existsSync(path.join(repositoryPackagePath, subdir))
-    );
+    const testSubdir = packageTestDir(repositoryPackagePath);
 
     if (!testSubdir) {
-      console.log(`No test folder found for package: ${packageName}`.yellow);
+      console.log(`No specs found for package: ${packageName}`.yellow);
       continue;
     }
 

@@ -118,7 +118,7 @@ describe('SubsequenceProvider', () => {
   })
 
   it('does not output suggestions from the other buffer', async () => {
-    await atom.packages.activatePackage('language-coffee-script')
+    // language-coffee-script is gone; the file opens as plain text.
     const coffeeEditor = await atom.workspace.open('sample.coffee')
     const suggestions = await suggestionsForPrefix(provider, coffeeEditor, 'item')
 
@@ -245,7 +245,6 @@ describe('SubsequenceProvider', () => {
     beforeEach(async () => {
       atom.config.set('autocomplete-plus.includeCompletionsFromAllBuffers', true)
 
-      await atom.packages.activatePackage('language-coffee-script')
       editor = await atom.workspace.open('sample.coffee')
     })
 
@@ -382,12 +381,13 @@ describe('SubsequenceProvider', () => {
 
       const suggestions = await suggestionsForPrefix(provider, editor, 'ab', {raw: true})
 
+      // By text, not rank: the buffer word on the cursor's row gets the
+      // locality bonus and can outrank the configured one.
+      const byText = text => suggestions.find(s => s.text === text)
       expect(suggestions).toHaveLength(2)
-      expect(suggestions[0].text).toBe('abcd')
-      expect(suggestions[0].type).toBe('function')
-      expect(suggestions[0].rightLabel).toBe('one')
-      expect(suggestions[1].text).toBe('abcomment')
-      expect(suggestions[1].type).toBe('comment')
+      expect(byText('abcd').type).toBe('function')
+      expect(byText('abcd').rightLabel).toBe('one')
+      expect(byText('abcomment').type).toBe('comment')
     })
   })
 
@@ -403,11 +403,10 @@ describe('SubsequenceProvider', () => {
 
       const suggestions = await suggestionsForPrefix(provider, editor, 'ab', {raw: true})
 
+      const byText = text => suggestions.find(s => s.text === text)
       expect(suggestions).toHaveLength(4)
-      expect(suggestions[0].text).toBe('abcd')
-      expect(suggestions[0].type).toBe('builtin')
-      expect(suggestions[3].text).toBe('abcomment')
-      expect(suggestions[3].type).toBe('')
+      expect(byText('abcd').type).toBe('builtin')
+      expect(byText('abcomment').type).toBe('')
     })
   })
 

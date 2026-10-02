@@ -46,6 +46,11 @@ times); shown on Xvfb it takes about 20s. `jasmine.yml` sets it for the
 focus specs fail.
 It also installs `fonts-noto-cjk` for the double-width character measurements.
 
+A Jasmine suite that exits 0 passes only if its output ends with a summary
+line reporting at least one spec (or only skipped ones) and no failures
+(`script/lib/jasmine-summary.js`). The exit code alone once let a retried
+autocomplete-plus run turn its shard green.
+
 With `CI` set, the runner also prints each failing spec (`FAILED: <name>` and
 its messages) the moment it fails. The terminal reporter only reports at the
 end of a run, so a suite killed by `script/test`'s watchdog used to leave no
