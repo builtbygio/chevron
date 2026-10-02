@@ -32,7 +32,7 @@ In-app updates come from these releases through electron-updater once a build is
 
 ## Download
 
-CI on tag `v*` builds every platform and attaches artifacts to the GitHub Release (`prerelease: true`).
+CI on tag `v*` builds every platform and attaches artifacts to a full GitHub Release (not a pre-release: stable builds' updater reads `releases/latest`).
 
 **1.2.0:** https://github.com/builtbygio/chevron/releases/tag/v1.2.0  
 Previous: [v1.1.0](https://github.com/builtbygio/chevron/releases/tag/v1.1.0)

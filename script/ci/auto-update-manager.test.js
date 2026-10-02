@@ -65,11 +65,18 @@ class FakeUpdater extends EventEmitter {
 class FakeConfig {
   constructor(values) {
     this.values = values;
+    this.listeners = {};
   }
   get(key) {
     return this.values[key];
   }
-  onDidChange() {
+  set(key, value) {
+    const oldValue = this.values[key];
+    this.values[key] = value;
+    for (const fn of this.listeners[key] || []) fn({ newValue: value, oldValue });
+  }
+  onDidChange(key, fn) {
+    (this.listeners[key] = this.listeners[key] || []).push(fn);
     return { dispose() {} };
   }
 }
@@ -86,10 +93,11 @@ function makeManager({
   const windows = [
     { sendMessage: (name, detail) => messages.push({ name, detail }) }
   ];
+  const fakeConfig = new FakeConfig({ 'core.automaticallyUpdate': false, ...config });
   const manager = new AutoUpdateManager(
     version,
     false,
-    new FakeConfig({ 'core.automaticallyUpdate': false, ...config }),
+    fakeConfig,
     {
       platform,
       env,
@@ -101,7 +109,7 @@ function makeManager({
   );
   const states = [];
   manager.on('state-changed', state => states.push(state));
-  return { manager, updater, messages, states };
+  return { manager, updater, messages, states, config: fakeConfig };
 }
 
 beforeEach(() => {
@@ -179,6 +187,42 @@ describe('in-app mode', () => {
     });
     optedIn.manager.initialize();
     assert.equal(optedIn.updater.allowPrerelease, true);
+  });
+
+  it('applies core.allowPrereleaseUpdates without a restart', () => {
+    const { manager, updater, config } = makeManager({ version: '1.4.0' });
+    manager.initialize();
+    assert.equal(updater.allowPrerelease, false);
+    config.set('core.allowPrereleaseUpdates', true);
+    assert.equal(updater.allowPrerelease, true);
+    config.set('core.allowPrereleaseUpdates', false);
+    assert.equal(updater.allowPrerelease, false);
+  });
+
+  // #412: releases/latest pointed at a release with no latest.yml, and every
+  // scheduled check ended in the error state.
+  it('reports no update when no release carries update metadata', async () => {
+    const { manager, updater, messages, states } = makeManager();
+    manager.initialize();
+    const noRelease = () => {
+      const error = new Error('Cannot find latest.yml in the latest release artifacts');
+      error.code = 'ERR_UPDATER_CHANNEL_FILE_NOT_FOUND';
+      return error;
+    };
+    updater.next = () => {
+      const error = noRelease();
+      updater.emit('error', error);
+      return Promise.reject(error);
+    };
+
+    await manager.check({ hidePopups: true });
+    assert.deepEqual(states, ['no-update-available']);
+    assert.deepEqual(messages.map(m => m.name), ['update-not-available']);
+    assert.equal(dialogs.length, 0);
+
+    await manager.check();
+    assert.equal(dialogs.length, 1);
+    assert.match(dialogs[0].message, /No update available/);
   });
 
   it('points electron-updater at CHEVRON_UPDATE_FEED_URL when set', () => {
