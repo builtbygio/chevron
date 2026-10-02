@@ -86,6 +86,9 @@ module.exports = function({logFile, headless, testPaths, buildAtomEnvironment}) 
   const promise = new Promise((resolve, reject) => resolveWithExitCode = resolve);
   const jasmineEnv = jasmine.getEnv();
   jasmineEnv.addReporter(buildReporter({logFile, headless, resolveWithExitCode}));
+  // The terminal reporter prints failures only when the run completes, so a
+  // suite killed by script/test's watchdog left no record of why it failed.
+  if (headless && process.env.CI) jasmineEnv.addReporter(buildEagerFailureReporter());
 
   if (process.env.TEST_JUNIT_XML_PATH) {
     const {JasmineJUnitReporter} = require('./jasmine-junit-reporter');
@@ -202,6 +205,23 @@ var buildReporter = function({logFile, headless, resolveWithExitCode}) {
     return reporter = new AtomReporter();
   }
 };
+
+var buildEagerFailureReporter = () => ({
+  reportSpecResults(spec) {
+    const results = spec.results();
+    if (results.passed()) return;
+    const lines = [`\nFAILED: ${spec.getFullName()}`];
+    for (const item of results.getItems()) {
+      if (item.passed && !item.passed()) {
+        lines.push(`  ${item.message}`);
+        if (item.trace && item.trace.stack) {
+          lines.push(...item.trace.stack.split('\n').slice(1, 4).map(l => `    ${l.trim()}`));
+        }
+      }
+    }
+    ipcRenderer.send('write-to-stderr', lines.join('\n') + '\n');
+  }
+});
 
 var buildTerminalReporter = function(logFile, resolveWithExitCode) {
   let logStream;

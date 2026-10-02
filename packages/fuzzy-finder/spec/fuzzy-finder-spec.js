@@ -754,6 +754,9 @@ describe('FuzzyFinder', () => {
 
       describe('cached file paths', () => {
         beforeEach(() => {
+          // The activation crawl may already have filled the cache.
+          projectView.paths = null
+          projectView.reloadPaths = true
           spyOn(PathLoader, 'startTask').andCallThrough()
           spyOn(atom.workspace, 'getTextEditors').andCallThrough()
         })

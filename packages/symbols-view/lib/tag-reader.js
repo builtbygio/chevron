@@ -98,6 +98,9 @@ var tag_reader_default = {
       if (!tagsFile) {
         return detectCallback();
       }
+      // async 3 iteratees take (err, result); a bare `false` as the error
+      // means "break" and the final callback never runs, so a symbol with no
+      // tags ahead of one with tags (`Foo=` before `Foo`) hung the lookup.
       return import_async.default.detectSeries(symbols, (symbol2, doneDetect) => {
         import_ctags.default.findTags(tagsFile, symbol2, (err, tags) => {
           if (!tags) {
@@ -105,15 +108,15 @@ var tag_reader_default = {
           }
           if (err) {
             foundErr = err;
-            doneDetect(false);
+            doneDetect(null, false);
           } else if (tags.length) {
             for (const tag of Array.from(tags)) {
               tag.directory = projectPath;
             }
             foundTags = tags;
-            doneDetect(true);
+            doneDetect(null, true);
           } else {
-            doneDetect(false);
+            doneDetect(null, false);
           }
         });
       }, detectCallback);

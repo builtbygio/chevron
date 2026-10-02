@@ -11,7 +11,6 @@ describe('GrammarSelector', () => {
 
     await atom.packages.activatePackage('status-bar');
     await atom.packages.activatePackage('grammar-selector');
-    await atom.packages.activatePackage('language-text');
     await atom.packages.activatePackage('language-javascript');
     await atom.packages.activatePackage(
       path.join(__dirname, 'fixtures', 'language-with-no-name')
@@ -19,8 +18,8 @@ describe('GrammarSelector', () => {
 
     editor = await atom.workspace.open('sample.js');
 
-    textGrammar = atom.grammars.grammarForScopeName('text.plain');
-    expect(textGrammar).toBeTruthy();
+    // Plain text is the null grammar; language-text is gone.
+    textGrammar = atom.grammars.nullGrammar;
     jsGrammar = atom.grammars.grammarForScopeName('source.js');
     expect(jsGrammar).toBeTruthy();
     expect(editor.getGrammar()).toBe(jsGrammar);
@@ -163,7 +162,7 @@ describe('GrammarSelector', () => {
 
     describe("when the editor's grammar changes", () =>
       it('displays the new grammar of the editor', async () => {
-        editor.setGrammar(atom.grammars.grammarForScopeName('text.plain'));
+        editor.setGrammar(atom.grammars.nullGrammar);
         await atom.views.getNextUpdatePromise();
 
         expect(grammarStatus.querySelector('a').textContent).toBe('Plain Text');
@@ -201,32 +200,19 @@ describe('GrammarSelector', () => {
         }
       });
 
-      it('shows both if false', async () => {
-        await atom.packages.activatePackage('language-c'); // punctuation making it sort wrong
+      // There are no TextMate grammars left to duplicate a Tree-sitter one.
+      it('shows each grammar once if false', async () => {
+        await atom.packages.activatePackage('language-c');
         atom.config.set(
           'grammar-selector.hideDuplicateTextMateGrammars',
           false
         );
         await getGrammarView(editor);
-        let cppCount = 0;
 
         const listItems = atom.workspace.getModalPanels()[0].item.items;
-        for (let i = 0; i < listItems.length; i++) {
-          const grammar = listItems[i];
-          const name = grammar.name;
-          if (cppCount === 0 && name === 'C++') {
-            expect(grammar.constructor.name).toBe('TreeSitterGrammar'); // first C++ entry should be Tree-sitter
-            cppCount++;
-          } else if (cppCount === 1) {
-            expect(name).toBe('C++');
-            expect(grammar.constructor.name).toBe('Grammar'); // immediate next grammar should be the TextMate version
-            cppCount++;
-          } else {
-            expect(name).not.toBe('C++'); // there should not be any other C++ grammars
-          }
-        }
-
-        expect(cppCount).toBe(2); // ensure we actually saw both grammars
+        const cpp = listItems.filter(grammar => grammar.name === 'C++');
+        expect(cpp.length).toBe(1);
+        expect(cpp[0].constructor.name).toBe('TreeSitterGrammar');
       });
     });
 

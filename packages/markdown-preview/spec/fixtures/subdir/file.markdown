@@ -22,10 +22,10 @@ end
 ```
 
 * ```javascript
-if a === 3 {
-  b = 5
-}
-```
+  if a === 3 {
+    b = 5
+  }
+  ```
 
 ```kombucha
 drink-that-stuff:

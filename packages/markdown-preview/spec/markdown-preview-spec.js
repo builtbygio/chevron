@@ -3,8 +3,6 @@ const fs = require('fs-plus')
 const temp = require('temp').track()
 const MarkdownPreviewView = require('../lib/markdown-preview-view')
 const { TextEditor } = require('chevron')
-const TextMateLanguageMode = new TextEditor().getBuffer().getLanguageMode()
-  .constructor
 
 describe('Markdown Preview', function () {
   let preview = null
@@ -14,8 +12,6 @@ describe('Markdown Preview', function () {
     const tempPath = temp.mkdirSync('atom')
     fs.copySync(fixturesPath, tempPath)
     atom.project.setPaths([tempPath])
-
-    jasmine.unspy(TextMateLanguageMode.prototype, 'tokenizeInBackground')
 
     jasmine.useRealClock()
     jasmine.attachToDOM(atom.views.getView(atom.workspace))
@@ -558,11 +554,13 @@ describe('Markdown Preview', function () {
 
       describe("when the code block's fence name doesn't have a matching grammar", function () {
         it('does not tokenize the code block', function () {
+          // Plain text renders its lines without any scope spans.
           expect(
-            preview.querySelectorAll(
-              'pre.lang-kombucha .line .syntax--null-grammar'
-            ).length
+            preview.querySelectorAll('pre.lang-kombucha .line').length
           ).toBe(2)
+          expect(
+            preview.querySelector('pre.lang-kombucha [class*="syntax--"]')
+          ).toBeNull()
         })
       })
 
@@ -691,11 +689,12 @@ world\
       )
       expectPreviewInSplitPane()
 
-      runs(() =>
-        expect(preview.element.innerHTML).toBe(`\
-<p><img alt="rel path" src="/foo.png"></p>\
-`)
-      )
+      runs(() => {
+        // Attributes, not innerHTML: the renderer's attribute order changed.
+        const img = preview.element.querySelector('p > img')
+        expect(img.getAttribute('src')).toBe('/foo.png')
+        expect(img.getAttribute('alt')).toBe('rel path')
+      })
     })
   })
 

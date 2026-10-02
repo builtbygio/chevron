@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Go to Declaration did nothing for some Ruby symbols.** The tag lookup tries candidates in order (`Foo=` then `Foo` for `Foo = 3`; `C::Foo` then `Foo` for `C::Foo::B`). symbols-view's `async` 3 reads a callback's `false` as "stop", so when the first candidate had no tags the lookup ended without ever calling back.
+
+- **Markdown preview code blocks showed line numbers.** The preview hid the gutter with a `gutter-hidden` attribute, which never reaches an editor built in code; it now hides it on the editor itself.
+
+- **Markdown preview and Copy HTML never finished with a code block in a language with no grammar.** They waited for the block's editor to finish tokenizing, and plain text never reports that.
+
+- The grammar-selector, markdown-preview and symbols-view specs pass; each used to hang until `script/test` killed it after 15 minutes. Their specs still activated the removed `language-text`, un-spied a TextMate language-mode method, or used TextMate fixtures, and symbols-view's `conditionPromise` timed out on the faked `Date.now`, which never advances. On CI the runner now prints each failure as it happens, so a killed suite still says why. Spec windows are shown only on the core-render shards, which need the animation frames; shown on the package shards, fuzzy-finder's focus specs failed. Two order-dependent specs (fuzzy-finder's path cache, the editor overlay position) no longer depend on timing or font metrics.
+
 - The editor component and element specs pass on CI. `text-editor-component-spec.js` took 426 seconds and timed out, so the runner retried it six times: the spec window was never shown and got few animation frames, and the specs wait on one per editor update. CI now shows it on Xvfb (`CHEVRON_SPEC_SHOW_WINDOW`, about 20 seconds) and installs a CJK font. Specs that measured in pixels now measure in lines and characters, since the fonts, and so the metrics, differ from the macOS ones the expected values came from.
 
 - **Find in Project sometimes reported no results.** The renderer learned a ripgrep search's id from main's reply to "start" and only then listened for output, but that reply is not ordered with the output messages. On a fast search the matches could arrive first and be dropped, then the close arrived and the search finished empty, with no error. The renderer now picks the id and listens before asking main to start. `script/ci/rg-search-ordering.test.js`.
