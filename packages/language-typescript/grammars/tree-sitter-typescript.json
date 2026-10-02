@@ -81,7 +81,7 @@
       },
       "entity.name.function"
     ],
-    "function > identifier": "entity.name.function",
+    "function_expression > identifier": "entity.name.function",
     "generator_function > identifier": "entity.name.function",
     "call_expression > super": "support.function.super",
     "method_definition > property_identifier": "entity.name.function",
@@ -218,7 +218,7 @@
     "\"public\"": "keyword.modifier",
     "\"private\"": "keyword.modifier",
     "\"protected\"": "keyword.modifier",
-    "readonly": "keyword.modifier",
+    "\"readonly\"": "keyword.modifier",
     "\"type\"": "keyword.modifier"
   }
 }

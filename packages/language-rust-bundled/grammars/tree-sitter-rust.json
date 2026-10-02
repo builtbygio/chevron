@@ -77,7 +77,7 @@
     "macro_invocation > identifier,\nmacro_invocation > \"!\",\nmacro_definition > identifier,\ncall_expression > identifier,\ncall_expression > field_expression > field_identifier,\ncall_expression > scoped_identifier > identifier:nth-child(2),\ngeneric_function > identifier,\ngeneric_function > field_expression > field_identifier,\ngeneric_function > scoped_identifier > identifier,\nfunction_item > identifier,\nfunction_signature_item > identifier,": "entity.name.function",
     "use_list > self,\nscoped_use_list > self,\nscoped_identifier > self,\ncrate,\nsuper": "keyword.control",
     "self": "variable.self",
-    "use_wildcard > identifier:nth-child(0),\nuse_wildcard > scoped_identifier > identifier:nth-child(2),\nscoped_type_identifier > identifier:nth-child(0),\nscoped_type_identifier > scoped_identifier:nth-child(0) > identifier,\nscoped_identifier > identifier:nth-child(0),\nscoped_identifier > scoped_identifier:nth-child(0) > identifier,\nuse_declaration > identifier,\nuse_declaration > scoped_identifier > identifier,\nuse_list > identifier,\nuse_list > scoped_identifier > identifier,\nmeta_item > identifier": [
+    "use_wildcard > identifier:nth-child(0),\nuse_wildcard > scoped_identifier > identifier:nth-child(2),\nscoped_type_identifier > identifier:nth-child(0),\nscoped_type_identifier > scoped_identifier:nth-child(0) > identifier,\nscoped_identifier > identifier:nth-child(0),\nscoped_identifier > scoped_identifier:nth-child(0) > identifier,\nuse_declaration > identifier,\nuse_declaration > scoped_identifier > identifier,\nuse_list > identifier,\nuse_list > scoped_identifier > identifier,\nattribute > identifier": [
       {
         "match": "^[A-Z]",
         "scopes": "support.type"
@@ -95,7 +95,6 @@
     "\"trait\"": "storage.modifier",
     "\"mod\"": "storage.modifier",
     "\"pub\"": "storage.modifier",
-    "\"crate\"": "storage.modifier",
     "\"default\"": "storage.modifier",
     "\"struct\"": "storage.modifier",
     "\"enum\"": "storage.modifier",

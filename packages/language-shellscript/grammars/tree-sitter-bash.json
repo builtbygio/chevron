@@ -117,7 +117,7 @@
     "comment": "comment.block",
     "string": "string",
     "raw_string": "string",
-    "ansii_c_string": "string",
+    "ansi_c_string": "string",
     "heredoc_body": "string",
     "heredoc_start": "string",
     "regex": "string.regexp",

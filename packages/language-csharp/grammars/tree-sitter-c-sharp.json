@@ -63,7 +63,7 @@
     "method_declaration": "meta.method.cs",
     "namespace_declaration, file_scoped_namespace_declaration": "meta.namespace.cs",
     "using_directive": "keyword.other.using.cs",
-    "if_statement, else, for_statement, foreach_statement, while_statement, do_statement, switch_statement, switch_expression, return_statement, break_statement, continue_statement, goto_statement, throw_statement, try_statement, catch_clause, finally_clause, yield_statement, lock_statement, using_statement, checked_statement, unchecked, unsafe_statement, fixed_statement": "keyword.control.cs",
+    "if_statement, \"else\", for_statement, foreach_statement, while_statement, do_statement, switch_statement, switch_expression, return_statement, break_statement, continue_statement, goto_statement, throw_statement, try_statement, catch_clause, finally_clause, yield_statement, lock_statement, using_statement, checked_statement, \"unchecked\", unsafe_statement, fixed_statement": "keyword.control.cs",
     "preproc_if, preproc_elif, preproc_else, preproc_endregion, preproc_region, preproc_define, preproc_undef, preproc_pragma, preproc_line, preproc_error, preproc_warning, preproc_nullable": "keyword.control.directive.cs"
   }
 }

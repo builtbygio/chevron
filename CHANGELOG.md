@@ -23,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Highlighting and folds that named renamed tree-sitter nodes did nothing.** The parser upgrade renamed nodes the grammars' scope maps and folds still used, and a selector for a node that never appears fails silently. Restored: HTML's `source.html` scope (on `document`), Ruby method calls and symbols, Java comments and method names, JavaScript and TypeScript named function expressions and rest parameters, `readonly`, C++ qualified function names and `nullptr`, C# `else`/`unchecked`, Bash `$'…'` strings, Rust attribute names, YAML mapping keys, JSON's root scope, and Go `case` and HTML `<script>`/`<style>` folds. Scope-map leaf rules gain `field`, matching a node by its field in the parent (a call's method versus its receiver). A new `script/ci/grammar-selectors.test.js` checks every selector against the parser's node types.
+- **CSS and SCSS offered no property-name, tag or pseudo-selector completions, and no property snippets.** autocomplete-css and the CSS snippets key on `meta.property-list` and `meta.selector.css`, which only the TextMate grammars produced. The tree-sitter grammars now scope rule blocks and selector lists with them. Property values still complete only right after the `:`.
+
+- The language-html, language-ruby and language-sass specs pass. One Ruby spec used `foo() = 10`, which is not Ruby; it now checks `foo.bar = 10`.
+
 - **Open Link only worked on Markdown link syntax.** It looked for a `markup.underline.link` token, which only the dropped `language-hyperlink` grammar produced for URLs in ordinary text, so a URL in a comment or a `.txt` did nothing — and in a `.txt` it threw, because grammarless buffers had no `tokenForBufferPosition`. Open Link now falls back to a URL in the line itself (`http`, `https`, `chevron`), plain-text buffers answer `tokenForBufferPosition`, and reference-style Markdown links (`[text][label]`) resolve again: tree-sitter scopes the label with its brackets, which the lookup did not expect.
 
 - **dev-live-reload never reloaded package stylesheets.** It watched packages whose type was `'atom'`; core's has been `'chevron'` since 1.0.

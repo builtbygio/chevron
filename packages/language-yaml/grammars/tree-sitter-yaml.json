@@ -56,8 +56,12 @@
     "single_quote_scalar": "string.quoted.single.yaml",
     "block_scalar": "string.unquoted.block.yaml",
     "escape_sequence": "constant.character.escape.yaml",
-    "block_mapping_pair > key": "entity.name.tag.yaml",
-    "flow_pair > key": "entity.name.tag.yaml",
+    "block_mapping_pair > flow_node, block_mapping_pair > block_node, flow_pair > flow_node": [
+      {
+        "field": "key",
+        "scopes": "entity.name.tag.yaml"
+      }
+    ],
     "anchor": "entity.name.type.anchor.yaml",
     "anchor_name": "entity.name.type.anchor.yaml",
     "alias": "variable.other.alias.yaml",

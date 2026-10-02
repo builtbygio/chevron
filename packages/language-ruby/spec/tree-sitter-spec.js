@@ -123,11 +123,16 @@ describe('Tree-sitter Ruby grammar', () => {
   it('does not tokenizes method call in assignment expressions', async () => {
     const editor = await atom.workspace.open('foo.rb')
     editor.setText(dedent`
-      foo() = 10
+      foo.bar = 10
     `)
 
-    expect(editor.scopeDescriptorForBufferPosition([0, 0]).toString()).not.toBe(
-      '.source.ruby .variable'
+    // `foo() = 10` was the old case; it is not Ruby, and the current parser
+    // recovers it as `foo = 10` plus an error node.
+    expect(editor.scopeDescriptorForBufferPosition([0, 0]).toString()).toBe(
+      '.source.ruby'
+    )
+    expect(editor.scopeDescriptorForBufferPosition([0, 4]).toString()).toBe(
+      '.source.ruby .entity.name.function'
     )
   })
 })

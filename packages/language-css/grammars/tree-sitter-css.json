@@ -29,6 +29,8 @@
   },
   "scopes": {
     "stylesheet": "source.css",
+    "block": "meta.property-list.css",
+    "selectors": "meta.selector.css",
     "comment": "comment",
     "tag_name": "entity.name.tag",
     "nesting_selector, universal_selector": "entity.name.tag",

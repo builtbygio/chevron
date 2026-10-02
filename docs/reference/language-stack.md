@@ -175,8 +175,14 @@ node-tree-sitter. The official 0.25 binding differs in ways that fail quietly:
 - **Parsing is synchronous.** `syncTimeoutMicros` is ignored; a buffer cannot
   change mid-parse.
 - **Node shapes moved**: `fragment` → `document` (HTML), `function` →
-  `function_expression`, `else` inside `else_clause`, `/>` one token (JSX).
-  Grammar `folds` and `scopes` written against the old shapes need checking.
+  `function_expression`, `else` inside `else_clause`, `/>` one token (JSX),
+  `method_call` → `call`, `symbol` → `simple_symbol` (Ruby). A selector naming
+  a node the parser never produces matches nothing, silently;
+  `script/ci/grammar-selectors.test.js` checks every `scopes` and `folds`
+  entry against the parser's `src/node-types.json`.
+- **Fields tell siblings apart.** A call's receiver and method are both
+  `identifier` under `call`, so position selectors guess. A leaf rule
+  `{"field": "method", "scopes": …}` matches by the node's field name instead.
 
 ## 5. What this document is not
 

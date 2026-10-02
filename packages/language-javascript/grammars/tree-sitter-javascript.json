@@ -125,7 +125,7 @@
     ],
     "member_expression > property_identifier": "variable.other.object.property.unquoted",
     "formal_parameters > identifier": "variable.parameter.function",
-    "formal_parameters > rest_parameter > identifier": "variable.parameter.rest.function",
+    "formal_parameters > rest_pattern > identifier": "variable.parameter.rest.function",
     "shorthand_property_identifier": [
       {
         "match": "^[$A-Z_]{2,}$",
@@ -147,7 +147,7 @@
       "entity.name.function"
     ],
     "arrow_function > identifier:nth-child(0)": "variable.parameter.function",
-    "function > identifier": "entity.name.function",
+    "function_expression > identifier": "entity.name.function",
     "function_declaration > identifier": "entity.name.function",
     "generator_function > identifier": "entity.name.function",
     "call_expression > super": "support.function.super",
