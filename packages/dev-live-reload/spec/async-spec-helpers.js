@@ -22,13 +22,13 @@ __export(async_spec_helpers_exports, {
 });
 module.exports = __toCommonJS(async_spec_helpers_exports);
 async function conditionPromise(condition, description = "anonymous condition") {
-  const startTime = Date.now();
+  const startTime = performance.now();
   while (true) {
     await timeoutPromise(100);
     if (await condition()) {
       return;
     }
-    if (Date.now() - startTime > 5e3) {
+    if (performance.now() - startTime > 5e3) {
       throw new Error("Timed out waiting on " + description);
     }
   }

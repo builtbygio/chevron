@@ -194,6 +194,7 @@ jobs:
           node --test script/ci/jasmine-suite-selection.test.js
           node --test script/ci/jasmine-summary.test.js
           node --test script/ci/package-test-dir.test.js
+          node --test script/ci/spec-helper-real-time.test.js
           node --test script/ci/legacy-transpile.test.js
           node --test script/ci/package-pin-policy.test.js
           node --test script/ci/patch-inventory.test.js
