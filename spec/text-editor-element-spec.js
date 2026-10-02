@@ -406,10 +406,11 @@ describe('TextEditorElement', () => {
 
       editor.update({ autoHeight: false });
       element.getModel().setText('x\n'.repeat(20));
-      element.style.height = 120 + horizontalScrollbarHeight + 'px';
+      // In lines, not pixels: the line height depends on the fonts installed.
+      const lineHeight = editor.getLineHeightInPixels();
+      element.style.height = 6.75 * lineHeight + horizontalScrollbarHeight + 'px';
       await element.getNextUpdatePromise();
-
-      element.setScrollTop(80);
+      element.setScrollTop(4.5 * lineHeight);
       await element.getNextUpdatePromise();
       expect(element.getVisibleRowRange()).toEqual([4, 11]);
 
@@ -429,9 +430,11 @@ describe('TextEditorElement', () => {
 
       editor.update({ autoHeight: false });
       element.getModel().setText('xxxxxxxxxxxxxxxxxxxxxx\n'.repeat(20));
-      element.style.height = 120 + horizontalScrollbarHeight + 'px';
+      // In lines, not pixels: the line height depends on the fonts installed.
+      const lineHeight = editor.getLineHeightInPixels();
+      element.style.height = 6.75 * lineHeight + horizontalScrollbarHeight + 'px';
       await element.getNextUpdatePromise();
-      element.setScrollTop(80);
+      element.setScrollTop(4.5 * lineHeight);
       await element.getNextUpdatePromise();
       expect(element.getVisibleRowRange()).toEqual([4, 11]);
 

@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The editor component and element specs pass on CI. `text-editor-component-spec.js` took 426 seconds and timed out, so the runner retried it six times: the spec window was never shown and got few animation frames, and the specs wait on one per editor update. CI now shows it on Xvfb (`CHEVRON_SPEC_SHOW_WINDOW`, about 20 seconds) and installs a CJK font. Specs that measured in pixels now measure in lines and characters, since the fonts, and so the metrics, differ from the macOS ones the expected values came from.
+
 - **Find in Project sometimes reported no results.** The renderer learned a ripgrep search's id from main's reply to "start" and only then listened for output, but that reply is not ordered with the output messages. On a fast search the matches could arrive first and be dropped, then the close arrived and the search finished empty, with no error. The renderer now picks the id and listens before asking main to start. `script/ci/rg-search-ordering.test.js`.
 
 - **The project results list could open with the second file selected and scrolled.** Ripgrep searches files in parallel; when a later result sorted above the selected first row, the selection moved down with it. A result arriving above the top row now takes the selection. The list also rendered no rows when results arrived before its first resize callback, or when it was first drawn detached (a split copy of the results pane), because row heights were missing or measured as 0.
