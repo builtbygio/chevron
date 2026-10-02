@@ -10,8 +10,6 @@ const temp = require('temp').track()
 const url = require('url')
 const { TextEditor } = require('chevron')
 const MarkdownPreviewView = require('../lib/markdown-preview-view')
-const TextMateLanguageMode = new TextEditor().getBuffer().getLanguageMode()
-  .constructor
 
 describe('MarkdownPreviewView', function () {
   let preview = null
@@ -19,8 +17,6 @@ describe('MarkdownPreviewView', function () {
   beforeEach(function () {
     // Makes _.debounce work
     jasmine.useRealClock()
-
-    jasmine.unspy(TextMateLanguageMode.prototype, 'tokenizeInBackground')
 
     spyOn(atom.packages, 'hasActivatedInitialPackages').andReturn(true)
 
@@ -159,7 +155,7 @@ end\
         )
         expect(jsEditor.getModel().getText()).toBe(`\
 if a === 3 {
-b = 5
+  b = 5
 }\
 `)
       })
@@ -545,11 +541,12 @@ end\
         atom.commands.dispatch(preview.element, 'core:copy')
         const clipboardText = atom.clipboard.read()
 
+        // Chromium no longer puts a blank line between the code block and the
+        // paragraph when it serializes a selection across them.
         expect(clipboardText).toBe(`\
 if a === 3 {
   b = 5
 }
-
 enc\
 `)
       })

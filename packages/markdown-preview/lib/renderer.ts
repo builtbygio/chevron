@@ -219,6 +219,9 @@ var highlightCodeBlocks = function (domFragment, grammar, editorCallback) {
 var makeAtomEditorNonInteractive = function (editorElement, preElement) {
   preElement.remove()
   editorElement.setAttributeNode(document.createAttribute('gutter-hidden')) // Hide gutter
+  // The attribute alone does not reach an editor built in code: its
+  // attributeChangedCallback never runs, and code blocks kept line numbers.
+  editorElement.getModel().update({ lineNumberGutterVisible: false })
   editorElement.removeAttribute('tabindex') // Make read-only
 
   // Remove line decorations from code blocks.
@@ -245,7 +248,9 @@ var convertAtomEditorToStandardElement = (editorElement, preElement) => {
         resolve()
       })
     const languageMode = editor.getBuffer().getLanguageMode()
-    if (languageMode.fullyTokenized || languageMode.tree) {
+    // Plain text (a fence with no matching grammar) never tokenizes, so it
+    // never emits did-tokenize either.
+    if (languageMode.fullyTokenized || languageMode.tree || !languageMode.onDidTokenize) {
       done()
     } else {
       editor.onDidTokenize(done)

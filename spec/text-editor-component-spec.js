@@ -2606,10 +2606,18 @@ describe('TextEditorComponent', () => {
         height: 100,
         attach: false
       });
+      // The vertical steps below only work for a line height of 16.5-16.8px:
+      // a 56px overlay must fit under row 4 at scrollTop 20, and a 66px one
+      // must then flip above it without leaving the 140px window.
+      component.element.style.lineHeight = '16.6px';
       const fakeWindow = attachFakeWindow(component);
+      // Scroll offsets are written for a 7.2px character; shift them so column
+      // 25 lands at the same pixel whatever the installed font's width.
+      const scrollLeftFor = left =>
+        left + 25 * (component.getBaseCharacterWidth() - 7.2);
 
       await setScrollTop(component, 50);
-      await setScrollLeft(component, 100);
+      await setScrollLeft(component, scrollLeftFor(100));
 
       const marker = editor.markScreenPosition([4, 25]);
 
@@ -2639,14 +2647,14 @@ describe('TextEditorComponent', () => {
       );
 
       // Updates the horizontal position on scroll
-      await setScrollLeft(component, 150);
+      await setScrollLeft(component, scrollLeftFor(150));
       expect(overlayWrapper.getBoundingClientRect().left).toBeNear(
         clientLeftForCharacter(component, 4, 25)
       );
 
       // Shifts the overlay horizontally to ensure the overlay element does not
       // overflow the window
-      await setScrollLeft(component, 30);
+      await setScrollLeft(component, scrollLeftFor(30));
       expect(overlayElement.getBoundingClientRect().right).toBeNear(
         fakeWindow.getBoundingClientRect().right
       );
@@ -2666,7 +2674,7 @@ describe('TextEditorComponent', () => {
 
       // Flips the overlay vertically to ensure the overlay element does not
       // overflow the bottom of the window
-      setScrollLeft(component, 100);
+      setScrollLeft(component, scrollLeftFor(100));
       await setScrollTop(component, 0);
       expect(overlayWrapper.getBoundingClientRect().bottom).toBeNear(
         clientTopForLine(component, 4)

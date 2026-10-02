@@ -207,8 +207,10 @@ jobs:
         if: startsWith(matrix.shard, 'core') || env.SHARD_EMPTY != 'true'
         env:
           CI: 'true'
-          # Show spec windows: a never-shown one gets few animation frames.
-          CHEVRON_SPEC_SHOW_WINDOW: '1'
+          # Show spec windows for the editor render specs: a never-shown one
+          # gets few animation frames. Not for packages: shown, fuzzy-finder's
+          # focus specs fail on Xvfb.
+          CHEVRON_SPEC_SHOW_WINDOW: ${{ startsWith(matrix.shard, 'core-render') && '1' || '' }}
           # core-main runs the main-process suite; the renderer specs split in
           # two at the boundary select-test-suites.js defines.
           ATOM_RUN_CORE_MAIN_TESTS: ${{ matrix.shard == 'core-main' && 'true' || 'false' }}

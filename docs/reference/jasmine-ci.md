@@ -41,8 +41,15 @@ when `CI=1` on Linux.
 (headless), which otherwise never shows it. A never-shown window gets few
 animation frames, and the editor component specs await one per update:
 `text-editor-component-spec.js` took 426s and timed out (then retried six
-times); shown on Xvfb it takes about 20s. `jasmine.yml` sets it, and installs
-`fonts-noto-cjk` for the double-width character measurements.
+times); shown on Xvfb it takes about 20s. `jasmine.yml` sets it for the
+`core-render` shards only: with the window shown on Xvfb, fuzzy-finder's
+focus specs fail.
+It also installs `fonts-noto-cjk` for the double-width character measurements.
+
+With `CI` set, the runner also prints each failing spec (`FAILED: <name>` and
+its messages) the moment it fails. The terminal reporter only reports at the
+end of a run, so a suite killed by `script/test`'s watchdog used to leave no
+record of what failed.
 
 Specs that attach an editor outside `atom-workspace` get the page's default
 font and line height, not `editor.fontFamily`/`fontSize`, so their pixel

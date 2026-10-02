@@ -1,4 +1,6 @@
 {
+  "type": "tree-sitter",
+  "parser": "tree-sitter-json",
   "scopeName": "source.a",
   "fileTypes": [
     ".a",
