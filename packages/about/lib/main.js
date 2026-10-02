@@ -3,6 +3,7 @@ const semver = require('semver');
 const UpdateManager = require('./update-manager');
 const About = require('./about');
 const StatusBarView = require('./components/about-status-bar');
+const { notifyUpdate } = require('./update-notification');
 let updateManager;
 
 // The local storage key for the available update version.
@@ -35,6 +36,17 @@ module.exports = {
           );
           this.showStatusBarIfNeeded();
         }
+      })
+    );
+
+    this.subscriptions.add(
+      chevron.autoUpdater.onDidCompleteDownloadingUpdate(details => {
+        notifyUpdate(details, {
+          notifications: chevron.notifications,
+          storage: window.localStorage,
+          restartAndInstall: () => chevron.autoUpdater.restartAndInstallUpdate(),
+          openExternal: url => chevron.applicationDelegate.openExternal(url)
+        });
       })
     );
 

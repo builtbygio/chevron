@@ -149,7 +149,12 @@ describe('in-app mode', () => {
       'did-begin-downloading-update',
       'update-available'
     ]);
-    assert.deepEqual(messages[2].detail, { releaseVersion: '1.5.0' });
+    assert.deepEqual(messages[2].detail, {
+      releaseVersion: '1.5.0',
+      installable: true,
+      releasePageUrl: 'https://github.com/builtbygio/chevron/releases/latest',
+      alreadyShown: false
+    });
     manager.install();
     assert.equal(updater.installs, 1);
   });
@@ -282,6 +287,13 @@ describe('download-page mode', () => {
     ]);
     assert.equal(dialogs.length, 1);
     assert.match(dialogs[0].detail, /not code-signed/);
+    // The dialog has said it; the window is told not to announce it again.
+    assert.deepEqual(messages[1].detail, {
+      releaseVersion: 'v1.5.0'.replace(/^v/, ''),
+      installable: false,
+      releasePageUrl: 'https://example.test/v1.5.0',
+      alreadyShown: true
+    });
     manager.install();
     assert.deepEqual(opened, ['https://example.test/v1.5.0']);
   });

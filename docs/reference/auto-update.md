@@ -19,6 +19,8 @@ Every four hours while `core.automaticallyUpdate` is on, and on **Help › Check
 
 The states (`checking`, `downloading`, `update-available`, `no-update-available`, `error`, `unsupported`) and the window messages are unchanged from Atom, so the application menu and the **about** package work as before.
 
+When an update is ready, the **about** package says so once per version, in a notification: "Chevron X.Y.Z is ready to install. It installs the next time Chevron restarts", with **Restart now** and **Later**, for an in-app build; "Chevron X.Y.Z is available" with **Open release page** for a download-page build. A manual check's dialog already says it, so that check skips the notification. The `update-available` window message carries `installable`, `releasePageUrl` and `alreadyShown` for this (`packages/about/lib/update-notification.js`).
+
 Releases are published as full GitHub releases (still labelled unsigned previews in their notes): a stable build's electron-updater reads `releases/latest`, which skips pre-releases. Beta and nightly builds, and anyone who sets **`core.allowPrereleaseUpdates`**, also see pre-releases; the setting applies from the next check, without a restart. When no release has update metadata yet (`latest.yml` and friends), a check reports no update rather than an error.
 
 ## How the build wires it
