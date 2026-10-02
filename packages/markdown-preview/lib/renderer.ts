@@ -218,10 +218,10 @@ var highlightCodeBlocks = function (domFragment, grammar, editorCallback) {
 
 var makeAtomEditorNonInteractive = function (editorElement, preElement) {
   preElement.remove()
-  // setAttribute, not setAttributeNode: the custom-elements polyfill only
-  // runs attributeChangedCallback for the former, and code blocks kept their
-  // line numbers.
-  editorElement.setAttribute('gutter-hidden', '') // Hide gutter
+  editorElement.setAttributeNode(document.createAttribute('gutter-hidden')) // Hide gutter
+  // The attribute alone does not reach an editor built in code: its
+  // attributeChangedCallback never runs, and code blocks kept line numbers.
+  editorElement.getModel().update({ lineNumberGutterVisible: false })
   editorElement.removeAttribute('tabindex') // Make read-only
 
   // Remove line decorations from code blocks.

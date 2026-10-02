@@ -19,7 +19,8 @@ function hasSpecFile(dir) {
 // The package's `spec` or `test` folder, if it holds specs.
 //
 // A folder with only fixtures is not one: bookmarks, encoding-selector and
-// status-bar were vendored without their specs, ran zero of them, and passed.
+// status-bar were vendored without their specs and passed by running none,
+// until the specs were restored.
 // Shared by script/test and jasmine.yml's shard split so they agree.
 function packageTestDir(packagePath) {
   for (const subdir of ['spec', 'test']) {

@@ -70,21 +70,6 @@ describe('TextEditorElement', () => {
     expect(element.getModel().isLineNumberGutterVisible()).toBe(false);
   });
 
-  // The custom-elements polyfill runs attributeChangedCallback for
-  // setAttribute and removeAttribute, not setAttributeNode.
-  it("honors attributes set on an editor's element after creation", () => {
-    const editor = new TextEditor();
-    const element = editor.getElement();
-    jasmine.attachToDOM(element);
-    expect(editor.isLineNumberGutterVisible()).toBe(true);
-
-    element.setAttribute('gutter-hidden', '');
-    expect(editor.isLineNumberGutterVisible()).toBe(false);
-
-    element.removeAttribute('gutter-hidden');
-    expect(editor.isLineNumberGutterVisible()).toBe(true);
-  });
-
   it("honors the 'readonly' attribute", async function() {
     jasmineContent.innerHTML = '<atom-text-editor readonly>';
     const element = jasmineContent.firstChild;

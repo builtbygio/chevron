@@ -21,7 +21,9 @@ module.exports = {
       if (bookmarksView == null) {
         bookmarksView = new BookmarksView(editorsBookmarks);
       }
-      bookmarksView.show();
+      // Returned so the command's dispatch resolves once the list is filled
+      // (CoffeeScript returned it implicitly).
+      return bookmarksView.show();
     });
 
     chevron.workspace.observeTextEditors(function(textEditor) {
