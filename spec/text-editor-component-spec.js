@@ -957,7 +957,9 @@ describe('TextEditorComponent', () => {
       const { editor, element, component } = buildComponent();
       editor.setSoftWrapped(true);
       await component.getNextUpdatePromise();
-      await setEditorWidthInCharacters(component, 40);
+      // 39 columns. A whole 40 lands on either side of row 2's 40 characters
+      // depending on how the font's width rounds.
+      await setEditorWidthInCharacters(component, 39.5);
       {
         const bufferRows = queryOnScreenLineNumberElements(element).map(
           e => e.dataset.bufferRow

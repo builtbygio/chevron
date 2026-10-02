@@ -92,7 +92,8 @@ jobs:
             libxtst6 \
             xvfb \
             fakeroot \
-            dpkg-dev
+            dpkg-dev \
+            fonts-noto-cjk
 
       - name: Enable pnpm
         uses: pnpm/action-setup@v4
@@ -206,6 +207,8 @@ jobs:
         if: startsWith(matrix.shard, 'core') || env.SHARD_EMPTY != 'true'
         env:
           CI: 'true'
+          # Show spec windows: a never-shown one gets few animation frames.
+          CHEVRON_SPEC_SHOW_WINDOW: '1'
           # core-main runs the main-process suite; the renderer specs split in
           # two at the boundary select-test-suites.js defines.
           ATOM_RUN_CORE_MAIN_TESTS: ${{ matrix.shard == 'core-main' && 'true' || 'false' }}

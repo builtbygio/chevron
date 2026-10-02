@@ -53,9 +53,13 @@ module.exports = async function({ blobStore }) {
         process.stdout.write(`${util.format(...args)}\n`);
       console.error = (...args) =>
         process.stderr.write(`${util.format(...args)}\n`);
-    } else {
-      // Show window synchronously so a focusout doesn't fire on input elements
-      // that are focused in the very first spec run.
+    }
+    // Show window synchronously so a focusout doesn't fire on input elements
+    // that are focused in the very first spec run. CI shows headless windows
+    // too (on Xvfb): one never shown gets few animation frames, and the editor
+    // component specs wait on one per update.
+    const showHeadless = (env && env.CHEVRON_SPEC_SHOW_WINDOW) || process.env.CHEVRON_SPEC_SHOW_WINDOW;
+    if (!headless || showHeadless) {
       rendererIpc.getWindowProxy().show();
     }
 

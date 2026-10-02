@@ -37,6 +37,18 @@ Needs a packaged app (`script/build`). The runner looks for
 On CI, `xvfb-run -a` provides a display. `--no-sandbox` is added automatically
 when `CI=1` on Linux.
 
+`CHEVRON_SPEC_SHOW_WINDOW=1` shows the spec window even with `--test`
+(headless), which otherwise never shows it. A never-shown window gets few
+animation frames, and the editor component specs await one per update:
+`text-editor-component-spec.js` took 426s and timed out (then retried six
+times); shown on Xvfb it takes about 20s. `jasmine.yml` sets it, and installs
+`fonts-noto-cjk` for the double-width character measurements.
+
+Specs that attach an editor outside `atom-workspace` get the page's default
+font and line height, not `editor.fontFamily`/`fontSize`, so their pixel
+metrics depend on the fonts installed. Write positions in lines and
+characters (`getLineHeightInPixels()`, `baseCharacterWidth`), not pixels.
+
 ## Runtime budget
 
 | Step | Expected |
