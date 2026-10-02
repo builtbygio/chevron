@@ -1094,7 +1094,9 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref_name }} unsigned preview
-          prerelease: true
+          # A full release: stable builds' updater reads releases/latest, which
+          # skips pre-releases (#412).
+          prerelease: false
           generate_release_notes: true
           body: |
             **UNSIGNED PREVIEW.** These binaries are not codesigned or notarized.

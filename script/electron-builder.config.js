@@ -32,7 +32,8 @@ module.exports = {
     provider: 'github',
     owner: repository.owner,
     repo: repository.repo,
-    releaseType: 'prerelease'
+    // Full releases: the updater's stable channel reads releases/latest.
+    releaseType: 'release'
   },
   npmRebuild: false,
   nodeGypRebuild: false,

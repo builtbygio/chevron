@@ -36,6 +36,18 @@ const ErrorState = 'error';
 //   unsupported     dev builds and tests.
 //
 // `options.createUpdater` and `options.readUpdateConfig` exist for the tests.
+// electron-updater's errors for "no published release has update metadata":
+// GitHub's latest release has no latest.yml, or there is no release at all.
+const NO_RELEASE_ERRORS = new Set([
+  'ERR_UPDATER_CHANNEL_FILE_NOT_FOUND',
+  'ERR_UPDATER_LATEST_VERSION_NOT_FOUND',
+  'ERR_UPDATER_NO_PUBLISHED_VERSIONS'
+]);
+
+function isNoReleaseError(error) {
+  return Boolean(error && NO_RELEASE_ERRORS.has(error.code));
+}
+
 module.exports = class AutoUpdateManager extends EventEmitter {
   constructor(version, testMode, config, options = {}) {
     super();
@@ -106,11 +118,16 @@ module.exports = class AutoUpdateManager extends EventEmitter {
     this.updater = updater;
     updater.autoDownload = true;
     updater.autoInstallOnAppQuit = true;
-    // The preview releases are flagged pre-release on GitHub. A stable version
-    // would otherwise never see them; a beta/nightly build always does.
-    updater.allowPrerelease =
-      getReleaseChannel(this.version) !== 'stable' ||
-      !!this.config.get('core.allowPrereleaseUpdates');
+    // Releases are full GitHub releases; a beta/nightly build, or a user who
+    // asks for pre-releases, also sees pre-releases. Re-read on every change,
+    // so the setting does not wait for a restart.
+    const setAllowPrerelease = () => {
+      updater.allowPrerelease =
+        getReleaseChannel(this.version) !== 'stable' ||
+        !!this.config.get('core.allowPrereleaseUpdates');
+    };
+    setAllowPrerelease();
+    this.config.onDidChange('core.allowPrereleaseUpdates', setAllowPrerelease);
     if (this.env.CHEVRON_UPDATE_FEED_URL) {
       updater.setFeedURL(this.env.CHEVRON_UPDATE_FEED_URL);
     }
@@ -138,6 +155,13 @@ module.exports = class AutoUpdateManager extends EventEmitter {
       this.emitUpdateAvailableEvent();
     });
     updater.on('error', error => {
+      if (isNoReleaseError(error)) {
+        // No release carries update metadata for this channel (yet): that is
+        // "no update", not a failure to report every four hours.
+        this.setState(NoUpdateAvailableState);
+        this.emitWindowEvent('update-not-available');
+        return;
+      }
       const message = error && error.message ? error.message : String(error);
       this.setState(ErrorState, message);
       this.emitWindowEvent('update-error');
@@ -221,6 +245,10 @@ module.exports = class AutoUpdateManager extends EventEmitter {
         this.onUpdateNotAvailable();
       }
     } catch (error) {
+      if (isNoReleaseError(error)) {
+        if (!hidePopups) this.onUpdateNotAvailable();
+        return;
+      }
       // The 'error' event has set the state and logged. A manual check gets a
       // dialog with the way out that always works.
       if (!hidePopups) {

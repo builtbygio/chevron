@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **A spec waiting on a condition that never came true hung its suite instead of failing.** The `conditionPromise` helpers (core's and fourteen packages' copies) timed out after 5 seconds of `Date.now`, which the spec helper fakes and only advances through `advanceClock`, so the guard never fired and `script/test` killed the suite after 15 minutes with no message. They measure `performance.now` now; `script/ci/spec-helper-real-time.test.js` keeps it that way.
+- **In-app update checks failed on every check with default settings (#412).** Releases were published as pre-releases, so a stable build's updater, which reads GitHub's `releases/latest`, found v0.6.0, a release with no `latest.yml`, and every four-hourly check ended in the error state. Tagged versions are now published as full releases; a release with no update metadata counts as "no update" rather than an error; and `core.allowPrereleaseUpdates` applies from the next check instead of after a restart.
 
 - **Markdown preview code blocks still hid their line numbers the long way round.** The gutter was hidden with `setAttributeNode`, which the custom-elements polyfill does not report to `attributeChangedCallback`, so #432 also set it on the editor directly. The preview now uses `setAttribute`, which the polyfill does report, and a core spec pins that attributes set after creation reach an editor built in code.
 
