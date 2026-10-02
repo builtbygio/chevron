@@ -3,7 +3,6 @@ const { shell } = require('electron');
 describe('link package', () => {
   beforeEach(async () => {
     await atom.packages.activatePackage('language-gfm');
-    await atom.packages.activatePackage('language-hyperlink');
 
     const activationPromise = atom.packages.activatePackage('link');
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'link:open');
@@ -78,6 +77,22 @@ describe('link package', () => {
       expect(shell.openExternal).toHaveBeenCalled();
       expect(shell.openExternal.argsForCall[0][0]).toBe(
         'chevron://core/open/file?filename=sample.js&line=1&column=2'
+      );
+    });
+
+    it('opens a bare URL in a file with no link scopes', async () => {
+      const editor = await atom.workspace.open('notes.txt');
+      editor.setText('see https://github.com/builtbygio/chevron. thanks');
+
+      spyOn(shell, 'openExternal');
+      editor.setCursorBufferPosition([0, 1]);
+      atom.commands.dispatch(atom.views.getView(editor), 'link:open');
+      expect(shell.openExternal).not.toHaveBeenCalled();
+
+      editor.setCursorBufferPosition([0, 10]);
+      atom.commands.dispatch(atom.views.getView(editor), 'link:open');
+      expect(shell.openExternal.argsForCall[0][0]).toBe(
+        'https://github.com/builtbygio/chevron'
       );
     });
 

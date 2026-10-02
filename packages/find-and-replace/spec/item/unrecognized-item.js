@@ -25,6 +25,6 @@ class UnrecognizedItem {
   update() {}
 }
 
-UnrecognizedItem.uri = 'atom://find-and-replace/spec/unrecognized'
+UnrecognizedItem.uri = 'chevron://find-and-replace/spec/unrecognized'
 
 module.exports = UnrecognizedItem

@@ -3,6 +3,10 @@ const { shell } = require('electron');
 const _ = require('underscore-plus');
 
 const LINK_SCOPE_REGEX = /markup\.underline\.link/;
+// Bare URLs in any text. language-hyperlink scoped these until TextMate went;
+// no tree-sitter grammar does, so they are found in the line itself.
+const BARE_URL_REGEX = /\b(?:https?|chevron):\/\/[^\s"'`<>()[\]{}]+/g;
+const TRAILING_PUNCTUATION_REGEX = /[.,;:!?]+$/;
 
 module.exports = {
   activate() {
@@ -25,7 +29,8 @@ module.exports = {
     if (link == null) return;
 
     if (editor.getGrammar().scopeName === 'source.gfm') {
-      link = this.linkForName(editor, link);
+      // tree-sitter scopes the whole `[label]`, brackets included.
+      link = this.linkForName(editor, link.replace(/^\[(.*)\]$/, '$1'));
     }
 
     const { protocol } = url.parse(link);
@@ -59,6 +64,19 @@ module.exports = {
       token.scopes.some(scope => LINK_SCOPE_REGEX.test(scope))
     ) {
       return token.value;
+    }
+    return this.bareUrlAtPosition(editor, bufferPosition);
+  },
+
+  bareUrlAtPosition(editor, { row, column }) {
+    const line = editor.lineTextForBufferRow(row) || '';
+    BARE_URL_REGEX.lastIndex = 0;
+    let match;
+    while ((match = BARE_URL_REGEX.exec(line))) {
+      const text = match[0].replace(TRAILING_PUNCTUATION_REGEX, '');
+      if (column >= match.index && column < match.index + text.length) {
+        return text;
+      }
     }
   },
 

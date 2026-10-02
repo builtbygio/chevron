@@ -66,7 +66,7 @@ module.exports = class UIWatcher {
   }
 
   watchPackage(pack) {
-    if (PackageWatcher.supportsPackage(pack, 'atom')) {
+    if (PackageWatcher.supportsPackage(pack, 'chevron')) {
       this.watchedPackages.set(
         pack.name,
         this.createWatcher(new PackageWatcher(pack))
@@ -89,7 +89,7 @@ module.exports = class UIWatcher {
   reloadAll() {
     this.baseTheme.loadAllStylesheets();
     for (const pack of chevron.packages.getActivePackages()) {
-      if (PackageWatcher.supportsPackage(pack, 'atom')) {
+      if (PackageWatcher.supportsPackage(pack, 'chevron')) {
         pack.reloadStylesheets();
       }
     }

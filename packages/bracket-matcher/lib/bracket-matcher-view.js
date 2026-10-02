@@ -476,7 +476,8 @@ class BracketMatcherView {
       this.editor.setCursorBufferPosition(matchPosition)
     } else {
       let startRange, endRange
-      if (this.hasSyntaxTree()) {
+      const syntaxTree = this.hasSyntaxTree()
+      if (syntaxTree) {
         ({startRange, endRange} = this.findMatchingTagsWithSyntaxTree())
       } else {
         ({startRange, endRange} = this.tagFinder.findStartEndTags())
@@ -486,7 +487,12 @@ class BracketMatcherView {
         if (startRange.compare(endRange) > 0) {
           [startRange, endRange] = [endRange, startRange]
         }
-        this.editor.setCursorBufferPosition(startRange.start)
+        // The syntax tree gives whole tags; land on the name, as the tag finder does.
+        let target = startRange.start
+        if (syntaxTree && this.editor.getTextInBufferRange([target, target.traverse(ONE_CHAR_FORWARD_TRAVERSAL)]) === '<') {
+          target = target.traverse(ONE_CHAR_FORWARD_TRAVERSAL)
+        }
+        this.editor.setCursorBufferPosition(target)
       }
     }
   }

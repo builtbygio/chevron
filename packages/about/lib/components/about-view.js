@@ -50,9 +50,8 @@ module.exports = class AboutView extends EtchComponent {
 
   handleHowToUpdateClick(e) {
     e.preventDefault();
-    shell.openExternal(
-      'https://github.com/builtbygio/chevron/blob/master/docs/build-instructions'
-    );
+    // No auto-update here (Linux, source builds): updating is a new download.
+    shell.openExternal('https://github.com/builtbygio/chevron/releases/latest');
   }
 
   handleShowMoreClick(e) {

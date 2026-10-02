@@ -16,6 +16,7 @@
 const { Point, Range } = require('text-buffer');
 const { Disposable } = require('event-kit');
 const ScopeDescriptor = require('./scope-descriptor');
+const Token = require('./token');
 
 const NON_WHITESPACE_REGEX = /\S/;
 // Not frozen: a display-layer caller assigns to .length, as it does to
@@ -58,6 +59,14 @@ module.exports = class PlainTextLanguageMode {
 
   scopeDescriptorForPosition() {
     return this.rootScopeDescriptor || new ScopeDescriptor({ scopes: ['text'] });
+  }
+
+  // With no grammar the whole line is one token, as under TextMate's null grammar.
+  tokenForPosition(position) {
+    return new Token({
+      value: this.buffer.lineForRow(Point.fromObject(position).row) || '',
+      scopes: this.scopeDescriptorForPosition().getScopesArray()
+    });
   }
 
   // --- folding, by indentation ---------------------------------------------

@@ -15,9 +15,9 @@ describe('Autosave', () => {
     initialActiveItem = atom.workspace.getActiveTextEditor()
 
     if (atom.workspace.createItemForURI != null) {
-      otherItem1 = await atom.workspace.createItemForURI('sample.coffee')
+      otherItem1 = await atom.workspace.createItemForURI('other.txt')
     } else {
-      otherItem1 = await atom.workspace.open('sample.coffee', {activateItem: false})
+      otherItem1 = await atom.workspace.open('other.txt', {activateItem: false})
     }
 
     otherItem2 = otherItem1.copy()

@@ -130,10 +130,8 @@ describe('BackgroundTips', () => {
       jasmine.unspy(atom.getCurrentWindow(), 'isFocused')
       spyOn(atom.getCurrentWindow(), 'isFocused').andReturn(true)
 
-      const focusEvent = emitterEventPromise(atom.getCurrentWindow(), 'focus')
-      atom.getCurrentWindow().emit('focus') // Manually emit to prevent actually blurring + refocusing the window
-
-      await focusEvent
+      // The window proxy relays the DOM window's focus event.
+      window.dispatchEvent(new FocusEvent('focus'))
 
       advanceClock(backgroundTipsView.startDelay + 1)
       expect(backgroundTipsView.element.parentNode).toBeTruthy()

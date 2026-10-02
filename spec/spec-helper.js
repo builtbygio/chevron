@@ -99,11 +99,6 @@ beforeEach(function() {
   spyOn(Date, 'now').andCallFake(() => window.now);
   spyOn(window, "setTimeout").andCallFake(window.fakeSetTimeout);
   spyOn(window, "clearTimeout").andCallFake(window.fakeClearTimeout);
-  // underscore 1.13 binds its clock at load, out of reach of the spies above.
-  for (const target of [_, _._]) {
-    spyOn(target, 'debounce').andCallFake(clockDebounce);
-    spyOn(target, 'throttle').andCallFake(clockThrottle);
-  }
 
   const spy = spyOn(atom.packages, 'resolvePackagePath').andCallFake(function(packageName) {
     if (specPackageName && (packageName === specPackageName)) {
@@ -461,6 +456,13 @@ function clockThrottle(func, wait, options = {}) {
     timeout = context = args = null;
   };
   return throttled;
+}
+
+// underscore 1.13 binds its clock at load, out of reach of the clock spies.
+// Installed once rather than spied per spec, so a spec can still spy on them.
+for (const target of [_, _._]) {
+  target.debounce = clockDebounce;
+  target.throttle = clockThrottle;
 }
 
 window.fakeSetTimeout = function(callback, ms) {

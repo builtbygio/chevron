@@ -23,6 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Open Link only worked on Markdown link syntax.** It looked for a `markup.underline.link` token, which only the dropped `language-hyperlink` grammar produced for URLs in ordinary text, so a URL in a comment or a `.txt` did nothing — and in a `.txt` it threw, because grammarless buffers had no `tokenForBufferPosition`. Open Link now falls back to a URL in the line itself (`http`, `https`, `chevron`), plain-text buffers answer `tokenForBufferPosition`, and reference-style Markdown links (`[text][label]`) resolve again: tree-sitter scopes the label with its brackets, which the lookup did not expect.
+
+- **dev-live-reload never reloaded package stylesheets.** It watched packages whose type was `'atom'`; core's has been `'chevron'` since 1.0.
+
+- **Timecop's Compile Cache panel errored on open.** It read CoffeeScript, Babel and CSON counts that no longer exist. It now shows TypeScript and Less, the two things still compiled.
+
+- **About's "how to update" link was a 404.** It pointed at `docs/build-instructions`; on a platform without auto-update it now opens the latest release.
+
+- **Go to Matching Bracket from inside a tag landed on the `<`.** The syntax-tree path jumped to the start of the tag rather than its name, as the tag finder did.
+
+- Nine of the fifteen failing package specs pass (autosave, background-tips, bracket-matcher, deprecation-cop, dev-live-reload, link, open-on-github, styleguide, timecop), and about's, which passed only because it opened `atom://about` and never reached the About view. The shared spec helper no longer spies on `_.debounce`, which clashed with packages that spy on it themselves.
+
 - **There was no working way to register Chevron for `chevron://` links.** At startup, `core.uriHandlerRegistration` (`prompt` by default, or `always`) tested `await !this.isDefaultProtocolClient()`: `!` negated the Promise, which is always truthy, so neither the prompt nor the registration ever happened (#408). The Settings › URI Handling button registered Chevron for `atom://` instead, re-creating the registration Chevron withdraws on purpose, while its label said `chevron://` (#407). The panel now goes through core's installer, and main accepts `atom` only to remove a registration.
 - **`chevron --wait` never returned.** The launch scripts pass `--pid`, `--executed-from` and `--path-environment`, none of which the command-line parser declared. Since 1.1.0 it treats undeclared options as stray arguments (so Chromium flags cannot swallow a path), which dropped all three: `--wait` had no process to release — `git commit` with Chevron as the editor hung after the message was closed — relative paths resolved against the running app's directory rather than the shell's, and on macOS the shell's `PATH` was lost. They are declared now (hidden from `--help`).
 
