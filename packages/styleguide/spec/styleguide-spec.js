@@ -8,7 +8,7 @@ describe('Style Guide', () => {
   describe('the Styleguide view', () => {
     let styleGuideView
     beforeEach(async () => {
-      styleGuideView = await atom.workspace.open('atom://styleguide')
+      styleGuideView = await atom.workspace.open('chevron://styleguide')
     })
 
     it('opens the style guide', () => {

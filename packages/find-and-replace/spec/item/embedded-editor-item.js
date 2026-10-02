@@ -33,6 +33,6 @@ class EmbeddedEditorItem {
   }
 }
 
-EmbeddedEditorItem.uri = 'atom://find-and-replace/spec/embedded-editor'
+EmbeddedEditorItem.uri = 'chevron://find-and-replace/spec/embedded-editor'
 
 module.exports = EmbeddedEditorItem

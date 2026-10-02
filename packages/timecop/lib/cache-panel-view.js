@@ -42,41 +42,24 @@ class CachePanelView {
     return import_etch.default.destroy(this);
   }
   render() {
-    return /* @__PURE__ */ import_etch.default.dom("div", { className: "tool-panel padded package-panel" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "inset-panel" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "panel-heading" }, "Compile Cache"), /* @__PURE__ */ import_etch.default.dom("div", { className: "panel-body padded" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "timing" }, /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block" }, "CoffeeScript files compiled"), /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block", ref: "coffeeCompileCount" }, "Loading…")), /* @__PURE__ */ import_etch.default.dom("div", { className: "timing" }, /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block" }, "Babel files compiled"), /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block", ref: "babelCompileCount" }, "Loading…")), /* @__PURE__ */ import_etch.default.dom("div", { className: "timing" }, /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block" }, "Typescript files compiled"), /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block", ref: "typescriptCompileCount" }, "Loading…")), /* @__PURE__ */ import_etch.default.dom("div", { className: "timing" }, /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block" }, "CSON files compiled"), /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block", ref: "csonCompileCount" }, "Loading…")), /* @__PURE__ */ import_etch.default.dom("div", { className: "timing" }, /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block" }, "Less files compiled"), /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block", ref: "lessCompileCount" }, "Loading…")))));
+    return /* @__PURE__ */ import_etch.default.dom("div", { className: "tool-panel padded package-panel" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "inset-panel" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "panel-heading" }, "Compile Cache"), /* @__PURE__ */ import_etch.default.dom("div", { className: "panel-body padded" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "timing" }, /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block" }, "TypeScript files compiled"), /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block", ref: "typescriptCompileCount" }, "Loading…")), /* @__PURE__ */ import_etch.default.dom("div", { className: "timing" }, /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block" }, "Less files compiled"), /* @__PURE__ */ import_etch.default.dom("span", { className: "inline-block", ref: "lessCompileCount" }, "Loading…")))));
   }
   populate() {
-    const compileCacheStats = this.getCompileCacheStats();
-    if (compileCacheStats) {
-      this.refs.coffeeCompileCount.classList.add("highlight-info");
-      this.refs.coffeeCompileCount.textContent = compileCacheStats[".coffee"].misses;
-      this.refs.babelCompileCount.classList.add("highlight-info");
-      this.refs.babelCompileCount.textContent = compileCacheStats[".js"].misses;
-      this.refs.typescriptCompileCount.classList.add("highlight-info");
-      this.refs.typescriptCompileCount.textContent = compileCacheStats[".ts"].misses;
-    }
-    this.refs.csonCompileCount.classList.add("highlight-info");
-    this.refs.csonCompileCount.textContent = this.getCsonCompiles();
+    // TypeScript and Less are all that is compiled now; CoffeeScript, Babel
+    // and CSON went with their compilers.
+    this.refs.typescriptCompileCount.classList.add("highlight-info");
+    this.refs.typescriptCompileCount.textContent = this.getTypeScriptCompiles();
     this.refs.lessCompileCount.classList.add("highlight-info");
     this.refs.lessCompileCount.textContent = this.getLessCompiles();
   }
-  getCompileCacheStats() {
+  getTypeScriptCompiles() {
+    let stats = null;
     try {
-      return require(import_path.default.join(chevron.getLoadSettings().resourcePath, "src", "compile-cache")).getCacheStats();
-    } catch (error) {
-      return null;
-    }
-  }
-  getCsonCompiles() {
-    try {
-      const CSON = require(import_path.default.join(chevron.getLoadSettings().resourcePath, "node_modules", "season"));
-      if (CSON.getCacheMisses) {
-        return CSON.getCacheMisses() || 0;
-      } else {
-        return 0;
-      }
+      stats = require(import_path.default.join(chevron.getLoadSettings().resourcePath, "src", "compile-cache")).getCacheStats();
     } catch (error) {
       return 0;
     }
+    return [".ts", ".tsx"].reduce((total, ext) => total + (stats && stats[ext] ? stats[ext].misses : 0), 0);
   }
   getLessCompiles() {
     const lessCache = chevron.themes.lessCache;

@@ -18,7 +18,7 @@ describe('About', () => {
   it('deserializes correctly', () => {
     let deserializedAboutView = atom.deserializers.deserialize({
       deserializer: 'AboutView',
-      uri: 'atom://about'
+      uri: 'chevron://about'
     });
 
     expect(deserializedAboutView).toBeTruthy();
@@ -33,7 +33,7 @@ describe('About', () => {
       jasmine.attachToDOM(workspaceElement);
 
       expect(workspaceElement.querySelector('.about')).not.toExist();
-      await atom.workspace.open('atom://about');
+      await atom.workspace.open('chevron://about');
 
       let aboutElement = workspaceElement.querySelector('.about');
       expect(aboutElement).toBeVisible();
@@ -42,7 +42,7 @@ describe('About', () => {
 
   describe('when the Atom version number is clicked', () => {
     it('copies the version number to the clipboard', async () => {
-      await atom.workspace.open('atom://about');
+      await atom.workspace.open('chevron://about');
       jasmine.attachToDOM(workspaceElement);
 
       let aboutElement = workspaceElement.querySelector('.about');
@@ -54,7 +54,7 @@ describe('About', () => {
 
   describe('when the show more link is clicked', () => {
     it('expands to show additional version numbers', async () => {
-      await atom.workspace.open('atom://about');
+      await atom.workspace.open('chevron://about');
       jasmine.attachToDOM(workspaceElement);
 
       let aboutElement = workspaceElement.querySelector('.about');
@@ -67,7 +67,7 @@ describe('About', () => {
 
   describe('when the Electron version number is clicked', () => {
     it('copies the version number to the clipboard', async () => {
-      await atom.workspace.open('atom://about');
+      await atom.workspace.open('chevron://about');
       jasmine.attachToDOM(workspaceElement);
 
       let aboutElement = workspaceElement.querySelector('.about');
@@ -79,7 +79,7 @@ describe('About', () => {
 
   describe('when the Chrome version number is clicked', () => {
     it('copies the version number to the clipboard', async () => {
-      await atom.workspace.open('atom://about');
+      await atom.workspace.open('chevron://about');
       jasmine.attachToDOM(workspaceElement);
 
       let aboutElement = workspaceElement.querySelector('.about');
@@ -91,7 +91,7 @@ describe('About', () => {
 
   describe('when the Node version number is clicked', () => {
     it('copies the version number to the clipboard', async () => {
-      await atom.workspace.open('atom://about');
+      await atom.workspace.open('chevron://about');
       jasmine.attachToDOM(workspaceElement);
 
       let aboutElement = workspaceElement.querySelector('.about');

@@ -30,7 +30,7 @@ describe('UpdateView', () => {
   describe('when the About page is open', () => {
     beforeEach(async () => {
       jasmine.attachToDOM(workspaceElement);
-      await atom.workspace.open('atom://about');
+      await atom.workspace.open('chevron://about');
       aboutElement = workspaceElement.querySelector('.about');
       updateManager = main.model.state.updateManager;
       scheduler = AboutView.getScheduler();
@@ -61,7 +61,7 @@ describe('UpdateView', () => {
 
         let args = shell.openExternal.mostRecentCall.args;
         expect(shell.openExternal).toHaveBeenCalled();
-        expect(args[0]).toContain('installing-atom');
+        expect(args[0]).toBe('https://github.com/builtbygio/chevron/releases/latest');
       });
     });
 
@@ -257,7 +257,7 @@ describe('UpdateView', () => {
           expect(
             aboutElement.querySelector('.about-default-update-message')
               .textContent
-          ).toBe('Atom will check for updates automatically');
+          ).toBe('Chevron will check for updates automatically');
 
           atom.config.set('core.automaticallyUpdate', false);
           await scheduler.getNextUpdatePromise();
@@ -307,7 +307,7 @@ describe('UpdateView', () => {
           expect(
             aboutElement.querySelector('.about-default-update-message')
               .textContent
-          ).toBe('Atom will check for updates automatically');
+          ).toBe('Chevron will check for updates automatically');
         });
 
         describe('checking for updates', function() {
@@ -363,7 +363,7 @@ describe('UpdateView', () => {
       MockUpdater.finishDownloadingUpdate('42.0.0');
 
       jasmine.attachToDOM(workspaceElement);
-      await atom.workspace.open('atom://about');
+      await atom.workspace.open('chevron://about');
       aboutElement = workspaceElement.querySelector('.about');
       updateManager = main.model.state.updateManager;
       scheduler = AboutView.getScheduler();

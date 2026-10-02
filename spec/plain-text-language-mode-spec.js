@@ -34,6 +34,13 @@ describe('PlainTextLanguageMode', () => {
     expect(editor.isSoftWrapped()).toBe(true);
   });
 
+  it('answers tokenForBufferPosition with the line', () => {
+    editor.setText('one\ntwo words');
+    const token = editor.tokenForBufferPosition([1, 4]);
+    expect(token.value).toBe('two words');
+    expect(token.scopes).toEqual(['text.plain.null-grammar']);
+  });
+
   it('suggests no indentation on the first row', () => {
     editor.setText('  a');
     expect(editor.suggestedIndentForBufferRow(0)).toBe(0);
