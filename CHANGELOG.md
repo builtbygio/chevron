@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Markdown preview code blocks still hid their line numbers the long way round.** The gutter was hidden with `setAttributeNode`, which the custom-elements polyfill does not report to `attributeChangedCallback`, so #432 also set it on the editor directly. The preview now uses `setAttribute`, which the polyfill does report, and a core spec pins that attributes set after creation reach an editor built in code.
+
 - **The Jasmine runner could pass a shard over failing specs.** `script/test` trusted a suite's exit code alone, and a retried autocomplete-plus run exited 0 while its results listed nine failures. A Jasmine suite now passes only if its summary line reports specs run (or all skipped) and no failures. That exposed four packages that had never run a spec: bookmarks, encoding-selector and status-bar were vendored with only `spec/fixtures/`, and are no longer counted as tested; welcome's mocha runner, `atom-mocha-test-runner`, ships untranspiled ES modules and failed to load while exiting 0, so its tests now run under Jasmine like the other packages.
 
 - **The Welcome Guide reported an expand or collapse whenever a section's button was clicked.** The handler sat on the whole section, so the button's click bubbled into it; only the section header counts now.
