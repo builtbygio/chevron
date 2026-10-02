@@ -24,6 +24,9 @@ var import_welcome_package = __toESM(require("../lib/welcome-package"));
 var import_assert = __toESM(require("assert"));
 var import_helpers = require("./helpers");
 describe("Welcome", () => {
+  const centerItems = () => atom.workspace.getCenter().getPanes().reduce((acc, pane) => acc.concat(pane.getItems()), []);
+  const centerTitles = () => centerItems().map((item) => item.getTitle());
+  const guideItem = () => centerItems().find((item) => item.getTitle() === "Welcome Guide");
   let welcomePackage;
   beforeEach(() => {
     welcomePackage = new import_welcome_package.default();
@@ -55,11 +58,10 @@ describe("Welcome", () => {
       atom.config.set("welcome.showOnStartup", true);
       await welcomePackage.activate();
     });
-    it("shows Welcome and Welcome Guide panes", () => {
-      const panes = atom.workspace.getCenter().getPanes();
-      import_assert.default.equal(panes.length, 2);
-      import_assert.default.equal(panes[0].getItems()[0].getTitle(), "Welcome");
-      import_assert.default.equal(panes[1].getItems()[0].getTitle(), "Welcome Guide");
+    // Adjacent tabs, not upstream's left/right split (#13: the split left an
+    // empty center pane once the Guide was closed).
+    it("shows Welcome and Welcome Guide as tabs", () => {
+      import_assert.default.deepEqual(centerTitles(), ["Welcome", "Welcome Guide"]);
     });
     describe("the welcome:show command", () => {
       it("shows the welcome panes", async () => {
@@ -68,17 +70,13 @@ describe("Welcome", () => {
         const workspaceElement = atom.views.getView(atom.workspace);
         atom.commands.dispatch(workspaceElement, "welcome:show");
         await (0, import_helpers.conditionPromise)(() => atom.workspace.getActivePaneItem());
-        const panes = atom.workspace.getCenter().getPanes();
-        import_assert.default.equal(panes.length, 2);
-        import_assert.default.equal(panes[0].getItems()[0].getTitle(), "Welcome");
-        import_assert.default.equal(panes[1].getItems()[0].getTitle(), "Welcome Guide");
+        import_assert.default.deepEqual(centerTitles(), ["Welcome", "Welcome Guide"]);
       });
     });
     describe("deserializing the pane items", () => {
       describe("when GuideView is deserialized", () => {
         it("remembers open sections", () => {
-          const panes = atom.workspace.getCenter().getPanes();
-          const guideView = panes[1].getItems()[0];
+          const guideView = guideItem();
           guideView.element.querySelector('details[data-section="snippets"]').setAttribute("open", "open");
           guideView.element.querySelector('details[data-section="init-script"]').setAttribute("open", "open");
           const state = guideView.serialize();
@@ -102,10 +100,9 @@ describe("Welcome", () => {
       });
     });
     describe("reporting events", () => {
-      let panes, guideView, reportedEvents;
+      let guideView, reportedEvents;
       beforeEach(() => {
-        panes = atom.workspace.getCenter().getPanes();
-        guideView = panes[1].getItems()[0];
+        guideView = guideItem();
         reportedEvents = [];
         welcomePackage.reporterProxy.sendEvent = (...event) => {
           reportedEvents.push(event);
@@ -155,8 +152,8 @@ describe("Welcome", () => {
           await guideView.didClickThemesButton();
           import_assert.default.deepEqual(activated, ["settings-view", "settings-view"]);
           import_assert.default.deepEqual(opened, [
-            "atom://config/install",
-            "atom://config/themes"
+            "chevron://config/install",
+            "chevron://config/themes"
           ]);
         });
       });

@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The Jasmine runner could pass a shard over failing specs.** `script/test` trusted a suite's exit code alone, and a retried autocomplete-plus run exited 0 while its results listed nine failures. A Jasmine suite now passes only if its summary line reports specs run (or all skipped) and no failures. That exposed four packages that had never run a spec: bookmarks, encoding-selector and status-bar were vendored with only `spec/fixtures/`, and are no longer counted as tested; welcome's mocha runner, `atom-mocha-test-runner`, ships untranspiled ES modules and failed to load while exiting 0, so its tests now run under Jasmine like the other packages.
+
+- **The Welcome Guide reported an expand or collapse whenever a section's button was clicked.** The handler sat on the whole section, so the button's click bubbled into it; only the section header counts now.
+
+- **autocomplete-plus's "more" keybinding opened the app's own page when a suggestion had no link.** Without a `descriptionMoreURL` the hidden link's `#` resolved to the app's `file://` URL; it now does nothing.
+
+- The autocomplete-plus specs pass: they activated the removed `language-text` and `language-coffee-script`, lacked the `sample.coffee` fixture (restored from upstream), spied on `electron.shell` where the package uses the application delegate, and compared overlay positions and suggestion order more strictly than the rounding and scoring allow.
+
 - **Go to Declaration did nothing for some Ruby symbols.** The tag lookup tries candidates in order (`Foo=` then `Foo` for `Foo = 3`; `C::Foo` then `Foo` for `C::Foo::B`). symbols-view's `async` 3 reads a callback's `false` as "stop", so when the first candidate had no tags the lookup ended without ever calling back.
 
 - **Markdown preview code blocks showed line numbers.** The preview hid the gutter with a `gutter-hidden` attribute, which never reaches an editor built in code; it now hides it on the editor itself.

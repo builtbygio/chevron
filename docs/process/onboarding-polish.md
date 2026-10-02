@@ -104,7 +104,7 @@ All of the following should be true before checking the README goal:
 packages/welcome/lib/welcome-package.js
 packages/welcome/lib/welcome-view.js
 packages/welcome/lib/guide-view.js
-packages/welcome/test/welcome.test.js
+packages/welcome/spec/welcome-spec.js
 packages/welcome/docs/events.md
 docs/decisions/REBRANDING.md
 README.md
