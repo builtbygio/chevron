@@ -195,6 +195,7 @@ jobs:
           node --test script/ci/jasmine-summary.test.js
           node --test script/ci/package-test-dir.test.js
           node --test script/ci/spec-helper-real-time.test.js
+          node --test script/ci/release-notes.test.js
           node --test script/ci/legacy-transpile.test.js
           node --test script/ci/package-pin-policy.test.js
           node --test script/ci/patch-inventory.test.js
@@ -1077,6 +1078,25 @@ jobs:
       contents: write
 
     steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            package.json
+            CHANGELOG.md
+            script/lib/release-notes.js
+          sparse-checkout-cone-mode: false
+
+      # Fails when the tag does not match package.json or the CHANGELOG has
+      # no section for it: every release is a tagged version bump with notes.
+      - name: Release notes from the CHANGELOG
+        run: |
+          {
+            echo '**Unsigned preview.** These binaries are not codesigned or notarized, so macOS Gatekeeper and Windows SmartScreen will warn. See [docs/reference/releases.md](https://github.com/builtbygio/chevron/blob/master/docs/reference/releases.md).'
+            echo
+            node script/lib/release-notes.js "${GITHUB_REF_NAME}"
+          } > release-notes.md
+          cat release-notes.md
+
       - uses: actions/download-artifact@v6
         with:
           path: artifacts
@@ -1097,15 +1117,7 @@ jobs:
           # A full release: stable builds' updater reads releases/latest, which
           # skips pre-releases (#412).
           prerelease: false
-          generate_release_notes: true
-          body: |
-            **UNSIGNED PREVIEW.** These binaries are not codesigned or notarized.
-
-            - macOS Gatekeeper / Windows SmartScreen will warn. That is expected.
-            - In-app update checks open [GitHub Releases](https://github.com/builtbygio/chevron/releases); they do not silently install.
-            - Product contract: owned catalog only; Phase S **Option C** (editor `sandbox: false`). See [docs/reference/releases.md](https://github.com/builtbygio/chevron/blob/master/docs/reference/releases.md).
-
-            Update URL: https://github.com/builtbygio/chevron/releases
+          body_path: release-notes.md
           files: |
             artifacts/**/*.zip
             artifacts/**/*.deb

@@ -123,6 +123,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Versions move only at release, and every release is a tagged version bump.** PRs add to `[Unreleased]` without touching `package.json`; cutting a release sets the semver version, dates its CHANGELOG section and tags it (`docs/reference/releases.md`, `CONTRIBUTING.md`). The release's notes are now that CHANGELOG section, and the publish job fails if the tag does not match `package.json` or has no section. This replaces the release body that still said in-app updates never install themselves.
+
 - **The workspace-trust prompt defaults to "Don't trust".** Granting lets a project's own tooling execute — build scripts, plugins in `node_modules`, proc macros — so the modal now focuses the declining button, and Enter acts on whichever button is focused rather than always granting. Trusting still takes one click, and the native dialog in `src/main-process/lsp-trust.js` already defaulted to Cancel; this is the in-editor half of the same decision.
 
 ### Fixed

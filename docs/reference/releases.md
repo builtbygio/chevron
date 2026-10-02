@@ -55,16 +55,31 @@ Env overrides (advanced):
 | `CHEVRON_RELEASES_API_URL` | GitHub API list used by Check for Update |
 | `CHEVRON_UPDATE_FEED_URL` | Point electron-updater at a generic server instead of GitHub, to test an update locally |
 
-## How to publish a tag
+## How to publish a release
+
+The version changes only here, and every bump is tagged. PRs leave `package.json`
+alone and add to `## [Unreleased]` in `CHANGELOG.md`.
+
+1. **Pick the version** from what `[Unreleased]` holds (semver): only `Fixed`
+   entries is a patch, anything under `Added` is a minor, a breaking change is
+   a major.
+2. **On a branch from `master`**, set `version` in `package.json`, rename
+   `## [Unreleased]` to `## [X.Y.Z] — YYYY-MM-DD` and open a fresh empty
+   `## [Unreleased]` above it, and update the download table in this file,
+   `README.md` and `GROK.md`. Merge it.
+3. **Tag the merge commit** and push the tag:
 
 ```bash
 git checkout master
 git pull
-git tag -a v1.2.0 -m "Chevron 1.2.0 unsigned preview"
-git push origin v1.2.0
+git tag -a vX.Y.Z -m "Chevron X.Y.Z"
+git push origin vX.Y.Z
 ```
 
-The `publish-unsigned-preview` CI job waits for the five-platform matrix, then creates the GitHub Release.
+The `publish-unsigned-preview` CI job waits for the five-platform matrix, then
+creates the GitHub Release. Its notes are the version's CHANGELOG section
+(`script/lib/release-notes.js`), and it fails if the tag does not match
+`package.json` or the CHANGELOG has no section for it.
 
 ## From source
 
