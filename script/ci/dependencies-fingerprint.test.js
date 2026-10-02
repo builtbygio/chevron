@@ -8,9 +8,10 @@
  * package's dependencies does not touch the lockfile until an install runs, so
  * a lockfile-only fingerprint still matched and the install never happened.
  *
- * Drives the real module against real files, restoring them in a finally
- * block, because the failure mode is a fingerprint that looks plausible and
- * does not move.
+ * Drives the real module against a copy of the repo's manifests and lockfile,
+ * because the failure mode is a fingerprint that looks plausible and does not
+ * move. A copy, not the real files: edited in place, a parallel test reading
+ * package.json mid-write failed with "Unexpected end of JSON input".
  *
  * Run: node --test script/ci/dependencies-fingerprint.test.js
  */
@@ -20,8 +21,27 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = path.resolve(__dirname, '..', '..');
+const REPO = path.resolve(__dirname, '..', '..');
 const fingerprint = require('../lib/dependencies-fingerprint');
+const { makeTempDir } = require('../lib/temp-dir');
+
+// The repo's root manifest, lockfile and every workspace manifest, copied.
+function copyManifests() {
+  const root = makeTempDir('fingerprint-');
+  for (const file of ['package.json', 'pnpm-lock.yaml']) {
+    if (fs.existsSync(path.join(REPO, file))) {
+      fs.copyFileSync(path.join(REPO, file), path.join(root, file));
+    }
+  }
+  for (const pkg of fs.readdirSync(path.join(REPO, 'packages'))) {
+    const manifest = path.join(REPO, 'packages', pkg, 'package.json');
+    if (!fs.existsSync(manifest)) continue;
+    fs.mkdirSync(path.join(root, 'packages', pkg), { recursive: true });
+    fs.copyFileSync(manifest, path.join(root, 'packages', pkg, 'package.json'));
+  }
+  return root;
+}
+const ROOT = copyManifests();
 
 // Edit a file, run `body`, always put it back.
 function withEdit(file, transform, body) {
@@ -41,15 +61,15 @@ describe('dependencies fingerprint', () => {
   const ROOT_MANIFEST = path.join(ROOT, 'package.json');
 
   it('is stable when nothing changes', () => {
-    assert.equal(fingerprint.compute(), fingerprint.compute());
+    assert.equal(fingerprint.compute(ROOT), fingerprint.compute(ROOT));
   });
 
   it('moves when a workspace package changes a dependency range', () => {
-    const base = fingerprint.compute();
+    const base = fingerprint.compute(ROOT);
     const moved = withEdit(
       ABOUT,
       src => src.replace(/"etch"\s*:\s*"[^"]+"/, '"etch": "^0.13.0"'),
-      () => fingerprint.compute()
+      () => fingerprint.compute(ROOT)
     );
     assert.notEqual(
       moved,
@@ -61,31 +81,31 @@ describe('dependencies fingerprint', () => {
   });
 
   it('moves when a workspace package changes a devDependency', () => {
-    const base = fingerprint.compute();
+    const base = fingerprint.compute(ROOT);
     const moved = withEdit(
       path.join(ROOT, 'packages', 'git-diff', 'package.json'),
       src => src.replace(/"temp"\s*:\s*"[^"]+"/, '"temp": "^0.8.1"'),
-      () => fingerprint.compute()
+      () => fingerprint.compute(ROOT)
     );
     assert.notEqual(moved, base, 'devDependencies change resolution too');
   });
 
   it('moves when the root manifest changes a dependency', () => {
-    const base = fingerprint.compute();
+    const base = fingerprint.compute(ROOT);
     const moved = withEdit(
       ROOT_MANIFEST,
       src => src.replace(/"etch"\s*:\s*"[^"]+"/, '"etch": "0.14.0"'),
-      () => fingerprint.compute()
+      () => fingerprint.compute(ROOT)
     );
     assert.notEqual(moved, base, 'the root manifest is a workspace manifest too');
   });
 
   it('ignores edits that cannot change resolution', () => {
-    const base = fingerprint.compute();
+    const base = fingerprint.compute(ROOT);
     const afterDescription = withEdit(
       ABOUT,
       src => src.replace(/"description"\s*:\s*"[^"]*"/, '"description": "reworded"'),
-      () => fingerprint.compute()
+      () => fingerprint.compute(ROOT)
     );
     assert.equal(
       afterDescription,
@@ -95,7 +115,7 @@ describe('dependencies fingerprint', () => {
   });
 
   it('ignores key reordering', () => {
-    const base = fingerprint.compute();
+    const base = fingerprint.compute(ROOT);
     const reordered = withEdit(
       ABOUT,
       src => {
@@ -104,7 +124,7 @@ describe('dependencies fingerprint', () => {
         for (const key of Object.keys(json).reverse()) flipped[key] = json[key];
         return JSON.stringify(flipped, null, 2);
       },
-      () => fingerprint.compute()
+      () => fingerprint.compute(ROOT)
     );
     assert.equal(reordered, base, 'authoring order is not content');
   });
@@ -116,11 +136,11 @@ describe('dependencies fingerprint', () => {
     // `dependencies` and hashed an empty object. Every manifest then produced
     // the same digest and the fingerprint never moved -- a silent pass, which
     // is worse than a refusal.
-    const base = fingerprint.manifestPart();
+    const base = fingerprint.manifestPart(ROOT);
     const moved = withEdit(
       ABOUT,
       src => src.replace(/"etch"\s*:\s*"[^"]+"/, '"etch": "^0.11.0"'),
-      () => fingerprint.manifestPart()
+      () => fingerprint.manifestPart(ROOT)
     );
     assert.notEqual(
       moved,

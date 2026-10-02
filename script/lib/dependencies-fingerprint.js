@@ -56,9 +56,10 @@ module.exports = {
   // Only the fields that can change resolution are hashed: a reworded
   // description should not cost a reinstall. `name` and `version` are in
   // because workspace:* links resolve through them.
-  manifestPart: function() {
-    const manifests = [path.join(CONFIG.repositoryRootPath, 'package.json')];
-    const packagesDir = path.join(CONFIG.repositoryRootPath, 'packages');
+  // `root` defaults to the repository; tests pass a copy.
+  manifestPart: function(root = CONFIG.repositoryRootPath) {
+    const manifests = [path.join(root, 'package.json')];
+    const packagesDir = path.join(root, 'packages');
     let entries = [];
     try {
       entries = fs.readdirSync(packagesDir).sort();
@@ -99,7 +100,7 @@ module.exports = {
       // `dependencies` and hash an empty object -- which silently defeats the
       // whole point, since every manifest then fingerprints the same.
       parts.push(
-        path.relative(CONFIG.repositoryRootPath, file) + '\u0000' + canonical(relevant)
+        path.relative(root, file) + '\u0000' + canonical(relevant)
       );
     }
     return crypto
@@ -109,15 +110,15 @@ module.exports = {
       .slice(0, 16);
   },
 
-  compute: function() {
+  compute: function(root = CONFIG.repositoryRootPath) {
     // Electron minor + lockfile identity + workspace manifests + host Node.
     const electronVersion = CONFIG.appMetadata.electronVersion.replace(
       /\.\d+$/,
       ''
     );
     const lockPath = [
-      path.join(CONFIG.repositoryRootPath, 'pnpm-lock.yaml'),
-      path.join(CONFIG.repositoryRootPath, 'package-lock.json')
+      path.join(root, 'pnpm-lock.yaml'),
+      path.join(root, 'package-lock.json')
     ].find(p => fs.existsSync(p));
     let lockPart = 'nolock';
     if (lockPath) {
@@ -130,7 +131,7 @@ module.exports = {
     const body =
       electronVersion +
       lockPart +
-      this.manifestPart() +
+      this.manifestPart(root) +
       process.platform +
       process.version +
       process.arch +
