@@ -58,6 +58,18 @@ CI (`script/ci/src-typescript-first.test.js`) fails if a new `src/**/*.js` file 
 - For non-obvious or architecturally significant changes, leave a short inline comment explaining the reasoning (e.g. `// CHANGED: <reason>` or `// NOTE: <context>`), especially around IPC and process-boundary code — this is the part of the codebase most likely to confuse future contributors (including future-me)
 - Keep PRs scoped to one logical change. Large sprawling PRs are hard to review and harder to revert if something breaks
 
+## Versions and the changelog
+
+Chevron follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
+
+- **Patch** (1.5.1): fixes only.
+- **Minor** (1.6.0): new features, backwards compatible.
+- **Major** (2.0.0): a breaking change to what Chevron promises users or packages.
+
+A PR does **not** change `package.json`'s version. It adds its entry to the `## [Unreleased]` section of [CHANGELOG.md](CHANGELOG.md), under `Added`, `Changed`, `Fixed` or `Removed`.
+
+The version moves only when a release is cut, and every version bump is tagged: see [How to publish a release](docs/reference/releases.md#how-to-publish-a-release).
+
 ## Reporting issues
 
 When filing an issue, please include:
