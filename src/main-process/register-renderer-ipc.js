@@ -236,7 +236,7 @@ function isUserDefaultQuery(key, type) {
   return typeof type === 'string' && USER_DEFAULT_TYPES.has(type);
 }
 
-const REGISTRABLE_PROTOCOLS = new Set(['chevron', 'atom']);
+const REGISTRABLE_PROTOCOLS = new Set(['chevron']);
 
 /** Only this app's schemes, and only this app's binary. */
 function protocolRegistration(protocol, args) {

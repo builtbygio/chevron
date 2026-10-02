@@ -188,11 +188,13 @@ const decryptOptions = (optionsMessage, secret) => {
 // Only this app's own schemes, and only this app's own binary. The renderer
 // used to supply the executable to register, which is a way to have the OS
 // launch anything when a link is opened.
-const REGISTRABLE_PROTOCOLS = new Set(['chevron', 'atom']);
+const REGISTRABLE_PROTOCOLS = new Set(['chevron']);
+// atom:// may only be withdrawn: earlier versions registered it.
+const REMOVABLE_PROTOCOLS = new Set(['chevron', 'atom']);
 
-function protocolRegistration(payload, channel) {
+function protocolRegistration(payload, channel, allowed = REGISTRABLE_PROTOCOLS) {
   const { protocol, args } = payload || {};
-  if (!REGISTRABLE_PROTOCOLS.has(protocol)) {
+  if (!allowed.has(protocol)) {
     console.warn(`${channel}: refused protocol ${String(protocol)}`);
     return null;
   }
@@ -222,7 +224,11 @@ ipcMain.handle('chevron:set-as-default-protocol-client', (_, payload) => {
 // Wave 4: used to withdraw the stale atom:// registration that earlier
 // versions installed. Only the schemes this app knows about are accepted.
 ipcMain.handle('chevron:remove-as-default-protocol-client', (_, payload) => {
-  const reg = protocolRegistration(payload, 'removeAsDefaultProtocolClient');
+  const reg = protocolRegistration(
+    payload,
+    'removeAsDefaultProtocolClient',
+    REMOVABLE_PROTOCOLS
+  );
   if (!reg) return false;
   return app.removeAsDefaultProtocolClient(reg.protocol, reg.execPath, reg.args);
 });

@@ -35,22 +35,18 @@ var import_etch = __toESM(require("etch"));
 function isSupported() {
   return ["win32", "darwin"].includes(process.platform);
 }
-function isDefaultProtocolClient() {
-  const { ipcRenderer } = require("electron");
-  return ipcRenderer.sendSync("chevron:is-default-protocol-client-sync", "atom", process.execPath, ["--uri-handler", "--"]);
-}
-function setAsDefaultProtocolClient() {
-  if (!isSupported()) return false;
-  const { ipcRenderer } = require("electron");
-  return ipcRenderer.sendSync("chevron:set-as-default-protocol-client-sync", "atom", process.execPath, ["--uri-handler", "--"]);
+// Core's installer checks chevron:// and withdraws the registration older builds made.
+function protocolHandlerInstaller() {
+  return chevron.protocolHandlerInstaller;
 }
 class UriHandlerPanel {
   constructor() {
     this.handleChange = this.handleChange.bind(this);
     this.handleBecomeProtocolClient = this.handleBecomeProtocolClient.bind(this);
-    this.isDefaultProtocolClient = isDefaultProtocolClient();
+    this.isDefaultProtocolClient = false;
     this.uriHistory = [];
     import_etch.default.initialize(this);
+    this.refreshProtocolClientState();
     this.subscriptions = new import_atom.CompositeDisposable();
     this.subscriptions.add(
       chevron.commands.add(this.element, {
@@ -79,7 +75,17 @@ class UriHandlerPanel {
       })
     );
   }
+  refreshProtocolClientState() {
+    if (!isSupported()) return Promise.resolve();
+    return protocolHandlerInstaller().isDefaultProtocolClient().then((isDefault) => {
+      if (this.destroyed) return;
+      this.isDefaultProtocolClient = Boolean(isDefault);
+      import_etch.default.update(this);
+    }).catch(() => {
+    });
+  }
   destroy() {
+    this.destroyed = true;
     this.subscriptions.dispose();
     return import_etch.default.destroy(this);
   }
@@ -141,11 +147,16 @@ class UriHandlerPanel {
   handleChange(evt) {
     chevron.config.set("core.uriHandlerRegistration", evt.target.value);
   }
-  handleBecomeProtocolClient(evt) {
+  async handleBecomeProtocolClient(evt) {
     evt.preventDefault();
-    if (setAsDefaultProtocolClient()) {
-      this.isDefaultProtocolClient = isDefaultProtocolClient();
-      import_etch.default.update(this);
+    let registered = false;
+    try {
+      registered = isSupported() && await protocolHandlerInstaller().setAsDefaultProtocolClient();
+    } catch (error) {
+      registered = false;
+    }
+    if (registered) {
+      await this.refreshProtocolClientState();
     } else {
       chevron.notifications.addError("Could not become default protocol client");
     }
