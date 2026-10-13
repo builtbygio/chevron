@@ -103,12 +103,15 @@ module.exports = class Whitespace {
       }
 
       let scopeDescriptor = editor.getRootScopeDescriptor()
+      let root = editor.getPath()
 
       if (chevron.config.get('whitespace.removeTrailingWhitespace', {
-        scope: scopeDescriptor
+        scope: scopeDescriptor,
+        root
       })) {
         if (!chevron.config.get('whitespace.ignoreWhitespaceOnlyLines', {
-          scope: scopeDescriptor
+          scope: scopeDescriptor,
+          root
         })) {
           return editor.setIndentationForBufferRow(event.range.start.row, 0)
         }
@@ -146,16 +149,18 @@ module.exports = class Whitespace {
   // An `.editorconfig` value beats the user's setting and loses to the
   // project root's own config. docs/reference/config-precedence.md
   settingFor (editor, keyPath, editorConfigValue) {
-    const options = {scope: editor.getRootScopeDescriptor(), root: editor.getPath()}
+    const scope = editor.getRootScopeDescriptor()
+    const root = editor.getPath()
     const setByRoot = typeof chevron.config.getSourceOf === 'function' &&
-      chevron.config.getSourceOf(keyPath, options).source === 'root'
+      chevron.config.getSourceOf(keyPath, {scope, root}).source === 'root'
     if (typeof editorConfigValue === 'boolean' && !setByRoot) return editorConfigValue
-    return chevron.config.get(keyPath, options)
+    return chevron.config.get(keyPath, {scope, root})
   }
 
   removeTrailingWhitespace (editor, grammarScopeName) {
     const buffer = editor.getBuffer()
     const scopeDescriptor = editor.getRootScopeDescriptor()
+    const root = editor.getPath()
 
     // When buffer is same buffer of activeEditor's buffer, don't remove
     // trailing WS at activeEditor's cursor line.
@@ -166,16 +171,18 @@ module.exports = class Whitespace {
         : new Set()
 
     const ignoreCurrentLine = chevron.config.get('whitespace.ignoreWhitespaceOnCurrentLine', {
-      scope: scopeDescriptor
+      scope: scopeDescriptor,
+      root
     })
 
     const ignoreWhitespaceOnlyLines = chevron.config.get('whitespace.ignoreWhitespaceOnlyLines', {
-      scope: scopeDescriptor
+      scope: scopeDescriptor,
+      root
     })
 
     const keepMarkdownLineBreakWhitespace =
       grammarScopeName === ('source.gfm' || 'text.md') &&
-      chevron.config.get('whitespace.keepMarkdownLineBreakWhitespace')
+      chevron.config.get('whitespace.keepMarkdownLineBreakWhitespace', {root})
 
     buffer.transact(() => {
       // TODO - remove this conditional after Atom 1.19 stable is released.
@@ -259,7 +266,8 @@ module.exports = class Whitespace {
     let fileTabSize = editor.getTabLength()
 
     let userTabSize = chevron.config.get('editor.tabLength', {
-      scope: scope
+      scope: scope,
+      root: editor.getPath()
     })
 
     let regex = new RegExp(' '.repeat(fileTabSize), 'g')

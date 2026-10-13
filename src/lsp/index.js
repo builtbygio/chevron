@@ -133,6 +133,19 @@ function projectRootForEditor(editor) {
   return path.dirname(filePath);
 }
 
+// The root a trust command means: the active file's, in a window with several,
+// and the first folder when no file in a folder is active.
+function commandProjectRoot(env) {
+  if (!env || !env.project || !env.project.getPaths) return null;
+  const editor = env.workspace && env.workspace.getActiveTextEditor();
+  const filePath = editor && editor.getPath && editor.getPath();
+  if (filePath && env.project.relativizePath) {
+    const [root] = env.project.relativizePath(filePath);
+    if (root) return root;
+  }
+  return env.project.getPaths()[0] || null;
+}
+
 function sessionKey(regId, projectRoot) {
   return `${regId}::${projectRoot}`;
 }
@@ -722,11 +735,12 @@ function getDiagnosticsService() {
   });
 }
 
-function isFormatOnSaveEnabled() {
+function isFormatOnSaveEnabled(editor) {
   const env = global.chevron;
   if (!env || !env.config) return false;
   try {
-    return Boolean(env.config.get('lsp.formatOnSave'));
+    const root = editor && editor.getPath ? editor.getPath() : undefined;
+    return Boolean(env.config.get('lsp.formatOnSave', { root }));
   } catch (_) {
     return false;
   }
@@ -737,7 +751,7 @@ function observeFormatOnSave(editor) {
   const buffer = editor.getBuffer();
   if (!buffer || !buffer.onWillSave) return null;
   return buffer.onWillSave(async () => {
-    if (!isFormatOnSaveEnabled()) return;
+    if (!isFormatOnSaveEnabled(editor)) return;
     if (!getServerIdForEditor(editor)) return;
     try {
       await formatDocument(clientApi, editor);
@@ -796,10 +810,7 @@ function activate() {
     disposables.add(
       env.commands.add('atom-workspace', {
         'chevron-lsp:trust-project': async () => {
-          const root =
-            env.project &&
-            env.project.getPaths &&
-            env.project.getPaths()[0];
+          const root = commandProjectRoot(env);
           if (!root) {
             env.notifications &&
               env.notifications.addWarning('No project folder open');
@@ -808,10 +819,7 @@ function activate() {
           emitter.emit('did-request-trust-prompt', { projectRoot: root, force: true });
         },
         'chevron-lsp:untrust-project': async () => {
-          const root =
-            env.project &&
-            env.project.getPaths &&
-            env.project.getPaths()[0];
+          const root = commandProjectRoot(env);
           if (!root) return;
           await ipcRenderer.invoke('lsp:set-trust', {
             projectRoot: root,
@@ -990,6 +998,17 @@ async function recordTrustDecision(projectRoot, trusted) {
   return ipcRenderer.invoke('lsp:set-trust', { projectRoot, trusted });
 }
 
+// Ask for the trust prompt for one root (lsp-ui draws it). Returns false
+// when nothing is listening, so the caller can ask some other way.
+function requestTrustPrompt(projectRoot) {
+  const emitter = events();
+  if (emitter.listenerCountForEventName('did-request-trust-prompt') === 0) {
+    return false;
+  }
+  emitter.emit('did-request-trust-prompt', { projectRoot, force: true });
+  return true;
+}
+
 async function startServersForOpenEditors() {
   const env = global.chevron;
   if (!env || !env.workspace || !documentSync) return;
@@ -1057,6 +1076,7 @@ module.exports = {
   onDidRequestTrustPrompt,
   getTrustState,
   recordTrustDecision,
+  requestTrustPrompt,
   startServersForOpenEditors,
   onDidFailStart,
   onDidNoServer,

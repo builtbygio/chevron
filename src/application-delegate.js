@@ -367,6 +367,30 @@ module.exports = class ApplicationDelegate {
     );
   }
 
+  // Whether the user trusts a project root (the store language servers and
+  // tasks already use). Resolves false when it cannot be asked.
+  async isProjectTrusted(projectRoot) {
+    try {
+      return Boolean(
+        await ipcRenderer.invoke('lsp:is-trusted', { projectRoot })
+      );
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // Trust changed for some root, in any window.
+  onDidChangeProjectTrust(callback) {
+    const outerCallback = (event, change) => callback(change || {});
+    ipcRenderer.on('chevron:did-change-project-trust', outerCallback);
+    return new Disposable(() =>
+      ipcRenderer.removeListener(
+        'chevron:did-change-project-trust',
+        outerCallback
+      )
+    );
+  }
+
   onDidChangeHistoryManager(callback) {
     const outerCallback = (event, message) => callback(event);
 

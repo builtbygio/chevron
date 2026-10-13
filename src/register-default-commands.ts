@@ -10,6 +10,7 @@ const {ipcRenderer} = require('electron');
 const Grim = require('grim');
 const {profiler} = require('./package-profiler');
 const {formatProfilerReport} = require('./package-profiler-report');
+const {collectSettingsSources, formatSettingsSources} = require('./settings-source-report');
 
 module.exports = function({commandRegistry, commandInstaller, config, notificationManager, project, clipboard, workspace}) {
   commandRegistry.add(
@@ -141,6 +142,30 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
           return editor;
         });
       }
+    },
+    false
+  );
+
+  // Which source each of the active file's settings came from: project, user
+  // or default (docs/reference/config-precedence.md).
+  commandRegistry.add(
+    'atom-workspace',
+    'config:show-effective-settings',
+    () => {
+      const editor = workspace.getActiveTextEditor();
+      if (!editor) {
+        return notificationManager.addInfo('Open a file to see where its settings come from');
+      }
+      const report = collectSettingsSources(config, {
+        filePath: editor.getPath() || null,
+        scope: editor.getRootScopeDescriptor()
+      });
+      return workspace.open().then(reportEditor => {
+        reportEditor.setText(formatSettingsSources(report));
+        const markdown = chevron.grammars.grammarForScopeName('source.gfm');
+        if (markdown) chevron.grammars.assignLanguageMode(reportEditor.getBuffer(), 'source.gfm');
+        return reportEditor;
+      });
     },
     false
   );

@@ -220,6 +220,150 @@ describe('changes are announced', () => {
   });
 });
 
+describe('trust', () => {
+  // Rows: what an untrusted root's config can set, and what waits for trust.
+  // The point is that cloning a repository and opening it cannot change how
+  // Chevron runs things; how text looks and is written is fair game.
+  let config;
+  const FILE = path.join(ROOT_A, 'src', 'index.js');
+
+  beforeEach(() => {
+    config = makeConfig();
+    config.setSchema('lsp', {
+      type: 'object',
+      properties: {
+        formatOnSave: { type: 'boolean', default: false },
+        servers: { type: 'object', default: {} }
+      }
+    });
+    config.setSchema('core', {
+      type: 'object',
+      properties: {
+        fileEncoding: { type: 'string', default: 'utf8' },
+        disabledPackages: { type: 'array', default: [] }
+      }
+    });
+    config.setSchema('whitespace', {
+      type: 'object',
+      properties: { removeTrailingWhitespace: { type: 'boolean', default: true } }
+    });
+  });
+
+  const rows = [
+    // [key, root value, applies untrusted?]
+    ['editor.tabLength', 2, true],
+    ['whitespace.removeTrailingWhitespace', false, true],
+    ['core.fileEncoding', 'latin1', true],
+    ['lsp.formatOnSave', true, false],
+    ['lsp.servers', { evil: { command: 'curl' } }, false],
+    ['core.disabledPackages', ['tree-view'], false]
+  ];
+
+  for (const [keyPath, value, untrusted] of rows) {
+    it(`${keyPath} from an untrusted root: ${untrusted ? 'applies' : 'waits'}`, () => {
+      const settings = {};
+      const [head, ...rest] = keyPath.split('.');
+      settings[head] = { [rest.join('.')]: value };
+      config.setRootSettings(ROOT_A, settings, path.join(ROOT_A, '.chevron', 'config.json'));
+
+      const expected = untrusted ? value : config.get(keyPath);
+      assert.deepStrictEqual(config.get(keyPath, { root: FILE }), expected);
+      assert.strictEqual(
+        config.getSourceOf(keyPath, { root: FILE }).source,
+        untrusted ? 'root' : 'default'
+      );
+      assert.deepStrictEqual(
+        config.getWithheldRootKeys(ROOT_A),
+        untrusted ? [] : [keyPath]
+      );
+    });
+
+    it(`${keyPath} from a trusted root: applies`, () => {
+      const settings = {};
+      const [head, ...rest] = keyPath.split('.');
+      settings[head] = { [rest.join('.')]: value };
+      config.setRootTrusted(ROOT_A, true);
+      config.setRootSettings(ROOT_A, settings);
+      assert.deepStrictEqual(config.get(keyPath, { root: FILE }), value);
+      assert.strictEqual(config.getSourceOf(keyPath, { root: FILE }).source, 'root');
+      assert.deepStrictEqual(config.getWithheldRootKeys(ROOT_A), []);
+    });
+  }
+
+  it('trusting a root applies what it held back, without reloading it', () => {
+    config.setRootSettings(ROOT_A, { lsp: { formatOnSave: true }, editor: { tabLength: 2 } });
+    assert.strictEqual(config.get('lsp.formatOnSave', { root: FILE }), false);
+
+    let rootEvents = 0;
+    config.onDidChangeRootSettings(() => rootEvents++);
+    config.setRootTrusted(ROOT_A, true);
+    assert.strictEqual(config.get('lsp.formatOnSave', { root: FILE }), true);
+    assert.strictEqual(config.get('editor.tabLength', { root: FILE }), 2);
+    assert.strictEqual(rootEvents, 1, 'editors re-resolve on the usual event');
+
+    config.setRootTrusted(ROOT_A, true);
+    assert.strictEqual(rootEvents, 1, 'no change, no event');
+
+    config.setRootTrusted(ROOT_A, false);
+    assert.strictEqual(config.get('lsp.formatOnSave', { root: FILE }), false);
+    assert.deepStrictEqual(config.getWithheldRootKeys(ROOT_A), ['lsp.formatOnSave']);
+  });
+
+  it('holds back scoped settings selector by selector', () => {
+    config.setRootSettings(ROOT_A, {
+      '.source.js': { editor: { tabLength: 2 }, lsp: { formatOnSave: true } }
+    });
+    assert.strictEqual(
+      config.get('editor.tabLength', { root: FILE, scope: JS_SCOPE }),
+      2
+    );
+    assert.strictEqual(
+      config.get('lsp.formatOnSave', { root: FILE, scope: JS_SCOPE }),
+      false
+    );
+    config.setRootTrusted(ROOT_A, true);
+    assert.strictEqual(
+      config.get('lsp.formatOnSave', { root: FILE, scope: JS_SCOPE }),
+      true
+    );
+  });
+
+  it('keeps the allowed half of a namespace and holds back the rest', () => {
+    config.setRootSettings(ROOT_A, {
+      core: { fileEncoding: 'latin1', disabledPackages: ['tree-view'] }
+    });
+    assert.strictEqual(config.get('core.fileEncoding', { root: FILE }), 'latin1');
+    assert.deepStrictEqual(config.get('core.disabledPackages', { root: FILE }), []);
+    assert.deepStrictEqual(config.getWithheldRootKeys(ROOT_A), ['core.disabledPackages']);
+  });
+
+  it('says when the value in use is not the one the root asked for', () => {
+    const file = path.join(ROOT_A, '.chevron', 'config.json');
+    config.set('lsp.formatOnSave', true);
+    config.setRootSettings(ROOT_A, { lsp: { formatOnSave: false } }, file);
+    const source = config.getSourceOf('lsp.formatOnSave', { root: FILE });
+    assert.strictEqual(source.source, 'user');
+    assert.strictEqual(source.withheldBy, file);
+    assert.strictEqual(
+      config.getSourceOf('editor.tabLength', { root: FILE }).withheldBy,
+      undefined,
+      'and only then'
+    );
+  });
+
+  it('trust is per root: a trusted sibling does not trust its neighbour', () => {
+    const sibling = path.join(path.sep, 'repo', 'b');
+    config.setRootTrusted(sibling, true);
+    config.setRootSettings(ROOT_A, { lsp: { formatOnSave: true } });
+    config.setRootSettings(sibling, { lsp: { formatOnSave: true } });
+    assert.strictEqual(config.get('lsp.formatOnSave', { root: FILE }), false);
+    assert.strictEqual(
+      config.get('lsp.formatOnSave', { root: path.join(sibling, 'x.js') }),
+      true
+    );
+  });
+});
+
 describe('the document and the code agree', () => {
   it('documents the order the code implements', () => {
     const fs = require('fs');
@@ -231,6 +375,10 @@ describe('the document and the code agree', () => {
     assert.match(doc, /longest matching root path/i);
     assert.match(doc, /getSourceOf/);
     assert.match(doc, /onDidChangeRootSettings/);
+    assert.match(doc, /## Trust/);
+    for (const key of ['editor', 'whitespace', 'core.fileEncoding', 'line-ending-selector']) {
+      assert.ok(doc.includes(`\`${key}`), `the trust section lists ${key}`);
+    }
 
     const source = fs.readFileSync(path.join(ROOT, 'src', 'config.js'), 'utf8');
     assert.match(

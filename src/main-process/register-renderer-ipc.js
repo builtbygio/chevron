@@ -1158,6 +1158,17 @@ module.exports = function registerRendererIpc(atomApplication) {
       return false;
     }
     lspManager.setTrusted(projectRoot, Boolean(trusted));
+    // Every window, not just the one that asked: trust also decides which of
+    // a root's .chevron/config.json settings apply, and another window may
+    // have the same root open.
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (!win.isDestroyed()) {
+        win.webContents.send('chevron:did-change-project-trust', {
+          projectRoot,
+          trusted: Boolean(trusted)
+        });
+      }
+    }
     return Boolean(trusted);
   });
 

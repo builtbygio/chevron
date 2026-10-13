@@ -75,7 +75,51 @@ chevron.config.getSourceOf('editor.tabLength', { root, scope });
 // => { source: 'root', path: '/repo/.chevron/config.json', scoped: true }
 ```
 
-`source` is one of `root`, `user` or `default`.
+`source` is one of `root`, `user` or `default`. When the root's config sets
+the key but is not trusted to (see [Trust](#trust)), the answer is whatever
+applies instead and carries `withheldBy: '/repo/.chevron/config.json'`.
+
+For a person rather than a package, **Config: Show Effective Settings**
+(`config:show-effective-settings`) opens the same answer for the active file:
+every editor, whitespace, encoding and line-ending setting, plus anything its
+root's config sets, with the value in force and where it came from.
+
+---
+
+## Trust
+
+A root's config is a file in a repository, and repositories get cloned from
+strangers. So a root can only change how text looks and is written until the
+user trusts it:
+
+| Applies from any root | Waits for trust |
+|---|---|
+| `editor.*` | everything else: `lsp.*` (including `lsp.servers`, which names commands to run), `terminal.*`, the rest of `core.*`, every package's settings |
+| `whitespace.*` | |
+| `core.fileEncoding` | |
+| `line-ending-selector.*` | |
+
+The trust is the one language servers and tasks already use: the
+`trusted-projects.json` store in the Chevron home, granted from lsp-ui's
+prompt or **Chevron Lsp: Trust Project**, and revoked with **Chevron Lsp:
+Untrust Project**. Both commands act on the active file's root.
+
+- A held-back setting is ignored, not deleted: the root resolves as if it had
+  not set it, so the user value or the default applies.
+- **Trusting applies it at once, with no reload.** The main process tells
+  every window when trust changes, each window re-asks for its configured
+  roots, and `Config#setRootTrusted` re-resolves that root and fires
+  `onDidChangeRootSettings` like any other root change. Revoking trust holds
+  the settings back again the same way.
+- Scoped settings are filtered selector by selector: `".source.js": { "editor":
+  …, "lsp": … }` keeps its `editor` half.
+- An untrusted root whose config sets something held back gets one
+  notification per session naming the keys, with a **Trust Project…** button
+  that opens the same prompt.
+- A root whose config only sets allowed keys is never asked about, and never
+  prompts.
+
+`config.getWithheldRootKeys(root)` lists what a root is holding back.
 
 ---
 

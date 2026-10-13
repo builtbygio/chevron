@@ -63,6 +63,8 @@ module.exports = class Project extends Model {
     // The last parse error reported per root, so a broken config warns once
     // rather than on every save.
     this.rootConfigErrors = new Map();
+    // Roots already told that some of their settings wait for trust.
+    this.rootTrustNoticed = new Set();
     this.watchRootConfigs();
     this.consumeServices(packageManager);
   }
@@ -81,6 +83,96 @@ module.exports = class Project extends Model {
       this.onDidChangeFiles(events => {
         if (events.some(event => isRootConfigEvent(event))) requestSync();
       })
+    );
+    const delegate = this.applicationDelegate;
+    if (delegate && typeof delegate.onDidChangeProjectTrust === 'function') {
+      this.subscriptions.add(
+        delegate.onDidChangeProjectTrust(() => this.syncRootTrust())
+      );
+    }
+  }
+
+  /**
+   * Ask which configured roots are trusted, so Config can apply the settings
+   * only a trusted root may set. Roots whose config sets nothing trust
+   * decides are not asked. Docs: config-precedence.md, "Trust".
+   */
+  async syncRootTrust() {
+    const config = chevron && chevron.config;
+    const delegate = this.applicationDelegate;
+    if (!config || typeof config.setRootTrusted !== 'function') return;
+    if (!delegate || typeof delegate.isProjectTrusted !== 'function') return;
+
+    const roots = config
+      .getConfiguredRoots()
+      .filter(
+        root =>
+          config.isRootTrusted(root) ||
+          config.getWithheldRootKeys(root).length > 0
+      );
+    await Promise.all(
+      roots.map(async root => {
+        const trusted = await delegate.isProjectTrusted(root);
+        // The root may have left the project while the answer was coming.
+        if (!config.getConfiguredRoots().includes(root)) return;
+        config.setRootTrusted(root, trusted);
+        if (!trusted) this.noticeWithheldRootSettings(root);
+      })
+    );
+  }
+
+  // Once per root per session: its config sets keys that are being ignored.
+  noticeWithheldRootSettings(root) {
+    const config = chevron.config;
+    const keys = config.getWithheldRootKeys(root);
+    if (keys.length === 0 || this.rootTrustNoticed.has(root)) return;
+    if (!this.notificationManager) return;
+    this.rootTrustNoticed.add(root);
+
+    const file = path.join(root, '.chevron', 'config.json');
+    const notification = this.notificationManager.addInfo(
+      'Some project settings apply only once you trust the project',
+      {
+        detail:
+          `${file} sets ${keys.join(', ')}.\n` +
+          'A project can change editor and whitespace settings without trust; ' +
+          'anything else waits, so opening a repository cannot change how ' +
+          'Chevron runs things.',
+        dismissable: true,
+        buttons: [
+          {
+            text: 'Trust Project…',
+            onDidClick: () => {
+              notification.dismiss();
+              this.requestRootTrust(root);
+            }
+          }
+        ]
+      }
+    );
+  }
+
+  // The same prompt language servers use, from lsp-ui; a plain confirmation
+  // when that package is not there to draw it.
+  requestRootTrust(root) {
+    const lsp = chevron.lsp;
+    if (lsp && typeof lsp.requestTrustPrompt === 'function' && lsp.requestTrustPrompt(root)) {
+      return;
+    }
+    chevron.confirm(
+      {
+        message: 'Trust this project?',
+        detail:
+          `${root}\n\nTrusting a project lets its .chevron/config.json change ` +
+          'any setting, and lets its language servers and tasks run.',
+        buttons: ['Trust', 'Cancel']
+      },
+      response => {
+        if (response !== 0) return;
+        if (lsp && typeof lsp.recordTrustDecision === 'function') {
+          lsp.recordTrustDecision(root, true);
+        }
+      }
     );
   }
 
@@ -581,6 +673,7 @@ module.exports = class Project extends Model {
       this.rootConfigErrors.delete(root);
       config.setRootSettings(root, settings, settings ? file : null);
     }
+    this.syncRootTrust();
   }
 
   // Strict FS IPC collects allowed roots from the main-process window's
