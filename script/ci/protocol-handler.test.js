@@ -14,9 +14,9 @@
 const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const Module = require('module');
+const { makeTempDir, removeTempDir } = require('../lib/temp-dir');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const FAKE_ELECTRON = path.join(__dirname, '_fake_electron_protocol.js');
@@ -77,7 +77,7 @@ describe('chevron:// protocol handler', () => {
       return originalResolve.call(this, request, ...rest);
     };
 
-    tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-protocol-'));
+    tmp = makeTempDir('chevron-protocol-');
     resourcePath = path.join(tmp, 'app');
     atomHome = path.join(tmp, 'home');
     process.env.ATOM_HOME = atomHome;
@@ -99,7 +99,7 @@ describe('chevron:// protocol handler', () => {
     delete require.cache[FAKE_ELECTRON];
     if (originalAtomHome === undefined) delete process.env.ATOM_HOME;
     else process.env.ATOM_HOME = originalAtomHome;
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   });
 
   it('registers chevron through protocol.handle even when registerFileProtocol exists', () => {
