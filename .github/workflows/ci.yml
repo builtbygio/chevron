@@ -124,6 +124,32 @@ jobs:
           fi
 
   # ---------------------------------------------------------------------------
+  # The version changes only when a release is cut (docs/reference/releases.md).
+  # A PR that changes package.json "version" must bring that version's
+  # "## [X.Y.Z]" section in CHANGELOG.md; every other PR adds to [Unreleased].
+  # ---------------------------------------------------------------------------
+  version-guard:
+    name: Version changes only with its release notes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      # The PR merge commit and its first parent, the base branch it merges into.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - name: Use Node 24
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: package.json version unchanged, or released in CHANGELOG.md
+        run: node script/lib/version-guard.js HEAD^1
+
+  # ---------------------------------------------------------------------------
   # Fast unit path — cpm + package-require-audit (no Electron package)
   # Full Jasmine (script/test) is not a default PR gate (audit #57):
   #   - nightly + manual: .github/workflows/jasmine.yml
@@ -196,6 +222,7 @@ jobs:
           node --test script/ci/package-test-dir.test.js
           node --test script/ci/spec-helper-real-time.test.js
           node --test script/ci/release-notes.test.js
+          node --test script/ci/version-guard.test.js
           node --test script/ci/legacy-transpile.test.js
           node --test script/ci/package-pin-policy.test.js
           node --test script/ci/patch-inventory.test.js

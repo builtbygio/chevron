@@ -58,7 +58,9 @@ Env overrides (advanced):
 ## How to publish a release
 
 The version changes only here, and every bump is tagged. PRs leave `package.json`
-alone and add to `## [Unreleased]` in `CHANGELOG.md`.
+alone and add to `## [Unreleased]` in `CHANGELOG.md`. CI's `version-guard` job
+fails a pull request that changes the version without a `## [X.Y.Z]` section
+for it (`script/lib/version-guard.js`).
 
 1. **Pick the version** from what `[Unreleased]` holds (semver): only `Fixed`
    entries is a patch, anything under `Added` is a minor, a breaking change is
