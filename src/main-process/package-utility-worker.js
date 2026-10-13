@@ -128,13 +128,9 @@ function destroyWorker(workerId, reason) {
   }
   if (meta.managerWc && !meta.managerWc.isDestroyed()) {
     try {
-      meta.managerWc.send('atom-utility-worker-event', {
-        windowId: workerId,
-        webContentsId: meta.webContentsId,
-        event: reason === 'crashed' ? 'crashed' : 'destroyed'
-      });
-      // Also mirror BrowserWindow worker events used by remote-compat
-      meta.managerWc.send('atom-worker-window-event', {
+      // remote-compat's BrowserWindow shim routes this to the worker's
+      // 'crashed' and 'destroyed' listeners.
+      meta.managerWc.send('chevron:worker-window-event', {
         windowId: workerId,
         webContentsId: meta.webContentsId,
         event: reason === 'crashed' ? 'crashed' : 'destroyed'

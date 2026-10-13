@@ -11,13 +11,12 @@
  */
 
 const MAIN_TO_RENDERER_CHANNELS = new Set([
-  'atom-popup-menu-click',
-  'atom-utility-worker-event',
-  'atom-worker-window-event',
   'chevron:did-change-native-theme',
+  'chevron:popup-menu-click',
   'chevron:pty-event',
   'chevron:rg-search-close',
   'chevron:rg-search-data',
+  'chevron:worker-window-event',
   'did-change-history-manager',
   'did-enter-full-screen',
   'did-leave-full-screen',

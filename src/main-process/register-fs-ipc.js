@@ -322,7 +322,7 @@ module.exports = function registerFsIpc(atomApplication) {
     const check = validateProjectRoots(projectRootPaths);
     if (!check.ok) {
       console.warn(
-        `atom-window-set-project-roots-sync: refused (${check.reason})`
+        `chevron:window-set-project-roots-sync: refused (${check.reason})`
       );
       event.returnValue = {
         ok: false,
@@ -350,7 +350,7 @@ module.exports = function registerFsIpc(atomApplication) {
 
   ipcMain.on('chevron:fs-path-kind-sync', (event, fullPath) => {
     if (!isAllowedFsPathOrRefresh(fullPath)) {
-      console.warn(`atom-fs-path-kind-sync: blocked path ${String(fullPath)}`);
+      console.warn(`chevron:fs-path-kind-sync: blocked path ${String(fullPath)}`);
       event.returnValue = null;
       return;
     }
@@ -367,7 +367,7 @@ module.exports = function registerFsIpc(atomApplication) {
 
   ipcMain.on('chevron:fs-realpath-sync', (event, fullPath) => {
     if (!isAllowedFsPathOrRefresh(fullPath)) {
-      console.warn(`atom-fs-realpath-sync: blocked path ${String(fullPath)}`);
+      console.warn(`chevron:fs-realpath-sync: blocked path ${String(fullPath)}`);
       event.returnValue = null;
       return;
     }
@@ -441,7 +441,7 @@ module.exports = function registerFsIpc(atomApplication) {
       return deny(event, 'chevron:fs-write-file-sync', fullPath);
     const payload = validateWriteFilePayload(data, encoding);
     if (!payload.ok) {
-      console.warn(`atom-fs-write-file-sync: refused (${payload.reason})`);
+      console.warn(`chevron:fs-write-file-sync: refused (${payload.reason})`);
       event.returnValue = { ok: false, error: payload.reason, code: 'EINVAL' };
       return;
     }

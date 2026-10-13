@@ -126,7 +126,7 @@ describe('sending to another window', () => {
       'prepare-to-unload',
       'lsp:event',
       'chevron:pty-event',
-      'atom-popup-menu-click',
+      'chevron:popup-menu-click',
       'uri-message'
     ]) {
       const result = validateCrossWindowSend(3, channel);
