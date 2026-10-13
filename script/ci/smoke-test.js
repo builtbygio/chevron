@@ -1324,6 +1324,61 @@ const CODE_CONTEXT_EXPR = `(function() {
       window.__contextProbe.result = result;
       window.__contextProbe.phase = 'done';
     };
+    // The outline panel, on the same file: open it, read the tree and the
+    // entry the cursor is in, click an entry, collapse its parent, refresh,
+    // and close it again so later phases get the layout they expect.
+    var probeOutline = function(editor, done) {
+      var labelRow = function(view, pattern) {
+        var rows = view.element.querySelectorAll('.outline-row');
+        for (var i = 0; i < rows.length; i++) {
+          var text = rows[i].querySelector('.outline-label').textContent;
+          if (pattern.test(text)) return rows[i];
+        }
+        return null;
+      };
+      // The package activates on outline:toggle, and activatePackage on such a
+      // package waits for that command, so the command goes first.
+      var activated = chevron.packages.activatePackage('outline');
+      chevron.commands.dispatch(
+        chevron.views.getView(chevron.workspace),
+        'outline:toggle'
+      );
+      activated
+        .then(function(pkg) {
+          var tries = 0;
+          (function settle() {
+            var view = pkg.mainModule.viewForTests();
+            var opened = view ? view.snapshotForTests() : {};
+            if (!(opened.source && opened.tree.length) && tries++ < 40) {
+              return setTimeout(settle, 250);
+            }
+            if (!view) return done({ error: 'outline:toggle opened no panel' });
+            try {
+              var outline = { opened: opened };
+              var method = labelRow(view, /^method/);
+              if (method) method.querySelector('.outline-label').click();
+              outline.cursorRowAfterClick = editor.getCursorBufferPosition().row;
+              var active = document.activeElement;
+              outline.editorFocused = Boolean(
+                active && active.closest && active.closest('atom-text-editor')
+              );
+              var outer = labelRow(view, /Outer/);
+              if (outer) outer.querySelector('.outline-twisty').click();
+              view.refresh().then(function() {
+                outline.afterCollapse = view.snapshotForTests();
+                chevron.workspace.hide('chevron://outline');
+                done(outline);
+              });
+            } catch (error) {
+              done({ error: String(error && error.stack) });
+            }
+          })();
+        })
+        .catch(function(error) {
+          done({ error: String(error && error.message) });
+        });
+    };
+
     var editor = chevron.workspace.getTextEditors().filter(function(e) {
       return /probe-context\.ts$/.test(e.getPath() || '');
     })[0];
@@ -1358,13 +1413,17 @@ const CODE_CONTEXT_EXPR = `(function() {
             var ranges = mode.getFoldableRanges ? mode.getFoldableRanges() : [];
             pkgs[1].mainModule.updateForTests(editor);
             setTimeout(function() {
-              finish({
+              var result = {
                 grammar: editor.getGrammar().name,
                 foldCount: ranges.length,
                 trail: pkgs[0].mainModule.trailForTests(),
                 pinned: pkgs[1].mainModule
                   .pinnedForTests(editor)
                   .map(function(t) { return t.trim(); })
+              };
+              probeOutline(editor, function(outline) {
+                result.outline = outline;
+                finish(result);
               });
             }, 800);
           }, 1200);
@@ -2448,6 +2507,54 @@ async function main() {
           failures.push(
             `sticky scroll pinned the wrong lines: ${JSON.stringify(pinned)}`
           );
+        }
+
+        // Folds here, unless a TypeScript server happens to be on PATH and
+        // trusted; the shape checks hold for either source.
+        const outline = codeContext.outline;
+        if (!outline) {
+          failures.push('outline probe did not report');
+        } else if (outline.error) {
+          failures.push(`outline: ${outline.error}`);
+        } else {
+          const opened = outline.opened || {};
+          const outer = (opened.tree || []).find(n => /Outer/.test(n.label));
+          if (!opened.visible || !opened.source) {
+            failures.push(
+              `the outline panel opened but never drew: ${JSON.stringify(opened)}`
+            );
+          } else if (
+            !outer ||
+            !outer.children.some(n => /^method/.test(n.label))
+          ) {
+            failures.push(
+              `the outline did not nest method under Outer: ${JSON.stringify(opened.tree)}`
+            );
+          }
+          if (opened.source === 'folds' && opened.selected !== 'if (a > 0)') {
+            failures.push(
+              `the outline highlighted ${JSON.stringify(opened.selected)}, not the block holding the cursor`
+            );
+          }
+          if (outline.cursorRowAfterClick !== 1) {
+            failures.push(
+              `clicking the method entry left the cursor on row ${outline.cursorRowAfterClick}, not 1`
+            );
+          }
+          if (!outline.editorFocused) {
+            failures.push('clicking an outline entry did not focus the editor');
+          }
+          const after = outline.afterCollapse || {};
+          const collapsedOuter = (after.tree || []).find(n =>
+            /Outer/.test(n.label)
+          );
+          if (!collapsedOuter || !collapsedOuter.collapsed) {
+            failures.push('a collapsed outline entry did not stay collapsed across a refresh');
+          } else if (!/Outer/.test(after.selected || '')) {
+            failures.push(
+              `with Outer collapsed the outline highlighted ${JSON.stringify(after.selected)}, not Outer`
+            );
+          }
         }
       }
 

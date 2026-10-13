@@ -1,12 +1,16 @@
-# Breadcrumbs and sticky scroll
+# Breadcrumbs, sticky scroll and the outline
 
-Two answers to the same question — *what encloses this line?*
+Two answers to the same question — *what encloses this line?* — and a third
+to the one beside it, *what is in this file?*
 
 - **Breadcrumbs**: the path to the cursor, in a bar above the editor.
   `probe.ts › class Outer › method(a) › if (a > 0)`. Clicking a segment goes
   to the line that opened it.
 - **Sticky scroll**: the lines that opened the blocks you have scrolled past,
   pinned to the top of the editor.
+- **Outline** (`outline:toggle`, View › Toggle Outline): the active file's
+  structure as a tree in the right dock. The entry holding the cursor is
+  highlighted, and clicking one goes to it.
 
 ---
 
@@ -69,6 +73,44 @@ The overlay is drawn rather than decorated on purpose: pinned lines are not
 where they appear to be, and a decoration that moved a line would move the
 cursor with it.
 
+## The outline: symbols first, folds always
+
+Unlike breadcrumbs, the outline asks the language server first. A panel kept
+open beside the code is read as a table of contents, and there a symbol's name
+(`parse`) reads better than the line that opens it (`export async function
+parse(text: string, options = {}) {`). Symbols come from
+`chevron.lsp.documentSymbolTreeAt(editor)`, which keeps the nesting that
+`documentSymbolsAt` flattens for symbols-view. When no server owns the file, or
+one answers with nothing, the outline falls back to the same folds as above,
+so every grammar with folds has an outline.
+
+- **Fold labels are cleaned up for a table of contents.** Doc comments fold,
+  but they aren't structure, so they're left out (`#if` blocks stay). A
+  signature or condition split over lines folds twice: once from
+  `export function parse(` and once from `): Result {`. The second is merged
+  into the first, so the entry reads `export function parse`, not `): Result`.
+- **Whole range and name range.** A symbol's `range` decides whether the
+  cursor is inside it, and its `selectionRange` is where a click lands. A fold
+  entry lands on the first character of its opening line.
+- **Flat servers are nested by range.** `SymbolInformation` carries a
+  `containerName`, but two classes can share a name; ranges cannot overlap
+  that way.
+- **Collapse state is keyed by name, not by position.** A key is the entry's
+  label and its count among same-named siblings, under its parent's key. So an
+  entry stays collapsed while lines are added above it, and overloads stay
+  distinct. State is kept per file for the session.
+- **A collapsed entry stands in for its contents.** If the cursor is inside a
+  collapsed entry, that entry is highlighted. Nothing is expanded behind the
+  user's back.
+- **Hidden means idle.** Edits and editor switches only mark the panel stale,
+  and it catches up when it is shown. A closed dock, another tab in front, and
+  a dock collapsed to nothing all count as hidden; an `IntersectionObserver`
+  covers all three. While shown it refreshes on stop-changing, which already
+  waits for a pause in typing. A server request is asynchronous, and the fold
+  walk is the same capped, cached one breadcrumbs uses.
+- **Restarts.** The panel serializes like any dock item, so it comes back open
+  if it was open.
+
 ## Configuration
 
 | Key | Default | |
@@ -82,7 +124,8 @@ cursor with it.
 | Test | Covers |
 |------|--------|
 | `script/ci/enclosing-scopes.test.js` | ordering, containment at the opening and closing lines, same-line de-duplication, label trimming, that the cache asks the language mode once, and that a file over the line limit is never asked at all |
-| `script/ci/smoke-test.js` | a real grammar producing folds, the trail naming the enclosing blocks outermost first, and the right lines pinned after scrolling |
+| `script/ci/outline.test.js` | symbol trees from `DocumentSymbol` and from flat `SymbolInformation`, fold trees (same-line folds, label-less blocks, input order), the entry holding a row, and keys that survive edits and tell overloads apart |
+| `script/ci/smoke-test.js` | a real grammar producing folds, the trail naming the enclosing blocks outermost first, the right lines pinned after scrolling, and the outline drawing the tree, highlighting the cursor's block, moving the cursor and focusing the editor on a click, and keeping a collapsed entry collapsed across a refresh |
 
 The smoke phase uses a file of its own. Sharing `probe.ts` meant replacing the
 text under the autocomplete and inline-text phases mid-run, and opening it

@@ -1,0 +1,8 @@
+{
+  "menu": [
+    {
+      "label": "View",
+      "submenu": [{ "label": "Toggle Outline", "command": "outline:toggle" }]
+    }
+  ]
+}

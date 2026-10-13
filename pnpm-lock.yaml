@@ -426,6 +426,9 @@ importers:
       open-on-github:
         specifier: workspace:@builtbygio/open-on-github@*
         version: link:packages/open-on-github
+      outline:
+        specifier: workspace:@builtbygio/outline@*
+        version: link:packages/outline
       pathwatcher:
         specifier: npm:@builtbygio/pathwatcher@8.1.2
         version: '@builtbygio/pathwatcher@8.1.2'
@@ -1167,6 +1170,8 @@ importers:
   packages/one-light-ui: {}
 
   packages/open-on-github: {}
+
+  packages/outline: {}
 
   packages/scrollbar-style:
     dependencies:
