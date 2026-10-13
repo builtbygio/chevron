@@ -1045,42 +1045,99 @@ const TERMINAL_EXPR = `(function() {
               buffer: readBuffer().slice(-200)
             });
           }
-          // Carriage return, not newline: pressing Enter in a terminal sends
-          // CR, a Unix pty turns it into NL for the shell, and cmd.exe only
-          // accepts CR. Sending LF opened a shell on Windows that printed its
-          // banner and then sat there, which reads as a broken terminal and
-          // was a broken probe.
-          view.write('echo smoke-terminal-token' + String.fromCharCode(13));
-          var tries = 0;
-          (function settle() {
-            var text = readBuffer();
-            // The echoed command line contains the token too, so match only
-            // what the shell printed back. Rows are joined with newlines, and
-            // a row that wrapped splits the echoed command in two (seen on
-            // Windows: "echo sm" / "oke-terminal-token"), so compare without
-            // them. Escaped twice: this template is evaluated before the
-            // renderer sees it (smoke-probe-syntax.test.js).
+          // Typing is driven by what the shell sends, not by a clock. Input
+          // that arrives before the shell has its line editor up is echoed by
+          // the pty and then thrown away when the editor takes the terminal
+          // over: a failed run's buffer ended at "echo smoke-te", the prompt
+          // printed and the command half-typed, gone. So wait for the shell
+          // to print something and then go quiet -- that is the prompt, and
+          // a shell showing its prompt is reading input.
+          var started = Date.now();
+          var lastData = 0;
+          var promptAtMs = null;
+          var wroteAtMs = null;
+          var settled = false;
+          var subscription = null;
+
+          // The echoed command line contains the token too, so match only
+          // what the shell printed back. Rows are joined with newlines, and a
+          // row that wrapped splits the echoed command in two (seen on
+          // Windows: "echo sm" / "oke-terminal-token"), so compare without
+          // them. Escaped twice: this template is evaluated before the
+          // renderer sees it (smoke-probe-syntax.test.js).
+          var printedBack = function(text) {
             var flat = text.replace(/\\r?\\n/g, '');
             var printed = flat.split('echo smoke-terminal-token').slice(1).join('');
-            if (/smoke-terminal-token/.test(printed) || tries >= 60) {
-              var result = {
-                sawOutput: /smoke-terminal-token/.test(printed),
-                cols: view.terminal.cols,
-                rows: view.terminal.rows,
-                cwdInProject: chevron.project.getPaths().some(function(root) {
-                  return view.cwd === root;
-                }),
-                waitedMs: tries * 250,
-                buffer: text.slice(-200)
-              };
-              // Leave the workspace as it was for the phases after this one.
-              var pane = chevron.workspace.paneForItem(view);
-              if (pane) pane.destroyItem(view);
-              return finish(result);
+            return /smoke-terminal-token/.test(printed);
+          };
+
+          var done = function() {
+            if (settled) return;
+            settled = true;
+            if (subscription) subscription.dispose();
+            var text = readBuffer();
+            var result = {
+              sawOutput: printedBack(text),
+              cols: view.terminal.cols,
+              rows: view.terminal.rows,
+              cwdInProject: chevron.project.getPaths().some(function(root) {
+                return view.cwd === root;
+              }),
+              promptAtMs: promptAtMs,
+              wroteAtMs: wroteAtMs,
+              waitedMs: Date.now() - started,
+              buffer: text.slice(-200)
+            };
+            // Leave the workspace as it was for the phases after this one.
+            var pane = chevron.workspace.paneForItem(view);
+            if (pane) pane.destroyItem(view);
+            finish(result);
+          };
+
+          var type = function() {
+            if (wroteAtMs !== null) return;
+            wroteAtMs = Date.now() - started;
+            // Carriage return, not newline: pressing Enter in a terminal
+            // sends CR, a Unix pty turns it into NL for the shell, and cmd.exe
+            // only accepts CR. Sending LF opened a shell on Windows that
+            // printed its banner and then sat there, which reads as a broken
+            // terminal and was a broken probe.
+            view.write('echo smoke-terminal-token' + String.fromCharCode(13));
+          };
+
+          subscription = view.session.onData(function() {
+            lastData = Date.now();
+            if (promptAtMs === null) promptAtMs = lastData - started;
+          });
+          // The shell usually beats the subscription: by the time the
+          // session is up its prompt is often already on screen, and no
+          // more data comes until something is typed.
+          if (readBuffer().trim()) {
+            promptAtMs = 0;
+            lastData = started;
+          }
+
+          (function untilAnswered() {
+            if (settled) return;
+            if (wroteAtMs === null) {
+              var quietFor = Date.now() - lastData;
+              // A shell that prints no prompt at all still gets the command
+              // eventually; the result then says no prompt was seen.
+              if ((promptAtMs !== null && quietFor >= 300) || Date.now() - started > 15000) {
+                type();
+              }
+            } else if (printedBack(readBuffer())) {
+              // Read from the buffer rather than the data events: xterm
+              // parses asynchronously, so the chunk that completes the
+              // answer can arrive before the buffer shows it.
+              return done();
             }
-            tries++;
-            setTimeout(settle, 250);
+            setTimeout(untilAnswered, 100);
           })();
+
+          // The ceiling for a shell that never answers. Reaching it is the
+          // failure, and the result says which step it stopped at.
+          setTimeout(done, 45000);
         })();
       }, 2500);
     }
@@ -1225,7 +1282,6 @@ const TASKS_EXPR = `(function() {
 
           var before = chevron.workspace.getPaneItems().length;
           var noticesBefore = chevron.notifications.getNotifications().length;
-          var trustAnswer = 'unset';
 
           // Discovery: the task the project declares should be found.
           var found = module.listTasksForTests
@@ -1250,50 +1306,46 @@ const TASKS_EXPR = `(function() {
 
             // Then the part that matters, without the UI in the way: running
             // a task in a folder nobody trusted must refuse and spawn nothing.
-            // Reported alongside the outcome: "not refused" and "the trust
-            // check said yes" are different failures, and telling them apart
-            // from the log saves a build.
+            //
+            // In order, not side by side. The trust answer is the
+            // precondition, so it is read before the task runs: a folder
+            // already trusted is a broken harness, and reporting it as "not
+            // refused" sends the reader after the wrong code. And runTask
+            // posts its refusal before it resolves, so once it has resolved
+            // the notice is there or was never sent -- nothing to poll for.
             var lib = module.tasksLibForTests ? module.tasksLibForTests() : null;
+            var report = function(fields) {
+              var notices = chevron.notifications
+                .getNotifications()
+                .slice(noticesBefore)
+                .map(function(n) { return n.getType() + ': ' + n.getMessage().slice(0, 90); });
+              var result = {
+                discovered: found.tasks.map(function(t) { return t.name; }),
+                problems: found.problems,
+                selectOpened: !!select,
+                panesAfter: chevron.workspace.getPaneItems().length,
+                panesBefore: before,
+                notices: notices,
+                refused: notices.some(function(n) { return /not trusted/.test(n); }),
+                // The runner declines the folder before launch, so no prompt
+                // should ever have been raised for it.
+                trustModalOpen: !!document.querySelector('.lsp-ui-trust')
+              };
+              for (var key in fields) result[key] = fields[key];
+              finish(result);
+            };
             Promise.resolve(lib ? lib.isTrusted(found.tasks[0].root) : 'no-lib')
-              .then(function(answer) {
-                trustAnswer = answer;
-              })
-              .catch(function(e) {
-                trustAnswer = 'threw: ' + String(e && e.message);
-              });
-            Promise.resolve(module.runTask(found.tasks[0])).then(function(view) {
-              var tries = 0;
-              (function settle() {
-                var notices = chevron.notifications
-                  .getNotifications()
-                  .slice(noticesBefore)
-                  .map(function(n) { return n.getType() + ': ' + n.getMessage().slice(0, 90); });
-                var refused = notices.some(function(n) {
-                  return /not trusted/.test(n);
-                });
-                if (refused || tries >= 20) {
-                  return finish({
-                    discovered: found.tasks.map(function(t) { return t.name; }),
-                    problems: found.problems,
-                    selectOpened: !!select,
-                    returnedView: !!view,
-                    panesAfter: chevron.workspace.getPaneItems().length,
-                    panesBefore: before,
-                    notices: notices,
-                    refused: refused,
-                    trustValue: trustAnswer,
-                    // A trust modal open here means something raised it and
-                    // may have answered it: the prompt used to grant on any
-                    // core:confirm that reached it, so this phase depended on
-                    // whether an earlier probe's confirm landed first.
-                    trustModalOpen: !!document.querySelector('.lsp-ui-trust'),
-                    waitedMs: tries * 250
-                  });
+              .then(function(trusted) {
+                if (trusted !== false) {
+                  return report({ trustValue: trusted, preconditionFailed: true });
                 }
-                tries++;
-                setTimeout(settle, 250);
-              })();
-            });
+                return Promise.resolve(module.runTask(found.tasks[0])).then(function(view) {
+                  report({ trustValue: trusted, returnedView: !!view });
+                });
+              })
+              .catch(function(error) {
+                finish({ error: String(error && error.message) });
+              });
           }, 1200);
         })
         .catch(function(error) {
@@ -1877,6 +1929,21 @@ async function main() {
 
   // A task the project declares. The smoke project is never trusted, which
   // is the case that matters: discovery must work and running must not.
+  //
+  // "Never trusted" is written down rather than left to the trust prompt.
+  // Left unanswered, the prompt sat open through every later phase, and in
+  // some runs it was gone by the tasks phase with the folder trusted -- the
+  // refusal check then failed on a project the run itself had trusted. A
+  // folder already declined gets no prompt, and the tasks probe checks the
+  // precondition before it relies on it.
+  fs.writeFileSync(
+    path.join(atomHome, 'trusted-projects.json'),
+    JSON.stringify(
+      { version: 1, roots: [], declined: [fs.realpathSync(projectDir)] },
+      null,
+      2
+    ) + '\n'
+  );
   fs.writeFileSync(
     path.join(projectDir, '.chevron', 'tasks.json'),
     JSON.stringify(
@@ -2200,9 +2267,11 @@ async function main() {
       }
     }
 
-    // A terminal, before the styleguide takes the active pane.
+    // A terminal, before the styleguide takes the active pane. The probe
+    // settles itself and has its own 45s ceiling once the shell is up, so
+    // this outer budget only has to outlast that.
     if (state && state.status === 'ready') {
-      for (let attempt = 0; attempt < 120; attempt++) {
+      for (let attempt = 0; attempt < 300; attempt++) {
         let terminalState;
         try {
           terminalState = await probeWindow([], TERMINAL_EXPR);
@@ -2451,7 +2520,9 @@ async function main() {
       } else {
         if (!terminal.sawOutput) {
           failures.push(
-            `terminal ran a command and never saw its output after ${terminal.waitedMs}ms — buffer: ${terminal.buffer}`
+            `terminal ran a command and never saw its output after ${terminal.waitedMs}ms ` +
+              `(first shell output at ${terminal.promptAtMs === null ? 'never' : `${terminal.promptAtMs}ms`}, ` +
+              `typed at ${terminal.wroteAtMs === null ? 'never' : `${terminal.wroteAtMs}ms`}) — buffer: ${terminal.buffer}`
           );
         }
         if (!terminal.cols || !terminal.rows) {
@@ -2516,12 +2587,31 @@ async function main() {
             `tasks did not find the task the project declares (found ${JSON.stringify(tasks.discovered)}, problems ${JSON.stringify(tasks.problems)})`
           );
         }
-        if (!tasks.refused) {
+        if (tasks.preconditionFailed) {
+          let store;
+          try {
+            store = fs.readFileSync(path.join(atomHome, 'trusted-projects.json'), 'utf8');
+          } catch (error) {
+            store = `unreadable: ${error.message}`;
+          }
+          failures.push(
+            'the smoke project was trusted before its task ran, so the refusal ' +
+              'was never tested — something in this run granted trust. ' +
+              `trustValue: ${JSON.stringify(tasks.trustValue)}, ` +
+              `trust modal open: ${tasks.trustModalOpen}, ` +
+              `trust store: ${store.replace(/\s+/g, ' ')}`
+          );
+        } else if (!tasks.refused) {
           failures.push(
             'running a task in an untrusted folder was not refused — ' +
               `trustValue: ${JSON.stringify(tasks.trustValue)}, ` +
               `trust modal open: ${tasks.trustModalOpen}, ` +
               `notices: ${JSON.stringify(tasks.notices)}`
+          );
+        }
+        if (tasks.trustModalOpen) {
+          failures.push(
+            'a trust prompt opened for a folder the runner had already declined'
           );
         }
         if (tasks.panesAfter !== tasks.panesBefore || tasks.returnedView) {
