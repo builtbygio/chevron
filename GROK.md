@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-10-01 (master **1.4.x**, last tag **v1.2.0**; auto-update, Wayland and the universal macOS bundle landed; the nightly Jasmine core specs pass locally)
+**Date of this handoff:** 2026-10-01 (last tag **v1.2.0**, next release **1.5.0**; auto-update, Wayland and the universal macOS bundle landed; the nightly Jasmine core specs pass locally)
 
 ---
 
@@ -22,11 +22,11 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 ---
 
-## Current baseline (master 1.4.x; last tag v1.2.0)
+## Current baseline (last tag v1.2.0; next release 1.5.0)
 
 | Item | Value |
 |------|--------|
-| Version | **1.4.x** on master — a patch bump per fix, all under `[Unreleased]` in CHANGELOG; tagging is separate. Last published: **v1.2.0** unsigned preview ([docs/reference/releases.md](docs/reference/releases.md)) |
+| Version | Changes only at release time, and every release is a tagged bump. PRs add to `[Unreleased]` in CHANGELOG and leave `package.json` alone. `package.json` reads 1.4.17, left over from an old patch-bump-per-PR rule whose versions were never released (#437). Last published: **v1.2.0** unsigned preview; next release **1.5.0** ([docs/reference/releases.md](docs/reference/releases.md)) |
 | Electron | **43.1.0** (ladder complete) |
 | Package / productName | `chevron` / **Chevron** |
 | Bundle ID | `dev.builtbygio.chevron` |
