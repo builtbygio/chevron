@@ -6,6 +6,9 @@
 # Requirements (install once):
 #   - nvm + Node 24 (matches Electron 43 host story):  nvm install 24 && nvm use 24
 #     (accepted host range: Node 20–24; default pin is 24)
+#   - pnpm, the version in package.json "packageManager", through that Node's
+#     corepack:  corepack enable pnpm
+#     (bootstrap-modern does this itself when pnpm is missing)
 #   - Python 3.12 (CI preferred) or 3.13 / 3.11:
 #       brew install python@3.12   (macOS)
 #       # or: brew install python@3.13 / python@3.11
