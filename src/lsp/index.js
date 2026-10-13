@@ -153,13 +153,37 @@ function getPositionEncoding(serverId) {
   return encodingByServerId.get(serverId) || 'utf-16';
 }
 
+// Lazy for the same reason as fs-ipc-client: node-side tests load this module
+// without anything that teaches require about .ts.
+let profilerModule;
+function getProfiler() {
+  if (profilerModule === undefined) {
+    try {
+      profilerModule = require('../package-profiler').profiler;
+    } catch (_) {
+      profilerModule = null;
+    }
+  }
+  return profilerModule;
+}
+
 async function request(serverId, method, params, timeoutMs) {
-  return ipcRenderer.invoke('lsp:request', {
+  const pending = ipcRenderer.invoke('lsp:request', {
     serverId,
     method,
     params,
     timeoutMs
   });
+  const profiler = getProfiler();
+  if (!profiler || !profiler.enabled) return pending;
+  // Who asked is only visible now, before the first await.
+  const owner = profiler.ownerOfCaller();
+  const started = performance.now();
+  try {
+    return await pending;
+  } finally {
+    profiler.record('lsp', owner, performance.now() - started);
+  }
 }
 
 function recordCompletionLatency(ms, count) {

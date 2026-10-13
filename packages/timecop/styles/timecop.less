@@ -66,4 +66,34 @@
     border-color: ~"rgb(from var(--text-color) r g b / 60%)";
   }
 
+  .session-controls {
+    margin-bottom: var(--component-padding);
+  }
+
+  .session-table {
+    width: 100%;
+    margin-bottom: var(--component-padding);
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: calc(var(--component-padding) / 4) calc(var(--component-padding) / 2);
+      text-align: left;
+    }
+
+    th {
+      color: var(--text-color-subtle);
+      font-weight: normal;
+    }
+
+    .session-number {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th:nth-child(n + 3) {
+      text-align: right;
+    }
+  }
+
 }

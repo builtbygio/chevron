@@ -96,6 +96,262 @@ describe('attribution', () => {
   });
 });
 
+describe('attribution through core', () => {
+  const frame = file => `    at fn (${file}:1:1)`;
+  const stack = (...files) => ['Error', ...files.map(frame)].join('\n');
+  const editor = p('', 'repo', 'src', 'text-editor.js');
+  const config = p('', 'repo', 'src', 'config.js');
+  const treeView = p('', 'repo', 'packages', 'tree-view', 'lib', 'main.js');
+  const eventKit = p('', 'repo', 'node_modules', 'event-kit', 'lib', 'emitter.js');
+  const linter = p('', 'app', 'node_modules', 'linter', 'lib', 'main.js');
+
+  function profilerWith(lookup) {
+    const profiler = new PackageProfiler();
+    profiler.setPackageDirPaths([p('', 'repo', 'packages')]);
+    if (lookup) profiler.setPackageLookup(lookup);
+    return profiler;
+  }
+
+  it('bills a subscription made through a core method to the package', () => {
+    // TextEditor#onDidChange, Config#observe: the first frame is core, and
+    // stopping there billed every package's handlers to Chevron.
+    const profiler = profilerWith();
+    assert.strictEqual(profiler.attribute(stack(editor, config, treeView)), 'tree-view');
+  });
+
+  it('is core when no package is on the stack', () => {
+    const profiler = profilerWith(() => false);
+    assert.strictEqual(profiler.attribute(stack(editor, config)), 'core');
+  });
+
+  it('does not mistake a library for a package', () => {
+    const profiler = profilerWith(name => name === 'linter');
+    assert.strictEqual(profiler.attribute(stack(editor, eventKit)), 'core');
+    assert.strictEqual(profiler.attribute(stack(editor, eventKit, linter)), 'linter');
+  });
+
+  it('trusts a package directory over the lookup', () => {
+    const profiler = profilerWith(() => false);
+    assert.strictEqual(profiler.attribute(stack(editor, treeView)), 'tree-view');
+  });
+
+  it('is unknown when no frame says anything', () => {
+    const profiler = profilerWith();
+    assert.strictEqual(profiler.attribute('Error\n    at <anonymous>'), 'unknown');
+  });
+
+  it('a real subscription through a core-shaped file lands on the package', () => {
+    // Real stacks, not strings: a src/ module that wraps on behalf of its
+    // caller, called from a module under a package directory.
+    const { makeTempDir } = require('../lib/temp-dir');
+    const dir = makeTempDir('profiler-');
+    fs.mkdirSync(path.join(dir, 'src'));
+    fs.mkdirSync(path.join(dir, 'packages', 'demo'), { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, 'src', 'emitter.js'),
+      'module.exports = (profiler, cb) => profiler.wrap("event", cb);'
+    );
+    fs.writeFileSync(
+      path.join(dir, 'packages', 'demo', 'main.js'),
+      'module.exports = (profiler, on) => on(profiler, () => {});'
+    );
+    const profiler = new PackageProfiler();
+    profiler.setPackageDirPaths([path.join(dir, 'packages')]);
+    profiler.start();
+    const on = require(path.join(dir, 'src', 'emitter.js'));
+    const handler = require(path.join(dir, 'packages', 'demo', 'main.js'))(profiler, on);
+    handler();
+    assert.deepEqual(profiler.report().map(entry => entry.owner), ['demo']);
+  });
+
+  it('ownerOfCaller falls back to the open window, then core', () => {
+    const profiler = profilerWith(() => false);
+    profiler.attribute = () => 'core';
+    assert.strictEqual(profiler.ownerOfCaller(), 'core');
+    const previous = profiler.enter('autocomplete-plus');
+    assert.strictEqual(profiler.ownerOfCaller(), 'autocomplete-plus');
+    profiler.leave(previous);
+    profiler.attribute = () => 'symbols-view';
+    assert.strictEqual(profiler.ownerOfCaller(), 'symbols-view', 'the stack wins');
+  });
+});
+
+describe('start, stop and reset', () => {
+  it('reset clears the numbers and keeps a running profiler running', () => {
+    const profiler = new PackageProfiler();
+    profiler.start();
+    profiler.record('command', 'x', 1);
+    profiler.reset();
+    assert.deepEqual(profiler.report(), []);
+    assert.strictEqual(profiler.isRunning(), true);
+    profiler.record('command', 'x', 1);
+    assert.strictEqual(profiler.report().length, 1);
+  });
+
+  it('tells listeners about start, stop and reset, and lets them go', () => {
+    const profiler = new PackageProfiler();
+    let calls = 0;
+    const subscription = profiler.onDidChangeState(() => calls++);
+    profiler.start();
+    profiler.reset();
+    profiler.stop();
+    assert.strictEqual(calls, 3);
+    subscription.dispose();
+    profiler.start();
+    assert.strictEqual(calls, 3);
+  });
+
+  it('a throwing listener does not stop the others', () => {
+    const profiler = new PackageProfiler();
+    let reached = false;
+    const original = console.error;
+    console.error = () => {};
+    try {
+      profiler.onDidChangeState(() => {
+        throw new Error('boom');
+      });
+      profiler.onDidChangeState(() => {
+        reached = true;
+      });
+      profiler.start();
+    } finally {
+      console.error = original;
+    }
+    assert.strictEqual(reached, true);
+  });
+});
+
+describe('save hooks', () => {
+  function fakeBuffer() {
+    class FakeBuffer {
+      constructor() {
+        this.will = [];
+        this.did = [];
+      }
+      onWillSave(callback) {
+        this.will.push(callback);
+        return { dispose() {} };
+      }
+      onDidSave(callback) {
+        this.did.push(callback);
+        return { dispose() {} };
+      }
+    }
+    return FakeBuffer;
+  }
+
+  it('times will-save and did-save handlers as save', async () => {
+    const FakeBuffer = fakeBuffer();
+    const profiler = new PackageProfiler();
+    profiler.instrumentBufferSaves(FakeBuffer);
+    profiler.ownerForSite = () => 'whitespace';
+    profiler.start();
+
+    const buffer = new FakeBuffer();
+    buffer.onWillSave(() => {});
+    buffer.onDidSave(() => {});
+    buffer.will[0]();
+    buffer.did[0]();
+
+    const entry = profiler.report()[0];
+    assert.strictEqual(entry.owner, 'whitespace');
+    assert.strictEqual(entry.byKind.save.count, 2);
+  });
+
+  it('times an async will-save until it settles, since the save waits on it', async () => {
+    const FakeBuffer = fakeBuffer();
+    const profiler = new PackageProfiler();
+    profiler.instrumentBufferSaves(FakeBuffer);
+    profiler.ownerForSite = () => 'formatter';
+    profiler.start();
+
+    const buffer = new FakeBuffer();
+    let resolve;
+    buffer.onWillSave(() => new Promise(r => (resolve = r)));
+    const pending = buffer.will[0]();
+    assert.deepEqual(profiler.report(), [], 'nothing recorded while it is pending');
+
+    await new Promise(r => setTimeout(r, 20));
+    resolve();
+    await pending;
+    await null;
+    const stats = profiler.report()[0].byKind.save;
+    assert.strictEqual(stats.count, 1);
+    assert.ok(stats.total >= 15, `waited ${stats.total}ms`);
+  });
+
+  it('records a rejected will-save too', async () => {
+    const FakeBuffer = fakeBuffer();
+    const profiler = new PackageProfiler();
+    profiler.instrumentBufferSaves(FakeBuffer);
+    profiler.start();
+    const buffer = new FakeBuffer();
+    buffer.onWillSave(() => Promise.reject(new Error('no')));
+    await assert.rejects(buffer.will[0]());
+    await null;
+    assert.strictEqual(profiler.report()[0].byKind.save.count, 1);
+  });
+
+  it('patches the prototype once and passes through while stopped', () => {
+    const FakeBuffer = fakeBuffer();
+    const profiler = new PackageProfiler();
+    profiler.instrumentBufferSaves(FakeBuffer);
+    const patched = FakeBuffer.prototype.onWillSave;
+    profiler.instrumentBufferSaves(FakeBuffer);
+    assert.strictEqual(FakeBuffer.prototype.onWillSave, patched, 'idempotent');
+
+    const buffer = new FakeBuffer();
+    let calls = 0;
+    buffer.onDidSave(() => calls++);
+    buffer.did[0]();
+    assert.strictEqual(calls, 1);
+    assert.deepEqual(profiler.report(), []);
+  });
+
+  it('the environment instruments the real TextBuffer', () => {
+    const source = fs.readFileSync(path.join(ROOT, 'src', 'atom-environment.js'), 'utf8');
+    assert.match(source, /profiler\.instrumentBufferSaves\(TextBuffer\)/);
+    assert.match(source, /this\.packageProfiler = profiler/);
+  });
+});
+
+describe('config and LSP', () => {
+  it('config change listeners are wrapped, not attributed, at subscription', () => {
+    const source = fs.readFileSync(path.join(ROOT, 'src', 'config.js'), 'utf8');
+    assert.strictEqual(
+      (source.match(/profiledListener\(\(\) => \{/g) || []).length,
+      2,
+      'both the plain and the scoped key path listeners'
+    );
+    assert.match(source, /profilerModule\.wrap\('config'/);
+    assert.doesNotMatch(source, /profiler(Module)?\.attribute\(/);
+    assert.match(
+      source,
+      /process\.type !== 'browser'/,
+      'the main process loads config.js and cannot load .ts'
+    );
+  });
+
+  it('an LSP request reads a stack only while profiling', () => {
+    const source = fs.readFileSync(path.join(ROOT, 'src', 'lsp', 'index.js'), 'utf8');
+    const body = source.slice(source.indexOf('async function request('));
+    const guardAt = body.indexOf('!profiler.enabled) return pending');
+    const ownerAt = body.indexOf('profiler.ownerOfCaller()');
+    assert.ok(guardAt !== -1 && ownerAt > guardAt, 'the stack is read after the guard');
+    assert.match(body, /profiler\.record\('lsp', owner/);
+  });
+
+  it('keeps waiting out of the totals', () => {
+    const profiler = new PackageProfiler();
+    profiler.start();
+    profiler.record('lsp', 'symbols-view', 300);
+    profiler.record('command', 'symbols-view', 2);
+    const entry = profiler.report()[0];
+    assert.strictEqual(entry.total, 2);
+    assert.strictEqual(entry.byKind.lsp.total, 300, 'but still reports it');
+  });
+});
+
 describe('measurement', () => {
   it('records nothing while stopped', () => {
     const profiler = new PackageProfiler();
@@ -346,5 +602,36 @@ describe('report', () => {
   it('says so when profiling is stopped', () => {
     const text = formatProfilerReport([], null);
     assert.match(text, /stopped/);
+  });
+
+  it('shows every kind the profiler records', () => {
+    const text = formatProfilerReport(
+      [
+        {
+          owner: 'whitespace',
+          total: 3,
+          byKind: {
+            save: { count: 2, total: 1, p50: 0.5, p95: 0.5, max: 0.5 },
+            config: { count: 4, total: 2, p50: 0.5, p95: 0.5, max: 0.5 },
+            lsp: { count: 1, total: 120, p50: 120, p95: 120, max: 120 }
+          }
+        }
+      ],
+      1
+    );
+    assert.match(text, /\bsave\b/);
+    assert.match(text, /\bconfig\b/);
+    assert.match(text, /\blsp\b/);
+  });
+
+  it('timecop lists the same kinds, in the same order', () => {
+    const { KINDS } = loadTs('src/package-profiler-report.ts');
+    const view = fs.readFileSync(
+      path.join(ROOT, 'packages', 'timecop', 'lib', 'session-panel-view.js'),
+      'utf8'
+    );
+    const match = /const KIND_ORDER = (\[[^\]]*\]);/.exec(view);
+    assert.ok(match, 'session-panel-view.js declares KIND_ORDER');
+    assert.deepEqual(JSON.parse(match[1].replace(/'/g, '"')), KINDS);
   });
 });

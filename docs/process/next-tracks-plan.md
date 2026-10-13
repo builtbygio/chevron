@@ -1,7 +1,10 @@
 # Next tracks — profiler, per-root config, and the agent host
 
-**Status: open.** Scoping only; no code has moved. Three tracks in the order
-they should happen, and why that order: each one makes the next cheaper.
+**Status: in progress.** Track 1 is done: the profiler is in core, timecop is
+the view, and the smoke test gates its overhead (#430). Track 2 has shipped as
+per-root config (`docs/reference/config-precedence.md`). Track 3 has started
+with the diff review surface. Three tracks in the order they should happen,
+and why that order: each one makes the next cheaper.
 
 A fourth — remote editing over SSH — was scoped and then **dropped** (owner,
 2026-09-04). §4 keeps the costing, because the question will come back and the
@@ -64,6 +67,26 @@ it. `timecop` becomes the view; the measurement belongs in core beside
 measure with counters and sampled timings, not a wrapper on every call.
 **Gate:** a CI check that the profiler's own overhead stays under a threshold on
 the smoke probe.
+
+### What shipped
+
+`src/package-profiler.ts`, with timecop's Session panel as the view (#430).
+Where it differs from the shape above:
+
+- Event subscriptions are wrapped where core hands them out — `TextEditor`,
+  `Workspace` observers, `TextBuffer` save hooks, `Config` change listeners —
+  not in `Emitter` itself, which would also time core listening to core.
+- IPC covers the blocking `atom-fs-*` calls and `lsp:request` waits. The LSP
+  waits are reported as their own kind and left out of the totals, because
+  they are latency, not main-thread time. Search is not covered: ripgrep runs
+  in the main process and streams results back, so the renderer never blocks
+  on it.
+- Attribution takes the nearest package frame on the registration stack.
+  Taking the nearest frame of any kind billed nearly everything to core, since
+  most subscriptions go through a core method.
+- The gate is in `script/ci/smoke-test.js`: alternating rounds of edits on a
+  real editor, profiled against unprofiled, must stay within 1.5x. A separate
+  node test checks that the "off" path is a single boolean check.
 
 ---
 

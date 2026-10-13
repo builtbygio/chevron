@@ -9,7 +9,7 @@
 
 import type { OwnerReport } from './package-profiler';
 
-const KINDS = ['command', 'event', 'decoration', 'ipc'];
+export const KINDS = ['command', 'event', 'save', 'config', 'decoration', 'ipc', 'lsp'];
 
 function pad(text: string, width: number): string {
   return text.length >= width ? text : text + ' '.repeat(width - text.length);
@@ -41,8 +41,9 @@ export function formatProfilerReport(
     'Time a package spent on your behalf **after activation**: command'
   );
   lines.push(
-    'handlers, editor and workspace subscriptions, and blocking IPC.'
+    'handlers, editor, workspace, save and config subscriptions, and'
   );
+  lines.push('blocking IPC.');
   lines.push('`timecop` covers load and activate; this covers the rest.');
   lines.push('');
   lines.push(
@@ -98,8 +99,19 @@ export function formatProfilerReport(
   lines.push(
     'happened, since a blocking call cannot see who asked for it.'
   );
+  lines.push('');
+  lines.push(
+    '`lsp` is time spent waiting on a language server, billed to the package'
+  );
+  lines.push(
+    'that asked. It is latency, not main-thread time, so it is left out of'
+  );
+  lines.push(
+    'the totals. `save` includes waiting for an async will-save handler,'
+  );
+  lines.push('since the save holds until it resolves.');
 
   return lines.join('\n') + '\n';
 }
 
-module.exports = { formatProfilerReport };
+module.exports = { formatProfilerReport, KINDS };

@@ -36,6 +36,7 @@ var import_etch = __toESM(require("etch"));
 var import_cache_panel_view = __toESM(require("./cache-panel-view"));
 var import_package_panel_view = __toESM(require("./package-panel-view"));
 var import_window_panel_view = __toESM(require("./window-panel-view"));
+var import_session_panel_view = __toESM(require("./session-panel-view"));
 class TimecopView {
   constructor({ uri }) {
     this.uri = uri;
@@ -55,10 +56,11 @@ class TimecopView {
   update() {
   }
   destroy() {
+    this.refs.sessionPanel.destroy();
     return import_etch.default.destroy(this);
   }
   render() {
-    return /* @__PURE__ */ import_etch.default.dom("div", { className: "timecop pane-item native-key-bindings", tabIndex: "-1" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "timecop-panel" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "panels" }, /* @__PURE__ */ import_etch.default.dom(import_window_panel_view.default, { ref: "windowLoadingPanel" }), /* @__PURE__ */ import_etch.default.dom(import_cache_panel_view.default, { ref: "cacheLoadingPanel" })), /* @__PURE__ */ import_etch.default.dom("div", { className: "panels" }, /* @__PURE__ */ import_etch.default.dom(import_package_panel_view.default, { ref: "packageLoadingPanel", title: "Package Loading" }), /* @__PURE__ */ import_etch.default.dom(import_package_panel_view.default, { ref: "packageActivationPanel", title: "Package Activation" }), /* @__PURE__ */ import_etch.default.dom(import_package_panel_view.default, { ref: "themeLoadingPanel", title: "Theme Loading" }), /* @__PURE__ */ import_etch.default.dom(import_package_panel_view.default, { ref: "themeActivationPanel", title: "Theme Activation" }))));
+    return /* @__PURE__ */ import_etch.default.dom("div", { className: "timecop pane-item native-key-bindings", tabIndex: "-1" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "timecop-panel" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "panels" }, /* @__PURE__ */ import_etch.default.dom(import_session_panel_view.default, { ref: "sessionPanel" })), /* @__PURE__ */ import_etch.default.dom("div", { className: "panels" }, /* @__PURE__ */ import_etch.default.dom(import_window_panel_view.default, { ref: "windowLoadingPanel" }), /* @__PURE__ */ import_etch.default.dom(import_cache_panel_view.default, { ref: "cacheLoadingPanel" })), /* @__PURE__ */ import_etch.default.dom("div", { className: "panels" }, /* @__PURE__ */ import_etch.default.dom(import_package_panel_view.default, { ref: "packageLoadingPanel", title: "Package Loading" }), /* @__PURE__ */ import_etch.default.dom(import_package_panel_view.default, { ref: "packageActivationPanel", title: "Package Activation" }), /* @__PURE__ */ import_etch.default.dom(import_package_panel_view.default, { ref: "themeLoadingPanel", title: "Theme Loading" }), /* @__PURE__ */ import_etch.default.dom(import_package_panel_view.default, { ref: "themeActivationPanel", title: "Theme Activation" }))));
   }
   populateLoadingViews() {
     this.showLoadedPackages();
