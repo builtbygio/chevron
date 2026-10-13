@@ -10,7 +10,8 @@ to the one beside it, *what is in this file?*
   pinned to the top of the editor.
 - **Outline** (`outline:toggle`, View › Toggle Outline): the active file's
   structure as a tree in the right dock. The entry holding the cursor is
-  highlighted, and clicking one goes to it.
+  highlighted, and clicking one goes to it. `outline:focus` puts the keyboard
+  in it; it has no default keybinding.
 
 ---
 
@@ -98,7 +99,8 @@ so every grammar with folds has an outline.
 - **Collapse state is keyed by name, not by position.** A key is the entry's
   label and its count among same-named siblings, under its parent's key. So an
   entry stays collapsed while lines are added above it, and overloads stay
-  distinct. State is kept per file for the session.
+  distinct. State is kept per file for the session, for the 200 files most
+  recently shown, so a long session does not keep every file it ever opened.
 - **A collapsed entry stands in for its contents.** If the cursor is inside a
   collapsed entry, that entry is highlighted. Nothing is expanded behind the
   user's back.
@@ -108,8 +110,25 @@ so every grammar with folds has an outline.
   covers all three. While shown it refreshes on stop-changing, which already
   waits for a pause in typing. A server request is asynchronous, and the fold
   walk is the same capped, cached one breadcrumbs uses.
+- **Too large to outline.** With no server and a file over `MAX_LINES`, there
+  are no folds to fall back on. The panel says "This file is too large to
+  outline without a language server." rather than "Nothing to outline", which
+  would claim the file has no structure.
+- **A server that starts late.** Opening a file is what starts its server, so
+  the first outline is usually folds. `chevron.lsp.onDidStartServer` fires once
+  the server for the active file has finished `initialize`, and the outline
+  asks again and swaps in symbols.
+- **One tab stop.** The tree follows the WAI-ARIA tree pattern: one row at a
+  time has `tabIndex` 0 (a roving tab index), and each `treeitem` carries
+  `aria-selected` (holds the cursor) and, if it has children, `aria-expanded`.
+  Up and Down move between visible rows, Home and End to the first and last.
+  Right expands, or moves to the first child if already open. Left collapses,
+  or moves to the parent if already closed. Enter goes to the entry as a
+  click does, and Space expands or collapses it. Focus and selection are
+  separate: moving with the arrows does not move the editor's cursor.
 - **Restarts.** The panel serializes like any dock item, so it comes back open
-  if it was open.
+  if it was open. Deactivating the package takes the panel out of its dock
+  before destroying it, so a disabled outline does not leave a dead tab.
 
 ## Configuration
 
@@ -124,8 +143,9 @@ so every grammar with folds has an outline.
 | Test | Covers |
 |------|--------|
 | `script/ci/enclosing-scopes.test.js` | ordering, containment at the opening and closing lines, same-line de-duplication, label trimming, that the cache asks the language mode once, and that a file over the line limit is never asked at all |
-| `script/ci/outline.test.js` | symbol trees from `DocumentSymbol` and from flat `SymbolInformation`, fold trees (same-line folds, label-less blocks, input order), the entry holding a row, and keys that survive edits and tell overloads apart |
-| `script/ci/smoke-test.js` | a real grammar producing folds, the trail naming the enclosing blocks outermost first, the right lines pinned after scrolling, and the outline drawing the tree, highlighting the cursor's block, moving the cursor and focusing the editor on a click, and keeping a collapsed entry collapsed across a refresh |
+| `script/ci/outline.test.js` | symbol trees from `DocumentSymbol` and from flat `SymbolInformation`, fold trees (same-line folds, label-less blocks, input order), the entry holding a row, keys that survive edits and tell overloads apart, the keyboard model, the status line (including too large to outline), and the cap on collapse state |
+| `script/ci/lsp-start-event.test.js` | `onDidStartServer` fires after `initialize` rather than on spawn, again on a crash restart, and for a listener that subscribed before the client activated |
+| `script/ci/smoke-test.js` | a real grammar producing folds, the trail naming the enclosing blocks outermost first, the right lines pinned after scrolling, and the outline drawing the tree, highlighting the cursor's block, moving the cursor and focusing the editor on a click, keeping a collapsed entry collapsed across a refresh, and the keyboard: `outline:focus` with a single tab stop, Space, Down, Left twice, and Enter moving the cursor and focusing the editor |
 
 The smoke phase uses a file of its own. Sharing `probe.ts` meant replacing the
 text under the autocomplete and inline-text phases mid-run, and opening it

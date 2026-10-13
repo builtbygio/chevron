@@ -7,7 +7,7 @@
   "repository": "https://github.com/builtbygio/chevron",
   "engines": { "chevron": "*", "atom": "*" },
   "activationCommands": {
-    "atom-workspace": ["outline:toggle"]
+    "atom-workspace": ["outline:toggle", "outline:focus"]
   },
   "deserializers": {
     "outline/OutlineView": "deserializeOutlineView"

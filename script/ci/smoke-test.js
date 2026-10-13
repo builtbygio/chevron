@@ -1327,6 +1327,57 @@ const CODE_CONTEXT_EXPR = `(function() {
     // The outline panel, on the same file: open it, read the tree and the
     // entry the cursor is in, click an entry, collapse its parent, refresh,
     // and close it again so later phases get the layout they expect.
+    // Keyboard, from where probeOutline leaves things: Outer collapsed, the
+    // cursor moved away to row 100. outline:focus lands on Outer, Space
+    // opens it, Down reaches method(a), Left closes that and Left again goes
+    // up to Outer, then Down and Enter go to method(a) in the editor.
+    var probeOutlineKeyboard = function(editor, view, done) {
+      var read = function() {
+        var snapshot = view.snapshotForTests();
+        var active = document.activeElement;
+        return {
+          focused: snapshot.focused,
+          tabStops: snapshot.tabStops,
+          expanded: active && active.getAttribute
+            ? active.getAttribute('aria-expanded')
+            : null
+        };
+      };
+      var press = function(key) {
+        var target = document.activeElement;
+        if (target) {
+          target.dispatchEvent(
+            new KeyboardEvent('keydown', { key: key, bubbles: true, cancelable: true })
+          );
+        }
+        return read();
+      };
+      editor.setCursorBufferPosition([100, 0]);
+      chevron.commands.dispatch(
+        chevron.views.getView(chevron.workspace),
+        'outline:focus'
+      );
+      setTimeout(function() {
+        try {
+          var keyboard = { focus: read() };
+          keyboard.space = press(' ');
+          keyboard.down = press('ArrowDown');
+          keyboard.left = press('ArrowLeft');
+          keyboard.leftAgain = press('ArrowLeft');
+          press('ArrowDown');
+          press('Enter');
+          keyboard.cursorRowAfterEnter = editor.getCursorBufferPosition().row;
+          var active = document.activeElement;
+          keyboard.editorFocusedAfterEnter = Boolean(
+            active && active.closest && active.closest('atom-text-editor')
+          );
+          done(keyboard);
+        } catch (error) {
+          done({ error: String(error && error.stack) });
+        }
+      }, 800);
+    };
+
     var probeOutline = function(editor, done) {
       var labelRow = function(view, pattern) {
         var rows = view.element.querySelectorAll('.outline-row');
@@ -1366,8 +1417,11 @@ const CODE_CONTEXT_EXPR = `(function() {
               if (outer) outer.querySelector('.outline-twisty').click();
               view.refresh().then(function() {
                 outline.afterCollapse = view.snapshotForTests();
-                chevron.workspace.hide('chevron://outline');
-                done(outline);
+                probeOutlineKeyboard(editor, view, function(keyboard) {
+                  outline.keyboard = keyboard;
+                  chevron.workspace.hide('chevron://outline');
+                  done(outline);
+                });
               });
             } catch (error) {
               done({ error: String(error && error.stack) });
@@ -2554,6 +2608,30 @@ async function main() {
             failures.push(
               `with Outer collapsed the outline highlighted ${JSON.stringify(after.selected)}, not Outer`
             );
+          }
+
+          const keyboard = outline.keyboard || {};
+          const step = (name, expected, actual) => {
+            if (expected !== actual) {
+              failures.push(
+                `outline keyboard, ${name}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`
+              );
+            }
+          };
+          if (keyboard.error) {
+            failures.push(`outline keyboard: ${keyboard.error}`);
+          } else {
+            const at = (snapshot, key) => (snapshot || {})[key];
+            step('outline:focus lands on', 'class Outer', at(keyboard.focus, 'focused'));
+            step('tab stops in the tree', 1, at(keyboard.focus, 'tabStops'));
+            step('Space expands', 'true', at(keyboard.space, 'expanded'));
+            step('Down moves to', 'method(a)', at(keyboard.down, 'focused'));
+            step('Left first collapses', 'false', at(keyboard.left, 'expanded'));
+            step('Left keeps focus on', 'method(a)', at(keyboard.left, 'focused'));
+            step('Left again moves to the parent', 'class Outer', at(keyboard.leftAgain, 'focused'));
+            step('tab stops after moving', 1, at(keyboard.leftAgain, 'tabStops'));
+            step('Enter moves the cursor to row', 1, keyboard.cursorRowAfterEnter);
+            step('Enter focuses the editor', true, keyboard.editorFocusedAfterEnter);
           }
         }
       }

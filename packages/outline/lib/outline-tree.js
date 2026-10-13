@@ -123,4 +123,124 @@ function countNodes(nodes) {
   return count;
 }
 
-module.exports = { fromSymbols, fromFolds, assignKeys, pathAt, countNodes };
+// The rows a reader can see, top to bottom, each with its parent: what the
+// arrow keys walk.
+function visibleRows(nodes, isCollapsed, parent = null, out = []) {
+  for (const node of nodes || []) {
+    out.push({ node, parent });
+    if (node.children.length > 0 && !isCollapsed(node.key)) {
+      visibleRows(node.children, isCollapsed, node, out);
+    }
+  }
+  return out;
+}
+
+// What a key does on the focused row, as the WAI-ARIA tree pattern has it.
+// Returns one of { focus }, { expand }, { collapse }, { reveal } (each a key),
+// or null for a key that does nothing here.
+function keyAction(key, focusedKey, nodes, isCollapsed) {
+  const rows = visibleRows(nodes, isCollapsed);
+  if (rows.length === 0) return null;
+  const index = rows.findIndex(r => r.node.key === focusedKey);
+  if (index === -1) return { focus: rows[0].node.key };
+
+  const { node, parent } = rows[index];
+  const hasChildren = node.children.length > 0;
+  const collapsed = hasChildren && isCollapsed(node.key);
+  switch (key) {
+    case 'ArrowDown':
+      return index + 1 < rows.length
+        ? { focus: rows[index + 1].node.key }
+        : null;
+    case 'ArrowUp':
+      return index > 0 ? { focus: rows[index - 1].node.key } : null;
+    case 'Home':
+      return { focus: rows[0].node.key };
+    case 'End':
+      return { focus: rows[rows.length - 1].node.key };
+    case 'ArrowRight':
+      if (!hasChildren) return null;
+      return collapsed ? { expand: node.key } : { focus: node.children[0].key };
+    case 'ArrowLeft':
+      if (hasChildren && !collapsed) return { collapse: node.key };
+      return parent ? { focus: parent.key } : null;
+    case 'Enter':
+      return { reveal: node.key };
+    case ' ':
+      if (!hasChildren) return null;
+      return collapsed ? { expand: node.key } : { collapse: node.key };
+  }
+  return null;
+}
+
+const KEYS = new Set([
+  'ArrowDown',
+  'ArrowUp',
+  'ArrowRight',
+  'ArrowLeft',
+  'Home',
+  'End',
+  'Enter',
+  ' '
+]);
+
+function statusMessage({ hasEditor, pending, empty, tooLarge }) {
+  if (!hasEditor) return 'Open a file to see its outline.';
+  if (pending || !empty) return '';
+  if (tooLarge) {
+    return 'This file is too large to outline without a language server.';
+  }
+  return 'Nothing to outline in this file.';
+}
+
+// Collapsed entries per file, for the most recently used `limit` files. A
+// session that opens thousands of files keeps only what is likely to be
+// opened again.
+class CollapsedState {
+  constructor(limit = 200) {
+    this.limit = limit;
+    this.byFile = new Map();
+  }
+
+  touch(file) {
+    const set = this.byFile.get(file);
+    if (!set) return;
+    this.byFile.delete(file);
+    this.byFile.set(file, set);
+  }
+
+  has(file, key) {
+    const set = this.byFile.get(file);
+    return Boolean(set && set.has(key));
+  }
+
+  set(file, key, collapsed) {
+    let set = this.byFile.get(file);
+    if (set) this.byFile.delete(file);
+    else set = new Set();
+    if (collapsed) set.add(key);
+    else set.delete(key);
+    if (set.size === 0) return;
+    this.byFile.set(file, set);
+    while (this.byFile.size > this.limit) {
+      this.byFile.delete(this.byFile.keys().next().value);
+    }
+  }
+
+  get size() {
+    return this.byFile.size;
+  }
+}
+
+module.exports = {
+  fromSymbols,
+  fromFolds,
+  assignKeys,
+  pathAt,
+  countNodes,
+  visibleRows,
+  keyAction,
+  KEYS,
+  statusMessage,
+  CollapsedState
+};

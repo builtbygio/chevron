@@ -249,12 +249,6 @@ async function ensureServerForEditor(editor) {
       source: reg.source
     });
     encodingByServerId.set(serverId, 'utf-16');
-    emitter.emit('did-start-server', {
-      serverId,
-      projectRoot,
-      regId: reg.id,
-      source: reg.source
-    });
     return serverId;
   } catch (err) {
     lastNotice = {
@@ -279,6 +273,20 @@ function handleLspEvent(_event, msg) {
           session.positionEncoding = msg.positionEncoding;
           session.capabilities = msg.capabilities;
         }
+      }
+    }
+    // Public "a server can answer now": after initialize, not on spawn, since
+    // a request sent in between has nothing to answer it.
+    for (const session of startedSessions.values()) {
+      if (session.serverId !== msg.serverId) continue;
+      if (emitter) {
+        emitter.emit('did-start-server', {
+          serverId: session.serverId,
+          projectRoot: session.projectRoot,
+          regId: session.regId,
+          source: session.source,
+          restarted: Boolean(msg.restarted)
+        });
       }
     }
     // Crash restart: re-open open buffers so the new process has document state
@@ -536,13 +544,15 @@ function getLspService() {
   return Object.assign({}, service, { registerServer: registerServerAndStart });
 }
 
+// Packages can subscribe before activate(): a dock item is deserialized while
+// the workspace loads, and the client activates only after that.
+function events() {
+  if (!emitter) emitter = new Emitter();
+  return emitter;
+}
+
 function getDiagnosticsService() {
-  if (!emitter) {
-    // Allow service construction after activate; create a no-op emitter shape
-    const { Emitter } = require('event-kit');
-    emitter = new Emitter();
-  }
-  return createDiagnosticsService(diagnosticsByUri, emitter, uri => {
+  return createDiagnosticsService(diagnosticsByUri, events(), uri => {
     const serverId = diagnosticsServerByUri.get(uri);
     return (serverId && encodingByServerId.get(serverId)) || 'utf-16';
   });
@@ -577,7 +587,7 @@ function activate() {
   if (activated) return exports;
   activated = true;
   disposables = new CompositeDisposable();
-  emitter = new Emitter();
+  events();
 
   ipcRenderer.invoke('lsp:subscribe').catch(() => {});
   ipcRenderer.on('lsp:event', handleLspEvent);
@@ -765,23 +775,23 @@ function getDiagnostics(uri) {
 }
 
 function onDidPublishDiagnostics(cb) {
-  return emitter.on('did-publish-diagnostics', cb);
+  return events().on('did-publish-diagnostics', cb);
 }
 
 function onDidChangeTrustNeeded(cb) {
-  return emitter.on('did-change-trust-needed', cb);
+  return events().on('did-change-trust-needed', cb);
 }
 
 function onDidRequestTrustPrompt(cb) {
-  return emitter.on('did-request-trust-prompt', cb);
+  return events().on('did-request-trust-prompt', cb);
 }
 
 function onDidFailStart(cb) {
-  return emitter.on('did-fail-start', cb);
+  return events().on('did-fail-start', cb);
 }
 
 function onDidNoServer(cb) {
-  return emitter.on('did-no-server', cb);
+  return events().on('did-no-server', cb);
 }
 
 function getPendingNotice() {
@@ -805,40 +815,44 @@ async function startServersForOpenEditors() {
   }
 }
 
+function onDidStartServer(cb) {
+  return events().on('did-start-server', cb);
+}
+
 function onDidServerExit(cb) {
-  return emitter.on('did-server-exit', cb);
+  return events().on('did-server-exit', cb);
 }
 
 function onDidServerRestarting(cb) {
-  return emitter.on('did-server-restarting', cb);
+  return events().on('did-server-restarting', cb);
 }
 
 function onDidRequestHover(cb) {
-  return emitter.on('did-request-hover', cb);
+  return events().on('did-request-hover', cb);
 }
 
 function onDidRequestDefinition(cb) {
-  return emitter.on('did-request-definition', cb);
+  return events().on('did-request-definition', cb);
 }
 
 function onDidRequestSignatureHelp(cb) {
-  return emitter.on('did-request-signature-help', cb);
+  return events().on('did-request-signature-help', cb);
 }
 
 function onDidRequestReferences(cb) {
-  return emitter.on('did-request-references', cb);
+  return events().on('did-request-references', cb);
 }
 
 function onDidRequestRename(cb) {
-  return emitter.on('did-request-rename', cb);
+  return events().on('did-request-rename', cb);
 }
 
 function onDidRequestCodeActions(cb) {
-  return emitter.on('did-request-code-actions', cb);
+  return events().on('did-request-code-actions', cb);
 }
 
 function onDidRequestDocumentSymbols(cb) {
-  return emitter.on('did-request-document-symbols', cb);
+  return events().on('did-request-document-symbols', cb);
 }
 
 module.exports = {
@@ -855,6 +869,7 @@ module.exports = {
   onDidFailStart,
   onDidNoServer,
   getPendingNotice,
+  onDidStartServer,
   onDidServerExit,
   onDidServerRestarting,
   onDidRequestHover,

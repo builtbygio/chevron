@@ -78,6 +78,20 @@ keeps the nesting, for the outline panel. `range` is the whole symbol and
 `selectionRange` its name. A server answering with flat `SymbolInformation`
 is nested by range. `[]` when no server owns the file.
 
+### Server start
+
+```js
+chevron.lsp.onDidStartServer(({ serverId, projectRoot, regId, source, restarted }) => {});
+```
+
+Fires once a server has answered `initialize`, not when its process is
+spawned: a request sent in between reaches a server that cannot answer yet.
+It fires again after a crash restart, with `restarted: true`. Compare
+`serverId` with `getServerIdForEditor(editor)` to tell whether it is the
+server for a given file. Like the other `on*` methods, it can be called
+before the client activates, as a dock item restored during workspace load
+does.
+
 ## Commands
 
 | Command | Default binding |
