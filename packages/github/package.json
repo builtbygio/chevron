@@ -126,6 +126,12 @@
       "default": false,
       "description": "Show change regions within a file patch with icons in addition to color"
     },
+    "inlineBlame": {
+      "type": "boolean",
+      "default": true,
+      "title": "Inline Blame",
+      "description": "Show who last changed the cursor's line, when, and the commit summary at the end of that line. Hover for the full commit; click to open it."
+    },
     "excludedUsers": {
       "type": "string",
       "default": "",

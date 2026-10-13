@@ -181,6 +181,7 @@ class Present extends _state.default {
         keys.add(_keys.Keys.statusBundle);
         keys.add(_keys.Keys.headDescription);
         keys.add(_keys.Keys.authors);
+        keys.add(_keys.Keys.blame.all);
         continue;
       }
 
@@ -190,6 +191,7 @@ class Present extends _state.default {
         keys.add(_keys.Keys.recentCommits);
         keys.add(_keys.Keys.headDescription);
         keys.add(_keys.Keys.authors);
+        keys.add(_keys.Keys.blame.all);
         continue;
       }
 
@@ -216,6 +218,7 @@ class Present extends _state.default {
         keys.add(key);
       }
 
+      keys.add(_keys.Keys.blame.oneWith(relativePath));
       keys.add(_keys.Keys.statusBundle);
     }
     /* istanbul ignore else */
@@ -758,6 +761,22 @@ class Present extends _state.default {
       });
       const commit = new _commit.default(rawCommit);
       return commit;
+    });
+  }
+
+  // Blame for a path relative to the working directory. The file on disk is
+  // cached until it changes or HEAD moves; `contents` (an unsaved buffer) is not.
+  getBlame(filePath, {
+    contents = null
+  } = {}) {
+    if (contents !== null) {
+      return this.git().blame(filePath, {
+        contents
+      });
+    }
+
+    return this.cache.getOrSet(_keys.Keys.blame.oneWith(filePath), () => {
+      return this.git().blame(filePath);
     });
   }
 

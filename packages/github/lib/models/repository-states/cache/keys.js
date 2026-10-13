@@ -129,6 +129,10 @@ const Keys = {
   blob: {
     oneWith: sha => new CacheKey(`blob:${sha}`, ['blob'])
   },
+  blame: {
+    oneWith: fileName => new CacheKey(`blame:${fileName}`, ['blame']),
+    all: new GroupKey('blame')
+  },
   // Common collections of keys and patterns for use with invalidate().
   workdirOperationKeys: fileNames => [Keys.statusBundle, ...Keys.filePatch.eachWithFileOpts(fileNames, [{
     staged: false
@@ -138,6 +142,6 @@ const Keys = {
   }]), ...fileNames.map(Keys.index.oneWith), Keys.stagedChanges],
   headOperationKeys: () => [Keys.headDescription, Keys.branches, ...Keys.filePatch.eachWithOpts({
     staged: true
-  }), Keys.filePatch.allAgainstNonHead, Keys.stagedChanges, Keys.lastCommit, Keys.recentCommits, Keys.authors, Keys.statusBundle]
+  }), Keys.filePatch.allAgainstNonHead, Keys.stagedChanges, Keys.lastCommit, Keys.recentCommits, Keys.authors, Keys.statusBundle, Keys.blame.all]
 };
 exports.Keys = Keys;

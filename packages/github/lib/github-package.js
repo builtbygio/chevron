@@ -23,6 +23,8 @@ var _workdirContext = _interopRequireDefault(require("./models/workdir-context")
 
 var _workdirContextPool = _interopRequireDefault(require("./models/workdir-context-pool"));
 
+var _inlineBlameController = _interopRequireDefault(require("./controllers/inline-blame-controller"));
+
 var _repository = _interopRequireDefault(require("./models/repository"));
 
 var _styleCalculator = _interopRequireDefault(require("./models/style-calculator"));
@@ -295,6 +297,14 @@ class GithubPackage {
         shouldDisplay: hasSelectedFiles
       }]
     }));
+    this.inlineBlame = new _inlineBlameController.default({
+      workspace: this.workspace,
+      config: this.config,
+      commands: this.commands,
+      tooltips: this.tooltips,
+      contextPool: this.contextPool
+    });
+    this.subscriptions.add(new _eventKit.Disposable(() => this.inlineBlame.destroy()));
     this.activated = true;
     this.scheduleActiveContextUpdate({
       usePath: savedState.activeRepositoryPath,
