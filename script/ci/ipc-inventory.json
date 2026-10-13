@@ -7,8 +7,7 @@
     "validation": "none",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:app-get-jump-list-settings",
@@ -18,8 +17,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:app-get-jump-list-settings-sync",
@@ -29,8 +27,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-app-get-jump-list-settings-sync"
+    ]
   },
   {
     "channel": "chevron:app-get-path-sync",
@@ -40,8 +37,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-app-get-path-sync"
+    ]
   },
   {
     "channel": "chevron:app-get-version-sync",
@@ -51,8 +47,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-app-get-version-sync"
+    ]
   },
   {
     "channel": "chevron:app-set-jump-list",
@@ -63,8 +58,7 @@
     "effect": [
       "spawn",
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:app-set-jump-list-sync",
@@ -75,8 +69,7 @@
     "effect": [
       "spawn",
       "ui"
-    ],
-    "legacyName": "atom-app-set-jump-list-sync"
+    ]
   },
   {
     "channel": "chevron:browser-window-call-sync",
@@ -86,8 +79,7 @@
     "validation": "partial",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-browser-window-call-sync"
+    ]
   },
   {
     "channel": "chevron:bw-id-call-sync",
@@ -98,8 +90,7 @@
     "effect": [
       "spawn",
       "network"
-    ],
-    "legacyName": "atom-bw-id-call-sync"
+    ]
   },
   {
     "channel": "chevron:center-window",
@@ -109,8 +100,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:clipboard-read-find-text-sync",
@@ -120,8 +110,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-clipboard-read-find-text-sync"
+    ]
   },
   {
     "channel": "chevron:clipboard-read-text-sync",
@@ -131,8 +120,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-clipboard-read-text-sync"
+    ]
   },
   {
     "channel": "chevron:clipboard-write-find-text-sync",
@@ -142,8 +130,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-clipboard-write-find-text-sync"
+    ]
   },
   {
     "channel": "chevron:clipboard-write-text-sync",
@@ -153,8 +140,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-clipboard-write-text-sync"
+    ]
   },
   {
     "channel": "chevron:command",
@@ -164,8 +150,7 @@
     "validation": "none",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:context-menu",
@@ -175,8 +160,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-context-menu"
+    ]
   },
   {
     "channel": "chevron:create-browser-window-sync",
@@ -186,8 +170,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-create-browser-window-sync"
+    ]
   },
   {
     "channel": "chevron:destroy-own-window-sync",
@@ -197,8 +180,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-destroy-own-window-sync"
+    ]
   },
   {
     "channel": "chevron:did-change-history-manager",
@@ -208,8 +190,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:did-prepare-to-unload",
@@ -219,8 +200,7 @@
     "validation": "partial",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:did-save-path",
@@ -230,8 +210,7 @@
     "validation": "none",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:execute-javascript-in-dev-tools",
@@ -241,8 +220,7 @@
     "validation": "none",
     "effect": [
       "eval"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:focus-window",
@@ -252,8 +230,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:fs-copy-sync",
@@ -263,8 +240,7 @@
     "validation": "full",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": "atom-fs-copy-sync"
+    ]
   },
   {
     "channel": "chevron:fs-exists-sync",
@@ -274,8 +250,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-fs-exists-sync"
+    ]
   },
   {
     "channel": "chevron:fs-list-sync",
@@ -285,8 +260,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-fs-list-sync"
+    ]
   },
   {
     "channel": "chevron:fs-mkdirp-sync",
@@ -296,8 +270,7 @@
     "validation": "full",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": "atom-fs-mkdirp-sync"
+    ]
   },
   {
     "channel": "chevron:fs-move-sync",
@@ -307,8 +280,7 @@
     "validation": "full",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": "atom-fs-move-sync"
+    ]
   },
   {
     "channel": "chevron:fs-path-kind-sync",
@@ -318,8 +290,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-fs-path-kind-sync"
+    ]
   },
   {
     "channel": "chevron:fs-read-file-sync",
@@ -329,8 +300,7 @@
     "validation": "partial",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-fs-read-file-sync"
+    ]
   },
   {
     "channel": "chevron:fs-readdir-sync",
@@ -340,8 +310,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-fs-readdir-sync"
+    ]
   },
   {
     "channel": "chevron:fs-realpath-sync",
@@ -351,8 +320,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-fs-realpath-sync"
+    ]
   },
   {
     "channel": "chevron:fs-refresh-roots-sync",
@@ -362,8 +330,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-fs-refresh-roots-sync"
+    ]
   },
   {
     "channel": "chevron:fs-rename-sync",
@@ -373,8 +340,7 @@
     "validation": "full",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": "atom-fs-rename-sync"
+    ]
   },
   {
     "channel": "chevron:fs-rmdir-sync",
@@ -384,8 +350,7 @@
     "validation": "full",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": "atom-fs-rmdir-sync"
+    ]
   },
   {
     "channel": "chevron:fs-stat-no-exception-sync",
@@ -395,8 +360,7 @@
     "validation": "partial",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-fs-stat-no-exception-sync"
+    ]
   },
   {
     "channel": "chevron:fs-stat-sync",
@@ -406,8 +370,7 @@
     "validation": "partial",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-fs-stat-sync"
+    ]
   },
   {
     "channel": "chevron:fs-write-file-sync",
@@ -417,8 +380,7 @@
     "validation": "full",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": "atom-fs-write-file-sync"
+    ]
   },
   {
     "channel": "chevron:get-auto-update-manager-error-sync",
@@ -428,8 +390,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:get-auto-update-manager-state-sync",
@@ -439,8 +400,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:get-current-window-id-sync",
@@ -450,8 +410,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-get-current-window-id-sync"
+    ]
   },
   {
     "channel": "chevron:get-primary-display-work-area-size",
@@ -461,8 +420,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:get-primary-display-work-area-size-sync",
@@ -472,8 +430,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-get-primary-display-work-area-size-sync"
+    ]
   },
   {
     "channel": "chevron:get-temporary-window-state",
@@ -483,8 +440,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:get-user-default",
@@ -494,8 +450,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:get-user-default-sync",
@@ -505,8 +460,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-get-user-default-sync"
+    ]
   },
   {
     "channel": "chevron:get-web-contents-id-sync",
@@ -516,8 +470,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-get-web-contents-id-sync"
+    ]
   },
   {
     "channel": "chevron:hide-window",
@@ -527,8 +480,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:is-default-protocol-client",
@@ -538,8 +490,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "isDefaultProtocolClient"
+    ]
   },
   {
     "channel": "chevron:is-default-protocol-client-sync",
@@ -549,8 +500,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-is-default-protocol-client-sync"
+    ]
   },
   {
     "channel": "chevron:native-theme",
@@ -560,8 +510,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:native-theme-sync",
@@ -571,8 +520,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:open",
@@ -582,8 +530,7 @@
     "validation": "partial",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:open-chosen-any",
@@ -593,8 +540,7 @@
     "validation": "none",
     "effect": [
       "dialog"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:open-chosen-file",
@@ -604,8 +550,7 @@
     "validation": "none",
     "effect": [
       "dialog"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:open-chosen-folder",
@@ -615,8 +560,7 @@
     "validation": "none",
     "effect": [
       "dialog"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:pick-folder",
@@ -626,8 +570,7 @@
     "validation": "none",
     "effect": [
       "dialog"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:popup-menu",
@@ -637,8 +580,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-popup-menu"
+    ]
   },
   {
     "channel": "chevron:pty-kill",
@@ -648,8 +590,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:pty-resize",
@@ -659,8 +600,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:pty-spawn",
@@ -670,8 +610,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:pty-write",
@@ -681,8 +620,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:remove-as-default-protocol-client",
@@ -692,8 +630,7 @@
     "validation": "full",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": "removeAsDefaultProtocolClient"
+    ]
   },
   {
     "channel": "chevron:resolve-proxy",
@@ -703,8 +640,7 @@
     "validation": "none",
     "effect": [
       "network"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:restart-application",
@@ -714,8 +650,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:rg-search-cancel",
@@ -725,8 +660,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:rg-search-start",
@@ -737,8 +671,7 @@
     "effect": [
       "spawn",
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:run-package-specs",
@@ -748,8 +681,7 @@
     "validation": "none",
     "effect": [
       "spawn"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:set-as-default-protocol-client",
@@ -760,8 +692,7 @@
     "effect": [
       "spawn",
       "write-fs"
-    ],
-    "legacyName": "setAsDefaultProtocolClient"
+    ]
   },
   {
     "channel": "chevron:set-as-default-protocol-client-sync",
@@ -772,8 +703,7 @@
     "effect": [
       "spawn",
       "write-fs"
-    ],
-    "legacyName": "atom-set-as-default-protocol-client-sync"
+    ]
   },
   {
     "channel": "chevron:set-temporary-window-state",
@@ -783,8 +713,7 @@
     "validation": "none",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:set-user-settings",
@@ -794,8 +723,7 @@
     "validation": "partial",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:set-window-position",
@@ -805,8 +733,7 @@
     "validation": "none",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:set-window-size",
@@ -816,8 +743,7 @@
     "validation": "none",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:settings-view-cache-ensure",
@@ -827,8 +753,7 @@
     "validation": "full",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": "atom-settings-view-cache-ensure"
+    ]
   },
   {
     "channel": "chevron:settings-view-cache-list",
@@ -838,8 +763,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-settings-view-cache-list"
+    ]
   },
   {
     "channel": "chevron:settings-view-cache-unlink",
@@ -849,8 +773,7 @@
     "validation": "full",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": "atom-settings-view-cache-unlink"
+    ]
   },
   {
     "channel": "chevron:settings-view-cache-write",
@@ -860,8 +783,7 @@
     "validation": "full",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": "atom-settings-view-cache-write"
+    ]
   },
   {
     "channel": "chevron:shell-beep",
@@ -871,8 +793,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:shell-beep-sync",
@@ -882,8 +803,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-shell-beep-sync"
+    ]
   },
   {
     "channel": "chevron:shell-move-item-to-trash",
@@ -893,8 +813,7 @@
     "validation": "full",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": "atom-shell-move-item-to-trash"
+    ]
   },
   {
     "channel": "chevron:shell-open-external",
@@ -904,8 +823,7 @@
     "validation": "full",
     "effect": [
       "network"
-    ],
-    "legacyName": "atom-shell-open-external"
+    ]
   },
   {
     "channel": "chevron:shell-show-item-in-folder",
@@ -915,8 +833,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-shell-show-item-in-folder"
+    ]
   },
   {
     "channel": "chevron:show-message-box",
@@ -926,8 +843,7 @@
     "validation": "full",
     "effect": [
       "dialog"
-    ],
-    "legacyName": "atom-show-message-box"
+    ]
   },
   {
     "channel": "chevron:show-message-box-sync",
@@ -937,8 +853,7 @@
     "validation": "full",
     "effect": [
       "dialog"
-    ],
-    "legacyName": "atom-show-message-box-sync"
+    ]
   },
   {
     "channel": "chevron:show-open-dialog",
@@ -948,8 +863,7 @@
     "validation": "full",
     "effect": [
       "dialog"
-    ],
-    "legacyName": "atom-show-open-dialog"
+    ]
   },
   {
     "channel": "chevron:show-save-dialog",
@@ -959,8 +873,7 @@
     "validation": "full",
     "effect": [
       "dialog"
-    ],
-    "legacyName": "atom-show-save-dialog"
+    ]
   },
   {
     "channel": "chevron:show-window",
@@ -970,8 +883,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:update-application-menu",
@@ -981,8 +893,7 @@
     "validation": "none",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:utility-worker-capabilities",
@@ -992,8 +903,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-utility-worker-capabilities"
+    ]
   },
   {
     "channel": "chevron:utility-worker-create-sync",
@@ -1003,8 +913,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": "atom-utility-worker-create-sync"
+    ]
   },
   {
     "channel": "chevron:utility-worker-destroy-sync",
@@ -1014,8 +923,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": "atom-utility-worker-destroy-sync"
+    ]
   },
   {
     "channel": "chevron:utility-worker-enabled-sync",
@@ -1025,8 +933,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-utility-worker-enabled-sync"
+    ]
   },
   {
     "channel": "chevron:utility-worker-is-destroyed-sync",
@@ -1036,8 +943,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-utility-worker-is-destroyed-sync"
+    ]
   },
   {
     "channel": "chevron:utility-worker-load-sync",
@@ -1048,8 +954,7 @@
     "effect": [
       "spawn",
       "network"
-    ],
-    "legacyName": "atom-utility-worker-load-sync"
+    ]
   },
   {
     "channel": "chevron:utility-worker-send",
@@ -1059,8 +964,7 @@
     "validation": "partial",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-utility-worker-send"
+    ]
   },
   {
     "channel": "chevron:wc-is-destroyed-sync",
@@ -1070,8 +974,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-wc-is-destroyed-sync"
+    ]
   },
   {
     "channel": "chevron:wc-send",
@@ -1081,8 +984,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-wc-send"
+    ]
   },
   {
     "channel": "chevron:web-contents-call-sync",
@@ -1092,8 +994,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-web-contents-call-sync"
+    ]
   },
   {
     "channel": "chevron:webcontents-send-to-window-id",
@@ -1103,8 +1004,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": "atom-webcontents-send-to-window-id"
+    ]
   },
   {
     "channel": "chevron:will-save-path",
@@ -1114,8 +1014,7 @@
     "validation": "none",
     "effect": [
       "write-fs"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:window-command",
@@ -1125,8 +1024,7 @@
     "validation": "none",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:window-load-settings-sync",
@@ -1136,8 +1034,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-window-load-settings-sync"
+    ]
   },
   {
     "channel": "chevron:window-method",
@@ -1147,8 +1044,7 @@
     "validation": "partial",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:window-set-project-roots-sync",
@@ -1159,8 +1055,7 @@
     "effect": [
       "write-fs",
       "read"
-    ],
-    "legacyName": "atom-window-set-project-roots-sync"
+    ]
   },
   {
     "channel": "chevron:window-startup-markers-sync",
@@ -1170,8 +1065,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": "atom-window-startup-markers-sync"
+    ]
   },
   {
     "channel": "chevron:write-text-to-selection-clipboard",
@@ -1181,8 +1075,7 @@
     "validation": "none",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:write-to-stderr",
@@ -1192,8 +1085,7 @@
     "validation": "none",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "chevron:write-to-stdout",
@@ -1203,8 +1095,7 @@
     "validation": "none",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:get-trust-state",
@@ -1214,8 +1105,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:is-trusted",
@@ -1225,8 +1115,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:list-servers",
@@ -1236,8 +1125,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:list-trusted",
@@ -1247,8 +1135,7 @@
     "validation": "full",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:notify",
@@ -1258,8 +1145,7 @@
     "validation": "partial",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:register-server",
@@ -1269,8 +1155,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:request",
@@ -1280,8 +1165,7 @@
     "validation": "partial",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:respond",
@@ -1291,8 +1175,7 @@
     "validation": "partial",
     "effect": [
       "read"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:set-trust",
@@ -1302,8 +1185,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:start-server",
@@ -1313,8 +1195,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:stop-server",
@@ -1324,8 +1205,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:subscribe",
@@ -1335,8 +1215,7 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:unregister-server",
@@ -1346,8 +1225,7 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ],
-    "legacyName": null
+    ]
   },
   {
     "channel": "lsp:unsubscribe",
@@ -1357,7 +1235,6 @@
     "validation": "full",
     "effect": [
       "ui"
-    ],
-    "legacyName": null
+    ]
   }
 ]
