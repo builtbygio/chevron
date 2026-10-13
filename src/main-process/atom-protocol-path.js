@@ -23,7 +23,9 @@ function pathContained(root, target) {
 }
 
 /**
- * Strip scheme and query/hash; normalize; reject empty / absolute / still-`..`.
+ * Strip scheme and query/hash; percent-decode; normalize; reject empty /
+ * absolute / still-`..`. Decoding comes before the `..` check, so `%2e%2e`
+ * is rejected like `..`.
  */
 function relativePathFromAtomUrl(url) {
   if (typeof url !== 'string' || url.length === 0) return null;
@@ -39,6 +41,13 @@ function relativePathFromAtomUrl(url) {
   if (q !== -1) raw = raw.slice(0, q);
   const h = raw.indexOf('#');
   if (h !== -1) raw = raw.slice(0, h);
+
+  try {
+    raw = decodeURIComponent(raw);
+  } catch (error) {
+    // A lone `%` is a literal character in a file name, not an escape.
+  }
+  if (raw.includes('\0')) return null;
 
   let relativePath = path.normalize(raw.replace(/\\/g, '/'));
   const parts = relativePath.split(/[/\\]/).filter(p => p && p !== '.');

@@ -1,5 +1,5 @@
 const { net, protocol } = require('electron');
-const fs = require('fs-plus');
+const fs = require('fs');
 const path = require('path');
 const { pathToFileURL } = require('url');
 const {
@@ -41,20 +41,14 @@ module.exports = class AtomProtocolHandler {
     this.registerScheme('chevron');
   }
 
+  // Not protocol.registerFileProtocol: deprecated since Electron 25 yet still
+  // present, so a feature check that prefers it never reaches protocol.handle.
   registerScheme(scheme) {
-    if (typeof protocol.registerFileProtocol === 'function') {
-      protocol.registerFileProtocol(scheme, (request, callback) => {
-        callback(this.resolveAtomUrl(request.url));
-      });
-    } else {
-      // Electron 25+ replacement; registerFileProtocol was removed after
-      // a long deprecation. Serve the resolved file via net.fetch.
-      protocol.handle(scheme, request => {
-        const filePath = this.resolveAtomUrl(request.url);
-        if (!filePath) return new Response('', { status: 404 });
-        return net.fetch(pathToFileURL(filePath).toString());
-      });
-    }
+    protocol.handle(scheme, request => {
+      const filePath = this.resolveAtomUrl(request.url);
+      if (!filePath) return new Response('', { status: 404 });
+      return net.fetch(pathToFileURL(filePath).toString());
+    });
   }
 
   resolveAtomUrl(url) {
@@ -71,9 +65,8 @@ module.exports = class AtomProtocolHandler {
     ) {
       const assetsRoot = path.resolve(atomHome, 'assets');
       const assetsPath = path.resolve(atomHome, relativePath);
-      if (pathContained(assetsRoot, assetsPath)) {
-        const stat = fs.statSyncNoException(assetsPath);
-        if (stat && stat.isFile()) return assetsPath;
+      if (pathContained(assetsRoot, assetsPath) && isFile(assetsPath)) {
+        return assetsPath;
       }
       return undefined;
     }
@@ -83,13 +76,20 @@ module.exports = class AtomProtocolHandler {
       const root = path.resolve(loadPath);
       const candidate = path.resolve(root, relativePath);
       if (!pathContained(root, candidate)) continue;
-      const stat = fs.statSyncNoException(candidate);
-      if (stat && stat.isFile()) return candidate;
+      if (isFile(candidate)) return candidate;
     }
 
     return undefined;
   }
 };
+
+function isFile(filePath) {
+  try {
+    return fs.statSync(filePath).isFile();
+  } catch (error) {
+    return false;
+  }
+}
 
 // Re-export helpers for tests / tooling.
 module.exports.pathContained = pathContained;
