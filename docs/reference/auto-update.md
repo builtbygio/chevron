@@ -12,6 +12,7 @@ Every four hours while `core.automaticallyUpdate` is on, and on **Help › Check
 | Build | Mode | Behaviour |
 |-------|------|-----------|
 | Windows (NSIS install) | `in-app` | Downloads the new installer in the background; **Restart and Install Update** (or quitting) runs it silently |
+| Windows (portable zip) | `download-page` | Running the installer would add a second, installed copy and leave this one behind, so the app offers the Releases page. Told apart from an install by the absence of NSIS's `Uninstall Chevron.exe` beside the executable |
 | macOS, signed and notarized | `in-app` | Downloads the universal zip; Squirrel.Mac swaps the bundle on restart |
 | macOS, unsigned preview | `download-page` | Squirrel.Mac refuses unsigned code, so the app offers the Releases page instead |
 | Linux (deb, rpm, tar) | `download-page` | The package manager owns the install; the app offers the Releases page |

@@ -139,10 +139,26 @@ describe('chooseUpdateMode', () => {
       reader.chooseUpdateMode({
         platform: 'win32',
         isPackaged: true,
-        updateConfig: unsigned
+        updateConfig: unsigned,
+        windowsInstall: 'nsis'
       }),
       'in-app'
     );
+  });
+
+  it('keeps the portable Windows zip on the download page (#413)', () => {
+    for (const windowsInstall of ['portable', undefined]) {
+      assert.equal(
+        reader.chooseUpdateMode({
+          platform: 'win32',
+          isPackaged: true,
+          updateConfig: unsigned,
+          windowsInstall
+        }),
+        'download-page',
+        String(windowsInstall)
+      );
+    }
   });
 
   it('keeps an unsigned macOS build on the download page, since Squirrel.Mac would refuse it', () => {
@@ -198,6 +214,28 @@ describe('chooseUpdateMode', () => {
         env: { CHEVRON_UPDATE_FEED_URL: 'http://localhost:9000/' }
       }),
       'in-app'
+    );
+  });
+});
+
+describe('windowsInstallKind', () => {
+  const exe = 'C:\\Users\\me\\AppData\\Local\\Programs\\Chevron\\Chevron.exe';
+
+  it('is nsis where the installer left its uninstaller beside the exe', () => {
+    const readdir = () => ['Chevron.exe', 'Uninstall Chevron.exe', 'resources'];
+    assert.equal(reader.windowsInstallKind(exe, readdir), 'nsis');
+  });
+
+  it('is portable for an unzipped copy, and when the folder cannot be read', () => {
+    assert.equal(
+      reader.windowsInstallKind(exe, () => ['Chevron.exe', 'resources']),
+      'portable'
+    );
+    assert.equal(
+      reader.windowsInstallKind(exe, () => {
+        throw new Error('EACCES');
+      }),
+      'portable'
     );
   });
 });

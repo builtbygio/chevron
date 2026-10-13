@@ -61,22 +61,50 @@ function readUpdateConfig(resourcesPath) {
 }
 
 /**
+ * How a Windows build was installed: 'nsis' or 'portable'.
+ *
+ * The NSIS installer and the portable zip are made from the same packaged
+ * folder, app-update.yml included, so only the install itself tells them
+ * apart: NSIS leaves its uninstaller beside the executable, and an unzipped
+ * copy has none. electron-updater on a portable copy would download the
+ * installer and run it on quit, leaving a second, installed Chevron while
+ * the zip copy stays where it was.
+ */
+function windowsInstallKind(execPath, readdir = fs.readdirSync) {
+  try {
+    const names = readdir(path.dirname(execPath));
+    return names.some(name => /^Uninstall .+\.exe$/i.test(name))
+      ? 'nsis'
+      : 'portable';
+  } catch (error) {
+    return 'portable';
+  }
+}
+
+/**
  * Which update path a build takes.
  *
- *  - `in-app`: electron-updater downloads and installs (NSIS on Windows,
- *    Squirrel.Mac on a signed macOS build).
+ *  - `in-app`: electron-updater downloads and installs (an NSIS install on
+ *    Windows, Squirrel.Mac on a signed macOS build).
  *  - `download-page`: check GitHub Releases and open the page. Linux
- *    (package managers own the install), an unsigned macOS build, or a
- *    packaged build without app-update.yml.
+ *    (package managers own the install), an unsigned macOS build, the
+ *    portable Windows zip, or a packaged build without app-update.yml.
  *  - `unsupported`: not a packaged build.
  */
-function chooseUpdateMode({ platform, isPackaged, updateConfig, env = {} }) {
+function chooseUpdateMode({
+  platform,
+  isPackaged,
+  updateConfig,
+  windowsInstall,
+  env = {}
+}) {
   if (env.CHEVRON_UPDATE_FEED_URL) return IN_APP;
   if (!isPackaged) return UNSUPPORTED;
   if (platform === 'linux') return DOWNLOAD_PAGE;
   if (!updateConfig || !updateConfig.provider) return DOWNLOAD_PAGE;
   if (platform === 'darwin' && updateConfig.codeSigned !== true)
     return DOWNLOAD_PAGE;
+  if (platform === 'win32' && windowsInstall !== 'nsis') return DOWNLOAD_PAGE;
   return IN_APP;
 }
 
@@ -87,5 +115,6 @@ module.exports = {
   parseFlatYaml,
   updateConfigPath,
   readUpdateConfig,
+  windowsInstallKind,
   chooseUpdateMode
 };
