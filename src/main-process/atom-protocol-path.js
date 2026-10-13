@@ -23,6 +23,32 @@ function pathContained(root, target) {
 }
 
 /**
+ * Decode each run of `%XX` escapes as UTF-8, one character at a time, so an
+ * escape that is not valid UTF-8 (`%FF`, a stray continuation byte) and a `%`
+ * that starts no escape (`50% off`) stay literal without stopping the valid
+ * escapes around them from decoding.
+ */
+function decodeEscapes(raw) {
+  return raw.replace(/(?:%[0-9a-fA-F]{2})+/g, run => {
+    const escapes = run.match(/%[0-9a-fA-F]{2}/g);
+    let decoded = '';
+    let i = 0;
+    while (i < escapes.length) {
+      const lead = parseInt(escapes[i].slice(1), 16);
+      const length = lead >= 0xf0 ? 4 : lead >= 0xe0 ? 3 : lead >= 0xc0 ? 2 : 1;
+      try {
+        decoded += decodeURIComponent(escapes.slice(i, i + length).join(''));
+        i += length;
+      } catch (error) {
+        decoded += escapes[i];
+        i += 1;
+      }
+    }
+    return decoded;
+  });
+}
+
+/**
  * Strip scheme and query/hash; percent-decode; normalize; reject empty /
  * absolute / still-`..`. Decoding comes before the `..` check, so `%2e%2e`
  * is rejected like `..`.
@@ -42,11 +68,7 @@ function relativePathFromAtomUrl(url) {
   const h = raw.indexOf('#');
   if (h !== -1) raw = raw.slice(0, h);
 
-  try {
-    raw = decodeURIComponent(raw);
-  } catch (error) {
-    // A lone `%` is a literal character in a file name, not an escape.
-  }
+  raw = decodeEscapes(raw);
   if (raw.includes('\0')) return null;
 
   let relativePath = path.normalize(raw.replace(/\\/g, '/'));

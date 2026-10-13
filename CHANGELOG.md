@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`chevron://` decodes every valid escape, and a symlink cannot leave its package (follow-up to #417).** Decoding was all or nothing, so one literal `%` stopped the rest of the URL decoding: `chevron://pkg/50% off%20x.png` missed `50% off x.png`. Each run of escapes now decodes as UTF-8 on its own, and an escape that is not valid UTF-8 stays literal. Resolution also follows symlinks now: a file whose real path leaves its package directory, or leaves `$ATOM_HOME/assets`, answers 404. A package that is itself a symlink, as `cpm link` installs it, is still served. `script/ci/protocol-handler.test.js`.
+
 - **`chevron://` resources are served through `protocol.handle` (#417).** The handler used the deprecated `protocol.registerFileProtocol` whenever it existed, and Electron 43 still has it, so the `protocol.handle` branch had never run and would have gone to production untested the day Electron removed the old API. Percent-encoded names now resolve too: `chevron://pkg/two%20words.png` used to miss the file. Decoding happens before the traversal check, so `%2e%2e` is refused like `..`. `script/ci/protocol-handler.test.js`.
 
 - **A spec waiting on a condition that never came true hung its suite instead of failing.** The `conditionPromise` helpers (core's and fourteen packages' copies) timed out after 5 seconds of `Date.now`, which the spec helper fakes and only advances through `advanceClock`, so the guard never fired and `script/test` killed the suite after 15 minutes with no message. They measure `performance.now` now; `script/ci/spec-helper-real-time.test.js` keeps it that way.
