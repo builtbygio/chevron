@@ -922,11 +922,11 @@ describe('AtomApplication', function() {
     // * drag and drop
     // * deprecated call links in deprecation-cop
     // * other direct callers of `atom.open()`
-    it('"open" opens a fixed path by the standard opening rules', async function() {
+    it('"chevron:open" opens a fixed path by the standard opening rules', async function() {
       sinon.stub(app, 'atomWindowForEvent').callsFake(() => w1);
 
       electron.ipcMain.emit(
-        'open',
+        'chevron:open',
         {},
         { pathsToOpen: [scenario.convertEditorPath('a/1.md')] }
       );
@@ -934,7 +934,7 @@ describe('AtomApplication', function() {
       await scenario.assert('[a 1.md] [_ _] [b _]');
 
       electron.ipcMain.emit(
-        'open',
+        'chevron:open',
         {},
         { pathsToOpen: [scenario.convertRootPath('c')] }
       );
@@ -942,7 +942,7 @@ describe('AtomApplication', function() {
       await scenario.assert('[a 1.md] [c _] [b _]');
 
       electron.ipcMain.emit(
-        'open',
+        'chevron:open',
         {},
         { pathsToOpen: [scenario.convertRootPath('d')], here: true }
       );
@@ -950,18 +950,18 @@ describe('AtomApplication', function() {
       await scenario.assert('[a 1.md] [c,d _] [b _]');
     });
 
-    it('"open" without any option open the prompt for selecting a path', async function() {
+    it('"chevron:open" without any option open the prompt for selecting a path', async function() {
       sinon.stub(app, 'atomWindowForEvent').callsFake(() => w1);
 
-      electron.ipcMain.emit('open', {});
+      electron.ipcMain.emit('chevron:open', {});
       assert.strictEqual(app.promptForPath.lastCall.args[0], 'all');
     });
 
-    it('"open-chosen-any" opens a file in the sending window', async function() {
+    it('"chevron:open-chosen-any" opens a file in the sending window', async function() {
       sinon.stub(app, 'atomWindowForEvent').callsFake(() => w2);
 
       electron.ipcMain.emit(
-        'open-chosen-any',
+        'chevron:open-chosen-any',
         {},
         scenario.convertEditorPath('a/1.md')
       );
@@ -973,12 +973,12 @@ describe('AtomApplication', function() {
       assert.strictEqual(app.promptForPath.lastCall.args[0], 'all');
     });
 
-    it('"open-chosen-any" opens a directory by the standard opening rules', async function() {
+    it('"chevron:open-chosen-any" opens a directory by the standard opening rules', async function() {
       sinon.stub(app, 'atomWindowForEvent').callsFake(() => w1);
 
       // Open unrecognized directory in empty window
       electron.ipcMain.emit(
-        'open-chosen-any',
+        'chevron:open-chosen-any',
         {},
         scenario.convertRootPath('c')
       );
@@ -991,7 +991,7 @@ describe('AtomApplication', function() {
 
       // Open unrecognized directory in new window
       electron.ipcMain.emit(
-        'open-chosen-any',
+        'chevron:open-chosen-any',
         {},
         scenario.convertRootPath('d')
       );
@@ -1004,7 +1004,7 @@ describe('AtomApplication', function() {
 
       // Open recognized directory in existing window
       electron.ipcMain.emit(
-        'open-chosen-any',
+        'chevron:open-chosen-any',
         {},
         scenario.convertRootPath('a')
       );
@@ -1016,11 +1016,11 @@ describe('AtomApplication', function() {
       assert.strictEqual(app.promptForPath.lastCall.args[0], 'all');
     });
 
-    it('"open-chosen-file" opens a file chooser and opens the chosen file in the sending window', async function() {
+    it('"chevron:open-chosen-file" opens a file chooser and opens the chosen file in the sending window', async function() {
       sinon.stub(app, 'atomWindowForEvent').callsFake(() => w0);
 
       electron.ipcMain.emit(
-        'open-chosen-file',
+        'chevron:open-chosen-file',
         {},
         scenario.convertEditorPath('b/2.md')
       );
@@ -1031,11 +1031,11 @@ describe('AtomApplication', function() {
       assert.strictEqual(app.promptForPath.lastCall.args[0], 'file');
     });
 
-    it('"open-chosen-folder" opens a directory chooser and opens the chosen directory', async function() {
+    it('"chevron:open-chosen-folder" opens a directory chooser and opens the chosen directory', async function() {
       sinon.stub(app, 'atomWindowForEvent').callsFake(() => w0);
 
       electron.ipcMain.emit(
-        'open-chosen-folder',
+        'chevron:open-chosen-folder',
         {},
         scenario.convertRootPath('c')
       );

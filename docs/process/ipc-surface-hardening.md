@@ -210,6 +210,17 @@ validation is removed (verify by reverting the guard locally once).
 other prefix — the four grandfathered names are gone rather than carried
 forward.
 
+**Correction (#414).** The count was 90 because the enumerator only read
+`ipcMain.on(...)` and `ipcMain.handle(...)`. `atom-application.js` registered
+31 more through `ipcHelpers.on(ipcMain, ...)` and `ipcHelpers.respondTo(...)`,
+all unprefixed and none recorded. The enumerator reads both forms now, the 31
+are `chevron:` (the two `sendSync` getters also gained `-sync`), and they are
+in the inventory as they are rather than as they should be: most have
+`validation: "none"`. Two were tightened on the way in:
+`chevron:window-method` calls only the AtomWindow methods renderers send
+(`src/main-process/window-ipc-policy.js`), and `chevron:set-user-settings`
+writes only main's own config file.
+
 `src/main-process/ipc-aliases.js` holds the 64 old names. `withLegacyAliases`
 wraps `ipcMain` so a registration answers to both, and the old name logs once
 per session per channel:

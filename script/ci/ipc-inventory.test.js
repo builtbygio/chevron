@@ -64,6 +64,41 @@ describe('the recorded IPC surface', () => {
     assert.deepEqual(duplicates, [], `a channel is registered twice: ${duplicates}`);
   });
 
+  it('sees channels registered through ipc-helpers', () => {
+    // 31 channels went through ipcHelpers.on(ipcMain, ...) and respondTo()
+    // and none of them were in the inventory, because only ipcMain.on/handle
+    // were recognised.
+    const { makeTempDir } = require(path.join(ROOT, 'script', 'lib', 'temp-dir'));
+    const root = makeTempDir('chevron-ipc-inventory-');
+    fs.mkdirSync(path.join(root, 'src', 'main-process'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'src', 'main-process', 'fixture.js'),
+      [
+        "ipcHelpers.on(ipcMain, 'chevron:one', () => {});",
+        'ipcHelpers.on(',
+        '  ipcMain,',
+        "  'chevron:two',",
+        '  () => {}',
+        ');',
+        "ipcHelpers.respondTo('chevron:three', () => {});",
+        'ipcHelpers.respondTo(',
+        "  'chevron:four',",
+        '  () => {}',
+        ');',
+        // Not ipcMain: app and nativeTheme events are not IPC.
+        "ipcHelpers.on(app, 'before-quit', () => {});",
+        "// ipcHelpers.respondTo('chevron:commented-out', () => {});"
+      ].join('\n')
+    );
+    const found = enumerateChannels(root).map(e => `${e.channel} ${e.kind}`);
+    assert.deepEqual(found, [
+      'chevron:four on',
+      'chevron:one on',
+      'chevron:three on',
+      'chevron:two on'
+    ]);
+  });
+
   it('namespaces every channel', () => {
     const unnamespaced = enumerateChannels(ROOT)
       .map(e => e.channel)

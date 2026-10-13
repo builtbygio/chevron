@@ -4840,7 +4840,7 @@ describe('TextEditorComponent', () => {
           eventName,
           selectedText
         ) {
-          if (eventName === 'write-text-to-selection-clipboard') {
+          if (eventName === 'chevron:write-text-to-selection-clipboard') {
             clipboard.writeText(selectedText, 'selection');
           }
         });
@@ -4898,7 +4898,7 @@ describe('TextEditorComponent', () => {
           eventName,
           selectedText
         ) {
-          if (eventName === 'write-text-to-selection-clipboard') {
+          if (eventName === 'chevron:write-text-to-selection-clipboard') {
             clipboard.writeText(selectedText, 'selection');
           }
         });

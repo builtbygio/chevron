@@ -17,7 +17,7 @@ module.exports = async function({ blobStore }) {
   const exitWithStatusCode = function(status) {
     // Best-effort: notify main then exit renderer process group via IPC
     try {
-      ipcRenderer.send('command', 'application:quit');
+      ipcRenderer.send('chevron:command', 'application:quit');
     } catch (e) {
       /* ignore */
     }
@@ -66,7 +66,7 @@ module.exports = async function({ blobStore }) {
     const handleKeydown = function(event) {
       // Reload: cmd-r / ctrl-r
       if ((event.metaKey || event.ctrlKey) && event.keyCode === 82) {
-        ipcHelpers.call('window-method', 'reload');
+        ipcHelpers.call('chevron:window-method', 'reload');
       }
 
       // Toggle Dev Tools: cmd-alt-i (Mac) / ctrl-shift-i (Linux/Windows)
@@ -75,12 +75,12 @@ module.exports = async function({ blobStore }) {
         ((process.platform === 'darwin' && event.metaKey && event.altKey) ||
           (process.platform !== 'darwin' && event.ctrlKey && event.shiftKey))
       ) {
-        ipcHelpers.call('window-method', 'toggleDevTools');
+        ipcHelpers.call('chevron:window-method', 'toggleDevTools');
       }
 
       // Close: cmd-w / ctrl-w
       if ((event.metaKey || event.ctrlKey) && event.keyCode === 87) {
-        ipcHelpers.call('window-method', 'close');
+        ipcHelpers.call('chevron:window-method', 'close');
       }
 
       // Copy: cmd-c / ctrl-c

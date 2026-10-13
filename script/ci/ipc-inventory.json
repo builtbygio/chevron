@@ -1,5 +1,16 @@
 [
   {
+    "channel": "chevron:add-recent-document",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "none",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
     "channel": "chevron:app-get-jump-list-settings",
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
@@ -91,6 +102,17 @@
     "legacyName": "atom-bw-id-call-sync"
   },
   {
+    "channel": "chevron:center-window",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
     "channel": "chevron:clipboard-read-find-text-sync",
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
@@ -135,6 +157,17 @@
     "legacyName": "atom-clipboard-write-text-sync"
   },
   {
+    "channel": "chevron:command",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "none",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
     "channel": "chevron:context-menu",
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
@@ -168,11 +201,55 @@
     "legacyName": "atom-destroy-own-window-sync"
   },
   {
+    "channel": "chevron:did-change-history-manager",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
     "channel": "chevron:did-prepare-to-unload",
     "kind": "on",
     "file": "src/main-process/atom-window.js",
     "scope": "owner-window",
     "validation": "partial",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:did-save-path",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:execute-javascript-in-dev-tools",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "eval"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:focus-window",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "full",
     "effect": [
       "ui"
     ],
@@ -344,6 +421,28 @@
     "legacyName": "atom-fs-write-file-sync"
   },
   {
+    "channel": "chevron:get-auto-update-manager-error-sync",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:get-auto-update-manager-state-sync",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": null
+  },
+  {
     "channel": "chevron:get-current-window-id-sync",
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
@@ -377,6 +476,17 @@
     "legacyName": "atom-get-primary-display-work-area-size-sync"
   },
   {
+    "channel": "chevron:get-temporary-window-state",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ],
+    "legacyName": null
+  },
+  {
     "channel": "chevron:get-user-default",
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
@@ -408,6 +518,17 @@
       "read"
     ],
     "legacyName": "atom-get-web-contents-id-sync"
+  },
+  {
+    "channel": "chevron:hide-window",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
   },
   {
     "channel": "chevron:is-default-protocol-client",
@@ -450,6 +571,61 @@
     "validation": "full",
     "effect": [
       "read"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:open",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "partial",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:open-chosen-any",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "dialog"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:open-chosen-file",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "dialog"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:open-chosen-folder",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "dialog"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:pick-folder",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "dialog"
     ],
     "legacyName": null
   },
@@ -520,6 +696,28 @@
     "legacyName": "removeAsDefaultProtocolClient"
   },
   {
+    "channel": "chevron:resolve-proxy",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "network"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:restart-application",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "full",
+    "effect": [
+      "spawn"
+    ],
+    "legacyName": null
+  },
+  {
     "channel": "chevron:rg-search-cancel",
     "kind": "handle",
     "file": "src/main-process/register-rg-ipc.js",
@@ -539,6 +737,17 @@
     "effect": [
       "spawn",
       "read"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:run-package-specs",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "none",
+    "effect": [
+      "spawn"
     ],
     "legacyName": null
   },
@@ -565,6 +774,50 @@
       "write-fs"
     ],
     "legacyName": "atom-set-as-default-protocol-client-sync"
+  },
+  {
+    "channel": "chevron:set-temporary-window-state",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:set-user-settings",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "partial",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:set-window-position",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:set-window-size",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
   },
   {
     "channel": "chevron:settings-view-cache-ensure",
@@ -710,6 +963,28 @@
     "legacyName": "atom-show-save-dialog"
   },
   {
+    "channel": "chevron:show-window",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:update-application-menu",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
     "channel": "chevron:utility-worker-capabilities",
     "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
@@ -832,6 +1107,28 @@
     "legacyName": "atom-webcontents-send-to-window-id"
   },
   {
+    "channel": "chevron:will-save-path",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "write-fs"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:window-command",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "none",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
     "channel": "chevron:window-load-settings-sync",
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
@@ -841,6 +1138,17 @@
       "read"
     ],
     "legacyName": "atom-window-load-settings-sync"
+  },
+  {
+    "channel": "chevron:window-method",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "owner-window",
+    "validation": "partial",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
   },
   {
     "channel": "chevron:window-set-project-roots-sync",
@@ -864,6 +1172,39 @@
       "read"
     ],
     "legacyName": "atom-window-startup-markers-sync"
+  },
+  {
+    "channel": "chevron:write-text-to-selection-clipboard",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "none",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:write-to-stderr",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "none",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
+  },
+  {
+    "channel": "chevron:write-to-stdout",
+    "kind": "on",
+    "file": "src/main-process/atom-application.js",
+    "scope": "global",
+    "validation": "none",
+    "effect": [
+      "ui"
+    ],
+    "legacyName": null
   },
   {
     "channel": "lsp:get-trust-state",
