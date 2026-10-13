@@ -49,7 +49,7 @@ macOS signs with hardened runtime and `resources/mac/entitlements.plist` (JIT, u
 
 ## Testing an update
 
-1. Build twice with different versions (`ATOM_RELEASE_VERSION=1.4.1 ./script/build …`), producing the newer installer/zip and its `latest*.yml`.
+1. Build twice with different versions (`CHEVRON_RELEASE_VERSION=1.4.1 ./script/build …`), producing the newer installer/zip and its `latest*.yml`.
 2. Serve the newer artifacts from a directory over HTTP.
 3. Run the older build with `CHEVRON_UPDATE_FEED_URL` pointing at it and choose **Check for Update**.
 

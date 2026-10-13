@@ -16,6 +16,7 @@
 
 const { describe, it } = require('node:test');
 const assert = require('assert');
+const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -68,5 +69,41 @@ describe('script/config.js contract', () => {
     for (const key of ['apmRootPath', 'apmMetadata', 'getApmBinPath']) {
       assert.ok(!exported.has(key), `${key} was retired with the apm tree`);
     }
+  });
+});
+
+describe('script/config.js release version', () => {
+  // config.js reads the environment once, at require time.
+  function load(env) {
+    const clean = { ...process.env };
+    delete clean.CHEVRON_RELEASE_VERSION;
+    delete clean.ATOM_RELEASE_VERSION;
+    return spawnSync(
+      process.execPath,
+      ['-e', "process.stdout.write(require('./script/config.js').computedAppVersion)"],
+      { cwd: ROOT, env: { ...clean, ...env }, encoding: 'utf8' }
+    );
+  }
+
+  it('defaults to package.json', () => {
+    const { version } = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+    assert.strictEqual(load({}).stdout, version);
+  });
+
+  it('prefers CHEVRON_RELEASE_VERSION over ATOM_RELEASE_VERSION', () => {
+    assert.strictEqual(
+      load({ CHEVRON_RELEASE_VERSION: '1.5.0', ATOM_RELEASE_VERSION: '1.4.1' }).stdout,
+      '1.5.0'
+    );
+  });
+
+  it('still reads ATOM_RELEASE_VERSION on its own', () => {
+    assert.strictEqual(load({ ATOM_RELEASE_VERSION: '1.4.1' }).stdout, '1.4.1');
+  });
+
+  it('names Chevron when the version is malformed', () => {
+    const result = load({ CHEVRON_RELEASE_VERSION: 'not-a-version' });
+    assert.notStrictEqual(result.status, 0);
+    assert.match(result.stderr, /incorrectly formatted Chevron version not-a-version/);
   });
 });

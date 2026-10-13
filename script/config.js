@@ -29,7 +29,9 @@ const atomHomeDirPath = (() => {
 
 const appMetadata = require(path.join(repositoryRootPath, 'package.json'));
 const computedAppVersion = computeAppVersion(
-  process.env.ATOM_RELEASE_VERSION || appMetadata.version
+  process.env.CHEVRON_RELEASE_VERSION ||
+    process.env.ATOM_RELEASE_VERSION ||
+    appMetadata.version
 );
 const channel = getChannel(computedAppVersion);
 const appName = getAppName(channel);
@@ -80,7 +82,7 @@ function getChannelName(channel) {
 function getChannel(version) {
   const match = version.match(/\d+\.\d+\.\d+(-([a-z]+)(\d+|-\w{4,})?)?$/);
   if (!match) {
-    throw new Error(`Found incorrectly formatted Atom version ${version}`);
+    throw new Error(`Found incorrectly formatted Chevron version ${version}`);
   } else if (match[2]) {
     return match[2];
   }
