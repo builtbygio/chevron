@@ -82,7 +82,7 @@ describe('Wave 1 app/shell invoke slice', () => {
     const main = read('src/main-process/register-renderer-ipc.js');
     assert.ok(main.includes("on('chevron:create-browser-window-sync'"));
     const fsIpc = read('src/main-process/register-fs-ipc.js');
-    assert.ok(/atom-fs-.*-sync/.test(fsIpc));
+    assert.ok(fsIpc.includes("ipcMain.on('chevron:fs-stat-sync'"));
   });
 
   it('Workspace.replace forces a global regex like the old Task worker', () => {

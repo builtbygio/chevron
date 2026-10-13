@@ -75,6 +75,20 @@ describe('the recorded IPC surface', () => {
         `ipc-aliases.js, not here — these are not: ${unnamespaced.join(', ')}`
     );
   });
+
+  it('names the registered channel in its warnings, not the pre-rename one', () => {
+    const { withoutComments } = require(path.join(ROOT, 'script', 'lib', 'ipc-inventory'));
+    const stale = [];
+    for (const file of ['register-renderer-ipc.js', 'register-fs-ipc.js']) {
+      const code = withoutComments(
+        fs.readFileSync(path.join(ROOT, 'src', 'main-process', file), 'utf8')
+      );
+      for (const match of code.matchAll(/[`'"](atom-[a-z-]+)/g)) {
+        stale.push(`${file}: ${match[1]}`);
+      }
+    }
+    assert.deepEqual(stale, []);
+  });
 });
 
 const SCOPES = ['owner-window', 'any-window', 'global'];

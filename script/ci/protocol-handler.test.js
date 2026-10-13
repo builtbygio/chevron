@@ -209,3 +209,17 @@ describe('chevron:// protocol handler', () => {
     );
   });
 });
+
+describe('the editor page CSP', () => {
+  it('allows chevron: and not the atom: scheme Wave 4 removed', () => {
+    const html = fs.readFileSync(
+      path.join(ROOT, 'static', 'index.html'),
+      'utf8'
+    );
+    const csp = html.match(
+      /http-equiv="Content-Security-Policy" content="([^"]+)"/
+    )[1];
+    assert.doesNotMatch(csp, /\batom:/);
+    assert.match(csp, /default-src 'self' chevron:/);
+  });
+});

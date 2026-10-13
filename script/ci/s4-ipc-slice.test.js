@@ -43,7 +43,7 @@ describe('S4 display invoke slice', () => {
     assert.ok(main.includes("on('chevron:create-browser-window-sync'"));
     assert.ok(main.includes('refused'));
     const fsIpc = read('src/main-process/register-fs-ipc.js');
-    assert.ok(/atom-fs-.*-sync/.test(fsIpc));
+    assert.ok(fsIpc.includes("ipcMain.on('chevron:fs-stat-sync'"));
   });
 
   it('deprecates require("remote") as unsupported', () => {

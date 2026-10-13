@@ -15,7 +15,7 @@ const menuSessions = new Map();
 
 if (!ipcRenderer.__atomPopupMenuListener) {
   ipcRenderer.__atomPopupMenuListener = true;
-  ipcRenderer.on('atom-popup-menu-click', (_event, sessionId, itemId) => {
+  ipcRenderer.on('chevron:popup-menu-click', (_event, sessionId, itemId) => {
     const callbacks = menuSessions.get(sessionId);
     if (callbacks && typeof callbacks[itemId] === 'function') {
       try {
@@ -85,7 +85,7 @@ const workerEventHandlers = new Map(); // windowId -> { crashed: Set, destroyed:
 
 if (!ipcRenderer.__atomWorkerWindowListener) {
   ipcRenderer.__atomWorkerWindowListener = true;
-  ipcRenderer.on('atom-worker-window-event', (_event, payload) => {
+  ipcRenderer.on('chevron:worker-window-event', (_event, payload) => {
     const { windowId, event: eventName } = payload || {};
     const handlers = workerEventHandlers.get(windowId);
     if (!handlers) return;

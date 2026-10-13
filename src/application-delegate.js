@@ -30,7 +30,7 @@ module.exports = class ApplicationDelegate {
   }
 
   pickFolder(callback) {
-    const responseChannel = 'atom-pick-folder-response';
+    const responseChannel = 'chevron:pick-folder-response';
     ipcRenderer.on(responseChannel, function(event, path) {
       ipcRenderer.removeAllListeners(responseChannel);
       return callback(path);
@@ -291,7 +291,7 @@ module.exports = class ApplicationDelegate {
 
   playBeepSound() {
     // Callers (`atom.beep()`) ignore the result, so this does not have to be
-    // sync. `atom-shell-beep-sync` stays for remote-compat.
+    // sync. `chevron:shell-beep-sync` stays for remote-compat.
     return rendererIpc.beepAsync().catch(error => {
       console.warn('playBeepSound failed', error);
     });

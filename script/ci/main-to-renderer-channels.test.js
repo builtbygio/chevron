@@ -59,6 +59,11 @@ describe('the main-to-renderer channel list', () => {
     }
   });
 
+  it('sends on chevron: names, not the pre-rename atom- ones', () => {
+    const old = [...MAIN_TO_RENDERER_CHANNELS].filter(c => c.startsWith('atom-'));
+    assert.deepEqual(old, []);
+  });
+
   it('does not claim channels main does not send', () => {
     assert.equal(isMainOnlyChannel('github:renderer-ipc'), false);
     assert.equal(isMainOnlyChannel('some-package-channel'), false);
