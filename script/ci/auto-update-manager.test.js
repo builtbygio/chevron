@@ -84,6 +84,7 @@ class FakeConfig {
 function makeManager({
   platform = 'win32',
   codeSigned = false,
+  windowsInstall = 'nsis',
   version = '1.4.0',
   config = {},
   env = {}
@@ -101,6 +102,7 @@ function makeManager({
     {
       platform,
       env,
+      windowsInstall,
       isPackaged: true,
       updateConfig: { provider: 'github', owner: 'o', repo: 'r', codeSigned },
       createUpdater: () => updater,
@@ -133,6 +135,13 @@ describe('in-app mode', () => {
     );
     assert.equal(
       makeManager({ platform: 'darwin', codeSigned: false }).manager.getMode(),
+      'download-page'
+    );
+  });
+
+  it('is not chosen for the portable Windows zip, which would install a second copy', () => {
+    assert.equal(
+      makeManager({ platform: 'win32', windowsInstall: 'portable' }).manager.getMode(),
       'download-page'
     );
   });

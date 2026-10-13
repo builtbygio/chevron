@@ -13,6 +13,7 @@ const {
   DOWNLOAD_PAGE,
   UNSUPPORTED,
   readUpdateConfig,
+  windowsInstallKind,
   chooseUpdateMode
 } = require('./update-config');
 const getReleaseChannel = require('../get-release-channel');
@@ -85,12 +86,19 @@ module.exports = class AutoUpdateManager extends EventEmitter {
         ? readUpdateConfig(process.resourcesPath)
         : null;
     this.updateConfig = updateConfig;
+    const windowsInstall =
+      options.windowsInstall !== undefined
+        ? options.windowsInstall
+        : isPackaged && this.platform === 'win32'
+        ? windowsInstallKind(process.execPath)
+        : null;
     this.mode = testMode
       ? UNSUPPORTED
       : chooseUpdateMode({
           platform: this.platform,
           isPackaged,
           updateConfig,
+          windowsInstall,
           env: this.env
         });
   }
