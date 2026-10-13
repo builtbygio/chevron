@@ -224,6 +224,79 @@ describe('Node BrowserWindow git workers are gone', () => {
   });
 });
 
+describe("remote-compat's BrowserWindow is a utility worker", () => {
+  const Module = require('module');
+  const FAKE = path.join(__dirname, '_fake_electron_remote_compat.js');
+  const originalResolve = Module._resolveFilename;
+  const sent = [];
+  const listeners = new Map();
+  let remote;
+
+  before(() => {
+    require.cache[FAKE] = {
+      id: FAKE,
+      filename: FAKE,
+      loaded: true,
+      exports: {
+        ipcRenderer: {
+          sendSync(channel, ...args) {
+            sent.push([channel, ...args]);
+            if (channel === 'chevron:utility-worker-create-sync') {
+              return { id: 7, webContentsId: 70 };
+            }
+            if (channel === 'chevron:utility-worker-is-destroyed-sync') {
+              return sent.some(([c]) => c === 'chevron:utility-worker-destroy-sync');
+            }
+            return true;
+          },
+          send(channel, ...args) {
+            sent.push([channel, ...args]);
+          },
+          on(channel, listener) {
+            listeners.set(channel, listener);
+          },
+          invoke: () => Promise.resolve(null)
+        }
+      }
+    };
+    Module._resolveFilename = function(request, ...rest) {
+      if (request === 'electron') return FAKE;
+      return originalResolve.call(this, request, ...rest);
+    };
+    remote = require(path.join(ROOT, 'src', 'remote-compat.js'));
+  });
+
+  after(() => {
+    Module._resolveFilename = originalResolve;
+    delete require.cache[FAKE];
+  });
+
+  it('loads, reports and destroys through the utility-worker channels', () => {
+    const win = new remote.BrowserWindow();
+    win.loadURL('file:///worker.html');
+    assert.equal(win.isDestroyed(), false);
+    let crashed = 0;
+    win.webContents.on('crashed', () => crashed++);
+    win.destroy();
+    assert.equal(win.isDestroyed(), true);
+    assert.deepEqual(
+      sent.map(([channel]) => channel).filter(c => c.startsWith('chevron:utility-worker')),
+      [
+        'chevron:utility-worker-create-sync',
+        'chevron:utility-worker-load-sync',
+        'chevron:utility-worker-is-destroyed-sync',
+        'chevron:utility-worker-destroy-sync',
+        'chevron:utility-worker-is-destroyed-sync'
+      ]
+    );
+    assert.ok(!sent.some(([channel]) => channel === 'chevron:bw-id-call-sync'));
+    // destroy() dropped the worker's listeners, so a late event reaches nobody.
+    const [, onWorkerEvent] = [...listeners].find(([c]) => c.endsWith('worker-window-event'));
+    onWorkerEvent({}, { windowId: 7, event: 'crashed' });
+    assert.equal(crashed, 0);
+  });
+});
+
 describe('git-utility-host AverageTracker + message shape', () => {
   it('tracks averages', () => {
     const host = require(path.join(

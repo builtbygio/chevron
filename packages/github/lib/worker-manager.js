@@ -338,13 +338,9 @@ class RendererProcess {
     this.onSpawnError = onSpawnError;
     this.onStdinError = onStdinError;
     this.onExecStarted = onExecStarted;
-    this.win = new BrowserWindow({
-      show: !!process.env.ATOM_GITHUB_SHOW_RENDERER_WINDOW,
-      webPreferences: {
-        nodeIntegration: true,
-        enableRemoteModule: true
-      }
-    });
+    // A utilityProcess worker behind remote-compat's BrowserWindow shim, which
+    // takes no options: there is no window to show and no webPreferences.
+    this.win = new BrowserWindow();
     this.webContents = this.win.webContents; // this.webContents.openDevTools();
 
     this.emitter = new _eventKit.Emitter();
