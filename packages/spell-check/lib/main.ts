@@ -126,8 +126,7 @@ module.exports = {
         );
         this.viewsByEditor = new WeakMap();
         this.contextMenuEntries = [];
-        return this.subs.add(
-            chevron.workspace.observeTextEditors((editor) => {
+        const watch = (editor) => {
                 if (this.viewsByEditor.has(editor)) {
                     return;
                 }
@@ -175,7 +174,12 @@ module.exports = {
                 this.subs.add(destroySub);
 
                 return this.viewsByEditor.set(editor, spellCheckView);
-            })
+        };
+        // An editor in large-file mode is checked once it leaves the mode.
+        return this.subs.add(
+            chevron.workspace.observeTextEditors((editor) =>
+                this.subs.add(editor.whenFullFeatures(() => watch(editor)))
+            )
         );
     },
 

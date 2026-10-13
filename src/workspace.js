@@ -1449,7 +1449,16 @@ module.exports = class Workspace extends Model {
       });
     }
 
-    const buffer = await this.project.bufferForPath(filePath, options);
+    const largeFileModeThreshold = this.config.get(
+      'core.largeFileModeThreshold'
+    );
+    const largeFileMode =
+      largeFileModeThreshold > 0 &&
+      fileSize >= largeFileModeThreshold * 1048576;
+
+    const buffer = await this.project.bufferForPath(filePath, {
+      largeFileMode
+    });
     return this.textEditorRegistry.build(
       Object.assign({ buffer, autoHeight: false }, options)
     );

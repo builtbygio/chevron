@@ -39,8 +39,7 @@ let subscriptions = null;
 var main_default = {
   activate(state) {
     subscriptions = new import_atom.CompositeDisposable();
-    subscriptions.add(
-      chevron.workspace.observeTextEditors((editor) => {
+    const watch = (editor) => {
         const editorElement = chevron.views.getView(editor);
         const diffView = new import_git_diff_view.default(editor, editorElement);
         diffViews.add(diffView);
@@ -58,7 +57,13 @@ var main_default = {
           })
         );
         subscriptions.add(editorSubs);
-      })
+    };
+    // A file in large-file mode is diffed once it leaves the mode: the diff
+    // against HEAD runs over the whole buffer on every change.
+    subscriptions.add(
+      chevron.workspace.observeTextEditors(
+        (editor) => subscriptions.add(editor.whenFullFeatures(() => watch(editor)))
+      )
     );
   },
   deactivate() {

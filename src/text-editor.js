@@ -4515,6 +4515,61 @@ module.exports = class TextEditor {
   }
 
   /*
+  Section: Large-file mode
+  */
+
+  // Extended: Is this editor's buffer in large-file mode?
+  //
+  // Files at or above `core.largeFileModeThreshold` open in it: plain text,
+  // never parsed, no folds. Packages that do per-keystroke or per-scroll work
+  // over the whole buffer should leave such an editor alone until it leaves
+  // the mode. See {Project::setLargeFileMode}.
+  isLargeFileMode() {
+    const { project } = chevron;
+    return Boolean(project && project.isLargeFileBuffer(this.buffer));
+  }
+
+  // Extended: Invoke the given callback when this editor enters or leaves
+  // large-file mode.
+  //
+  // * `callback` {Function}
+  //   * `enabled` {Boolean} Whether the editor is now in large-file mode.
+  //
+  // Returns a {Disposable} on which `.dispose()` can be called to unsubscribe.
+  onDidChangeLargeFileMode(callback) {
+    // The project outlives the editor; this must not.
+    const subscription = chevron.project.onDidChangeLargeFileMode(
+      ({ buffer, enabled }) => {
+        if (buffer === this.buffer) callback(enabled);
+      }
+    );
+    this.disposables.add(subscription);
+    return subscription;
+  }
+
+  // Extended: Invoke the given callback now, or, if this editor is in
+  // large-file mode, once it leaves it.
+  //
+  // This is how a package that watches editors skips large files: wrap the
+  // code that starts watching one.
+  //
+  // * `callback` {Function}
+  //
+  // Returns a {Disposable} that cancels a callback not yet invoked.
+  whenFullFeatures(callback) {
+    if (!this.isLargeFileMode()) {
+      callback();
+      return new Disposable(() => {});
+    }
+    const subscription = this.onDidChangeLargeFileMode(enabled => {
+      if (enabled) return;
+      subscription.dispose();
+      callback();
+    });
+    return subscription;
+  }
+
+  /*
   Section: Managing Syntax Scopes
   */
 

@@ -7,6 +7,8 @@ const TextBuffer = require('text-buffer');
 const { watchPath } = require('./path-watcher');
 
 const DefaultDirectoryProvider = require('./default-directory-provider');
+const NullGrammar = require('./null-grammar');
+const PlainTextLanguageMode = require('./plain-text-language-mode');
 // Either separator: a watcher on Windows can report a path in either style,
 // and matching only the native one is a bug that shows up on one platform.
 const ROOT_CONFIG_PATTERN = /[\\/]\.chevron[\\/]config\.json$/;
@@ -56,6 +58,7 @@ module.exports = class Project extends Model {
     this.watcherPromisesByPath = {};
     this.retiredBufferIDs = new Set();
     this.retiredBufferPaths = new Set();
+    this.largeFileBufferIds = new Set();
     this.subscriptions = new CompositeDisposable();
     // The last parse error reported per root, so a broken config warns once
     // rather than on every save.
@@ -113,6 +116,7 @@ module.exports = class Project extends Model {
     this.loadPromisesByPath = {};
     this.retiredBufferIDs = new Set();
     this.retiredBufferPaths = new Set();
+    this.largeFileBufferIds = new Set();
     this.consumeServices(packageManager);
   }
 
@@ -185,7 +189,18 @@ module.exports = class Project extends Model {
 
     return Promise.all(bufferPromises).then(buffers => {
       this.buffers = buffers.filter(Boolean);
+      const largeFileBufferIds = new Set(state.largeFileBufferIds || []);
+      this.largeFileBufferIds = new Set(
+        this.buffers
+          .map(buffer => buffer.id)
+          .filter(id => largeFileBufferIds.has(id))
+      );
       for (let buffer of this.buffers) {
+        // The grammar registry's own state is restored after the project's,
+        // too late to stop maintainLanguageMode parsing the buffer.
+        if (this.largeFileBufferIds.has(buffer.id)) {
+          this.assignLargeFileLanguageMode(buffer);
+        }
         this.grammarRegistry.maintainLanguageMode(buffer);
         this.subscribeToBuffer(buffer);
       }
@@ -194,20 +209,22 @@ module.exports = class Project extends Model {
   }
 
   serialize(options = {}) {
+    const retained = this.buffers.filter(buffer => buffer.isRetained());
+    const isUnloading = options.isUnloading === true;
     return {
       deserializer: 'Project',
       paths: this.getPaths(),
       buffers: _.compact(
-        this.buffers.map(function(buffer) {
-          if (buffer.isRetained()) {
-            const isUnloading = options.isUnloading === true;
-            return buffer.serialize({
-              markerLayers: isUnloading,
-              history: isUnloading
-            });
-          }
-        })
-      )
+        retained.map(buffer =>
+          buffer.serialize({
+            markerLayers: isUnloading,
+            history: isUnloading
+          })
+        )
+      ),
+      largeFileBufferIds: retained
+        .filter(buffer => this.isLargeFileBuffer(buffer))
+        .map(buffer => buffer.id)
     };
   }
 
@@ -835,9 +852,13 @@ module.exports = class Project extends Model {
   // `text` is used as the contents of the new buffer.
   //
   // * `filePath` A {String} representing a path. If `null`, an "Untitled" buffer is created.
+  // * `options` (optional) {Object}
+  //   * `largeFileMode` {Boolean} If the buffer has to be built, build it in
+  //     large-file mode (see {::setLargeFileMode}). A buffer that is already
+  //     open keeps the mode it has.
   //
   // Returns a {Promise} that resolves to the {TextBuffer}.
-  bufferForPath(absoluteFilePath) {
+  bufferForPath(absoluteFilePath, options = {}) {
     let existingBuffer;
     if (absoluteFilePath != null) {
       existingBuffer = this.findBufferForPath(absoluteFilePath);
@@ -845,8 +866,61 @@ module.exports = class Project extends Model {
     if (existingBuffer) {
       return Promise.resolve(existingBuffer);
     } else {
-      return this.buildBuffer(absoluteFilePath);
+      return this.buildBuffer(absoluteFilePath, options);
     }
+  }
+
+  /*
+  Section: Large-file mode
+  */
+
+  // Public: Is the buffer in large-file mode?
+  //
+  // A buffer in large-file mode is plain text: it is never parsed, so it has
+  // no syntax highlighting or folds, and the language server and the
+  // per-keystroke decorations of the bundled packages leave its editors alone.
+  // {TextEditor::isLargeFileMode} asks this for the editor's buffer.
+  isLargeFileBuffer(buffer) {
+    return buffer != null && this.largeFileBufferIds.has(buffer.id);
+  }
+
+  // Public: Put a buffer in or out of large-file mode.
+  //
+  // Leaving it re-detects the buffer's language, which parses it.
+  setLargeFileMode(buffer, enabled) {
+    enabled = Boolean(enabled);
+    if (buffer == null || this.isLargeFileBuffer(buffer) === enabled) return;
+    if (enabled) {
+      this.largeFileBufferIds.add(buffer.id);
+      this.assignLargeFileLanguageMode(buffer);
+    } else {
+      this.largeFileBufferIds.delete(buffer.id);
+      this.grammarRegistry.autoAssignLanguageMode(buffer);
+    }
+    this.emitter.emit('did-change-large-file-mode', { buffer, enabled });
+  }
+
+  // Public: Invoke the given callback when a buffer enters or leaves
+  // large-file mode.
+  //
+  // * `callback` {Function}
+  //   * `event` {Object}
+  //     * `buffer` The {TextBuffer}.
+  //     * `enabled` {Boolean} Whether it is now in large-file mode.
+  //
+  // Returns a {Disposable} on which `.dispose()` can be called to unsubscribe.
+  onDidChangeLargeFileMode(callback) {
+    return this.emitter.on('did-change-large-file-mode', callback);
+  }
+
+  // The override keeps the registry from auto-assigning a grammar later; the
+  // registry's own mode for the null grammar folds, so it is replaced. Assigning
+  // the null grammar again is a no-op, which keeps this one in place.
+  assignLargeFileLanguageMode(buffer) {
+    this.grammarRegistry.assignLanguageMode(buffer, NullGrammar.scopeName);
+    buffer.setLanguageMode(
+      new PlainTextLanguageMode(buffer, NullGrammar, { folding: false })
+    );
   }
 
   shouldDestroyBufferOnFileDelete() {
@@ -875,7 +949,7 @@ module.exports = class Project extends Model {
   // * `text` The {String} text to use as a buffer.
   //
   // Returns a {Promise} that resolves to the {TextBuffer}.
-  async buildBuffer(absoluteFilePath) {
+  async buildBuffer(absoluteFilePath, options = {}) {
     const params = {
       shouldDestroyOnFileDelete: this.shouldDestroyBufferOnFileDelete
     };
@@ -901,7 +975,13 @@ module.exports = class Project extends Model {
       buffer = new TextBuffer(params);
     }
 
-    this.grammarRegistry.autoAssignLanguageMode(buffer);
+    if (options.largeFileMode) {
+      // Assigned before the buffer is added, so it is never parsed at all.
+      this.largeFileBufferIds.add(buffer.id);
+      this.assignLargeFileLanguageMode(buffer);
+    } else {
+      this.grammarRegistry.autoAssignLanguageMode(buffer);
+    }
 
     this.addBuffer(buffer);
     return buffer;
@@ -927,6 +1007,7 @@ module.exports = class Project extends Model {
 
   removeBufferAtIndex(index, options = {}) {
     const [buffer] = this.buffers.splice(index, 1);
+    if (buffer != null) this.largeFileBufferIds.delete(buffer.id);
     return buffer != null ? buffer.destroy() : undefined;
   }
 
@@ -963,6 +1044,20 @@ module.exports = class Project extends Model {
       if (isRootConfigEvent({ path: savedPath })) this.syncRootConfigs();
     });
     buffer.onDidDestroy(() => this.removeBuffer(buffer));
+    // Picking a grammar for a large file parses it anyway; the rest of the
+    // features may as well follow.
+    buffer.onDidChangeLanguageMode(() => {
+      if (
+        this.isLargeFileBuffer(buffer) &&
+        buffer.getLanguageMode().grammar !== NullGrammar
+      ) {
+        this.largeFileBufferIds.delete(buffer.id);
+        this.emitter.emit('did-change-large-file-mode', {
+          buffer,
+          enabled: false
+        });
+      }
+    });
     buffer.onDidChangePath(() => {
       if (!(this.getPaths().length > 0)) {
         this.setPaths([path.dirname(buffer.getPath())]);

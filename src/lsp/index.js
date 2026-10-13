@@ -8,7 +8,7 @@
 
 const { CompositeDisposable, Emitter } = require('event-kit');
 const { ipcRenderer } = require('electron');
-const { DocumentSync } = require('./document-sync');
+const { DocumentSync, isLargeFileMode } = require('./document-sync');
 const { pathToUri } = require('./path-uri');
 const {
   resolveRegistration,
@@ -168,6 +168,7 @@ function getCompletionLatencyStats() {
 }
 
 async function ensureServerForEditor(editor) {
+  if (isLargeFileMode(editor)) return null;
   const grammar = editor.getGrammar && editor.getGrammar();
   const scope = grammar && grammar.scopeName;
   if (!scope) return null;
@@ -602,11 +603,19 @@ function activate() {
   const env = global.chevron;
   if (env && env.workspace) {
     disposables.add(
-      env.workspace.observeTextEditors(async editor => {
-        const serverId = await ensureServerForEditor(editor);
-        if (serverId) documentSync.observeEditor(editor);
-        const fos = observeFormatOnSave(editor);
-        if (fos) disposables.add(fos);
+      env.workspace.observeTextEditors(editor => {
+        const start = async () => {
+          const serverId = await ensureServerForEditor(editor);
+          if (serverId) documentSync.observeEditor(editor);
+          const fos = observeFormatOnSave(editor);
+          if (fos) disposables.add(fos);
+        };
+        // A file in large-file mode gets a server once it leaves the mode.
+        if (typeof editor.whenFullFeatures === 'function') {
+          disposables.add(editor.whenFullFeatures(start));
+        } else {
+          start();
+        }
       })
     );
   }

@@ -955,6 +955,83 @@ describe('Workspace', () => {
       });
     });
 
+    describe('when the file size is at or over `core.largeFileModeThreshold`', () => {
+      const openOfSize = megabytes => {
+        spyOn(fs, 'getSizeSync').andReturn(megabytes * 1048576);
+        return workspace.open('../sample.js');
+      };
+
+      beforeEach(async () => {
+        await atom.packages.activatePackage('language-javascript');
+        atom.config.set('core.largeFileModeThreshold', 5);
+      });
+
+      it('opens it as plain text with no folds, in large-file mode', async () => {
+        const editor = await openOfSize(5);
+        expect(editor.isLargeFileMode()).toBe(true);
+        expect(editor.getGrammar().scopeName).toBe('text.plain.null-grammar');
+        expect(editor.isFoldableAtBufferRow(0)).toBe(false);
+      });
+
+      it('opens smaller files normally', async () => {
+        const editor = await openOfSize(4);
+        expect(editor.isLargeFileMode()).toBe(false);
+        expect(editor.getGrammar().scopeName).toBe('source.js');
+      });
+
+      it('is off when the threshold is 0', async () => {
+        atom.config.set('core.largeFileModeThreshold', 0);
+        const editor = await openOfSize(30);
+        expect(editor.isLargeFileMode()).toBe(false);
+      });
+
+      it('switches the features back on with editor:enable-full-features', async () => {
+        jasmine.useRealClock();
+        const editor = await openOfSize(5);
+        const changes = [];
+        editor.onDidChangeLargeFileMode(enabled => changes.push(enabled));
+
+        atom.commands.dispatch(
+          atom.views.getView(editor),
+          'editor:enable-full-features'
+        );
+
+        expect(changes).toEqual([false]);
+        expect(editor.isLargeFileMode()).toBe(false);
+        expect(editor.getGrammar().scopeName).toBe('source.js');
+        await editor.getBuffer().getLanguageMode().parseCompletePromise();
+        expect(editor.isFoldableAtBufferRow(0)).toBe(true);
+      });
+
+      it('runs whenFullFeatures callbacks once the editor leaves the mode', async () => {
+        const editor = await openOfSize(5);
+        let calls = 0;
+        editor.whenFullFeatures(() => calls++);
+        expect(calls).toBe(0);
+
+        atom.project.setLargeFileMode(editor.getBuffer(), false);
+        expect(calls).toBe(1);
+
+        editor.whenFullFeatures(() => calls++);
+        expect(calls).toBe(2);
+      });
+
+      it('leaves the mode when a grammar is chosen for the file', async () => {
+        const editor = await openOfSize(5);
+        atom.grammars.assignLanguageMode(editor.getBuffer(), 'source.js');
+        expect(editor.isLargeFileMode()).toBe(false);
+      });
+
+      it('flags every editor of the buffer', async () => {
+        const editor = await openOfSize(5);
+        const copy = editor.copy();
+        expect(copy.isLargeFileMode()).toBe(true);
+        atom.project.setLargeFileMode(editor.getBuffer(), false);
+        expect(copy.isLargeFileMode()).toBe(false);
+        copy.destroy();
+      });
+    });
+
     describe('when passed a path that matches a custom opener', () => {
       it('returns the resource returned by the custom opener', () => {
         const fooOpener = (pathToOpen, options) => {

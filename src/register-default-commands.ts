@@ -337,6 +337,7 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
       'editor:log-cursor-syntax-tree-scope'() { return showSyntaxTree(this.getCursorSyntaxTreeScope(), notificationManager); },
       'editor:copy-path'() { return copyPathToClipboard(this, project, clipboard, false); },
       'editor:copy-project-path'() { return copyPathToClipboard(this, project, clipboard, true); },
+      'editor:enable-full-features'() { return project.setLargeFileMode(this.getBuffer(), false); },
       'editor:toggle-indent-guide'() { return config.set('editor.showIndentGuide', !config.get('editor.showIndentGuide')); },
       'editor:toggle-line-numbers'() { return config.set('editor.showLineNumbers', !config.get('editor.showLineNumbers')); },
       'editor:scroll-to-cursor'() { return this.scrollToCursorPosition(); }

@@ -399,6 +399,14 @@ const configSchema = {
         type: 'number',
         default: 40
       },
+      largeFileModeThreshold: {
+        title: 'Large File Mode Threshold',
+        description:
+          'Open files of at least this many megabytes in large-file mode: plain text, no syntax parsing, no language server, no folding and none of the per-keystroke decorations. The status bar shows the mode and can switch full features back on. 0 turns it off.',
+        type: 'number',
+        default: 5,
+        minimum: 0
+      },
       fileSystemWatcher: {
         description:
           'Choose the underlying implementation used to watch for filesystem changes. Emulating changes will miss any events caused by applications other than Chevron, but may help prevent crashes or freezes.',

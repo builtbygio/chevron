@@ -61,6 +61,12 @@ function watch(editor) {
   if (editorSubscriptions) editorSubscriptions.dispose();
   editorSubscriptions = new CompositeDisposable();
   if (!editor) return render(null);
+  // The trail comes from the whole buffer's foldable ranges, recomputed on
+  // every change: not for a file in large-file mode.
+  if (editor.isLargeFileMode()) {
+    editorSubscriptions.add(editor.whenFullFeatures(() => watch(editor)));
+    return render(null);
+  }
 
   editorSubscriptions.add(
     editor.onDidChangeCursorPosition(() => render(editor)),

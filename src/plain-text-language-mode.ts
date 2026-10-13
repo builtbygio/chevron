@@ -24,9 +24,12 @@ const NON_WHITESPACE_REGEX = /\S/;
 const EMPTY = [];
 
 module.exports = class PlainTextLanguageMode {
-  constructor(buffer, grammar) {
+  // `folding: false` is large-file mode's: folding all of a big file by
+  // indentation is quadratic in the number of lines.
+  constructor(buffer, grammar, { folding = true } = {}) {
     this.buffer = buffer;
     this.grammar = grammar;
+    this.folding = folding;
     // Scoped config such as `.text.plain.null-grammar` keys on this.
     if (grammar && grammar.scopeName) {
       this.rootScopeDescriptor = new ScopeDescriptor({
@@ -126,6 +129,7 @@ module.exports = class PlainTextLanguageMode {
   }
 
   endRowForFoldAtRow(row, tabLength, existenceOnly = false) {
+    if (!this.folding) return;
     let foldEndRow;
     const line = this.buffer.lineForRow(row);
     if (line == null || !NON_WHITESPACE_REGEX.test(line)) return;
