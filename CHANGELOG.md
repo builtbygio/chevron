@@ -139,6 +139,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **CI fails a pull request that bumps the version without its release notes.** A new `version-guard` job compares `package.json`'s `version` with the base branch; if it changed, `CHANGELOG.md` must have a `## [X.Y.Z]` section with notes for the new version, or the job fails and points to `docs/reference/releases.md`. A release PR passes with its dated section, and every other PR passes by leaving the version alone (`script/lib/version-guard.js`).
 
+- **Builds read `CHEVRON_RELEASE_VERSION`.** `script/config.js` takes the build's version from `CHEVRON_RELEASE_VERSION`, then `ATOM_RELEASE_VERSION`, then `package.json`, so existing scripts that set the Atom name keep working. A malformed version now fails with "Found incorrectly formatted Chevron version". `docs/reference/auto-update.md` uses the new name.
+
 - **The workspace-trust prompt defaults to "Don't trust".** Granting lets a project's own tooling execute — build scripts, plugins in `node_modules`, proc macros — so the modal now focuses the declining button, and Enter acts on whichever button is focused rather than always granting. Trusting still takes one click, and the native dialog in `src/main-process/lsp-trust.js` already defaulted to Cancel; this is the in-editor half of the same decision.
 
 ### Fixed
