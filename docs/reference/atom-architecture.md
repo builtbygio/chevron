@@ -2,7 +2,7 @@
 
 **Audience:** developers studying or modifying the editor  
 **Product:** Chevron — a modernized fork of Atom  
-**Runtime:** Electron 43.1.0 (Chromium + Node ~24 in-app)  
+**Runtime:** Electron 43.7.9 (Chromium + Node ~24 in-app)  
 **Current-state sketch.** The **target** (what to delete, wrap, or migrate next) is [chevron-architecture-modernization.md](./chevron-architecture-modernization.md). If this file disagrees with that one on intent, the modernization doc wins.
 
 Chevron is a **hackable Electron 43 editor**. The package *model* (`activate` / services / keymaps / styles, `require('chevron')`, inspectable preload) stays. Atom-era *machinery* (CSON-as-config, `Task` fork workers, scandal search, TextMate as the default language engine, Jasmine-as-hero) does not. User config is JSON; packager is `@electron/packager`.
@@ -24,7 +24,7 @@ The **page world** is a thin shell without Node.
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│  Electron 43.1.0  (Chromium + Node ~24 in-app)              │
+│  Electron 43.7.9  (Chromium + Node ~24 in-app)              │
 ├─────────────────────────────────────────────────────────────┤
 │  Main process (T0)                                          │
 │  src/main-process/main.js → start.js → AtomApplication      │
@@ -198,7 +198,7 @@ See [remote-ipc-inventory.md](./remote-ipc-inventory.md), [security-threat-model
 |---------|------|
 | **Host toolchain** | Node 20–24 + Python 3.12 for bootstrap/build |
 | **Package manager** | **cpm** (product Electron as Node). The `apm` name is retired |
-| **App runtime** | Electron **43.1.0** (in-process Node ~24) |
+| **App runtime** | Electron **43.7.9** (in-process Node ~24) |
 | **Package** | `script/build` → `out/Chevron.app` / `Chevron-linux-<arch>/chevron` / `chevron.exe` + `app.asar` |
 | **Natives** | Rebuilt for Electron ABI; unpacked from asar |
 | **Snapshot** | Custom on Linux/Windows; **stock on Darwin** |

@@ -27,7 +27,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | Item | Value |
 |------|--------|
 | Version | Changes only at release time, and every release is a tagged bump. PRs add to `[Unreleased]` in CHANGELOG and leave `package.json` alone. `package.json` reads 1.4.17, left over from an old patch-bump-per-PR rule whose versions were never released (#437). Last published: **v1.2.0** unsigned preview; next release **1.5.0** ([docs/reference/releases.md](docs/reference/releases.md)) |
-| Electron | **43.1.0** (ladder complete) |
+| Electron | **43.7.9** (ladder complete; tracks the latest 43.x patch) |
 | Package / productName | `chevron` / **Chevron** |
 | Bundle ID | `dev.builtbygio.chevron` |
 | Security (page) | `contextIsolation: true`, `nodeIntegration: false` |

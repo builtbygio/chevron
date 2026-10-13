@@ -73,7 +73,7 @@ Key files:
 - Workers: fixed `webPreferences`, `file:`-only nav, destroy with manager  
 - Editor session permission denylist (media, geo, serial, usb, …)  
 - Auto-update off unless `ATOM_UPDATE_URL_PREFIX`  
-- Electron **43.1.0**
+- Electron **43.7.9**
 - **P0–P3 shippable scope** (see status board)
 
 ## Audit summary (post-0.6.0)
@@ -87,7 +87,7 @@ Key files:
 | Editor sandbox / package Node | Weak (intentional) | Phase S |
 | CSP | Fair | Tightened; `unsafe-eval` / `unsafe-inline` still required |
 | Protocols | Good | Path confinement |
-| Currency | Good | E43.1.0 |
+| Currency | Good | E43.7.9 |
 | Fuses | Fair | Cookie encryption on; ASAR integrity macOS-only; RunAsNode kept for cpm |
 
 ---
@@ -199,7 +199,7 @@ Blocked on natives in `src/preload-natives.js`. Authoritative notes: `docs/proce
 | Validate IPC | Good | P0.2, P0.3, P2.1 |
 | Limit navigation | Good | P0.1, P2.4 |
 | Limit `window.open` | Yes | keep |
-| Current Electron | 43.1.0 | keep current |
+| Current Electron | 43.7.9 | keep current |
 | Fuses / ASAR integrity | Partial (mac integrity; Windows/Linux cookie+NODE_OPTIONS) | P3.2 |
 
 ---
