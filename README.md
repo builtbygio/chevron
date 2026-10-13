@@ -84,7 +84,7 @@ and what is still early — without pretending a dependency bump is the whole jo
 
 Built using a branch → PR → merge workflow, even solo.
 
-**Host toolchain:** Node **24** + Python **3.12** (+ `setuptools`). Always use `./script/bootstrap-modern` (not stock `./script/bootstrap`).
+**Host toolchain:** Node **24** + Python **3.12** (+ `setuptools`), and pnpm at the version pinned in `package.json` `packageManager`. Always use `./script/bootstrap-modern` (not stock `./script/bootstrap`). If `pnpm` is not on your PATH, it runs `corepack enable pnpm` under the Node it selected; to do it yourself, run that under the same Node (`./script/with-modern-env corepack enable pnpm`), since the shim is installed beside that Node.
 
 ```bash
 git clone https://github.com/builtbygio/chevron.git
