@@ -66,6 +66,18 @@ since servers match on their own terms and are not required to agree.
 
 Background: docs/process/next-tracks-plan.md, track 3.
 
+### File structure
+
+```js
+await chevron.lsp.documentSymbolTreeAt(editor);
+// [{ name, kind, kindName, detail, range, selectionRange, children }]
+```
+
+`documentSymbolsAt` flattens a file's symbols for a filterable list; this
+keeps the nesting, for the outline panel. `range` is the whole symbol and
+`selectionRange` its name. A server answering with flat `SymbolInformation`
+is nested by range. `[]` when no server owns the file.
+
 ## Commands
 
 | Command | Default binding |

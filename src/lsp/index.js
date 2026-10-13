@@ -32,7 +32,10 @@ const {
   resolveCodeAction,
   executeCommand
 } = require('./providers/code-action');
-const { documentSymbols } = require('./providers/document-symbols');
+const {
+  documentSymbols,
+  documentSymbolTree
+} = require('./providers/document-symbols');
 /**
  * The workspace-symbols provider is TypeScript, and `require` only resolves a
  * `.ts` once compile-cache is registered -- true in the app, not in a plain
@@ -425,6 +428,11 @@ async function applyCodeAction(editor, action) {
 
 async function documentSymbolsAt(editor) {
   return documentSymbols(clientApi, editor);
+}
+
+// Nested, for an outline; documentSymbolsAt flattens for a filterable list.
+async function documentSymbolTreeAt(editor) {
+  return documentSymbolTree(clientApi, editor);
 }
 
 /**
@@ -867,6 +875,7 @@ module.exports = {
   codeActionsAtCursor,
   applyCodeAction,
   documentSymbolsAt,
+  documentSymbolTreeAt,
   projectSymbols,
   inlayHintsAt,
   servesInlayHints,

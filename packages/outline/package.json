@@ -1,0 +1,15 @@
+{
+  "name": "@builtbygio/outline",
+  "version": "0.1.0",
+  "main": "./lib/main",
+  "description": "The active file's structure as a tree in a dock.",
+  "license": "MIT",
+  "repository": "https://github.com/builtbygio/chevron",
+  "engines": { "chevron": "*", "atom": "*" },
+  "activationCommands": {
+    "atom-workspace": ["outline:toggle"]
+  },
+  "deserializers": {
+    "outline/OutlineView": "deserializeOutlineView"
+  }
+}
