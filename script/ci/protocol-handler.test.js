@@ -153,4 +153,59 @@ describe('chevron:// protocol handler', () => {
     const response = serve('chevron://pkg/100%.txt');
     assert.equal(response.fetched, require('url').pathToFileURL(file).href);
   });
+
+  it('decodes the escapes beside a literal %', () => {
+    const file = write(path.join(atomHome, 'packages', 'pkg', '50% off x.png'));
+    const response = serve('chevron://pkg/50% off%20x.png');
+    assert.equal(response.fetched, require('url').pathToFileURL(file).href);
+  });
+
+  it('decodes multi-byte UTF-8 and keeps invalid escapes literal', () => {
+    const accented = write(path.join(atomHome, 'packages', 'pkg', 'café.png'));
+    assert.equal(
+      serve('chevron://pkg/caf%C3%A9.png').fetched,
+      require('url').pathToFileURL(accented).href
+    );
+    const invalid = write(
+      path.join(atomHome, 'packages', 'pkg', 'a%FFb%C3 c.png')
+    );
+    assert.equal(
+      serve('chevron://pkg/a%FFb%C3%20c.png').fetched,
+      require('url').pathToFileURL(invalid).href
+    );
+  });
+
+  it('answers 404 for a symlink that leaves its package or the assets root', () => {
+    const secret = write(path.join(tmp, 'outside', 'secret.txt'));
+    const pkg = path.join(atomHome, 'packages', 'linky');
+    fs.mkdirSync(pkg, { recursive: true });
+    fs.symlinkSync(secret, path.join(pkg, 'secret.txt'));
+    fs.symlinkSync(path.dirname(secret), path.join(pkg, 'outside'));
+    fs.mkdirSync(path.join(atomHome, 'assets'), { recursive: true });
+    fs.symlinkSync(secret, path.join(atomHome, 'assets', 'secret.txt'));
+
+    const before = electron.fetched.length;
+    for (const url of [
+      'chevron://linky/secret.txt',
+      'chevron://linky/outside/secret.txt',
+      'chevron://assets/secret.txt'
+    ]) {
+      assert.equal(serve(url).status, 404, url);
+    }
+    assert.equal(electron.fetched.length, before);
+  });
+
+  it('serves a package that is itself a symlink, as cpm link installs it', () => {
+    const source = path.join(tmp, 'src', 'linked-theme');
+    write(path.join(source, 'styles', 'index.less'));
+    fs.mkdirSync(path.join(atomHome, 'packages'), { recursive: true });
+    fs.symlinkSync(source, path.join(atomHome, 'packages', 'linked-theme'));
+    const response = serve('chevron://linked-theme/styles/index.less');
+    assert.equal(
+      response.fetched,
+      require('url').pathToFileURL(
+        path.join(atomHome, 'packages', 'linked-theme', 'styles', 'index.less')
+      ).href
+    );
+  });
 });

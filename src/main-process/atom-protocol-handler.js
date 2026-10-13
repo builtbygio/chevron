@@ -65,7 +65,10 @@ module.exports = class AtomProtocolHandler {
     ) {
       const assetsRoot = path.resolve(atomHome, 'assets');
       const assetsPath = path.resolve(atomHome, relativePath);
-      if (pathContained(assetsRoot, assetsPath) && isFile(assetsPath)) {
+      if (
+        pathContained(assetsRoot, assetsPath) &&
+        isFile(assetsPath, assetsRoot)
+      ) {
         return assetsPath;
       }
       return undefined;
@@ -76,16 +79,32 @@ module.exports = class AtomProtocolHandler {
       const root = path.resolve(loadPath);
       const candidate = path.resolve(root, relativePath);
       if (!pathContained(root, candidate)) continue;
-      if (isFile(candidate)) return candidate;
+      if (isFile(candidate, packageDirectory(root, relativePath))) {
+        return candidate;
+      }
     }
 
     return undefined;
   }
 };
 
-function isFile(filePath) {
+// The boundary is the package, not the load path: `cpm link` installs a
+// package as a symlink to its source, and a dev checkout's node_modules
+// entries are symlinks into packages/, so only a link *inside* a package is
+// an escape.
+function packageDirectory(root, relativePath) {
+  const parts = relativePath.split(path.sep);
+  if (parts.length === 1) return root;
+  const depth = parts[0].startsWith('@') && parts.length > 2 ? 2 : 1;
+  return path.join(root, ...parts.slice(0, depth));
+}
+
+function isFile(filePath, boundary) {
   try {
-    return fs.statSync(filePath).isFile();
+    return (
+      fs.statSync(filePath).isFile() &&
+      pathContained(fs.realpathSync(boundary), fs.realpathSync(filePath))
+    );
   } catch (error) {
     return false;
   }
