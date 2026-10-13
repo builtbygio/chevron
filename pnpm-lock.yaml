@@ -714,25 +714,6 @@ importers:
         specifier: ^1.1.0
         version: 1.6.0
 
-  packages/exception-reporting:
-    dependencies:
-      fs-plus:
-        specifier: ^3.0.0
-        version: 3.1.1
-      node-uuid:
-        specifier: ~1.4.7
-        version: 1.4.8
-      stack-trace:
-        specifier: 0.0.9
-        version: 0.0.9
-      underscore-plus:
-        specifier: ^1.7.0
-        version: 1.7.0
-    devDependencies:
-      semver:
-        specifier: ^7.8.5
-        version: 7.8.5
-
   packages/find-and-replace:
     dependencies:
       binary-search:
@@ -3291,11 +3272,6 @@ packages:
   node-pty@1.1.0:
     resolution: {integrity: sha512-20JqtutY6JPXTUnL0ij1uad7Qe1baT46lyolh2sSENDd4sTzKZ4nmAFkeAARDKwmlLjPx6XKRlwRUxwjOy+lUg==}
 
-  node-uuid@1.4.8:
-    resolution: {integrity: sha512-TkCET/3rr9mUuRp+CpO7qfgT++aAxfDRaalQhwPFzI9BY/2rCDn6OfpZOVggi1AXfTPpfkTrg5f5WQx5G1uLxA==}
-    deprecated: Use uuid module instead
-    hasBin: true
-
   noop-logger@0.1.1:
     resolution: {integrity: sha512-6kM8CLXvuW5crTxsAtva2YLrRrDaiTIkIePWs9moLHqbFWT94WpNFjwS/5dfLfECg5i/lkmw3aoqVidxt23TEQ==}
 
@@ -3854,9 +3830,6 @@ packages:
   stable@0.1.8:
     resolution: {integrity: sha512-ji9qxRnOVfcuLDySj9qzhGSEFVobyt1kIOSkj1qZzYLzq7Tos/oUUWvotUPQLlrsidqsK6tBH89Bc9kL5zHA6w==}
     deprecated: 'Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility'
-
-  stack-trace@0.0.9:
-    resolution: {integrity: sha512-vjUc6sfgtgY0dxCdnc40mK6Oftjo9+2K8H/NG81TMhgL392FtiPA9tn9RLyTxXmTLPJPjF3VyzFp6bsWFLisMQ==}
 
   stacktrace-parser@0.1.11:
     resolution: {integrity: sha512-WjlahMgHmCJpqzU8bIBy4qtsZdU9lRlcZE3Lvyej6t4tuOuv1vk57OW3MBrj6hXBFx/nNoC9MPMTcr5YA7NQbg==}
@@ -6637,8 +6610,6 @@ snapshots:
     dependencies:
       node-addon-api: 7.1.1
 
-  node-uuid@1.4.8: {}
-
   noop-logger@0.1.1: {}
 
   normalize-package-data@2.5.0:
@@ -7268,8 +7239,6 @@ snapshots:
   sprintf-js@1.0.3: {}
 
   stable@0.1.8: {}
-
-  stack-trace@0.0.9: {}
 
   stacktrace-parser@0.1.11:
     dependencies:

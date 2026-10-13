@@ -218,23 +218,6 @@ function BrowserWindow(options) {
   this.__chevronUtilityWorker = true;
 }
 
-BrowserWindow.prototype.loadURL = function(url) {
-  return ipcRenderer.sendSync('chevron:bw-id-call-sync', this.id, 'loadURL', url);
-};
-
-BrowserWindow.prototype.destroy = function() {
-  workerEventHandlers.delete(this.id);
-  return ipcRenderer.sendSync('chevron:bw-id-call-sync', this.id, 'destroy');
-};
-
-BrowserWindow.prototype.isDestroyed = function() {
-  return !!ipcRenderer.sendSync(
-    'chevron:bw-id-call-sync',
-    this.id,
-    'isDestroyed'
-  );
-};
-
 BrowserWindow.fromId = function(id) {
   return {
     id,

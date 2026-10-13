@@ -28,7 +28,6 @@ See [RFC 003](https://github.com/atom/atom/blob/master/docs/rfcs/003-consolidate
 | **deprecation-cop** | [`./deprecation-cop`](./deprecation-cop) | [#17839](https://github.com/atom/atom/issues/17839) |
 | **dev-live-reload** | [`./dev-live-reload`](dev-live-reload) | [#17840](https://github.com/atom/atom/issues/17840) |
 | **encoding-selector** | [`atom/encoding-selector`][encoding-selector] | [#17841](https://github.com/atom/atom/issues/17841) |
-| **exception-reporting** | [`./exception-reporting`](./exception-reporting) | [#17842](https://github.com/atom/atom/issues/17842) |
 | **find-and-replace** | [`atom/find-and-replace`][find-and-replace] |  |
 | **fuzzy-finder** | [`atom/fuzzy-finder`][fuzzy-finder] |  |
 | **github** | [`atom/github`][github] |  |
