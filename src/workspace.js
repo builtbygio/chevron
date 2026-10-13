@@ -1432,7 +1432,7 @@ module.exports = class Workspace extends Model {
         this.applicationDelegate.confirm(
           {
             message:
-              'Atom will be unresponsive during the loading of very large files.',
+              'Chevron may become unresponsive while loading very large files.',
             detail: 'Do you still want to load this file?',
             buttons: ['Proceed', 'Cancel']
           },

@@ -937,6 +937,11 @@ describe('Workspace', () => {
       it('prompts before opening the file', async () => {
         atom.config.set('core.warnOnLargeFileLimit', 20);
         await shouldPromptForFileOfSize(20, true);
+        const [options] = atom.applicationDelegate.confirm.mostRecentCall.args;
+        expect(options.message).toBe(
+          'Chevron may become unresponsive while loading very large files.'
+        );
+        expect(options.buttons).toEqual(['Proceed', 'Cancel']);
       });
 
       it("doesn't prompt on files below the limit", async () => {
