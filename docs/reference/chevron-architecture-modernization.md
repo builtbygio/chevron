@@ -6,7 +6,7 @@
 | **Date** | 2026-08-15 (rev 4 contract 2026-08-27) |
 | **Status** | Draft (rev 3 — owner Q1–Q10 resolved 2026-08-15; **rev 4** = 1.1.0 leftover table) |
 | **Product** | Chevron **1.1.0** unsigned preview (`builtbygio/chevron`) |
-| **Baseline** | Electron **43.1.0**, Node 24, Phase S Option C, pnpm workspace, owned catalog on npmjs |
+| **Baseline** | Electron **43.7.9**, Node 24, Phase S Option C, pnpm workspace, owned catalog on npmjs |
 | **Audience** | Senior engineers who know this tree |
 | **Type** | Strategy + target architecture + incremental PR plan — not a rewrite charter |
 
@@ -30,7 +30,7 @@ The 2025–2026 work already purged the worst Atom-era *runtime* debts. Treat th
 
 | Locked | Evidence |
 |--------|----------|
-| Electron 43.1.0 + in-app Node ~24 | Root `package.json` `electronVersion`; `GROK.md` |
+| Electron 43.7.9 + in-app Node ~24 | Root `package.json` `electronVersion`; `GROK.md` |
 | Page world: `nodeIntegration: false`, `contextIsolation: true` | `src/main-process/atom-window.js` ~184–210 |
 | Editor `sandbox: false` **intentional** (Option C) | `docs/decisions/security-phase-s-decision.md`; `src/preload-natives.js` `phaseSDecision` |
 | No `@electron/remote`; `src/remote-compat.js` + `register-renderer-ipc.js` | `static/preload.js` 32–35; `docs/reference/remote-ipc-inventory.md` |

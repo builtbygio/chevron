@@ -38,7 +38,7 @@ All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtb
 
 | Track | Notes |
 |-------|--------|
-| Electron | **43.1.0** |
+| Electron | **43.7.9** |
 | Bundle ID | `dev.builtbygio.chevron` |
 | Package API | **Chevron only** (`require('chevron')`, `global.chevron`, `engines.chevron`) |
 | URI scheme | **`chevron://`** only — the `atom://` alias and the `.atom` host were removed in Wave 4 |
