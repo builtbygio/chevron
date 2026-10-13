@@ -309,6 +309,7 @@ jobs:
           node --test script/ci/src-typescript-first.test.js
           node --test script/ci/uri-scheme.test.js
           node --test script/ci/protocol-handler.test.js
+          node --test script/ci/release-assets.test.js
           node --test script/ci/no-atom-uri.test.js
           node --test script/ci/shell-commands.test.js
           node --test script/ci/reload-watcher-shutdown.test.js
@@ -413,9 +414,10 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: chevron-macos-${{ matrix.arch }}
-          path: |
-            out/*.zip
-            out/*.app
+          # The zip only. The universal job unpacks it, and a .app here was
+          # merged into the release's artifacts, where its vendored
+          # ctags-win32.exe matched the .exe pattern and shipped as an asset.
+          path: out/*.zip
           if-no-files-found: warn
 
       - name: Upload build output on failure
@@ -1149,14 +1151,16 @@ jobs:
           # skips pre-releases (#412).
           prerelease: false
           body_path: release-notes.md
+          # Top level only: merge-multiple puts every package there, and
+          # anything deeper is the inside of something else.
           files: |
-            artifacts/**/*.zip
-            artifacts/**/*.deb
-            artifacts/**/*.rpm
-            artifacts/**/*.tar.gz
-            artifacts/**/*.exe
-            artifacts/**/*.blockmap
-            artifacts/**/latest*.yml
+            artifacts/*.zip
+            artifacts/*.deb
+            artifacts/*.rpm
+            artifacts/*.tar.gz
+            artifacts/*.exe
+            artifacts/*.blockmap
+            artifacts/latest*.yml
 
   # ---------------------------------------------------------------------------
   # No-cache build. Every build job above restores node_modules from
