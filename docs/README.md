@@ -77,6 +77,7 @@ polyfill survive, and it fails rather than rotting.
 | [package-ecosystem-strategy.md](./decisions/package-ecosystem-strategy.md) | Owned catalog only; community packages cancelled (locked) |
 | [build-architecture.md](./decisions/build-architecture.md) | Compiled build, signed package artifacts, first-party registry (proposed) |
 | [security-phase-s-decision.md](./decisions/security-phase-s-decision.md) | **Option C** — editor `sandbox: false` on purpose |
+| [ai-native-architecture.md](./decisions/ai-native-architecture.md) | A local model through Lowerbeam; no rewrite first, with tripwires that would reopen one (proposed) |
 | [nested-package-modules.md](./decisions/nested-package-modules.md) | Nested `packages/*/node_modules` policy |
 | [windows-userdata-migrate.md](./decisions/windows-userdata-migrate.md) | Resolved — no migration built, and why |
 | [inherited/rfcs/](./decisions/inherited/rfcs/) | **Atom-era RFCs**, deliberately unedited. Not Chevron specs — kept as *provenance*: RFC 003 is why core packages are bundled the way they are, cited by `packages/README.md` |

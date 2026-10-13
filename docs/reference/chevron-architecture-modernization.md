@@ -228,7 +228,7 @@ Work is ordered so each horizon is a product that still boots.
 | **H2** | Language-first + catalog hygiene | Tree-sitter ports for named TextMate-only languages **or** a written exception list with owners; first-mate lazy; pin CSON conversion stream; `github` is **8B** (upgrade, do not slim); factory/catalog CE work; `Task` callers migrated then public `Task` removable | After H1 search/replace; Epic 18/19 **skipped** (Q1 = 8B) |
 | **H3** | Platform reopen | Package host v2 **epic** (owner-gated); first-mate removable **only if** exception list is empty; Atom name shims; Windows userData name; signing | After base Chevron is “done enough” (owner call) |
 
-Avalonia / in-app AI stay **after H3** unless a separate funded spike says otherwise. The in-app AI design doc was deleted as an undecided proposal; recover it from git history if that work is ever funded.
+Avalonia stays **after H3** unless a separate funded spike says otherwise. In-app AI has a proposed design again — a local model through Lowerbeam, built on the existing hosts rather than a rewrite: [ai-native-architecture.md](../decisions/ai-native-architecture.md). It also reweighs A2 below against that goal.
 
 ---
 
@@ -1293,7 +1293,7 @@ So TextMate is a **permanent supported fallback**, exactly as G4 and D4 already 
 - Mass `AtomEnvironment` class rename
 - Host v2 before owner sign-off (**given 2026-08-17**; Epic 21 slices 21.1–21.5 built, routing still off)
 - Custom snapshot Darwin bisection (**Q2: do not staff**)
-- AI integration (no live design doc; the proposal was deleted as undecided)
+- AI integration (proposed separately: [ai-native-architecture.md](../decisions/ai-native-architecture.md))
 - Deleting `Task`, `season`, or `document-register-element` in H1
 - Epic 18 / PR 19 (**skipped**: Q1 is 8B)
 - A new `utilityProcess` host **for `rg`** (PR 2b is main-process spawn)
