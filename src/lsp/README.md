@@ -100,6 +100,8 @@ does.
 | `chevron-lsp:status` | status-bar click |
 | `chevron-lsp:toggle-diagnostics` | `Ctrl-Shift-M` (or Ctrl/Cmd-click status) |
 | `chevron-lsp:go-to-definition` | `F12` |
+| `chevron-lsp:go-to-implementation` | `Ctrl-F12` |
+| `chevron-lsp:go-to-type-definition` | `Ctrl-Shift-F12` |
 | `chevron-lsp:find-references` | `Shift-F12` |
 | `chevron-lsp:rename` | `F2` |
 | `chevron-lsp:format-document` | `Ctrl-Shift-I` |
@@ -108,12 +110,24 @@ does.
 | `chevron-lsp:show-hover` | `Alt-F1` |
 | `chevron-lsp:signature-help` | `Ctrl-Shift-Space` |
 
+The implementation and type-definition commands are registered on an
+editor's element, and only while that editor's server advertises
+`implementationProvider` / `typeDefinitionProvider`; the command palette and
+the context menu leave them out otherwise. Packages can ask the same with
+`servesImplementation(editor)` and `servesTypeDefinition(editor)`, and request
+the locations with `implementationAtCursor(editor, point?)` and
+`typeDefinitionAtCursor(editor, point?)`. `documentHighlightsAt(editor, point?)`
+returns the uses of the symbol there as `{range, kind}`, `kind` being `text`,
+`read` or `write`; `servesDocumentHighlights(editor)` says whether to ask.
+
 ## Config
 
 | Key | Default | Meaning |
 |-----|---------|---------|
 | `lsp.servers` | `{}` | User server map |
 | `lsp.formatOnSave` | `false` | Format via LSP before save |
+| `lsp.inlayHints` | `true` | Draw inlay hints |
+| `lsp.documentHighlights` | `true` | Highlight uses of the symbol under the cursor |
 
 ## Tests
 

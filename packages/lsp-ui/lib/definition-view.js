@@ -17,11 +17,17 @@ class DefinitionView {
   /**
    * @param {Array<{uri, path, range}>} locations
    * @param {object} env chevron/atom environment
+   * @param {{emptyMessage?: string, noun?: string}} [options] `noun` is
+   *   plural and titles the list of several results.
    */
-  async openLocations(locations, env) {
+  async openLocations(
+    locations,
+    env,
+    { emptyMessage = 'No definition found', noun = 'definitions' } = {}
+  ) {
     if (!locations || locations.length === 0) {
       if (env && env.notifications) {
-        env.notifications.addInfo('No definition found');
+        env.notifications.addInfo(emptyMessage);
       }
       return;
     }
@@ -31,7 +37,7 @@ class DefinitionView {
       return;
     }
 
-    this._showList(locations, env);
+    this._showList(locations, env, noun);
   }
 
   async _openOne(loc, env) {
@@ -48,13 +54,13 @@ class DefinitionView {
     }
   }
 
-  _showList(locations, env) {
+  _showList(locations, env, noun = 'definitions') {
     this.hide();
     this.element.innerHTML = '';
 
     const title = document.createElement('div');
     title.classList.add('lsp-ui-definitions-title');
-    title.textContent = `${locations.length} definitions`;
+    title.textContent = `${locations.length} ${noun}`;
     this.element.appendChild(title);
 
     const list = document.createElement('ul');

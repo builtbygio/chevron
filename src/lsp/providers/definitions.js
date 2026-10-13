@@ -145,5 +145,6 @@ module.exports = {
   definitionAt,
   normalizeDefinitionResult,
   normalizeDefinitionResultForEncoding,
+  positionFor,
   refsForResult
 };

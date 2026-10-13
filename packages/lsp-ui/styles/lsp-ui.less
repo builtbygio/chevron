@@ -271,6 +271,19 @@ atom-panel.modal .lsp-ui-trust,
   background: ~"rgb(from var(--background-color-warning) r g b / 25%)";
 }
 
+// Uses of the symbol under the cursor. A write is the one you most need to
+// find, so it is the one with an outline.
+.lsp-document-highlight .region {
+  box-sizing: border-box;
+  border-radius: 2px;
+  background: ~"rgb(from var(--text-color) r g b / 10%)";
+}
+
+.lsp-document-highlight-write .region {
+  background: ~"rgb(from var(--text-color-warning) r g b / 18%)";
+  border: 1px solid ~"rgb(from var(--text-color-warning) r g b / 45%)";
+}
+
 // Inlay hints. Dimmer than the code they sit among: they are not in the file,
 // and reading them as if they were is the failure mode.
 .inlay-hint {
