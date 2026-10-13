@@ -128,6 +128,53 @@ not edit it silently.
 
 ---
 
+## `.editorconfig`
+
+The bundled `editorconfig` package reads `.editorconfig` files and slots in
+between the two config files: a root's own config beats it, and it beats the
+user's config and the default.
+
+| # | Source |
+|---|--------|
+| 1–2 | root config for the file's root |
+| — | `.editorconfig` |
+| 3–5 | user config, then the schema default |
+
+A `.editorconfig` is written for a repository, by people who knew which
+repository they were in — the same argument that puts root config above user
+config. It sits below root config because `.chevron/config.json` is the
+Chevron-specific file: if a repository has both and they disagree, the one
+written for this editor is the one meant.
+
+The comparison is per setting. A root config that sets `editor.tabLength` and
+nothing else leaves `.editorconfig`'s `indent_style` in charge of soft tabs.
+
+| Property | Setting it stands in for |
+|----------|--------------------------|
+| `indent_style` | `editor.tabType` / `editor.softTabs` |
+| `indent_size`, `tab_width` | `editor.tabLength` (`tab_width` for tabs, `indent_size` for spaces) |
+| `charset` | `core.fileEncoding` (`utf-8`, `latin1`, `utf-16be`, `utf-16le`; `utf-8-bom` is not supported) |
+| `max_line_length` | `editor.preferredLineLength` |
+| `end_of_line` | `line-ending-selector.defaultLineEnding` — the ending new lines get; existing ones are not converted |
+| `trim_trailing_whitespace` | `whitespace.removeTrailingWhitespace` |
+| `insert_final_newline` | `whitespace.ensureSingleTrailingNewline` |
+
+Packages supply values like these through
+`chevron.textEditors.addSettingsProvider`, which `TextEditorRegistry` consults
+wherever it resolves an editor's settings, so a provided value is not undone
+by the next config change. `getSourceOf` does not report it: it describes the
+config files only.
+
+On save, whitespace fixes run before an LSP `formatOnSave`: they are applied
+while the save is being announced, and the formatter's edits arrive after the
+server answers.
+
+`.editorconfig` files are read again when one is saved in Chevron or changes
+inside a project root. The package can be turned off with
+`editorconfig.enabled`.
+
+---
+
 ## What this does not change
 
 - **Writing.** `config.set` still writes to user config unless given an

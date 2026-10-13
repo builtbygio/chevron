@@ -28,6 +28,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var main_exports = {};
 __export(main_exports, {
   activate: () => activate,
+  consumeEditorConfig: () => consumeEditorConfig,
   consumeStatusBar: () => consumeStatusBar,
   deactivate: () => deactivate,
   setLineEnding: () => setLineEnding
@@ -42,6 +43,7 @@ const LineEndingRegExp = /\r\n|\n/g;
 const LFRegExp = /(\A|[^\r])\n/g;
 const CRLFRegExp = /\r\n/g;
 let disposables = null;
+let editorConfig = null;
 function activate() {
   disposables = new import_atom.CompositeDisposable();
   let selectorDisposable;
@@ -73,6 +75,12 @@ function activate() {
 function deactivate() {
   disposables.dispose();
 }
+function consumeEditorConfig(service) {
+  editorConfig = service;
+  return new import_atom.Disposable(() => {
+    if (editorConfig === service) editorConfig = null;
+  });
+}
 function consumeStatusBar(statusBar) {
   let statusBarItem = new import_status_bar_item.default();
   let currentBufferDisposable = null;
@@ -80,7 +88,7 @@ function consumeStatusBar(statusBar) {
   const updateTile = import_underscore_plus.default.debounce((buffer) => {
     getLineEndings(buffer).then((lineEndings) => {
       if (lineEndings.size === 0) {
-        let defaultLineEnding = getDefaultLineEnding();
+        let defaultLineEnding = getDefaultLineEnding(buffer);
         buffer.setPreferredLineEnding(defaultLineEnding);
         lineEndings = (/* @__PURE__ */ new Set()).add(defaultLineEnding);
       }
@@ -137,7 +145,14 @@ function consumeStatusBar(statusBar) {
   let tile = statusBar.addRightTile({ item: statusBarItem, priority: 200 });
   disposables.add(new import_atom.Disposable(() => tile.destroy()));
 }
-function getDefaultLineEnding() {
+const LINE_ENDING_BY_END_OF_LINE = { lf: "\n", crlf: "\r\n", cr: "\r" };
+function getDefaultLineEnding(buffer) {
+  const filePath = buffer && buffer.getPath && buffer.getPath();
+  if (editorConfig && filePath) {
+    const properties = editorConfig.propertiesForPath(filePath) || {};
+    const lineEnding = LINE_ENDING_BY_END_OF_LINE[properties.end_of_line];
+    if (lineEnding) return lineEnding;
+  }
   switch (chevron.config.get("line-ending-selector.defaultLineEnding")) {
     case "LF":
       return "\n";
@@ -178,6 +193,7 @@ function setLineEnding(item, lineEnding) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   activate,
+  consumeEditorConfig,
   consumeStatusBar,
   deactivate,
   setLineEnding

@@ -18,6 +18,11 @@
       "versions": {
         "^1.0.0": "consumeStatusBar"
       }
+    },
+    "editorconfig": {
+      "versions": {
+        "^1.0.0": "consumeEditorConfig"
+      }
     }
   },
   "configSchema": {

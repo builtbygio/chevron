@@ -49,6 +49,7 @@
     "dedent": "^0.7.0",
     "deprecation-cop": "workspace:@builtbygio/deprecation-cop@*",
     "dev-live-reload": "workspace:@builtbygio/dev-live-reload@*",
+    "editorconfig": "workspace:@builtbygio/editorconfig@*",
     "devtron": "1.4.0",
     "electron-updater": "6.8.9",
     "encoding-selector": "workspace:@builtbygio/encoding-selector@*",
@@ -245,7 +246,8 @@
     "diff-review": "0.1.0",
     "breadcrumbs": "0.1.0",
     "sticky-scroll": "0.1.0",
-    "outline": "0.1.0"
+    "outline": "0.1.0",
+    "editorconfig": "0.1.0"
   },
   "private": true,
   "overrides": {
