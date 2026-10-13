@@ -17,13 +17,16 @@ const assert = require('node:assert/strict');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const { fromSymbols, fromFolds, pathAt, countNodes } = require(path.join(
-  ROOT,
-  'packages',
-  'outline',
-  'lib',
-  'outline-tree'
-));
+const {
+  fromSymbols,
+  fromFolds,
+  pathAt,
+  countNodes,
+  visibleRows,
+  keyAction,
+  statusMessage,
+  CollapsedState
+} = require(path.join(ROOT, 'packages', 'outline', 'lib', 'outline-tree'));
 const {
   normalizeDocumentSymbols,
   normalizeDocumentSymbolTree
@@ -347,5 +350,139 @@ describe('keys', () => {
       tree[1].children[0].key
     ];
     assert.equal(new Set(keys).size, 3);
+  });
+});
+
+describe('the keyboard', () => {
+  // A
+  //   a1
+  //   a2
+  //     b
+  // C
+  const sym = (name, a, b, children = []) => ({
+    name,
+    kind: 6,
+    range: lspRange(a, 0, b, 0),
+    selectionRange: lspRange(a, 0, a, 1),
+    children
+  });
+  const tree = fromSymbols(
+    normalizeDocumentSymbolTree([
+      sym('A', 0, 9, [sym('a1', 1, 2), sym('a2', 3, 8, [sym('b', 4, 5)])]),
+      sym('C', 10, 12)
+    ])
+  );
+  const key = name => {
+    const find = nodes => {
+      for (const n of nodes) {
+        if (n.label === name) return n.key;
+        const inner = find(n.children);
+        if (inner) return inner;
+      }
+      return null;
+    };
+    return find(tree);
+  };
+  const press = (k, on, collapsed = []) => {
+    const set = new Set(collapsed.map(key));
+    const action = keyAction(k, key(on), tree, x => set.has(x));
+    if (!action) return null;
+    const [verb, target] = Object.entries(action)[0];
+    return `${verb} ${nameOf(target)}`;
+  };
+  const nameOf = k =>
+    visibleRows(tree, () => false).find(r => r.node.key === k).node.label;
+
+  it('walks only rows that are showing, top to bottom', () => {
+    assert.deepEqual(
+      visibleRows(tree, k => k === key('a2')).map(r => r.node.label),
+      ['A', 'a1', 'a2', 'C']
+    );
+    assert.equal(press('ArrowDown', 'a2'), 'focus b');
+    assert.equal(press('ArrowDown', 'a2', ['a2']), 'focus C');
+    assert.equal(press('ArrowUp', 'C', ['A']), 'focus A');
+    assert.equal(press('ArrowUp', 'A'), null);
+    assert.equal(press('ArrowDown', 'C'), null);
+    assert.equal(press('Home', 'b'), 'focus A');
+    assert.equal(press('End', 'a1'), 'focus C');
+  });
+
+  it('Right expands a collapsed entry, then goes to its first child', () => {
+    assert.equal(press('ArrowRight', 'A', ['A']), 'expand A');
+    assert.equal(press('ArrowRight', 'A'), 'focus a1');
+    assert.equal(press('ArrowRight', 'a1'), null);
+  });
+
+  it('Left collapses an open entry, then goes to its parent', () => {
+    assert.equal(press('ArrowLeft', 'a2'), 'collapse a2');
+    assert.equal(press('ArrowLeft', 'a2', ['a2']), 'focus A');
+    assert.equal(press('ArrowLeft', 'b'), 'focus a2');
+    assert.equal(press('ArrowLeft', 'C'), null);
+  });
+
+  it('Enter reveals, and Space toggles only what has children', () => {
+    assert.equal(press('Enter', 'b'), 'reveal b');
+    assert.equal(press(' ', 'A'), 'collapse A');
+    assert.equal(press(' ', 'A', ['A']), 'expand A');
+    assert.equal(press(' ', 'a1'), null);
+  });
+
+  it('starts at the first row when nothing showing has focus', () => {
+    assert.equal(press('ArrowDown', 'b', ['A']), 'focus A');
+    assert.equal(keyAction('ArrowDown', 'x', [], () => false), null);
+  });
+
+  it('ignores keys it does not own', () => {
+    assert.equal(press('a', 'A'), null);
+    assert.equal(press('Tab', 'A'), null);
+  });
+});
+
+describe('the status line', () => {
+  const status = options =>
+    statusMessage(
+      Object.assign(
+        { hasEditor: true, pending: false, empty: true, tooLarge: false },
+        options
+      )
+    );
+
+  it('says a file over the fold limit is too large, not empty', () => {
+    assert.equal(
+      status({ tooLarge: true }),
+      'This file is too large to outline without a language server.'
+    );
+    assert.equal(status({}), 'Nothing to outline in this file.');
+  });
+
+  it('is blank with a tree, while waiting, and asks for a file without one', () => {
+    assert.equal(status({ empty: false, tooLarge: true }), '');
+    assert.equal(status({ pending: true }), '');
+    assert.equal(
+      status({ hasEditor: false }),
+      'Open a file to see its outline.'
+    );
+  });
+});
+
+describe('collapsed state', () => {
+  it('keeps the most recently used files only', () => {
+    const state = new CollapsedState(3);
+    for (const file of ['a', 'b', 'c']) state.set(file, 'k', true);
+    state.touch('a');
+    state.set('d', 'k', true);
+    assert.equal(state.size, 3);
+    assert.equal(state.has('b', 'k'), false, 'b was least recently used');
+    assert.equal(state.has('a', 'k'), true);
+    assert.equal(state.has('d', 'k'), true);
+  });
+
+  it('holds no entry for a file with nothing collapsed', () => {
+    const state = new CollapsedState();
+    state.set('a', 'k', true);
+    state.set('a', 'k', false);
+    assert.equal(state.size, 0);
+    state.touch('never-collapsed');
+    assert.equal(state.size, 0);
   });
 });

@@ -23,7 +23,14 @@ module.exports = {
         if (uri === OutlineView.URI) return getView();
       }),
       chevron.commands.add('atom-workspace', {
-        'outline:toggle': () => chevron.workspace.toggle(OutlineView.URI)
+        'outline:toggle': () => chevron.workspace.toggle(OutlineView.URI),
+        // No default keybinding: every obvious chord is taken by something.
+        'outline:focus': async () => {
+          const item = await chevron.workspace.open(OutlineView.URI, {
+            searchAllPanes: true
+          });
+          if (item && typeof item.focus === 'function') item.focus();
+        }
       })
     );
   },
@@ -31,6 +38,12 @@ module.exports = {
   deactivate() {
     if (subscriptions) subscriptions.dispose();
     subscriptions = null;
+    if (!view) return;
+    // Out of the dock first: a destroyed view left in a pane keeps its
+    // element, and the dock its tab, until the window closes. Workspace state
+    // is saved before packages deactivate, so a restart still restores it.
+    const pane = chevron.workspace.paneForItem(view);
+    if (pane) pane.destroyItem(view, true);
     if (view) view.destroy();
   },
 
