@@ -219,7 +219,7 @@ var buildEagerFailureReporter = () => ({
         }
       }
     }
-    ipcRenderer.send('write-to-stderr', lines.join('\n') + '\n');
+    ipcRenderer.send('chevron:write-to-stderr', lines.join('\n') + '\n');
   }
 });
 
@@ -230,7 +230,7 @@ var buildTerminalReporter = function(logFile, resolveWithExitCode) {
     if (logStream != null) {
       return fs.writeSync(logStream, str);
     } else {
-      return ipcRenderer.send('write-to-stderr', str);
+      return ipcRenderer.send('chevron:write-to-stderr', str);
     }
   };
 

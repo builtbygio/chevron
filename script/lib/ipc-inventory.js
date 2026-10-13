@@ -11,6 +11,11 @@ const path = require('path');
 
 const REGISTRATION = /\bipcMain\s*\.\s*(handle|on)\s*\(\s*(['"`])((?:\\.|(?!\2)[^\\])*)\2/g;
 
+// src/ipc-helpers.js registers on ipcMain too, one call removed: on() takes
+// the emitter as its first argument, respondTo() is ipcMain.on underneath.
+// Missing these left 31 channels in atom-application.js outside the gate.
+const HELPER_REGISTRATION = /\bipcHelpers\s*\.\s*(?:on\s*\(\s*ipcMain\s*,|respondTo\s*\()\s*(['"`])((?:\\.|(?!\1)[^\\])*)\1/g;
+
 // Comments blanked, keeping length and newlines so offsets still give the
 // right line number. A commented-out registration is not a registration.
 function withoutComments(source) {
@@ -74,15 +79,21 @@ function enumerateChannels(rootDir) {
   for (const file of sourceFiles(rootDir)) {
     const source = fs.readFileSync(file, 'utf8');
     const code = withoutComments(source);
+    const record = (channel, kind, index) =>
+      found.push({
+        channel,
+        kind,
+        file: path.relative(rootDir, file).split(path.sep).join('/'),
+        line: code.slice(0, index).split('\n').length
+      });
     REGISTRATION.lastIndex = 0;
     let match;
     while ((match = REGISTRATION.exec(code))) {
-      found.push({
-        channel: match[3],
-        kind: match[1],
-        file: path.relative(rootDir, file).split(path.sep).join('/'),
-        line: code.slice(0, match.index).split('\n').length
-      });
+      record(match[3], match[1], match.index);
+    }
+    HELPER_REGISTRATION.lastIndex = 0;
+    while ((match = HELPER_REGISTRATION.exec(code))) {
+      record(match[2], 'on', match.index);
     }
   }
   return found.sort(

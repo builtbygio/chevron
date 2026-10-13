@@ -26,7 +26,7 @@ module.exports = class ApplicationDelegate {
   }
 
   open(params) {
-    return ipcRenderer.send('open', params);
+    return ipcRenderer.send('chevron:open', params);
   }
 
   pickFolder(callback) {
@@ -35,7 +35,7 @@ module.exports = class ApplicationDelegate {
       ipcRenderer.removeAllListeners(responseChannel);
       return callback(path);
     });
-    return ipcRenderer.send('pick-folder', responseChannel);
+    return ipcRenderer.send('chevron:pick-folder', responseChannel);
   }
 
   getCurrentWindow() {
@@ -43,16 +43,16 @@ module.exports = class ApplicationDelegate {
   }
 
   closeWindow() {
-    return ipcHelpers.call('window-method', 'close');
+    return ipcHelpers.call('chevron:window-method', 'close');
   }
 
   async getTemporaryWindowState() {
-    const stateJSON = await ipcHelpers.call('get-temporary-window-state');
+    const stateJSON = await ipcHelpers.call('chevron:get-temporary-window-state');
     return stateJSON && JSON.parse(stateJSON);
   }
 
   setTemporaryWindowState(state) {
-    return ipcHelpers.call('set-temporary-window-state', JSON.stringify(state));
+    return ipcHelpers.call('chevron:set-temporary-window-state', JSON.stringify(state));
   }
 
   getWindowSize() {
@@ -62,7 +62,7 @@ module.exports = class ApplicationDelegate {
   }
 
   setWindowSize(width, height) {
-    return ipcHelpers.call('set-window-size', width, height);
+    return ipcHelpers.call('chevron:set-window-size', width, height);
   }
 
   getWindowPosition() {
@@ -72,35 +72,35 @@ module.exports = class ApplicationDelegate {
   }
 
   setWindowPosition(x, y) {
-    return ipcHelpers.call('set-window-position', x, y);
+    return ipcHelpers.call('chevron:set-window-position', x, y);
   }
 
   centerWindow() {
-    return ipcHelpers.call('center-window');
+    return ipcHelpers.call('chevron:center-window');
   }
 
   focusWindow() {
-    return ipcHelpers.call('focus-window');
+    return ipcHelpers.call('chevron:focus-window');
   }
 
   showWindow() {
-    return ipcHelpers.call('show-window');
+    return ipcHelpers.call('chevron:show-window');
   }
 
   hideWindow() {
-    return ipcHelpers.call('hide-window');
+    return ipcHelpers.call('chevron:hide-window');
   }
 
   reloadWindow() {
-    return ipcHelpers.call('window-method', 'reload');
+    return ipcHelpers.call('chevron:window-method', 'reload');
   }
 
   restartApplication() {
-    return ipcRenderer.send('restart-application');
+    return ipcRenderer.send('chevron:restart-application');
   }
 
   minimizeWindow() {
-    return ipcHelpers.call('window-method', 'minimize');
+    return ipcHelpers.call('chevron:window-method', 'minimize');
   }
 
   isWindowMaximized() {
@@ -108,11 +108,11 @@ module.exports = class ApplicationDelegate {
   }
 
   maximizeWindow() {
-    return ipcHelpers.call('window-method', 'maximize');
+    return ipcHelpers.call('chevron:window-method', 'maximize');
   }
 
   unmaximizeWindow() {
-    return ipcHelpers.call('window-method', 'unmaximize');
+    return ipcHelpers.call('chevron:window-method', 'unmaximize');
   }
 
   isWindowFullScreen() {
@@ -120,7 +120,7 @@ module.exports = class ApplicationDelegate {
   }
 
   setWindowFullScreen(fullScreen = false) {
-    return ipcHelpers.call('window-method', 'setFullScreen', fullScreen);
+    return ipcHelpers.call('chevron:window-method', 'setFullScreen', fullScreen);
   }
 
   onDidEnterFullScreen(callback) {
@@ -149,41 +149,41 @@ module.exports = class ApplicationDelegate {
 
   async openWindowDevTools() {
     await new Promise(process.nextTick);
-    return ipcHelpers.call('window-method', 'openDevTools');
+    return ipcHelpers.call('chevron:window-method', 'openDevTools');
   }
 
   async closeWindowDevTools() {
     await new Promise(process.nextTick);
-    return ipcHelpers.call('window-method', 'closeDevTools');
+    return ipcHelpers.call('chevron:window-method', 'closeDevTools');
   }
 
   async toggleWindowDevTools() {
     await new Promise(process.nextTick);
-    return ipcHelpers.call('window-method', 'toggleDevTools');
+    return ipcHelpers.call('chevron:window-method', 'toggleDevTools');
   }
 
   executeJavaScriptInWindowDevTools(code) {
-    return ipcRenderer.send('execute-javascript-in-dev-tools', code);
+    return ipcRenderer.send('chevron:execute-javascript-in-dev-tools', code);
   }
 
   didClosePathWithWaitSession(path) {
     return ipcHelpers.call(
-      'window-method',
+      'chevron:window-method',
       'didClosePathWithWaitSession',
       path
     );
   }
 
   setWindowDocumentEdited(edited) {
-    return ipcHelpers.call('window-method', 'setDocumentEdited', edited);
+    return ipcHelpers.call('chevron:window-method', 'setDocumentEdited', edited);
   }
 
   setRepresentedFilename(filename) {
-    return ipcHelpers.call('window-method', 'setRepresentedFilename', filename);
+    return ipcHelpers.call('chevron:window-method', 'setRepresentedFilename', filename);
   }
 
   addRecentDocument(filename) {
-    return ipcRenderer.send('add-recent-document', filename);
+    return ipcRenderer.send('chevron:add-recent-document', filename);
   }
 
   setProjectRoots(paths) {
@@ -193,12 +193,12 @@ module.exports = class ApplicationDelegate {
     try {
       return ipcRenderer.sendSync('chevron:window-set-project-roots-sync', paths);
     } catch (error) {
-      return ipcHelpers.call('window-method', 'setProjectRoots', paths);
+      return ipcHelpers.call('chevron:window-method', 'setProjectRoots', paths);
     }
   }
 
   setAutoHideWindowMenuBar(autoHide) {
-    return ipcHelpers.call('window-method', 'setAutoHideMenuBar', autoHide);
+    return ipcHelpers.call('chevron:window-method', 'setAutoHideMenuBar', autoHide);
   }
 
   setWindowMenuBarVisibility(visible) {
@@ -217,7 +217,7 @@ module.exports = class ApplicationDelegate {
     this.pendingSettingsUpdateCount++;
     try {
       await ipcHelpers.call(
-        'set-user-settings',
+        'chevron:set-user-settings',
         JSON.stringify(config),
         configFilePath
       );
@@ -377,7 +377,7 @@ module.exports = class ApplicationDelegate {
   }
 
   didChangeHistoryManager() {
-    return ipcRenderer.send('did-change-history-manager');
+    return ipcRenderer.send('chevron:did-change-history-manager');
   }
 
   openExternal(url) {
@@ -466,31 +466,31 @@ module.exports = class ApplicationDelegate {
   }
 
   checkForUpdate() {
-    return ipcRenderer.send('command', 'application:check-for-update');
+    return ipcRenderer.send('chevron:command', 'application:check-for-update');
   }
 
   restartAndInstallUpdate() {
-    return ipcRenderer.send('command', 'application:install-update');
+    return ipcRenderer.send('chevron:command', 'application:install-update');
   }
 
   getAutoUpdateManagerState() {
-    return ipcRenderer.sendSync('get-auto-update-manager-state');
+    return ipcRenderer.sendSync('chevron:get-auto-update-manager-state-sync');
   }
 
   getAutoUpdateManagerErrorMessage() {
-    return ipcRenderer.sendSync('get-auto-update-manager-error');
+    return ipcRenderer.sendSync('chevron:get-auto-update-manager-error-sync');
   }
 
   emitWillSavePath(path) {
-    return ipcHelpers.call('will-save-path', path);
+    return ipcHelpers.call('chevron:will-save-path', path);
   }
 
   emitDidSavePath(path) {
-    return ipcHelpers.call('did-save-path', path);
+    return ipcHelpers.call('chevron:did-save-path', path);
   }
 
   resolveProxy(requestId, url) {
-    return ipcRenderer.send('resolve-proxy', requestId, url);
+    return ipcRenderer.send('chevron:resolve-proxy', requestId, url);
   }
 
   onDidResolveProxy(callback) {

@@ -12,6 +12,10 @@ const FileRecoveryService = require('./file-recovery-service');
 const StartupTime = require('../startup-time');
 const ipcHelpers = require('../ipc-helpers');
 const {
+  isAllowedWindowMethod,
+  userSettingsTarget
+} = require('./window-ipc-policy');
+const {
   BrowserWindow,
   Menu,
   app,
@@ -925,13 +929,13 @@ module.exports = class AtomApplication extends EventEmitter {
     );
 
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'restart-application', () => {
+      ipcHelpers.on(ipcMain, 'chevron:restart-application', () => {
         this.restart();
       })
     );
 
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'resolve-proxy', async (event, requestId, url) => {
+      ipcHelpers.on(ipcMain, 'chevron:resolve-proxy', async (event, requestId, url) => {
         const proxy = await event.sender.session.resolveProxy(url);
         if (!event.sender.isDestroyed())
           event.sender.send('did-resolve-proxy', requestId, proxy);
@@ -939,7 +943,7 @@ module.exports = class AtomApplication extends EventEmitter {
     );
 
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'did-change-history-manager', event => {
+      ipcHelpers.on(ipcMain, 'chevron:did-change-history-manager', event => {
         for (let atomWindow of this.getAllWindows()) {
           const { webContents } = atomWindow.browserWindow;
           if (webContents !== event.sender)
@@ -965,7 +969,7 @@ module.exports = class AtomApplication extends EventEmitter {
     // A request from the associated render process to open a set of paths using the standard window location logic.
     // Used for application:reopen-project.
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'open', (event, options) => {
+      ipcHelpers.on(ipcMain, 'chevron:open', (event, options) => {
         if (options) {
           if (typeof options.pathsToOpen === 'string') {
             options.pathsToOpen = [options.pathsToOpen];
@@ -989,7 +993,7 @@ module.exports = class AtomApplication extends EventEmitter {
     // Prompt for a file, folder, or either, then open the chosen paths. Files will be opened in the originating
     // window; folders will be opened in a new window unless an existing window exactly contains all of them.
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'open-chosen-any', (event, defaultPath) => {
+      ipcHelpers.on(ipcMain, 'chevron:open-chosen-any', (event, defaultPath) => {
         this.promptForPathToOpen(
           'all',
           createOpenSettings({ event, sameWindow: true }),
@@ -998,7 +1002,7 @@ module.exports = class AtomApplication extends EventEmitter {
       })
     );
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'open-chosen-file', (event, defaultPath) => {
+      ipcHelpers.on(ipcMain, 'chevron:open-chosen-file', (event, defaultPath) => {
         this.promptForPathToOpen(
           'file',
           createOpenSettings({ event, sameWindow: true }),
@@ -1007,7 +1011,7 @@ module.exports = class AtomApplication extends EventEmitter {
       })
     );
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'open-chosen-folder', (event, defaultPath) => {
+      ipcHelpers.on(ipcMain, 'chevron:open-chosen-folder', (event, defaultPath) => {
         this.promptForPathToOpen(
           'folder',
           createOpenSettings({ event }),
@@ -1019,7 +1023,7 @@ module.exports = class AtomApplication extends EventEmitter {
     this.disposable.add(
       ipcHelpers.on(
         ipcMain,
-        'update-application-menu',
+        'chevron:update-application-menu',
         (event, template, menu) => {
           const window = BrowserWindow.fromWebContents(event.sender);
           if (this.applicationMenu)
@@ -1031,7 +1035,7 @@ module.exports = class AtomApplication extends EventEmitter {
     this.disposable.add(
       ipcHelpers.on(
         ipcMain,
-        'run-package-specs',
+        'chevron:run-package-specs',
         (event, packageSpecPath, options = {}) => {
           this.runTests(
             Object.assign(
@@ -1048,13 +1052,13 @@ module.exports = class AtomApplication extends EventEmitter {
     );
 
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'command', (event, command) => {
+      ipcHelpers.on(ipcMain, 'chevron:command', (event, command) => {
         this.emit(command);
       })
     );
 
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'window-command', (event, command, ...args) => {
+      ipcHelpers.on(ipcMain, 'chevron:window-command', (event, command, ...args) => {
         const window = BrowserWindow.fromWebContents(event.sender);
         return window && window.emit(command, ...args);
       })
@@ -1062,8 +1066,12 @@ module.exports = class AtomApplication extends EventEmitter {
 
     this.disposable.add(
       ipcHelpers.respondTo(
-        'window-method',
+        'chevron:window-method',
         (browserWindow, method, ...args) => {
+          if (!isAllowedWindowMethod(method)) {
+            console.warn(`chevron:window-method: refused method ${String(method)}`);
+            return;
+          }
           const window = this.atomWindowForBrowserWindow(browserWindow);
           if (window) window[method](...args);
         }
@@ -1071,7 +1079,7 @@ module.exports = class AtomApplication extends EventEmitter {
     );
 
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'pick-folder', (event, responseChannel) => {
+      ipcHelpers.on(ipcMain, 'chevron:pick-folder', (event, responseChannel) => {
         this.promptForPath('folder', paths =>
           event.sender.send(responseChannel, paths)
         );
@@ -1079,51 +1087,54 @@ module.exports = class AtomApplication extends EventEmitter {
     );
 
     this.disposable.add(
-      ipcHelpers.respondTo('set-window-size', (window, width, height) => {
+      ipcHelpers.respondTo('chevron:set-window-size', (window, width, height) => {
         window.setSize(width, height);
       })
     );
 
     this.disposable.add(
-      ipcHelpers.respondTo('set-window-position', (window, x, y) => {
+      ipcHelpers.respondTo('chevron:set-window-position', (window, x, y) => {
         window.setPosition(x, y);
       })
     );
 
     this.disposable.add(
       ipcHelpers.respondTo(
-        'set-user-settings',
+        'chevron:set-user-settings',
         (window, settings, filePath) => {
+          const target = userSettingsTarget(filePath, this.configFilePath);
+          if (!target) {
+            console.warn(`chevron:set-user-settings: refused path ${String(filePath)}`);
+            return;
+          }
           if (!this.quitting) {
-            return ConfigFile.at(filePath || this.configFilePath).update(
-              JSON.parse(settings)
-            );
+            return ConfigFile.at(target).update(JSON.parse(settings));
           }
         }
       )
     );
 
     this.disposable.add(
-      ipcHelpers.respondTo('center-window', window => window.center())
+      ipcHelpers.respondTo('chevron:center-window', window => window.center())
     );
     this.disposable.add(
-      ipcHelpers.respondTo('focus-window', window => window.focus())
+      ipcHelpers.respondTo('chevron:focus-window', window => window.focus())
     );
     this.disposable.add(
-      ipcHelpers.respondTo('show-window', window => window.show())
+      ipcHelpers.respondTo('chevron:show-window', window => window.show())
     );
     this.disposable.add(
-      ipcHelpers.respondTo('hide-window', window => window.hide())
+      ipcHelpers.respondTo('chevron:hide-window', window => window.hide())
     );
     this.disposable.add(
       ipcHelpers.respondTo(
-        'get-temporary-window-state',
+        'chevron:get-temporary-window-state',
         window => window.temporaryState
       )
     );
 
     this.disposable.add(
-      ipcHelpers.respondTo('set-temporary-window-state', (win, state) => {
+      ipcHelpers.respondTo('chevron:set-temporary-window-state', (win, state) => {
         win.temporaryState = state;
       })
     );
@@ -1131,25 +1142,25 @@ module.exports = class AtomApplication extends EventEmitter {
     this.disposable.add(
       ipcHelpers.on(
         ipcMain,
-        'write-text-to-selection-clipboard',
+        'chevron:write-text-to-selection-clipboard',
         (event, text) => clipboard.writeText(text, 'selection')
       )
     );
 
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'write-to-stdout', (event, output) =>
+      ipcHelpers.on(ipcMain, 'chevron:write-to-stdout', (event, output) =>
         process.stdout.write(output)
       )
     );
 
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'write-to-stderr', (event, output) =>
+      ipcHelpers.on(ipcMain, 'chevron:write-to-stderr', (event, output) =>
         process.stderr.write(output)
       )
     );
 
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'add-recent-document', (event, filename) =>
+      ipcHelpers.on(ipcMain, 'chevron:add-recent-document', (event, filename) =>
         app.addRecentDocument(filename)
       )
     );
@@ -1157,7 +1168,7 @@ module.exports = class AtomApplication extends EventEmitter {
     this.disposable.add(
       ipcHelpers.on(
         ipcMain,
-        'execute-javascript-in-dev-tools',
+        'chevron:execute-javascript-in-dev-tools',
         (event, code) =>
           event.sender.devToolsWebContents &&
           event.sender.devToolsWebContents.executeJavaScript(code)
@@ -1165,25 +1176,25 @@ module.exports = class AtomApplication extends EventEmitter {
     );
 
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'get-auto-update-manager-state', event => {
+      ipcHelpers.on(ipcMain, 'chevron:get-auto-update-manager-state-sync', event => {
         event.returnValue = this.autoUpdateManager.getState();
       })
     );
 
     this.disposable.add(
-      ipcHelpers.on(ipcMain, 'get-auto-update-manager-error', event => {
+      ipcHelpers.on(ipcMain, 'chevron:get-auto-update-manager-error-sync', event => {
         event.returnValue = this.autoUpdateManager.getErrorMessage();
       })
     );
 
     this.disposable.add(
-      ipcHelpers.respondTo('will-save-path', (window, path) =>
+      ipcHelpers.respondTo('chevron:will-save-path', (window, path) =>
         this.fileRecoveryService.willSavePath(window, path)
       )
     );
 
     this.disposable.add(
-      ipcHelpers.respondTo('did-save-path', (window, path) =>
+      ipcHelpers.respondTo('chevron:did-save-path', (window, path) =>
         this.fileRecoveryService.didSavePath(window, path)
       )
     );

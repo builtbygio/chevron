@@ -180,7 +180,7 @@ module.exports =
 
       listen(document, 'click', '.stack-trace', event => event.currentTarget.classList.toggle('expanded'));
 
-      return this.reloadButton.addEventListener('click', () => ipcHelpers.call('window-method', 'reload'));
+      return this.reloadButton.addEventListener('click', () => ipcHelpers.call('chevron:window-method', 'reload'));
     }
 
     updateSpecCounts() {

@@ -1833,7 +1833,7 @@ or use Pane::saveItemAs for programmatic saving.`);
       this.notifications.addWarning(message, { description });
     }
 
-    ipcRenderer.send('window-command', 'window:locations-opened');
+    ipcRenderer.send('chevron:window-command', 'window:locations-opened');
   }
 
   resolveProxy(url) {

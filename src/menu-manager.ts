@@ -225,7 +225,7 @@ module.exports =
   }
 
   sendToBrowserProcess(template, keystrokesByCommand) {
-    return ipcRenderer.send('update-application-menu', template, keystrokesByCommand);
+    return ipcRenderer.send('chevron:update-application-menu', template, keystrokesByCommand);
   }
 
   // Get an {Array} of {String} classes for the given element.

@@ -202,7 +202,7 @@
 
     return initialize({ blobStore: blobStore }).then(function() {
       StartupTime.addMarker('window:initialize:end');
-      electron.ipcRenderer.send('window-command', 'window:loaded');
+      electron.ipcRenderer.send('chevron:window-command', 'window:loaded');
     });
   }
 

@@ -450,7 +450,7 @@ class WorkspaceElement extends HTMLElement {
         specPath = testPath;
       }
 
-      ipcRenderer.send('run-package-specs', specPath, options);
+      ipcRenderer.send('chevron:run-package-specs', specPath, options);
     }
   }
 

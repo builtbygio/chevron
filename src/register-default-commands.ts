@@ -34,42 +34,42 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
       'window:increase-font-size'() { return this.getModel().increaseFontSize(); },
       'window:decrease-font-size'() { return this.getModel().decreaseFontSize(); },
       'window:reset-font-size'() { return this.getModel().resetFontSize(); },
-      'application:about'() { return ipcRenderer.send('command', 'application:about'); },
-      'application:show-preferences'() { return ipcRenderer.send('command', 'application:show-settings'); },
-      'application:show-settings'() { return ipcRenderer.send('command', 'application:show-settings'); },
-      'application:quit'() { return ipcRenderer.send('command', 'application:quit'); },
-      'application:hide'() { return ipcRenderer.send('command', 'application:hide'); },
-      'application:hide-other-applications'() { return ipcRenderer.send('command', 'application:hide-other-applications'); },
-      'application:install-update'() { return ipcRenderer.send('command', 'application:install-update'); },
-      'application:unhide-all-applications'() { return ipcRenderer.send('command', 'application:unhide-all-applications'); },
-      'application:new-window'() { return ipcRenderer.send('command', 'application:new-window'); },
-      'application:new-file'() { return ipcRenderer.send('command', 'application:new-file'); },
+      'application:about'() { return ipcRenderer.send('chevron:command', 'application:about'); },
+      'application:show-preferences'() { return ipcRenderer.send('chevron:command', 'application:show-settings'); },
+      'application:show-settings'() { return ipcRenderer.send('chevron:command', 'application:show-settings'); },
+      'application:quit'() { return ipcRenderer.send('chevron:command', 'application:quit'); },
+      'application:hide'() { return ipcRenderer.send('chevron:command', 'application:hide'); },
+      'application:hide-other-applications'() { return ipcRenderer.send('chevron:command', 'application:hide-other-applications'); },
+      'application:install-update'() { return ipcRenderer.send('chevron:command', 'application:install-update'); },
+      'application:unhide-all-applications'() { return ipcRenderer.send('chevron:command', 'application:unhide-all-applications'); },
+      'application:new-window'() { return ipcRenderer.send('chevron:command', 'application:new-window'); },
+      'application:new-file'() { return ipcRenderer.send('chevron:command', 'application:new-file'); },
       'application:open'() {
         let left;
         const defaultPath = (left = __guard__(chevron.workspace.getActiveTextEditor(), x => x.getPath())) != null ? left : __guard__(chevron.project.getPaths(), x1 => x1[0]);
-        return ipcRenderer.send('open-chosen-any', defaultPath);
+        return ipcRenderer.send('chevron:open-chosen-any', defaultPath);
       },
       'application:open-file'() {
         let left;
         const defaultPath = (left = __guard__(chevron.workspace.getActiveTextEditor(), x => x.getPath())) != null ? left : __guard__(chevron.project.getPaths(), x1 => x1[0]);
-        return ipcRenderer.send('open-chosen-file', defaultPath);
+        return ipcRenderer.send('chevron:open-chosen-file', defaultPath);
       },
       'application:open-folder'() {
         let left;
         const defaultPath = (left = __guard__(chevron.workspace.getActiveTextEditor(), x => x.getPath())) != null ? left : __guard__(chevron.project.getPaths(), x1 => x1[0]);
-        return ipcRenderer.send('open-chosen-folder', defaultPath);
+        return ipcRenderer.send('chevron:open-chosen-folder', defaultPath);
       },
-      'application:open-dev'() { return ipcRenderer.send('command', 'application:open-dev'); },
-      'application:open-safe'() { return ipcRenderer.send('command', 'application:open-safe'); },
+      'application:open-dev'() { return ipcRenderer.send('chevron:command', 'application:open-dev'); },
+      'application:open-safe'() { return ipcRenderer.send('chevron:command', 'application:open-safe'); },
       'application:add-project-folder'() { return chevron.addProjectFolder(); },
-      'application:minimize'() { return ipcRenderer.send('command', 'application:minimize'); },
-      'application:zoom'() { return ipcRenderer.send('command', 'application:zoom'); },
-      'application:bring-all-windows-to-front'() { return ipcRenderer.send('command', 'application:bring-all-windows-to-front'); },
-      'application:open-your-config'() { return ipcRenderer.send('command', 'application:open-your-config'); },
-      'application:open-your-init-script'() { return ipcRenderer.send('command', 'application:open-your-init-script'); },
-      'application:open-your-keymap'() { return ipcRenderer.send('command', 'application:open-your-keymap'); },
-      'application:open-your-snippets'() { return ipcRenderer.send('command', 'application:open-your-snippets'); },
-      'application:open-your-stylesheet'() { return ipcRenderer.send('command', 'application:open-your-stylesheet'); },
+      'application:minimize'() { return ipcRenderer.send('chevron:command', 'application:minimize'); },
+      'application:zoom'() { return ipcRenderer.send('chevron:command', 'application:zoom'); },
+      'application:bring-all-windows-to-front'() { return ipcRenderer.send('chevron:command', 'application:bring-all-windows-to-front'); },
+      'application:open-your-config'() { return ipcRenderer.send('chevron:command', 'application:open-your-config'); },
+      'application:open-your-init-script'() { return ipcRenderer.send('chevron:command', 'application:open-your-init-script'); },
+      'application:open-your-keymap'() { return ipcRenderer.send('chevron:command', 'application:open-your-keymap'); },
+      'application:open-your-snippets'() { return ipcRenderer.send('chevron:command', 'application:open-your-snippets'); },
+      'application:open-your-stylesheet'() { return ipcRenderer.send('chevron:command', 'application:open-your-stylesheet'); },
       'application:open-license'() { return this.getModel().openLicense(); },
       'window:run-package-specs'() { return this.runPackageSpecs(); },
       'window:toggle-left-dock'() { return this.getModel().getLeftDock().toggle(); },

@@ -133,6 +133,10 @@ Uses **shell** (not remote, but still privileged):
 
 Registered mainly in `src/main-process/atom-application.js` (`handleEvents` / IPC setup):
 
+> These are the names as this plan found them. The `ipcHelpers` channels below
+> now carry the `chevron:` prefix (`chevron:open`, `chevron:window-method`, …)
+> and are recorded in `script/ci/ipc-inventory.json` (#414).
+
 | Channel | Direction | Purpose |
 |---------|-----------|---------|
 | `open` | → main | Open paths/options |

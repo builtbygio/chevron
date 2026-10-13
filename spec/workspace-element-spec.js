@@ -1038,7 +1038,7 @@ describe('WorkspaceElement', () => {
 
       // No project paths. Don't try to run specs.
       atom.commands.dispatch(workspaceElement, 'window:run-package-specs');
-      expect(ipcRenderer.send).not.toHaveBeenCalledWith('run-package-specs');
+      expect(ipcRenderer.send).not.toHaveBeenCalledWith('chevron:run-package-specs');
 
       const projectPaths = [temp.mkdirSync('dir1-'), temp.mkdirSync('dir2-')];
       atom.project.setPaths(projectPaths);
@@ -1046,7 +1046,7 @@ describe('WorkspaceElement', () => {
       // No active item. Use first project directory.
       atom.commands.dispatch(workspaceElement, 'window:run-package-specs');
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'run-package-specs',
+        'chevron:run-package-specs',
         path.join(projectPaths[0], 'spec'),
         {}
       );
@@ -1057,7 +1057,7 @@ describe('WorkspaceElement', () => {
       atom.workspace.getActivePane().activateItem(item);
       atom.commands.dispatch(workspaceElement, 'window:run-package-specs');
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'run-package-specs',
+        'chevron:run-package-specs',
         path.join(projectPaths[0], 'spec'),
         {}
       );
@@ -1067,7 +1067,7 @@ describe('WorkspaceElement', () => {
       item.getPath = () => null;
       atom.commands.dispatch(workspaceElement, 'window:run-package-specs');
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'run-package-specs',
+        'chevron:run-package-specs',
         path.join(projectPaths[0], 'spec'),
         {}
       );
@@ -1077,7 +1077,7 @@ describe('WorkspaceElement', () => {
       item.getPath = () => path.join(projectPaths[1], 'a-file.txt');
       atom.commands.dispatch(workspaceElement, 'window:run-package-specs');
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'run-package-specs',
+        'chevron:run-package-specs',
         path.join(projectPaths[1], 'spec'),
         {}
       );
@@ -1095,7 +1095,7 @@ describe('WorkspaceElement', () => {
       });
 
       expect(ipcRenderer.send).toHaveBeenCalledWith(
-        'run-package-specs',
+        'chevron:run-package-specs',
         path.join(projectPath, 'spec'),
         { env: { ATOM_GITHUB_BABEL_ENV: 'coverage' } }
       );

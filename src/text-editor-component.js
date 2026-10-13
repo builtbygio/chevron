@@ -2947,7 +2947,7 @@ module.exports = class TextEditorComponent {
           // clipboard.writeText is a sync ipcRenderer call on Linux and that
           // will slow down selections.
           electron.ipcRenderer.send(
-            'write-text-to-selection-clipboard',
+            'chevron:write-text-to-selection-clipboard',
             selectedText
           );
         }

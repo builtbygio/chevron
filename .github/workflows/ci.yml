@@ -268,6 +268,7 @@ jobs:
           node --test script/ci/fs-ipc-roots.test.js
           node --test script/ci/derived-constructor-super.test.js
           node --test script/ci/ipc-inventory.test.js
+          node --test script/ci/window-ipc-policy.test.js
           node --test script/ci/ipc-guard.test.js
           node --test script/ci/ipc-aliases.test.js
           node --test script/ci/lsp-packages-no-privileged-require.test.js
