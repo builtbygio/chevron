@@ -1,4 +1,4 @@
-const {CompositeDisposable, Point, Range} = require('chevron')
+const {CompositeDisposable, Disposable, Point, Range} = require('chevron')
 
 const TRAILING_WHITESPACE_REGEX = /[ \t]+(?=\r?$)/g
 
@@ -77,16 +77,18 @@ module.exports = class Whitespace {
 
     let bufferSavedSubscription = buffer.onWillSave(() => {
       return buffer.transact(() => {
-        let scopeDescriptor = editor.getRootScopeDescriptor()
+        const properties = this.editorConfigPropertiesFor(editor)
 
-        if (chevron.config.get('whitespace.removeTrailingWhitespace', {
-          scope: scopeDescriptor
-        }) && !this.ignore) {
+        if (this.settingFor(editor, 'whitespace.removeTrailingWhitespace', properties.trim_trailing_whitespace) && !this.ignore) {
           this.removeTrailingWhitespace(editor, editor.getGrammar().scopeName)
         }
 
-        if (chevron.config.get('whitespace.ensureSingleTrailingNewline', {scope: scopeDescriptor})) {
+        const singleNewline = this.settingFor(editor, 'whitespace.ensureSingleTrailingNewline')
+        const finalNewline = this.settingFor(editor, 'whitespace.ensureSingleTrailingNewline', properties.insert_final_newline)
+        if (finalNewline && singleNewline) {
           return this.ensureSingleTrailingNewline(editor)
+        } else if (finalNewline) {
+          return this.ensureFinalNewline(editor)
         }
       })
     })
@@ -127,6 +129,28 @@ module.exports = class Whitespace {
     this.subscriptions.add(editorTextInsertedSubscription)
     this.subscriptions.add(editorDestroyedSubscription)
     this.watchedEditors.add(editor)
+  }
+
+  consumeEditorConfig (editorConfig) {
+    this.editorConfig = editorConfig
+    return new Disposable(() => {
+      if (this.editorConfig === editorConfig) this.editorConfig = null
+    })
+  }
+
+  editorConfigPropertiesFor (editor) {
+    if (!this.editorConfig || !editor.getPath()) return {}
+    return this.editorConfig.propertiesForPath(editor.getPath()) || {}
+  }
+
+  // An `.editorconfig` value beats the user's setting and loses to the
+  // project root's own config. docs/reference/config-precedence.md
+  settingFor (editor, keyPath, editorConfigValue) {
+    const options = {scope: editor.getRootScopeDescriptor(), root: editor.getPath()}
+    const setByRoot = typeof chevron.config.getSourceOf === 'function' &&
+      chevron.config.getSourceOf(keyPath, options).source === 'root'
+    if (typeof editorConfigValue === 'boolean' && !setByRoot) return editorConfigValue
+    return chevron.config.get(keyPath, options)
   }
 
   removeTrailingWhitespace (editor, grammarScopeName) {
@@ -205,6 +229,14 @@ module.exports = class Whitespace {
       buffer.append('\n')
       editor.setSelectedBufferRanges(selectedBufferRanges)
     }
+  }
+
+  ensureFinalNewline (editor) {
+    const buffer = editor.getBuffer()
+    if (buffer.getText() === '' || buffer.lineForRow(buffer.getLastRow()) === '') return
+    const selectedBufferRanges = editor.getSelectedBufferRanges()
+    buffer.append('\n')
+    editor.setSelectedBufferRanges(selectedBufferRanges)
   }
 
   convertTabsToSpaces (editor, convertAllTabs) {

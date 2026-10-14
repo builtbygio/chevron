@@ -675,6 +675,7 @@ jobs:
           node --test script/ci/change-proposal.test.js
           node --test script/ci/tasks.test.js
           node --test script/ci/enclosing-scopes.test.js
+          node --test script/ci/editorconfig.test.js
           node --test script/ci/lsp-start-event.test.js
           node --test script/ci/lsp-navigation-highlights.test.js
           node --test script/ci/grammar-selectors.test.js

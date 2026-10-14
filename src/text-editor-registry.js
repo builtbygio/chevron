@@ -67,6 +67,7 @@ module.exports = class TextEditorRegistry {
     this.editorGrammarOverrides = {};
     this.editorGrammarScores = new WeakMap();
     this.paramsByEditor = new WeakMap();
+    this.settingsProviders = [];
 
     if (
       this.config &&
@@ -203,6 +204,67 @@ module.exports = class TextEditorRegistry {
       this.subscriptions.remove(languageChangeSubscription);
       this.subscriptions.remove(tokenizeSubscription);
     });
+  }
+
+  // Extended: Supply editor settings for files by path, as the editorconfig
+  // package does from `.editorconfig`.
+  //
+  // A provider's value for a setting beats the user's config and the default,
+  // and loses to the config of the project root that owns the file
+  // (docs/reference/config-precedence.md). It is consulted wherever this
+  // registry resolves an editor's settings: when the editor is built, and
+  // when its language or the config changes.
+  //
+  // * `provider` {Object}
+  //   * `settingsForPath(path)` {Function} Returns an {Object} of
+  //     {TextEditor} params this registry maintains -- `tabLength`,
+  //     `encoding`, `preferredLineLength` and the like -- plus `softTabs`
+  //     {Boolean}, or `null`. Called often: it must be synchronous and cheap.
+  //
+  // Returns a {Disposable} that removes the provider and re-resolves the open
+  // editors without it.
+  addSettingsProvider(provider) {
+    this.settingsProviders.push(provider);
+    this.refreshSettings();
+    return new Disposable(() => {
+      const index = this.settingsProviders.indexOf(provider);
+      if (index === -1) return;
+      this.settingsProviders.splice(index, 1);
+      this.refreshSettings();
+    });
+  }
+
+  // Extended: Re-resolve the settings of every editor whose config this
+  // registry maintains. A settings provider calls this when its answers
+  // change, such as after an `.editorconfig` is edited.
+  refreshSettings() {
+    if (!this.editorsWithMaintainedConfig) return;
+    this.editorsWithMaintainedConfig.forEach(editor => {
+      this.applyScopedSettings(editor);
+      this.updateSoftTabsForEditor(editor);
+    });
+  }
+
+  providedSettingsForPath(filePath) {
+    if (!filePath || this.settingsProviders.length === 0) return null;
+    const settings = {};
+    for (const provider of this.settingsProviders) {
+      let provided = null;
+      try {
+        provided = provider.settingsForPath(filePath);
+      } catch (error) {
+        console.error('A text editor settings provider failed:', error);
+      }
+      if (provided) Object.assign(settings, provided);
+    }
+    return settings;
+  }
+
+  isSetByRoot(keyPath, configOptions) {
+    return (
+      typeof this.config.getSourceOf === 'function' &&
+      this.config.getSourceOf(keyPath, configOptions).source === 'root'
+    );
   }
 
   // Deprecated: set a {TextEditor}'s grammar based on its path and content,
@@ -363,6 +425,16 @@ module.exports = class TextEditorRegistry {
       scope: editor.getRootScopeDescriptor(),
       root: editor.getPath()
     };
+    const provided = this.providedSettingsForPath(editor.getPath());
+    if (
+      provided &&
+      typeof provided.softTabs === 'boolean' &&
+      !this.isSetByRoot('editor.tabType', configOptions) &&
+      !this.isSetByRoot('editor.softTabs', configOptions)
+    ) {
+      editor.setSoftTabs(provided.softTabs);
+      return;
+    }
     editor.setSoftTabs(
       shouldEditorUseSoftTabs(
         editor,
@@ -378,8 +450,17 @@ module.exports = class TextEditorRegistry {
   textEditorParamsForScope(scopeDescriptor, root) {
     const result = {};
     const configOptions = { scope: scopeDescriptor, root };
+    const provided = this.providedSettingsForPath(root);
     for (const [settingKey, paramName] of EDITOR_PARAMS_BY_SETTING_KEY) {
-      result[paramName] = this.config.get(settingKey, configOptions);
+      if (
+        provided &&
+        provided[paramName] !== undefined &&
+        !this.isSetByRoot(settingKey, configOptions)
+      ) {
+        result[paramName] = provided[paramName];
+      } else {
+        result[paramName] = this.config.get(settingKey, configOptions);
+      }
     }
     return result;
   }

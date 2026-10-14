@@ -1,0 +1,35 @@
+{
+  "name": "@builtbygio/editorconfig",
+  "version": "0.1.0",
+  "main": "./lib/main",
+  "description": "Apply the indentation, charset, line endings and whitespace rules of .editorconfig files.",
+  "license": "MIT",
+  "repository": "https://github.com/builtbygio/chevron",
+  "engines": { "chevron": "*", "atom": "*" },
+  "dependencies": {
+    "editorconfig-core": "npm:editorconfig@3.0.2"
+  },
+  "providedServices": {
+    "editorconfig": {
+      "description": "EditorConfig properties for a file path",
+      "versions": {
+        "1.0.0": "provideEditorConfig"
+      }
+    }
+  },
+  "consumedServices": {
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
+    }
+  },
+  "configSchema": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "title": "Apply .editorconfig files",
+      "description": "A project's own `.chevron/config.json` still outranks `.editorconfig` for the settings both set."
+    }
+  }
+}

@@ -30,6 +30,13 @@
       "waitsForPromise"
     ]
   },
+  "consumedServices": {
+    "editorconfig": {
+      "versions": {
+        "^1.0.0": "consumeEditorConfig"
+      }
+    }
+  },
   "configSchema": {
     "removeTrailingWhitespace": {
       "type": "boolean",

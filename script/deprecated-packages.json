@@ -464,11 +464,6 @@
     "hasDeprecations": true,
     "latestHasDeprecations": false
   },
-  "editorconfig": {
-    "version": "<=0.3.0",
-    "hasDeprecations": true,
-    "latestHasDeprecations": false
-  },
   "elixir-cmd": {
     "version": "<=0.2.6",
     "hasDeprecations": true,

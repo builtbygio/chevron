@@ -1,3 +1,4 @@
+const {Disposable} = require('chevron')
 const Whitespace = require('./whitespace')
 
 module.exports = {
@@ -8,5 +9,9 @@ module.exports = {
   deactivate () {
     if (this.whitespace) this.whitespace.destroy()
     this.whitespace = null
+  },
+
+  consumeEditorConfig (editorConfig) {
+    return this.whitespace ? this.whitespace.consumeEditorConfig(editorConfig) : new Disposable(() => {})
   }
 }
