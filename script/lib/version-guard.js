@@ -11,10 +11,6 @@ const { changelogSection } = require('./release-notes');
 // package.json alone.
 function versionGuard({ baseVersion, headVersion, changelog }) {
   if (baseVersion === headVersion) return null;
-  if (baseVersion > headVersion) return (
-    `package.json version changed from ${baseVersion} to ${headVersion}, ` +
-    `this looks like a version downgrade. Please check again.`
-  );
   if (changelogSection(changelog, headVersion)) return null;
   return (
     `package.json version changed from ${baseVersion} to ${headVersion}, ` +

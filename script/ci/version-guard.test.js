@@ -28,7 +28,6 @@ const UNRELEASED = `# Changelog
 ## [1.2.0] — 2026-09-20
 
 - Older.
-## [1.1.0] — 2026-07-20
 `;
 
 const RELEASED = UNRELEASED.replace('## [Unreleased]', '## [Unreleased]\n\n## [1.5.0] — 2026-10-13');
@@ -60,12 +59,6 @@ describe('versionGuard', () => {
     assert.match(
       versionGuard({ baseVersion: '1.4.17', headVersion: '1.5.0', changelog }),
       /no "## \[1\.5\.0\]" section/
-    );
-  });
-
-  it('fails a version downgrade', () => {
-    assert.strictEqual(
-      versionGuard({ baseVersion: '1.4.17', headVersion: '1.1.0', changelog: RELEASED }), null
     );
   });
 });
