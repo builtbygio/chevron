@@ -683,6 +683,13 @@ const configSchema = {
         description:
           'Draw the parameter names and inferred types a language server knows and the source does not spell out. Requested for the visible rows only.'
       },
+      documentHighlights: {
+        type: 'boolean',
+        default: true,
+        title: 'Highlight symbol uses',
+        description:
+          'Highlight the other uses of the symbol under the cursor in the same file, telling reads from writes where the language server does. Follows the cursor after a short pause and clears as soon as you type.'
+      },
       formatOnSave: {
         type: 'boolean',
         default: false,

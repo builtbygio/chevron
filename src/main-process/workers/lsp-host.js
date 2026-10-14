@@ -367,6 +367,9 @@ class ServerSession {
           publishDiagnostics: { relatedInformation: true },
           hover: { contentFormat: ['markdown', 'plaintext'] },
           definition: { linkSupport: true },
+          implementation: { linkSupport: true },
+          typeDefinition: { linkSupport: true },
+          documentHighlight: { dynamicRegistration: false },
           references: { dynamicRegistration: false },
           signatureHelp: {
             signatureInformation: {

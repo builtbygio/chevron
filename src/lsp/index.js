@@ -59,6 +59,23 @@ function symbolProvider() {
   }
   return symbolProviderCache;
 }
+// TypeScript providers, loaded on demand for the reason symbolProvider gives.
+const OPTIONAL_PROVIDERS = {
+  navigation: () => require('./providers/navigation'),
+  documentHighlights: () => require('./providers/document-highlights')
+};
+const optionalProviderCache = new Map();
+function optionalProvider(name) {
+  if (optionalProviderCache.has(name)) return optionalProviderCache.get(name);
+  let provider = null;
+  try {
+    provider = OPTIONAL_PROVIDERS[name]();
+  } catch (error) {
+    if (!error || error.code !== 'MODULE_NOT_FOUND') throw error;
+  }
+  optionalProviderCache.set(name, provider);
+  return provider;
+}
 const { applyWorkspaceEdit } = require('./workspace-edit');
 const { createDiagnosticsService } = require('./diagnostics-service');
 
@@ -290,6 +307,8 @@ function handleLspEvent(_event, msg) {
         });
       }
     }
+    // The capabilities have only just arrived.
+    syncAllNavigationCommands();
     // Crash restart: re-open open buffers so the new process has document state
     if (msg.restarted && documentSync) {
       try {
@@ -340,6 +359,7 @@ function handleLspEvent(_event, msg) {
           encodingByServerId.delete(msg.serverId);
         }
       }
+      syncAllNavigationCommands();
     }
     if (emitter) emitter.emit('did-server-exit', msg);
   }
@@ -512,6 +532,125 @@ function servesInlayHints(editor) {
   );
 }
 
+/**
+ * Whether the server for this editor advertises `capability`
+ * (`implementationProvider`, `documentHighlightProvider`, ...). False until
+ * the server has answered `initialize`.
+ */
+function servesCapability(editor, capability) {
+  const navigation = optionalProvider('navigation');
+  if (!navigation) return false;
+  const serverId = getServerIdForEditor(editor);
+  if (!serverId) return false;
+  for (const session of startedSessions.values()) {
+    if (
+      session.serverId === serverId &&
+      navigation.servesCapability(session, capability)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function servesImplementation(editor) {
+  return servesCapability(editor, 'implementationProvider');
+}
+
+function servesTypeDefinition(editor) {
+  return servesCapability(editor, 'typeDefinitionProvider');
+}
+
+function servesDocumentHighlights(editor) {
+  return servesCapability(editor, 'documentHighlightProvider');
+}
+
+async function implementationAtCursor(editor, point) {
+  const navigation = optionalProvider('navigation');
+  if (!navigation) return [];
+  return navigation.locationsAt(clientApi, 'implementation', editor, point);
+}
+
+async function typeDefinitionAtCursor(editor, point) {
+  const navigation = optionalProvider('navigation');
+  if (!navigation) return [];
+  return navigation.locationsAt(clientApi, 'typeDefinition', editor, point);
+}
+
+/**
+ * Uses of the symbol at `point` (or the cursor) in the same file, each with a
+ * kind: 'text', 'read' or 'write'. Empty when the server does not answer.
+ */
+async function documentHighlightsAt(editor, point) {
+  const provider = optionalProvider('documentHighlights');
+  if (!provider) return [];
+  return provider.documentHighlightsFor(clientApi, editor, point);
+}
+
+/**
+ * Navigation commands that only some servers answer. Each is registered on an
+ * editor's element only while that editor's server advertises it, so the
+ * command palette, the context menu and the keybinding leave it out rather
+ * than offering a command that can only do nothing.
+ */
+const NAVIGATION_COMMANDS = {
+  'chevron-lsp:go-to-implementation': {
+    capability: 'implementationProvider',
+    locate: implementationAtCursor,
+    event: 'did-request-implementation'
+  },
+  'chevron-lsp:go-to-type-definition': {
+    capability: 'typeDefinitionProvider',
+    locate: typeDefinitionAtCursor,
+    event: 'did-request-type-definition'
+  }
+};
+/** editor -> Map(command -> Disposable) */
+const navigationCommandsByEditor = new Map();
+
+function syncNavigationCommands(editor) {
+  const env = global.chevron;
+  if (!env || !env.commands || !env.views || !editor) return;
+  if (editor.isDestroyed && editor.isDestroyed()) return;
+  let registered = navigationCommandsByEditor.get(editor);
+  for (const [command, navigation] of Object.entries(NAVIGATION_COMMANDS)) {
+    const supported = servesCapability(editor, navigation.capability);
+    const existing = registered && registered.get(command);
+    if (supported && !existing) {
+      if (!registered) {
+        registered = new Map();
+        navigationCommandsByEditor.set(editor, registered);
+      }
+      registered.set(
+        command,
+        env.commands.add(env.views.getView(editor), command, async () => {
+          if (documentSync) documentSync.observeEditor(editor);
+          const locations = await navigation.locate(editor);
+          if (emitter) emitter.emit(navigation.event, { editor, locations });
+        })
+      );
+    } else if (!supported && existing) {
+      existing.dispose();
+      registered.delete(command);
+    }
+  }
+}
+
+function syncAllNavigationCommands() {
+  const env = global.chevron;
+  if (!env || !env.workspace) return;
+  for (const editor of env.workspace.getTextEditors()) {
+    syncNavigationCommands(editor);
+  }
+}
+
+function forgetNavigationCommands(editor) {
+  const registered = navigationCommandsByEditor.get(editor);
+  if (!registered) return;
+  for (const disposable of registered.values()) disposable.dispose();
+  navigationCommandsByEditor.delete(editor);
+}
+
 async function projectSymbols(query, options) {
   const provider = symbolProvider();
   if (!provider) return [];
@@ -604,9 +743,18 @@ function activate() {
   if (env && env.workspace) {
     disposables.add(
       env.workspace.observeTextEditors(editor => {
+        if (editor.onDidDestroy) {
+          editor.onDidDestroy(() => forgetNavigationCommands(editor));
+        }
+        if (editor.onDidChangeGrammar) {
+          disposables.add(
+            editor.onDidChangeGrammar(() => syncNavigationCommands(editor))
+          );
+        }
         const start = async () => {
           const serverId = await ensureServerForEditor(editor);
           if (serverId) documentSync.observeEditor(editor);
+          syncNavigationCommands(editor);
           const fos = observeFormatOnSave(editor);
           if (fos) disposables.add(fos);
         };
@@ -772,6 +920,9 @@ function deactivate() {
   ipcRenderer.invoke('lsp:unsubscribe').catch(() => {});
   if (disposables) disposables.dispose();
   disposables = null;
+  for (const editor of [...navigationCommandsByEditor.keys()]) {
+    forgetNavigationCommands(editor);
+  }
   diagnosticsByUri.clear();
   diagnosticsServerByUri.clear();
   startedSessions.clear();
@@ -864,6 +1015,14 @@ function onDidRequestDocumentSymbols(cb) {
   return events().on('did-request-document-symbols', cb);
 }
 
+function onDidRequestImplementation(cb) {
+  return events().on('did-request-implementation', cb);
+}
+
+function onDidRequestTypeDefinition(cb) {
+  return events().on('did-request-type-definition', cb);
+}
+
 module.exports = {
   activate,
   deactivate,
@@ -888,8 +1047,16 @@ module.exports = {
   onDidRequestRename,
   onDidRequestCodeActions,
   onDidRequestDocumentSymbols,
+  onDidRequestImplementation,
+  onDidRequestTypeDefinition,
   hoverAtCursor,
   definitionAtCursor,
+  implementationAtCursor,
+  typeDefinitionAtCursor,
+  documentHighlightsAt,
+  servesImplementation,
+  servesTypeDefinition,
+  servesDocumentHighlights,
   signatureHelpAtCursor,
   referencesAtCursor,
   prepareRenameAtCursor,
@@ -927,6 +1094,8 @@ module.exports = {
     encodingByServerId,
     completionLatencySamples,
     clientApi,
+    syncNavigationCommands,
+    navigationCommandsByEditor,
     get lastNotice() {
       return lastNotice;
     },

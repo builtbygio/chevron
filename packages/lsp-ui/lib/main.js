@@ -16,9 +16,11 @@ const { ListView } = require('./list-view');
 const { DiagnosticsView } = require('./diagnostics-view');
 const { TrustView } = require('./trust-view');
 const { InlayHints } = require('./inlay-hints');
+const { DocumentHighlights } = require('./document-highlights');
 
 let lsp = null;
 let inlayHints = null;
+let documentHighlights = null;
 let disposables = null;
 let statusTile = null;
 let statusEl = null;
@@ -374,6 +376,23 @@ module.exports = {
       })
     );
 
+    if (typeof client.onDidRequestImplementation === 'function') {
+      disposables.add(
+        client.onDidRequestImplementation(async ({ locations }) => {
+          await definitionView.openLocations(locations, env(), {
+            emptyMessage: 'No implementation found',
+            noun: 'implementations'
+          });
+        }),
+        client.onDidRequestTypeDefinition(async ({ locations }) => {
+          await definitionView.openLocations(locations, env(), {
+            emptyMessage: 'No type definition found',
+            noun: 'type definitions'
+          });
+        })
+      );
+    }
+
     if (typeof client.onDidRequestReferences === 'function') {
       disposables.add(
         client.onDidRequestReferences(async ({ locations }) => {
@@ -513,6 +532,45 @@ module.exports = {
       inlayHints.activate();
     }
 
+    if (lspClient && typeof lspClient.documentHighlightsAt === 'function') {
+      documentHighlights = new DocumentHighlights(lspClient);
+      documentHighlights.activate();
+    }
+
+    // In code rather than menus/lsp-ui.json: a JSON entry shows whether or not
+    // the file's server answers the command, and these two only some do.
+    if (e && e.contextMenu && typeof lspClient.servesImplementation === 'function') {
+      const editorFor = event => {
+        const element =
+          event && event.target && event.target.closest
+            ? event.target.closest('atom-text-editor')
+            : null;
+        return element && element.getModel ? element.getModel() : null;
+      };
+      disposables.add(
+        e.contextMenu.add({
+          'atom-text-editor:not([mini])': [
+            {
+              label: 'Go to Implementation',
+              command: 'chevron-lsp:go-to-implementation',
+              shouldDisplay: event => {
+                const editor = editorFor(event);
+                return Boolean(editor && lspClient.servesImplementation(editor));
+              }
+            },
+            {
+              label: 'Go to Type Definition',
+              command: 'chevron-lsp:go-to-type-definition',
+              shouldDisplay: event => {
+                const editor = editorFor(event);
+                return Boolean(editor && lspClient.servesTypeDefinition(editor));
+              }
+            }
+          ]
+        })
+      );
+    }
+
     // Escape dismisses hover / definition / lists
     if (e && e.commands) {
       disposables.add(
@@ -543,6 +601,10 @@ module.exports = {
     if (inlayHints) {
       inlayHints.deactivate();
       inlayHints = null;
+    }
+    if (documentHighlights) {
+      documentHighlights.deactivate();
+      documentHighlights = null;
     }
     clearHoverTimer();
     if (hoverView) {
