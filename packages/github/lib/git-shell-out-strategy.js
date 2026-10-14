@@ -41,6 +41,8 @@ var _workerManager = _interopRequireDefault(require("./worker-manager"));
 
 var _author = _interopRequireDefault(require("./models/author"));
 
+var _blame = require("./models/blame");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _objectSpread2(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
@@ -1345,6 +1347,36 @@ class GitShellOutStrategy {
 
   async getBlobContents(sha) {
     return await this.exec(['cat-file', '-p', sha]);
+  } // Who last changed each line of a file. With `contents`, the lines are those
+  // rather than the file on disk, so an unsaved buffer gets its own answer.
+  // Resolves null for a file git cannot blame: untracked, or no commits yet.
+
+
+  async blame(filePath, {
+    contents = null
+  } = {}) {
+    const args = ['blame', '--porcelain'];
+
+    if (contents !== null) {
+      args.push('--contents', '-');
+    }
+
+    args.push('--', (0, _helpers.toGitPathSep)(filePath));
+    let output;
+
+    try {
+      output = await this.exec(args, contents !== null ? {
+        stdin: contents
+      } : undefined);
+    } catch (err) {
+      if (err instanceof GitError && /no such path|no such ref|bad revision|outside repository|does not have any commits/i.test(err.stdErr || '')) {
+        return null;
+      }
+
+      throw err;
+    }
+
+    return (0, _blame.parseBlamePorcelain)(output);
   }
 
   async mergeFile(oursPath, commonBasePath, theirsPath, resultPath) {

@@ -332,6 +332,10 @@ class State {
     return Promise.resolve([]);
   }
 
+  getBlame() {
+    return Promise.resolve(null);
+  }
+
   isCommitPushed(sha) {
     return false;
   } // Author information

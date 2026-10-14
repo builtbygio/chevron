@@ -1,0 +1,22 @@
+// Who last changed the cursor's line. Faint, and well clear of the code: it is
+// not in the file. Unlike an inlay hint it takes the mouse, for the tooltip
+// and the click that opens the commit.
+.github-InlineBlame {
+  margin-left: 3em;
+  color: var(--text-color-subtle);
+  opacity: 0.7;
+  font-style: italic;
+  white-space: pre;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+}
+
+.github-InlineBlame-tooltip .tooltip-inner {
+  text-align: left;
+  max-width: 40em;
+}

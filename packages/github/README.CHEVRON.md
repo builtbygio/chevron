@@ -38,3 +38,15 @@ Git workers: utilityProcess (Phase S).
   See `docs/github-app.md`.
 - **0.37.9:** `electron.remote` gone from directory-select and git-timings
   (ipc `atom-show-open-dialog` / `atom-show-save-dialog`).
+
+## Inline blame
+
+`lib/controllers/inline-blame-controller.js` annotates the active editor's
+cursor line with an `inline-text` decoration (`github-InlineBlame`). Blame is
+`GitShellOutStrategy#blame` (`git blame --porcelain`), parsed by
+`lib/models/blame.js`, and cached per file as `Keys.blame` in the present
+repository state. A change to the file drops that file's entry; anything that
+moves HEAD drops them all. An unsaved buffer is blamed through
+`--contents -` and not cached. Files over `MAX_BLAME_LINES`, or in large-file
+mode, are skipped. `github.inlineBlame` and `github:toggle-inline-blame` turn
+it off. Gates: `script/ci/inline-blame.test.js`, `spec/inline-blame-spec.js`.

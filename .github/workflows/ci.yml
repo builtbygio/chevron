@@ -681,6 +681,7 @@ jobs:
           node --test script/ci/grammar-selectors.test.js
           node --test script/ci/tree-sitter-chunk-reader.test.js
           node --test script/ci/tree-view-fs-shim.test.js
+          node --test script/ci/inline-blame.test.js
           node --test script/ci/jasmine-node-coffee.test.js
           node --test script/ci/patch-inventory.test.js
           node --test script/ci/wave3-gates.test.js
