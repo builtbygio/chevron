@@ -19,6 +19,11 @@ function versionGuard({ baseVersion, headVersion, changelog }) {
     '"## [Unreleased]" and leave package.json alone. ' +
     'See docs/reference/releases.md.'
   );
+  if (changelogSection(changelog, headVersion) && (headVersion > baseVersion)) return null;
+  else return (
+    `package.json version changed from ${baseVersion} to ${headVersion}, ` +
+    `this looks like a version downgrade. Please check again.`
+  );
 }
 
 // Compares package.json at git ref `base` with the working tree of `root`.

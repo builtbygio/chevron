@@ -255,6 +255,11 @@ describe('FuzzyFinder', () => {
               fs.symlinkSync(atom.project.getDirectories()[0].resolve('..'), atom.project.getDirectories()[0].resolve('symlink-to-project-dir-ancestor'))
 
               fs.unlinkSync(brokenFilePath)
+
+              // The activation crawl may already have handed the view its
+              // paths, from before these links existed. Coming back to the
+              // window is what makes the finder recrawl.
+              window.dispatchEvent(new FocusEvent('focus'))
             })
 
             it('indexes project paths that are symlinks', async () => {
