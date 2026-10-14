@@ -408,6 +408,82 @@ function splitScopedSettings(settings) {
   return { scoped, plain };
 }
 
+// What a project root may set without being trusted: how text looks and is
+// written, nothing that runs anything. Everything else in a root's config —
+// `lsp.servers`, `terminal.shell`, `core.*` — waits until the root is trusted,
+// so cloning a repository and opening it cannot change them.
+// docs/reference/config-precedence.md, "Trust".
+const ROOT_KEYS_WITHOUT_TRUST = [
+  'editor',
+  'whitespace',
+  'core.fileEncoding',
+  'line-ending-selector'
+];
+
+function isRootKeyWithoutTrust(keyPath) {
+  return ROOT_KEYS_WITHOUT_TRUST.some(
+    allowed => keyPath === allowed || keyPath.startsWith(allowed + '.')
+  );
+}
+
+// Split one settings object into what an untrusted root may set and the key
+// paths it may not, descending only as far as the allowlist needs to.
+// `isSetting(keyPath)` stops the withheld list at a setting whose value is an
+// object (`lsp.servers`), rather than naming what is inside it.
+function partitionUntrusted(settings, prefix, withheld, isSetting) {
+  const allowed = {};
+  for (const key of Object.keys(settings || {})) {
+    const keyPath = prefix ? `${prefix}.${key}` : key;
+    const value = settings[key];
+    if (isRootKeyWithoutTrust(keyPath)) {
+      allowed[key] = value;
+    } else if (
+      isPlainObject(value) &&
+      ROOT_KEYS_WITHOUT_TRUST.some(entry => entry.startsWith(keyPath + '.'))
+    ) {
+      const inner = partitionUntrusted(value, keyPath, withheld, isSetting);
+      if (Object.keys(inner).length > 0) allowed[key] = inner;
+    } else {
+      withheld.push(...settingKeyPaths(value, keyPath, isSetting));
+    }
+  }
+  return allowed;
+}
+
+function settingKeyPaths(value, keyPath, isSetting) {
+  if (
+    isSetting(keyPath) ||
+    !isPlainObject(value) ||
+    Object.keys(value).length === 0
+  ) {
+    return [keyPath];
+  }
+  const paths = [];
+  for (const key of Object.keys(value)) {
+    paths.push(...settingKeyPaths(value[key], `${keyPath}.${key}`, isSetting));
+  }
+  return paths;
+}
+
+// The settings a root contributes at its trust level, and what it held back.
+// Scoped settings are filtered selector by selector.
+function rootSettingsForTrust(settings, trusted, isSetting) {
+  const { scoped, plain } = splitScopedSettings(settings);
+  if (trusted) return { scoped, plain, withheld: [] };
+  const withheld = [];
+  const allowedPlain = partitionUntrusted(plain, '', withheld, isSetting);
+  const allowedScoped = {};
+  for (const selector of Object.keys(scoped)) {
+    const inner = partitionUntrusted(scoped[selector], '', withheld, isSetting);
+    if (Object.keys(inner).length > 0) allowedScoped[selector] = inner;
+  }
+  return {
+    scoped: allowedScoped,
+    plain: allowedPlain,
+    withheld: [...new Set(withheld)].sort()
+  };
+}
+
 class Config {
   static addSchemaEnforcer(typeName, enforcerFunction) {
     if (schemaEnforcers[typeName] == null) {
@@ -486,6 +562,9 @@ class Config {
     // first so the nearest root wins a nested lookup.
     // docs/reference/config-precedence.md
     this.settingsByRoot = new Map();
+    // Roots the user has trusted. A root not in here gets only the keys in
+    // ROOT_KEYS_WITHOUT_TRUST from its config.
+    this.trustedRoots = new Set();
 
     this.scopedSettingsStore = new ScopedPropertyStore();
     // Root scoped settings live apart from the main store. Sharing it would
@@ -1486,12 +1565,42 @@ class Config {
       return;
     }
     const source = sourcePath || root;
-    const { scoped, plain } = splitScopedSettings(settings);
-    this.settingsByRoot.set(root, { source, settings: plain });
+    const { scoped, plain, withheld } = rootSettingsForTrust(
+      settings,
+      this.trustedRoots.has(root),
+      keyPath => {
+        const schema = this.getSchema(keyPath);
+        return Boolean(schema) && !(schema.type === 'object' && schema.properties);
+      }
+    );
+    this.settingsByRoot.set(root, { source, settings: plain, raw: settings, withheld });
     if (Object.keys(scoped).length > 0) {
       this.rootScopedSettingsStore.addProperties(source, scoped);
     }
     this.emitRootSettingsChange();
+  }
+
+  // Extended: Record whether the user trusts a project root. An untrusted
+  // root's config only sets the keys any repository may; the rest applies
+  // the moment this is called with true, with no reload.
+  setRootTrusted(root, trusted) {
+    if (!root) return;
+    if (this.trustedRoots.has(root) === Boolean(trusted)) return;
+    if (trusted) this.trustedRoots.add(root);
+    else this.trustedRoots.delete(root);
+    const entry = this.settingsByRoot.get(root);
+    if (entry) this.setRootSettings(root, entry.raw, entry.source);
+  }
+
+  isRootTrusted(root) {
+    return this.trustedRoots.has(root);
+  }
+
+  // Extended: Key paths a root's config sets that are being ignored because
+  // the root is not trusted. Empty for a trusted root or one without config.
+  getWithheldRootKeys(root) {
+    const entry = this.settingsByRoot.get(root);
+    return entry ? entry.withheld.slice() : [];
   }
 
   emitRootSettingsChange() {
@@ -1528,16 +1637,28 @@ class Config {
         return { source: 'root', path: entry.source, scoped: false };
       }
     }
+    // The root has a value for this, and it is not the one in use.
+    const withheldBy =
+      entry &&
+      entry.withheld.some(
+        withheld =>
+          withheld === keyPath ||
+          keyPath.startsWith(withheld + '.') ||
+          withheld.startsWith(keyPath + '.')
+      )
+        ? entry.source
+        : undefined;
+    const answer = result => (withheldBy ? { ...result, withheldBy } : result);
     if (options.scope != null) {
       const scoped = this.getRawScopedValue(options.scope, keyPath, options);
       if (scoped != null) {
-        return { source: 'user', path: this.mainSource, scoped: true };
+        return answer({ source: 'user', path: this.mainSource, scoped: true });
       }
     }
     if (getValueAtKeyPath(this.settings, keyPath) !== undefined) {
-      return { source: 'user', path: this.mainSource, scoped: false };
+      return answer({ source: 'user', path: this.mainSource, scoped: false });
     }
-    return { source: 'default', path: null, scoped: false };
+    return answer({ source: 'default', path: null, scoped: false });
   }
 
   getRawScopedValue(

@@ -1,10 +1,10 @@
 # Next tracks — profiler, per-root config, and the agent host
 
-**Status: in progress.** Track 1 is done: the profiler is in core, timecop is
-the view, and the smoke test gates its overhead (#430). Track 2 has shipped as
-per-root config (`docs/reference/config-precedence.md`). Track 3 has started
-with the diff review surface. Three tracks in the order they should happen,
-and why that order: each one makes the next cheaper.
+**Status: in progress.** Tracks 1 and 2 are done. The profiler is in core,
+timecop is the view, and the smoke test gates its overhead (#430). Per-root
+config is trust-gated, read by packages, and shows where a value came from
+(#431). Track 3 has started with the diff review surface. Three tracks in the
+order they should happen, and why that order: each one makes the next cheaper.
 
 A fourth — remote editing over SSH — was scoped and then **dropped** (owner,
 2026-09-04). §4 keeps the costing, because the question will come back and the
@@ -120,6 +120,21 @@ this value come from" — the store knows the source, so the answer is available
 **Cost:** a week, most of it on precedence and its tests. **Gate:** a matrix
 test over (user, root A, root B, scope) asserting the resolved value and its
 source for each combination.
+
+### What shipped
+
+`<root>/.chevron/config.json`, resolved per file by root, with the table in
+`docs/reference/config-precedence.md` and the matrix in
+`script/ci/config-precedence.test.js`. #431 finished it:
+
+- **Trust.** A root's config can set editor, whitespace, encoding and line
+  endings on its own. Anything else waits until the user trusts the root,
+  using the same store as language servers and tasks, and applies without a
+  reload once they do. The matrix has trust rows.
+- **Packages read it.** `whitespace` and LSP format-on-save pass the file's
+  path as `root`.
+- **"Where did this value come from"** is `Config#getSourceOf` for code and
+  **Config: Show Effective Settings** for people.
 
 ---
 

@@ -12,6 +12,7 @@
 
 const MAIN_TO_RENDERER_CHANNELS = new Set([
   'chevron:did-change-native-theme',
+  'chevron:did-change-project-trust',
   'chevron:popup-menu-click',
   'chevron:pty-event',
   'chevron:rg-search-close',

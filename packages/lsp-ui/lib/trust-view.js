@@ -81,7 +81,7 @@ class TrustView {
     this.leadEl = document.createElement('p');
     this.leadEl.classList.add('lsp-ui-trust-lead');
     this.leadEl.textContent =
-      'Language servers can run this folder’s own tools — TypeScript plugins, Rust build scripts, and similar.';
+      'Language servers can run this folder’s own tools — TypeScript plugins, Rust build scripts, and similar. Its .chevron/config.json can also change any setting, not only editor ones.';
 
     this.pathWrap = document.createElement('div');
     this.pathWrap.classList.add('lsp-ui-trust-path-wrap');
