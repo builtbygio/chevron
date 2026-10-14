@@ -237,3 +237,66 @@ describe('runtime Less compilation still has its variables', () => {
     });
   });
 });
+
+/**
+ * A UI theme compiles against its paired syntax theme.
+ *
+ * One Dark and One Light UI take the active editor tab, the editor scrollbars
+ * and their whole palette from `@syntax-background-color`. Compiled against
+ * the fallback syntax variables that is #fff: the active tab was a white block
+ * with grey text, the editor scrollbar thumb white on a white track, and the
+ * rest of the UI neutral grey instead of the syntax theme's hue.
+ */
+describe('UI themes compile against their syntax theme', () => {
+  const {
+    pairedSyntaxTheme,
+    themeImportPaths,
+    renderSync,
+    FALLBACK_VARIABLE_IMPORTS
+  } = require('../lib/compile-package-styles');
+  const STATIC = [path.join(ROOT, 'static', 'variables'), path.join(ROOT, 'static')];
+
+  const editorTab = css =>
+    (css.match(/\[data-type="MarkdownPreviewView"\]\s*\{([^}]*)\}/) || [])[1] || '';
+  const editorThumb = css =>
+    (css.match(/atom-text-editor ::-webkit-scrollbar-thumb\s*\{([^}]*)\}/) || [])[1] || '';
+  const WHITE = /#fff\b|#ffffff\b|rgb\(255, 255, 255\)/i;
+
+  it('pairs <name>-ui with <name>-syntax only when that syntax theme exists', () => {
+    const syntax = ['one-dark-syntax', 'one-light-syntax'];
+    assert.strictEqual(pairedSyntaxTheme('one-dark-ui', syntax), 'one-dark-syntax');
+    assert.strictEqual(pairedSyntaxTheme('one-light-ui', syntax), 'one-light-syntax');
+    assert.strictEqual(pairedSyntaxTheme('chevron-dark-ui', syntax), null);
+    assert.strictEqual(pairedSyntaxTheme('one-dark-syntax', syntax), null);
+  });
+
+  for (const ui of ['one-dark-ui', 'one-light-ui']) {
+    it(`${ui}: the active editor tab and editor scrollbar take the syntax background`, () => {
+      const uiRoot = path.join(ROOT, 'packages', ui);
+      const syntaxRoot = path.join(ROOT, 'packages', ui.replace(/-ui$/, '-syntax'));
+      const index = path.join(uiRoot, 'index.less');
+      const css = renderSync(
+        index,
+        FALLBACK_VARIABLE_IMPORTS + fs.readFileSync(index, 'utf8'),
+        themeImportPaths(uiRoot, syntaxRoot, STATIC)
+      );
+      const tab = editorTab(css);
+      const thumb = editorThumb(css);
+      assert.ok(tab && thumb, 'the editor tab and scrollbar rules must exist');
+      assert.doesNotMatch(tab, WHITE, `editor tab: ${tab.trim()}`);
+      assert.doesNotMatch(thumb, WHITE, `editor scrollbar thumb: ${thumb.trim()}`);
+    });
+  }
+
+  const describeApp = fs.existsSync(APP) ? describe : describe.skip;
+  describeApp('in the built app', () => {
+    it('one-dark-ui shipped with a dark editor tab and a visible scrollbar thumb', () => {
+      const css = fs.readFileSync(
+        path.join(APP, 'node_modules', 'one-dark-ui', 'index.css'),
+        'utf8'
+      );
+      assert.doesNotMatch(editorTab(css), WHITE);
+      assert.doesNotMatch(editorThumb(css), WHITE);
+    });
+  });
+});
