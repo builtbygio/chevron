@@ -31,7 +31,7 @@ function overlayFor(editor) {
 }
 
 function update(editor) {
-  if (!editor) return;
+  if (!editor || editor.isLargeFileMode()) return;
   const overlay = overlays.get(editor);
   if (!chevron.config.get('sticky-scroll.enabled')) {
     if (overlay) overlay.element.innerHTML = '';
@@ -81,7 +81,18 @@ function update(editor) {
   }
 }
 
+// The pinned lines come from the whole buffer's foldable ranges, recomputed
+// on every change: a file in large-file mode is watched only once it leaves it.
 function watch(editor) {
+  if (editor.isLargeFileMode()) {
+    const pending = editor.whenFullFeatures(() => {
+      subscriptions.remove(pending);
+      watch(editor);
+      update(editor);
+    });
+    subscriptions.add(pending);
+    return;
+  }
   const editorSubscriptions = new CompositeDisposable();
   const view = chevron.views.getView(editor);
 

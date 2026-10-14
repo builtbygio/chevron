@@ -111,6 +111,32 @@ describe('Project', () => {
       runs(() => expect(deserializedProject.getBuffers().length).toBe(0));
     });
 
+    it('keeps buffers in large-file mode, unparsed, across serialization', async () => {
+      await atom.packages.activatePackage('language-javascript');
+      const buffer = await atom.project.bufferForPath(
+        require.resolve('./fixtures/sample.js'),
+        { largeFileMode: true }
+      );
+      buffer.retain();
+
+      deserializedProject = new Project({
+        notificationManager: atom.notifications,
+        packageManager: atom.packages,
+        confirm: atom.confirm,
+        grammarRegistry: atom.grammars
+      });
+      await deserializedProject.deserialize(
+        atom.project.serialize({ isUnloading: false })
+      );
+
+      const restored = deserializedProject.getBuffers()[0];
+      expect(deserializedProject.isLargeFileBuffer(restored)).toBe(true);
+      expect(restored.getLanguageMode().grammar.scopeName).toBe(
+        'text.plain.null-grammar'
+      );
+      buffer.release();
+    });
+
     it('listens for destroyed events on deserialized buffers and removes them when they are destroyed', () => {
       waitsForPromise(() => atom.workspace.open('a'));
 

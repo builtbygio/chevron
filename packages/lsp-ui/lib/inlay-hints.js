@@ -127,8 +127,12 @@ class InlayHints {
   }
 
   activate() {
+    // A file in large-file mode has no server; it gets hints once it leaves
+    // the mode and gets one.
     this.subscriptions.add(
-      chevron.workspace.observeTextEditors(editor => this.watch(editor))
+      chevron.workspace.observeTextEditors(editor =>
+        this.subscriptions.add(editor.whenFullFeatures(() => this.watch(editor)))
+      )
     );
     this.subscriptions.add(
       chevron.config.onDidChange('lsp.inlayHints', () => this.refreshAll())

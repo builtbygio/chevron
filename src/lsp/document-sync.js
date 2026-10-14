@@ -8,6 +8,12 @@ const { pathToUri } = require('./path-uri');
 const { pointToLsp } = require('./position');
 const { languageIdForScope } = require('./language-id');
 
+// core.largeFileModeThreshold: such a file is never sent to a server, which
+// would otherwise get the whole text on open and every change after.
+function isLargeFileMode(editor) {
+  return typeof editor.isLargeFileMode === 'function' && editor.isLargeFileMode();
+}
+
 class DocumentSync {
   /**
    * @param {{ notify: Function, getServerIdForEditor: Function }} opts
@@ -22,7 +28,7 @@ class DocumentSync {
   }
 
   observeEditor(editor) {
-    if (!editor) return;
+    if (!editor || isLargeFileMode(editor)) return;
     if (this._state.has(editor)) {
       this._editors.add(editor);
       return;
@@ -139,4 +145,4 @@ class DocumentSync {
   }
 }
 
-module.exports = { DocumentSync, pointToLsp };
+module.exports = { DocumentSync, pointToLsp, isLargeFileMode };

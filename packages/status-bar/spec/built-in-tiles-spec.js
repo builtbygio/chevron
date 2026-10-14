@@ -684,4 +684,29 @@ describe("Built-in Status Bar Tiles", function() {
       });
     });
   });
+
+  describe("the large-file tile", function() {
+    let tile = null;
+
+    beforeEach(function() {
+      tile = statusBar.querySelector('status-bar-large-file');
+      jasmine.attachToDOM(workspaceElement);
+    });
+
+    it("is hidden for an editor that is not in large-file mode", async function() {
+      await atom.workspace.open('sample.js');
+      expect(tile.style.display).toBe('none');
+    });
+
+    it("shows for one that is, and a click switches full features back on", async function() {
+      const editor = await atom.workspace.open('sample.js');
+      atom.project.setLargeFileMode(editor.getBuffer(), true);
+      expect(tile.style.display).toBe('');
+      expect(tile.textContent).toBe('Large file');
+
+      tile.querySelector('a').click();
+      expect(editor.isLargeFileMode()).toBe(false);
+      expect(tile.style.display).toBe('none');
+    });
+  });
 });

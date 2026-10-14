@@ -339,6 +339,10 @@ module.exports = class GrammarRegistry {
 
   grammarForId(languageId) {
     if (!languageId) return null;
+    // The null grammar is never registered, but it is the override a
+    // large-file buffer carries (Project#setLargeFileMode), and
+    // maintainLanguageMode re-applies an override through this.
+    if (languageId === NullGrammar.scopeName) return NullGrammar;
     const grammar = this.treeSitterGrammarsById[languageId];
     // Not a placeholder holding injection points for a grammar not yet loaded.
     return grammar instanceof TreeSitterGrammar ? grammar : null;

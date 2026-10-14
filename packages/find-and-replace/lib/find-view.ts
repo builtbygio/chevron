@@ -327,6 +327,10 @@ class FindView {
   }
 
   liveSearch() {
+    // Each search marks every match in the buffer; in large-file mode it
+    // waits for Enter rather than running on every keystroke.
+    const editor = this.model.getEditor();
+    if (editor && editor.isLargeFileMode && editor.isLargeFileMode()) return;
     let findPattern = this.findEditor.getText();
     if (findPattern.length === 0 || (findPattern.length >= chevron.config.get('find-and-replace.liveSearchMinimumCharacters') && !this.model.patternMatchesEmptyString(findPattern))) {
       return this.model.search(findPattern);

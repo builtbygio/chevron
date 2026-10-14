@@ -15,6 +15,7 @@ const CursorPositionView = require('./cursor-position-view');
 const SelectionCountView = require('./selection-count-view');
 const GitView = require('./git-view');
 const LaunchModeView = require('./launch-mode-view');
+const LargeFileView = require('./large-file-view');
 
 module.exports = {
   activate() {
@@ -59,6 +60,9 @@ module.exports = {
     this.selectionCount = new SelectionCountView();
     this.statusBar.addLeftTile({item: this.selectionCount.element, priority: 2});
 
+    this.largeFile = new LargeFileView();
+    this.statusBar.addLeftTile({item: this.largeFile.element, priority: 3});
+
     this.gitInfo = new GitView();
     return this.gitInfoTile = this.statusBar.addRightTile({item: this.gitInfo.element, priority: 0});
   },
@@ -88,6 +92,11 @@ module.exports = {
       this.selectionCount.destroy();
     }
     this.selectionCount = null;
+
+    if (this.largeFile != null) {
+      this.largeFile.destroy();
+    }
+    this.largeFile = null;
 
     if (this.statusBarPanel != null) {
       this.statusBarPanel.destroy();
