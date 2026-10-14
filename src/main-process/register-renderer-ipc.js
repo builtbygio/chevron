@@ -12,7 +12,7 @@ const {
   Menu,
   clipboard,
   dialog,
-  ipcMain: electronIpcMain,
+  ipcMain,
   nativeTheme,
   screen,
   shell,
@@ -24,7 +24,6 @@ const guard = require('./ipc-guard');
 const { isSafeAbsolutePath } = guard;
 const { isAllowedFsPath } = require('./register-fs-ipc');
 const { isMainOnlyChannel } = require('./main-to-renderer-channels');
-const { withLegacyAliases } = require('./ipc-aliases');
 
 let registered = false;
 
@@ -310,8 +309,6 @@ function resolveSettingsViewCachePath(basename) {
 }
 
 module.exports = function registerRendererIpc(atomApplication) {
-  // Every registration below also answers to the name it had; see ipc-aliases.
-  const ipcMain = withLegacyAliases(electronIpcMain);
   if (registered) return;
   registered = true;
 

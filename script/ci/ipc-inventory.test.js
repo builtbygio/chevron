@@ -106,8 +106,8 @@ describe('the recorded IPC surface', () => {
     assert.deepEqual(
       unnamespaced,
       [],
-      'a channel must be chevron: or lsp:; an old name belongs in ' +
-        `ipc-aliases.js, not here — these are not: ${unnamespaced.join(', ')}`
+      'a channel must be chevron: or lsp:, and old names are not ' +
+        `registered alongside — these are not: ${unnamespaced.join(', ')}`
     );
   });
 
@@ -175,41 +175,16 @@ describe('the recorded entries are well formed', () => {
     assert.equal(RECORDED.length, enumerateChannels(ROOT).length);
   });
 
-  it('records the old name of every aliased channel', () => {
-    // The alias map is what keeps out-of-tree callers working. An alias the
-    // inventory does not record is one nobody will remember to remove.
-    const { LEGACY_ALIASES } = require(path.join(
-      ROOT, 'src', 'main-process', 'ipc-aliases'
-    ));
-    for (const [canonical, legacy] of LEGACY_ALIASES) {
-      const entry = RECORDED.find(e => e.channel === canonical);
-      assert.ok(entry, `${canonical} is aliased but not recorded`);
-      assert.equal(entry.legacyName, legacy, canonical);
+  it('keeps no legacy names', () => {
+    // The atom-* aliases were for one release after Phase 4 and are gone
+    // (#416). An entry growing a legacyName again would mean an alias layer
+    // came back without anyone deciding it should.
+    for (const entry of RECORDED) {
+      assert.ok(!('legacyName' in entry), `${entry.channel} records a legacy name`);
     }
-    const recorded = RECORDED.filter(e => e.legacyName).length;
-    assert.equal(recorded, LEGACY_ALIASES.size);
-  });
-
-  it('does not alias a channel that no longer exists', () => {
-    const { LEGACY_ALIASES } = require(path.join(
-      ROOT, 'src', 'main-process', 'ipc-aliases'
-    ));
-    const live = new Set(enumerateChannels(ROOT).map(e => e.channel));
-    for (const canonical of LEGACY_ALIASES.keys()) {
-      assert.ok(live.has(canonical), `${canonical} is aliased but not registered`);
-    }
-  });
-
-  it('never reuses an old name as a new channel', () => {
-    const { LEGACY_ALIASES } = require(path.join(
-      ROOT, 'src', 'main-process', 'ipc-aliases'
-    ));
-    const legacyNames = new Set(LEGACY_ALIASES.values());
-    for (const entry of enumerateChannels(ROOT)) {
-      assert.ok(
-        !legacyNames.has(entry.channel),
-        `${entry.channel} is an old name; it must not be registered directly`
-      );
-    }
+    assert.ok(
+      !fs.existsSync(path.join(ROOT, 'src', 'main-process', 'ipc-aliases.js')),
+      'src/main-process/ipc-aliases.js is back'
+    );
   });
 });

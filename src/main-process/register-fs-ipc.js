@@ -9,9 +9,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { ipcMain: electronIpcMain, app, BrowserWindow } = require('electron');
-const { withLegacyAliases } = require('./ipc-aliases');
-const ipcMain = withLegacyAliases(electronIpcMain);
+const { ipcMain, app, BrowserWindow } = require('electron');
 const { pathContained } = require('./atom-protocol-path');
 const guard = require('./ipc-guard');
 const { isSafeAbsolutePath } = guard;

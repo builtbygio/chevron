@@ -21,13 +21,11 @@ const {
   app,
   clipboard,
   dialog,
-  ipcMain: electronIpcMain,
+  ipcMain,
   nativeTheme,
   shell,
   screen
 } = require('electron');
-const { withLegacyAliases } = require('./ipc-aliases');
-const ipcMain = withLegacyAliases(electronIpcMain);
 const { CompositeDisposable, Disposable } = require('event-kit');
 const crypto = require('crypto');
 const fs = require('fs-plus');

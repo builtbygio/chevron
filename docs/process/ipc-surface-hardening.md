@@ -76,7 +76,8 @@ Rules that apply to every phase:
   (see the header of `static/preload.js`); packages need `require`. Moving
   packages out of that world is package host v2, a separate track.
 - **Do not rename channels before Phase 4**, and never without an alias.
-  Bundled packages call these by string.
+  Bundled packages call these by string. (Phase 4's aliases have since been
+  retired; see below.)
 - Every PR runs `node --test script/ci/ipc-inventory.test.js` green, and
   the unit job (`unit-and-cpm` in `.github/workflows/ci.yml`) must stay
   free of `script/node_modules` and root `node_modules` dependencies.
@@ -221,32 +222,25 @@ in the inventory as they are rather than as they should be: most have
 (`src/main-process/window-ipc-policy.js`), and `chevron:set-user-settings`
 writes only main's own config file.
 
-`src/main-process/ipc-aliases.js` holds the 64 old names. `withLegacyAliases`
-wraps `ipcMain` so a registration answers to both, and the old name logs once
-per session per channel:
+For one release, `src/main-process/ipc-aliases.js` held the 64 old names.
+`withLegacyAliases` wrapped `ipcMain` so a registration answered to both, and
+the old name logged once per session per channel:
 
 ```
 [chevron] IPC channel "atom-window-load-settings-sync" is the old name for
 "chevron:window-load-settings-sync" and will be removed. Update the caller.
 ```
 
-The canonical name stays a literal at the call site, because that is what the
-enumerator reads; an alias registered through a variable would be invisible to
-the inventory, which is the blind spot that made this document's first channel
-count wrong.
-
 Every caller **in this repository** moved to the canonical names — 92
 references across 13 files, core and bundled packages alike — so a normal
-session prints no warnings. The aliases exist for out-of-tree packages, which
-is the compatibility problem worth having.
+session printed no warnings. The aliases were for out-of-tree packages.
 
-`chevron:did-prepare-to-unload` has no alias on purpose: `atom-window.js`
-registers and removes that listener for each unload, and an alias beside it
-would not be removed with it. Its only sender is `src/application-delegate.js`,
-which moved with the rename.
-
-**Remove the aliases the release after this one.** Not before. When they go,
-`ipc-aliases.js` and the `legacyName` field in the inventory go with them.
+**The aliases are gone (#416).** They were due the release after 1.2.0 and
+outlived it by several. `ipc-aliases.js`, the three `withLegacyAliases`
+wrappers and the inventory's `legacyName` field were removed together, and
+`ipc-inventory.test.js` fails if either comes back. An `atom-*` name now
+reaches no handler: a `send` is dropped, an `invoke` rejects with "No handler
+registered", and a `sendSync` returns nothing.
 
 ## What this does not do
 
@@ -260,8 +254,7 @@ which moved with the rename.
 
 ## Where to start
 
-All five phases are done. Phase 4's aliases are the only thing left to
-retire, a release from now. The enumerator is
+All five phases are done, and Phase 4's aliases are retired. The enumerator is
 `script/lib/ipc-inventory.js` and the guard is
 `script/ci/ipc-inventory.test.js`. Re-run `enumerateChannels` before trusting
 any count in this document — the numbers here were wrong once already.
