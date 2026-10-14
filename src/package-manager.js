@@ -90,6 +90,9 @@ module.exports = class PackageManager {
     // The profiler attributes a call site to a package by path, so it needs
     // the same directories this resolves against.
     profiler.setPackageDirPaths(this.packageDirPaths);
+    profiler.setPackageLookup(
+      name => this.isBundledPackage(name) || this.isPackageLoaded(name)
+    );
   }
 
   setContextMenuManager(contextMenuManager) {

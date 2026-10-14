@@ -31,6 +31,10 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const PORT = 9451;
 const STARTUP_TIMEOUT_MS = 120 * 1000;
 const MIN_ACTIVE_PACKAGES = 50;
+// The package profiler's gate (docs/process/next-tracks-plan.md, track 1):
+// profiled edits may cost this much more than unprofiled ones.
+const PROFILER_MAX_OVERHEAD = 1.5;
+const PROFILER_OVERHEAD_FLOOR_MS = 10;
 
 function listOutDirs() {
   const outDir = path.join(REPO_ROOT, 'out');
@@ -1545,6 +1549,104 @@ const CODE_CONTEXT_EXPR = `(function() {
   });
 })()`;
 
+// The package profiler: what it costs when on, and whether it sees anything.
+//
+// Rounds of real edits on the probe editor — every package subscriber still
+// attached — alternate off and on, and the medians are compared. Then one
+// profiled pass with an edit, a save and a config change has to come back
+// with each kind recorded and some of it billed to a package rather than to
+// core; billing everything to core is what a broken attribution looks like.
+const PROFILER_EXPR = `(function() {
+  var chevron = window.chevron || window.atom;
+  if (!chevron || !chevron.workspace) {
+    return JSON.stringify({ status: 'no-chevron' });
+  }
+  if (!window.__profilerProbe) {
+    window.__profilerProbe = { phase: 'running', result: null };
+    var finish = function(result) {
+      window.__profilerProbe.result = result;
+      window.__profilerProbe.phase = 'done';
+    };
+    var profiler = chevron.packageProfiler;
+    var editor = chevron.workspace.getTextEditors().filter(function(e) {
+      return /probe-context\\.ts$/.test(e.getPath() || '');
+    })[0];
+    if (!profiler) {
+      finish({ error: 'chevron.packageProfiler is missing' });
+    } else if (!editor) {
+      finish({ error: 'probe-context.ts is not open' });
+    } else {
+      try {
+        var buffer = editor.getBuffer();
+        var EDITS = 40;
+        var round = function() {
+          var checkpoint = buffer.createCheckpoint();
+          editor.setCursorBufferPosition([0, 0]);
+          var started = performance.now();
+          for (var i = 0; i < EDITS; i++) editor.insertText('x');
+          var elapsed = performance.now() - started;
+          buffer.revertToCheckpoint(checkpoint);
+          return elapsed;
+        };
+        var median = function(values) {
+          var sorted = values.slice().sort(function(a, b) { return a - b; });
+          return sorted[Math.floor(sorted.length / 2)];
+        };
+        round();
+        var off = [];
+        var on = [];
+        for (var r = 0; r < 5; r++) {
+          off.push(round());
+          profiler.start();
+          on.push(round());
+          profiler.stop();
+        }
+        var overhead = { edits: EDITS, offMs: median(off), onMs: median(on) };
+
+        profiler.start();
+        editor.setCursorBufferPosition([0, 0]);
+        editor.insertText('x');
+        editor.backspace();
+        chevron.config.set('editor.tabLength', 3);
+        chevron.config.unset('editor.tabLength');
+        Promise.resolve(editor.save())
+          .then(function() {
+            var report = profiler.report();
+            profiler.stop();
+            profiler.reset();
+            var kinds = {};
+            var packagesByKind = {};
+            report.forEach(function(entry) {
+              Object.keys(entry.byKind).forEach(function(kind) {
+                kinds[kind] = (kinds[kind] || 0) + entry.byKind[kind].count;
+                if (entry.owner !== 'core' && entry.owner !== 'unknown') {
+                  (packagesByKind[kind] = packagesByKind[kind] || []).push(entry.owner);
+                }
+              });
+            });
+            finish({
+              overhead: overhead,
+              kinds: kinds,
+              packagesByKind: packagesByKind,
+              owners: report.map(function(entry) { return entry.owner; })
+            });
+          })
+          .catch(function(error) {
+            profiler.stop();
+            finish({ error: String(error && error.message) });
+          });
+      } catch (error) {
+        profiler.stop();
+        finish({ error: String(error && error.stack) });
+      }
+    }
+  }
+  return JSON.stringify({
+    status: window.__profilerProbe.phase === 'done' ? 'ready' : 'pending',
+    profiler: window.__profilerProbe.result
+  });
+})()`;
+
 function isAppWindowTarget(target) {
   if (!target || target.type !== 'page') return false;
   const url = target.url || '';
@@ -2337,6 +2439,23 @@ async function main() {
       }
     }
 
+    // The package profiler, on the editor the code-context probe left open.
+    if (state && state.status === 'ready') {
+      for (let attempt = 0; attempt < 60; attempt++) {
+        let profilerState;
+        try {
+          profilerState = await probeWindow([], PROFILER_EXPR);
+        } catch (error) {
+          profilerState = { profiler: { error: String(error.message || error) } };
+        }
+        if (profilerState && profilerState.profiler) {
+          state.profiler = profilerState.profiler;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
     // The styleguide, last: it takes over the active pane.
     if (state && state.status === 'ready') {
       for (let attempt = 0; attempt < 40; attempt++) {
@@ -2723,6 +2842,45 @@ async function main() {
             step('Enter moves the cursor to row', 1, keyboard.cursorRowAfterEnter);
             step('Enter focuses the editor', true, keyboard.editorFocusedAfterEnter);
           }
+        }
+      }
+
+      const profilerProbe = state.profiler;
+      if (!profilerProbe) {
+        failures.push('profiler probe did not report');
+      } else if (profilerProbe.error) {
+        failures.push(`profiler: ${profilerProbe.error}`);
+      } else {
+        const { offMs, onMs, edits } = profilerProbe.overhead;
+        // Relative, with an absolute floor: on a fast machine the off run is a
+        // few milliseconds and scheduler noise alone can exceed any ratio.
+        if (
+          onMs > offMs * PROFILER_MAX_OVERHEAD &&
+          onMs - offMs > PROFILER_OVERHEAD_FLOOR_MS
+        ) {
+          failures.push(
+            `the package profiler costs too much when on: ${edits} edits took ${onMs.toFixed(
+              1
+            )}ms profiled vs ${offMs.toFixed(1)}ms (limit ${PROFILER_MAX_OVERHEAD}x)`
+          );
+        }
+        const kinds = profilerProbe.kinds || {};
+        for (const kind of ['event', 'save', 'config']) {
+          if (!kinds[kind]) {
+            failures.push(
+              `the profiler recorded no ${kind} work for an edit, a save and a config change: ${JSON.stringify(
+                kinds
+              )}`
+            );
+          }
+        }
+        const billed = profilerProbe.packagesByKind || {};
+        if (!billed.event || billed.event.length === 0) {
+          failures.push(
+            `every editor subscriber was billed to core; attribution is not reaching packages: ${JSON.stringify(
+              profilerProbe.owners
+            )}`
+          );
         }
       }
 

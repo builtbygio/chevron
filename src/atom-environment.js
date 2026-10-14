@@ -42,6 +42,7 @@ const Pane = require('./pane');
 const Dock = require('./dock');
 const TextEditor = require('./text-editor');
 const TextBuffer = require('text-buffer');
+const { profiler } = require('./package-profiler');
 const TextEditorRegistry = require('./text-editor-registry');
 const AutoUpdateManager = require('./auto-update-manager');
 const StartupTime = require('./startup-time');
@@ -121,6 +122,11 @@ class AtomEnvironment {
 
     // Public: A {CommandRegistry} instance
     this.commands = new CommandRegistry();
+
+    // Extended: The package profiler — what each package costs after it has
+    // activated. Off until something starts it; timecop is the view.
+    this.packageProfiler = profiler;
+    profiler.instrumentBufferSaves(TextBuffer);
     this.uriHandlerRegistry = new URIHandlerRegistry();
 
     // Public: A {GrammarRegistry} instance

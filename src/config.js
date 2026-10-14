@@ -14,6 +14,21 @@ const path = require('path');
 
 const schemaEnforcers = {};
 
+// Resolved on the first subscription, not at load: the main process loads
+// this module too and cannot load .ts, which package-profiler is.
+let profilerModule;
+function profiledListener(listener, below) {
+  if (profilerModule === undefined) {
+    profilerModule = null;
+    if (process.type !== 'browser') {
+      try {
+        profilerModule = require('./package-profiler').profiler;
+      } catch (error) {}
+    }
+  }
+  return profilerModule ? profilerModule.wrap('config', listener, below) : listener;
+}
+
 // Essential: Used to access all of Atom's configuration details.
 //
 // An instance of this class is always available as the `atom.config` global.
@@ -1185,14 +1200,17 @@ class Config {
 
   onDidChangeKeyPath(keyPath, callback) {
     let oldValue = this.get(keyPath);
-    return this.emitter.on('did-change', () => {
-      const newValue = this.get(keyPath);
-      if (!_.isEqual(oldValue, newValue)) {
-        const event = { oldValue, newValue };
-        oldValue = newValue;
-        return callback(event);
-      }
-    });
+    return this.emitter.on(
+      'did-change',
+      profiledListener(() => {
+        const newValue = this.get(keyPath);
+        if (!_.isEqual(oldValue, newValue)) {
+          const event = { oldValue, newValue };
+          oldValue = newValue;
+          return callback(event);
+        }
+      }, this.onDidChangeKeyPath)
+    );
   }
 
   isSubKeyPath(keyPath, subKeyPath) {
@@ -1558,14 +1576,17 @@ class Config {
 
   onDidChangeScopedKeyPath(scope, keyPath, callback) {
     let oldValue = this.get(keyPath, { scope });
-    return this.emitter.on('did-change', () => {
-      const newValue = this.get(keyPath, { scope });
-      if (!_.isEqual(oldValue, newValue)) {
-        const event = { oldValue, newValue };
-        oldValue = newValue;
-        callback(event);
-      }
-    });
+    return this.emitter.on(
+      'did-change',
+      profiledListener(() => {
+        const newValue = this.get(keyPath, { scope });
+        if (!_.isEqual(oldValue, newValue)) {
+          const event = { oldValue, newValue };
+          oldValue = newValue;
+          callback(event);
+        }
+      }, this.onDidChangeScopedKeyPath)
+    );
   }
 }
 

@@ -71,6 +71,79 @@ describe('Timecop', () => {
       expect(activationPanel.element.textContent).not.toMatch(/fast-package/)
     })
 
+    describe('the session panel', () => {
+      let profiler, panel
+
+      beforeEach(() => {
+        profiler = atom.packageProfiler
+        profiler.stop()
+        profiler.reset()
+        panel = timecopView.refs.sessionPanel
+      })
+
+      afterEach(() => {
+        profiler.stop()
+        profiler.reset()
+      })
+
+      it('says profiling is off until something starts it', () => {
+        expect(panel.refs.summary.textContent).toMatch(/Profiling is off/)
+        expect(panel.refs.toggleButton.textContent).toBe('Start')
+        expect(panel.element.querySelector('table')).toBeNull()
+      })
+
+      it('starts, shows a row per package and kind, resets and stops', async () => {
+        panel.refs.toggleButton.click()
+        expect(profiler.isRunning()).toBe(true)
+        await panel.refresh()
+        expect(panel.refs.toggleButton.textContent).toBe('Stop')
+
+        for (const ms of [1, 2, 40]) profiler.record('command', 'tree-view', ms)
+        profiler.record('save', 'whitespace', 3)
+        profiler.record('lsp', 'symbols-view', 300)
+        await panel.refresh()
+
+        const rows = [...panel.element.querySelectorAll('tr.session-row')].map(row => [
+          row.dataset.owner,
+          row.dataset.kind,
+          [...row.querySelectorAll('td')].slice(2).map(td => td.textContent)
+        ])
+        expect(rows).toContain(['tree-view', 'command', ['3', '43', '2.00', '40', '40']])
+        expect(rows).toContain(['whitespace', 'save', ['1', '3.00', '3.00', '3.00', '3.00']])
+        expect(rows.map(([owner]) => owner)).toContain('symbols-view')
+        expect(panel.element.querySelector('a.package[data-package="tree-view"]')).not.toBeNull()
+
+        panel.refs.resetButton.click()
+        await panel.refresh()
+        expect(profiler.report()).toEqual([])
+        expect(profiler.isRunning()).toBe(true)
+        expect(panel.element.querySelector('tr.session-row')).toBeNull()
+
+        panel.refs.toggleButton.click()
+        await panel.refresh()
+        expect(profiler.isRunning()).toBe(false)
+        expect(panel.refs.toggleButton.textContent).toBe('Start')
+      })
+
+      it('polls only while profiling runs', async () => {
+        expect(panel.timer).toBeNull()
+        profiler.start()
+        expect(panel.timer).not.toBeNull()
+        profiler.stop()
+        expect(panel.timer).toBeNull()
+      })
+
+      it('stops polling and listening when the view goes away', async () => {
+        profiler.start()
+        expect(panel.timer).not.toBeNull()
+        timecopView.destroy()
+        expect(panel.timer).toBeNull()
+        spyOn(panel, 'refresh')
+        profiler.stop()
+        expect(panel.refresh).not.toHaveBeenCalled()
+      })
+    })
+
     it('shows how many files were transpiled from each language', () => {
       const cachePanel = timecopView.refs.cacheLoadingPanel
 

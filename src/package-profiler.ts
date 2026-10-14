@@ -23,7 +23,21 @@
 const path = require('path');
 
 /** Kinds of work a package can do on the user's time. */
-export type ProfileKind = 'command' | 'event' | 'decoration' | 'ipc';
+export type ProfileKind =
+  | 'command'
+  | 'event'
+  | 'decoration'
+  | 'ipc'
+  | 'save'
+  | 'config'
+  | 'lsp';
+
+/**
+ * Kinds measured as time spent waiting, not time on the main thread. They are
+ * reported, but kept out of an owner's total: a 300ms language server reply
+ * is latency, not jank, and would otherwise outrank every real hot path.
+ */
+export const WAIT_KINDS: ReadonlySet<string> = new Set(['lsp']);
 
 export interface KindStats {
   /** How many times it ran. */
@@ -75,6 +89,8 @@ class PackageProfiler {
    * paying for a stack on every call.
    */
   private current: string | null;
+  private isPackage: ((name: string) => boolean) | null;
+  private stateListeners: Set<() => void>;
 
   constructor() {
     this.enabled = false;
@@ -83,6 +99,8 @@ class PackageProfiler {
     this.packageDirs = [];
     this.startedAt = null;
     this.current = null;
+    this.isPackage = null;
+    this.stateListeners = new Set();
   }
 
   /**
@@ -96,18 +114,52 @@ class PackageProfiler {
     this.ownerByCallSite.clear();
   }
 
+  /**
+   * Which names under node_modules are packages, from PackageManager. Without
+   * it, every library on the stack (event-kit, text-buffer) looks like one.
+   */
+  setPackageLookup(isPackage: ((name: string) => boolean) | null): void {
+    this.isPackage = isPackage;
+    this.ownerByCallSite.clear();
+  }
+
   start(): void {
     this.enabled = true;
     this.startedAt = Date.now();
     this.buckets.clear();
+    this.emitStateChange();
   }
 
   stop(): void {
     this.enabled = false;
+    this.emitStateChange();
+  }
+
+  /** Drop what has been recorded; a running profiler keeps running. */
+  reset(): void {
+    this.buckets.clear();
+    if (this.enabled) this.startedAt = Date.now();
+    this.emitStateChange();
   }
 
   isRunning(): boolean {
     return this.enabled;
+  }
+
+  /** Called on start, stop and reset — not per record, which is hot. */
+  onDidChangeState(callback: () => void): { dispose(): void } {
+    this.stateListeners.add(callback);
+    return { dispose: () => this.stateListeners.delete(callback) };
+  }
+
+  private emitStateChange(): void {
+    for (const listener of [...this.stateListeners]) {
+      try {
+        listener();
+      } catch (error) {
+        console.error(error);
+      }
+    }
   }
 
   /**
@@ -134,32 +186,61 @@ class PackageProfiler {
 
   /**
    * Which package registered a callback, from the stack at registration.
-   * Returns 'core' for anything inside src/, and 'unknown' when the stack
-   * says nothing useful — a bundled esbuild output, mostly.
+   *
+   * The nearest *package* frame wins. Most subscriptions go through a core
+   * method (`TextEditor#onDidChange`, `Config#observe`), so the first frame
+   * is nearly always core; stopping there would bill every package's
+   * handlers to Chevron. Core — and the libraries core uses — is the answer
+   * only when no package is on the stack. 'unknown' means the stack said
+   * nothing useful: a bundled esbuild output, mostly.
    */
   attribute(stack?: string): string {
     const raw = stack || new Error().stack || '';
     const cached = this.ownerByCallSite.get(raw);
     if (cached) return cached;
 
-    let owner = 'unknown';
+    let owner: string | null = null;
+    let sawCore = false;
     for (const line of raw.split('\n').slice(1)) {
       const match = /\(?([^()\s]+\.(?:js|ts|jsx|tsx)):\d+:\d+\)?/.exec(line);
       if (!match) continue;
       const file = match[1];
-      // Skip the profiler and the registry that calls it: the first frame
-      // outside them is the registrant.
       if (/package-profiler|command-registry/.test(file)) continue;
 
       const found = this.ownerForPath(file);
-      if (found) {
+      if (!found) continue;
+      if (this.isPackageOwner(found, file)) {
         owner = found;
         break;
       }
+      sawCore = true;
     }
 
-    this.ownerByCallSite.set(raw, owner);
-    return owner;
+    const result = owner || (sawCore ? 'core' : 'unknown');
+    this.ownerByCallSite.set(raw, result);
+    return result;
+  }
+
+  private isPackageOwner(name: string, file: string): boolean {
+    if (name === 'core') return false;
+    const resolved = path.resolve(file);
+    if (this.packageDirs.some(dir => resolved.startsWith(dir))) return true;
+    return this.isPackage ? this.isPackage(name) : true;
+  }
+
+  /**
+   * The owner of whoever is calling right now, for async work that outlives
+   * any attribution window — an LSP request, say. Reads a stack, so only
+   * call it while enabled. Falls back to the open window, then core.
+   */
+  ownerOfCaller(): string {
+    const limit = Error.stackTraceLimit;
+    Error.stackTraceLimit = 30;
+    const stack = new Error().stack;
+    Error.stackTraceLimit = limit;
+    const owner = this.attribute(stack);
+    if (owner !== 'core' && owner !== 'unknown') return owner;
+    return this.current || 'core';
   }
 
   /** The package owning a file path, or null when it is not under one. */
@@ -238,6 +319,65 @@ class PackageProfiler {
     return (wrapped as unknown) as T;
   }
 
+  /**
+   * Like `wrap`, but a callback that returns a promise is timed until it
+   * settles. For hooks the caller awaits — `will-save` holds the save until
+   * every handler resolves, so that wait is the cost the user sees.
+   */
+  wrapUntilSettled<T extends Function>(kind: ProfileKind, callback: T, below?: Function): T {
+    if (typeof callback !== 'function') return callback;
+    const site = this.captureSite(below);
+    const self = this;
+    const wrapped = function(this: any, ...args: any[]) {
+      if (!self.enabled) return callback.apply(this, args);
+      const owner = self.ownerForSite(site);
+      const previous = self.enter(owner);
+      const started = performance.now();
+      let pending = false;
+      try {
+        const result = callback.apply(this, args);
+        if (result && typeof result.then === 'function') {
+          pending = true;
+          const done = () => self.record(kind, owner, performance.now() - started);
+          result.then(done, done);
+        }
+        return result;
+      } finally {
+        if (!pending) self.record(kind, owner, performance.now() - started);
+        self.leave(previous);
+      }
+    };
+    return (wrapped as unknown) as T;
+  }
+
+  /**
+   * Time every `TextBuffer` save hook, whoever subscribes — packages reach
+   * the buffer directly (`whitespace`, `lsp.formatOnSave`), so wrapping the
+   * `TextEditor` forwarders would miss most of them. Patches the prototype
+   * once; when profiling is off a hook costs the usual boolean check.
+   */
+  instrumentBufferSaves(TextBuffer: any): void {
+    const proto = TextBuffer && TextBuffer.prototype;
+    if (!proto || proto.__chevronProfiledSaves) return;
+    Object.defineProperty(proto, '__chevronProfiledSaves', { value: true });
+    const self = this;
+    const onWillSave = proto.onWillSave;
+    if (typeof onWillSave === 'function') {
+      proto.onWillSave = function profiledOnWillSave(callback: Function) {
+        return onWillSave.call(
+          this,
+          self.wrapUntilSettled('save', callback, profiledOnWillSave)
+        );
+      };
+    }
+    const onDidSave = proto.onDidSave;
+    if (typeof onDidSave === 'function') {
+      proto.onDidSave = function profiledOnDidSave(callback: Function) {
+        return onDidSave.call(this, self.wrap('save', callback, profiledOnDidSave));
+      };
+    }
+  }
+
   /** Open an attribution window; returns the previous owner to restore. */
   enter(owner: string): string | null {
     const previous = this.current;
@@ -288,7 +428,7 @@ class PackageProfiler {
         p95: percentile(sorted, 0.95),
         max: round(bucket.max)
       };
-      entry.total = round(entry.total + bucket.total);
+      if (!WAIT_KINDS.has(kind)) entry.total = round(entry.total + bucket.total);
     }
     return [...byOwner.values()].sort((a, b) => b.total - a.total);
   }
@@ -302,4 +442,4 @@ class PackageProfiler {
 
 const profiler = new PackageProfiler();
 
-module.exports = { profiler, PackageProfiler };
+module.exports = { profiler, PackageProfiler, WAIT_KINDS };
