@@ -18,12 +18,16 @@
  *
  * Import paths, and why themes differ:
  *   non-theme  [static/variables, static]
- *   theme      [<its own>/styles, static/variables, static]
+ *   theme      [<its own>/styles, <paired syntax>/styles, static/variables, static]
  * A theme's ui-variables.less has to resolve to its own copy rather than the
  * fallbacks, which is what makes its custom-properties.less emit that theme's
- * values. Nothing outside a theme needs a theme directory on the path: the
- * only cross-file theme imports (ui-variables-custom, colors, buttons) are
- * within the theme packages themselves.
+ * values. Nothing outside a theme needs a theme directory on the path.
+ *
+ * One Dark and One Light UI derive their palette, the active editor tab and
+ * the editor scrollbars from `@syntax-background-color`. Against the fallback
+ * syntax-variables.less that is #fff: the tab and scrollbar came out white and
+ * the rest of the UI neutral grey. So a UI theme compiles against its paired
+ * syntax theme, `one-dark-ui` against `one-dark-syntax`.
  */
 
 const fs = require('fs');
@@ -75,6 +79,24 @@ const pattern = p => p.split(path.sep).join('/');
 const samePath = (a, b) => normalize(a) === normalize(b);
 const normalize = p => p.split(/[\\/]/).join('/');
 
+// The syntax theme a UI theme was designed with: `<name>-ui` -> `<name>-syntax`,
+// if that is one of the syntax themes. Null for a syntax theme or an unpaired
+// UI theme, which then sees the fallback syntax variables.
+function pairedSyntaxTheme(themeName, syntaxThemes) {
+  if (!/-ui$/.test(themeName)) return null;
+  const paired = themeName.replace(/-ui$/, '-syntax');
+  return syntaxThemes.includes(paired) ? paired : null;
+}
+
+// Where a theme's index.less looks up its imports, in order.
+function themeImportPaths(themeRoot, pairedSyntaxRoot, staticPaths) {
+  return [
+    path.join(themeRoot, 'styles'),
+    ...(pairedSyntaxRoot ? [path.join(pairedSyntaxRoot, 'styles')] : []),
+    ...staticPaths
+  ];
+}
+
 // Package styles only -- never compile a nested dependency's Less (github's
 // node_modules/react-select uses mixins this pipeline does not provide).
 function packageLessFiles(packageName) {
@@ -99,6 +121,7 @@ module.exports = function() {
   ];
 
   const themes = [];
+  const syntaxThemes = [];
   const packages = [];
   for (const packageName of Object.keys(
     CONFIG.appMetadata.packageDependencies
@@ -111,6 +134,7 @@ module.exports = function() {
     ));
     if (metadata.theme === 'ui' || metadata.theme === 'syntax') {
       themes.push(packageName);
+      if (metadata.theme === 'syntax') syntaxThemes.push(packageName);
     } else {
       packages.push(packageName);
     }
@@ -170,7 +194,8 @@ module.exports = function() {
   const discarded = [];
   for (const themeName of themes) {
     const themeRoot = path.join(appPath, 'node_modules', themeName);
-    const ownStyles = path.join(themeRoot, 'styles');
+    const paired = pairedSyntaxTheme(themeName, syntaxThemes);
+    const pairedRoot = paired && path.join(appPath, 'node_modules', paired);
     const indexPath = path.resolve(themeRoot, 'index.less');
     if (!fs.existsSync(indexPath)) {
       throw new Error(
@@ -178,7 +203,7 @@ module.exports = function() {
           'point and cannot be compiled'
       );
     }
-    compileTo(indexPath, [ownStyles, ...staticPaths], true);
+    compileTo(indexPath, themeImportPaths(themeRoot, pairedRoot, staticPaths), true);
     for (const lessFilePath of packageLessFiles(themeName)) {
       if (!samePath(lessFilePath, indexPath)) discarded.push(lessFilePath);
     }
@@ -214,3 +239,7 @@ module.exports = function() {
 // Exported for script/ci/compiled-styles.test.js.
 module.exports.normalize = normalize;
 module.exports.samePath = samePath;
+module.exports.pairedSyntaxTheme = pairedSyntaxTheme;
+module.exports.themeImportPaths = themeImportPaths;
+module.exports.renderSync = renderSync;
+module.exports.FALLBACK_VARIABLE_IMPORTS = FALLBACK_VARIABLE_IMPORTS;
