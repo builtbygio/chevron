@@ -15,7 +15,10 @@ harness (nightly / label `jasmine`). Do **not** delete `script/test`.
 | Linux x64 smoke | every code PR | `script/ci/smoke-test.js` |
 | **Jasmine nightly** | 04:00 UTC on `master` | full `script/test` (core + packages) |
 | **Jasmine dispatch** | Actions → Jasmine → Run workflow | same as nightly |
-| **Opt-in on CI** | workflow_dispatch `run_full_core_tests`, or PR label `jasmine` | same suite after Linux x64 build + smoke |
+| **Jasmine on a PR** | PR label `jasmine` (starts when added, reruns on each push) | same as nightly, on the PR's merge commit |
+
+All three are `jasmine.yml`, in the same seven shards. Unsharded, the full
+suite does not finish inside a job's time limit.
 
 Jasmine is **not** a required PR check. A red nightly means the suite failed
 on `master`; it does not block merges.
@@ -69,9 +72,10 @@ characters (`getLineHeightInPixels()`, `baseCharacterWidth`), not pixels.
 | Full Jasmine | **unknown until first nightly** — budget **up to ~3 h** |
 | Workflow timeout | 240 min |
 
-Split (historical VSTS) is still in `script/test` via
-`ATOM_RUN_CORE_RENDER_TESTS=1|2` and `ATOM_RUN_PACKAGE_TESTS=1|2`. Nightly
-runs the whole thing on one Linux x64 box on purpose (simpler; measure first).
+`jasmine.yml` shards with `ATOM_RUN_CORE_MAIN_TESTS`,
+`ATOM_RUN_CORE_RENDER_TESTS=1|2` and `ATOM_PACKAGES_TO_TEST`: `core-main`,
+two `core-render` shards, and four package shards over the packages that have
+specs.
 
 ## Expected flakes / first-run redness
 

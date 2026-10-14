@@ -11,10 +11,6 @@ on:
     - cron: '0 6 * * 1'
   workflow_dispatch:
     inputs:
-      run_full_core_tests:
-        description: 'After bootstrap+build, also run script/test (expensive; experimental)'
-        type: boolean
-        default: false
       no_cache_build:
         description: 'Bootstrap and build from an empty dependency cache (macOS x64 + Linux x64)'
         type: boolean
@@ -151,9 +147,9 @@ jobs:
 
   # ---------------------------------------------------------------------------
   # Fast unit path — cpm + package-require-audit (no Electron package)
-  # Full Jasmine (script/test) is not a default PR gate (audit #57):
-  #   - nightly + manual: .github/workflows/jasmine.yml
-  #   - opt-in on this workflow: dispatch run_full_core_tests or PR label "jasmine"
+  # Full Jasmine (script/test) is not a default PR gate (audit #57). It runs
+  # sharded in .github/workflows/jasmine.yml: nightly, on manual dispatch, and
+  # on pull requests labelled "jasmine".
   # Always runs, including on docs-only changes.
   # ---------------------------------------------------------------------------
   unit-and-cpm:
@@ -733,29 +729,6 @@ jobs:
         with:
           name: playwright-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/playwright-report
-          if-no-files-found: ignore
-
-      - name: Full Jasmine (opt-in)
-        if: |
-          (github.event_name == 'workflow_dispatch' && inputs.run_full_core_tests) ||
-          (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'jasmine'))
-        env:
-          CI: 'true'
-          ATOM_RUN_CORE_TESTS: 'true'
-          ATOM_RUN_PACKAGE_TESTS: 'true'
-          ELECTRON_OZONE_PLATFORM_HINT: x11
-          LIBGL_ALWAYS_SOFTWARE: '1'
-          TEST_JUNIT_XML_ROOT: ${{ runner.temp }}/jasmine-junit
-        run: |
-          mkdir -p "$TEST_JUNIT_XML_ROOT"
-          xvfb-run -a ./script/with-modern-env ./script/test
-
-      - name: Upload Jasmine JUnit
-        if: always() && ((github.event_name == 'workflow_dispatch' && inputs.run_full_core_tests) || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'jasmine')))
-        uses: actions/upload-artifact@v6
-        with:
-          name: jasmine-junit-linux-x64-opt-in
-          path: ${{ runner.temp }}/jasmine-junit
           if-no-files-found: ignore
 
       - name: Upload Linux packages
