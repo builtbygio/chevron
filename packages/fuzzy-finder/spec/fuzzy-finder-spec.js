@@ -126,6 +126,13 @@ describe('FuzzyFinder', () => {
     describe(`file-finder behavior (ripgrep=${useRipGrep}, scoringSystem=${scoringSystem})`, () => {
       beforeEach(async () => {
         projectView = fuzzyFinder.createProjectView()
+        // The crawl started at activation runs in-process and can finish
+        // before this, handing the view paths from before the spec's own
+        // fixtures, crawled with the default loader. Start from no paths,
+        // and no rendered items, which stay listed while it reindexes.
+        projectView.paths = null
+        projectView.reloadPaths = true
+        await projectView.setItems([])
 
         atom.config.set('fuzzy-finder.scoringSystem', scoringSystem)
         atom.config.set('fuzzy-finder.useRipGrep', useRipGrep)

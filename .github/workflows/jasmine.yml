@@ -1,11 +1,16 @@
 name: Jasmine
 
 # Full in-app Jasmine (script/test). Not a PR gate — #57.
-# Nightly on master + manual dispatch. Linux x64 only.
+# Nightly on master, manual dispatch, and pull requests labelled `jasmine`.
+# Linux x64 only.
 on:
   schedule:
     # 04:00 UTC
     - cron: '0 4 * * *'
+  # `labeled` starts the run as soon as the label is added. Any other label
+  # also fires the event, so the job and concurrency below check which one.
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
   workflow_dispatch:
     inputs:
       packages:
@@ -17,8 +22,14 @@ on:
         required: false
         default: ''
 
+# A pull_request run that is not opted in gets a group of its own, so adding
+# an unrelated label cannot cancel a labelled PR's run in progress.
 concurrency:
-  group: jasmine-${{ github.ref }}
+  group: >-
+    ${{ (github.event_name == 'pull_request' &&
+         !((github.event.action == 'labeled' && github.event.label.name == 'jasmine') ||
+           (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, 'jasmine'))))
+        && format('jasmine-noop-{0}', github.run_id) || format('jasmine-{0}', github.ref) }}
   cancel-in-progress: true
 
 env:
@@ -31,6 +42,13 @@ env:
 jobs:
   jasmine-linux:
     name: Linux x64 ${{ matrix.shard }}
+    # On a pull request, only when it carries the `jasmine` label. A
+    # `labeled` event counts only for that label, so adding another one to a
+    # labelled PR does not start the suite again.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.action == 'labeled' && github.event.label.name == 'jasmine') ||
+      (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, 'jasmine'))
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
