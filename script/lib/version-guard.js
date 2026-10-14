@@ -11,6 +11,10 @@ const { changelogSection } = require('./release-notes');
 // package.json alone.
 function versionGuard({ baseVersion, headVersion, changelog }) {
   if (baseVersion === headVersion) return null;
+  if (baseVersion > headVersion) return (
+    `package.json version changed from ${baseVersion} to ${headVersion}, ` +
+    `this looks like a version downgrade. Please check again.`
+  );
   if (changelogSection(changelog, headVersion)) return null;
   return (
     `package.json version changed from ${baseVersion} to ${headVersion}, ` +
@@ -18,11 +22,6 @@ function versionGuard({ baseVersion, headVersion, changelog }) {
     'The version changes only when a release is cut; other PRs add to ' +
     '"## [Unreleased]" and leave package.json alone. ' +
     'See docs/reference/releases.md.'
-  );
-  if (changelogSection(changelog, headVersion) && (headVersion > baseVersion)) return null;
-  else return (
-    `package.json version changed from ${baseVersion} to ${headVersion}, ` +
-    `this looks like a version downgrade. Please check again.`
   );
 }
 

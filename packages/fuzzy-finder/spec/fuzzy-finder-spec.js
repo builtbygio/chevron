@@ -126,6 +126,13 @@ describe('FuzzyFinder', () => {
     describe(`file-finder behavior (ripgrep=${useRipGrep}, scoringSystem=${scoringSystem})`, () => {
       beforeEach(async () => {
         projectView = fuzzyFinder.createProjectView()
+        // The crawl started at activation runs in-process and can finish
+        // before this, handing the view paths from before the spec's own
+        // fixtures, crawled with the default loader. Start from no paths,
+        // and no rendered items, which stay listed while it reindexes.
+        projectView.paths = null
+        projectView.reloadPaths = true
+        await projectView.setItems([])
 
         atom.config.set('fuzzy-finder.scoringSystem', scoringSystem)
         atom.config.set('fuzzy-finder.useRipGrep', useRipGrep)
@@ -255,11 +262,6 @@ describe('FuzzyFinder', () => {
               fs.symlinkSync(atom.project.getDirectories()[0].resolve('..'), atom.project.getDirectories()[0].resolve('symlink-to-project-dir-ancestor'))
 
               fs.unlinkSync(brokenFilePath)
-
-              // The activation crawl may already have handed the view its
-              // paths, from before these links existed. Coming back to the
-              // window is what makes the finder recrawl.
-              window.dispatchEvent(new FocusEvent('focus'))
             })
 
             it('indexes project paths that are symlinks', async () => {
