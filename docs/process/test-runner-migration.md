@@ -146,11 +146,14 @@ were vendored at.
 
    **Upstream specs are partly CoffeeScript, which this repo bans** (PR 23,
    gated by `script/ci/no-coffee-in-owned-packages.test.js`). The restore
-   script drops `.coffee` files and reports what it dropped. Where a package's
-   specs are *all* CoffeeScript it restores nothing and says
-   `no usable spec (CoffeeScript only)` — `autocomplete-css` and
-   `autocomplete-html` are both in that position. Those are a conversion
-   decision per package, not a restore.
+   script drops `.coffee` files and reports what it dropped. The tag it
+   picks is the highest at or below the vendored version, compared as
+   numbers: a string compare treats `0.37.8` as newer than `0.37.10` and
+   used to land on an older CoffeeScript tag. Where that tag's specs are
+   *all* CoffeeScript, the script tries the default branch before giving
+   up. If that branch is CoffeeScript too, it restores nothing and says
+   `no usable spec (CoffeeScript only)`. The language grammars are in that
+   position. Those are a conversion decision per package, not a restore.
 
    **The hang had a cause, and it is fixed.** Every suite — core and package
    alike — reached `Executing … tests` and produced nothing until the watchdog
