@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Five core specs no longer use Jasmine 1.3's `runs()` / `waitsFor()`.** `buffered-node-process`, `compile-cache`, `panel-container-element`, `pane-container-element` and `atom-environment` await instead. The spec clock is faked, so each converted spec turns the real clock back on before it waits. `project`, `workspace`, `theme-manager` and the remaining smaller files still use the old async model.
+
+### Changed
+
 - **Linux releases are x64, with an AppImage beside the packages.** The arm64 CI job is gone, so a release no longer carries the arm64 deb, the aarch64 rpm, or `chevron-arm64.tar.gz`. The x64 deb, rpm and tar stay, and `script/build --create-appimage` adds `chevron-<version>-x64.AppImage`. Linux still updates from the Releases page. `docs/reference/auto-update.md`.
 
 ## [1.5.0] — 2026-10-18

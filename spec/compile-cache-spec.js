@@ -4,6 +4,7 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+const { timeoutPromise } = require('./async-spec-helpers');
 const path = require('path');
 const fs = require('fs');
 const temp = require('temp').track();
@@ -52,7 +53,8 @@ describe('CompileCache', function() {
   });
 
   return describe('overriding Error.prepareStackTrace', function() {
-    it('removes the override on the next tick, and always assigns the raw stack', function() {
+    it('removes the override on the next tick, and always assigns the raw stack', async function() {
+      jasmine.useRealClock();
       if (process.platform === 'win32') { return; } // Flakey Error.stack contents on Win32
 
       Error.prepareStackTrace = () => 'a-stack-trace';
@@ -61,12 +63,10 @@ describe('CompileCache', function() {
       expect(error.stack).toBe('a-stack-trace');
       expect(Array.isArray(error.getRawStack())).toBe(true);
 
-      waits(1);
-      return runs(function() {
-        error = new Error("Oops again");
-        expect(error.stack).toContain('compile-cache-spec.js');
-        return expect(Array.isArray(error.getRawStack())).toBe(true);
-      });
+      await timeoutPromise(1);
+      error = new Error("Oops again");
+      expect(error.stack).toContain('compile-cache-spec.js');
+      expect(Array.isArray(error.getRawStack())).toBe(true);
     });
 
     it('does not infinitely loop when the original prepareStackTrace value is reassigned', function() {

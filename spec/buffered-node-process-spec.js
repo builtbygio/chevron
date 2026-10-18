@@ -1,9 +1,11 @@
 /* eslint-disable no-new */
 const path = require('path');
 const BufferedNodeProcess = require('../src/buffered-node-process');
+const { conditionPromise } = require('./async-spec-helpers');
 
 describe('BufferedNodeProcess', function() {
-  it('executes the script in a new process', function() {
+  it('executes the script in a new process', async function() {
+    jasmine.useRealClock();
     const exit = jasmine.createSpy('exitCallback');
     let output = '';
     const stdout = lines => (output += lines);
@@ -14,16 +16,14 @@ describe('BufferedNodeProcess', function() {
 
     new BufferedNodeProcess({ command, args, stdout, stderr, exit });
 
-    waitsFor(() => exit.callCount === 1);
-
-    runs(function() {
-      expect(output).toBe('hi');
-      expect(error).toBe('');
-      expect(args).toEqual(['hi']);
-    });
+    await conditionPromise(() => exit.callCount === 1);
+    expect(output).toBe('hi');
+    expect(error).toBe('');
+    expect(args).toEqual(['hi']);
   });
 
-  it('suppresses deprecations in the new process', function() {
+  it('suppresses deprecations in the new process', async function() {
+    jasmine.useRealClock();
     const exit = jasmine.createSpy('exitCallback');
     let output = '';
     const stdout = lines => (output += lines);
@@ -37,11 +37,8 @@ describe('BufferedNodeProcess', function() {
 
     new BufferedNodeProcess({ command, stdout, stderr, exit });
 
-    waitsFor(() => exit.callCount === 1);
-
-    runs(function() {
-      expect(output).toBe('hi');
-      expect(error).toBe('');
-    });
+    await conditionPromise(() => exit.callCount === 1);
+    expect(output).toBe('hi');
+    expect(error).toBe('');
   });
 });
