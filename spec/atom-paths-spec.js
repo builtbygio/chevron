@@ -12,10 +12,10 @@ describe('AtomPaths', () => {
     '.chevron'
   );
 
-  afterEach(() => {
+  afterEach(async () => {
     delete process.env.CHEVRON_HOME;
     delete process.env.ATOM_HOME;
-    atomPaths.setAtomHome(app.getPath('home'));
+    atomPaths.setAtomHome(await app.getPath('home'));
   });
 
   describe('SetAtomHomePath (Chevron-only)', () => {
@@ -34,19 +34,19 @@ describe('AtomPaths', () => {
         fs.removeSync(portableChevronHomePath);
       });
 
-      it('sets home to the portable .chevron folder if it has permission', () => {
-        atomPaths.setAtomHome(app.getPath('home'));
+      it('sets home to the portable .chevron folder if it has permission', async () => {
+        atomPaths.setAtomHome(await app.getPath('home'));
         expect(process.env.CHEVRON_HOME).toEqual(portableChevronHomePath);
         expect(process.env.ATOM_HOME).toEqual(portableChevronHomePath);
       });
 
-      it('uses ATOM_HOME if no write access to portable .chevron folder', () => {
+      it('uses ATOM_HOME if no write access to portable .chevron folder', async () => {
         if (process.platform === 'win32') return;
 
         const readOnlyPath = temp.mkdirSync('atom-path-spec-no-write-access');
         process.env.ATOM_HOME = readOnlyPath;
         fs.chmodSync(portableChevronHomePath, 444);
-        atomPaths.setAtomHome(app.getPath('home'));
+        atomPaths.setAtomHome(await app.getPath('home'));
         expect(process.env.ATOM_HOME).toEqual(readOnlyPath);
         expect(process.env.CHEVRON_HOME).toEqual(readOnlyPath);
       });
@@ -64,27 +64,27 @@ describe('AtomPaths', () => {
         delete process.env.CHEVRON_HOME;
       });
 
-      it('leaves home unmodified if ATOM_HOME was already set (legacy override)', () => {
+      it('leaves home unmodified if ATOM_HOME was already set (legacy override)', async () => {
         const temporaryHome = temp.mkdirSync('atom-spec-setatomhomepath');
         process.env.ATOM_HOME = temporaryHome;
-        atomPaths.setAtomHome(app.getPath('home'));
+        atomPaths.setAtomHome(await app.getPath('home'));
         expect(process.env.ATOM_HOME).toEqual(temporaryHome);
         expect(process.env.CHEVRON_HOME).toEqual(temporaryHome);
       });
 
-      it('prefers CHEVRON_HOME over ATOM_HOME when both are set', () => {
+      it('prefers CHEVRON_HOME over ATOM_HOME when both are set', async () => {
         const chevronHome = temp.mkdirSync('chevron-home-env');
         const atomHome = temp.mkdirSync('atom-home-env');
         process.env.CHEVRON_HOME = chevronHome;
         process.env.ATOM_HOME = atomHome;
-        atomPaths.setAtomHome(app.getPath('home'));
+        atomPaths.setAtomHome(await app.getPath('home'));
         expect(process.env.CHEVRON_HOME).toEqual(chevronHome);
         expect(process.env.ATOM_HOME).toEqual(chevronHome);
       });
 
-      it('defaults to ~/.chevron (not ~/.atom)', () => {
-        const expectedPath = path.join(app.getPath('home'), '.chevron');
-        atomPaths.setAtomHome(app.getPath('home'));
+      it('defaults to ~/.chevron (not ~/.atom)', async () => {
+        const expectedPath = path.join(await app.getPath('home'), '.chevron');
+        atomPaths.setAtomHome(await app.getPath('home'));
         expect(process.env.CHEVRON_HOME).toEqual(expectedPath);
         expect(process.env.ATOM_HOME).toEqual(expectedPath);
       });
@@ -98,10 +98,10 @@ describe('AtomPaths', () => {
     let defaultElectronUserDataPath = null;
     let stubApp = null;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       // setUserData takes the app it configures, so a stub keeps the spec off
       // app.setPath, which the renderer's remote-compat proxy does not carry.
-      defaultElectronUserDataPath = app.getPath('userData');
+      defaultElectronUserDataPath = await app.getPath('userData');
       const paths = { userData: defaultElectronUserDataPath };
       stubApp = {
         getPath: name => paths[name],

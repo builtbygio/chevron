@@ -21,11 +21,8 @@ describe('S4 display invoke slice', () => {
     const main = read('src/main-process/register-renderer-ipc.js');
     assert.ok(main.includes("handle('chevron:get-primary-display-work-area-size'"));
     assert.ok(main.includes("handle('chevron:get-user-default'"));
-    assert.ok(
-      main.includes("on('chevron:get-primary-display-work-area-size-sync'"),
-      'sendSync twin stays for remote-compat'
-    );
-    assert.ok(main.includes("on('chevron:get-user-default-sync'"));
+    assert.ok(!main.includes("on('chevron:get-primary-display-work-area-size-sync'"));
+    assert.ok(!main.includes("on('chevron:get-user-default-sync'"));
   });
 
   it('first-party application-delegate uses the async display getters', () => {

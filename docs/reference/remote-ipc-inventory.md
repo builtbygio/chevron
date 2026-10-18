@@ -360,7 +360,7 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 
 ## 11. Remaining `sendSync` channels (Electron BP P2.2 — follow-on)
 
-**Status (Wave 1):** first-party **display** (PR 8 / S4) and **app jump list + shell beep** (Wave 1) getters use `invoke` on `chevron:*`. Sync `confirm` / clipboard / `remote-compat` / boot / workers / FS stay `sendSync`.
+**Status:** first-party display, jump list, beep, app path, app version and protocol-client registration use `invoke`. `remote-compat`'s copies of those getters return promises too, and the `sendSync` twins are gone. Sync `confirm`, clipboard, boot settings, the window/webContents proxy, workers and FS stay `sendSync`.
 
 Most boot and `remote-compat` paths still use `ipcMain.on` + `event.returnValue` (sync). Prefer `ipcMain.handle` / `invoke` only where the call site can become async without breaking the package API.
 
@@ -369,14 +369,14 @@ Most boot and `remote-compat` paths still use `ipcMain.on` + `event.returnValue`
 | Boot | `atom-window-load-settings-sync`, `atom-window-startup-markers-sync` | **Stay sync** until inject-at-preload exists |
 | Window / webContents proxy | `atom-browser-window-call-sync`, `atom-web-contents-call-sync`, `atom-bw-id-call-sync`, `atom-wc-is-destroyed-sync`, `atom-get-current-window-id-sync`, `atom-get-web-contents-id-sync` | **Stay** while `remote-compat` is the github/worker proxy |
 | Dialogs | `atom-show-message-box` (**invoke**, callback `confirm`), `atom-show-message-box-sync` (legacy `atom.confirm` / `remote.dialog.showMessageBoxSync`) | Async path already invoke. **Sync confirm stays** (hard public API) |
-| Display | `chevron:get-primary-display-work-area-size`, `chevron:get-user-default` | **First-party invoke (PR 8)**. `atom-*-sync` twins stay for `remote-compat` |
-| App jump list / beep | `chevron:app-get-jump-list-settings`, `chevron:app-set-jump-list`, `chevron:shell-beep` | **First-party invoke (Wave 1)**. `atom-*-sync` twins stay for `remote-compat` |
-| Clipboard | `atom-clipboard-write-text-sync`, `atom-clipboard-read-text-sync`, `atom-clipboard-*-find-text-sync` | **Stay sync** — `atom.clipboard.read()` / `readWithMetadata()` are synchronous public API, and an async write would race a same-tick read |
-| App path / version | `atom-app-get-path-sync`, `atom-app-get-version-sync` | **Stay** — no first-party caller; `remote-compat` `app` proxy only |
+| Display | `chevron:get-primary-display-work-area-size`, `chevron:get-user-default` | **invoke**. Sync twins removed once `remote-compat` returned promises |
+| App jump list / beep | `chevron:app-get-jump-list-settings`, `chevron:app-set-jump-list`, `chevron:shell-beep` | **invoke**. Sync twins removed |
+| Clipboard | `chevron:clipboard-write-text-sync`, `chevron:clipboard-read-text-sync`, `chevron:clipboard-*-find-text-sync` | **Stay sync** — `chevron.clipboard.read()` / `readWithMetadata()` are synchronous public API, and an async write would race a same-tick read |
+| App path / version | `chevron:app-get-path`, `chevron:app-get-version` | **invoke**. `remote-compat`, github's devtools installer and settings-view's avatar cache all await them |
 | Workers | `atom-create-browser-window-sync` (always refuses), `atom-utility-worker-*-sync` | **PR 9:** Node BW path gone. utilityProcess only |
 | FS IPC | `atom-fs-*-sync` family in `register-fs-ipc.js` | **Separate** later PR. Not this merge |
 
-**Migration hints:** first-party display (PR 8) and jump list + beep (Wave 1) are done. What is left is either sync-by-contract (clipboard read, `confirm`, boot settings) or `remote-compat`-only (`app` proxy, window/webContents proxy), so the next mover is `remote-compat` itself, not another getter slice. Never break load-settings without an inject-at-preload alternative. New channels are `chevron:*`.
+**Migration hints:** the getters that could become promises have. What is left is sync-by-contract: clipboard read, sync `confirm`, boot load-settings, and the window/webContents/worker proxy github still calls synchronously (`isVisible`, `BrowserWindow`, `isDestroyed`). Never break load-settings without an inject-at-preload alternative. New channels are `chevron:*`.
 
 ---
 

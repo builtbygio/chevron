@@ -290,8 +290,8 @@ module.exports = class ApplicationDelegate {
   }
 
   playBeepSound() {
-    // Callers (`atom.beep()`) ignore the result, so this does not have to be
-    // sync. `chevron:shell-beep-sync` stays for remote-compat.
+    // Callers (`chevron.beep()`) ignore the result, so this does not have to be
+    // sync.
     return rendererIpc.beepAsync().catch(error => {
       console.warn('playBeepSound failed', error);
     });
