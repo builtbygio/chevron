@@ -28,6 +28,7 @@ const UNRELEASED = `# Changelog
 ## [1.2.0] — 2026-09-20
 
 - Older.
+## [1.1.0] — 2026-07-20
 `;
 
 const RELEASED = UNRELEASED.replace('## [Unreleased]', '## [Unreleased]\n\n## [1.5.0] — 2026-10-13');
@@ -59,6 +60,29 @@ describe('versionGuard', () => {
     assert.match(
       versionGuard({ baseVersion: '1.4.17', headVersion: '1.5.0', changelog }),
       /no "## \[1\.5\.0\]" section/
+    );
+  });
+
+  it('fails a version downgrade', () => {
+    assert.match(
+      versionGuard({ baseVersion: '1.4.17', headVersion: '1.1.0', changelog: UNRELEASED }),
+      /downgrade/
+    );
+  });
+
+  it('fails a downgrade that a string compare would call an upgrade', () => {
+    const changelog = '## [1.9.0] — 2026-10-18\n\n- Notes.\n';
+    assert.match(
+      versionGuard({ baseVersion: '1.10.0', headVersion: '1.9.0', changelog }),
+      /downgrade/
+    );
+  });
+
+  it('passes an upgrade that a string compare would call a downgrade', () => {
+    const changelog = '## [1.10.0] — 2026-10-18\n\n- Notes.\n';
+    assert.strictEqual(
+      versionGuard({ baseVersion: '1.9.0', headVersion: '1.10.0', changelog }),
+      null
     );
   });
 });
