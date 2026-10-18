@@ -1,7 +1,7 @@
 # Chevron unsigned preview releases
 
-**Status:** 1.2.0 product contract  
-**Current tag:** [v1.2.0](https://github.com/builtbygio/chevron/releases/tag/v1.2.0)  
+**Status:** 1.5.0 product contract  
+**Current tag:** [v1.5.0](https://github.com/builtbygio/chevron/releases/tag/v1.5.0)  
 **Update URL:** https://github.com/builtbygio/chevron/releases
 
 This is a **modernization 1.0**, published as an **unsigned preview**. It is not a signed, notarized daily-driver store build.
@@ -34,16 +34,15 @@ In-app updates come from these releases through electron-updater once a build is
 
 CI on tag `v*` builds every platform and attaches artifacts to a full GitHub Release (not a pre-release: stable builds' updater reads `releases/latest`).
 
-**1.2.0:** https://github.com/builtbygio/chevron/releases/tag/v1.2.0  
-Previous: [v1.1.0](https://github.com/builtbygio/chevron/releases/tag/v1.1.0)
+**1.5.0:** https://github.com/builtbygio/chevron/releases/tag/v1.5.0  
+Previous: [v1.2.0](https://github.com/builtbygio/chevron/releases/tag/v1.2.0)
 
 | Platform | File |
 |----------|------|
-| Linux x64 | `chevron_1.2.0_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz` |
-| Linux arm64 | `chevron_1.2.0_arm64.deb`, `chevron.aarch64.rpm`, `chevron-arm64.tar.gz` |
-| macOS Intel | `chevron-mac-x64.zip` (unsigned `.app`) |
-| macOS Apple Silicon | `chevron-mac-arm64.zip` (unsigned `.app`) |
-| Windows x64 | `chevron-x64-windows.zip` |
+| Linux x64 | `chevron_1.5.0_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz` |
+| Linux arm64 | `chevron_1.5.0_arm64.deb`, `chevron.aarch64.rpm`, `chevron-arm64.tar.gz` |
+| macOS | `chevron-mac-universal.zip` (unsigned `.app`) |
+| Windows x64 | `chevron-1.5.0-windows-x64-setup.exe`, `chevron-x64-windows.zip` |
 
 Update URL to give users: **https://github.com/builtbygio/chevron/releases**
 
@@ -64,11 +63,13 @@ for it (`script/lib/version-guard.js`).
 
 1. **Pick the version** from what `[Unreleased]` holds (semver): only `Fixed`
    entries is a patch, anything under `Added` is a minor, a breaking change is
-   a major.
-2. **On a branch from `master`**, set `version` in `package.json`, rename
-   `## [Unreleased]` to `## [X.Y.Z] — YYYY-MM-DD` and open a fresh empty
-   `## [Unreleased]` above it, and update the download table in this file,
-   `README.md` and `GROK.md`. Merge it.
+   a major. `node script/lib/release.js suggest` prints it.
+2. **On a branch from `master`**, run `node script/lib/release.js prepare`
+   (`prepare patch`, `minor`, `major`, or an exact `X.Y.Z` overrides the
+   suggestion). It sets `version` in `package.json`, renames `## [Unreleased]`
+   to `## [X.Y.Z] — YYYY-MM-DD` with a fresh empty `## [Unreleased]` above it,
+   and updates the download table in this file and `README.md` and the version
+   lines in `GROK.md`. Merge it.
 3. **Tag the merge commit** and push the tag:
 
 ```bash
