@@ -86,8 +86,12 @@ describe('URI scheme (Wave 4)', () => {
     assert.match(main, /REGISTRABLE_PROTOCOLS = new Set\(\['chevron'\]\)/);
     assert.match(main, /REMOVABLE_PROTOCOLS = new Set\(\['chevron', 'atom'\]\)/);
     assert.match(main, /'removeAsDefaultProtocolClient',\s*REMOVABLE_PROTOCOLS/);
+    // The sync twins in register-renderer-ipc.js had their own copy of the
+    // allowlist. Those handlers are gone, so a second copy must not come back
+    // and drift from the one above.
     const ipc = read('src/main-process/register-renderer-ipc.js');
-    assert.match(ipc, /REGISTRABLE_PROTOCOLS = new Set\(\['chevron'\]\)/);
+    assert.doesNotMatch(ipc, /protocol-client/);
+    assert.doesNotMatch(ipc, /REGISTRABLE_PROTOCOLS/);
     // And the executable is main's own, never one the renderer supplied.
     assert.match(main, /execPath: process\.execPath/);
   });
