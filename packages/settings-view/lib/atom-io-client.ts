@@ -78,13 +78,13 @@ class AtomIoClient {
     return ipcRenderer.invoke('chevron:settings-view-cache-ensure').then(onRoot).catch(onErr);
   }
 
-  avatarPath(login: string) {
-    return path.join(this.getCachePath(), `${login}-${Date.now()}`);
+  async avatarPath(login: string) {
+    return path.join(await this.getCachePath(), `${login}-${Date.now()}`);
   }
 
   cachedAvatar(login: string, callback: Function) {
     const { ipcRenderer } = require('electron');
-    const root = this.getCachePath();
+    return this.getCachePath().then(root => {
     const handle = (names: string[]) => {
       const files: string[] = [];
       for (const name of names || []) {
@@ -103,6 +103,7 @@ class AtomIoClient {
       return callback(null, null);
     };
     return ipcRenderer.invoke('chevron:settings-view-cache-list').then(handle).catch(callback);
+    }).catch(callback);
   }
 
   fetchAndCacheAvatar(login: string, callback: Function) {
@@ -110,8 +111,9 @@ class AtomIoClient {
       return callback(null, null);
     }
     const basename = `${login}-${Date.now()}`;
-    const imagePath = path.join(this.getCachePath(), basename);
     const { ipcRenderer } = require('electron');
+    return this.getCachePath().then(root => {
+    const imagePath = path.join(root, basename);
     return httpGetBuffer(`https://avatars.githubusercontent.com/${login}`)
       .then(({ status, body, headers }) => {
         const contentType = headers['content-type'] || '';
@@ -128,6 +130,7 @@ class AtomIoClient {
           });
       })
       .catch(callback);
+    }).catch(callback);
   }
 
   expireAvatarCache() {
@@ -157,13 +160,13 @@ class AtomIoClient {
     return ipcRenderer.invoke('chevron:settings-view-cache-list').then(handle).catch(onErr);
   }
 
-  getCachePath() {
+  async getCachePath() {
     if (this.cachePath != null) return this.cachePath;
-    this.cachePath = path.join(
-      require('electron').ipcRenderer.sendSync('chevron:app-get-path-sync', 'userData'),
-      'Cache',
-      'settings-view'
+    const userData = await require('electron').ipcRenderer.invoke(
+      'chevron:app-get-path',
+      'userData'
     );
+    this.cachePath = path.join(userData, 'Cache', 'settings-view');
     return this.cachePath;
   }
 }

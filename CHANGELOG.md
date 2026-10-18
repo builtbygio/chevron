@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`remote-compat` no longer keeps a synchronous copy of the getters that already had `invoke`.** Display size, user defaults, the Windows jump list, the beep, `app.getPath`, `app.getVersion` and protocol-client registration return promises, and the `sendSync` twins for those channels are gone. Clipboard reads, the synchronous confirm dialog, boot settings, and the window and git-worker proxy stay synchronous, because their callers use the result on the same turn.
+
 - **Linux releases are x64, with an AppImage beside the packages.** The arm64 CI job is gone, so a release no longer carries the arm64 deb, the aarch64 rpm, or `chevron-arm64.tar.gz`. The x64 deb, rpm and tar stay, and `script/build --create-appimage` adds `chevron-<version>-x64.AppImage`. Linux still updates from the Releases page. `docs/reference/auto-update.md`.
 
 ## [1.5.0] — 2026-10-18

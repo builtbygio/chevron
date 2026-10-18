@@ -25,15 +25,20 @@ describe('Wave 1 app/shell invoke slice', () => {
     assert.ok(main.includes("handle('chevron:app-set-jump-list'"));
   });
 
-  it('keeps the atom-*-sync twins for remote-compat', () => {
+  it('remote-compat uses the invoke jump list, not the sync twins', () => {
     const main = read('src/main-process/register-renderer-ipc.js');
-    assert.ok(main.includes("on('chevron:shell-beep-sync'"));
-    assert.ok(main.includes("on('chevron:app-get-jump-list-settings-sync'"));
-    assert.ok(main.includes("on('chevron:app-set-jump-list-sync'"));
+    assert.ok(!main.includes("on('chevron:shell-beep-sync'"));
+    assert.ok(!main.includes("on('chevron:app-get-jump-list-settings-sync'"));
+    assert.ok(!main.includes("on('chevron:app-set-jump-list-sync'"));
+    assert.ok(main.includes("handle('chevron:app-get-path'"));
+    assert.ok(!main.includes("on('chevron:app-get-path-sync'"));
 
     const remote = read('src/remote-compat.js');
-    assert.ok(remote.includes('rendererIpc.getJumpListSettings()'));
-    assert.ok(remote.includes('rendererIpc.setJumpList(categories)'));
+    assert.ok(remote.includes('rendererIpc.getJumpListSettingsAsync()'));
+    assert.ok(remote.includes('rendererIpc.setJumpListAsync(categories)'));
+    assert.ok(remote.includes("invoke('chevron:is-default-protocol-client'"));
+    assert.ok(!remote.includes('rendererIpc.getJumpListSettings()'));
+    assert.ok(!remote.includes('rendererIpc.setJumpList('));
   });
 
   it('first-party callers use the async getters', () => {

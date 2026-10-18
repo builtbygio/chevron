@@ -235,16 +235,6 @@ function isUserDefaultQuery(key, type) {
   return typeof type === 'string' && USER_DEFAULT_TYPES.has(type);
 }
 
-const REGISTRABLE_PROTOCOLS = new Set(['chevron']);
-
-/** Only this app's schemes, and only this app's binary. */
-function protocolRegistration(protocol, args) {
-  if (!REGISTRABLE_PROTOCOLS.has(protocol)) return null;
-  const check = guard.requireStringArray(args, { name: 'args' });
-  if (!check.ok) return null;
-  return { protocol, execPath: process.execPath, args: args || [] };
-}
-
 /**
  * A jump list task names a program the OS will launch later, so the only
  * program accepted is this application's own.
@@ -518,35 +508,11 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   ipcMain.handle('chevron:native-theme', () => nativeThemeSnapshot());
 
-  ipcMain.on('chevron:get-primary-display-work-area-size-sync', event => {
-    try {
-      event.returnValue = screen.getPrimaryDisplay().workAreaSize;
-    } catch (error) {
-      event.returnValue = { width: 0, height: 0 };
-    }
-  });
-
   ipcMain.handle('chevron:get-primary-display-work-area-size', () => {
     try {
       return screen.getPrimaryDisplay().workAreaSize;
     } catch (error) {
       return { width: 0, height: 0 };
-    }
-  });
-
-  ipcMain.on('chevron:get-user-default-sync', (event, key, type) => {
-    if (!isUserDefaultQuery(key, type)) {
-      event.returnValue = undefined;
-      return;
-    }
-    try {
-      if (process.platform === 'darwin' && systemPreferences) {
-        event.returnValue = systemPreferences.getUserDefault(key, type);
-      } else {
-        event.returnValue = undefined;
-      }
-    } catch (error) {
-      event.returnValue = undefined;
     }
   });
 
@@ -684,64 +650,27 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   // Path probes / bulk FS: see register-fs-ipc.js (N2.2–N2.3).
 
-  ipcMain.on('chevron:shell-beep-sync', event => {
-    shell.beep();
-    event.returnValue = true;
-  });
-
   ipcMain.handle('chevron:shell-beep', () => {
     shell.beep();
     return true;
   });
 
   // app.getPath only knows a fixed set of names; anything else throws.
-  ipcMain.on('chevron:app-get-path-sync', (event, name) => {
+  ipcMain.handle('chevron:app-get-path', (_event, name) => {
     if (!APP_PATH_NAMES.has(name)) {
-      console.warn(`chevron:app-get-path-sync: refused name ${String(name)}`);
-      event.returnValue = null;
-      return;
+      console.warn(`chevron:app-get-path: refused name ${String(name)}`);
+      return null;
     }
     try {
-      event.returnValue = app.getPath(name);
+      return app.getPath(name);
     } catch (error) {
-      event.returnValue = null;
+      return null;
     }
   });
 
-  ipcMain.on('chevron:app-get-version-sync', event => {
-    event.returnValue = app.getVersion();
-  });
+  ipcMain.handle('chevron:app-get-version', () => app.getVersion());
 
   // Windows jump list (reopen-project-menu-manager)
-  ipcMain.on('chevron:app-get-jump-list-settings-sync', event => {
-    try {
-      event.returnValue =
-        typeof app.getJumpListSettings === 'function'
-          ? app.getJumpListSettings()
-          : { removedItems: [] };
-    } catch (error) {
-      event.returnValue = { removedItems: [] };
-    }
-  });
-
-  ipcMain.on('chevron:app-set-jump-list-sync', (event, categories) => {
-    const check = validateJumpList(categories);
-    if (!check.ok) {
-      console.warn(`chevron:app-set-jump-list-sync refused: ${check.reason}`);
-      event.returnValue = false;
-      return;
-    }
-    try {
-      if (typeof app.setJumpList === 'function') {
-        app.setJumpList(categories);
-      }
-      event.returnValue = true;
-    } catch (error) {
-      console.error(error);
-      event.returnValue = false;
-    }
-  });
-
   ipcMain.handle('chevron:app-get-jump-list-settings', () => {
     try {
       return typeof app.getJumpListSettings === 'function'
@@ -850,47 +779,6 @@ module.exports = function registerRendererIpc(atomApplication) {
     const win = browserWindowFromEvent(event);
     event.returnValue = win ? win.id : -1;
   });
-
-  // Protocol client (settings-view); also available via ipcMain.handle elsewhere
-  ipcMain.on(
-    'chevron:is-default-protocol-client-sync',
-    (event, protocolName, _execPath, args) => {
-      const reg = protocolRegistration(protocolName, args);
-      if (!reg) {
-        event.returnValue = false;
-        return;
-      }
-      try {
-        event.returnValue = app.isDefaultProtocolClient(
-          reg.protocol,
-          reg.execPath,
-          reg.args
-        );
-      } catch (error) {
-        event.returnValue = false;
-      }
-    }
-  );
-
-  ipcMain.on(
-    'chevron:set-as-default-protocol-client-sync',
-    (event, protocolName, _execPath, args) => {
-      const reg = protocolRegistration(protocolName, args);
-      if (!reg) {
-        event.returnValue = false;
-        return;
-      }
-      try {
-        event.returnValue = app.setAsDefaultProtocolClient(
-          reg.protocol,
-          reg.execPath,
-          reg.args
-        );
-      } catch (error) {
-        event.returnValue = false;
-      }
-    }
-  );
 
   // --- WebContents id / send (github workers, sendTo) ------------------------
 

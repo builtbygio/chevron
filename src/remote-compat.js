@@ -247,12 +247,18 @@ function createAppProxy() {
   return {
     getPath: name => rendererIpc.appGetPath(name),
     getVersion: () => rendererIpc.appGetVersion(),
-    getJumpListSettings: () => rendererIpc.getJumpListSettings(),
-    setJumpList: categories => rendererIpc.setJumpList(categories),
-    isDefaultProtocolClient: (protocolName, execPath, args) =>
-      rendererIpc.isDefaultProtocolClient(protocolName, execPath, args),
-    setAsDefaultProtocolClient: (protocolName, execPath, args) =>
-      rendererIpc.setAsDefaultProtocolClient(protocolName, execPath, args),
+    getJumpListSettings: () => rendererIpc.getJumpListSettingsAsync(),
+    setJumpList: categories => rendererIpc.setJumpListAsync(categories),
+    isDefaultProtocolClient: (protocolName, _execPath, args) =>
+      ipcRenderer.invoke('chevron:is-default-protocol-client', {
+        protocol: protocolName,
+        args
+      }),
+    setAsDefaultProtocolClient: (protocolName, _execPath, args) =>
+      ipcRenderer.invoke('chevron:set-as-default-protocol-client', {
+        protocol: protocolName,
+        args
+      }),
     emit() {}
   };
 }
@@ -308,14 +314,15 @@ module.exports = {
   },
   get screen() {
     return {
-      getPrimaryDisplay: () => ({
-        workAreaSize: rendererIpc.getPrimaryDisplayWorkAreaSize()
-      })
+      getPrimaryDisplay: () =>
+        rendererIpc.getPrimaryDisplayWorkAreaSizeAsync().then(workAreaSize => ({
+          workAreaSize
+        })),
     };
   },
   get systemPreferences() {
     return {
-      getUserDefault: (key, type) => rendererIpc.getUserDefault(key, type)
+      getUserDefault: (key, type) => rendererIpc.getUserDefaultAsync(key, type)
     };
   },
   get webContents() {

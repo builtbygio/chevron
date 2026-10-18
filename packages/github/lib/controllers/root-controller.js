@@ -662,7 +662,8 @@ class RootController extends _react.default.Component {
       ipcRenderer
     } = require('electron');
 
-    const extensionFolder = _path.default.resolve(ipcRenderer.sendSync('chevron:app-get-path-sync', 'userData'), `extensions/${id}`);
+    const userData = await ipcRenderer.invoke('chevron:app-get-path', 'userData');
+    const extensionFolder = _path.default.resolve(userData, `extensions/${id}`);
 
     const extensionFile = `${extensionFolder}.crx`;
     await _fsExtra.default.ensureDir(_path.default.dirname(extensionFile));

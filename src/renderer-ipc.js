@@ -168,10 +168,6 @@ module.exports = {
     return ipcRenderer.invoke('chevron:show-save-dialog', options);
   },
 
-  getPrimaryDisplayWorkAreaSize() {
-    return ipcRenderer.sendSync('chevron:get-primary-display-work-area-size-sync');
-  },
-
   getNativeTheme() {
     return ipcRenderer.sendSync('chevron:native-theme-sync');
   },
@@ -182,10 +178,6 @@ module.exports = {
 
   getPrimaryDisplayWorkAreaSizeAsync() {
     return ipcRenderer.invoke('chevron:get-primary-display-work-area-size');
-  },
-
-  getUserDefault(key, type) {
-    return ipcRenderer.sendSync('chevron:get-user-default-sync', key, type);
   },
 
   getUserDefaultAsync(key, type) {
@@ -204,28 +196,16 @@ module.exports = {
     return ipcRenderer.invoke('chevron:shell-move-item-to-trash', fullPath);
   },
 
-  beep() {
-    return ipcRenderer.sendSync('chevron:shell-beep-sync');
-  },
-
   beepAsync() {
     return ipcRenderer.invoke('chevron:shell-beep');
   },
 
   appGetPath(name) {
-    return ipcRenderer.sendSync('chevron:app-get-path-sync', name);
+    return ipcRenderer.invoke('chevron:app-get-path', name);
   },
 
   appGetVersion() {
-    return ipcRenderer.sendSync('chevron:app-get-version-sync');
-  },
-
-  getJumpListSettings() {
-    return ipcRenderer.sendSync('chevron:app-get-jump-list-settings-sync');
-  },
-
-  setJumpList(categories) {
-    return ipcRenderer.sendSync('chevron:app-set-jump-list-sync', categories);
+    return ipcRenderer.invoke('chevron:app-get-version');
   },
 
   getJumpListSettingsAsync() {
@@ -271,23 +251,6 @@ module.exports = {
     );
   },
 
-  isDefaultProtocolClient(protocolName, execPath, args) {
-    return ipcRenderer.sendSync(
-      'chevron:is-default-protocol-client-sync',
-      protocolName,
-      execPath,
-      args
-    );
-  },
-
-  setAsDefaultProtocolClient(protocolName, execPath, args) {
-    return ipcRenderer.sendSync(
-      'chevron:set-as-default-protocol-client-sync',
-      protocolName,
-      execPath,
-      args
-    );
-  }
 };
 
 // Phase N2.2–N2.3: filesystem probes/mutations via main (absolute paths only).
