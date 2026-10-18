@@ -38,6 +38,7 @@ const argv = yargs
   .describe('create-windows-installer', 'Create the NSIS installer, latest.yml and blockmap (Windows only)')
   .describe('create-debian-package', 'Create .deb package (Linux only)')
   .describe('create-rpm-package', 'Create .rpm package (Linux only)')
+  .describe('create-appimage', 'Create the x64 AppImage (Linux only)')
   .describe('compress-artifacts', 'Compress Atom binaries (and symbols on macOS)')
   .describe('install', 'Install Atom')
   .string('install')
@@ -52,6 +53,7 @@ const compressArtifacts = require('./lib/compress-artifacts')
 const copyAssets = require('./lib/copy-assets')
 const createDebianPackage = require('./lib/create-debian-package')
 const createRpmPackage = require('./lib/create-rpm-package')
+const createAppImage = require('./lib/create-appimage')
 const createWindowsInstaller = require('./lib/create-windows-installer')
 const dumpSymbols = require('./lib/dump-symbols')
 const generateMetadata = require('./lib/generate-metadata')
@@ -142,6 +144,12 @@ if (!argv.existingBinaries) {
             createRpmPackage(packagedAppPath)
           } else {
             console.log('Skipping creating rpm package. Specify the --create-rpm-package option to create it.'.gray)
+          }
+
+          if (argv.createAppimage) {
+            await createAppImage(packagedAppPath)
+          } else {
+            console.log('Skipping creating AppImage. Specify the --create-appimage option to create it.'.gray)
           }
           break
         }

@@ -39,7 +39,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 | Package manager | **cpm** (Electron-as-Node). The `apm` shim is retired. |
 | Registry | **None** — the registry client and install UI went in #239; cpm installs an owned package from a directory or links a working copy |
 | Bootstrap | **pnpm workspaces** + `@electron/rebuild` via `./script/bootstrap-modern` |
-| CI | macOS x64/arm64 + universal merge, Linux x64/arm64 (packages + smoke), Windows x64. Nightly Jasmine in 7 shards — measurement, not a gate |
+| CI | macOS x64/arm64 + universal merge, Linux x64 (deb, rpm, tar, AppImage + smoke), Windows x64. Nightly Jasmine in 7 shards — measurement, not a gate |
 | Catalog | **93** packages in `packages/`, 86 of them app dependencies as `workspace:@builtbygio/<id>@*`. **13** owned libs/natives stay `npm:@builtbygio/<id>@ver`. **0** git SHA pins |
 | Default themes | **One Dark** (`one-dark-ui` / `one-dark-syntax`). Eight themes ship: One Dark/Light + Chevron Dark/Light, UI + syntax each. Solarized and base16-tomorrow were dropped; `ThemeManager` maps their names onto the survivors. Theme variables reach package styles as CSS custom properties generated at build ([theme-custom-properties.md](docs/reference/theme-custom-properties.md)); `core.followSystemTheme` swaps light/dark with the OS |
 | Package host v2 | **Removed** (2026-08-28) — community packages are cancelled, so sandboxing third-party code has no subject. T2 require restrict stays |
@@ -251,7 +251,6 @@ Squirrel no longer writes `apm.*` shims — an install upgraded from an older bu
 
 ### Optional hygiene
 
-- Linux arm64: bootstrap/build are hard gates; **smoke only** is soft-gated (`continue-on-error` on smoke step)  
 - Custom V8 snapshot on Linux/Windows; Darwin stock **frozen** (`darwin-boot-crash`, Q2)
 - Keep `GROK.md` / CHANGELOG current when landing epics  
 - Nested `packages/*/node_modules`: untracked; policy in `docs/decisions/nested-package-modules.md`  

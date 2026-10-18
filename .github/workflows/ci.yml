@@ -520,7 +520,7 @@ jobs:
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
-  # Linux x64 — deb + tar + rpm
+  # Linux x64 — deb + tar + rpm + AppImage. No arm64 job.
   # ---------------------------------------------------------------------------
   build-and-smoke-linux:
     name: Linux x64 bootstrap, build, smoke & packages
@@ -567,7 +567,8 @@ jobs:
             xvfb \
             fakeroot \
             dpkg-dev \
-            rpm
+            rpm \
+            squashfs-tools
 
       - name: Enable pnpm
         uses: pnpm/action-setup@v4
@@ -685,16 +686,18 @@ jobs:
           node --test script/ci/wave3-gates.test.js
           node --test script/ci/menu-uri-openers.test.js
 
-      - name: Build + package (deb, tar, rpm)
+      - name: Build + package (deb, tar, rpm, AppImage)
         run: |
           set -euo pipefail
           command -v rpmbuild
+          command -v mksquashfs
           ./script/with-modern-env ./script/build --no-bootstrap \
             --create-debian-package \
             --create-rpm-package \
+            --create-appimage \
             --compress-artifacts
-          # Require deb + tar + rpm artifacts
-          ls -la out/*.deb out/*.tar.gz out/*.rpm
+          # Require deb + tar + rpm + AppImage artifacts
+          ls -la out/*.deb out/*.tar.gz out/*.rpm out/*.AppImage
 
       # Asserts on out/app, so it has to follow the build: no bundled package
       # ships .less, and no per-theme-pair compile cache is warmed.
@@ -741,6 +744,7 @@ jobs:
             out/*.deb
             out/*.rpm
             out/*.tar.gz
+            out/*.AppImage
           if-no-files-found: error
 
       - name: Upload build output on failure
@@ -748,167 +752,6 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: build-state-linux-${{ runner.arch }}
-          path: |
-            out/startup.js
-            ${{ github.workspace }}/npm-debug.log
-          if-no-files-found: ignore
-
-  # ---------------------------------------------------------------------------
-  # Linux arm64 — deb + tar + rpm
-  # Bootstrap/build are hard gates. Smoke is soft-gated (Xvfb/renderer flakes)
-  # so packaging regressions still fail the job (audit #65).
-  # ---------------------------------------------------------------------------
-  build-and-smoke-linux-arm64:
-    name: Linux arm64 bootstrap, build, smoke & packages
-    needs: changes
-    if: needs.changes.outputs.code == 'true'
-    runs-on: ubuntu-24.04-arm
-    timeout-minutes: 150
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Install system build dependencies
-        run: |
-          set -euo pipefail
-          # Same as x64: ignore flaky third-party apt mirrors on the image.
-          # Ubuntu 24.04 images declare it in deb822 form (google-chrome.sources), which
-          # the *.list glob missed: a Hash Sum mismatch from that mirror took a job out.
-          sudo rm -f /etc/apt/sources.list.d/google-chrome*.list \
-            /etc/apt/sources.list.d/google*.list \
-            /etc/apt/sources.list.d/google*.sources 2>/dev/null || true
-          sudo apt-get update -o Acquire::Retries=3
-          if apt-cache show libasound2t64 >/dev/null 2>&1; then
-            ALSA_PKG=libasound2t64
-          else
-            ALSA_PKG=libasound2
-          fi
-          sudo apt-get install -y --no-install-recommends \
-            build-essential \
-            pkg-config \
-            libx11-dev \
-            libxkbfile-dev \
-            libsecret-1-dev \
-            libxss-dev \
-            libgtk-3-0 \
-            libnotify4 \
-            libnss3 \
-            "${ALSA_PKG}" \
-            libgbm1 \
-            libx11-xcb1 \
-            libxcb-dri3-0 \
-            libxtst6 \
-            xvfb \
-            fakeroot \
-            dpkg-dev \
-            rpm
-
-      - name: Enable pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          # package.json packageManager (pnpm@11.22.0) is the pin. `version: 11`
-          # here fails action-setup with "Multiple versions of pnpm specified".
-          run_install: false
-
-      - name: Use Node 24
-        uses: actions/setup-node@v5
-        with:
-          node-version: '24'
-
-      - name: Use Python 3.12
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - name: Install setuptools
-        run: python -m pip install --upgrade pip setuptools
-
-      - name: Rewrite git ssh URLs to https
-        run: |
-          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
-          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
-          git config --global --add url."https://github.com/".insteadOf "git://github.com/"
-
-      - name: Resolve Electron version
-        id: meta
-        run: echo "electron=$(node -p "require('./package.json').electronVersion")" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Electron binaries and headers
-        uses: actions/cache@v5
-        with:
-          path: |
-            ${{ github.workspace }}/.cache/electron
-            ~/.cache/electron
-            ~/.cache/node-gyp
-          key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
-          restore-keys: |
-            electron-${{ runner.os }}-${{ runner.arch }}-
-            electron-${{ runner.os }}-
-
-      - name: Cache npm + node_modules (enables native rebuild skip)
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.npm
-            ~/.local/share/pnpm/store
-            ~/Library/pnpm/store
-            node_modules
-            script/node_modules
-            cpm/node_modules
-          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
-          restore-keys: |
-            nm-${{ runner.os }}-${{ runner.arch }}-node24-
-
-      - name: Bootstrap
-        run: ./script/bootstrap-modern --ci
-
-      - name: Build + package (deb, tar, rpm)
-        run: |
-          set -euo pipefail
-          command -v rpmbuild
-          ./script/with-modern-env ./script/build --no-bootstrap \
-            --create-debian-package \
-            --create-rpm-package \
-            --compress-artifacts
-          ls -la out/*.deb out/*.tar.gz out/*.rpm
-
-      # Soft-gate only: historical Xvfb/renderer flakes before packages activate.
-      # Build/package steps above remain hard failures.
-      - name: Launch smoke test (Xvfb)
-        id: arm64_smoke
-        continue-on-error: true
-        run: xvfb-run -a node script/ci/smoke-test.js
-
-      - name: Playwright e2e (Xvfb)
-        run: xvfb-run -a npx --prefix script playwright test --config script/e2e/playwright.config.js
-      - uses: actions/upload-artifact@v6
-        if: failure()
-        with:
-          name: playwright-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/playwright-report
-          if-no-files-found: ignore
-
-      - name: Upload Linux arm64 packages
-        if: success()
-        uses: actions/upload-artifact@v6
-        with:
-          name: chevron-linux-arm64
-          path: |
-            out/*.deb
-            out/*.rpm
-            out/*.tar.gz
-          if-no-files-found: error
-
-      - name: Note soft smoke failure
-        if: steps.arm64_smoke.outcome == 'failure'
-        run: |
-          echo "::warning::Linux arm64 smoke failed (soft-gated). Packages still uploaded if build succeeded."
-
-      - name: Upload build output on failure
-        if: failure()
-        uses: actions/upload-artifact@v6
-        with:
-          name: build-state-linux-arm64
           path: |
             out/startup.js
             ${{ github.workspace }}/npm-debug.log
@@ -1082,7 +925,6 @@ jobs:
       - build-and-smoke-macos
       - macos-universal
       - build-and-smoke-linux
-      - build-and-smoke-linux-arm64
       - build-and-smoke-windows
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -1137,6 +979,7 @@ jobs:
             artifacts/*.deb
             artifacts/*.rpm
             artifacts/*.tar.gz
+            artifacts/*.AppImage
             artifacts/*.exe
             artifacts/*.blockmap
             artifacts/latest*.yml
