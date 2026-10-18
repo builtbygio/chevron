@@ -5,12 +5,30 @@ const fs = require('fs');
 const path = require('path');
 const { changelogSection } = require('./release-notes');
 
+// Numeric, so 1.10.0 is newer than 1.9.0. A string compare sorts them the
+// other way.
+function isDowngrade(baseVersion, headVersion) {
+  const parts = version => String(version).split('.').map(part => Number(part) || 0);
+  const base = parts(baseVersion);
+  const head = parts(headVersion);
+  for (let i = 0; i < 3; i++) {
+    const from = base[i] || 0;
+    const to = head[i] || 0;
+    if (to !== from) return to < from;
+  }
+  return false;
+}
+
 // Why a change from `baseVersion` to `headVersion` cannot merge, or null if it
 // can. The version moves only when a release is cut, and that release brings
 // its `## [X.Y.Z]` notes (docs/reference/releases.md); any other PR leaves
 // package.json alone.
 function versionGuard({ baseVersion, headVersion, changelog }) {
   if (baseVersion === headVersion) return null;
+  if (isDowngrade(baseVersion, headVersion)) return (
+    `package.json version changed from ${baseVersion} to ${headVersion}, ` +
+    `this looks like a version downgrade. Please check again.`
+  );
   if (changelogSection(changelog, headVersion)) return null;
   return (
     `package.json version changed from ${baseVersion} to ${headVersion}, ` +
