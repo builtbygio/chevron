@@ -47,6 +47,16 @@ module.exports = {
       publisherName: process.env.WIN_PUBLISHER_NAME || undefined
     }
   },
+  // x64 only. The name matches the Windows installer: version and arch,
+  // no spaces for GitHub to rewrite.
+  linux: {
+    target: [{ target: 'AppImage', arch: ['x64'] }],
+    icon: path.join(iconDir, 'chevron.png'),
+    category: 'Development',
+    // eslint-disable-next-line no-template-curly-in-string
+    artifactName: 'chevron-${version}-x64.AppImage',
+    synopsis: CONFIG.appMetadata.description
+  },
   nsis: {
     oneClick: false,
     perMachine: false,

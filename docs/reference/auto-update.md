@@ -15,7 +15,7 @@ Every four hours while `core.automaticallyUpdate` is on, and on **Help › Check
 | Windows (portable zip) | `download-page` | Running the installer would add a second, installed copy and leave this one behind, so the app offers the Releases page. Told apart from an install by the absence of NSIS's `Uninstall Chevron.exe` beside the executable |
 | macOS, signed and notarized | `in-app` | Downloads the universal zip; Squirrel.Mac swaps the bundle on restart |
 | macOS, unsigned preview | `download-page` | Squirrel.Mac refuses unsigned code, so the app offers the Releases page instead |
-| Linux (deb, rpm, tar) | `download-page` | The package manager owns the install; the app offers the Releases page |
+| Linux (deb, rpm, tar, AppImage) | `download-page` | The packages are owned by the package manager, and the AppImage is the same build; the app offers the Releases page |
 | Source checkout, specs | `unsupported` | Nothing runs |
 
 The states (`checking`, `downloading`, `update-available`, `no-update-available`, `error`, `unsupported`) and the window messages are unchanged from Atom, so the application menu and the **about** package work as before.

@@ -117,6 +117,8 @@ describe('prepareFiles', () => {
     assert.match(out.releases, /\*\*Status:\*\* 1\.5\.0 product contract/);
     assert.match(out.releases, /Previous: \[v1\.2\.0\]/);
     assert.match(out.releases, /chevron_1\.5\.0_amd64\.deb/);
+    assert.match(out.releases, /chevron-1\.5\.0-x64\.AppImage/);
+    assert.doesNotMatch(out.releases, /Linux arm64/);
     assert.match(out.releases, /chevron-mac-universal\.zip/);
     assert.match(out.releases, /chevron-1\.5\.0-windows-x64-setup\.exe/);
     assert.doesNotMatch(out.releases, /chevron-mac-x64\.zip/);

@@ -50,11 +50,19 @@ describe('electron-builder config', () => {
   it('names assets without spaces, which GitHub would rewrite', () => {
     assert.doesNotMatch(config.nsis.artifactName, /\s/);
     assert.match(config.nsis.artifactName, /\$\{version\}/);
+    assert.doesNotMatch(config.linux.artifactName, /\s/);
+    assert.match(config.linux.artifactName, /\$\{version\}/);
+  });
+
+  it('builds one x64 AppImage', () => {
+    assert.deepEqual(config.linux.target, [{ target: 'AppImage', arch: ['x64'] }]);
+    assert.equal(config.linux.artifactName, 'chevron-${version}-x64.AppImage');
   });
 
   it('uses icons that exist', () => {
     for (const icon of [
       config.win.icon,
+      config.linux.icon,
       config.nsis.installerIcon,
       config.nsis.uninstallerIcon
     ]) {

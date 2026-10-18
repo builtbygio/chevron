@@ -1,6 +1,6 @@
 # Building and installing Chevron on Linux
 
-**Status:** L1–L3 support (bootstrap, CI smoke, deb/tar packages, arm64 CI)  
+**Status:** x64 CI (bootstrap, smoke, deb/rpm/tar, AppImage). Linux arm64 is not built.  
 **Host toolchain:** Node **24** + **pnpm 11** + Python **3.12** (+ `setuptools`) via `script/bootstrap-modern`  
 **Runtime:** Electron 43
 
@@ -82,11 +82,10 @@ GitHub Actions (`.github/workflows/ci.yml`):
 | Job | Runner | What |
 |-----|--------|------|
 | `build-and-smoke-macos` | `macos-15-intel` + `macos-15` (arm64) | Bootstrap, build, zip, smoke |
-| `build-and-smoke-linux` | `ubuntu-latest` (x64) | Bootstrap, build, xvfb smoke, **deb + tar + rpm** |
-| `build-and-smoke-linux-arm64` | `ubuntu-24.04-arm` | Bootstrap/build hard-gated; **smoke soft-gated** (Xvfb flakes) |
+| `build-and-smoke-linux` | `ubuntu-latest` (x64) | Bootstrap, build, xvfb smoke, **deb + tar + rpm + AppImage** |
 | `build-and-smoke-windows` | `windows-latest` (x64) | Bootstrap, build, zip, smoke |
 
-Linux jobs upload **packages only** (`.deb` / `.tar.gz` / `.rpm`) as workflow artifacts (`chevron-linux-*`). RPM is a required artifact on both arches (needs `rpm` / `rpmbuild` from apt).
+The Linux job uploads `.deb`, `.tar.gz`, `.rpm` and `.AppImage` (`chevron-linux-x64`). RPM needs `rpm` / `rpmbuild` from apt. There is no arm64 job.
 
 ---
 
@@ -124,6 +123,8 @@ xvfb-run -a node script/ci/smoke-test.js
 See `docs/process/toolchain-node-python-upgrade-plan.md` and `docs/reference/bootstrap-report.md`.
 
 ### arm64 and mksnapshot
+
+CI does not build Linux arm64. A local arm64 build still hits this:
 
 `electron-mksnapshot` **does not run on Linux arm64** (Electron only ships an
 x64 host tool that can *cross-generate* arm64 snapshots). On native arm64
@@ -177,4 +178,4 @@ on `/usr/share/chevron/chrome-sandbox`.
 
 ---
 
-*L1 = CI green + smoke · L2 = deb/tar artifacts · L3 = arm64 CI + docs/branding*
+*L1 = CI green + smoke · L2 = deb/tar/rpm/AppImage artifacts. Linux CI is x64.*

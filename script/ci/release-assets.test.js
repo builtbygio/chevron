@@ -47,6 +47,13 @@ describe('release assets', () => {
     }
   });
 
+  it('publishes the x64 AppImage and no Linux arm64 job', () => {
+    const files = blockAfter('softprops/action-gh-release', 'files');
+    assert.ok(files.includes('artifacts/*.AppImage'));
+    assert.doesNotMatch(WORKFLOW, /build-and-smoke-linux-arm64/);
+    assert.doesNotMatch(WORKFLOW, /ubuntu-24\.04-arm/);
+  });
+
   it('uploads the macOS zip, not the app bundle inside it', () => {
     const paths = blockAfter('name: chevron-macos-${{ matrix.arch }}', 'path');
     assert.deepEqual(paths, ['out/*.zip']);
