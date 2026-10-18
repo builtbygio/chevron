@@ -9,9 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **HTML autocompletion no longer throws.** `autocomplete-html` called `node.isMissing()`, and tree-sitter 0.25 makes that a boolean, so asking for a suggestion threw and the list stayed empty. Its specs are restored from atom v0.8.8, and `whitespace`'s from v0.37.8. The restore script was choosing those tags with a string compare, which treats `0.37.8` as newer than `0.37.10` and landed on an older CoffeeScript tag.
+
 ### Changed
 
 - **`remote-compat` no longer keeps a synchronous copy of the getters that already had `invoke`.** Display size, user defaults, the Windows jump list, the beep, `app.getPath`, `app.getVersion` and protocol-client registration return promises, and the `sendSync` twins for those channels are gone. Clipboard reads, the synchronous confirm dialog, boot settings, and the window and git-worker proxy stay synchronous, because their callers use the result on the same turn.
+
+- **Five core specs no longer use Jasmine 1.3's `runs()` / `waitsFor()`.** `buffered-node-process`, `compile-cache`, `panel-container-element`, `pane-container-element` and `atom-environment` await instead. The spec clock is faked, so each converted spec turns the real clock back on before it waits. `project`, `workspace`, `theme-manager` and the remaining smaller files still use the old async model.
 
 - **Linux releases are x64, with an AppImage beside the packages.** The arm64 CI job is gone, so a release no longer carries the arm64 deb, the aarch64 rpm, or `chevron-arm64.tar.gz`. The x64 deb, rpm and tar stay, and `script/build --create-appimage` adds `chevron-<version>-x64.AppImage`. Linux still updates from the Releases page. `docs/reference/auto-update.md`.
 
