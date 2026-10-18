@@ -20,8 +20,8 @@
     ]
   },
   {
-    "channel": "chevron:app-get-jump-list-settings-sync",
-    "kind": "on",
+    "channel": "chevron:app-get-path",
+    "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
     "validation": "full",
@@ -30,18 +30,8 @@
     ]
   },
   {
-    "channel": "chevron:app-get-path-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "chevron:app-get-version-sync",
-    "kind": "on",
+    "channel": "chevron:app-get-version",
+    "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
     "validation": "full",
@@ -52,17 +42,6 @@
   {
     "channel": "chevron:app-set-jump-list",
     "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "spawn",
-      "ui"
-    ]
-  },
-  {
-    "channel": "chevron:app-set-jump-list-sync",
-    "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
     "validation": "full",
@@ -423,16 +402,6 @@
     ]
   },
   {
-    "channel": "chevron:get-primary-display-work-area-size-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
     "channel": "chevron:get-temporary-window-state",
     "kind": "on",
     "file": "src/main-process/atom-application.js",
@@ -445,16 +414,6 @@
   {
     "channel": "chevron:get-user-default",
     "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "chevron:get-user-default-sync",
-    "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
     "validation": "full",
@@ -486,16 +445,6 @@
     "channel": "chevron:is-default-protocol-client",
     "kind": "handle",
     "file": "src/main-process/atom-application.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "chevron:is-default-protocol-client-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
     "validation": "full",
     "effect": [
@@ -695,17 +644,6 @@
     ]
   },
   {
-    "channel": "chevron:set-as-default-protocol-client-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "spawn",
-      "write-fs"
-    ]
-  },
-  {
     "channel": "chevron:set-temporary-window-state",
     "kind": "on",
     "file": "src/main-process/atom-application.js",
@@ -788,16 +726,6 @@
   {
     "channel": "chevron:shell-beep",
     "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "ui"
-    ]
-  },
-  {
-    "channel": "chevron:shell-beep-sync",
-    "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "global",
     "validation": "full",
