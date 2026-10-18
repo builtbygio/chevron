@@ -1,3 +1,4 @@
+const { conditionPromise } = require('./async-spec-helpers');
 const PaneContainer = require('../src/pane-container');
 const PaneAxis = require('../src/pane-axis');
 
@@ -154,7 +155,8 @@ describe('PaneContainerElement', function() {
     const getPaneElement = i =>
       containerElement.querySelectorAll('atom-pane')[i];
 
-    it('adds and removes panes in the direction that the pane is being dragged', function() {
+    it('adds and removes panes in the direction that the pane is being dragged', async function() {
+      jasmine.useRealClock();
       const leftPane = container.getActivePane();
       expectPaneScale([leftPane, 1]);
 
@@ -177,14 +179,15 @@ describe('PaneContainerElement', function() {
       );
       expectPaneScale([leftPane, 0.5], [middlePane, 0.75], [rightPane, 1.75]);
 
-      waitsForPromise(() => middlePane.close());
-      runs(() => expectPaneScale([leftPane, 0.44], [rightPane, 1.55]));
+      await middlePane.close();
+      expectPaneScale([leftPane, 0.44], [rightPane, 1.55]);
 
-      waitsForPromise(() => leftPane.close());
-      runs(() => expectPaneScale([rightPane, 1]));
+      await leftPane.close();
+      expectPaneScale([rightPane, 1]);
     });
 
-    it('splits or closes panes in orthogonal direction that the pane is being dragged', function() {
+    it('splits or closes panes in orthogonal direction that the pane is being dragged', async function() {
+      jasmine.useRealClock();
       const leftPane = container.getActivePane();
       expectPaneScale([leftPane, 1]);
 
@@ -206,11 +209,12 @@ describe('PaneContainerElement', function() {
       );
 
       // dynamically close pane, the pane's flexscale will recover to origin value
-      waitsForPromise(() => lowerPane.close());
-      runs(() => expectPaneScale([leftPane, 0.5], [rightPane, 1.5]));
+      await lowerPane.close();
+      expectPaneScale([leftPane, 0.5], [rightPane, 1.5]);
     });
 
-    it('unsubscribes from mouse events when the pane is detached', function() {
+    it('unsubscribes from mouse events when the pane is detached', async function() {
+      jasmine.useRealClock();
       container.getActivePane().splitRight();
       const element = getResizeElement(0);
       spyOn(document, 'addEventListener').andCallThrough();
@@ -225,14 +229,12 @@ describe('PaneContainerElement', function() {
         })
       );
 
-      waitsFor(() => document.addEventListener.callCount === 2);
+      await conditionPromise(() => document.addEventListener.callCount === 2);
 
-      runs(function() {
-        expect(element.resizeStopped.callCount).toBe(0);
-        container.destroy();
-        expect(element.resizeStopped.callCount).toBe(1);
-        expect(document.removeEventListener.callCount).toBe(2);
-      });
+      expect(element.resizeStopped.callCount).toBe(0);
+      container.destroy();
+      expect(element.resizeStopped.callCount).toBe(1);
+      expect(document.removeEventListener.callCount).toBe(2);
     });
 
     it('does not throw an error when resized to fit content in a detached state', function() {

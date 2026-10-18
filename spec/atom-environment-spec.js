@@ -771,7 +771,8 @@ describe('AtomEnvironment', () => {
       describe('when the opened path is handled by a registered directory provider', () => {
         let serviceDisposable;
 
-        beforeEach(() => {
+        beforeEach(async () => {
+          jasmine.useRealClock();
           serviceDisposable = atom.packages.serviceHub.provide(
             'atom.directory-provider',
             '0.1.0',
@@ -790,7 +791,9 @@ describe('AtomEnvironment', () => {
             }
           );
 
-          waitsFor(() => atom.project.directoryProviders.length > 0);
+          await conditionPromise(
+            () => atom.project.directoryProviders.length > 0
+          );
         });
 
         afterEach(() => {

@@ -1,5 +1,6 @@
 'use strict';
 
+const { conditionPromise } = require('./async-spec-helpers');
 const Panel = require('../src/panel');
 const PanelContainer = require('../src/panel-container');
 
@@ -251,7 +252,8 @@ describe('PanelContainerElement', () => {
         expect(panelEl.focus).toHaveBeenCalled();
       });
 
-      it('returns focus to the original activeElement', () => {
+      it('returns focus to the original activeElement', async () => {
+        jasmine.useRealClock();
         const panel = createPanel();
         const previousActiveElement = document.activeElement;
         const panelEl = panel.getElement();
@@ -260,10 +262,10 @@ describe('PanelContainerElement', () => {
         panel.show();
         panel.hide();
 
-        waitsFor(() => document.activeElement === previousActiveElement);
-        runs(() => {
-          expect(document.activeElement).toBe(previousActiveElement);
-        });
+        await conditionPromise(
+          () => document.activeElement === previousActiveElement
+        );
+        expect(document.activeElement).toBe(previousActiveElement);
       });
     });
   });
