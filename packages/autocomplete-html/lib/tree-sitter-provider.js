@@ -79,7 +79,8 @@ function tokenBeforePosition (editor, position) {
 
   while (
     position.isLessThan(node.endPosition) ||
-    node.isMissing() ||
+    // tree-sitter 0.25 exposes this as a boolean, not a method.
+    node.isMissing ||
     node.type === 'text'
   ) {
     node = tokenBefore(node)
