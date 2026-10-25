@@ -349,7 +349,6 @@ module.exports = function registerRendererIpc(atomApplication) {
     'isFullScreen',
     'isFocused',
     'isMinimized',
-    'isVisible',
     'isWebViewFocused',
     'setSize',
     'setPosition',
@@ -417,6 +416,20 @@ module.exports = function registerRendererIpc(atomApplication) {
     } catch (error) {
       console.error(`chevron:browser-window-call-sync ${method}:`, error);
       event.returnValue = null;
+    }
+  });
+
+  // Visibility is the one window read GitHub still used on the same turn.
+  // The other methods stay on the sync channel: their callers use the result
+  // before they can await.
+  ipcMain.handle('chevron:browser-window-is-visible', event => {
+    const win = browserWindowFromEvent(event);
+    if (!win) return false;
+    try {
+      return !!win.isVisible();
+    } catch (error) {
+      console.error('chevron:browser-window-is-visible', error);
+      return false;
     }
   });
 
@@ -817,16 +830,13 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   });
 
-  ipcMain.on('chevron:wc-is-destroyed-sync', (event, webContentsId) => {
+  ipcMain.handle('chevron:wc-is-destroyed', (event, webContentsId) => {
     try {
-      if (webContentsId !== event.sender.id) {
-        event.returnValue = true;
-        return;
-      }
+      if (webContentsId !== event.sender.id) return true;
       const wc = webContents.fromId(webContentsId);
-      event.returnValue = !wc || wc.isDestroyed();
+      return !wc || wc.isDestroyed();
     } catch (error) {
-      event.returnValue = true;
+      return true;
     }
   });
 
@@ -843,31 +853,24 @@ module.exports = function registerRendererIpc(atomApplication) {
     };
   });
 
-  ipcMain.on('chevron:utility-worker-create-sync', event => {
+  ipcMain.handle('chevron:utility-worker-create', event => {
     try {
-      if (!packageUtilityWorker.isEnabled()) {
-        event.returnValue = null;
-        return;
-      }
-      const created = packageUtilityWorker.createWorker(event.sender);
-      event.returnValue = created;
+      if (!packageUtilityWorker.isEnabled()) return null;
+      return packageUtilityWorker.createWorker(event.sender);
     } catch (error) {
-      console.error('chevron:utility-worker-create-sync', error);
-      event.returnValue = null;
+      console.error('chevron:utility-worker-create', error);
+      return null;
     }
   });
 
-  ipcMain.on('chevron:utility-worker-load-sync', (event, workerId, loadUrl) => {
+  ipcMain.handle('chevron:utility-worker-load', (event, workerId, loadUrl) => {
     try {
       const meta = packageUtilityWorker.getWorker(workerId);
-      if (!meta || meta.managerWcId !== event.sender.id) {
-        event.returnValue = false;
-        return;
-      }
-      event.returnValue = packageUtilityWorker.loadWorkerUrl(workerId, loadUrl);
+      if (!meta || meta.managerWcId !== event.sender.id) return false;
+      return packageUtilityWorker.loadWorkerUrl(workerId, loadUrl);
     } catch (error) {
-      console.error('chevron:utility-worker-load-sync', error);
-      event.returnValue = false;
+      console.error('chevron:utility-worker-load', error);
+      return false;
     }
   });
 
@@ -884,26 +887,22 @@ module.exports = function registerRendererIpc(atomApplication) {
     }
   );
 
-  ipcMain.on('chevron:utility-worker-destroy-sync', (event, workerId) => {
+  ipcMain.handle('chevron:utility-worker-destroy', (event, workerId) => {
     try {
       const meta = packageUtilityWorker.getWorker(workerId);
-      if (!meta || meta.managerWcId !== event.sender.id) {
-        event.returnValue = false;
-        return;
-      }
-      event.returnValue = packageUtilityWorker.destroy(workerId);
+      if (!meta || meta.managerWcId !== event.sender.id) return false;
+      return packageUtilityWorker.destroy(workerId);
     } catch (error) {
-      console.error('chevron:utility-worker-destroy-sync', error);
-      event.returnValue = false;
+      console.error('chevron:utility-worker-destroy', error);
+      return false;
     }
   });
 
-  ipcMain.on('chevron:utility-worker-is-destroyed-sync', (event, workerId) => {
+  ipcMain.handle('chevron:utility-worker-is-destroyed', (event, workerId) => {
     if (!guard.requireInt(workerId, { name: 'workerId', min: 0 }).ok) {
-      event.returnValue = true;
-      return;
+      return true;
     }
-    event.returnValue = !packageUtilityWorker.isUtilityWorker(workerId);
+    return !packageUtilityWorker.isUtilityWorker(workerId);
   });
 
   // Node BrowserWindow git workers are gone (PR 9). Always refuse.
@@ -914,45 +913,30 @@ module.exports = function registerRendererIpc(atomApplication) {
     event.returnValue = null;
   });
 
-  ipcMain.on('chevron:bw-id-call-sync', (event, windowId, method, ...args) => {
+  ipcMain.handle('chevron:bw-id-call', (event, windowId, method, ...args) => {
     // P0.2: package-worker windows only + method allowlist (no BrowserWindow.fromId).
     if (!PACKAGE_WORKER_WINDOW_METHODS.has(method)) {
       console.warn(
-        `chevron:bw-id-call-sync: blocked method ${String(method)} on window ${windowId}`
+        `chevron:bw-id-call: blocked method ${String(method)} on window ${windowId}`
       );
-      event.returnValue = null;
-      return;
+      return null;
     }
 
     // Phase S3: synthetic utility workers share the same call surface.
     if (packageUtilityWorker.isUtilityWorker(windowId)) {
       const uMeta = packageUtilityWorker.getWorker(windowId);
       if (!uMeta || uMeta.managerWcId !== event.sender.id) {
-        event.returnValue =
-          method === 'isDestroyed' ? true : method === 'destroy' ? true : null;
-        return;
+        return method === 'isDestroyed' ? true : method === 'destroy' ? true : null;
       }
-      if (method === 'isDestroyed') {
-        event.returnValue = false;
-        return;
-      }
-      if (method === 'destroy') {
-        event.returnValue = packageUtilityWorker.destroy(windowId);
-        return;
-      }
+      if (method === 'isDestroyed') return false;
+      if (method === 'destroy') return packageUtilityWorker.destroy(windowId);
       if (method === 'loadURL') {
-        event.returnValue = packageUtilityWorker.loadWorkerUrl(
-          windowId,
-          args[0]
-        );
-        return;
+        return packageUtilityWorker.loadWorkerUrl(windowId, args[0]);
       }
-      event.returnValue = null;
-      return;
+      return null;
     }
 
-    event.returnValue =
-      method === 'isDestroyed' ? true : method === 'destroy' ? true : null;
+    return method === 'isDestroyed' ? true : method === 'destroy' ? true : null;
   });
 
   ipcMain.on('chevron:destroy-own-window-sync', event => {

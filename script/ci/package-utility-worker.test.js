@@ -239,15 +239,8 @@ describe("remote-compat's BrowserWindow is a utility worker", () => {
       loaded: true,
       exports: {
         ipcRenderer: {
-          sendSync(channel, ...args) {
-            sent.push([channel, ...args]);
-            if (channel === 'chevron:utility-worker-create-sync') {
-              return { id: 7, webContentsId: 70 };
-            }
-            if (channel === 'chevron:utility-worker-is-destroyed-sync') {
-              return sent.some(([c]) => c === 'chevron:utility-worker-destroy-sync');
-            }
-            return true;
+          sendSync() {
+            throw new Error('git worker channels are invoke');
           },
           send(channel, ...args) {
             sent.push([channel, ...args]);
@@ -255,7 +248,18 @@ describe("remote-compat's BrowserWindow is a utility worker", () => {
           on(channel, listener) {
             listeners.set(channel, listener);
           },
-          invoke: () => Promise.resolve(null)
+          invoke(channel, ...args) {
+            sent.push([channel, ...args]);
+            if (channel === 'chevron:utility-worker-create') {
+              return Promise.resolve({ id: 7, webContentsId: 70 });
+            }
+            if (channel === 'chevron:utility-worker-is-destroyed') {
+              return Promise.resolve(
+                sent.some(([c]) => c === 'chevron:utility-worker-destroy')
+              );
+            }
+            return Promise.resolve(true);
+          }
         }
       }
     };
@@ -271,25 +275,25 @@ describe("remote-compat's BrowserWindow is a utility worker", () => {
     delete require.cache[FAKE];
   });
 
-  it('loads, reports and destroys through the utility-worker channels', () => {
-    const win = new remote.BrowserWindow();
-    win.loadURL('file:///worker.html');
-    assert.equal(win.isDestroyed(), false);
+  it('loads, reports and destroys through the utility-worker channels', async () => {
+    const win = await remote.BrowserWindow.open();
+    await win.loadURL('file:///worker.html');
+    assert.equal(await win.isDestroyed(), false);
     let crashed = 0;
     win.webContents.on('crashed', () => crashed++);
-    win.destroy();
-    assert.equal(win.isDestroyed(), true);
+    await win.destroy();
+    assert.equal(await win.isDestroyed(), true);
     assert.deepEqual(
       sent.map(([channel]) => channel).filter(c => c.startsWith('chevron:utility-worker')),
       [
-        'chevron:utility-worker-create-sync',
-        'chevron:utility-worker-load-sync',
-        'chevron:utility-worker-is-destroyed-sync',
-        'chevron:utility-worker-destroy-sync',
-        'chevron:utility-worker-is-destroyed-sync'
+        'chevron:utility-worker-create',
+        'chevron:utility-worker-load',
+        'chevron:utility-worker-is-destroyed',
+        'chevron:utility-worker-destroy',
+        'chevron:utility-worker-is-destroyed'
       ]
     );
-    assert.ok(!sent.some(([channel]) => channel === 'chevron:bw-id-call-sync'));
+    assert.ok(!sent.some(([channel]) => channel === 'chevron:bw-id-call'));
     // destroy() dropped the worker's listeners, so a late event reaches nobody.
     const [, onWorkerEvent] = [...listeners].find(([c]) => c.endsWith('worker-window-event'));
     onWorkerEvent({}, { windowId: 7, event: 'crashed' });

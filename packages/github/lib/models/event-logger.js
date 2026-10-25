@@ -9,17 +9,20 @@ var _path = _interopRequireDefault(require("path"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-let headless = null;
+let headlessPromise = null;
+
+function whenHeadless() {
+  if (!headlessPromise) {
+    headlessPromise = require('electron').remote.getCurrentWindow().isVisible().then(visible => !visible);
+  }
+  return headlessPromise;
+}
 
 class EventLogger {
   constructor(kind) {
     this.kind = kind;
     this.directory = '<unknown>';
     this.shortDirectory = '<unknown>';
-
-    if (headless === null) {
-      headless = !require('electron').remote.getCurrentWindow().isVisible();
-    }
   }
 
   showStarted(directory, implementation) {
@@ -33,7 +36,7 @@ class EventLogger {
     this.shortLog(`${implementation} watcher started`);
   }
 
-  showEvents(events) {
+  async showEvents(events) {
     if (!this.isEnabled()) {
       return;
     }
@@ -46,7 +49,7 @@ class EventLogger {
     const summary = `${this.getShortName()}: ${fileNames.join(', ')}${elipses}`;
     /* eslint-disable no-console */
 
-    if (headless) {
+    if (await whenHeadless()) {
       const eventText = events.map(event => {
         if (event.action === 'renamed') {
           return `  ${event.oldPath} => ${event.path} (${event.action})\n`;
@@ -96,8 +99,8 @@ class EventLogger {
     return `${this.kind} @ ${this.shortDirectory}`;
   }
 
-  shortLog(line) {
-    if (headless) {
+  async shortLog(line) {
+    if (await whenHeadless()) {
       // eslint-disable-next-line no-console
       console.log(`${this.getShortName()}: ${line}`);
       return;

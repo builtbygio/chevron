@@ -360,23 +360,23 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 
 ## 11. Remaining `sendSync` channels (Electron BP P2.2 — follow-on)
 
-**Status:** first-party display, jump list, beep, app path, app version and protocol-client registration use `invoke`. `remote-compat`'s copies of those getters return promises too, and the `sendSync` twins are gone. Sync `confirm`, clipboard, boot settings, the window/webContents proxy, workers and FS stay `sendSync`.
+**Status:** first-party display, jump list, beep, app path, app version, protocol-client registration, git-worker lifecycle and `isVisible` use `invoke`. Sync `confirm`, clipboard, boot settings, the rest of the window/webContents proxy (`getSize`, fullscreen, the menu bar, edit commands) and FS stay `sendSync`.
 
 Most boot and `remote-compat` paths still use `ipcMain.on` + `event.returnValue` (sync). Prefer `ipcMain.handle` / `invoke` only where the call site can become async without breaking the package API.
 
 | Area | Representative channels | Status |
 |------|-------------------------|--------|
 | Boot | `atom-window-load-settings-sync`, `atom-window-startup-markers-sync` | **Stay sync** until inject-at-preload exists |
-| Window / webContents proxy | `atom-browser-window-call-sync`, `atom-web-contents-call-sync`, `atom-bw-id-call-sync`, `atom-wc-is-destroyed-sync`, `atom-get-current-window-id-sync`, `atom-get-web-contents-id-sync` | **Stay** while `remote-compat` is the github/worker proxy |
+| Window / webContents proxy | `chevron:browser-window-call-sync`, `chevron:web-contents-call-sync`, `chevron:get-current-window-id-sync`, `chevron:get-web-contents-id-sync` | **Stay** for size, fullscreen, the menu bar and edit commands. `isVisible` is `chevron:browser-window-is-visible` (**invoke**) |
 | Dialogs | `atom-show-message-box` (**invoke**, callback `confirm`), `atom-show-message-box-sync` (legacy `atom.confirm` / `remote.dialog.showMessageBoxSync`) | Async path already invoke. **Sync confirm stays** (hard public API) |
 | Display | `chevron:get-primary-display-work-area-size`, `chevron:get-user-default` | **invoke**. Sync twins removed once `remote-compat` returned promises |
 | App jump list / beep | `chevron:app-get-jump-list-settings`, `chevron:app-set-jump-list`, `chevron:shell-beep` | **invoke**. Sync twins removed |
 | Clipboard | `chevron:clipboard-write-text-sync`, `chevron:clipboard-read-text-sync`, `chevron:clipboard-*-find-text-sync` | **Stay sync** — `chevron.clipboard.read()` / `readWithMetadata()` are synchronous public API, and an async write would race a same-tick read |
 | App path / version | `chevron:app-get-path`, `chevron:app-get-version` | **invoke**. `remote-compat`, github's devtools installer and settings-view's avatar cache all await them |
-| Workers | `atom-create-browser-window-sync` (always refuses), `atom-utility-worker-*-sync` | **PR 9:** Node BW path gone. utilityProcess only |
+| Workers | `chevron:create-browser-window-sync` (always refuses), `chevron:utility-worker-create`, `chevron:utility-worker-load`, `chevron:utility-worker-destroy`, `chevron:utility-worker-is-destroyed`, `chevron:wc-is-destroyed`, `chevron:bw-id-call` | **invoke**. Node BrowserWindow path still refuses |
 | FS IPC | `atom-fs-*-sync` family in `register-fs-ipc.js` | **Separate** later PR. Not this merge |
 
-**Migration hints:** the getters that could become promises have. What is left is sync-by-contract: clipboard read, sync `confirm`, boot load-settings, and the window/webContents/worker proxy github still calls synchronously (`isVisible`, `BrowserWindow`, `isDestroyed`). Never break load-settings without an inject-at-preload alternative. New channels are `chevron:*`.
+**Migration hints:** the getters that could become promises have, and so have the git worker and `isVisible`. What is left is sync-by-contract: clipboard read, sync `confirm`, boot load-settings, and the window methods whose callers still use the result on the same turn. Never break load-settings without an inject-at-preload alternative. New channels are `chevron:*`.
 
 ---
 

@@ -50,7 +50,14 @@ function _objectSpread2(target) { for (var i = 1; i < arguments.length; i++) { v
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 const MAX_STATUS_OUTPUT_LENGTH = 1024 * 1024 * 10;
-let headless = null;
+let headlessPromise = null;
+
+function whenHeadless() {
+  if (!headlessPromise) {
+    headlessPromise = require('electron').remote.getCurrentWindow().isVisible().then(visible => !visible);
+  }
+  return headlessPromise;
+}
 let execPathPromise = null;
 
 class GitError extends Error {
@@ -108,10 +115,6 @@ class GitShellOutStrategy {
     this.prompt = options.prompt || (query => Promise.reject());
 
     this.workerManager = options.workerManager;
-
-    if (headless === null) {
-      headless = !require('electron').remote.getCurrentWindow().isVisible();
-    }
   }
   /*
    * Provide an asynchronous callback to be used to request input from the user for git operations.
@@ -344,7 +347,7 @@ class GitShellOutStrategy {
             return raw.replace(/\u0000/ug, '<NUL>\n').replace(/\u001F/ug, '<SEP>');
           };
 
-          if (headless) {
+          if (await whenHeadless()) {
             let summary = `git:${formattedArgs}\n`;
 
             if (exitCode !== undefined) {
