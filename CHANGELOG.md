@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`remote-compat` no longer keeps a synchronous copy of the getters that already had `invoke`.** Display size, user defaults, the Windows jump list, the beep, `app.getPath`, `app.getVersion` and protocol-client registration return promises, and the `sendSync` twins for those channels are gone. Clipboard reads, the synchronous confirm dialog, boot settings, and the window and git-worker proxy stay synchronous, because their callers use the result on the same turn.
 
+- **Five core specs no longer use Jasmine 1.3's `runs()` / `waitsFor()`.** `buffered-node-process`, `compile-cache`, `panel-container-element`, `pane-container-element` and `atom-environment` await instead. The spec clock is faked, so each converted spec turns the real clock back on before it waits. `project`, `theme-manager` and the remaining smaller files still use the old async model.
+
+- **`workspace` no longer uses Jasmine 1.3's `runs()` / `waitsFor()`.** Its specs await. The one-millisecond wait for service consumers stays on the spec clock, because some examples advance that clock. A spec that polls turns the real clock on, and a second attempt is ignored.
 - **Five core specs no longer use Jasmine 1.3's `runs()` / `waitsFor()`.** `buffered-node-process`, `compile-cache`, `panel-container-element`, `pane-container-element` and `atom-environment` await instead. The spec clock is faked, so each converted spec turns the real clock back on before it waits. `workspace`, `theme-manager` and the remaining smaller files still use the old async model.
 
 - **`project` no longer uses Jasmine 1.3's `runs()` / `waitsFor()`.** Its specs await. The suite waits one millisecond up front, on the real clock, for service consumers to register. `workspace` still uses the old async model.
