@@ -1,5 +1,6 @@
 const { Emitter, CompositeDisposable } = require('chevron');
 const { Terminal } = require('@xterm/xterm');
+const { appendTranscript } = require('./transcript');
 
 // A terminal pane item: an xterm view on one end, a pty session on the other.
 //
@@ -10,7 +11,7 @@ const { Terminal } = require('@xterm/xterm');
 const CHARACTER_MEASURE = 'W';
 
 class TerminalView {
-  constructor({ cwd, shell, args, title } = {}) {
+  constructor({ cwd, shell, args, title, task, priorTranscript } = {}) {
     this.emitter = new Emitter();
     this.subscriptions = new CompositeDisposable();
     this.cwd = cwd;
@@ -19,6 +20,11 @@ class TerminalView {
     // say which in the tab.
     this.args = args;
     this.title = title;
+    // Identity of the task that opened this pane. Restored across reload so
+    // the tab still says which task it was. Never used to run the command
+    // again: a reload starts a fresh shell.
+    this.task = task || null;
+    this.transcript = '';
     this.session = null;
     this.exited = false;
     this.pendingInput = [];
@@ -35,6 +41,17 @@ class TerminalView {
       allowProposedApi: true
     });
     this.terminal.open(this.element);
+
+    // The previous run's tail, then a fresh shell under it. The command is
+    // not run again: the text is what survived, and the shell is a new one.
+    if (priorTranscript) {
+      const banner =
+        '\r\n— reloaded; the previous run is above, this is a new shell —\r\n';
+      this.remember(priorTranscript);
+      this.remember(banner);
+      this.terminal.write(priorTranscript);
+      this.terminal.write(banner);
+    }
 
     // Keystrokes reach the shell, not the editor's keymap.
     this.terminal.onData(data => this.write(data));
@@ -78,7 +95,10 @@ class TerminalView {
       return;
     }
 
-    this.session.onData(data => this.terminal.write(data));
+    this.session.onData(data => {
+      this.remember(data);
+      this.terminal.write(data);
+    });
     this.session.onExit(({ exitCode, signal }) => {
       this.exited = true;
       this.writeNotice(
@@ -106,8 +126,15 @@ class TerminalView {
     this.session.write(data);
   }
 
+  remember(chunk) {
+    if (!this.task) return;
+    this.transcript = appendTranscript(this.transcript, chunk);
+  }
+
   writeNotice(text) {
-    this.terminal.write(text.endsWith('\n') ? text : `${text}\r\n`);
+    const line = text.endsWith('\n') ? text : `${text}\r\n`;
+    this.remember(line);
+    this.terminal.write(line);
   }
 
   // Columns and rows that fit the element, worked out from one character.
@@ -181,9 +208,20 @@ class TerminalView {
 
   serialize() {
     // Deliberately not serialising the session: a pty does not survive a
-    // reload, and a restored pane pretending it did would be a lie. It
-    // restores as a fresh shell in the same directory.
-    return { deserializer: 'TerminalView', cwd: this.cwd };
+    // reload, and a restored pane pretending it did would be a lie. A task
+    // pane keeps its name and the tail of what it already printed, and
+    // comes back as a fresh shell in the same directory. The command is
+    // not stored as something to run.
+    const state = {
+      deserializer: 'TerminalView',
+      cwd: this.cwd,
+      title: this.title
+    };
+    if (this.task) {
+      state.task = this.task;
+      state.transcript = this.transcript || '';
+    }
+    return state;
   }
 
   destroy() {

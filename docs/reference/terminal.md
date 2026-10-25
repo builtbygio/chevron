@@ -51,6 +51,8 @@ to it, resize it or kill it, and a window closing takes its shells with it.
 
 **Sessions do not survive a reload.** A pty is a process; a restored pane
 starts a fresh shell in the same directory rather than pretending otherwise.
+A pane that was opened for a task also keeps the task's name and the last
+16KB of that run's output. It still does not re-run the command.
 
 **There is no permission gate on individual commands, and no transcript.**
 Those belong to the agent-facing terminal, which the plan is explicit is a
