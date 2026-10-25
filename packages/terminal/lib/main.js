@@ -168,9 +168,16 @@ module.exports = {
   },
 
   deserializeTerminalView(state = {}) {
-    // A pty does not survive a reload; this restores a fresh shell in the
-    // directory the old one was in.
-    const view = new TerminalView({ cwd: state.cwd });
+    // A pty does not survive a reload. A task pane comes back titled with
+    // the task, showing the tail of the run, and a fresh shell in the same
+    // directory. `args` is intentionally not passed: that would run the
+    // command again because a window reopened.
+    const view = new TerminalView({
+      cwd: state.cwd,
+      title: state.title,
+      task: state.task,
+      priorTranscript: state.transcript
+    });
     this.terminals.add(view);
     view.onDidDestroy(() => this.terminals.delete(view));
     return view;

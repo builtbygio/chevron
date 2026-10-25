@@ -79,7 +79,13 @@ async function runTask(task, { TerminalView, register }) {
     cwd: task.cwd,
     shell: invocation.shell,
     args: invocation.args,
-    title: `${task.name}`
+    title: `${task.name}`,
+    task: {
+      name: task.name,
+      command: task.command,
+      root: task.root,
+      cwd: task.cwd
+    }
   });
   register(view);
 

@@ -163,10 +163,12 @@ packages and language servers.
 - ~~a **diff review** surface: propose, show, accept per hunk, undo as one
   step~~ — **shipped** ([change-review.md](../reference/change-review.md)).
   `chevron.review.propose()` over `chevron.changeProposal`, applied in one
-  transaction. Conflict detection, for a file that changes between proposal
-  and apply, is the next thing it needs
-- **task state that survives reload** — the reload path is well understood now
-  (#308), and an agent's work must not die with a window
+  transaction. A file that changes between proposal and apply is reported
+  instead of written in the wrong place ([change-review.md](../reference/change-review.md))
+- ~~**task state that survives reload**~~ — a task pane keeps its name and the
+  last 16KB of output, and comes back as a new shell. It does not re-run the
+  command. An interactive terminal still keeps only its directory
+  ([tasks.md](../reference/tasks.md))
 - a **terminal**. There is no terminal package in the tree at all — decided
   below
 - **permission prompts** for tool calls, in the shape the trust modal already has
@@ -267,9 +269,8 @@ every server running for a root and merges the answers (`src/lsp/README.md`).
 Gated by a round trip through a real host process against a mock server, which
 also asserts that `initialize` carries the client capability — a server that is
 never asked for workspace symbols returns nothing, with no error to notice.
-Next: the human surface, which needs `symbols-view` to query as you type
-rather than load one list, since most servers answer an empty query with
-nothing.
+The human surface is in: `symbols-view` asks again as you type, and an empty
+query says to type rather than claiming the project has no symbols.
 
 ---
 

@@ -70,11 +70,21 @@ Through the same pty host as the terminal
 host validates the shell, the arguments and the working directory again on its
 own side.
 
+## A reload keeps the tail, not the process
+
+The shell is a process, so it dies with the window. The pane comes back with
+the task's name and the last 16KB of what that run printed, and a new shell
+in the same directory underneath it. The command is not run again: reopening
+a window is not granting a fresh execution. An interactive terminal that was
+not started as a task still comes back as a shell in the same directory, with
+no transcript.
+
 ## Gates
 
 | Test | Covers |
 |------|--------|
 | `script/ci/tasks.test.js` | parsing, the path-escape rules, malformed files, and the shell invocation per platform |
+| `script/ci/task-transcript.test.js` | the kept tail is capped at the end, and a restored pane does not receive the command |
 | `script/ci/smoke-test.js` | the task is discovered in an untrusted project, and running it is refused with nothing spawned |
 
 The trusted path — picker, confirm, a terminal titled with the task showing

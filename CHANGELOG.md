@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **A task pane keeps the tail of its output across a reload.** The shell itself is gone with the window. The pane comes back named for the task, with the last 16KB of what that run printed, and a new shell in the same directory. The command is not run again.
+
 ### Fixed
 
 - **The portable-home spec no longer loses to the suite's launch environment.** `app.getPath` yields, and the spec window writes the launch `ATOM_HOME` (the suite's temp directory) on that turn. The example now sets the env it cares about after that write, in the same turn as `setAtomHome`. Nightly `core-render-1` was failing on this since the getter became a promise.
