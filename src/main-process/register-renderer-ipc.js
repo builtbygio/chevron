@@ -2,7 +2,7 @@
 
 /**
  * IPC used by the renderer without electron.remote / @electron/remote.
- * Registered once from AtomApplication so handlers can resolve AtomWindow.
+ * Registered once from ChevronApplication so handlers can resolve ChevronWindow.
  */
 
 const fs = require('fs');
@@ -332,7 +332,7 @@ module.exports = function registerRendererIpc(atomApplication) {
   ipcMain.on('chevron:window-startup-markers-sync', event => {
     const win = browserWindowFromEvent(event);
     try {
-      // One-shot getter on BrowserWindow (see atom-window.js)
+      // One-shot getter on BrowserWindow (see chevron-window.js)
       event.returnValue = win ? win.startupMarkers : null;
     } catch (error) {
       console.error(error);
@@ -514,7 +514,7 @@ module.exports = function registerRendererIpc(atomApplication) {
   // --- Screen / systemPreferences / shell / app (P1/P2) ---------------------
 
   // Read-only view of Electron's nativeTheme, for core.followSystemTheme.
-  // Changes are pushed on chevron:did-change-native-theme (atom-application).
+  // Changes are pushed on chevron:did-change-native-theme (chevron-application).
   ipcMain.on('chevron:native-theme-sync', event => {
     event.returnValue = nativeThemeSnapshot();
   });

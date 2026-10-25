@@ -8,7 +8,7 @@ let grammarStatusView = null;
 module.exports = {
   activate() {
     commandDisposable = chevron.commands.add(
-      'atom-text-editor',
+      'chevron-text-editor',
       'grammar-selector:show',
       () => {
         if (!grammarListView) grammarListView = new GrammarListView();

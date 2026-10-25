@@ -5,7 +5,7 @@ const { assert } = require('chai');
 module.exports = function(testPaths) {
   global.assert = assert;
 
-  // These specs load renderer modules from source (AtomApplication's package
+  // These specs load renderer modules from source (ChevronApplication's package
   // lookup reaches src/package-manager.js), and some are TypeScript. The app
   // never needs this: packaging compiles them, and the main process registers
   // no TypeScript loader by policy (script/ci/src-typescript-first.test.js).

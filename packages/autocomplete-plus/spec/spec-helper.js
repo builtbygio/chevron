@@ -1,16 +1,16 @@
 /* eslint-env jasmine */
 
 beforeEach(() => {
-  spyOn(atom.views, 'readDocument').andCallFake(fn => fn())
-  spyOn(atom.views, 'updateDocument').andCallFake(fn => fn())
-  atom.config.set('autocomplete-plus.minimumWordLength', 1)
-  atom.config.set('autocomplete-plus.suggestionListFollows', 'Word')
-  atom.config.set('autocomplete-plus.useCoreMovementCommands', true)
-  atom.config.set('autocomplete-plus.includeCompletionsFromAllBuffers', false)
+  spyOn(chevron.views, 'readDocument').andCallFake(fn => fn())
+  spyOn(chevron.views, 'updateDocument').andCallFake(fn => fn())
+  chevron.config.set('autocomplete-plus.minimumWordLength', 1)
+  chevron.config.set('autocomplete-plus.suggestionListFollows', 'Word')
+  chevron.config.set('autocomplete-plus.useCoreMovementCommands', true)
+  chevron.config.set('autocomplete-plus.includeCompletionsFromAllBuffers', false)
 })
 
 function waitForAutocomplete (editor) {
-  const editorView = atom.views.getView(editor)
+  const editorView = chevron.views.getView(editor)
 
   return conditionPromise(
     () => editorView.querySelectorAll('.autocomplete-plus li').length > 0
@@ -18,7 +18,7 @@ function waitForAutocomplete (editor) {
 }
 
 function waitForAutocompleteToDisappear (editor) {
-  const editorView = atom.views.getView(editor)
+  const editorView = chevron.views.getView(editor)
 
   return conditionPromise(
     () => editorView.querySelectorAll('.autocomplete-plus li').length === 0

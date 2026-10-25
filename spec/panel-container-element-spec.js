@@ -32,12 +32,12 @@ describe('PanelContainerElement', () => {
   beforeEach(() => {
     jasmineContent = document.body.querySelector('#jasmine-content');
 
-    atom.views.addViewProvider(TestPanelContainerItem, model =>
+    chevron.views.addViewProvider(TestPanelContainerItem, model =>
       TestPanelContainerItemElement.initialize(model)
     );
 
     container = new PanelContainer({
-      viewRegistry: atom.views,
+      viewRegistry: chevron.views,
       location: 'left'
     });
     element = container.getElement();
@@ -58,15 +58,15 @@ describe('PanelContainerElement', () => {
     it('allows panels to be inserted at any position', () => {
       const panel1 = new Panel(
         { item: new TestPanelContainerItem(), priority: 10 },
-        atom.views
+        chevron.views
       );
       const panel2 = new Panel(
         { item: new TestPanelContainerItem(), priority: 5 },
-        atom.views
+        chevron.views
       );
       const panel3 = new Panel(
         { item: new TestPanelContainerItem(), priority: 8 },
-        atom.views
+        chevron.views
       );
 
       container.addPanel(panel1);
@@ -79,12 +79,12 @@ describe('PanelContainerElement', () => {
     });
 
     describe('when the container is at the left location', () =>
-      it('adds atom-panel elements when a new panel is added to the container; removes them when the panels are destroyed', () => {
+      it('adds chevron-panel elements when a new panel is added to the container; removes them when the panels are destroyed', () => {
         expect(element.childNodes.length).toBe(0);
 
         const panel1 = new Panel(
           { item: new TestPanelContainerItem() },
-          atom.views
+          chevron.views
         );
         container.addPanel(panel1);
         expect(element.childNodes.length).toBe(1);
@@ -92,11 +92,11 @@ describe('PanelContainerElement', () => {
         expect(element.childNodes[0]).toHaveClass('tool-panel'); // legacy selector support
         expect(element.childNodes[0]).toHaveClass('panel-left'); // legacy selector support
 
-        expect(element.childNodes[0].tagName).toBe('ATOM-PANEL');
+        expect(element.childNodes[0].tagName).toBe('CHEVRON-PANEL');
 
         const panel2 = new Panel(
           { item: new TestPanelContainerItem() },
-          atom.views
+          chevron.views
         );
         container.addPanel(panel2);
         expect(element.childNodes.length).toBe(2);
@@ -114,31 +114,31 @@ describe('PanelContainerElement', () => {
     describe('when the container is at the bottom location', () => {
       beforeEach(() => {
         container = new PanelContainer({
-          viewRegistry: atom.views,
+          viewRegistry: chevron.views,
           location: 'bottom'
         });
         element = container.getElement();
         jasmineContent.appendChild(element);
       });
 
-      it('adds atom-panel elements when a new panel is added to the container; removes them when the panels are destroyed', () => {
+      it('adds chevron-panel elements when a new panel is added to the container; removes them when the panels are destroyed', () => {
         expect(element.childNodes.length).toBe(0);
 
         const panel1 = new Panel(
           { item: new TestPanelContainerItem(), className: 'one' },
-          atom.views
+          chevron.views
         );
         container.addPanel(panel1);
         expect(element.childNodes.length).toBe(1);
         expect(element.childNodes[0]).toHaveClass('bottom');
         expect(element.childNodes[0]).toHaveClass('tool-panel'); // legacy selector support
         expect(element.childNodes[0]).toHaveClass('panel-bottom'); // legacy selector support
-        expect(element.childNodes[0].tagName).toBe('ATOM-PANEL');
+        expect(element.childNodes[0].tagName).toBe('CHEVRON-PANEL');
         expect(panel1.getElement()).toHaveClass('one');
 
         const panel2 = new Panel(
           { item: new TestPanelContainerItem(), className: 'two' },
-          atom.views
+          chevron.views
         );
         container.addPanel(panel2);
         expect(element.childNodes.length).toBe(2);
@@ -156,7 +156,7 @@ describe('PanelContainerElement', () => {
   describe('when the container is modal', () => {
     beforeEach(() => {
       container = new PanelContainer({
-        viewRegistry: atom.views,
+        viewRegistry: chevron.views,
         location: 'modal'
       });
       element = container.getElement();
@@ -166,7 +166,7 @@ describe('PanelContainerElement', () => {
     it('allows only one panel to be visible at a time', () => {
       const panel1 = new Panel(
         { item: new TestPanelContainerItem() },
-        atom.views
+        chevron.views
       );
       container.addPanel(panel1);
 
@@ -174,7 +174,7 @@ describe('PanelContainerElement', () => {
 
       const panel2 = new Panel(
         { item: new TestPanelContainerItem() },
-        atom.views
+        chevron.views
       );
       container.addPanel(panel2);
 
@@ -190,7 +190,7 @@ describe('PanelContainerElement', () => {
     it("adds the 'modal' class to panels", () => {
       const panel1 = new Panel(
         { item: new TestPanelContainerItem() },
-        atom.views
+        chevron.views
       );
       container.addPanel(panel1);
 
@@ -210,7 +210,7 @@ describe('PanelContainerElement', () => {
             autoFocus: autoFocus,
             visible: false
           },
-          atom.views
+          chevron.views
         );
 
         container.addPanel(panel);

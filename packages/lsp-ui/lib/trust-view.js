@@ -133,7 +133,7 @@ class TrustView {
 
   applyContrast() {
     const host =
-      (this.element.closest && this.element.closest('atom-panel.modal')) ||
+      (this.element.closest && this.element.closest('chevron-panel.modal')) ||
       this.element;
     const bg = effectiveBackground(host) || { r: 32, g: 33, b: 35 };
     const dark = luminance(bg) < 140;

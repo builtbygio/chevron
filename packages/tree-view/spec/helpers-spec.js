@@ -9,8 +9,8 @@ describe('Helpers', () => {
     let fixturesPath, fixturesRepo
 
     beforeEach(async () => {
-      fixturesPath = atom.project.getPaths()[0]
-      fixturesRepo = await atom.project.repositoryForDirectory(atom.project.getDirectories()[0])
+      fixturesPath = chevron.project.getPaths()[0]
+      fixturesRepo = await chevron.project.repositoryForDirectory(chevron.project.getDirectories()[0])
     })
 
     it('returns the repository for a given project path', () => {

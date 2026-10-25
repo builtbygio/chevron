@@ -34,8 +34,8 @@ describe('ArchiveEditorView', () => {
       return new Disposable()
     })
 
-    await atom.packages.activatePackage('archive-view')
-    archiveEditorView = await atom.workspace.open('nested.tar')
+    await chevron.packages.activatePackage('archive-view')
+    archiveEditorView = await chevron.workspace.open('nested.tar')
   })
 
   describe('.constructor()', () => {
@@ -74,9 +74,9 @@ describe('ArchiveEditorView', () => {
 
   describe('archive summary', () => {
     beforeEach(async () => {
-      await atom.workspace.open('multiple-entries.zip')
-      archiveEditorView = atom.workspace.getActivePaneItem()
-      jasmine.attachToDOM(atom.views.getView(atom.workspace))
+      await chevron.workspace.open('multiple-entries.zip')
+      archiveEditorView = chevron.workspace.getActivePaneItem()
+      jasmine.attachToDOM(chevron.views.getView(chevron.workspace))
     })
 
     it('shows correct statistics', async () => {
@@ -90,7 +90,7 @@ describe('ArchiveEditorView', () => {
   describe('when core:move-up/core:move-down is triggered', () => {
     let selectedEntry
     const dispatch = (command) => {
-      atom.commands.dispatch(archiveEditorView.element.querySelector('.selected'), command)
+      chevron.commands.dispatch(archiveEditorView.element.querySelector('.selected'), command)
       selectedEntry = archiveEditorView.element.querySelector('.selected').textContent
       return true
     }
@@ -111,9 +111,9 @@ describe('ArchiveEditorView', () => {
     it('copies the contents to a temp file and opens it in a new editor', async () => {
       await condition(() => archiveEditorView.element.querySelectorAll('.entry').length > 0)
       archiveEditorView.element.querySelectorAll('.file')[2].click()
-      await condition(() => atom.workspace.getActivePane().getItems().length > 1)
-      expect(atom.workspace.getActivePaneItem().getText()).toBe('hey there\n')
-      expect(atom.workspace.getActivePaneItem().getTitle()).toBe('fa.txt')
+      await condition(() => chevron.workspace.getActivePane().getItems().length > 1)
+      expect(chevron.workspace.getActivePaneItem().getText()).toBe('hey there\n')
+      expect(chevron.workspace.getActivePaneItem().getTitle()).toBe('fa.txt')
     })
   })
 
@@ -132,10 +132,10 @@ describe('ArchiveEditorView', () => {
   describe('when core:confirm is triggered', () => {
     it('copies the contents to a temp file and opens it in a new editor', async () => {
       await condition(() => archiveEditorView.element.querySelectorAll('.entry').length > 0)
-      atom.commands.dispatch(archiveEditorView.element.querySelector('.file'), 'core:confirm')
-      await condition(() => atom.workspace.getActivePane().getItems().length > 1)
-      expect(atom.workspace.getActivePaneItem().getText()).toBe('')
-      expect(atom.workspace.getActivePaneItem().getTitle()).toBe('f1.txt')
+      chevron.commands.dispatch(archiveEditorView.element.querySelector('.file'), 'core:confirm')
+      await condition(() => chevron.workspace.getActivePane().getItems().length > 1)
+      expect(chevron.workspace.getActivePaneItem().getText()).toBe('')
+      expect(chevron.workspace.getActivePaneItem().getTitle()).toBe('f1.txt')
     })
   })
 
@@ -163,17 +163,17 @@ describe('ArchiveEditorView', () => {
   describe('when the file is removed', () => {
     it('destroys the view', async () => {
       await condition(() => archiveEditorView.element.querySelectorAll('.entry').length > 0)
-      expect(atom.workspace.getActivePane().getItems().length).toBe(1)
+      expect(chevron.workspace.getActivePane().getItems().length).toBe(1)
       onDidDeleteCallback()
-      expect(atom.workspace.getActivePaneItem()).toBeUndefined()
+      expect(chevron.workspace.getActivePaneItem()).toBeUndefined()
     })
   })
 
   describe('when the file is invalid', () => {
     beforeEach(async () => {
-      await atom.workspace.open('invalid.zip')
-      archiveEditorView = atom.workspace.getActivePaneItem()
-      jasmine.attachToDOM(atom.views.getView(atom.workspace))
+      await chevron.workspace.open('invalid.zip')
+      archiveEditorView = chevron.workspace.getActivePaneItem()
+      jasmine.attachToDOM(chevron.views.getView(chevron.workspace))
     })
 
     it('shows the error', async () => {
@@ -184,9 +184,9 @@ describe('ArchiveEditorView', () => {
 
   describe('FileIcons', () => {
     async function openFile () {
-      await atom.workspace.open('file-icons.zip')
-      archiveEditorView = atom.workspace.getActivePaneItem()
-      jasmine.attachToDOM(atom.views.getView(atom.workspace))
+      await chevron.workspace.open('file-icons.zip')
+      archiveEditorView = chevron.workspace.getActivePaneItem()
+      jasmine.attachToDOM(chevron.views.getView(chevron.workspace))
     }
 
     describe('Icon service', () => {

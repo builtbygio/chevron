@@ -29,7 +29,7 @@ describe('URI scheme (Wave 4)', () => {
   // The renderer registry above was converted in Wave 4; main's openUrl was
   // not, and every external chevron:// link was dropped (#406).
   it('main-process URL opening accepts chevron:, not atom:', () => {
-    const src = read('src/main-process/atom-application.js');
+    const src = read('src/main-process/chevron-application.js');
     const openUrl = src.slice(src.indexOf('  openUrl({'));
     const body = openUrl.slice(0, openUrl.indexOf('\n  }\n'));
     assert.match(body, /protocol !== 'chevron:'/);
@@ -79,7 +79,7 @@ describe('URI scheme (Wave 4)', () => {
     );
 
     // Main must actually handle the channel, and only for known schemes.
-    const main = read('src/main-process/atom-application.js');
+    const main = read('src/main-process/chevron-application.js');
     assert.match(main, /ipcMain\.handle\(\s*'chevron:remove-as-default-protocol-client'/);
     // Only chevron may be checked or registered; atom may only be withdrawn
     // (#407: the settings panel was registering atom).
@@ -124,7 +124,7 @@ describe('URI scheme (Wave 4)', () => {
   it('the app opens its own menu URIs as chevron://', () => {
     // These were atom://about, atom://config and five atom://.atom/* paths.
     // Missing one would have broken About or Settings with the alias gone.
-    const src = read('src/main-process/atom-application.js');
+    const src = read('src/main-process/chevron-application.js');
     for (const uri of [
       'chevron://about',
       'chevron://config',
@@ -153,7 +153,7 @@ describe('URI scheme (Wave 4)', () => {
     const ws = read('src/workspace.js');
     assert.doesNotMatch(ws, /alternateSchemeURI/);
 
-    const env = read('src/atom-environment.js');
+    const env = read('src/chevron-environment.js');
     assert.match(env, /chevron:\/\/\.chevron\/config/);
     assert.doesNotMatch(env, /replace\(\/\^atom:/);
     // The `.atom` host normalization went too, once welcome and

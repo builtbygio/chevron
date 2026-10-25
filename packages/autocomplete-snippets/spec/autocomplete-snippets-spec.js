@@ -2,12 +2,12 @@ describe('AutocompleteSnippets', () => {
   let [completionDelay, editor, editorView] = []
 
   beforeEach(() => {
-    atom.config.set('autocomplete-plus.enableAutoActivation', true)
+    chevron.config.set('autocomplete-plus.enableAutoActivation', true)
     completionDelay = 100
-    atom.config.set('autocomplete-plus.autoActivationDelay', completionDelay)
+    chevron.config.set('autocomplete-plus.autoActivationDelay', completionDelay)
     completionDelay += 100 // Rendering delay
 
-    const workspaceElement = atom.views.getView(atom.workspace)
+    const workspaceElement = chevron.views.getView(chevron.workspace)
     jasmine.attachToDOM(workspaceElement)
 
     let autocompleteSnippetsMainModule = null
@@ -16,16 +16,16 @@ describe('AutocompleteSnippets', () => {
 
     waitsForPromise(() =>
       Promise.all([
-        atom.workspace.open('sample.js').then((e) => {
+        chevron.workspace.open('sample.js').then((e) => {
           editor = e
-          editorView = atom.views.getView(editor)
+          editorView = chevron.views.getView(editor)
         }),
 
-        atom.packages.activatePackage('language-javascript'),
-        atom.packages.activatePackage('autocomplete-snippets').then(({mainModule}) => autocompleteSnippetsMainModule = mainModule),
+        chevron.packages.activatePackage('language-javascript'),
+        chevron.packages.activatePackage('autocomplete-snippets').then(({mainModule}) => autocompleteSnippetsMainModule = mainModule),
 
-        atom.packages.activatePackage('autocomplete-plus'),
-        atom.packages.activatePackage('snippets').then(({mainModule}) => {
+        chevron.packages.activatePackage('autocomplete-plus'),
+        chevron.packages.activatePackage('snippets').then(({mainModule}) => {
           snippetsMainModule = mainModule
           snippetsMainModule.loaded = false
         })
@@ -71,7 +71,7 @@ describe('AutocompleteSnippets', () => {
       waitsFor('autocomplete view to appear', 1000, () => editorView.querySelector('.autocomplete-plus'))
 
       runs(() => {
-        atom.commands.dispatch(editorView, 'autocomplete-plus:confirm')
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:confirm')
         expect(editor.getText()).toContain('} while (true)')
       })
     })

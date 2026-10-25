@@ -13,12 +13,12 @@ describe('HTML autocompletions', () => {
   }
 
   beforeEach(() => {
-    waitsForPromise(() => atom.packages.activatePackage('autocomplete-html'))
-    waitsForPromise(() => atom.packages.activatePackage('language-html'))
-    waitsForPromise(() => atom.workspace.open('test.html'))
+    waitsForPromise(() => chevron.packages.activatePackage('autocomplete-html'))
+    waitsForPromise(() => chevron.packages.activatePackage('language-html'))
+    waitsForPromise(() => chevron.workspace.open('test.html'))
 
-    runs(() => provider = atom.packages.getActivePackage('autocomplete-html').mainModule.getProvider())
-    runs(() => editor = atom.workspace.getActiveTextEditor())
+    runs(() => provider = chevron.packages.getActivePackage('autocomplete-html').mainModule.getProvider())
+    runs(() => editor = chevron.workspace.getActiveTextEditor())
   })
 
   it('returns no completions when not at the start of a tag', () => {
@@ -490,27 +490,27 @@ describe('HTML autocompletions', () => {
   })
 
   it('triggers autocomplete when an attibute has been inserted', () => {
-    spyOn(atom.commands, 'dispatch')
+    spyOn(chevron.commands, 'dispatch')
     const suggestion = {type: 'attribute', text: 'whatever'}
     provider.onDidInsertSuggestion({editor, suggestion})
 
     advanceClock(1)
-    expect(atom.commands.dispatch).toHaveBeenCalled()
+    expect(chevron.commands.dispatch).toHaveBeenCalled()
 
-    const { args } = atom.commands.dispatch.mostRecentCall
-    expect(args[0].tagName.toLowerCase()).toBe('atom-text-editor')
+    const { args } = chevron.commands.dispatch.mostRecentCall
+    expect(args[0].tagName.toLowerCase()).toBe('chevron-text-editor')
     expect(args[1]).toBe('autocomplete-plus:activate')
   })
 
   it('does not error in EJS documents', () => {
     waitsForPromise(async () => {
-      await atom.workspace.open('test.html.ejs')
-      editor = atom.workspace.getActiveTextEditor()
+      await chevron.workspace.open('test.html.ejs')
+      editor = chevron.workspace.getActiveTextEditor()
       editor.setText('<span><% a = ""; %></span>')
     })
 
     waitsForPromise(() => {
-      return atom.packages.activatePackage('language-javascript')
+      return chevron.packages.activatePackage('language-javascript')
     })
 
     runs(() => {

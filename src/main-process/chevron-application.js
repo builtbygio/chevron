@@ -1,4 +1,4 @@
-const AtomWindow = require('./atom-window');
+const ChevronWindow = require('./chevron-window');
 const ApplicationMenu = require('./application-menu');
 const AtomProtocolHandler = require('./atom-protocol-handler');
 const AutoUpdateManager = require('./auto-update-manager');
@@ -43,7 +43,7 @@ const ConfigSchema = require('../config-schema');
 const LocationSuffixRegExp = /(:\d+)(:\d+)?$/;
 
 // Increment this when changing the serialization format of `${ATOM_HOME}/storage/application.json` used by
-// AtomApplication::saveCurrentWindowOptions() and AtomApplication::loadPreviousWindowOptions() in a backward-
+// ChevronApplication::saveCurrentWindowOptions() and ChevronApplication::loadPreviousWindowOptions() in a backward-
 // incompatible way.
 const APPLICATION_STATE_VERSION = '1';
 
@@ -239,17 +239,17 @@ ipcMain.handle('chevron:remove-as-default-protocol-client', (_, payload) => {
 // It's the entry point into the Atom application and maintains the global state
 // of the application.
 //
-module.exports = class AtomApplication extends EventEmitter {
+module.exports = class ChevronApplication extends EventEmitter {
   // Public: The entry point into the Atom application.
   static open(options) {
-    StartupTime.addMarker('main-process:atom-application:open');
+    StartupTime.addMarker('main-process:chevron-application:open');
 
     const socketSecret = getExistingSocketSecret(options.version);
     const socketPath = getSocketPath(socketSecret);
     const createApplication =
       options.createApplication ||
       (async () => {
-        const app = new AtomApplication(options);
+        const app = new ChevronApplication(options);
         await app.initialize(options);
         return app;
       });
@@ -284,7 +284,7 @@ module.exports = class AtomApplication extends EventEmitter {
   }
 
   constructor(options) {
-    StartupTime.addMarker('main-process:atom-application:constructor:start');
+    StartupTime.addMarker('main-process:chevron-application:constructor:start');
 
     super();
     this.quitting = false;
@@ -336,7 +336,7 @@ module.exports = class AtomApplication extends EventEmitter {
     // IPC for renderers that no longer use electron.remote (P0–P2 security ladder)
     require('./register-renderer-ipc')(this);
 
-    StartupTime.addMarker('main-process:atom-application:constructor:end');
+    StartupTime.addMarker('main-process:chevron-application:constructor:end');
   }
 
   // This stuff was previously done in the constructor, but we want to be able to construct this object
@@ -344,7 +344,7 @@ module.exports = class AtomApplication extends EventEmitter {
   // of these various sub-objects into the constructor, but you'll need to remove the side-effects they
   // perform during their construction, adding an initialize method that you call here.
   async initialize(options) {
-    StartupTime.addMarker('main-process:atom-application:initialize:start');
+    StartupTime.addMarker('main-process:chevron-application:initialize:start');
 
     global.chevronApplication = this;
     this.applicationMenu = new ApplicationMenu(
@@ -369,7 +369,7 @@ module.exports = class AtomApplication extends EventEmitter {
     const result = await this.launch(options);
     this.autoUpdateManager.initialize();
 
-    StartupTime.addMarker('main-process:atom-application:initialize:end');
+    StartupTime.addMarker('main-process:chevron-application:initialize:end');
 
     return result;
   }
@@ -507,12 +507,12 @@ module.exports = class AtomApplication extends EventEmitter {
     }
   }
 
-  // Public: Create a new {AtomWindow} bound to this application.
+  // Public: Create a new {ChevronWindow} bound to this application.
   createWindow(settings) {
-    return new AtomWindow(this, this.fileRecoveryService, settings);
+    return new ChevronWindow(this, this.fileRecoveryService, settings);
   }
 
-  // Public: Removes the {AtomWindow} from the global window list.
+  // Public: Removes the {ChevronWindow} from the global window list.
   removeWindow(window) {
     this.windowStack.removeWindow(window);
     if (this.getAllWindows().length === 0 && process.platform !== 'darwin') {
@@ -522,7 +522,7 @@ module.exports = class AtomApplication extends EventEmitter {
     if (!window.isSpec) this.saveCurrentWindowOptions(true);
   }
 
-  // Public: Adds the {AtomWindow} to the global window list.
+  // Public: Adds the {ChevronWindow} to the global window list.
   addWindow(window) {
     this.windowStack.addWindow(window);
     try {
@@ -674,7 +674,7 @@ module.exports = class AtomApplication extends EventEmitter {
       (event, _webContents, url, error, _certificate, callback) => {
         event.preventDefault();
         console.warn(
-          `AtomApplication: denied certificate-error for ${String(url)}: ${String(
+          `ChevronApplication: denied certificate-error for ${String(url)}: ${String(
             error
           )}`
         );
@@ -1240,7 +1240,7 @@ module.exports = class AtomApplication extends EventEmitter {
   // Public: Executes the given command on the given window.
   //
   // command - The string representing the command.
-  // atomWindow - The {AtomWindow} to send the command to.
+  // atomWindow - The {ChevronWindow} to send the command to.
   // args - The optional arguments to pass along.
   sendCommandToWindow(command, atomWindow, ...args) {
     if (!this.emit(command, ...args)) {
@@ -1300,7 +1300,7 @@ module.exports = class AtomApplication extends EventEmitter {
     });
   }
 
-  // Returns the {AtomWindow} for the given locations.
+  // Returns the {ChevronWindow} for the given locations.
   windowForLocations(locationsToOpen, devMode, safeMode) {
     return this.getLastFocusedWindow(
       window =>
@@ -1311,7 +1311,7 @@ module.exports = class AtomApplication extends EventEmitter {
     );
   }
 
-  // Returns the {AtomWindow} for the given ipcMain event.
+  // Returns the {ChevronWindow} for the given ipcMain event.
   atomWindowForEvent({ sender }) {
     return this.atomWindowForBrowserWindow(
       BrowserWindow.fromWebContents(sender)
@@ -1324,7 +1324,7 @@ module.exports = class AtomApplication extends EventEmitter {
     );
   }
 
-  // Public: Returns the currently focused {AtomWindow} or undefined if none.
+  // Public: Returns the currently focused {ChevronWindow} or undefined if none.
   focusedWindow() {
     return this.getAllWindows().find(window => window.isFocused());
   }
@@ -1361,7 +1361,7 @@ module.exports = class AtomApplication extends EventEmitter {
   //   :devMode - Boolean to control the opened window's dev mode.
   //   :safeMode - Boolean to control the opened window's safe mode.
   //   :profileStartup - Boolean to control creating a profile of the startup time.
-  //   :window - {AtomWindow} to open file paths in.
+  //   :window - {ChevronWindow} to open file paths in.
   //   :addToLastWindow - Boolean of whether this should be opened in last focused window.
   openPath({
     pathToOpen,
@@ -1399,7 +1399,7 @@ module.exports = class AtomApplication extends EventEmitter {
   //   :devMode - Boolean to control the opened window's dev mode.
   //   :safeMode - Boolean to control the opened window's safe mode.
   //   :windowDimensions - Object with height and width keys.
-  //   :window - {AtomWindow} to open file paths in.
+  //   :window - {ChevronWindow} to open file paths in.
   //   :addToLastWindow - Boolean of whether this should be opened in last focused window.
   async openPaths({
     pathsToOpen,
@@ -1455,7 +1455,7 @@ module.exports = class AtomApplication extends EventEmitter {
     let existingWindow;
 
     if (!createNewWindow) {
-      // An explicitly provided AtomWindow has precedence.
+      // An explicitly provided ChevronWindow has precedence.
       existingWindow = window;
 
       // If no window is specified and at least one path is provided, locate an existing window that contains all
@@ -1505,7 +1505,7 @@ module.exports = class AtomApplication extends EventEmitter {
     let openedWindow;
     if (existingWindow) {
       openedWindow = existingWindow;
-      StartupTime.addMarker('main-process:atom-application:open-in-existing');
+      StartupTime.addMarker('main-process:chevron-application:open-in-existing');
       openedWindow.openLocations(locationsToOpen);
       if (openedWindow.isMinimized()) {
         openedWindow.restore();
@@ -1537,7 +1537,7 @@ module.exports = class AtomApplication extends EventEmitter {
       if (!windowDimensions)
         windowDimensions = this.getDimensionsForNewWindow();
 
-      StartupTime.addMarker('main-process:atom-application:create-window');
+      StartupTime.addMarker('main-process:chevron-application:create-window');
       openedWindow = this.createWindow({
         locationsToOpen,
         windowInitializationScript,
@@ -1827,7 +1827,7 @@ module.exports = class AtomApplication extends EventEmitter {
     return this.packages;
   }
 
-  // Opens up a new {AtomWindow} to run specs within.
+  // Opens up a new {ChevronWindow} to run specs within.
   //
   // options -
   //   :headless - A Boolean that, if true, will close the window upon
@@ -2016,7 +2016,7 @@ module.exports = class AtomApplication extends EventEmitter {
 
   // Opens a native dialog to prompt the user for a path.
   //
-  // Once paths are selected, they're opened in a new or existing {AtomWindow}s.
+  // Once paths are selected, they're opened in a new or existing {ChevronWindow}s.
   //
   // options -
   //   :type - A String which specifies the type of the dialog, could be 'file',
@@ -2025,7 +2025,7 @@ module.exports = class AtomApplication extends EventEmitter {
   //              should be in dev mode or not.
   //   :safeMode - A Boolean which controls whether any newly opened windows
   //               should be in safe mode or not.
-  //   :window - An {AtomWindow} to use for opening selected file paths as long as
+  //   :window - An {ChevronWindow} to use for opening selected file paths as long as
   //             all are files.
   //   :path - An optional String which controls the default path to which the
   //           file dialog opens.

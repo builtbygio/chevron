@@ -70,7 +70,7 @@ describe('classifyCallerPath', () => {
 
   it('classifies src/static as core', () => {
     assert.strictEqual(
-      classifyCallerPath('/repo/chevron/src/atom-environment.js'),
+      classifyCallerPath('/repo/chevron/src/chevron-environment.js'),
       'core'
     );
     assert.strictEqual(

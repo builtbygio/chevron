@@ -10,7 +10,7 @@ module.exports = {
       if (filePath === ViewURI) return this.createTimecopView({uri: ViewURI})
     }))
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'timecop:view', () => chevron.workspace.open(ViewURI)))
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'timecop:view', () => chevron.workspace.open(ViewURI)))
   },
 
   deactivate () {

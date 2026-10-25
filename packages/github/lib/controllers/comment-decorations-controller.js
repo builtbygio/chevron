@@ -123,7 +123,7 @@ class BareCommentDecorationsController extends _react.default.Component {
     const openEditorsWithCommentThreads = this.getOpenEditorsWithCommentThreads(threadDataByPath);
     return _react.default.createElement(_react.Fragment, null, _react.default.createElement(_commands.default, {
       registry: this.props.commands,
-      target: "atom-workspace"
+      target: "chevron-workspace"
     }, _react.default.createElement(_commands.Command, {
       command: "github:open-reviews-tab",
       callback: this.openReviewsTab

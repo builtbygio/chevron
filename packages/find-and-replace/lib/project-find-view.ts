@@ -188,7 +188,7 @@ class ProjectFindView {
   }
 
   handleEvents() {
-    this.subscriptions.add(chevron.commands.add('atom-workspace', {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', {
       'find-and-replace:use-selection-as-find-pattern': () => this.setSelectionAsFindPattern(),
       'find-and-replace:use-selection-as-replace-pattern': () => this.setSelectionAsReplacePattern()
     }));

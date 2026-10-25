@@ -44,7 +44,7 @@ describe('StyleManager', () => {
       expect(styleManager.getStyleElements().length).toBe(0);
     });
 
-    describe('atom-text-editor shadow DOM selectors upgrades', () => {
+    describe('chevron-text-editor shadow DOM selectors upgrades', () => {
       beforeEach(() => {
         // attach styles element to the DOM to parse CSS rules
         styleManager.onDidAddStyleElement(styleElement => {
@@ -52,28 +52,28 @@ describe('StyleManager', () => {
         });
       });
 
-      it('removes the ::shadow pseudo-element from atom-text-editor selectors', () => {
+      it('removes the ::shadow pseudo-element from chevron-text-editor selectors', () => {
         styleManager.addStyleSheet(`
-          atom-text-editor::shadow .class-1, atom-text-editor::shadow .class-2 { color: red }
-          atom-text-editor::shadow > .class-3 { color: yellow }
-          atom-text-editor .class-4 { color: blue }
-          atom-text-editor[data-grammar*="js"]::shadow .class-6 { color: green; }
-          atom-text-editor[mini].is-focused::shadow .class-7 { color: green; }
+          chevron-text-editor::shadow .class-1, chevron-text-editor::shadow .class-2 { color: red }
+          chevron-text-editor::shadow > .class-3 { color: yellow }
+          chevron-text-editor .class-4 { color: blue }
+          chevron-text-editor[data-grammar*="js"]::shadow .class-6 { color: green; }
+          chevron-text-editor[mini].is-focused::shadow .class-7 { color: green; }
         `);
         expect(
           Array.from(styleManager.getStyleElements()[0].sheet.cssRules).map(
             r => r.selectorText
           )
         ).toEqual([
-          'atom-text-editor.editor .class-1, atom-text-editor.editor .class-2',
-          'atom-text-editor.editor > .class-3',
-          'atom-text-editor .class-4',
-          'atom-text-editor[data-grammar*="js"].editor .class-6',
-          'atom-text-editor[mini].is-focused.editor .class-7'
+          'chevron-text-editor.editor .class-1, chevron-text-editor.editor .class-2',
+          'chevron-text-editor.editor > .class-3',
+          'chevron-text-editor .class-4',
+          'chevron-text-editor[data-grammar*="js"].editor .class-6',
+          'chevron-text-editor[mini].is-focused.editor .class-7'
         ]);
       });
 
-      describe('when a selector targets the atom-text-editor shadow DOM', () => {
+      describe('when a selector targets the chevron-text-editor shadow DOM', () => {
         it('prepends "--syntax" to class selectors matching a grammar scope name and not already starting with "syntax--"', () => {
           styleManager.addStyleSheet(
             `
@@ -82,7 +82,7 @@ describe('StyleManager', () => {
             .syntax--source { color: gray }
             #id-1 { color: blue }
           `,
-            { context: 'atom-text-editor' }
+            { context: 'chevron-text-editor' }
           );
           expect(
             Array.from(styleManager.getStyleElements()[0].sheet.cssRules).map(
@@ -97,9 +97,9 @@ describe('StyleManager', () => {
 
           styleManager.addStyleSheet(`
             .source > .js, .source.coffee { color: green }
-            atom-text-editor::shadow .source > .js { color: yellow }
-            atom-text-editor[mini].is-focused::shadow .source > .js { color: gray }
-            atom-text-editor .source > .js { color: red }
+            chevron-text-editor::shadow .source > .js { color: yellow }
+            chevron-text-editor[mini].is-focused::shadow .source > .js { color: gray }
+            chevron-text-editor .source > .js { color: red }
           `);
           expect(
             Array.from(styleManager.getStyleElements()[1].sheet.cssRules).map(
@@ -107,14 +107,14 @@ describe('StyleManager', () => {
             )
           ).toEqual([
             '.source > .js, .source.coffee',
-            'atom-text-editor.editor .syntax--source > .syntax--js',
-            'atom-text-editor[mini].is-focused.editor .syntax--source > .syntax--js',
-            'atom-text-editor .source > .js'
+            'chevron-text-editor.editor .syntax--source > .syntax--js',
+            'chevron-text-editor[mini].is-focused.editor .syntax--source > .syntax--js',
+            'chevron-text-editor .source > .js'
           ]);
         });
       });
 
-      it('replaces ":host" with "atom-text-editor" only when the context of a style sheet is "atom-text-editor"', () => {
+      it('replaces ":host" with "chevron-text-editor" only when the context of a style sheet is "chevron-text-editor"', () => {
         styleManager.addStyleSheet(
           ':host .class-1, :host .class-2 { color: red; }'
         );
@@ -125,18 +125,18 @@ describe('StyleManager', () => {
         ).toEqual([':host .class-1, :host .class-2']);
         styleManager.addStyleSheet(
           ':host .class-1, :host .class-2 { color: red; }',
-          { context: 'atom-text-editor' }
+          { context: 'chevron-text-editor' }
         );
         expect(
           Array.from(styleManager.getStyleElements()[1].sheet.cssRules).map(
             r => r.selectorText
           )
-        ).toEqual(['atom-text-editor .class-1, atom-text-editor .class-2']);
+        ).toEqual(['chevron-text-editor .class-1, chevron-text-editor .class-2']);
       });
 
       it('does not throw exceptions on rules with no selectors', () => {
         styleManager.addStyleSheet('@media screen {font-size: 10px}', {
-          context: 'atom-text-editor'
+          context: 'chevron-text-editor'
         });
       });
     });

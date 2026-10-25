@@ -12,33 +12,33 @@ const {it, fit, ffit, fffit, beforeEach, afterEach, conditionPromise} = require(
 describe('SymbolsView', () => {
   let [symbolsView, activationPromise, editor, directory] = [];
 
-  const getWorkspaceView = () => atom.views.getView(atom.workspace);
-  const getEditorView = () => atom.views.getView(atom.workspace.getActiveTextEditor());
+  const getWorkspaceView = () => chevron.views.getView(chevron.workspace);
+  const getEditorView = () => chevron.views.getView(chevron.workspace.getActiveTextEditor());
 
   beforeEach(async () => {
     jasmine.unspy(global, 'setTimeout');
 
-    atom.project.setPaths([
+    chevron.project.setPaths([
       temp.mkdirSync('other-dir-'),
       temp.mkdirSync('atom-symbols-view-'),
     ]);
 
-    directory = atom.project.getDirectories()[1];
-    fs.copySync(path.join(__dirname, 'fixtures', 'js'), atom.project.getPaths()[1]);
+    directory = chevron.project.getDirectories()[1];
+    fs.copySync(path.join(__dirname, 'fixtures', 'js'), chevron.project.getPaths()[1]);
 
-    activationPromise = atom.packages.activatePackage('symbols-view');
+    activationPromise = chevron.packages.activatePackage('symbols-view');
     jasmine.attachToDOM(getWorkspaceView());
   });
 
   describe('when tags can be generated for a file', () => {
     beforeEach(async () => {
-      await atom.workspace.open(directory.resolve('sample.js'));
+      await chevron.workspace.open(directory.resolve('sample.js'));
     });
 
     it('initially displays all JavaScript functions with line numbers', async () => {
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
       await activationPromise;
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
       expect(symbolsView.selectListView.refs.loadingMessage).toBeUndefined();
       expect(document.body.contains(symbolsView.element)).toBe(true);
@@ -51,15 +51,15 @@ describe('SymbolsView', () => {
     });
 
     it('caches tags until the editor changes', async () => {
-      editor = atom.workspace.getActiveTextEditor();
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      editor = chevron.workspace.getActiveTextEditor();
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
       await activationPromise;
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
       await symbolsView.cancel();
 
       spyOn(symbolsView, 'generateTags').andCallThrough();
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
       expect(symbolsView.selectListView.refs.loadingMessage).toBeUndefined();
       expect(symbolsView.element.querySelectorAll('li').length).toBe(2);
@@ -67,7 +67,7 @@ describe('SymbolsView', () => {
       await symbolsView.cancel();
 
       await editor.save();
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
       expect(symbolsView.selectListView.refs.loadingMessage).toBeUndefined();
       expect(symbolsView.element.querySelectorAll('li').length).toBe(2);
@@ -77,9 +77,9 @@ describe('SymbolsView', () => {
     });
 
     it('displays an error when no tags match text in mini-editor', async () => {
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
       await activationPromise;
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
 
       symbolsView.selectListView.refs.queryEditor.setText('nothing will match this');
@@ -96,26 +96,26 @@ describe('SymbolsView', () => {
     });
 
     it('moves the cursor to the selected function', async () => {
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 0]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 0]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
       await activationPromise;
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
 
       symbolsView.element.querySelectorAll('li')[1].click();
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([1, 2]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([1, 2]);
     });
   });
 
   describe("when tags can't be generated for a file", () => {
     beforeEach(async () => {
-      await atom.workspace.open('sample.txt');
+      await chevron.workspace.open('sample.txt');
     });
 
     it('shows an error message when no matching tags are found', async () => {
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
       await activationPromise;
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
 
       await conditionPromise(() => symbolsView.selectListView.refs.emptyMessage);
       expect(document.body.contains(symbolsView.element));
@@ -148,10 +148,10 @@ describe('SymbolsView', () => {
 
   describe('go to declaration', () => {
     it("doesn't move the cursor when no declaration is found", async () => {
-      await atom.workspace.open(directory.resolve('tagged.js'));
-      editor = atom.workspace.getActiveTextEditor();
+      await chevron.workspace.open(directory.resolve('tagged.js'));
+      editor = chevron.workspace.getActiveTextEditor();
       editor.setCursorBufferPosition([0, 2]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await activationPromise;
 
@@ -159,38 +159,38 @@ describe('SymbolsView', () => {
     });
 
     it('moves the cursor to the declaration when there is a single matching declaration', async () => {
-      await atom.workspace.open(directory.resolve('tagged.js'));
-      editor = atom.workspace.getActiveTextEditor();
+      await chevron.workspace.open(directory.resolve('tagged.js'));
+      editor = chevron.workspace.getActiveTextEditor();
       editor.setCursorBufferPosition([6, 24]);
       spyOn(SymbolsView.prototype, 'moveToPosition').andCallThrough();
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
       expect(editor.getCursorBufferPosition()).toEqual([2, 0]);
     });
 
     it('correctly moves the cursor to the declaration of a C preprocessor macro', async () => {
-      atom.project.setPaths([temp.mkdirSync('atom-symbols-view-c-')]);
-      fs.copySync(path.join(__dirname, 'fixtures', 'c'), atom.project.getPaths()[0]);
+      chevron.project.setPaths([temp.mkdirSync('atom-symbols-view-c-')]);
+      fs.copySync(path.join(__dirname, 'fixtures', 'c'), chevron.project.getPaths()[0]);
 
-      await atom.packages.activatePackage('language-c');
-      await atom.workspace.open('sample.c');
+      await chevron.packages.activatePackage('language-c');
+      await chevron.workspace.open('sample.c');
 
-      editor = atom.workspace.getActiveTextEditor();
+      editor = chevron.workspace.getActiveTextEditor();
       editor.setCursorBufferPosition([4, 4]);
       spyOn(SymbolsView.prototype, 'moveToPosition').andCallThrough();
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
       expect(editor.getCursorBufferPosition()).toEqual([0, 0]);
     });
 
     it('displays matches when more than one exists and opens the selected match', async () => {
-      await atom.workspace.open(directory.resolve('tagged.js'));
-      editor = atom.workspace.getActiveTextEditor();
+      await chevron.workspace.open(directory.resolve('tagged.js'));
+      editor = chevron.workspace.getActiveTextEditor();
       editor.setCursorBufferPosition([8, 14]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
 
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
       expect(symbolsView.element.querySelectorAll('li').length).toBe(2);
@@ -199,123 +199,123 @@ describe('SymbolsView', () => {
       symbolsView.selectListView.confirmSelection();
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
-      expect(atom.workspace.getActiveTextEditor().getPath()).toBe(directory.resolve('tagged-duplicate.js'));
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 4]);
+      expect(chevron.workspace.getActiveTextEditor().getPath()).toBe(directory.resolve('tagged-duplicate.js'));
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 4]);
     });
 
     it('includes ? and ! characters in ruby symbols', async () => {
-      atom.project.setPaths([temp.mkdirSync('atom-symbols-view-ruby-')]);
-      fs.copySync(path.join(__dirname, 'fixtures', 'ruby'), atom.project.getPaths()[0]);
+      chevron.project.setPaths([temp.mkdirSync('atom-symbols-view-ruby-')]);
+      fs.copySync(path.join(__dirname, 'fixtures', 'ruby'), chevron.project.getPaths()[0]);
 
-      await atom.packages.activatePackage('language-ruby');
-      await atom.workspace.open('file1.rb');
+      await chevron.packages.activatePackage('language-ruby');
+      await chevron.workspace.open('file1.rb');
 
       spyOn(SymbolsView.prototype, 'moveToPosition').andCallThrough();
-      atom.workspace.getActiveTextEditor().setCursorBufferPosition([18, 4]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.workspace.getActiveTextEditor().setCursorBufferPosition([18, 4]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await activationPromise;
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([7, 2]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([7, 2]);
       SymbolsView.prototype.moveToPosition.reset();
-      atom.workspace.getActiveTextEditor().setCursorBufferPosition([19, 2]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.workspace.getActiveTextEditor().setCursorBufferPosition([19, 2]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([11, 2]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([11, 2]);
       SymbolsView.prototype.moveToPosition.reset();
-      atom.workspace.getActiveTextEditor().setCursorBufferPosition([20, 5]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.workspace.getActiveTextEditor().setCursorBufferPosition([20, 5]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([3, 2]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([3, 2]);
       SymbolsView.prototype.moveToPosition.reset();
-      atom.workspace.getActiveTextEditor().setCursorBufferPosition([21, 7]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.workspace.getActiveTextEditor().setCursorBufferPosition([21, 7]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([3, 2]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([3, 2]);
     });
 
     it('handles jumping to assignment ruby method definitions', async () => {
-      atom.project.setPaths([temp.mkdirSync('atom-symbols-view-ruby-')]);
-      fs.copySync(path.join(__dirname, 'fixtures', 'ruby'), atom.project.getPaths()[0]);
+      chevron.project.setPaths([temp.mkdirSync('atom-symbols-view-ruby-')]);
+      fs.copySync(path.join(__dirname, 'fixtures', 'ruby'), chevron.project.getPaths()[0]);
 
-      await atom.packages.activatePackage('language-ruby');
-      await atom.workspace.open('file1.rb');
+      await chevron.packages.activatePackage('language-ruby');
+      await chevron.workspace.open('file1.rb');
       spyOn(SymbolsView.prototype, 'moveToPosition').andCallThrough();
-      atom.workspace.getActiveTextEditor().setCursorBufferPosition([22, 5]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.workspace.getActiveTextEditor().setCursorBufferPosition([22, 5]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([14, 2]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([14, 2]);
       SymbolsView.prototype.moveToPosition.reset();
-      atom.workspace.getActiveTextEditor().setCursorBufferPosition([23, 5]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.workspace.getActiveTextEditor().setCursorBufferPosition([23, 5]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([14, 2]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([14, 2]);
       SymbolsView.prototype.moveToPosition.reset();
-      atom.workspace.getActiveTextEditor().setCursorBufferPosition([24, 5]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.workspace.getActiveTextEditor().setCursorBufferPosition([24, 5]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 0]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 0]);
       SymbolsView.prototype.moveToPosition.reset();
-      atom.workspace.getActiveTextEditor().setCursorBufferPosition([25, 5]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.workspace.getActiveTextEditor().setCursorBufferPosition([25, 5]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([11, 2]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([11, 2]);
     });
 
     it('handles jumping to fully qualified ruby constant definitions', async () => {
-      atom.project.setPaths([temp.mkdirSync('atom-symbols-view-ruby-')]);
-      fs.copySync(path.join(__dirname, 'fixtures', 'ruby'), atom.project.getPaths()[0]);
-      await atom.packages.activatePackage('language-ruby');
-      await atom.workspace.open('file1.rb');
+      chevron.project.setPaths([temp.mkdirSync('atom-symbols-view-ruby-')]);
+      fs.copySync(path.join(__dirname, 'fixtures', 'ruby'), chevron.project.getPaths()[0]);
+      await chevron.packages.activatePackage('language-ruby');
+      await chevron.workspace.open('file1.rb');
       spyOn(SymbolsView.prototype, 'moveToPosition').andCallThrough();
-      atom.workspace.getActiveTextEditor().setCursorBufferPosition([26, 10]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.workspace.getActiveTextEditor().setCursorBufferPosition([26, 10]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([1, 2]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([1, 2]);
       SymbolsView.prototype.moveToPosition.reset();
-      atom.workspace.getActiveTextEditor().setCursorBufferPosition([27, 5]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.workspace.getActiveTextEditor().setCursorBufferPosition([27, 5]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 0]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 0]);
       SymbolsView.prototype.moveToPosition.reset();
-      atom.workspace.getActiveTextEditor().setCursorBufferPosition([28, 5]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+      chevron.workspace.getActiveTextEditor().setCursorBufferPosition([28, 5]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
       await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([31, 0]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([31, 0]);
     });
 
     describe('return from declaration', () => {
       it("doesn't do anything when no go-to have been triggered", async () => {
-        await atom.workspace.open(directory.resolve('tagged.js'));
-        editor = atom.workspace.getActiveTextEditor();
+        await chevron.workspace.open(directory.resolve('tagged.js'));
+        editor = chevron.workspace.getActiveTextEditor();
         editor.setCursorBufferPosition([6, 0]);
-        atom.commands.dispatch(getEditorView(), 'symbols-view:return-from-declaration');
+        chevron.commands.dispatch(getEditorView(), 'symbols-view:return-from-declaration');
 
         await activationPromise;
         expect(editor.getCursorBufferPosition()).toEqual([6, 0]);
       });
 
       it('returns to previous row and column', async () => {
-        await atom.workspace.open(directory.resolve('tagged.js'));
-        editor = atom.workspace.getActiveTextEditor();
+        await chevron.workspace.open(directory.resolve('tagged.js'));
+        editor = chevron.workspace.getActiveTextEditor();
         editor.setCursorBufferPosition([6, 24]);
         spyOn(SymbolsView.prototype, 'moveToPosition').andCallThrough();
-        atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+        chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
         await activationPromise;
         await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
         expect(editor.getCursorBufferPosition()).toEqual([2, 0]);
-        atom.commands.dispatch(getEditorView(), 'symbols-view:return-from-declaration');
+        chevron.commands.dispatch(getEditorView(), 'symbols-view:return-from-declaration');
 
         await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 2);
         expect(editor.getCursorBufferPosition()).toEqual([6, 24]);
@@ -325,12 +325,12 @@ describe('SymbolsView', () => {
     describe("when the tag is in a file that doesn't exist", () => {
       it("doesn't display the tag", async () => {
         fs.removeSync(directory.resolve('tagged-duplicate.js'));
-        await atom.workspace.open(directory.resolve('tagged.js'));
+        await chevron.workspace.open(directory.resolve('tagged.js'));
 
-        editor = atom.workspace.getActiveTextEditor();
+        editor = chevron.workspace.getActiveTextEditor();
         editor.setCursorBufferPosition([8, 14]);
         spyOn(SymbolsView.prototype, 'moveToPosition').andCallThrough();
-        atom.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
+        chevron.commands.dispatch(getEditorView(), 'symbols-view:go-to-declaration');
 
         await conditionPromise(() => SymbolsView.prototype.moveToPosition.callCount === 1);
         expect(editor.getCursorBufferPosition()).toEqual([8, 0]);
@@ -340,12 +340,12 @@ describe('SymbolsView', () => {
 
   describe('project symbols', () => {
     it('displays all tags', async () => {
-      await atom.workspace.open(directory.resolve('tagged.js'));
+      await chevron.workspace.open(directory.resolve('tagged.js'));
       expect(getWorkspaceView().querySelector('.symbols-view')).toBeNull();
-      atom.commands.dispatch(getWorkspaceView(), 'symbols-view:toggle-project-symbols');
+      chevron.commands.dispatch(getWorkspaceView(), 'symbols-view:toggle-project-symbols');
 
       await activationPromise;
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
 
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
       const directoryBasename = path.basename(directory.getPath());
@@ -357,26 +357,26 @@ describe('SymbolsView', () => {
       expect(symbolsView.element.querySelector('li:first-child .secondary-line')).toHaveText(taggedFile);
       expect(symbolsView.element.querySelector('li:last-child .primary-line')).toHaveText('thisIsCrazy');
       expect(symbolsView.element.querySelector('li:last-child .secondary-line')).toHaveText(taggedFile);
-      atom.commands.dispatch(getWorkspaceView(), 'symbols-view:toggle-project-symbols');
+      chevron.commands.dispatch(getWorkspaceView(), 'symbols-view:toggle-project-symbols');
       fs.removeSync(directory.resolve('tags'));
 
       await conditionPromise(() => symbolsView.reloadTags);
-      atom.commands.dispatch(getWorkspaceView(), 'symbols-view:toggle-project-symbols');
+      chevron.commands.dispatch(getWorkspaceView(), 'symbols-view:toggle-project-symbols');
 
       await conditionPromise(() => symbolsView.selectListView.refs.loadingMessage);
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length === 0);
     });
 
     describe('when there is only one project', () => {
-      beforeEach(async () => atom.project.setPaths([directory.getPath()]));
+      beforeEach(async () => chevron.project.setPaths([directory.getPath()]));
 
       it("does not include the root directory's name when displaying the tag's filename", async () => {
-        await atom.workspace.open(directory.resolve('tagged.js'));
+        await chevron.workspace.open(directory.resolve('tagged.js'));
         expect(getWorkspaceView().querySelector('.symbols-view')).toBeNull();
-        atom.commands.dispatch(getWorkspaceView(), 'symbols-view:toggle-project-symbols');
+        chevron.commands.dispatch(getWorkspaceView(), 'symbols-view:toggle-project-symbols');
 
         await activationPromise;
-        symbolsView = atom.workspace.getModalPanels()[0].item;
+        symbolsView = chevron.workspace.getModalPanels()[0].item;
         await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
         expect(symbolsView.element.querySelector('li:first-child .primary-line')).toHaveText('callMeMaybe');
         expect(symbolsView.element.querySelector('li:first-child .secondary-line')).toHaveText('tagged.js');
@@ -388,17 +388,17 @@ describe('SymbolsView', () => {
         beforeEach(async () => fs.removeSync(directory.resolve('tagged.js')));
 
         it("doesn't open the editor", async () => {
-          atom.commands.dispatch(getWorkspaceView(), 'symbols-view:toggle-project-symbols');
+          chevron.commands.dispatch(getWorkspaceView(), 'symbols-view:toggle-project-symbols');
 
           await activationPromise;
 
-          symbolsView = atom.workspace.getModalPanels()[0].item;
+          symbolsView = chevron.workspace.getModalPanels()[0].item;
 
           await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
-          spyOn(atom.workspace, 'open').andCallThrough();
+          spyOn(chevron.workspace, 'open').andCallThrough();
           symbolsView.element.querySelector('li:first-child').click();
           await conditionPromise(() => symbolsView.selectListView.refs.errorMessage);
-          expect(atom.workspace.open).not.toHaveBeenCalled();
+          expect(chevron.workspace.open).not.toHaveBeenCalled();
           expect(symbolsView.selectListView.refs.errorMessage.textContent.length).toBeGreaterThan(0);
         });
       });
@@ -407,21 +407,21 @@ describe('SymbolsView', () => {
 
   describe('when useEditorGrammarAsCtagsLanguage is set to true', () => {
     it("uses the language associated with the editor's grammar", async () => {
-      atom.config.set('symbols-view.useEditorGrammarAsCtagsLanguage', true);
+      chevron.config.set('symbols-view.useEditorGrammarAsCtagsLanguage', true);
 
-      await atom.packages.activatePackage('language-javascript');
-      await atom.workspace.open('sample.javascript');
-      atom.workspace.getActiveTextEditor().setText('var test = function() {}');
-      await atom.workspace.getActiveTextEditor().save();
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      await chevron.packages.activatePackage('language-javascript');
+      await chevron.workspace.open('sample.javascript');
+      chevron.workspace.getActiveTextEditor().setText('var test = function() {}');
+      await chevron.workspace.getActiveTextEditor().save();
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
       await activationPromise;
 
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
       await conditionPromise(() => symbolsView.selectListView.refs.emptyMessage);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
 
-      atom.workspace.getActiveTextEditor().setGrammar(atom.grammars.grammarForScopeName('source.js'));
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      chevron.workspace.getActiveTextEditor().setGrammar(chevron.grammars.grammarForScopeName('source.js'));
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length === 1);
       expect(document.body.contains(symbolsView.element)).toBe(true);
       expect(symbolsView.element.querySelector('li:first-child .primary-line')).toHaveText('test');
@@ -431,14 +431,14 @@ describe('SymbolsView', () => {
 
   describe('match highlighting', () => {
     beforeEach(async () => {
-      await atom.workspace.open(directory.resolve('sample.js'));
+      await chevron.workspace.open(directory.resolve('sample.js'));
     });
 
     it('highlights an exact match', async () => {
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
 
       await activationPromise;
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
       symbolsView.selectListView.refs.queryEditor.setText('quicksort');
       await getOrScheduleUpdatePromise();
@@ -449,9 +449,9 @@ describe('SymbolsView', () => {
     });
 
     it('highlights a partial match', async () => {
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
       await activationPromise;
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
       symbolsView.selectListView.refs.queryEditor.setText('quick');
       await getOrScheduleUpdatePromise();
@@ -462,9 +462,9 @@ describe('SymbolsView', () => {
     });
 
     it('highlights multiple matches in the symbol name', async () => {
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
       await activationPromise;
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
       symbolsView.selectListView.refs.queryEditor.setText('quicort');
       await getOrScheduleUpdatePromise();
@@ -478,50 +478,50 @@ describe('SymbolsView', () => {
 
   describe('quickjump to symbol', () => {
     beforeEach(async () => {
-      await atom.workspace.open(directory.resolve('sample.js'));
+      await chevron.workspace.open(directory.resolve('sample.js'));
     });
 
     it('jumps to the selected function', async () => {
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 0]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 0]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
       await activationPromise;
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
       symbolsView.selectListView.selectNext();
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([1, 2]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([1, 2]);
     });
 
     it('restores previous editor state on cancel', async () => {
       const bufferRanges = [{start: {row: 0, column: 0}, end: {row: 0, column: 3}}];
-      atom.workspace.getActiveTextEditor().setSelectedBufferRanges(bufferRanges);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      chevron.workspace.getActiveTextEditor().setSelectedBufferRanges(bufferRanges);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
 
       await activationPromise;
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
 
       symbolsView.selectListView.selectNext();
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([1, 2]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([1, 2]);
       await symbolsView.cancel();
-      expect(atom.workspace.getActiveTextEditor().getSelectedBufferRanges()).toEqual(bufferRanges);
+      expect(chevron.workspace.getActiveTextEditor().getSelectedBufferRanges()).toEqual(bufferRanges);
     });
   });
 
   describe('when quickJumpToSymbol is set to false', async () => {
     beforeEach(async () => {
-      atom.config.set('symbols-view.quickJumpToFileSymbol', false);
-      await atom.workspace.open(directory.resolve('sample.js'));
+      chevron.config.set('symbols-view.quickJumpToFileSymbol', false);
+      await chevron.workspace.open(directory.resolve('sample.js'));
     });
 
     it("won't jumps to the selected function", async () => {
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 0]);
-      atom.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 0]);
+      chevron.commands.dispatch(getEditorView(), 'symbols-view:toggle-file-symbols');
 
       await activationPromise;
-      symbolsView = atom.workspace.getModalPanels()[0].item;
+      symbolsView = chevron.workspace.getModalPanels()[0].item;
       await conditionPromise(() => symbolsView.element.querySelectorAll('li').length > 0);
       symbolsView.selectListView.selectNext();
-      expect(atom.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 0]);
+      expect(chevron.workspace.getActiveTextEditor().getCursorBufferPosition()).toEqual([0, 0]);
     });
   });
 });

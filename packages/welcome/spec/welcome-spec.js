@@ -24,7 +24,7 @@ var import_welcome_package = __toESM(require("../lib/welcome-package"));
 var import_assert = __toESM(require("assert"));
 var import_helpers = require("./helpers");
 describe("Welcome", () => {
-  const centerItems = () => atom.workspace.getCenter().getPanes().reduce((acc, pane) => acc.concat(pane.getItems()), []);
+  const centerItems = () => chevron.workspace.getCenter().getPanes().reduce((acc, pane) => acc.concat(pane.getItems()), []);
   const centerTitles = () => centerItems().map((item) => item.getTitle());
   const guideItem = () => centerItems().find((item) => item.getTitle() === "Welcome Guide");
   let welcomePackage;
@@ -32,20 +32,20 @@ describe("Welcome", () => {
     welcomePackage = new import_welcome_package.default();
   });
   afterEach(() => {
-    atom.reset();
+    chevron.reset();
   });
   describe("telemetry", () => {
     it("forces core.telemetryConsent to no on activate", async () => {
-      atom.config.set("core.telemetryConsent", "undecided");
-      atom.config.set("welcome.showOnStartup", false);
+      chevron.config.set("core.telemetryConsent", "undecided");
+      chevron.config.set("welcome.showOnStartup", false);
       await welcomePackage.activate();
-      import_assert.default.equal(atom.config.get("core.telemetryConsent"), "no");
+      import_assert.default.equal(chevron.config.get("core.telemetryConsent"), "no");
     });
     it("does not open consent or sunsetting panes", async () => {
-      atom.config.set("core.telemetryConsent", "undecided");
-      atom.config.set("welcome.showOnStartup", true);
+      chevron.config.set("core.telemetryConsent", "undecided");
+      chevron.config.set("welcome.showOnStartup", true);
       await welcomePackage.activate();
-      const titles = atom.workspace.getCenter().getPanes().reduce((acc, pane) => acc.concat(pane.getItems().map((i) => i.getTitle())), []);
+      const titles = chevron.workspace.getCenter().getPanes().reduce((acc, pane) => acc.concat(pane.getItems().map((i) => i.getTitle())), []);
       (0, import_assert.default)(!titles.includes("Telemetry Consent"));
       (0, import_assert.default)(!titles.includes("Sunsetting Atom"));
       (0, import_assert.default)(titles.includes("Welcome"));
@@ -54,8 +54,8 @@ describe("Welcome", () => {
   });
   describe("when showOnStartup is true", () => {
     beforeEach(async () => {
-      atom.config.set("core.telemetryConsent", "no");
-      atom.config.set("welcome.showOnStartup", true);
+      chevron.config.set("core.telemetryConsent", "no");
+      chevron.config.set("welcome.showOnStartup", true);
       await welcomePackage.activate();
     });
     // Adjacent tabs, not upstream's left/right split (#13: the split left an
@@ -65,11 +65,11 @@ describe("Welcome", () => {
     });
     describe("the welcome:show command", () => {
       it("shows the welcome panes", async () => {
-        atom.workspace.getCenter().getPanes().map((pane) => pane.destroy());
-        (0, import_assert.default)(!atom.workspace.getActivePaneItem());
-        const workspaceElement = atom.views.getView(atom.workspace);
-        atom.commands.dispatch(workspaceElement, "welcome:show");
-        await (0, import_helpers.conditionPromise)(() => atom.workspace.getActivePaneItem());
+        chevron.workspace.getCenter().getPanes().map((pane) => pane.destroy());
+        (0, import_assert.default)(!chevron.workspace.getActivePaneItem());
+        const workspaceElement = chevron.views.getView(chevron.workspace);
+        chevron.commands.dispatch(workspaceElement, "welcome:show");
+        await (0, import_helpers.conditionPromise)(() => chevron.workspace.getActivePaneItem());
         import_assert.default.deepEqual(centerTitles(), ["Welcome", "Welcome Guide"]);
       });
     });
@@ -140,11 +140,11 @@ describe("Welcome", () => {
         it("activates settings-view before opening installer and theme picker", async () => {
           const opened = [];
           const activated = [];
-          atom.packages.activatePackage = (name) => {
+          chevron.packages.activatePackage = (name) => {
             activated.push(name);
             return Promise.resolve();
           };
-          atom.workspace.open = (uri) => {
+          chevron.workspace.open = (uri) => {
             opened.push(uri);
             return Promise.resolve();
           };
@@ -185,10 +185,10 @@ describe("Welcome", () => {
   });
   describe("when showOnStartup is false", () => {
     it("does not open welcome panes on activate", async () => {
-      atom.config.set("core.telemetryConsent", "no");
-      atom.config.set("welcome.showOnStartup", false);
+      chevron.config.set("core.telemetryConsent", "no");
+      chevron.config.set("welcome.showOnStartup", false);
       await welcomePackage.activate();
-      const itemCount = atom.workspace.getCenter().getPanes().reduce((n, pane) => n + pane.getItems().length, 0);
+      const itemCount = chevron.workspace.getCenter().getPanes().reduce((n, pane) => n + pane.getItems().length, 0);
       import_assert.default.equal(itemCount, 0);
     });
   });

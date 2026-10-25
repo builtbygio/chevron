@@ -8,7 +8,7 @@
     "ctrl-F": "project-find:show",
     "ctrl-f": "find-and-replace:show"
   },
-  ".platform-darwin atom-text-editor": {
+  ".platform-darwin chevron-text-editor": {
     "cmd-g": "find-and-replace:find-next",
     "cmd-G": "find-and-replace:find-previous",
     "cmd-f3": "find-and-replace:find-next-selected",
@@ -21,7 +21,7 @@
     "cmd-u": "find-and-replace:select-undo",
     "cmd-k cmd-d": "find-and-replace:select-skip"
   },
-  ".platform-win32 atom-text-editor, .platform-linux atom-text-editor": {
+  ".platform-win32 chevron-text-editor, .platform-linux chevron-text-editor": {
     "f3": "find-and-replace:find-next",
     "shift-f3": "find-and-replace:find-previous",
     "ctrl-f3": "find-and-replace:find-next-selected",
@@ -64,22 +64,22 @@
     "tab": "find-and-replace:focus-next",
     "shift-tab": "find-and-replace:focus-previous"
   },
-  ".platform-darwin .find-and-replace .replace-container atom-text-editor": {
+  ".platform-darwin .find-and-replace .replace-container chevron-text-editor": {
     "cmd-enter": "find-and-replace:replace-all"
   },
-  ".platform-darwin .project-find .replace-container atom-text-editor": {
+  ".platform-darwin .project-find .replace-container chevron-text-editor": {
     "cmd-enter": "project-find:replace-all"
   },
-  ".platform-win32 .find-and-replace .replace-container atom-text-editor": {
+  ".platform-win32 .find-and-replace .replace-container chevron-text-editor": {
     "ctrl-enter": "find-and-replace:replace-all"
   },
-  ".platform-win32 .project-find .replace-container atom-text-editor": {
+  ".platform-win32 .project-find .replace-container chevron-text-editor": {
     "ctrl-enter": "project-find:replace-all"
   },
-  ".platform-linux .find-and-replace .replace-container atom-text-editor": {
+  ".platform-linux .find-and-replace .replace-container chevron-text-editor": {
     "ctrl-enter": "find-and-replace:replace-all"
   },
-  ".platform-linux .project-find .replace-container atom-text-editor": {
+  ".platform-linux .project-find .replace-container chevron-text-editor": {
     "ctrl-enter": "project-find:replace-all"
   },
   ".results-view": {

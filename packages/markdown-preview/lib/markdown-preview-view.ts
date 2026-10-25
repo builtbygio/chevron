@@ -360,9 +360,9 @@ module.exports = class MarkdownPreviewView {
   }
 
   getTextEditorStyles () {
-    const textEditorStyles = document.createElement('atom-styles')
+    const textEditorStyles = document.createElement('chevron-styles')
     textEditorStyles.initialize(chevron.styles)
-    textEditorStyles.setAttribute('context', 'atom-text-editor')
+    textEditorStyles.setAttribute('context', 'chevron-text-editor')
     document.body.appendChild(textEditorStyles)
 
     // Extract style elements content
@@ -390,7 +390,7 @@ module.exports = class MarkdownPreviewView {
     return markdownPreviewRules
       .concat(this.getTextEditorStyles())
       .join('\n')
-      .replace(/atom-text-editor/g, 'pre.editor-colors')
+      .replace(/chevron-text-editor/g, 'pre.editor-colors')
       .replace(/:host/g, '.host') // Remove shadow-dom :host selector causing problem on FF
       .replace(cssUrlRegExp, function (match, assetsName, offset, string) {
         // base64 encode assets

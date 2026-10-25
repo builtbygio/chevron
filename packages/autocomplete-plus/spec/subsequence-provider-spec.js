@@ -24,18 +24,18 @@ describe('SubsequenceProvider', () => {
     jasmine.useRealClock()
 
     // Set to live completion
-    atom.config.set('autocomplete-plus.enableAutoActivation', true)
-    atom.config.set('autocomplete-plus.defaultProvider', 'Subsequence')
+    chevron.config.set('autocomplete-plus.enableAutoActivation', true)
+    chevron.config.set('autocomplete-plus.defaultProvider', 'Subsequence')
 
     // Set the completion delay
-    atom.config.set('autocomplete-plus.autoActivationDelay', 100)
+    chevron.config.set('autocomplete-plus.autoActivationDelay', 100)
 
-    let workspaceElement = atom.views.getView(atom.workspace)
+    let workspaceElement = chevron.views.getView(chevron.workspace)
     jasmine.attachToDOM(workspaceElement)
 
-    editor = await atom.workspace.open('sample.js')
-    await atom.packages.activatePackage('language-javascript')
-    mainModule = (await atom.packages.activatePackage('autocomplete-plus')).mainModule
+    editor = await chevron.workspace.open('sample.js')
+    await chevron.packages.activatePackage('language-javascript')
+    mainModule = (await chevron.packages.activatePackage('autocomplete-plus')).mainModule
 
     await conditionPromise(() =>
       mainModule.autocompleteManager && mainModule.autocompleteManager.ready
@@ -94,8 +94,8 @@ describe('SubsequenceProvider', () => {
   })
 
   it('does not return the prefix as a suggestion', async () => {
-    atom.config.set('editor.nonWordCharacters', '-')
-    atom.config.set('autocomplete-plus.extraWordCharacters', '-')
+    chevron.config.set('editor.nonWordCharacters', '-')
+    chevron.config.set('autocomplete-plus.extraWordCharacters', '-')
 
     editor.moveToBottom()
     editor.insertText('--qu')
@@ -119,7 +119,7 @@ describe('SubsequenceProvider', () => {
 
   it('does not output suggestions from the other buffer', async () => {
     // language-coffee-script is gone; the file opens as plain text.
-    const coffeeEditor = await atom.workspace.open('sample.coffee')
+    const coffeeEditor = await chevron.workspace.open('sample.coffee')
     const suggestions = await suggestionsForPrefix(provider, coffeeEditor, 'item')
 
     expect(suggestions).toHaveLength(0)
@@ -144,7 +144,7 @@ describe('SubsequenceProvider', () => {
   })
 
   describe('when autocomplete-plus.minimumWordLength is > 1', () => {
-    beforeEach(() => atom.config.set('autocomplete-plus.minimumWordLength', 3))
+    beforeEach(() => chevron.config.set('autocomplete-plus.minimumWordLength', 3))
 
     it('only returns results when the prefix is at least the min word length', async () => {
       editor.insertText('function aNewFunction(){};')
@@ -166,7 +166,7 @@ describe('SubsequenceProvider', () => {
   })
 
   describe('when autocomplete-plus.minimumWordLength is 0', () => {
-    beforeEach(() => atom.config.set('autocomplete-plus.minimumWordLength', 0))
+    beforeEach(() => chevron.config.set('autocomplete-plus.minimumWordLength', 0))
 
     it('only returns results when the prefix is at least the min word length', async () => {
       editor.insertText('function aNewFunction(){};')
@@ -224,17 +224,17 @@ describe('SubsequenceProvider', () => {
       const scopeSelector = editor.getLastCursor().getScopeDescriptor().getScopeChain()
       editor.insertText('good$noodles good-beef ')
 
-      atom.config.set('editor.nonWordCharacters', '$-', {scopeSelector})
+      chevron.config.set('editor.nonWordCharacters', '$-', {scopeSelector})
       let sugs = await suggestionsForPrefix(provider, editor, 'good')
       expect(sugs).not.toContain('good$noodles')
       expect(sugs).not.toContain('good-beef')
 
-      atom.config.set('autocomplete-plus.extraWordCharacters', '-', {scopeSelector})
+      chevron.config.set('autocomplete-plus.extraWordCharacters', '-', {scopeSelector})
       sugs = await suggestionsForPrefix(provider, editor, 'good')
       expect(sugs).toContain('good-beef')
       expect(sugs).not.toContain('good$noodles')
 
-      atom.config.set('editor.nonWordCharacters', '-', {scopeSelector})
+      chevron.config.set('editor.nonWordCharacters', '-', {scopeSelector})
       sugs = await suggestionsForPrefix(provider, editor, 'good')
       expect(sugs).toContain('good-beef')
       expect(sugs).toContain('good$noodles')
@@ -243,13 +243,13 @@ describe('SubsequenceProvider', () => {
 
   describe('when includeCompletionsFromAllBuffers is enabled', () => {
     beforeEach(async () => {
-      atom.config.set('autocomplete-plus.includeCompletionsFromAllBuffers', true)
+      chevron.config.set('autocomplete-plus.includeCompletionsFromAllBuffers', true)
 
-      editor = await atom.workspace.open('sample.coffee')
+      editor = await chevron.workspace.open('sample.coffee')
     })
 
     afterEach(() => {
-      atom.config.set('autocomplete-plus.includeCompletionsFromAllBuffers', false)
+      chevron.config.set('autocomplete-plus.includeCompletionsFromAllBuffers', false)
     })
 
     it('outputs unique suggestions', async () => {
@@ -372,7 +372,7 @@ describe('SubsequenceProvider', () => {
           ]
         }
       }
-      atom.config.set('autocomplete.symbols', commentConfig, {scopeSelector: '.source.js .comment'})
+      chevron.config.set('autocomplete.symbols', commentConfig, {scopeSelector: '.source.js .comment'})
     })
 
     it('adds the suggestion objects to the results', async () => {
@@ -394,7 +394,7 @@ describe('SubsequenceProvider', () => {
   describe('when the legacy completions array is used', () => {
     beforeEach(() => {
       editor.setText('// abcomment')
-      atom.config.set('editor.completions', ['abcd', 'abcde', 'abcdef'], {scopeSelector: '.source.js .comment'})
+      chevron.config.set('editor.completions', ['abcd', 'abcde', 'abcdef'], {scopeSelector: '.source.js .comment'})
     })
 
     it('uses the config for the scope under the cursor', async () => {
@@ -411,7 +411,7 @@ describe('SubsequenceProvider', () => {
   })
 
   it('adds words to the wordlist with unicode characters', async () => {
-    atom.config.set('autocomplete-plus.enableExtendedUnicodeSupport', true)
+    chevron.config.set('autocomplete-plus.enableExtendedUnicodeSupport', true)
 
     let suggestions = await suggestionsForPrefix(provider, editor, 'somē', {raw: true})
     expect(suggestions).toHaveLength(0)

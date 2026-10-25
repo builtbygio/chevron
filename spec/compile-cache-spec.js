@@ -15,7 +15,7 @@ describe('CompileCache', function() {
   let [atomHome, fixtures] = Array.from([]);
 
   beforeEach(function() {
-    fixtures = atom.project.getPaths()[0];
+    fixtures = chevron.project.getPaths()[0];
     atomHome = temp.mkdirSync('fake-atom-home');
 
     CompileCache.resetCacheStats();

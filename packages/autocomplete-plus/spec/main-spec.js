@@ -12,24 +12,24 @@ describe('Autocomplete', () => {
     jasmine.useRealClock()
 
     // Set to live completion
-    atom.config.set('autocomplete-plus.enableAutoActivation', true)
-    atom.config.set('autocomplete-plus.fileBlacklist', ['.*', '*.md'])
+    chevron.config.set('autocomplete-plus.enableAutoActivation', true)
+    chevron.config.set('autocomplete-plus.fileBlacklist', ['.*', '*.md'])
 
-    let workspaceElement = atom.views.getView(atom.workspace)
+    let workspaceElement = chevron.views.getView(chevron.workspace)
     jasmine.attachToDOM(workspaceElement)
 
-    editor = await atom.workspace.open('sample.js')
-    await atom.packages.activatePackage('language-javascript')
+    editor = await chevron.workspace.open('sample.js')
+    await chevron.packages.activatePackage('language-javascript')
 
     // Activate the package
-    mainModule = (await atom.packages.activatePackage('autocomplete-plus')).mainModule
+    mainModule = (await chevron.packages.activatePackage('autocomplete-plus')).mainModule
 
     await conditionPromise(() =>
       mainModule.autocompleteManager && mainModule.autocompleteManager.ready
     )
 
     autocompleteManager = mainModule.autocompleteManager
-    editorView = atom.views.getView(editor)
+    editorView = chevron.views.getView(editor)
   })
 
   describe('@activate()', () =>
@@ -50,7 +50,7 @@ describe('Autocomplete', () => {
       expect(editorView.querySelector('.autocomplete-plus')).toExist()
 
       // Deactivate the package
-      await atom.packages.deactivatePackage('autocomplete-plus')
+      await chevron.packages.deactivatePackage('autocomplete-plus')
       expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
     })
   })

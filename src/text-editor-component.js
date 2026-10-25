@@ -71,7 +71,7 @@ module.exports = class TextEditorComponent {
       this.element = TextEditorElement.createTextEditorElement();
     }
     this.element.initialize(this);
-    this.virtualNode = $('atom-text-editor');
+    this.virtualNode = $('chevron-text-editor');
     this.virtualNode.domNode = this.element;
     this.refs = {};
 
@@ -517,7 +517,7 @@ module.exports = class TextEditorComponent {
     }
 
     return $(
-      'atom-text-editor',
+      'chevron-text-editor',
       {
         // See this.updateClassList() for construction of the class name
         style,

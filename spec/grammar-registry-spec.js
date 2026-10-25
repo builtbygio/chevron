@@ -39,7 +39,7 @@ describe('GrammarRegistry', () => {
   let grammarRegistry;
 
   beforeEach(() => {
-    grammarRegistry = new GrammarRegistry({ config: atom.config });
+    grammarRegistry = new GrammarRegistry({ config: chevron.config });
     expect(subscriptionCount(grammarRegistry)).toBe(0);
   });
 
@@ -256,16 +256,16 @@ describe('GrammarRegistry', () => {
 
   describe('.selectGrammar(filePath)', () => {
     it('always returns a grammar', () => {
-      const registry = new GrammarRegistry({ config: atom.config });
+      const registry = new GrammarRegistry({ config: chevron.config });
       expect(registry.selectGrammar().scopeName).toBe(NULL_SCOPE);
     });
 
     it('selects a grammar based on the file path case insensitively', async () => {
-      await atom.packages.activatePackage('language-python');
-      expect(atom.grammars.selectGrammar('/tmp/source.py').scopeName).toBe(
+      await chevron.packages.activatePackage('language-python');
+      expect(chevron.grammars.selectGrammar('/tmp/source.py').scopeName).toBe(
         'source.python'
       );
-      expect(atom.grammars.selectGrammar('/tmp/source.PY').scopeName).toBe(
+      expect(chevron.grammars.selectGrammar('/tmp/source.PY').scopeName).toBe(
         'source.python'
       );
     });
@@ -283,68 +283,68 @@ describe('GrammarRegistry', () => {
       });
 
       it('normalizes back slashes to forward slashes when matching the fileTypes', async () => {
-        await atom.packages.activatePackage('language-ruby');
-        atom.config.set('core.customFileTypes', {
+        await chevron.packages.activatePackage('language-ruby');
+        chevron.config.set('core.customFileTypes', {
           'source.ruby': ['config/rules']
         });
         expect(
-          atom.grammars.selectGrammar('project\\config\\rules').scopeName
+          chevron.grammars.selectGrammar('project\\config\\rules').scopeName
         ).toBe('source.ruby');
       });
     });
 
     it("can use the filePath to load the correct grammar based on the grammar's filetype", async () => {
-      await atom.packages.activatePackage('language-html');
-      await atom.packages.activatePackage('language-javascript');
-      await atom.packages.activatePackage('language-ruby');
+      await chevron.packages.activatePackage('language-html');
+      await chevron.packages.activatePackage('language-javascript');
+      await chevron.packages.activatePackage('language-ruby');
 
-      expect(atom.grammars.selectGrammar('file.js').name).toBe('JavaScript'); // based on extension (.js)
-      expect(atom.grammars.selectGrammar('view.html.erb').name).toBe('ERB'); // based on the longest suffix (.html.erb)
-      expect(atom.grammars.selectGrammar('Rakefile').name).toBe('Ruby'); // based on the file's basename (Rakefile)
-      expect(atom.grammars.selectGrammar('curb').name).toBe('Null Grammar');
-      expect(atom.grammars.selectGrammar('test.txt').name).toBe('Null Grammar');
+      expect(chevron.grammars.selectGrammar('file.js').name).toBe('JavaScript'); // based on extension (.js)
+      expect(chevron.grammars.selectGrammar('view.html.erb').name).toBe('ERB'); // based on the longest suffix (.html.erb)
+      expect(chevron.grammars.selectGrammar('Rakefile').name).toBe('Ruby'); // based on the file's basename (Rakefile)
+      expect(chevron.grammars.selectGrammar('curb').name).toBe('Null Grammar');
+      expect(chevron.grammars.selectGrammar('test.txt').name).toBe('Null Grammar');
     });
 
     it("uses the filePath's shebang line if the grammar cannot be determined by the extension or basename", async () => {
-      await atom.packages.activatePackage('language-javascript');
-      await atom.packages.activatePackage('language-ruby');
+      await chevron.packages.activatePackage('language-javascript');
+      await chevron.packages.activatePackage('language-ruby');
 
       const filePath = require.resolve('./fixtures/shebang');
-      expect(atom.grammars.selectGrammar(filePath).name).toBe('Ruby');
+      expect(chevron.grammars.selectGrammar(filePath).name).toBe('Ruby');
       expect(
-        atom.grammars.selectGrammar('script', '#!/usr/bin/env jruby\nputs 1')
+        chevron.grammars.selectGrammar('script', '#!/usr/bin/env jruby\nputs 1')
           .name
       ).toBe('Ruby');
     });
 
     it('uses the number of newlines in the first line regex to determine the number of lines to test against', async () => {
-      await atom.packages.activatePackage('language-property-list');
-      await atom.packages.activatePackage('language-python');
+      await chevron.packages.activatePackage('language-property-list');
+      await chevron.packages.activatePackage('language-python');
 
       let fileContent = 'first-line\n<html>';
-      expect(atom.grammars.selectGrammar('dummy.py', fileContent).name).toBe(
+      expect(chevron.grammars.selectGrammar('dummy.py', fileContent).name).toBe(
         'Python'
       );
 
       fileContent = '<?xml version="1.0" encoding="UTF-8"?>';
       expect(
-        atom.grammars.selectGrammar('grammar.tmLanguage', fileContent).name
+        chevron.grammars.selectGrammar('grammar.tmLanguage', fileContent).name
       ).toBe('Null Grammar');
 
       fileContent +=
         '\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">';
       expect(
-        atom.grammars.selectGrammar('grammar.tmLanguage', fileContent).name
+        chevron.grammars.selectGrammar('grammar.tmLanguage', fileContent).name
       ).toBe('Property List (XML)');
     });
 
     it("doesn't read the file when the file contents are specified", async () => {
-      await atom.packages.activatePackage('language-ruby');
+      await chevron.packages.activatePackage('language-ruby');
 
       const filePath = require.resolve('./fixtures/shebang');
       const filePathContents = fs.readFileSync(filePath, 'utf8');
       spyOn(fs, 'read').andCallThrough();
-      expect(atom.grammars.selectGrammar(filePath, filePathContents).name).toBe(
+      expect(chevron.grammars.selectGrammar(filePath, filePathContents).name).toBe(
         'Ruby'
       );
       expect(fs.read).not.toHaveBeenCalled();
@@ -369,81 +369,81 @@ describe('GrammarRegistry', () => {
     });
 
     it('favors non-bundled packages when breaking scoring ties', async () => {
-      await atom.packages.activatePackage('language-ruby');
-      await atom.packages.activatePackage(
+      await chevron.packages.activatePackage('language-ruby');
+      await chevron.packages.activatePackage(
         path.join(__dirname, 'fixtures', 'packages', 'package-with-rb-filetype')
       );
 
-      atom.grammars.grammarForScopeName('source.ruby').bundledPackage = true;
-      atom.grammars.grammarForScopeName('test.rb').bundledPackage = false;
+      chevron.grammars.grammarForScopeName('source.ruby').bundledPackage = true;
+      chevron.grammars.grammarForScopeName('test.rb').bundledPackage = false;
 
       expect(
-        atom.grammars.selectGrammar('test.rb', '#!/usr/bin/env ruby\n').scopeName
+        chevron.grammars.selectGrammar('test.rb', '#!/usr/bin/env ruby\n').scopeName
       ).toBe('source.ruby');
       expect(
-        atom.grammars.selectGrammar('test.rb', '#!/usr/bin/env testruby')
+        chevron.grammars.selectGrammar('test.rb', '#!/usr/bin/env testruby')
           .scopeName
       ).toBe('test.rb');
-      expect(atom.grammars.selectGrammar('test.rb').scopeName).toBe('test.rb');
+      expect(chevron.grammars.selectGrammar('test.rb').scopeName).toBe('test.rb');
     });
 
     describe('when there is no file path', () => {
       it('does not throw an exception (regression)', () => {
         expect(() =>
-          atom.grammars.selectGrammar(null, '#!/usr/bin/ruby')
+          chevron.grammars.selectGrammar(null, '#!/usr/bin/ruby')
         ).not.toThrow();
-        expect(() => atom.grammars.selectGrammar(null, '')).not.toThrow();
-        expect(() => atom.grammars.selectGrammar(null, null)).not.toThrow();
+        expect(() => chevron.grammars.selectGrammar(null, '')).not.toThrow();
+        expect(() => chevron.grammars.selectGrammar(null, null)).not.toThrow();
       });
     });
 
     describe('when the user has custom grammar file types', () => {
       it('considers the custom file types as well as those defined in the grammar', async () => {
-        await atom.packages.activatePackage('language-ruby');
-        atom.config.set('core.customFileTypes', {
+        await chevron.packages.activatePackage('language-ruby');
+        chevron.config.set('core.customFileTypes', {
           'source.ruby': ['Cheffile']
         });
         expect(
-          atom.grammars.selectGrammar('build/Cheffile', 'cookbook "postgres"')
+          chevron.grammars.selectGrammar('build/Cheffile', 'cookbook "postgres"')
             .scopeName
         ).toBe('source.ruby');
       });
 
       it('favors user-defined file types over built-in ones of equal length', async () => {
-        await atom.packages.activatePackage('language-ruby');
-        await atom.packages.activatePackage('language-python');
+        await chevron.packages.activatePackage('language-ruby');
+        await chevron.packages.activatePackage('language-python');
 
-        atom.config.set('core.customFileTypes', {
+        chevron.config.set('core.customFileTypes', {
           'source.python': ['Rakefile'],
           'source.ruby': ['SConstruct']
         });
-        expect(atom.grammars.selectGrammar('Rakefile', '').scopeName).toBe(
+        expect(chevron.grammars.selectGrammar('Rakefile', '').scopeName).toBe(
           'source.python'
         );
-        expect(atom.grammars.selectGrammar('SConstruct', '').scopeName).toBe(
+        expect(chevron.grammars.selectGrammar('SConstruct', '').scopeName).toBe(
           'source.ruby'
         );
       });
 
       it('favors user-defined file types over grammars with matching first-line-regexps', async () => {
-        await atom.packages.activatePackage('language-ruby');
-        await atom.packages.activatePackage('language-javascript');
+        await chevron.packages.activatePackage('language-ruby');
+        await chevron.packages.activatePackage('language-javascript');
 
-        atom.config.set('core.customFileTypes', {
+        chevron.config.set('core.customFileTypes', {
           'source.ruby': ['bootstrap']
         });
         expect(
-          atom.grammars.selectGrammar('bootstrap', '#!/usr/bin/env node')
+          chevron.grammars.selectGrammar('bootstrap', '#!/usr/bin/env node')
             .scopeName
         ).toBe('source.ruby');
       });
     });
 
     it('favors a grammar with a matching file type over one with a matching first line pattern', async () => {
-      await atom.packages.activatePackage('language-ruby');
-      await atom.packages.activatePackage('language-javascript');
+      await chevron.packages.activatePackage('language-ruby');
+      await chevron.packages.activatePackage('language-javascript');
       expect(
-        atom.grammars.selectGrammar('foo.rb', '#!/usr/bin/env node').scopeName
+        chevron.grammars.selectGrammar('foo.rb', '#!/usr/bin/env node').scopeName
       ).toBe('source.ruby');
     });
 
@@ -589,10 +589,10 @@ describe('GrammarRegistry', () => {
 
   describe('.removeGrammar(grammar)', () => {
     it("removes the grammar, so it won't be returned by selectGrammar", async () => {
-      await atom.packages.activatePackage('language-css');
-      const grammar = atom.grammars.selectGrammar('foo.css');
-      atom.grammars.removeGrammar(grammar);
-      expect(atom.grammars.selectGrammar('foo.css').name).not.toBe(
+      await chevron.packages.activatePackage('language-css');
+      const grammar = chevron.grammars.selectGrammar('foo.css');
+      chevron.grammars.removeGrammar(grammar);
+      expect(chevron.grammars.selectGrammar('foo.css').name).not.toBe(
         grammar.name
       );
     });
@@ -665,7 +665,7 @@ describe('GrammarRegistry', () => {
       const buffer1Copy = await TextBuffer.deserialize(buffer1.serialize());
       const buffer2Copy = await TextBuffer.deserialize(buffer2.serialize());
 
-      const grammarRegistryCopy = new GrammarRegistry({ config: atom.config });
+      const grammarRegistryCopy = new GrammarRegistry({ config: chevron.config });
       grammarRegistryCopy.deserialize(
         JSON.parse(JSON.stringify(grammarRegistry.serialize()))
       );

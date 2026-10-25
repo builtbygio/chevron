@@ -66,7 +66,7 @@ class PaneAxisElement extends HTMLElement {
   isPaneResizeHandleElement(element) {
     return (
       (element != null ? element.nodeName.toLowerCase() : undefined) ===
-      'atom-pane-resize-handle'
+      'chevron-pane-resize-handle'
     );
   }
 
@@ -123,12 +123,12 @@ class PaneAxisElement extends HTMLElement {
   }
 }
 
-window.customElements.define('atom-pane-axis', PaneAxisElement);
+window.customElements.define('chevron-pane-axis', PaneAxisElement);
 
 const createCustomElement = require('./create-custom-element');
 
 function createPaneAxisElement() {
-  return createCustomElement('atom-pane-axis', PaneAxisElement);
+  return createCustomElement('chevron-pane-axis', PaneAxisElement);
 }
 
 module.exports = {

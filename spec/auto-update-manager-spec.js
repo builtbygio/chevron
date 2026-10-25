@@ -67,7 +67,7 @@ describe('AutoUpdateManager (renderer)', () => {
     it('is true only for a supported state outside the dev channel', () => {
       let state, releaseChannel;
       spyOn(autoUpdateManager, 'getState').andCallFake(() => state);
-      spyOn(atom, 'getReleaseChannel').andCallFake(() => releaseChannel);
+      spyOn(chevron, 'getReleaseChannel').andCallFake(() => releaseChannel);
 
       state = 'idle';
       releaseChannel = 'stable';

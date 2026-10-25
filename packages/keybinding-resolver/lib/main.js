@@ -14,7 +14,7 @@ module.exports = {
       }
     }))
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', {
       'key-binding-resolver:toggle': () => this.toggle()
     }))
   },

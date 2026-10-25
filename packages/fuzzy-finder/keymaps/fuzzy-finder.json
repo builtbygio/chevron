@@ -17,7 +17,7 @@
     "ctrl-b": "fuzzy-finder:toggle-buffer-finder",
     "ctrl-B": "fuzzy-finder:toggle-git-status-finder"
   },
-  ".fuzzy-finder atom-text-editor[mini]": {
+  ".fuzzy-finder chevron-text-editor[mini]": {
     "shift-enter": "fuzzy-finder:invert-confirm"
   }
 }

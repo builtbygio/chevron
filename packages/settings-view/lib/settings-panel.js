@@ -228,7 +228,7 @@ class SettingsPanel extends import_collapsible_section_panel.default {
     return new import_atom.CompositeDisposable(...disposables);
   }
   bindEditors() {
-    const disposables = Array.from(this.element.querySelectorAll("atom-text-editor")).map((editorElement) => {
+    const disposables = Array.from(this.element.querySelectorAll("chevron-text-editor")).map((editorElement) => {
       let editor = editorElement.getModel();
       let name = editorElement.id;
       let type = editorElement.getAttribute("type");
@@ -272,7 +272,7 @@ class SettingsPanel extends import_collapsible_section_panel.default {
     return new import_atom.CompositeDisposable(...disposables);
   }
   bindTooltips() {
-    const disposables = Array.from(this.element.querySelectorAll("input[id], select[id], atom-text-editor[id]")).map((element) => {
+    const disposables = Array.from(this.element.querySelectorAll("input[id], select[id], chevron-text-editor[id]")).map((element) => {
       const schema = chevron.config.getSchema(element.id);
       let defaultValue = this.valueToString(this.getDefault(element.id));
       if (defaultValue != null) {

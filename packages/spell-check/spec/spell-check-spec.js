@@ -23,34 +23,34 @@ describe('Spell check', function () {
     beforeEach(async function () {
         jasmine.useRealClock();
 
-        workspaceElement = atom.views.getView(atom.workspace);
-        await atom.packages.activatePackage('language-javascript');
-        await atom.workspace.open(`${__dirname}${sep}sample.js`);
-        const package = await atom.packages.activatePackage('spell-check');
+        workspaceElement = chevron.views.getView(chevron.workspace);
+        await chevron.packages.activatePackage('language-javascript');
+        await chevron.workspace.open(`${__dirname}${sep}sample.js`);
+        const package = await chevron.packages.activatePackage('spell-check');
         spellCheckModule = package.mainModule;
 
         // Disable the grammers so nothing is done until we turn it back on.
-        atom.config.set('spell-check.grammars', []);
+        chevron.config.set('spell-check.grammars', []);
 
         // Set the settings to a specific setting to avoid side effects.
-        atom.config.set('spell-check.useSystem', false);
-        atom.config.set('spell-check.useLocales', false);
-        atom.config.set('spell-check.locales', ['en-US']);
+        chevron.config.set('spell-check.useSystem', false);
+        chevron.config.set('spell-check.useLocales', false);
+        chevron.config.set('spell-check.locales', ['en-US']);
 
         // Attach everything and ready to test.
         jasmine.attachToDOM(workspaceElement);
-        editor = atom.workspace.getActiveTextEditor();
-        editorElement = atom.views.getView(editor);
+        editor = chevron.workspace.getActiveTextEditor();
+        editorElement = chevron.views.getView(editor);
     });
 
     afterEach(() => SpellCheckTask.clear());
 
     it('decorates all misspelled words', async function () {
-        atom.config.set('spell-check.useLocales', true);
+        chevron.config.set('spell-check.useLocales', true);
         editor.insertText(
             'This middle of thiss\nsentencts\n\nhas issues and the "edn" \'dsoe\' too'
         );
-        atom.config.set('spell-check.grammars', ['source.js']);
+        chevron.config.set('spell-check.grammars', ['source.js']);
 
         await conditionPromise(() => getMisspellingMarkers().length === 4);
         const misspellingMarkers = getMisspellingMarkers();
@@ -61,9 +61,9 @@ describe('Spell check', function () {
     });
 
     it('decorates misspelled words with a leading space', async function () {
-        atom.config.set('spell-check.useLocales', true);
+        chevron.config.set('spell-check.useLocales', true);
         editor.setText('\nchok bok');
-        atom.config.set('spell-check.grammars', ['source.js']);
+        chevron.config.set('spell-check.grammars', ['source.js']);
 
         await conditionPromise(() => getMisspellingMarkers().length === 2);
         const misspellingMarkers = getMisspellingMarkers();
@@ -77,12 +77,12 @@ describe('Spell check', function () {
                 'function speledWrong() {}\n' +
                 'class SpeledWrong {}'
         );
-        atom.config.set('spell-check.useLocales', true);
-        atom.config.set('spell-check.grammars', [
+        chevron.config.set('spell-check.useLocales', true);
+        chevron.config.set('spell-check.grammars', [
             'source.js',
             'text.plain.null-grammar',
         ]);
-        atom.config.set('spell-check.excludedScopes', ['.function.entity']);
+        chevron.config.set('spell-check.excludedScopes', ['.function.entity']);
 
         {
             await conditionPromise(() => getMisspellingMarkers().length > 0);
@@ -100,7 +100,7 @@ describe('Spell check', function () {
         }
 
         {
-            atom.config.set('spell-check.excludedScopes', ['.functio.entity']);
+            chevron.config.set('spell-check.excludedScopes', ['.functio.entity']);
             await conditionPromise(() => getMisspellingMarkers().length === 3);
             const markers = getMisspellingMarkers();
             expect(markers.map((marker) => marker.getBufferRange())).toEqual([
@@ -120,7 +120,7 @@ describe('Spell check', function () {
         }
 
         {
-            atom.config.set('spell-check.excludedScopes', ['.meta.class']);
+            chevron.config.set('spell-check.excludedScopes', ['.meta.class']);
             await conditionPromise(() => getMisspellingMarkers().length === 2);
             const markers = getMisspellingMarkers();
             expect(markers.map((marker) => marker.getBufferRange())).toEqual([
@@ -136,7 +136,7 @@ describe('Spell check', function () {
         }
 
         {
-            atom.grammars.assignLanguageMode(editor, null);
+            chevron.grammars.assignLanguageMode(editor, null);
             await conditionPromise(() => getMisspellingMarkers().length === 3);
             const markers = getMisspellingMarkers();
             expect(markers.map((marker) => marker.getBufferRange())).toEqual([
@@ -157,14 +157,14 @@ describe('Spell check', function () {
     });
 
     it('allow entering of known words', async function () {
-        atom.config.set('spell-check.knownWords', [
+        chevron.config.set('spell-check.knownWords', [
             'GitHub',
             '!github',
             'codez',
         ]);
-        atom.config.set('spell-check.useLocales', true);
+        chevron.config.set('spell-check.useLocales', true);
         editor.setText('GitHub (aka github): Where codez are builz.');
-        atom.config.set('spell-check.grammars', ['source.js']);
+        chevron.config.set('spell-check.grammars', ['source.js']);
 
         await conditionPromise(() => getMisspellingMarkers().length === 1);
         const misspellingMarkers = getMisspellingMarkers();
@@ -174,8 +174,8 @@ describe('Spell check', function () {
     it('hides decorations when a misspelled word is edited', async function () {
         editor.setText('notaword');
         advanceClock(editor.getBuffer().getStoppedChangingDelay());
-        atom.config.set('spell-check.useLocales', true);
-        atom.config.set('spell-check.grammars', ['source.js']);
+        chevron.config.set('spell-check.useLocales', true);
+        chevron.config.set('spell-check.grammars', ['source.js']);
         await conditionPromise(() => getMisspellingMarkers().length === 1);
 
         editor.moveToEndOfLine();
@@ -191,44 +191,44 @@ describe('Spell check', function () {
 
     describe('when spell checking for a grammar is removed', () =>
         it('removes all the misspellings', async function () {
-            atom.config.set('spell-check.useLocales', true);
+            chevron.config.set('spell-check.useLocales', true);
             editor.setText('notaword');
-            atom.config.set('spell-check.grammars', ['source.js']);
+            chevron.config.set('spell-check.grammars', ['source.js']);
             await conditionPromise(() => getMisspellingMarkers().length === 1);
 
-            atom.config.set('spell-check.grammars', []);
+            chevron.config.set('spell-check.grammars', []);
             expect(getMisspellingMarkers().length).toBe(0);
         }));
 
     describe('when spell checking for a grammar is toggled off', () =>
         it('removes all the misspellings', async function () {
-            atom.config.set('spell-check.useLocales', true);
+            chevron.config.set('spell-check.useLocales', true);
             editor.setText('notaword');
-            atom.config.set('spell-check.grammars', ['source.js']);
+            chevron.config.set('spell-check.grammars', ['source.js']);
             await conditionPromise(() => getMisspellingMarkers().length === 1);
 
-            atom.commands.dispatch(workspaceElement, 'spell-check:toggle');
+            chevron.commands.dispatch(workspaceElement, 'spell-check:toggle');
             expect(getMisspellingMarkers().length).toBe(0);
         }));
 
     describe("when the editor's grammar changes to one that does not have spell check enabled", () =>
         it('removes all the misspellings', async function () {
-            atom.config.set('spell-check.useLocales', true);
+            chevron.config.set('spell-check.useLocales', true);
             editor.setText('notaword');
-            atom.config.set('spell-check.grammars', ['source.js']);
+            chevron.config.set('spell-check.grammars', ['source.js']);
 
             await conditionPromise(() => getMisspellingMarkers().length === 1);
             const misspellingMarkers = getMisspellingMarkers();
-            editor.setGrammar(atom.grammars.selectGrammar('.txt'));
+            editor.setGrammar(chevron.grammars.selectGrammar('.txt'));
             expect(getMisspellingMarkers().length).toBe(0);
         }));
 
     describe("when 'spell-check:correct-misspelling' is triggered on the editor", function () {
         describe('when the cursor touches a misspelling that has corrections', () =>
             it('displays the corrections for the misspelling and replaces the misspelling when a correction is selected', async function () {
-                atom.config.set('spell-check.useLocales', true);
+                chevron.config.set('spell-check.useLocales', true);
                 editor.setText('tofether');
-                atom.config.set('spell-check.grammars', ['source.js']);
+                chevron.config.set('spell-check.grammars', ['source.js']);
                 let correctionsElement = null;
 
                 await conditionPromise(
@@ -236,7 +236,7 @@ describe('Spell check', function () {
                 );
                 expect(getMisspellingMarkers()[0].isValid()).toBe(true);
 
-                atom.commands.dispatch(
+                chevron.commands.dispatch(
                     editorElement,
                     'spell-check:correct-misspelling'
                 );
@@ -251,7 +251,7 @@ describe('Spell check', function () {
                     correctionsElement.querySelectorAll('li')[0].textContent
                 ).toBe('together');
 
-                atom.commands.dispatch(correctionsElement, 'core:confirm');
+                chevron.commands.dispatch(correctionsElement, 'core:confirm');
                 expect(editor.getText()).toBe('together');
                 expect(editor.getCursorBufferPosition()).toEqual([0, 8]);
 
@@ -261,14 +261,14 @@ describe('Spell check', function () {
 
         describe('when the cursor touches a misspelling that has no corrections', () =>
             it('displays a message saying no corrections found', async function () {
-                atom.config.set('spell-check.useLocales', true);
+                chevron.config.set('spell-check.useLocales', true);
                 editor.setText('zxcasdfysyadfyasdyfasdfyasdfyasdfyasydfasdf');
-                atom.config.set('spell-check.grammars', ['source.js']);
+                chevron.config.set('spell-check.grammars', ['source.js']);
                 await conditionPromise(
                     () => getMisspellingMarkers().length > 0
                 );
 
-                atom.commands.dispatch(
+                chevron.commands.dispatch(
                     editorElement,
                     'spell-check:correct-misspelling'
                 );
@@ -287,10 +287,10 @@ describe('Spell check', function () {
     describe('when a right mouse click is triggered on the editor', function () {
         describe('when the cursor touches a misspelling that has corrections', () =>
             it('displays the context menu items for the misspelling and replaces the misspelling when a correction is selected', async function () {
-                atom.config.set('spell-check.useLocales', true);
+                chevron.config.set('spell-check.useLocales', true);
                 editor.setText('tofether');
                 advanceClock(editor.getBuffer().getStoppedChangingDelay());
-                atom.config.set('spell-check.grammars', ['source.js']);
+                chevron.config.set('spell-check.grammars', ['source.js']);
                 await conditionPromise(
                     () => getMisspellingMarkers().length === 1
                 );
@@ -308,20 +308,20 @@ describe('Spell check', function () {
                 const menuItemLabel = 'together';
 
                 {
-                    const editorCommands = atom.commands.findCommands({
+                    const editorCommands = chevron.commands.findCommands({
                         target: editorElement,
                     });
                     const correctionCommand = editorCommands.filter(
                         (command) => command.name === commandName
                     )[0];
-                    const correctionMenuItem = atom.contextMenu.itemSets.filter(
+                    const correctionMenuItem = chevron.contextMenu.itemSets.filter(
                         (item) => item.items[0].label === menuItemLabel
                     )[0];
                     expect(correctionCommand).toBeDefined();
                     expect(correctionMenuItem).toBeDefined();
                 }
 
-                atom.commands.dispatch(editorElement, commandName);
+                chevron.commands.dispatch(editorElement, commandName);
                 // Check that the misspelling is corrected and the context menu entries are properly disposed.
                 expect(editor.getText()).toBe('together');
                 expect(editor.getCursorBufferPosition()).toEqual([0, 8]);
@@ -329,13 +329,13 @@ describe('Spell check', function () {
                 expect(spellCheckModule.contextMenuEntries.length).toBe(0);
 
                 {
-                    const editorCommands = atom.commands.findCommands({
+                    const editorCommands = chevron.commands.findCommands({
                         target: editorElement,
                     });
                     const correctionCommand = editorCommands.filter(
                         (command) => command.name === commandName
                     )[0];
-                    const correctionMenuItem = atom.contextMenu.itemSets.filter(
+                    const correctionMenuItem = chevron.contextMenu.itemSets.filter(
                         (item) => item.items[0].label === menuItemLabel
                     )[0];
                     expect(correctionCommand).toBeUndefined();
@@ -345,13 +345,13 @@ describe('Spell check', function () {
 
         describe('when the cursor touches a misspelling and adding known words is enabled', () =>
             it("displays the 'Add to Known Words' option and adds that word when the option is selected", async function () {
-                atom.config.set('spell-check.useLocales', true);
+                chevron.config.set('spell-check.useLocales', true);
                 editor.setText('zxcasdfysyadfyasdyfasdfyasdfyasdfyasydfasdf');
                 advanceClock(editor.getBuffer().getStoppedChangingDelay());
-                atom.config.set('spell-check.grammars', ['source.js']);
-                atom.config.set('spell-check.addKnownWords', true);
+                chevron.config.set('spell-check.grammars', ['source.js']);
+                chevron.config.set('spell-check.addKnownWords', true);
 
-                expect(atom.config.get('spell-check.knownWords').length).toBe(
+                expect(chevron.config.get('spell-check.knownWords').length).toBe(
                     0
                 );
 
@@ -369,37 +369,37 @@ describe('Spell check', function () {
                 const menuItemLabel = 'together';
 
                 {
-                    const editorCommands = atom.commands.findCommands({
+                    const editorCommands = chevron.commands.findCommands({
                         target: editorElement,
                     });
                     const correctionCommand = editorCommands.filter(
                         (command) => command.name === commandName
                     )[0];
 
-                    const correctionMenuItem = atom.contextMenu.itemSets.filter(
+                    const correctionMenuItem = chevron.contextMenu.itemSets.filter(
                         (item) => item.items[0].label === menuItemLabel
                     )[0];
                     expect(correctionCommand).toBeDefined;
                     expect(correctionMenuItem).toBeDefined;
                 }
 
-                atom.commands.dispatch(editorElement, commandName);
+                chevron.commands.dispatch(editorElement, commandName);
                 // Check that the misspelling is added as a known word, that there are no more misspelling
                 // markers in the editor, and that the context menu entries are properly disposed.
                 waitsFor(() => getMisspellingMarkers().length === 0);
-                expect(atom.config.get('spell-check.knownWords').length).toBe(
+                expect(chevron.config.get('spell-check.knownWords').length).toBe(
                     1
                 );
                 expect(spellCheckModule.contextMenuEntries.length).toBe(0);
 
                 {
-                    const editorCommands = atom.commands.findCommands({
+                    const editorCommands = chevron.commands.findCommands({
                         target: editorElement,
                     });
                     const correctionCommand = editorCommands.filter(
                         (command) => command.name === commandName
                     )[0];
-                    const correctionMenuItem = atom.contextMenu.itemSets.filter(
+                    const correctionMenuItem = chevron.contextMenu.itemSets.filter(
                         (item) => item.items[0].label === menuItemLabel
                     )[0];
                     expect(correctionCommand).toBeUndefined();
@@ -410,9 +410,9 @@ describe('Spell check', function () {
 
     describe('when the editor is destroyed', () =>
         it('destroys all misspelling markers', async function () {
-            atom.config.set('spell-check.useLocales', true);
+            chevron.config.set('spell-check.useLocales', true);
             editor.setText('mispelling');
-            atom.config.set('spell-check.grammars', ['source.js']);
+            chevron.config.set('spell-check.grammars', ['source.js']);
 
             await conditionPromise(() => getMisspellingMarkers().length > 0);
             editor.destroy();
@@ -439,7 +439,7 @@ describe('Spell check', function () {
                 require.resolve('./eot-spec-checker')
             );
             editor.setText('eot');
-            atom.config.set('spell-check.grammars', ['source.js']);
+            chevron.config.set('spell-check.grammars', ['source.js']);
 
             await conditionPromise(() => getMisspellingMarkers().length === 1);
             editor.destroy();
@@ -463,7 +463,7 @@ describe('Spell check', function () {
                 require.resolve('./eot-spec-checker')
             );
             editor.setText('k1a eot');
-            atom.config.set('spell-check.grammars', ['source.js']);
+            chevron.config.set('spell-check.grammars', ['source.js']);
             await conditionPromise(() => getMisspellingMarkers().length === 1);
             editor.destroy();
             expect(getMisspellingMarkers().length).toBe(0);
@@ -486,7 +486,7 @@ describe('Spell check', function () {
                 require.resolve('./eot-spec-checker')
             );
             editor.setText('k2a eot');
-            atom.config.set('spell-check.grammars', ['source.js']);
+            chevron.config.set('spell-check.grammars', ['source.js']);
 
             await conditionPromise(() => getMisspellingMarkers().length === 2);
             editor.destroy();
@@ -510,7 +510,7 @@ describe('Spell check', function () {
                 require.resolve('./eot-spec-checker')
             );
             editor.setText('k2a good eot');
-            atom.config.set('spell-check.grammars', ['source.js']);
+            chevron.config.set('spell-check.grammars', ['source.js']);
 
             await conditionPromise(() => getMisspellingMarkers().length === 2);
             editor.destroy();
@@ -534,7 +534,7 @@ describe('Spell check', function () {
                 require.resolve('./eot-spec-checker')
             );
             editor.setText('k0a eot');
-            atom.config.set('spell-check.grammars', ['source.js']);
+            chevron.config.set('spell-check.grammars', ['source.js']);
 
             await conditionPromise(() => getMisspellingMarkers().length === 1);
             editor.destroy();
@@ -558,7 +558,7 @@ describe('Spell check', function () {
                 require.resolve('./eot-spec-checker')
             );
             editor.setText('k0b eot');
-            atom.config.set('spell-check.grammars', ['source.js']);
+            chevron.config.set('spell-check.grammars', ['source.js']);
 
             await conditionPromise(() => getMisspellingMarkers().length === 1);
             editor.destroy();
@@ -582,7 +582,7 @@ describe('Spell check', function () {
                 require.resolve('./eot-spec-checker')
             );
             editor.setText('k0c eot');
-            atom.config.set('spell-check.grammars', ['source.js']);
+            chevron.config.set('spell-check.grammars', ['source.js']);
 
             await conditionPromise(() => getMisspellingMarkers().length === 2);
             editor.destroy();
@@ -594,8 +594,8 @@ describe('Spell check', function () {
                 require.resolve('./eot-spec-checker')
             );
             editor.setText('абырг eot');
-            atom.config.set('spell-check.grammars', ['source.js']);
-            expect(atom.config.get('spell-check.knownWords').length).toBe(0);
+            chevron.config.set('spell-check.grammars', ['source.js']);
+            expect(chevron.config.get('spell-check.knownWords').length).toBe(0);
 
             await conditionPromise(() => getMisspellingMarkers().length > 0);
             const markers = getMisspellingMarkers();
@@ -616,8 +616,8 @@ describe('Spell check', function () {
                 require.resolve('./eot-spec-checker')
             );
             editor.setText('абырг eot');
-            atom.config.set('spell-check.grammars', ['source.js']);
-            expect(atom.config.get('spell-check.knownWords').length).toBe(0);
+            chevron.config.set('spell-check.grammars', ['source.js']);
+            expect(chevron.config.get('spell-check.knownWords').length).toBe(0);
 
             await conditionPromise(() => getMisspellingMarkers().length === 1);
             editor.destroy();
@@ -630,9 +630,9 @@ describe('Spell check', function () {
     if (env.isSystemSupported() && env.isDarwin()) {
         describe('when using system checker plugin', function () {
             it('marks chzz as not a valid word but cheese is', async function () {
-                atom.config.set('spell-check.useSystem', true);
+                chevron.config.set('spell-check.useSystem', true);
                 editor.setText('cheese chzz');
-                atom.config.set('spell-check.grammars', ['source.js']);
+                chevron.config.set('spell-check.grammars', ['source.js']);
 
                 await conditionPromise(() => {
                     markers = getMisspellingMarkers();
@@ -649,9 +649,9 @@ describe('Spell check', function () {
             });
 
             it('marks multiple words as wrong', async function () {
-                atom.config.set('spell-check.useSystem', true);
+                chevron.config.set('spell-check.useSystem', true);
                 editor.setText('cheese chz chzz chzzz');
-                atom.config.set('spell-check.grammars', ['source.js']);
+                chevron.config.set('spell-check.grammars', ['source.js']);
 
                 await conditionPromise(() => {
                     markers = getMisspellingMarkers();

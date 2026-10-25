@@ -259,7 +259,7 @@ describe('UI themes compile against their syntax theme', () => {
   const editorTab = css =>
     (css.match(/\[data-type="MarkdownPreviewView"\]\s*\{([^}]*)\}/) || [])[1] || '';
   const editorThumb = css =>
-    (css.match(/atom-text-editor ::-webkit-scrollbar-thumb\s*\{([^}]*)\}/) || [])[1] || '';
+    (css.match(/chevron-text-editor ::-webkit-scrollbar-thumb\s*\{([^}]*)\}/) || [])[1] || '';
   const WHITE = /#fff\b|#ffffff\b|rgb\(255, 255, 255\)/i;
 
   it('pairs <name>-ui with <name>-syntax only when that syntax theme exists', () => {

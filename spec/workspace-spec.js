@@ -9,7 +9,7 @@ const platform = require('./spec-helper-platform');
 const _ = require('underscore-plus');
 const fstream = require('fstream');
 const fs = require('fs-plus');
-const AtomEnvironment = require('../src/atom-environment');
+const ChevronEnvironment = require('../src/chevron-environment');
 const { conditionPromise } = require('./async-spec-helpers');
 
 function useRealClockOnce() {
@@ -25,21 +25,21 @@ describe('Workspace', () => {
   let setDocumentEdited;
 
   beforeEach(async () => {
-    workspace = atom.workspace;
+    workspace = chevron.workspace;
     workspace.resetFontSize();
-    spyOn(atom.applicationDelegate, 'confirm');
+    spyOn(chevron.applicationDelegate, 'confirm');
     setDocumentEdited = spyOn(
-      atom.applicationDelegate,
+      chevron.applicationDelegate,
       'setWindowDocumentEdited'
     );
-    atom.project.setPaths([atom.project.getDirectories()[0].resolve('dir')]);
+    chevron.project.setPaths([chevron.project.getDirectories()[0].resolve('dir')]);
     // Service consumers register on a timer. Stay on the spec clock: several
     // examples advance it, and turning the real clock on here breaks them.
     await new Promise(resolve => {
       window.setTimeout(resolve, 1);
       window.advanceClock(1);
     });
-    await atom.workspace.itemLocationStore.clear();
+    await chevron.workspace.itemLocationStore.clear();
   });
 
   afterEach(() => {
@@ -53,31 +53,31 @@ describe('Workspace', () => {
   async function simulateReload() {
     await (async () => {
       const workspaceState = workspace.serialize();
-      const projectState = atom.project.serialize({ isUnloading: true });
+      const projectState = chevron.project.serialize({ isUnloading: true });
       workspace.destroy();
-      atom.project.destroy();
-      atom.project = new Project({
-        notificationManager: atom.notifications,
-        packageManager: atom.packages,
-        confirm: atom.confirm.bind(atom),
-        applicationDelegate: atom.applicationDelegate,
-        grammarRegistry: atom.grammars
+      chevron.project.destroy();
+      chevron.project = new Project({
+        notificationManager: chevron.notifications,
+        packageManager: chevron.packages,
+        confirm: chevron.confirm.bind(chevron),
+        applicationDelegate: chevron.applicationDelegate,
+        grammarRegistry: chevron.grammars
       });
-      return atom.project.deserialize(projectState).then(() => {
-        workspace = atom.workspace = new Workspace({
-          config: atom.config,
-          project: atom.project,
-          packageManager: atom.packages,
-          grammarRegistry: atom.grammars,
-          styleManager: atom.styles,
-          deserializerManager: atom.deserializers,
-          notificationManager: atom.notifications,
-          applicationDelegate: atom.applicationDelegate,
-          viewRegistry: atom.views,
-          assert: atom.assert.bind(atom),
-          textEditorRegistry: atom.textEditors
+      return chevron.project.deserialize(projectState).then(() => {
+        workspace = chevron.workspace = new Workspace({
+          config: chevron.config,
+          project: chevron.project,
+          packageManager: chevron.packages,
+          grammarRegistry: chevron.grammars,
+          styleManager: chevron.styles,
+          deserializerManager: chevron.deserializers,
+          notificationManager: chevron.notifications,
+          applicationDelegate: chevron.applicationDelegate,
+          viewRegistry: chevron.views,
+          assert: chevron.assert.bind(chevron),
+          textEditorRegistry: chevron.textEditors
         });
-        workspace.deserialize(workspaceState, atom.deserializers);
+        workspace.deserialize(workspaceState, chevron.deserializers);
       });
     })();
   }
@@ -85,36 +85,36 @@ describe('Workspace', () => {
   describe('serialization', () => {
     describe('when the workspace contains text editors', () => {
       it('constructs the view with the same panes', async () => {
-        const pane1 = atom.workspace.getActivePane();
+        const pane1 = chevron.workspace.getActivePane();
         const pane2 = pane1.splitRight({ copyActiveItem: true });
         const pane3 = pane2.splitRight({ copyActiveItem: true });
         let pane4 = null;
-        await atom.workspace
+        await chevron.workspace
             .open(null)
             .then(editor => editor.setText('An untitled editor.'));
-        await atom.workspace
+        await chevron.workspace
             .open('b')
             .then(editor => pane2.activateItem(editor.copy()));
-        await atom.workspace
+        await chevron.workspace
             .open('../sample.js')
             .then(editor => pane3.activateItem(editor));
         pane3.activeItem.setCursorScreenPosition([2, 4]);
         pane4 = pane2.splitDown();
-        await atom.workspace
+        await chevron.workspace
             .open('../sample.txt')
             .then(editor => pane4.activateItem(editor));
         pane4.getActiveItem().setCursorScreenPosition([0, 2]);
         pane2.activate();
         await simulateReload();
-        expect(atom.workspace.getTextEditors().length).toBe(5);
+        expect(chevron.workspace.getTextEditors().length).toBe(5);
         const [
           editor1,
           editor2,
           untitledEditor,
           editor3,
           editor4
-        ] = atom.workspace.getTextEditors();
-        const firstDirectory = atom.project.getDirectories()[0];
+        ] = chevron.workspace.getTextEditors();
+        const firstDirectory = chevron.project.getDirectories()[0];
         expect(firstDirectory).toBeDefined();
         expect(editor1.getPath()).toBe(firstDirectory.resolve('b'));
         expect(editor2.getPath()).toBe(
@@ -128,11 +128,11 @@ describe('Workspace', () => {
         expect(editor4.getCursorScreenPosition()).toEqual([2, 4]);
         expect(untitledEditor.getPath()).toBeUndefined();
         expect(untitledEditor.getText()).toBe('An untitled editor.');
-        expect(atom.workspace.getActiveTextEditor().getPath()).toBe(
+        expect(chevron.workspace.getActiveTextEditor().getPath()).toBe(
           editor3.getPath()
         );
         const pathEscaped = fs.tildify(
-          escapeStringRegex(atom.project.getPaths()[0])
+          escapeStringRegex(chevron.project.getPaths()[0])
         );
         expect(document.title).toMatch(
           new RegExp(
@@ -144,10 +144,10 @@ describe('Workspace', () => {
 
     describe('where there are no open panes or editors', () => {
       it('constructs the view with no open editors', async () => {
-        atom.workspace.getActivePane().destroy();
-        expect(atom.workspace.getTextEditors().length).toBe(0);
+        chevron.workspace.getActivePane().destroy();
+        expect(chevron.workspace.getTextEditors().length).toBe(0);
         await simulateReload();
-        expect(atom.workspace.getTextEditors().length).toBe(0);
+        expect(chevron.workspace.getTextEditors().length).toBe(0);
       });
     });
   });
@@ -218,32 +218,32 @@ describe('Workspace', () => {
             expect(editor).toBe(editor1);
             expect(workspace.getActivePaneItem()).toBe(editor);
             expect(workspace.getActivePane().activate).toHaveBeenCalled();
-            const firstDirectory = atom.project.getDirectories()[0];
+            const firstDirectory = chevron.project.getDirectories()[0];
             expect(firstDirectory).toBeDefined();
             expect(openEvents).toEqual([
               {
                 uri: firstDirectory.resolve('a'),
                 item: editor1,
-                pane: atom.workspace.getActivePane(),
+                pane: chevron.workspace.getActivePane(),
                 index: 0
               },
               {
                 uri: firstDirectory.resolve('b'),
                 item: editor2,
-                pane: atom.workspace.getActivePane(),
+                pane: chevron.workspace.getActivePane(),
                 index: 1
               },
               {
                 uri: firstDirectory.resolve('a'),
                 item: editor1,
-                pane: atom.workspace.getActivePane(),
+                pane: chevron.workspace.getActivePane(),
                 index: 0
               }
             ]);
           });
 
           it('finds items in docks', async () => {
-            const dock = atom.workspace.getRightDock();
+            const dock = chevron.workspace.getRightDock();
             const ITEM_URI = 'chevron://test';
             const item = {
               getURI: () => ITEM_URI,
@@ -252,8 +252,8 @@ describe('Workspace', () => {
             };
             dock.getActivePane().addItem(item);
             expect(dock.getPaneItems()).toHaveLength(1);
-            await atom.workspace.open(ITEM_URI, { searchAllPanes: true });
-            expect(atom.workspace.getPaneItems()).toHaveLength(1);
+            await chevron.workspace.open(ITEM_URI, { searchAllPanes: true });
+            expect(chevron.workspace.getPaneItems()).toHaveLength(1);
             expect(dock.getPaneItems()).toHaveLength(1);
             expect(dock.getPaneItems()[0]).toBe(item);
           });
@@ -273,12 +273,12 @@ describe('Workspace', () => {
 
         describe('when the active pane does not have an editor for the given uri', () => {
           beforeEach(() => {
-            atom.workspace.enablePersistence = true;
+            chevron.workspace.enablePersistence = true;
           });
 
           afterEach(async () => {
-            await atom.workspace.itemLocationStore.clear();
-            atom.workspace.enablePersistence = false;
+            await chevron.workspace.itemLocationStore.clear();
+            chevron.workspace.enablePersistence = false;
           });
 
           it('adds and activates a new editor for the given path on the active pane', async () => {
@@ -286,7 +286,7 @@ describe('Workspace', () => {
             await workspace.open('a').then(o => {
                 editor = o;
               });
-            const firstDirectory = atom.project.getDirectories()[0];
+            const firstDirectory = chevron.project.getDirectories()[0];
             expect(firstDirectory).toBeDefined();
             expect(editor.getURI()).toBe(firstDirectory.resolve('a'));
             expect(workspace.getActivePaneItem()).toBe(editor);
@@ -315,13 +315,13 @@ describe('Workspace', () => {
               getElement: () => document.createElement('div')
             };
             const opener = jasmine.createSpy().andReturn(item);
-            const dock = atom.workspace.getRightDock();
-            spyOn(atom.workspace.itemLocationStore, 'load').andReturn(
+            const dock = chevron.workspace.getRightDock();
+            spyOn(chevron.workspace.itemLocationStore, 'load').andReturn(
               Promise.resolve()
             );
-            spyOn(atom.workspace, 'getOpeners').andReturn([opener]);
+            spyOn(chevron.workspace, 'getOpeners').andReturn([opener]);
             expect(dock.getPaneItems()).toHaveLength(0);
-            await atom.workspace.open('a');
+            await chevron.workspace.open('a');
             expect(dock.getPaneItems()).toHaveLength(1);
             expect(opener).toHaveBeenCalled();
             expect(item.getDefaultLocation).toHaveBeenCalled();
@@ -335,15 +335,15 @@ describe('Workspace', () => {
               getElement: () => document.createElement('div')
             };
             const opener = uri => (uri === ITEM_URI ? item : null);
-            const dock = atom.workspace.getRightDock();
-            spyOn(atom.workspace.itemLocationStore, 'load').andCallFake(uri =>
+            const dock = chevron.workspace.getRightDock();
+            spyOn(chevron.workspace.itemLocationStore, 'load').andCallFake(uri =>
               uri === 'chevron://test'
                 ? Promise.resolve('right')
                 : Promise.resolve()
             );
-            spyOn(atom.workspace, 'getOpeners').andReturn([opener]);
+            spyOn(chevron.workspace, 'getOpeners').andReturn([opener]);
             expect(dock.getPaneItems()).toHaveLength(0);
-            await atom.workspace.open(ITEM_URI);
+            await chevron.workspace.open(ITEM_URI);
             expect(dock.getPaneItems()).toHaveLength(1);
             expect(dock.getPaneItems()[0]).toBe(item);
           });
@@ -352,26 +352,26 @@ describe('Workspace', () => {
 
       describe('when an item with the given uri exists in an inactive pane container', () => {
         it("activates that item if it is in that container's active pane", async () => {
-          const item = await atom.workspace.open('a');
-          atom.workspace.getLeftDock().activate();
+          const item = await chevron.workspace.open('a');
+          chevron.workspace.getLeftDock().activate();
           expect(
-            await atom.workspace.open('a', { searchAllPanes: false })
+            await chevron.workspace.open('a', { searchAllPanes: false })
           ).toBe(item);
-          expect(atom.workspace.getActivePaneContainer().getLocation()).toBe(
+          expect(chevron.workspace.getActivePaneContainer().getLocation()).toBe(
             'center'
           );
-          expect(atom.workspace.getPaneItems()).toEqual([item]);
+          expect(chevron.workspace.getPaneItems()).toEqual([item]);
 
-          atom.workspace.getActivePane().splitRight();
-          atom.workspace.getLeftDock().activate();
-          const item2 = await atom.workspace.open('a', {
+          chevron.workspace.getActivePane().splitRight();
+          chevron.workspace.getLeftDock().activate();
+          const item2 = await chevron.workspace.open('a', {
             searchAllPanes: false
           });
           expect(item2).not.toBe(item);
-          expect(atom.workspace.getActivePaneContainer().getLocation()).toBe(
+          expect(chevron.workspace.getActivePaneContainer().getLocation()).toBe(
             'center'
           );
-          expect(atom.workspace.getPaneItems()).toEqual([item, item2]);
+          expect(chevron.workspace.getPaneItems()).toEqual([item, item2]);
         });
       });
     });
@@ -426,7 +426,7 @@ describe('Workspace', () => {
         });
 
         it('activates the pane in the dock with the matching item', async () => {
-          const dock = atom.workspace.getRightDock();
+          const dock = chevron.workspace.getRightDock();
           const ITEM_URI = 'chevron://test';
           const item = {
             getURI: () => ITEM_URI,
@@ -435,7 +435,7 @@ describe('Workspace', () => {
           };
           dock.getActivePane().addItem(item);
           spyOn(dock.paneForItem(item), 'activate');
-          await atom.workspace.open(ITEM_URI, { searchAllPanes: true });
+          await chevron.workspace.open(ITEM_URI, { searchAllPanes: true });
           expect(dock.paneForItem(item).activate).toHaveBeenCalled();
         });
       });
@@ -453,9 +453,9 @@ describe('Workspace', () => {
 
     describe('when attempting to open an editor in a dock', () => {
       it('opens the editor in the workspace center', async () => {
-        await atom.workspace.open('sample.txt', { location: 'right' });
+        await chevron.workspace.open('sample.txt', { location: 'right' });
         expect(
-          atom.workspace
+          chevron.workspace
             .getCenter()
             .getActivePaneItem()
             .getFileName()
@@ -466,22 +466,22 @@ describe('Workspace', () => {
     describe('when called with an item rather than a URI', () => {
       it('adds the item itself to the workspace', async () => {
         const item = document.createElement('div');
-        await atom.workspace.open(item);
-        expect(atom.workspace.getActivePaneItem()).toBe(item);
+        await chevron.workspace.open(item);
+        expect(chevron.workspace.getActivePaneItem()).toBe(item);
       });
 
       describe('when the active pane already contains the item', () => {
         it('activates the item', async () => {
           const item = document.createElement('div');
 
-          await atom.workspace.open(item);
-          await atom.workspace.open();
-          expect(atom.workspace.getActivePaneItem()).not.toBe(item);
-          expect(atom.workspace.getActivePane().getItems().length).toBe(2);
+          await chevron.workspace.open(item);
+          await chevron.workspace.open();
+          expect(chevron.workspace.getActivePaneItem()).not.toBe(item);
+          expect(chevron.workspace.getActivePane().getItems().length).toBe(2);
 
-          await atom.workspace.open(item);
-          expect(atom.workspace.getActivePaneItem()).toBe(item);
-          expect(atom.workspace.getActivePane().getItems().length).toBe(2);
+          await chevron.workspace.open(item);
+          expect(chevron.workspace.getActivePaneItem()).toBe(item);
+          expect(chevron.workspace.getActivePane().getItems().length).toBe(2);
         });
       });
 
@@ -489,14 +489,14 @@ describe('Workspace', () => {
         it('rejects the promise', async () => {
           const item = document.createElement('div');
 
-          await atom.workspace.open(item);
-          await atom.workspace.open(null, { split: 'right' });
-          expect(atom.workspace.getActivePaneItem()).not.toBe(item);
-          expect(atom.workspace.getActivePane().getItems().length).toBe(1);
+          await chevron.workspace.open(item);
+          await chevron.workspace.open(null, { split: 'right' });
+          expect(chevron.workspace.getActivePaneItem()).not.toBe(item);
+          expect(chevron.workspace.getActivePane().getItems().length).toBe(1);
 
           let rejection;
           try {
-            await atom.workspace.open(item);
+            await chevron.workspace.open(item);
           } catch (error) {
             rejection = error;
           }
@@ -738,30 +738,30 @@ describe('Workspace', () => {
         spyOn(fs, 'getSizeSync').andReturn(size * 1048577);
 
         let selectedButtonIndex = 1; // cancel
-        atom.applicationDelegate.confirm.andCallFake((options, callback) =>
+        chevron.applicationDelegate.confirm.andCallFake((options, callback) =>
           callback(selectedButtonIndex)
         );
 
         let editor = await workspace.open('sample.js');
         if (shouldPrompt) {
           expect(editor).toBeUndefined();
-          expect(atom.applicationDelegate.confirm).toHaveBeenCalled();
+          expect(chevron.applicationDelegate.confirm).toHaveBeenCalled();
 
-          atom.applicationDelegate.confirm.reset();
+          chevron.applicationDelegate.confirm.reset();
           selectedButtonIndex = 0; // open the file
 
           editor = await workspace.open('sample.js');
 
-          expect(atom.applicationDelegate.confirm).toHaveBeenCalled();
+          expect(chevron.applicationDelegate.confirm).toHaveBeenCalled();
         } else {
           expect(editor).not.toBeUndefined();
         }
       };
 
       it('prompts before opening the file', async () => {
-        atom.config.set('core.warnOnLargeFileLimit', 20);
+        chevron.config.set('core.warnOnLargeFileLimit', 20);
         await shouldPromptForFileOfSize(20, true);
-        const [options] = atom.applicationDelegate.confirm.mostRecentCall.args;
+        const [options] = chevron.applicationDelegate.confirm.mostRecentCall.args;
         expect(options.message).toBe(
           'Chevron may become unresponsive while loading very large files.'
         );
@@ -769,12 +769,12 @@ describe('Workspace', () => {
       });
 
       it("doesn't prompt on files below the limit", async () => {
-        atom.config.set('core.warnOnLargeFileLimit', 30);
+        chevron.config.set('core.warnOnLargeFileLimit', 30);
         await shouldPromptForFileOfSize(20, false);
       });
 
       it('prompts for smaller files with a lower limit', async () => {
-        atom.config.set('core.warnOnLargeFileLimit', 5);
+        chevron.config.set('core.warnOnLargeFileLimit', 5);
         await shouldPromptForFileOfSize(10, true);
       });
     });
@@ -786,8 +786,8 @@ describe('Workspace', () => {
       };
 
       beforeEach(async () => {
-        await atom.packages.activatePackage('language-javascript');
-        atom.config.set('core.largeFileModeThreshold', 5);
+        await chevron.packages.activatePackage('language-javascript');
+        chevron.config.set('core.largeFileModeThreshold', 5);
       });
 
       it('opens it as plain text with no folds, in large-file mode', async () => {
@@ -804,7 +804,7 @@ describe('Workspace', () => {
       });
 
       it('is off when the threshold is 0', async () => {
-        atom.config.set('core.largeFileModeThreshold', 0);
+        chevron.config.set('core.largeFileModeThreshold', 0);
         const editor = await openOfSize(30);
         expect(editor.isLargeFileMode()).toBe(false);
       });
@@ -815,8 +815,8 @@ describe('Workspace', () => {
         const changes = [];
         editor.onDidChangeLargeFileMode(enabled => changes.push(enabled));
 
-        atom.commands.dispatch(
-          atom.views.getView(editor),
+        chevron.commands.dispatch(
+          chevron.views.getView(editor),
           'editor:enable-full-features'
         );
 
@@ -833,7 +833,7 @@ describe('Workspace', () => {
         editor.whenFullFeatures(() => calls++);
         expect(calls).toBe(0);
 
-        atom.project.setLargeFileMode(editor.getBuffer(), false);
+        chevron.project.setLargeFileMode(editor.getBuffer(), false);
         expect(calls).toBe(1);
 
         editor.whenFullFeatures(() => calls++);
@@ -842,7 +842,7 @@ describe('Workspace', () => {
 
       it('leaves the mode when a grammar is chosen for the file', async () => {
         const editor = await openOfSize(5);
-        atom.grammars.assignLanguageMode(editor.getBuffer(), 'source.js');
+        chevron.grammars.assignLanguageMode(editor.getBuffer(), 'source.js');
         expect(editor.isLargeFileMode()).toBe(false);
       });
 
@@ -850,7 +850,7 @@ describe('Workspace', () => {
         const editor = await openOfSize(5);
         const copy = editor.copy();
         expect(copy.isLargeFileMode()).toBe(true);
-        atom.project.setLargeFileMode(editor.getBuffer(), false);
+        chevron.project.setLargeFileMode(editor.getBuffer(), false);
         expect(copy.isLargeFileMode()).toBe(false);
         copy.destroy();
       });
@@ -871,7 +871,7 @@ describe('Workspace', () => {
         workspace.addOpener(fooOpener);
         workspace.addOpener(barOpener);
         await (async () => {
-          const pathToOpen = atom.project.getDirectories()[0].resolve('a.foo');
+          const pathToOpen = chevron.project.getDirectories()[0].resolve('a.foo');
           return workspace.open(pathToOpen, { hey: 'there' }).then(item =>
             expect(item).toEqual({
               foo: pathToOpen,
@@ -889,17 +889,17 @@ describe('Workspace', () => {
       if (process.platform !== 'darwin') {
         return;
       }
-      spyOn(atom.applicationDelegate, 'addRecentDocument');
+      spyOn(chevron.applicationDelegate, 'addRecentDocument');
       await workspace.open();
       expect(
-                atom.applicationDelegate.addRecentDocument
+                chevron.applicationDelegate.addRecentDocument
               ).not.toHaveBeenCalled();
       await workspace.open('something://a/url');
       expect(
-                atom.applicationDelegate.addRecentDocument
+                chevron.applicationDelegate.addRecentDocument
               ).not.toHaveBeenCalled();
       await workspace.open(__filename);
-      expect(atom.applicationDelegate.addRecentDocument).toHaveBeenCalledWith(
+      expect(chevron.applicationDelegate.addRecentDocument).toHaveBeenCalledWith(
                 __filename
               );
     });
@@ -918,7 +918,7 @@ describe('Workspace', () => {
     describe('when there is an error opening the file', () => {
       let notificationSpy = null;
       beforeEach(() =>
-        atom.notifications.onDidAddNotification(
+        chevron.notifications.onDidAddNotification(
           (notificationSpy = jasmine.createSpy())
         )
       );
@@ -1016,12 +1016,12 @@ describe('Workspace', () => {
       it('should terminate the pending state', async () => {
         let editor = null;
         let pane = null;
-        await atom.workspace.open('sample.js', { pending: true }).then(o => {
+        await chevron.workspace.open('sample.js', { pending: true }).then(o => {
             editor = o;
-            pane = atom.workspace.getActivePane();
+            pane = chevron.workspace.getActivePane();
           });
         expect(pane.getPendingItem()).toEqual(editor);
-        await atom.workspace.open('sample.js');
+        await chevron.workspace.open('sample.js');
         expect(pane.getPendingItem()).toBeNull();
       });
     });
@@ -1030,13 +1030,13 @@ describe('Workspace', () => {
       it('keeps the pending tab open', async () => {
         let editor1 = null;
         let editor2 = null;
-        await atom.workspace.open('sample.txt').then(o => {
+        await chevron.workspace.open('sample.txt').then(o => {
             editor1 = o;
           });
-        await atom.workspace.open('sample2.txt', { pending: true }).then(o => {
+        await chevron.workspace.open('sample2.txt', { pending: true }).then(o => {
             editor2 = o;
           });
-        const pane = atom.workspace.getActivePane();
+        const pane = chevron.workspace.getActivePane();
         pane.activateItem(editor1);
         expect(pane.getItems().length).toBe(2);
         expect(pane.getItems()).toEqual([editor1, editor2]);
@@ -1045,23 +1045,23 @@ describe('Workspace', () => {
 
     describe('when replacing a pending item which is the last item in a second pane', () => {
       it('does not destroy the pane even if core.destroyEmptyPanes is on', async () => {
-        atom.config.set('core.destroyEmptyPanes', true);
+        chevron.config.set('core.destroyEmptyPanes', true);
         let editor1 = null;
         let editor2 = null;
-        const leftPane = atom.workspace.getActivePane();
+        const leftPane = chevron.workspace.getActivePane();
         let rightPane = null;
-        await atom.workspace
+        await chevron.workspace
             .open('sample.js', { pending: true, split: 'right' })
             .then(o => {
               editor1 = o;
-              rightPane = atom.workspace.getActivePane();
+              rightPane = chevron.workspace.getActivePane();
               spyOn(rightPane, 'destroy').andCallThrough();
             });
         expect(leftPane).not.toBe(rightPane);
-        expect(atom.workspace.getActivePane()).toBe(rightPane);
-        expect(atom.workspace.getActivePane().getItems().length).toBe(1);
+        expect(chevron.workspace.getActivePane()).toBe(rightPane);
+        expect(chevron.workspace.getActivePane().getItems().length).toBe(1);
         expect(rightPane.getPendingItem()).toBe(editor1);
-        await atom.workspace.open('sample.txt', { pending: true }).then(o => {
+        await chevron.workspace.open('sample.txt', { pending: true }).then(o => {
             editor2 = o;
           });
         expect(rightPane.getPendingItem()).toBe(editor2);
@@ -1074,9 +1074,9 @@ describe('Workspace', () => {
         const buffer = new TextBuffer();
         const editor = new TextEditor({ buffer });
 
-        await atom.workspace.open(editor);
+        await chevron.workspace.open(editor);
 
-        expect(atom.project.getBuffers().map(buffer => buffer.id)).toContain(
+        expect(chevron.project.getBuffers().map(buffer => buffer.id)).toContain(
           buffer.id
         );
         expect(buffer.getLanguageMode().getLanguageId()).toBe(
@@ -1096,36 +1096,36 @@ describe('Workspace', () => {
         }
       };
 
-      atom.workspace.getActivePane().activateItem(item);
-      expect(atom.workspace.paneForItem(item)).toBe(
-        atom.workspace.getCenter().getActivePane()
+      chevron.workspace.getActivePane().activateItem(item);
+      expect(chevron.workspace.paneForItem(item)).toBe(
+        chevron.workspace.getCenter().getActivePane()
       );
-      expect(atom.workspace.paneContainerForItem(item)).toBe(
-        atom.workspace.getCenter()
+      expect(chevron.workspace.paneContainerForItem(item)).toBe(
+        chevron.workspace.getCenter()
       );
-      expect(atom.workspace.paneForURI(uri)).toBe(
-        atom.workspace.getCenter().getActivePane()
+      expect(chevron.workspace.paneForURI(uri)).toBe(
+        chevron.workspace.getCenter().getActivePane()
       );
-      expect(atom.workspace.paneContainerForURI(uri)).toBe(
-        atom.workspace.getCenter()
+      expect(chevron.workspace.paneContainerForURI(uri)).toBe(
+        chevron.workspace.getCenter()
       );
 
-      atom.workspace.getActivePane().destroyActiveItem();
-      atom.workspace
+      chevron.workspace.getActivePane().destroyActiveItem();
+      chevron.workspace
         .getLeftDock()
         .getActivePane()
         .activateItem(item);
-      expect(atom.workspace.paneForItem(item)).toBe(
-        atom.workspace.getLeftDock().getActivePane()
+      expect(chevron.workspace.paneForItem(item)).toBe(
+        chevron.workspace.getLeftDock().getActivePane()
       );
-      expect(atom.workspace.paneContainerForItem(item)).toBe(
-        atom.workspace.getLeftDock()
+      expect(chevron.workspace.paneContainerForItem(item)).toBe(
+        chevron.workspace.getLeftDock()
       );
-      expect(atom.workspace.paneForURI(uri)).toBe(
-        atom.workspace.getLeftDock().getActivePane()
+      expect(chevron.workspace.paneForURI(uri)).toBe(
+        chevron.workspace.getLeftDock().getActivePane()
       );
-      expect(atom.workspace.paneContainerForURI(uri)).toBe(
-        atom.workspace.getLeftDock()
+      expect(chevron.workspace.paneContainerForURI(uri)).toBe(
+        chevron.workspace.getLeftDock()
       );
     });
   });
@@ -1145,19 +1145,19 @@ describe('Workspace', () => {
 
     describe('when called with a URI', () => {
       it('if the item for the given URI is in the center, removes it', () => {
-        const pane = atom.workspace.getActivePane();
+        const pane = chevron.workspace.getActivePane();
         pane.addItem(item);
-        atom.workspace.hide(URI);
+        chevron.workspace.hide(URI);
         expect(pane.getItems().length).toBe(0);
       });
 
       it('if the item for the given URI is in a dock, hides the dock', () => {
-        const dock = atom.workspace.getLeftDock();
+        const dock = chevron.workspace.getLeftDock();
         const pane = dock.getActivePane();
         pane.addItem(item);
         dock.activate();
         expect(dock.isVisible()).toBe(true);
-        const itemFound = atom.workspace.hide(URI);
+        const itemFound = chevron.workspace.hide(URI);
         expect(itemFound).toBe(true);
         expect(dock.isVisible()).toBe(false);
       });
@@ -1165,19 +1165,19 @@ describe('Workspace', () => {
 
     describe('when called with an item', () => {
       it('if the item is in the center, removes it', () => {
-        const pane = atom.workspace.getActivePane();
+        const pane = chevron.workspace.getActivePane();
         pane.addItem(item);
-        atom.workspace.hide(item);
+        chevron.workspace.hide(item);
         expect(pane.getItems().length).toBe(0);
       });
 
       it('if the item is in a dock, hides the dock', () => {
-        const dock = atom.workspace.getLeftDock();
+        const dock = chevron.workspace.getLeftDock();
         const pane = dock.getActivePane();
         pane.addItem(item);
         dock.activate();
         expect(dock.isVisible()).toBe(true);
-        const itemFound = atom.workspace.hide(item);
+        const itemFound = chevron.workspace.hide(item);
         expect(itemFound).toBe(true);
         expect(dock.isVisible()).toBe(false);
       });
@@ -1399,100 +1399,100 @@ describe('Workspace', () => {
 
   describe('::onDidStopChangingActivePaneItem()', () => {
     it('invokes observers when the active item of the active pane stops changing', () => {
-      const pane1 = atom.workspace.getCenter().getActivePane();
+      const pane1 = chevron.workspace.getCenter().getActivePane();
       const pane2 = pane1.splitRight({
         items: [document.createElement('div'), document.createElement('div')]
       });
-      atom.workspace
+      chevron.workspace
         .getLeftDock()
         .getActivePane()
         .addItem(document.createElement('div'));
 
       const emittedItems = [];
-      atom.workspace.onDidStopChangingActivePaneItem(item =>
+      chevron.workspace.onDidStopChangingActivePaneItem(item =>
         emittedItems.push(item)
       );
 
       pane2.activateNextItem();
       pane2.activateNextItem();
       pane1.activate();
-      atom.workspace.getLeftDock().activate();
+      chevron.workspace.getLeftDock().activate();
 
       advanceClock(100);
       expect(emittedItems).toEqual([
-        atom.workspace.getLeftDock().getActivePaneItem()
+        chevron.workspace.getLeftDock().getActivePaneItem()
       ]);
     });
   });
 
   describe('the grammar-used hook', () => {
     it('fires when opening a file or changing the grammar of an open file', async () => {
-      await atom.packages.activatePackage('language-javascript');
-      await atom.packages.activatePackage('language-json');
+      await chevron.packages.activatePackage('language-javascript');
+      await chevron.packages.activatePackage('language-json');
 
       const observeTextEditorsSpy = jasmine.createSpy('observeTextEditors');
       const javascriptGrammarUsed = jasmine.createSpy('javascript');
       const jsonGrammarUsed = jasmine.createSpy('json');
 
-      atom.packages.triggerDeferredActivationHooks();
-      atom.packages.onDidTriggerActivationHook(
+      chevron.packages.triggerDeferredActivationHooks();
+      chevron.packages.onDidTriggerActivationHook(
         'language-javascript:grammar-used',
         () => {
-          atom.workspace.observeTextEditors(observeTextEditorsSpy);
+          chevron.workspace.observeTextEditors(observeTextEditorsSpy);
           javascriptGrammarUsed();
         }
       );
-      atom.packages.onDidTriggerActivationHook(
+      chevron.packages.onDidTriggerActivationHook(
         'language-json:grammar-used',
         jsonGrammarUsed
       );
 
       expect(javascriptGrammarUsed).not.toHaveBeenCalled();
       expect(observeTextEditorsSpy).not.toHaveBeenCalled();
-      const editor = await atom.workspace.open('sample.js', {
+      const editor = await chevron.workspace.open('sample.js', {
         autoIndent: false
       });
       expect(javascriptGrammarUsed).toHaveBeenCalled();
       expect(observeTextEditorsSpy.callCount).toBe(1);
 
       expect(jsonGrammarUsed).not.toHaveBeenCalled();
-      atom.grammars.assignLanguageMode(editor, 'source.json');
+      chevron.grammars.assignLanguageMode(editor, 'source.json');
       expect(jsonGrammarUsed).toHaveBeenCalled();
     });
   });
 
   describe('the root-scope-used hook', () => {
     it('fires when opening a file or changing the grammar of an open file', async () => {
-      await atom.packages.activatePackage('language-javascript');
-      await atom.packages.activatePackage('language-json');
+      await chevron.packages.activatePackage('language-javascript');
+      await chevron.packages.activatePackage('language-json');
 
       const observeTextEditorsSpy = jasmine.createSpy('observeTextEditors');
       const javascriptGrammarUsed = jasmine.createSpy('javascript');
       const jsonGrammarUsed = jasmine.createSpy('json');
 
-      atom.packages.triggerDeferredActivationHooks();
-      atom.packages.onDidTriggerActivationHook(
+      chevron.packages.triggerDeferredActivationHooks();
+      chevron.packages.onDidTriggerActivationHook(
         'source.js:root-scope-used',
         () => {
-          atom.workspace.observeTextEditors(observeTextEditorsSpy);
+          chevron.workspace.observeTextEditors(observeTextEditorsSpy);
           javascriptGrammarUsed();
         }
       );
-      atom.packages.onDidTriggerActivationHook(
+      chevron.packages.onDidTriggerActivationHook(
         'source.json:root-scope-used',
         jsonGrammarUsed
       );
 
       expect(javascriptGrammarUsed).not.toHaveBeenCalled();
       expect(observeTextEditorsSpy).not.toHaveBeenCalled();
-      const editor = await atom.workspace.open('sample.js', {
+      const editor = await chevron.workspace.open('sample.js', {
         autoIndent: false
       });
       expect(javascriptGrammarUsed).toHaveBeenCalled();
       expect(observeTextEditorsSpy.callCount).toBe(1);
 
       expect(jsonGrammarUsed).not.toHaveBeenCalled();
-      atom.grammars.assignLanguageMode(editor, 'source.json');
+      chevron.grammars.assignLanguageMode(editor, 'source.json');
       expect(jsonGrammarUsed).toHaveBeenCalled();
     });
   });
@@ -1510,7 +1510,7 @@ describe('Workspace', () => {
       expect(workspace.getActivePaneItem().getURI()).toBeUndefined();
       pane.destroyActiveItem();
       await workspace.reopenItem();
-      const firstDirectory = atom.project.getDirectories()[0];
+      const firstDirectory = chevron.project.getDirectories()[0];
       expect(firstDirectory).toBeDefined();
       expect(workspace.getActivePaneItem().getURI()).not.toBeUndefined();
       expect(workspace.getActivePaneItem().getURI()).toBe(
@@ -1543,59 +1543,59 @@ describe('Workspace', () => {
 
   describe('::increase/decreaseFontSize()', () => {
     it('increases/decreases the font size without going below 1', () => {
-      atom.config.set('editor.fontSize', 1);
+      chevron.config.set('editor.fontSize', 1);
       workspace.increaseFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(2);
+      expect(chevron.config.get('editor.fontSize')).toBe(2);
       workspace.increaseFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(3);
+      expect(chevron.config.get('editor.fontSize')).toBe(3);
       workspace.decreaseFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(2);
+      expect(chevron.config.get('editor.fontSize')).toBe(2);
       workspace.decreaseFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(1);
+      expect(chevron.config.get('editor.fontSize')).toBe(1);
       workspace.decreaseFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(1);
+      expect(chevron.config.get('editor.fontSize')).toBe(1);
     });
   });
 
   describe('::resetFontSize()', () => {
     it("resets the font size to the window's default font size", () => {
-      const defaultFontSize = atom.config.get('editor.defaultFontSize');
+      const defaultFontSize = chevron.config.get('editor.defaultFontSize');
 
       workspace.increaseFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(defaultFontSize + 1);
+      expect(chevron.config.get('editor.fontSize')).toBe(defaultFontSize + 1);
       workspace.resetFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(defaultFontSize);
+      expect(chevron.config.get('editor.fontSize')).toBe(defaultFontSize);
       workspace.decreaseFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(defaultFontSize - 1);
+      expect(chevron.config.get('editor.fontSize')).toBe(defaultFontSize - 1);
       workspace.resetFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(defaultFontSize);
+      expect(chevron.config.get('editor.fontSize')).toBe(defaultFontSize);
     });
 
     it('resets the font size the default font size when it is changed', () => {
-      const defaultFontSize = atom.config.get('editor.defaultFontSize');
+      const defaultFontSize = chevron.config.get('editor.defaultFontSize');
       workspace.increaseFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(defaultFontSize + 1);
-      atom.config.set('editor.defaultFontSize', 14);
+      expect(chevron.config.get('editor.fontSize')).toBe(defaultFontSize + 1);
+      chevron.config.set('editor.defaultFontSize', 14);
       workspace.resetFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(14);
+      expect(chevron.config.get('editor.fontSize')).toBe(14);
     });
 
     it('does nothing if the font size has not been changed', () => {
-      const originalFontSize = atom.config.get('editor.fontSize');
+      const originalFontSize = chevron.config.get('editor.fontSize');
 
       workspace.resetFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(originalFontSize);
+      expect(chevron.config.get('editor.fontSize')).toBe(originalFontSize);
     });
 
     it("resets the font size when the editor's font size changes", () => {
-      const originalFontSize = atom.config.get('editor.fontSize');
+      const originalFontSize = chevron.config.get('editor.fontSize');
 
-      atom.config.set('editor.fontSize', originalFontSize + 1);
+      chevron.config.set('editor.fontSize', originalFontSize + 1);
       workspace.resetFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(originalFontSize);
-      atom.config.set('editor.fontSize', originalFontSize - 1);
+      expect(chevron.config.get('editor.fontSize')).toBe(originalFontSize);
+      chevron.config.set('editor.fontSize', originalFontSize - 1);
       workspace.resetFontSize();
-      expect(atom.config.get('editor.fontSize')).toBe(originalFontSize);
+      expect(chevron.config.get('editor.fontSize')).toBe(originalFontSize);
     });
   });
 
@@ -1699,11 +1699,11 @@ describe('Workspace', () => {
 
       const dock = workspace.getLeftDock();
       dock.activate();
-      expect(atom.workspace.getActivePaneContainer()).toBe(dock);
+      expect(chevron.workspace.getActivePaneContainer()).toBe(dock);
 
       const editor = new TextEditor();
       center.getActivePane().activateItem(editor);
-      expect(atom.workspace.getActivePaneContainer()).toBe(dock);
+      expect(chevron.workspace.getActivePaneContainer()).toBe(dock);
 
       expect(observed).toEqual([editor]);
     });
@@ -1758,11 +1758,11 @@ describe('Workspace', () => {
 
   describe('when an editor is copied because its pane is split', () => {
     it('sets up the new editor to be configured by the text editor registry', async () => {
-      await atom.packages.activatePackage('language-javascript');
+      await chevron.packages.activatePackage('language-javascript');
 
       const editor = await workspace.open('a');
 
-      atom.grammars.assignLanguageMode(editor, 'source.js');
+      chevron.grammars.assignLanguageMode(editor, 'source.js');
       expect(editor.getGrammar().name).toBe('JavaScript');
 
       workspace.getActivePane().splitRight({ copyActiveItem: true });
@@ -1773,12 +1773,12 @@ describe('Workspace', () => {
   });
 
   it('stores the active grammars used by all the open editors', async () => {
-    await atom.packages.activatePackage('language-javascript');
-    await atom.packages.activatePackage('language-json');
-    await atom.workspace.open('sample.js');
+    await chevron.packages.activatePackage('language-javascript');
+    await chevron.packages.activatePackage('language-json');
+    await chevron.workspace.open('sample.js');
 
-    const atom2 = new AtomEnvironment({
-      applicationDelegate: atom.applicationDelegate
+    const atom2 = new ChevronEnvironment({
+      applicationDelegate: chevron.applicationDelegate
     });
     atom2.initialize({
       window: document.createElement('div'),
@@ -1790,8 +1790,8 @@ describe('Workspace', () => {
 
     atom2.packages.loadPackage('language-javascript');
     atom2.packages.loadPackage('language-json');
-    atom2.project.deserialize(atom.project.serialize());
-    atom2.workspace.deserialize(atom.workspace.serialize(), atom2.deserializers);
+    atom2.project.deserialize(chevron.project.serialize());
+    atom2.workspace.deserialize(chevron.workspace.serialize(), atom2.deserializers);
 
     const scopeNames = atom2.grammars
       .getGrammars()
@@ -1806,11 +1806,11 @@ describe('Workspace', () => {
     describe('when there is no item open', () => {
       it('sets the title to the project path', () =>
         expect(document.title).toMatch(
-          escapeStringRegex(fs.tildify(atom.project.getPaths()[0]))
+          escapeStringRegex(fs.tildify(chevron.project.getPaths()[0]))
         ));
 
       it("sets the title to 'untitled' if there is no project path", () => {
-        atom.project.setPaths([]);
+        chevron.project.setPaths([]);
         expect(document.title).toMatch(/^untitled/);
       });
     });
@@ -1818,12 +1818,12 @@ describe('Workspace', () => {
     describe("when the active pane item's path is not inside a project path", () => {
       beforeEach(async () =>
         {
-  await atom.workspace.open('b').then(() => atom.project.setPaths([]));
+  await chevron.workspace.open('b').then(() => chevron.project.setPaths([]));
 }
       );
 
       it("sets the title to the pane item's title plus the item's path", () => {
-        const item = atom.workspace.getActivePaneItem();
+        const item = chevron.workspace.getActivePaneItem();
         const pathEscaped = fs.tildify(
           escapeStringRegex(path.dirname(item.getPath()))
         );
@@ -1834,7 +1834,7 @@ describe('Workspace', () => {
 
       describe('when the title of the active pane item changes', () => {
         it("updates the window title based on the item's new title", () => {
-          const editor = atom.workspace.getActivePaneItem();
+          const editor = chevron.workspace.getActivePaneItem();
           editor.buffer.setPath(path.join(temp.dir, 'hi'));
           const pathEscaped = fs.tildify(
             escapeStringRegex(path.dirname(editor.getPath()))
@@ -1847,8 +1847,8 @@ describe('Workspace', () => {
 
       describe("when the active pane's item changes", () => {
         it("updates the title to the new item's title plus the project path", () => {
-          atom.workspace.getActivePane().activateNextItem();
-          const item = atom.workspace.getActivePaneItem();
+          chevron.workspace.getActivePane().activateNextItem();
+          const item = chevron.workspace.getActivePaneItem();
           const pathEscaped = fs.tildify(
             escapeStringRegex(path.dirname(item.getPath()))
           );
@@ -1860,7 +1860,7 @@ describe('Workspace', () => {
 
       describe("when an inactive pane's item changes", () => {
         it('does not update the title', () => {
-          const pane = atom.workspace.getActivePane();
+          const pane = chevron.workspace.getActivePane();
           pane.splitRight();
           const initialTitle = document.title;
           pane.activateNextItem();
@@ -1871,14 +1871,14 @@ describe('Workspace', () => {
 
     describe('when the active pane item is inside a project path', () => {
       beforeEach(async () => {
-  await atom.workspace.open('b');
+  await chevron.workspace.open('b');
 });
 
       describe('when there is an active pane item', () => {
         it("sets the title to the pane item's title plus the project path", () => {
-          const item = atom.workspace.getActivePaneItem();
+          const item = chevron.workspace.getActivePaneItem();
           const pathEscaped = fs.tildify(
-            escapeStringRegex(atom.project.getPaths()[0])
+            escapeStringRegex(chevron.project.getPaths()[0])
           );
           expect(document.title).toMatch(
             new RegExp(`^${item.getTitle()} \\u2014 ${pathEscaped}`)
@@ -1888,10 +1888,10 @@ describe('Workspace', () => {
 
       describe('when the title of the active pane item changes', () => {
         it("updates the window title based on the item's new title", () => {
-          const editor = atom.workspace.getActivePaneItem();
-          editor.buffer.setPath(path.join(atom.project.getPaths()[0], 'hi'));
+          const editor = chevron.workspace.getActivePaneItem();
+          editor.buffer.setPath(path.join(chevron.project.getPaths()[0], 'hi'));
           const pathEscaped = fs.tildify(
-            escapeStringRegex(atom.project.getPaths()[0])
+            escapeStringRegex(chevron.project.getPaths()[0])
           );
           expect(document.title).toMatch(
             new RegExp(`^${editor.getTitle()} \\u2014 ${pathEscaped}`)
@@ -1901,10 +1901,10 @@ describe('Workspace', () => {
 
       describe("when the active pane's item changes", () => {
         it("updates the title to the new item's title plus the project path", () => {
-          atom.workspace.getActivePane().activateNextItem();
-          const item = atom.workspace.getActivePaneItem();
+          chevron.workspace.getActivePane().activateNextItem();
+          const item = chevron.workspace.getActivePaneItem();
           const pathEscaped = fs.tildify(
-            escapeStringRegex(atom.project.getPaths()[0])
+            escapeStringRegex(chevron.project.getPaths()[0])
           );
           expect(document.title).toMatch(
             new RegExp(`^${item.getTitle()} \\u2014 ${pathEscaped}`)
@@ -1914,17 +1914,17 @@ describe('Workspace', () => {
 
       describe('when the last pane item is removed', () => {
         it("updates the title to the project's first path", () => {
-          atom.workspace.getActivePane().destroy();
-          expect(atom.workspace.getActivePaneItem()).toBeUndefined();
+          chevron.workspace.getActivePane().destroy();
+          expect(chevron.workspace.getActivePaneItem()).toBeUndefined();
           expect(document.title).toMatch(
-            escapeStringRegex(fs.tildify(atom.project.getPaths()[0]))
+            escapeStringRegex(fs.tildify(chevron.project.getPaths()[0]))
           );
         });
       });
 
       describe("when an inactive pane's item changes", () => {
         it('does not update the title', () => {
-          const pane = atom.workspace.getActivePane();
+          const pane = chevron.workspace.getActivePane();
           pane.splitRight();
           const initialTitle = document.title;
           pane.activateNextItem();
@@ -1935,13 +1935,13 @@ describe('Workspace', () => {
 
     describe('when the workspace is deserialized', () => {
       beforeEach(async () => {
-  await atom.workspace.open('a');
+  await chevron.workspace.open('a');
 });
 
       it("updates the title to contain the project's path", async () => {
         document.title = null;
-        const atom2 = new AtomEnvironment({
-          applicationDelegate: atom.applicationDelegate
+        const atom2 = new ChevronEnvironment({
+          applicationDelegate: chevron.applicationDelegate
         });
         atom2.initialize({
           window: document.createElement('div'),
@@ -1950,14 +1950,14 @@ describe('Workspace', () => {
             head: document.createElement('div')
           })
         });
-        await atom2.project.deserialize(atom.project.serialize());
+        await atom2.project.deserialize(chevron.project.serialize());
         atom2.workspace.deserialize(
-          atom.workspace.serialize(),
+          chevron.workspace.serialize(),
           atom2.deserializers
         );
         const item = atom2.workspace.getActivePaneItem();
         const pathEscaped = fs.tildify(
-          escapeStringRegex(atom.project.getPaths()[0])
+          escapeStringRegex(chevron.project.getPaths()[0])
         );
         expect(document.title).toMatch(
           new RegExp(`^${item.getLongTitle()} \\u2014 ${pathEscaped}`)
@@ -1972,22 +1972,22 @@ describe('Workspace', () => {
     let item2;
 
     beforeEach(async () => {
-      await atom.workspace.open('a');
-      await atom.workspace.open('b');
-      [item1, item2] = atom.workspace.getPaneItems();
+      await chevron.workspace.open('a');
+      await chevron.workspace.open('b');
+      [item1, item2] = chevron.workspace.getPaneItems();
     });
 
     it('calls setDocumentEdited when the active item changes', () => {
-      expect(atom.workspace.getActivePaneItem()).toBe(item2);
+      expect(chevron.workspace.getActivePaneItem()).toBe(item2);
       item1.insertText('a');
       expect(item1.isModified()).toBe(true);
-      atom.workspace.getActivePane().activateNextItem();
+      chevron.workspace.getActivePane().activateNextItem();
 
       expect(setDocumentEdited).toHaveBeenCalledWith(true);
     });
 
     it("calls atom.setDocumentEdited when the active item's modified status changes", () => {
-      expect(atom.workspace.getActivePaneItem()).toBe(item2);
+      expect(chevron.workspace.getActivePaneItem()).toBe(item2);
       item2.insertText('a');
       advanceClock(item2.getBuffer().getStoppedChangingDelay());
 
@@ -2025,7 +2025,7 @@ describe('Workspace', () => {
     };
 
     beforeEach(() =>
-      atom.views.addViewProvider(TestItem, model =>
+      chevron.views.addViewProvider(TestItem, model =>
         new TestItemElement().initialize(model)
       )
     );
@@ -2033,19 +2033,19 @@ describe('Workspace', () => {
     describe('::addLeftPanel(model)', () => {
       it('adds a panel to the correct panel container', () => {
         let addPanelSpy;
-        expect(atom.workspace.getLeftPanels().length).toBe(0);
-        atom.workspace.panelContainers.left.onDidAddPanel(
+        expect(chevron.workspace.getLeftPanels().length).toBe(0);
+        chevron.workspace.panelContainers.left.onDidAddPanel(
           (addPanelSpy = jasmine.createSpy())
         );
 
         const model = new TestItem();
-        const panel = atom.workspace.addLeftPanel({ item: model });
+        const panel = chevron.workspace.addLeftPanel({ item: model });
 
         expect(panel).toBeDefined();
         expect(addPanelSpy).toHaveBeenCalledWith({ panel, index: 0 });
 
-        const itemView = atom.views.getView(
-          atom.workspace.getLeftPanels()[0].getItem()
+        const itemView = chevron.views.getView(
+          chevron.workspace.getLeftPanels()[0].getItem()
         );
         expect(itemView instanceof TestItemElement).toBe(true);
         expect(itemView.getModel()).toBe(model);
@@ -2055,19 +2055,19 @@ describe('Workspace', () => {
     describe('::addRightPanel(model)', () => {
       it('adds a panel to the correct panel container', () => {
         let addPanelSpy;
-        expect(atom.workspace.getRightPanels().length).toBe(0);
-        atom.workspace.panelContainers.right.onDidAddPanel(
+        expect(chevron.workspace.getRightPanels().length).toBe(0);
+        chevron.workspace.panelContainers.right.onDidAddPanel(
           (addPanelSpy = jasmine.createSpy())
         );
 
         const model = new TestItem();
-        const panel = atom.workspace.addRightPanel({ item: model });
+        const panel = chevron.workspace.addRightPanel({ item: model });
 
         expect(panel).toBeDefined();
         expect(addPanelSpy).toHaveBeenCalledWith({ panel, index: 0 });
 
-        const itemView = atom.views.getView(
-          atom.workspace.getRightPanels()[0].getItem()
+        const itemView = chevron.views.getView(
+          chevron.workspace.getRightPanels()[0].getItem()
         );
         expect(itemView instanceof TestItemElement).toBe(true);
         expect(itemView.getModel()).toBe(model);
@@ -2077,19 +2077,19 @@ describe('Workspace', () => {
     describe('::addTopPanel(model)', () => {
       it('adds a panel to the correct panel container', () => {
         let addPanelSpy;
-        expect(atom.workspace.getTopPanels().length).toBe(0);
-        atom.workspace.panelContainers.top.onDidAddPanel(
+        expect(chevron.workspace.getTopPanels().length).toBe(0);
+        chevron.workspace.panelContainers.top.onDidAddPanel(
           (addPanelSpy = jasmine.createSpy())
         );
 
         const model = new TestItem();
-        const panel = atom.workspace.addTopPanel({ item: model });
+        const panel = chevron.workspace.addTopPanel({ item: model });
 
         expect(panel).toBeDefined();
         expect(addPanelSpy).toHaveBeenCalledWith({ panel, index: 0 });
 
-        const itemView = atom.views.getView(
-          atom.workspace.getTopPanels()[0].getItem()
+        const itemView = chevron.views.getView(
+          chevron.workspace.getTopPanels()[0].getItem()
         );
         expect(itemView instanceof TestItemElement).toBe(true);
         expect(itemView.getModel()).toBe(model);
@@ -2099,19 +2099,19 @@ describe('Workspace', () => {
     describe('::addBottomPanel(model)', () => {
       it('adds a panel to the correct panel container', () => {
         let addPanelSpy;
-        expect(atom.workspace.getBottomPanels().length).toBe(0);
-        atom.workspace.panelContainers.bottom.onDidAddPanel(
+        expect(chevron.workspace.getBottomPanels().length).toBe(0);
+        chevron.workspace.panelContainers.bottom.onDidAddPanel(
           (addPanelSpy = jasmine.createSpy())
         );
 
         const model = new TestItem();
-        const panel = atom.workspace.addBottomPanel({ item: model });
+        const panel = chevron.workspace.addBottomPanel({ item: model });
 
         expect(panel).toBeDefined();
         expect(addPanelSpy).toHaveBeenCalledWith({ panel, index: 0 });
 
-        const itemView = atom.views.getView(
-          atom.workspace.getBottomPanels()[0].getItem()
+        const itemView = chevron.views.getView(
+          chevron.workspace.getBottomPanels()[0].getItem()
         );
         expect(itemView instanceof TestItemElement).toBe(true);
         expect(itemView.getModel()).toBe(model);
@@ -2121,19 +2121,19 @@ describe('Workspace', () => {
     describe('::addHeaderPanel(model)', () => {
       it('adds a panel to the correct panel container', () => {
         let addPanelSpy;
-        expect(atom.workspace.getHeaderPanels().length).toBe(0);
-        atom.workspace.panelContainers.header.onDidAddPanel(
+        expect(chevron.workspace.getHeaderPanels().length).toBe(0);
+        chevron.workspace.panelContainers.header.onDidAddPanel(
           (addPanelSpy = jasmine.createSpy())
         );
 
         const model = new TestItem();
-        const panel = atom.workspace.addHeaderPanel({ item: model });
+        const panel = chevron.workspace.addHeaderPanel({ item: model });
 
         expect(panel).toBeDefined();
         expect(addPanelSpy).toHaveBeenCalledWith({ panel, index: 0 });
 
-        const itemView = atom.views.getView(
-          atom.workspace.getHeaderPanels()[0].getItem()
+        const itemView = chevron.views.getView(
+          chevron.workspace.getHeaderPanels()[0].getItem()
         );
         expect(itemView instanceof TestItemElement).toBe(true);
         expect(itemView.getModel()).toBe(model);
@@ -2143,19 +2143,19 @@ describe('Workspace', () => {
     describe('::addFooterPanel(model)', () => {
       it('adds a panel to the correct panel container', () => {
         let addPanelSpy;
-        expect(atom.workspace.getFooterPanels().length).toBe(0);
-        atom.workspace.panelContainers.footer.onDidAddPanel(
+        expect(chevron.workspace.getFooterPanels().length).toBe(0);
+        chevron.workspace.panelContainers.footer.onDidAddPanel(
           (addPanelSpy = jasmine.createSpy())
         );
 
         const model = new TestItem();
-        const panel = atom.workspace.addFooterPanel({ item: model });
+        const panel = chevron.workspace.addFooterPanel({ item: model });
 
         expect(panel).toBeDefined();
         expect(addPanelSpy).toHaveBeenCalledWith({ panel, index: 0 });
 
-        const itemView = atom.views.getView(
-          atom.workspace.getFooterPanels()[0].getItem()
+        const itemView = chevron.views.getView(
+          chevron.workspace.getFooterPanels()[0].getItem()
         );
         expect(itemView instanceof TestItemElement).toBe(true);
         expect(itemView.getModel()).toBe(model);
@@ -2165,19 +2165,19 @@ describe('Workspace', () => {
     describe('::addModalPanel(model)', () => {
       it('adds a panel to the correct panel container', () => {
         let addPanelSpy;
-        expect(atom.workspace.getModalPanels().length).toBe(0);
-        atom.workspace.panelContainers.modal.onDidAddPanel(
+        expect(chevron.workspace.getModalPanels().length).toBe(0);
+        chevron.workspace.panelContainers.modal.onDidAddPanel(
           (addPanelSpy = jasmine.createSpy())
         );
 
         const model = new TestItem();
-        const panel = atom.workspace.addModalPanel({ item: model });
+        const panel = chevron.workspace.addModalPanel({ item: model });
 
         expect(panel).toBeDefined();
         expect(addPanelSpy).toHaveBeenCalledWith({ panel, index: 0 });
 
-        const itemView = atom.views.getView(
-          atom.workspace.getModalPanels()[0].getItem()
+        const itemView = chevron.views.getView(
+          chevron.workspace.getModalPanels()[0].getItem()
         );
         expect(itemView instanceof TestItemElement).toBe(true);
         expect(itemView.getModel()).toBe(model);
@@ -2187,12 +2187,12 @@ describe('Workspace', () => {
     describe('::panelForItem(item)', () => {
       it('returns the panel associated with the item', () => {
         const item = new TestItem();
-        const panel = atom.workspace.addLeftPanel({ item });
+        const panel = chevron.workspace.addLeftPanel({ item });
 
         const itemWithNoPanel = new TestItem();
 
-        expect(atom.workspace.panelForItem(item)).toBe(panel);
-        expect(atom.workspace.panelForItem(itemWithNoPanel)).toBe(null);
+        expect(chevron.workspace.panelForItem(item)).toBe(panel);
+        expect(chevron.workspace.panelForItem(itemWithNoPanel)).toBe(null);
       });
     });
   });
@@ -2200,7 +2200,7 @@ describe('Workspace', () => {
   for (const ripgrep of [true, false]) {
     describe(`::scan(regex, options, callback) { ripgrep: ${ripgrep} }`, () => {
       function scan(regex, options, iterator) {
-        return atom.workspace.scan(regex, { ...options, ripgrep }, iterator);
+        return chevron.workspace.scan(regex, { ...options, ripgrep }, iterator);
       }
 
       describe('when called with a regex', () => {
@@ -2216,7 +2216,7 @@ describe('Workspace', () => {
 
           expect(results.length).toBeGreaterThan(0);
           expect(results[0].filePath).toBe(
-            atom.project.getDirectories()[0].resolve('a')
+            chevron.project.getDirectories()[0].resolve('a')
           );
           expect(results[0].matches).toHaveLength(3);
           expect(results[0].matches[0]).toEqual({
@@ -2239,7 +2239,7 @@ describe('Workspace', () => {
 
           expect(results.length).toBe(1);
           const { filePath, matches } = results[0];
-          expect(filePath).toBe(atom.project.getDirectories()[0].resolve('a'));
+          expect(filePath).toBe(chevron.project.getDirectories()[0].resolve('a'));
           expect(matches).toHaveLength(1);
           expect(matches[0]).toEqual({
             matchText: '$bill',
@@ -2252,9 +2252,9 @@ describe('Workspace', () => {
         });
 
         it('works on evil filenames', async () => {
-          atom.config.set('core.excludeVcsIgnoredPaths', false);
+          chevron.config.set('core.excludeVcsIgnoredPaths', false);
           platform.generateEvilFiles();
-          atom.project.setPaths([
+          chevron.project.setPaths([
             path.join(__dirname, 'fixtures', 'evil-files')
           ]);
           const paths = [];
@@ -2306,7 +2306,7 @@ describe('Workspace', () => {
             expect(results.length).toBe(1);
             const { filePath, matches } = results[0];
             expect(filePath).toBe(
-              atom.project
+              chevron.project
                 .getDirectories()[0]
                 .resolve(path.join('a-dir', 'oh-git'))
             );
@@ -2330,7 +2330,7 @@ describe('Workspace', () => {
               expect(results.length).toBe(1);
               const { filePath, matches } = results[0];
               expect(filePath).toBe(
-                atom.project
+                chevron.project
                   .getDirectories()[0]
                   .resolve('file-with-newline-literal')
               );
@@ -2360,7 +2360,7 @@ describe('Workspace', () => {
               expect(results.length).toBe(1);
               const { filePath, matches } = results[0];
               expect(filePath).toBe(
-                atom.project
+                chevron.project
                   .getDirectories()[0]
                   .resolve('file-with-newline-literal')
               );
@@ -2386,7 +2386,7 @@ describe('Workspace', () => {
 
               const { filePath, matches } = results[0];
               expect(filePath).toBe(
-                atom.project
+                chevron.project
                   .getDirectories()[0]
                   .resolve('file-with-newline-literal')
               );
@@ -2424,7 +2424,7 @@ describe('Workspace', () => {
               expect(results.length).toBe(1);
               const { filePath, matches } = results[0];
               expect(filePath).toBe(
-                atom.project
+                chevron.project
                   .getDirectories()[0]
                   .resolve('file-with-newline-literal')
               );
@@ -2446,7 +2446,7 @@ describe('Workspace', () => {
               expect(results.length).toBe(1);
               const { filePath, matches } = results[0];
               expect(filePath).toBe(
-                atom.project
+                chevron.project
                   .getDirectories()[0]
                   .resolve('file-with-newline-literal')
               );
@@ -2472,7 +2472,7 @@ describe('Workspace', () => {
               expect(results.length).toBe(1);
               const { filePath, matches } = results[0];
               expect(filePath).toBe(
-                atom.project.getDirectories()[0].resolve('a')
+                chevron.project.getDirectories()[0].resolve('a')
               );
               expect(matches).toHaveLength(1);
               expect(matches[0]).toEqual({
@@ -2494,7 +2494,7 @@ describe('Workspace', () => {
           expect(results.length).toBe(1);
           const { filePath, matches } = results[0];
           expect(filePath).toBe(
-            atom.project.getDirectories()[0].resolve('file-with-unicode')
+            chevron.project.getDirectories()[0].resolve('file-with-unicode')
           );
           expect(matches).toHaveLength(1);
           expect(matches[0]).toEqual({
@@ -2520,7 +2520,7 @@ describe('Workspace', () => {
           expect(results.length).toBe(1);
           const { filePath, matches } = results[0];
           expect(filePath).toBe(
-            atom.project.getDirectories()[0].resolve('file-detected-as-binary')
+            chevron.project.getDirectories()[0].resolve('file-detected-as-binary')
           );
           expect(matches).toHaveLength(1);
           expect(matches[0]).toEqual({
@@ -2569,8 +2569,8 @@ describe('Workspace', () => {
           });
 
           it('excludes ignored files when core.excludeVcsIgnoredPaths is true', async () => {
-            atom.project.setPaths([projectPath]);
-            atom.config.set('core.excludeVcsIgnoredPaths', true);
+            chevron.project.setPaths([projectPath]);
+            chevron.config.set('core.excludeVcsIgnoredPaths', true);
             const resultHandler = jasmine.createSpy('result found');
 
             await scan(/match/, {}, ({ filePath }) => resultHandler(filePath));
@@ -2579,8 +2579,8 @@ describe('Workspace', () => {
           });
 
           it('does not exclude ignored files when core.excludeVcsIgnoredPaths is false', async () => {
-            atom.project.setPaths([projectPath]);
-            atom.config.set('core.excludeVcsIgnoredPaths', false);
+            chevron.project.setPaths([projectPath]);
+            chevron.config.set('core.excludeVcsIgnoredPaths', false);
             const resultHandler = jasmine.createSpy('result found');
 
             await scan(/match/, {}, ({ filePath }) => resultHandler(filePath));
@@ -2597,8 +2597,8 @@ describe('Workspace', () => {
             );
             fs.writeFileSync(ignoredPath, 'this match should be included');
 
-            atom.project.setPaths([projectPath]);
-            atom.config.set('core.excludeVcsIgnoredPaths', true);
+            chevron.project.setPaths([projectPath]);
+            chevron.config.set('core.excludeVcsIgnoredPaths', true);
             const resultHandler = jasmine.createSpy('result found');
 
             await scan(/match/, { paths: ['poop'] }, ({ filePath }) =>
@@ -2642,8 +2642,8 @@ describe('Workspace', () => {
           });
 
           it('follows symlinks when core.followSymlinks is true', async () => {
-            atom.project.setPaths([projectPath]);
-            atom.config.set('core.followSymlinks', true);
+            chevron.project.setPaths([projectPath]);
+            chevron.config.set('core.followSymlinks', true);
             const resultHandler = jasmine.createSpy('result found');
 
             await scan(/ccc/, {}, ({ filePath }) => resultHandler(filePath));
@@ -2654,8 +2654,8 @@ describe('Workspace', () => {
           });
 
           it('does not follow symlinks when core.followSymlinks is false', async () => {
-            atom.project.setPaths([projectPath]);
-            atom.config.set('core.followSymlinks', false);
+            chevron.project.setPaths([projectPath]);
+            chevron.config.set('core.followSymlinks', false);
             const resultHandler = jasmine.createSpy('result found');
 
             await scan(/ccc/, {}, ({ filePath }) => resultHandler(filePath));
@@ -2697,7 +2697,7 @@ describe('Workspace', () => {
           });
 
           it('searches on hidden files', async () => {
-            atom.project.setPaths([projectPath]);
+            chevron.project.setPaths([projectPath]);
             const resultHandler = jasmine.createSpy('result found');
 
             await scan(/ccc/, {}, ({ filePath }) => resultHandler(filePath));
@@ -2712,7 +2712,7 @@ describe('Workspace', () => {
           const projectPath = path.join(
             path.join(__dirname, 'fixtures', 'dir')
           );
-          atom.project.setPaths([projectPath]);
+          chevron.project.setPaths([projectPath]);
 
           const filePath = path.join(projectPath, 'a-dir', 'oh-git');
 
@@ -2733,7 +2733,7 @@ describe('Workspace', () => {
           const projectPath = temp.mkdirSync('atom-spec-workspace');
           const filePath = path.join(projectPath, '.text');
           fs.writeFileSync(filePath, 'match this');
-          atom.project.setPaths([projectPath]);
+          chevron.project.setPaths([projectPath]);
           const paths = [];
           let matches = [];
 
@@ -2748,9 +2748,9 @@ describe('Workspace', () => {
         });
 
         it('excludes values in core.ignoredNames', async () => {
-          const ignoredNames = atom.config.get('core.ignoredNames');
+          const ignoredNames = chevron.config.get('core.ignoredNames');
           ignoredNames.push('a');
-          atom.config.set('core.ignoredNames', ignoredNames);
+          chevron.config.set('core.ignoredNames', ignoredNames);
 
           const resultHandler = jasmine.createSpy('result found');
           await scan(/dollar/, {}, () => resultHandler());
@@ -2760,7 +2760,7 @@ describe('Workspace', () => {
 
         it('scans buffer contents if the buffer is modified', async () => {
           const results = [];
-          const editor = await atom.workspace.open('a');
+          const editor = await chevron.workspace.open('a');
 
           editor.setText('Elephant');
 
@@ -2777,7 +2777,7 @@ describe('Workspace', () => {
 
         it('ignores buffers outside the project', async () => {
           const results = [];
-          const editor = await atom.workspace.open(temp.openSync().path);
+          const editor = await chevron.workspace.open(temp.openSync().path);
 
           editor.setText('Elephant');
 
@@ -2793,7 +2793,7 @@ describe('Workspace', () => {
           let file2;
 
           beforeEach(() => {
-            dir1 = atom.project.getPaths()[0];
+            dir1 = chevron.project.getPaths()[0];
             file1 = path.join(dir1, 'a-dir', 'oh-git');
 
             dir2 = temp.mkdirSync('a-second-dir');
@@ -2802,7 +2802,7 @@ describe('Workspace', () => {
             fs.mkdirSync(aDir2);
             fs.writeFileSync(file2, 'ccc aaaa');
 
-            atom.project.addPath(dir2);
+            chevron.project.addPath(dir2);
           });
 
           it("searches matching files in all of the project's root directories", async () => {
@@ -2899,7 +2899,7 @@ describe('Workspace', () => {
               useRealClockOnce();
               fakeSearch = null;
               onFakeSearchCreated = null;
-              atom.packages.serviceHub.provide(
+              chevron.packages.serviceHub.provide(
                 'atom.directory-searcher',
                 '0.1.0',
                 {
@@ -2912,7 +2912,7 @@ describe('Workspace', () => {
                   }
                 }
               );
-              await conditionPromise(() => atom.workspace.directorySearchers.length > 0);
+              await conditionPromise(() => chevron.workspace.directorySearchers.length > 0);
             });
 
             it('can override the built-in directory searcher on a per-directory basis', async () => {
@@ -2976,7 +2976,7 @@ describe('Workspace', () => {
               useRealClockOnce();
               let cancelableSearch;
               let fakeSearch2 = null;
-              atom.packages.serviceHub.provide(
+              chevron.packages.serviceHub.provide(
                 'atom.directory-searcher',
                 '0.1.0',
                 {
@@ -3109,9 +3109,9 @@ describe('Workspace', () => {
     let fixturesDir, projectDir;
 
     beforeEach(() => {
-      fixturesDir = path.dirname(atom.project.getPaths()[0]);
+      fixturesDir = path.dirname(chevron.project.getPaths()[0]);
       projectDir = temp.mkdirSync('atom');
-      atom.project.setPaths([projectDir]);
+      chevron.project.setPaths([projectDir]);
     });
 
     describe("when a file doesn't exist", () => {
@@ -3119,7 +3119,7 @@ describe('Workspace', () => {
         const errors = [];
         const missingPath = path.resolve('/not-a-file.js');
         expect(fs.existsSync(missingPath)).toBeFalsy();
-        await atom.workspace.replace(
+        await chevron.workspace.replace(
             /items/gi,
             'items',
             [missingPath],
@@ -3135,7 +3135,7 @@ describe('Workspace', () => {
         const filePath = path.join(projectDir, 'sample.js');
         fs.copyFileSync(path.join(fixturesDir, 'sample.js'), filePath);
         const results = [];
-        await atom.workspace.replace(/items/gi, 'items', [filePath], result =>
+        await chevron.workspace.replace(/items/gi, 'items', [filePath], result =>
             results.push(result)
           );
         expect(results).toHaveLength(1);
@@ -3147,7 +3147,7 @@ describe('Workspace', () => {
         const filePath = path.join(projectDir, 'sample.js');
         fs.copyFileSync(path.join(fixturesDir, 'sample.js'), filePath);
         const results = [];
-        await atom.workspace.replace(/;$/gim, 'items', [filePath], result =>
+        await chevron.workspace.replace(/;$/gim, 'items', [filePath], result =>
             results.push(result)
           );
         expect(results).toHaveLength(1);
@@ -3165,11 +3165,11 @@ describe('Workspace', () => {
         );
         let editor = null;
         const results = [];
-        await atom.workspace.open('sample.js').then(o => {
+        await chevron.workspace.open('sample.js').then(o => {
             editor = o;
           });
         expect(editor.isModified()).toBeFalsy();
-        await atom.workspace.replace(/items/gi, 'items', [filePath], result =>
+        await chevron.workspace.replace(/items/gi, 'items', [filePath], result =>
             results.push(result)
           );
         expect(results).toHaveLength(1);
@@ -3190,8 +3190,8 @@ describe('Workspace', () => {
           path.join(projectDir, 'sample-with-comments.js')
         );
         const results = [];
-        await atom.workspace.open('sample-with-comments.js');
-        await atom.workspace.replace(
+        await chevron.workspace.open('sample-with-comments.js');
+        await chevron.workspace.replace(
             /items/gi,
             'items',
             [commentFilePath],
@@ -3206,12 +3206,12 @@ describe('Workspace', () => {
         fs.copyFileSync(path.join(fixturesDir, 'sample.js'), filePath);
         let editor = null;
         const results = [];
-        await atom.workspace.open('sample.js').then(o => {
+        await chevron.workspace.open('sample.js').then(o => {
             editor = o;
           });
         editor.buffer.setTextInRange([[0, 0], [0, 0]], 'omg');
         expect(editor.isModified()).toBeTruthy();
-        await atom.workspace.replace(/items/gi, 'okthen', [filePath], result =>
+        await chevron.workspace.replace(/items/gi, 'okthen', [filePath], result =>
             results.push(result)
           );
         expect(results).toHaveLength(1);
@@ -3226,11 +3226,11 @@ describe('Workspace', () => {
     let editor, notificationSpy;
 
     beforeEach(async () => {
-      await atom.workspace.open('sample.js').then(o => {
+      await chevron.workspace.open('sample.js').then(o => {
           editor = o;
         });
       notificationSpy = jasmine.createSpy('did-add-notification');
-      atom.notifications.onDidAddNotification(notificationSpy);
+      chevron.notifications.onDidAddNotification(notificationSpy);
     });
 
     describe('when there is an error', () => {
@@ -3238,7 +3238,7 @@ describe('Workspace', () => {
         spyOn(editor, 'save').andCallFake(() => {
           throw new Error("'/some/file' is a directory");
         });
-        await atom.workspace.saveActivePaneItem().then(() => {
+        await chevron.workspace.saveActivePaneItem().then(() => {
             expect(notificationSpy).toHaveBeenCalled();
             expect(notificationSpy.mostRecentCall.args[0].getType()).toBe(
               'warning'
@@ -3253,7 +3253,7 @@ describe('Workspace', () => {
         spyOn(editor, 'save').andCallFake(() => {
           throw new Error("ENOTDIR, not a directory '/Some/dir/and-a-file.js'");
         });
-        await atom.workspace.saveActivePaneItem().then(() => {
+        await chevron.workspace.saveActivePaneItem().then(() => {
             expect(notificationSpy).toHaveBeenCalled();
             expect(notificationSpy.mostRecentCall.args[0].getType()).toBe(
               'warning'
@@ -3273,7 +3273,7 @@ describe('Workspace', () => {
           error.path = '/Some/dir/and-a-file.js';
           throw error;
         });
-        await atom.workspace.saveActivePaneItem().then(() => {
+        await chevron.workspace.saveActivePaneItem().then(() => {
             expect(notificationSpy).toHaveBeenCalled();
             expect(notificationSpy.mostRecentCall.args[0].getType()).toBe(
               'warning'
@@ -3293,7 +3293,7 @@ describe('Workspace', () => {
           error.path = '/Some/dir/and-a-file.js';
           throw error;
         });
-        await atom.workspace.saveActivePaneItem().then(() => {
+        await chevron.workspace.saveActivePaneItem().then(() => {
             expect(notificationSpy).toHaveBeenCalled();
             expect(notificationSpy.mostRecentCall.args[0].getType()).toBe(
               'warning'
@@ -3313,7 +3313,7 @@ describe('Workspace', () => {
           error.path = '/Some/dir/and-a-file.js';
           throw error;
         });
-        await atom.workspace.saveActivePaneItem().then(() => {
+        await chevron.workspace.saveActivePaneItem().then(() => {
             expect(notificationSpy).toHaveBeenCalled();
             expect(notificationSpy.mostRecentCall.args[0].getType()).toBe(
               'warning'
@@ -3333,7 +3333,7 @@ describe('Workspace', () => {
           error.path = '/Some/dir/and-a-file.js';
           throw error;
         });
-        await atom.workspace.saveActivePaneItem().then(() => {
+        await chevron.workspace.saveActivePaneItem().then(() => {
             expect(notificationSpy).toHaveBeenCalled();
             expect(notificationSpy.mostRecentCall.args[0].getType()).toBe(
               'warning'
@@ -3350,7 +3350,7 @@ describe('Workspace', () => {
         });
         let rejected = false;
         try {
-          await atom.workspace.saveActivePaneItem();
+          await chevron.workspace.saveActivePaneItem();
           throw new Error(
             'Expected promise to be rejected, but it was resolved'
           );
@@ -3370,76 +3370,76 @@ describe('Workspace', () => {
 
   describe('::closeActivePaneItemOrEmptyPaneOrWindow', () => {
     beforeEach(async () => {
-      spyOn(atom, 'close');
-      await atom.workspace.open();
+      spyOn(chevron, 'close');
+      await chevron.workspace.open();
     });
 
     it('closes the active center pane item, or the active center pane if it is empty, or the current window if there is only the empty root pane in the center', async () => {
-      atom.config.set('core.destroyEmptyPanes', false);
+      chevron.config.set('core.destroyEmptyPanes', false);
 
-      const pane1 = atom.workspace.getActivePane();
+      const pane1 = chevron.workspace.getActivePane();
       const pane2 = pane1.splitRight({ copyActiveItem: true });
 
-      expect(atom.workspace.getCenter().getPanes().length).toBe(2);
+      expect(chevron.workspace.getCenter().getPanes().length).toBe(2);
       expect(pane2.getItems().length).toBe(1);
-      atom.workspace.closeActivePaneItemOrEmptyPaneOrWindow();
+      chevron.workspace.closeActivePaneItemOrEmptyPaneOrWindow();
 
-      expect(atom.workspace.getCenter().getPanes().length).toBe(2);
+      expect(chevron.workspace.getCenter().getPanes().length).toBe(2);
       expect(pane2.getItems().length).toBe(0);
 
-      atom.workspace.closeActivePaneItemOrEmptyPaneOrWindow();
+      chevron.workspace.closeActivePaneItemOrEmptyPaneOrWindow();
 
-      expect(atom.workspace.getCenter().getPanes().length).toBe(1);
+      expect(chevron.workspace.getCenter().getPanes().length).toBe(1);
       expect(pane1.getItems().length).toBe(1);
 
-      atom.workspace.closeActivePaneItemOrEmptyPaneOrWindow();
-      expect(atom.workspace.getCenter().getPanes().length).toBe(1);
+      chevron.workspace.closeActivePaneItemOrEmptyPaneOrWindow();
+      expect(chevron.workspace.getCenter().getPanes().length).toBe(1);
       expect(pane1.getItems().length).toBe(0);
-      expect(atom.workspace.getCenter().getPanes().length).toBe(1);
+      expect(chevron.workspace.getCenter().getPanes().length).toBe(1);
 
       // The dock items should not be closed
-      await atom.workspace.open({
+      await chevron.workspace.open({
         getTitle: () => 'Permanent Dock Item',
         element: document.createElement('div'),
         getDefaultLocation: () => 'left',
         isPermanentDockItem: () => true
       });
-      await atom.workspace.open({
+      await chevron.workspace.open({
         getTitle: () => 'Impermanent Dock Item',
         element: document.createElement('div'),
         getDefaultLocation: () => 'left'
       });
 
-      expect(atom.workspace.getLeftDock().getPaneItems().length).toBe(2);
-      atom.workspace.closeActivePaneItemOrEmptyPaneOrWindow();
-      expect(atom.close).toHaveBeenCalled();
+      expect(chevron.workspace.getLeftDock().getPaneItems().length).toBe(2);
+      chevron.workspace.closeActivePaneItemOrEmptyPaneOrWindow();
+      expect(chevron.close).toHaveBeenCalled();
     });
   });
 
   describe('::activateNextPane', () => {
     describe('when the active workspace pane is inside a dock', () => {
       it('activates the next pane in the dock', () => {
-        const dock = atom.workspace.getLeftDock();
+        const dock = chevron.workspace.getLeftDock();
         const dockPane1 = dock.getPanes()[0];
         const dockPane2 = dockPane1.splitRight();
 
         dockPane2.focus();
-        expect(atom.workspace.getActivePane()).toBe(dockPane2);
-        atom.workspace.activateNextPane();
-        expect(atom.workspace.getActivePane()).toBe(dockPane1);
+        expect(chevron.workspace.getActivePane()).toBe(dockPane2);
+        chevron.workspace.activateNextPane();
+        expect(chevron.workspace.getActivePane()).toBe(dockPane1);
       });
     });
 
     describe('when the active workspace pane is inside the workspace center', () => {
       it('activates the next pane in the workspace center', () => {
-        const center = atom.workspace.getCenter();
+        const center = chevron.workspace.getCenter();
         const centerPane1 = center.getPanes()[0];
         const centerPane2 = centerPane1.splitRight();
 
         centerPane2.focus();
-        expect(atom.workspace.getActivePane()).toBe(centerPane2);
-        atom.workspace.activateNextPane();
-        expect(atom.workspace.getActivePane()).toBe(centerPane1);
+        expect(chevron.workspace.getActivePane()).toBe(centerPane2);
+        chevron.workspace.activateNextPane();
+        expect(chevron.workspace.getActivePane()).toBe(centerPane1);
       });
     });
   });
@@ -3447,27 +3447,27 @@ describe('Workspace', () => {
   describe('::activatePreviousPane', () => {
     describe('when the active workspace pane is inside a dock', () => {
       it('activates the previous pane in the dock', () => {
-        const dock = atom.workspace.getLeftDock();
+        const dock = chevron.workspace.getLeftDock();
         const dockPane1 = dock.getPanes()[0];
         const dockPane2 = dockPane1.splitRight();
 
         dockPane1.focus();
-        expect(atom.workspace.getActivePane()).toBe(dockPane1);
-        atom.workspace.activatePreviousPane();
-        expect(atom.workspace.getActivePane()).toBe(dockPane2);
+        expect(chevron.workspace.getActivePane()).toBe(dockPane1);
+        chevron.workspace.activatePreviousPane();
+        expect(chevron.workspace.getActivePane()).toBe(dockPane2);
       });
     });
 
     describe('when the active workspace pane is inside the workspace center', () => {
       it('activates the previous pane in the workspace center', () => {
-        const center = atom.workspace.getCenter();
+        const center = chevron.workspace.getCenter();
         const centerPane1 = center.getPanes()[0];
         const centerPane2 = centerPane1.splitRight();
 
         centerPane1.focus();
-        expect(atom.workspace.getActivePane()).toBe(centerPane1);
-        atom.workspace.activatePreviousPane();
-        expect(atom.workspace.getActivePane()).toBe(centerPane2);
+        expect(chevron.workspace.getActivePane()).toBe(centerPane1);
+        chevron.workspace.activatePreviousPane();
+        expect(chevron.workspace.getActivePane()).toBe(centerPane2);
       });
     });
   });
@@ -3550,9 +3550,9 @@ describe('Workspace', () => {
   describe('when the core.allowPendingPaneItems option is falsy', () => {
     it('does not open item with `pending: true` option as pending', async () => {
       let pane = null;
-      atom.config.set('core.allowPendingPaneItems', false);
-      await atom.workspace.open('sample.js', { pending: true }).then(() => {
-          pane = atom.workspace.getActivePane();
+      chevron.config.set('core.allowPendingPaneItems', false);
+      await chevron.workspace.open('sample.js', { pending: true }).then(() => {
+          pane = chevron.workspace.getActivePane();
         });
       expect(pane.getPendingItem()).toBeFalsy();
     });
@@ -3560,44 +3560,44 @@ describe('Workspace', () => {
 
   describe('grammar activation', () => {
     it('notifies the workspace of which grammar is used', async () => {
-      atom.packages.triggerDeferredActivationHooks();
+      chevron.packages.triggerDeferredActivationHooks();
 
       const javascriptGrammarUsed = jasmine.createSpy('js grammar used');
       const rubyGrammarUsed = jasmine.createSpy('ruby grammar used');
       const cGrammarUsed = jasmine.createSpy('c grammar used');
 
-      atom.packages.onDidTriggerActivationHook(
+      chevron.packages.onDidTriggerActivationHook(
         'language-javascript:grammar-used',
         javascriptGrammarUsed
       );
-      atom.packages.onDidTriggerActivationHook(
+      chevron.packages.onDidTriggerActivationHook(
         'language-ruby:grammar-used',
         rubyGrammarUsed
       );
-      atom.packages.onDidTriggerActivationHook(
+      chevron.packages.onDidTriggerActivationHook(
         'language-c:grammar-used',
         cGrammarUsed
       );
 
-      await atom.packages.activatePackage('language-ruby');
-      await atom.packages.activatePackage('language-javascript');
-      await atom.packages.activatePackage('language-c');
-      await atom.workspace.open('sample-with-comments.js');
+      await chevron.packages.activatePackage('language-ruby');
+      await chevron.packages.activatePackage('language-javascript');
+      await chevron.packages.activatePackage('language-c');
+      await chevron.workspace.open('sample-with-comments.js');
 
       // Hooks are triggered when opening new editors
       expect(javascriptGrammarUsed).toHaveBeenCalled();
 
       // Hooks are triggered when changing existing editors grammars
-      atom.grammars.assignLanguageMode(
-        atom.workspace.getActiveTextEditor(),
+      chevron.grammars.assignLanguageMode(
+        chevron.workspace.getActiveTextEditor(),
         'source.c'
       );
       expect(cGrammarUsed).toHaveBeenCalled();
 
       // Hooks are triggered when editors are added in other ways.
-      atom.workspace.getActivePane().splitRight({ copyActiveItem: true });
-      atom.grammars.assignLanguageMode(
-        atom.workspace.getActiveTextEditor(),
+      chevron.workspace.getActivePane().splitRight({ copyActiveItem: true });
+      chevron.grammars.assignLanguageMode(
+        chevron.workspace.getActiveTextEditor(),
         'source.ruby'
       );
       expect(rubyGrammarUsed).toHaveBeenCalled();
@@ -3608,9 +3608,9 @@ describe('Workspace', () => {
     let editor = null;
     beforeEach(async () => {
       useRealClockOnce();
-      atom.config.set('editor.confirmCheckoutHeadRevision', false);
+      chevron.config.set('editor.confirmCheckoutHeadRevision', false);
 
-      editor = await atom.workspace.open('sample-with-comments.js');
+      editor = await chevron.workspace.open('sample-with-comments.js');
     });
 
     it('reverts to the version of its file checked into the project repository', async () => {
@@ -3618,7 +3618,7 @@ describe('Workspace', () => {
       editor.insertText('---\n');
       expect(editor.lineTextForBufferRow(0)).toBe('---');
 
-      atom.workspace.checkoutHeadRevision(editor);
+      chevron.workspace.checkoutHeadRevision(editor);
 
       await conditionPromise(() => editor.lineTextForBufferRow(0) === '');
     });
@@ -3627,21 +3627,21 @@ describe('Workspace', () => {
       it("doesn't do anything", async () => {
         editor = new TextEditor();
         editor.setText('stuff');
-        atom.workspace.checkoutHeadRevision(editor);
+        chevron.workspace.checkoutHeadRevision(editor);
 
-        atom.workspace.checkoutHeadRevision(editor);
+        chevron.workspace.checkoutHeadRevision(editor);
       });
     });
   });
 
   describe('when an item is moved', () => {
     beforeEach(() => {
-      atom.workspace.enablePersistence = true;
+      chevron.workspace.enablePersistence = true;
     });
 
     afterEach(async () => {
-      await atom.workspace.itemLocationStore.clear();
-      atom.workspace.enablePersistence = false;
+      await chevron.workspace.itemLocationStore.clear();
+      chevron.workspace.enablePersistence = false;
     });
 
     it("stores the new location if it's not the default", () => {
@@ -3653,7 +3653,7 @@ describe('Workspace', () => {
       };
       const centerPane = workspace.getActivePane();
       centerPane.addItem(item);
-      const dockPane = atom.workspace.getRightDock().getActivePane();
+      const dockPane = chevron.workspace.getRightDock().getActivePane();
       spyOn(workspace.itemLocationStore, 'save');
       centerPane.moveItemToPane(item, dockPane);
       expect(workspace.itemLocationStore.save).toHaveBeenCalledWith(
@@ -3671,7 +3671,7 @@ describe('Workspace', () => {
       };
       const centerPane = workspace.getActivePane();
       centerPane.addItem(item);
-      const dockPane = atom.workspace.getRightDock().getActivePane();
+      const dockPane = chevron.workspace.getRightDock().getActivePane();
       spyOn(workspace.itemLocationStore, 'save');
       spyOn(workspace.itemLocationStore, 'delete');
       centerPane.moveItemToPane(item, dockPane);

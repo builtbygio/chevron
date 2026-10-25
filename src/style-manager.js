@@ -10,7 +10,7 @@ const DEPRECATED_SYNTAX_SELECTORS = require('./deprecated-syntax-selectors');
 // Extended: A singleton instance of this class available via `atom.styles`,
 // which you can use to globally query and observe the set of active style
 // sheets. The `StyleManager` doesn't add any style elements to the DOM on its
-// own, but is instead subscribed to by individual `<atom-styles>` elements,
+// own, but is instead subscribed to by individual `<chevron-styles>` elements,
 // which clone and attach style elements in different contexts.
 module.exports = class StyleManager {
   constructor() {
@@ -298,18 +298,18 @@ function transformDeprecatedShadowDOMSelectors(css, context) {
         selectors.each(selector => {
           const firstNode = selector.nodes[0];
           if (
-            context === 'atom-text-editor' &&
+            context === 'chevron-text-editor' &&
             firstNode.type === 'pseudo' &&
             firstNode.value === ':host'
           ) {
             const atomTextEditorElementNode = selectorParser.tag({
-              value: 'atom-text-editor'
+              value: 'chevron-text-editor'
             });
             firstNode.replaceWith(atomTextEditorElementNode);
           }
 
           let previousNodeIsAtomTextEditor = false;
-          let targetsAtomTextEditorShadow = context === 'atom-text-editor';
+          let targetsAtomTextEditorShadow = context === 'chevron-text-editor';
           let previousNode;
           selector.each(node => {
             if (targetsAtomTextEditorShadow && node.type === 'class') {
@@ -332,7 +332,7 @@ function transformDeprecatedShadowDOMSelectors(css, context) {
               previousNodeIsAtomTextEditor = false;
             } else if (
               previousNode.type === 'tag' &&
-              previousNode.value === 'atom-text-editor'
+              previousNode.value === 'chevron-text-editor'
             ) {
               previousNodeIsAtomTextEditor = true;
             }
@@ -351,7 +351,7 @@ function transformDeprecatedShadowDOMSelectors(css, context) {
     let deprecationMessage;
     if (transformedSelectors.length > 0) {
       deprecationMessage =
-        'Starting from Atom v1.13.0, the contents of `atom-text-editor` elements ';
+        'Starting from Atom v1.13.0, the contents of `chevron-text-editor` elements ';
       deprecationMessage +=
         'are no longer encapsulated within a shadow DOM boundary. ';
       deprecationMessage +=

@@ -4,7 +4,7 @@ const MenuHelpers = require('../menu-helpers');
 
 // Used to manage the global application menu.
 //
-// It's created by {AtomApplication} upon instantiation and used to add, remove
+// It's created by {ChevronApplication} upon instantiation and used to add, remove
 // and maintain the state of all menu items.
 module.exports = class ApplicationMenu {
   constructor(version, autoUpdateManager) {

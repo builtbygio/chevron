@@ -61,7 +61,7 @@ If so please open an issue on the package spawning the process.\
     })
     );
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'core:cancel', () => (() => {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'core:cancel', () => (() => {
       const result = [];
       for (notification of Array.from(chevron.notifications.getNotifications())) {           result.push(notification.dismiss());
       }
@@ -72,7 +72,7 @@ If so please open an issue on the package spawning the process.\
     this.subscriptions.add(chevron.config.observe('notifications.defaultTimeout', value => { return this.visibilityDuration = value; }));
 
     if (chevron.inDevMode()) {
-      this.subscriptions.add(chevron.commands.add('atom-workspace', 'notifications:trigger-error', function() {
+      this.subscriptions.add(chevron.commands.add('chevron-workspace', 'notifications:trigger-error', function() {
         try {
           return abc + 2; // nope
         } catch (error) {
@@ -89,8 +89,8 @@ If so please open an issue on the package spawning the process.\
 
     if (this.notificationsLog != null) { this.addNotificationsLogSubscriptions(); }
     this.subscriptions.add(chevron.workspace.addOpener(uri => { if (uri === NotificationsLog.prototype.getURI()) { return this.createLog(); } }));
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'notifications:toggle-log', () => chevron.workspace.toggle(NotificationsLog.prototype.getURI())));
-    return this.subscriptions.add(chevron.commands.add('atom-workspace', 'notifications:clear-log', function() {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'notifications:toggle-log', () => chevron.workspace.toggle(NotificationsLog.prototype.getURI())));
+    return this.subscriptions.add(chevron.commands.add('chevron-workspace', 'notifications:clear-log', function() {
       for (notification of Array.from(chevron.notifications.getNotifications())) {
         notification.options.dismissable = true;
         notification.dismissed = false;

@@ -22,7 +22,7 @@ module.exports = {
       chevron.workspace.addOpener(uri => {
         if (uri === OutlineView.URI) return getView();
       }),
-      chevron.commands.add('atom-workspace', {
+      chevron.commands.add('chevron-workspace', {
         'outline:toggle': () => chevron.workspace.toggle(OutlineView.URI),
         // No default keybinding: every obvious chord is taken by something.
         'outline:focus': async () => {

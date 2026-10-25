@@ -495,7 +495,7 @@ module.exports =
       if ((fromPane != null ? fromPane.id : undefined) !== fromPaneId) {
         // If dragging from a different pane container, we have to be more
         // exhaustive in our search.
-        fromPane = Array.from(document.querySelectorAll('atom-pane'))
+        fromPane = Array.from(document.querySelectorAll('chevron-pane'))
           .map(paneEl => paneEl.model)
           .find(pane => pane.id === fromPaneId);
       }

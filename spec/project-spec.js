@@ -10,9 +10,9 @@ const { conditionPromise, timeoutPromise } = require('./async-spec-helpers');
 
 describe('Project', () => {
   beforeEach(async () => {
-    const directory = atom.project.getDirectories()[0];
+    const directory = chevron.project.getDirectories()[0];
     const paths = directory ? [directory.resolve('dir')] : [null];
-    atom.project.setPaths(paths);
+    chevron.project.setPaths(paths);
 
     // Wait for project's service consumers to be asynchronously added
     jasmine.useRealClock();
@@ -38,22 +38,22 @@ describe('Project', () => {
 
     it("does not deserialize paths to directories that don't exist", async () => {
       deserializedProject = new Project({
-        notificationManager: atom.notifications,
-        packageManager: atom.packages,
-        confirm: atom.confirm,
-        grammarRegistry: atom.grammars
+        notificationManager: chevron.notifications,
+        packageManager: chevron.packages,
+        confirm: chevron.confirm,
+        grammarRegistry: chevron.grammars
       });
-      const state = atom.project.serialize();
+      const state = chevron.project.serialize();
       state.paths.push('/directory/that/does/not/exist');
 
       let err = null;
       await deserializedProject
-        .deserialize(state, atom.deserializers)
+        .deserialize(state, chevron.deserializers)
         .catch(e => {
           err = e;
         });
 
-      expect(deserializedProject.getPaths()).toEqual(atom.project.getPaths());
+      expect(deserializedProject.getPaths()).toEqual(chevron.project.getPaths());
       expect(err.missingProjectPaths).toEqual([
         '/directory/that/does/not/exist'
       ]);
@@ -64,20 +64,20 @@ describe('Project', () => {
       fs.mkdirSync(childPath);
 
       deserializedProject = new Project({
-        notificationManager: atom.notifications,
-        packageManager: atom.packages,
-        confirm: atom.confirm,
-        grammarRegistry: atom.grammars
+        notificationManager: chevron.notifications,
+        packageManager: chevron.packages,
+        confirm: chevron.confirm,
+        grammarRegistry: chevron.grammars
       });
-      atom.project.setPaths([childPath]);
-      const state = atom.project.serialize();
+      chevron.project.setPaths([childPath]);
+      const state = chevron.project.serialize();
 
       fs.rmdirSync(childPath);
       fs.writeFileSync(childPath, 'surprise!\n');
 
       let err = null;
       await deserializedProject
-        .deserialize(state, atom.deserializers)
+        .deserialize(state, chevron.deserializers)
         .catch(e => {
           err = e;
         });
@@ -87,38 +87,38 @@ describe('Project', () => {
     });
 
     it('does not include unretained buffers in the serialized state', async () => {
-      await atom.project.bufferForPath('a');
-      expect(atom.project.getBuffers().length).toBe(1);
+      await chevron.project.bufferForPath('a');
+      expect(chevron.project.getBuffers().length).toBe(1);
 
       deserializedProject = new Project({
-        notificationManager: atom.notifications,
-        packageManager: atom.packages,
-        confirm: atom.confirm,
-        grammarRegistry: atom.grammars
+        notificationManager: chevron.notifications,
+        packageManager: chevron.packages,
+        confirm: chevron.confirm,
+        grammarRegistry: chevron.grammars
       });
 
       await deserializedProject.deserialize(
-        atom.project.serialize({ isUnloading: false })
+        chevron.project.serialize({ isUnloading: false })
       );
       expect(deserializedProject.getBuffers().length).toBe(0);
     });
 
     it('keeps buffers in large-file mode, unparsed, across serialization', async () => {
-      await atom.packages.activatePackage('language-javascript');
-      const buffer = await atom.project.bufferForPath(
+      await chevron.packages.activatePackage('language-javascript');
+      const buffer = await chevron.project.bufferForPath(
         require.resolve('./fixtures/sample.js'),
         { largeFileMode: true }
       );
       buffer.retain();
 
       deserializedProject = new Project({
-        notificationManager: atom.notifications,
-        packageManager: atom.packages,
-        confirm: atom.confirm,
-        grammarRegistry: atom.grammars
+        notificationManager: chevron.notifications,
+        packageManager: chevron.packages,
+        confirm: chevron.confirm,
+        grammarRegistry: chevron.grammars
       });
       await deserializedProject.deserialize(
-        atom.project.serialize({ isUnloading: false })
+        chevron.project.serialize({ isUnloading: false })
       );
 
       const restored = deserializedProject.getBuffers()[0];
@@ -130,17 +130,17 @@ describe('Project', () => {
     });
 
     it('listens for destroyed events on deserialized buffers and removes them when they are destroyed', async () => {
-      await atom.workspace.open('a');
-      expect(atom.project.getBuffers().length).toBe(1);
+      await chevron.workspace.open('a');
+      expect(chevron.project.getBuffers().length).toBe(1);
       deserializedProject = new Project({
-        notificationManager: atom.notifications,
-        packageManager: atom.packages,
-        confirm: atom.confirm,
-        grammarRegistry: atom.grammars
+        notificationManager: chevron.notifications,
+        packageManager: chevron.packages,
+        confirm: chevron.confirm,
+        grammarRegistry: chevron.grammars
       });
 
       await deserializedProject.deserialize(
-        atom.project.serialize({ isUnloading: false })
+        chevron.project.serialize({ isUnloading: false })
       );
       expect(deserializedProject.getBuffers().length).toBe(1);
       deserializedProject.getBuffers()[0].destroy();
@@ -153,18 +153,18 @@ describe('Project', () => {
         'file.txt'
       );
 
-      await atom.workspace.open(pathToOpen);
-      expect(atom.project.getBuffers().length).toBe(1);
+      await chevron.workspace.open(pathToOpen);
+      expect(chevron.project.getBuffers().length).toBe(1);
       fs.mkdirSync(pathToOpen);
       deserializedProject = new Project({
-        notificationManager: atom.notifications,
-        packageManager: atom.packages,
-        confirm: atom.confirm,
-        grammarRegistry: atom.grammars
+        notificationManager: chevron.notifications,
+        packageManager: chevron.packages,
+        confirm: chevron.confirm,
+        grammarRegistry: chevron.grammars
       });
 
       await deserializedProject.deserialize(
-        atom.project.serialize({ isUnloading: false })
+        chevron.project.serialize({ isUnloading: false })
       );
       expect(deserializedProject.getBuffers().length).toBe(0);
     });
@@ -179,18 +179,18 @@ describe('Project', () => {
       );
       fs.writeFileSync(pathToOpen, '');
 
-      await atom.workspace.open(pathToOpen);
-      expect(atom.project.getBuffers().length).toBe(1);
+      await chevron.workspace.open(pathToOpen);
+      expect(chevron.project.getBuffers().length).toBe(1);
       fs.chmodSync(pathToOpen, '000');
       deserializedProject = new Project({
-        notificationManager: atom.notifications,
-        packageManager: atom.packages,
-        confirm: atom.confirm,
-        grammarRegistry: atom.grammars
+        notificationManager: chevron.notifications,
+        packageManager: chevron.packages,
+        confirm: chevron.confirm,
+        grammarRegistry: chevron.grammars
       });
 
       await deserializedProject.deserialize(
-        atom.project.serialize({ isUnloading: false })
+        chevron.project.serialize({ isUnloading: false })
       );
       expect(deserializedProject.getBuffers().length).toBe(0);
     });
@@ -202,18 +202,18 @@ describe('Project', () => {
       );
       fs.writeFileSync(pathToOpen, '');
 
-      await atom.workspace.open(pathToOpen);
-      expect(atom.project.getBuffers().length).toBe(1);
+      await chevron.workspace.open(pathToOpen);
+      expect(chevron.project.getBuffers().length).toBe(1);
       fs.unlinkSync(pathToOpen);
       deserializedProject = new Project({
-        notificationManager: atom.notifications,
-        packageManager: atom.packages,
-        confirm: atom.confirm,
-        grammarRegistry: atom.grammars
+        notificationManager: chevron.notifications,
+        packageManager: chevron.packages,
+        confirm: chevron.confirm,
+        grammarRegistry: chevron.grammars
       });
 
       await deserializedProject.deserialize(
-        atom.project.serialize({ isUnloading: false })
+        chevron.project.serialize({ isUnloading: false })
       );
       expect(deserializedProject.getBuffers().length).toBe(0);
     });
@@ -224,19 +224,19 @@ describe('Project', () => {
         'file.txt'
       );
 
-      await atom.workspace.open(pathToOpen);
-      atom.workspace.getActiveTextEditor().setText('unsaved\n');
-      expect(atom.project.getBuffers().length).toBe(1);
+      await chevron.workspace.open(pathToOpen);
+      chevron.workspace.getActiveTextEditor().setText('unsaved\n');
+      expect(chevron.project.getBuffers().length).toBe(1);
 
       deserializedProject = new Project({
-        notificationManager: atom.notifications,
-        packageManager: atom.packages,
-        confirm: atom.confirm,
-        grammarRegistry: atom.grammars
+        notificationManager: chevron.notifications,
+        packageManager: chevron.packages,
+        confirm: chevron.confirm,
+        grammarRegistry: chevron.grammars
       });
 
       await deserializedProject.deserialize(
-        atom.project.serialize({ isUnloading: false })
+        chevron.project.serialize({ isUnloading: false })
       );
       expect(deserializedProject.getBuffers().length).toBe(1);
       expect(deserializedProject.getBuffers()[0].getPath()).toBe(pathToOpen);
@@ -244,21 +244,21 @@ describe('Project', () => {
     });
 
     it('serializes marker layers and history only if Atom is quitting', async () => {
-      await atom.workspace.open('a');
+      await chevron.workspace.open('a');
 
-      const bufferA = atom.project.getBuffers()[0];
+      const bufferA = chevron.project.getBuffers()[0];
       const layerA = bufferA.addMarkerLayer({ persistent: true });
       const markerA = layerA.markPosition([0, 3]);
       bufferA.append('!');
       notQuittingProject = new Project({
-        notificationManager: atom.notifications,
-        packageManager: atom.packages,
-        confirm: atom.confirm,
-        grammarRegistry: atom.grammars
+        notificationManager: chevron.notifications,
+        packageManager: chevron.packages,
+        confirm: chevron.confirm,
+        grammarRegistry: chevron.grammars
       });
 
       await notQuittingProject.deserialize(
-        atom.project.serialize({ isUnloading: false })
+        chevron.project.serialize({ isUnloading: false })
       );
       expect(
         notQuittingProject.getBuffers()[0].getMarkerLayer(layerA.id),
@@ -266,14 +266,14 @@ describe('Project', () => {
       ).toBeUndefined();
       expect(notQuittingProject.getBuffers()[0].undo()).toBe(false);
       quittingProject = new Project({
-        notificationManager: atom.notifications,
-        packageManager: atom.packages,
-        confirm: atom.confirm,
-        grammarRegistry: atom.grammars
+        notificationManager: chevron.notifications,
+        packageManager: chevron.packages,
+        confirm: chevron.confirm,
+        grammarRegistry: chevron.grammars
       });
 
       await quittingProject.deserialize(
-        atom.project.serialize({ isUnloading: true })
+        chevron.project.serialize({ isUnloading: true })
       );
       expect(quittingProject.getBuffers()[0].getMarkerLayer(layerA.id), x =>
         x.getMarker(markerA.id)
@@ -285,19 +285,19 @@ describe('Project', () => {
   describe('when an editor is saved and the project has no path', () => {
     it("sets the project's path to the saved file's parent directory", async () => {
       const tempFile = temp.openSync().path;
-      atom.project.setPaths([]);
-      expect(atom.project.getPaths()[0]).toBeUndefined();
+      chevron.project.setPaths([]);
+      expect(chevron.project.getPaths()[0]).toBeUndefined();
 
-      const editor = await atom.workspace.open();
+      const editor = await chevron.workspace.open();
       await editor.saveAs(tempFile);
-      expect(atom.project.getPaths()[0]).toBe(path.dirname(tempFile));
+      expect(chevron.project.getPaths()[0]).toBe(path.dirname(tempFile));
     });
   });
 
   describe('.replace', () => {
     let projectSpecification, projectPath1, projectPath2;
     beforeEach(() => {
-      atom.project.replace(null);
+      chevron.project.replace(null);
       projectPath1 = temp.mkdirSync('project-path1');
       projectPath2 = temp.mkdirSync('project-path2');
       projectSpecification = {
@@ -309,20 +309,20 @@ describe('Project', () => {
       };
     });
     it('sets a project specification', () => {
-      expect(atom.config.get('baz')).toBeUndefined();
-      atom.project.replace(projectSpecification);
-      expect(atom.project.getPaths()).toEqual([projectPath1, projectPath2]);
-      expect(atom.config.get('baz')).toBe('buzz');
+      expect(chevron.config.get('baz')).toBeUndefined();
+      chevron.project.replace(projectSpecification);
+      expect(chevron.project.getPaths()).toEqual([projectPath1, projectPath2]);
+      expect(chevron.config.get('baz')).toBe('buzz');
     });
 
     it('clears a project through replace with no params', () => {
-      expect(atom.config.get('baz')).toBeUndefined();
-      atom.project.replace(projectSpecification);
-      expect(atom.config.get('baz')).toBe('buzz');
-      expect(atom.project.getPaths()).toEqual([projectPath1, projectPath2]);
-      atom.project.replace();
-      expect(atom.config.get('baz')).toBeUndefined();
-      expect(atom.project.getPaths()).toEqual([]);
+      expect(chevron.config.get('baz')).toBeUndefined();
+      chevron.project.replace(projectSpecification);
+      expect(chevron.config.get('baz')).toBe('buzz');
+      expect(chevron.project.getPaths()).toEqual([projectPath1, projectPath2]);
+      chevron.project.replace();
+      expect(chevron.config.get('baz')).toBeUndefined();
+      expect(chevron.project.getPaths()).toEqual([]);
     });
 
     it('responds to change of project specification', () => {
@@ -330,11 +330,11 @@ describe('Project', () => {
       const callback = () => {
         wasCalled = true;
       };
-      atom.project.onDidReplace(callback);
-      atom.project.replace(projectSpecification);
+      chevron.project.onDidReplace(callback);
+      chevron.project.replace(projectSpecification);
       expect(wasCalled).toBe(true);
       wasCalled = false;
-      atom.project.replace();
+      chevron.project.replace();
       expect(wasCalled).toBe(true);
     });
   });
@@ -342,7 +342,7 @@ describe('Project', () => {
   describe('before and after saving a buffer', () => {
     let buffer;
     beforeEach(async () => {
-      buffer = await atom.project.bufferForPath(
+      buffer = await chevron.project.bufferForPath(
         path.join(__dirname, 'fixtures', 'sample.js')
       );
       buffer.retain();
@@ -351,21 +351,21 @@ describe('Project', () => {
     afterEach(() => buffer.release());
 
     it('emits save events on the main process', async () => {
-      spyOn(atom.project.applicationDelegate, 'emitDidSavePath');
-      spyOn(atom.project.applicationDelegate, 'emitWillSavePath');
+      spyOn(chevron.project.applicationDelegate, 'emitDidSavePath');
+      spyOn(chevron.project.applicationDelegate, 'emitWillSavePath');
 
       await buffer.save();
-      expect(atom.project.applicationDelegate.emitDidSavePath.calls.length).toBe(
+      expect(chevron.project.applicationDelegate.emitDidSavePath.calls.length).toBe(
         1
       );
       expect(
-        atom.project.applicationDelegate.emitDidSavePath
+        chevron.project.applicationDelegate.emitDidSavePath
       ).toHaveBeenCalledWith(buffer.getPath());
       expect(
-        atom.project.applicationDelegate.emitWillSavePath.calls.length
+        chevron.project.applicationDelegate.emitWillSavePath.calls.length
       ).toBe(1);
       expect(
-        atom.project.applicationDelegate.emitWillSavePath
+        chevron.project.applicationDelegate.emitWillSavePath
       ).toHaveBeenCalledWith(buffer.getPath());
     });
   });
@@ -373,12 +373,12 @@ describe('Project', () => {
   describe('when a watch error is thrown from the TextBuffer', () => {
     let editor = null;
     beforeEach(async () => {
-      editor = await atom.workspace.open(require.resolve('./fixtures/dir/a'));
+      editor = await chevron.workspace.open(require.resolve('./fixtures/dir/a'));
     });
 
     it('creates a warning notification', () => {
       let noteSpy;
-      atom.notifications.onDidAddNotification((noteSpy = jasmine.createSpy()));
+      chevron.notifications.onDidAddNotification((noteSpy = jasmine.createSpy()));
 
       const error = new Error('SomeError');
       error.eventType = 'resurrect';
@@ -420,50 +420,50 @@ describe('Project', () => {
 
     it('uses it to create repositories for any directories that need one', async () => {
       const projectPath = temp.mkdirSync('atom-project');
-      atom.project.setPaths([projectPath]);
-      expect(atom.project.getRepositories()).toEqual([null]);
+      chevron.project.setPaths([projectPath]);
+      expect(chevron.project.getRepositories()).toEqual([null]);
 
-      atom.packages.serviceHub.provide(
+      chevron.packages.serviceHub.provide(
         'atom.repository-provider',
         '0.1.0',
         fakeRepositoryProvider
       );
       await conditionPromise(
-        () => atom.project.repositoryProviders.length > 1
+        () => chevron.project.repositoryProviders.length > 1
       );
-      atom.project.getRepositories()[0] === fakeRepository;
+      chevron.project.getRepositories()[0] === fakeRepository;
     });
 
     it('does not create any new repositories if every directory has a repository', async () => {
-      const repositories = atom.project.getRepositories();
+      const repositories = chevron.project.getRepositories();
       expect(repositories.length).toEqual(1);
       expect(repositories[0]).toBeTruthy();
 
-      atom.packages.serviceHub.provide(
+      chevron.packages.serviceHub.provide(
         'atom.repository-provider',
         '0.1.0',
         fakeRepositoryProvider
       );
       await conditionPromise(
-        () => atom.project.repositoryProviders.length > 1
+        () => chevron.project.repositoryProviders.length > 1
       );
-      expect(atom.project.getRepositories()).toBe(repositories);
+      expect(chevron.project.getRepositories()).toBe(repositories);
     });
 
     it('stops using it to create repositories when the service is removed', async () => {
-      atom.project.setPaths([]);
+      chevron.project.setPaths([]);
 
-      const disposable = atom.packages.serviceHub.provide(
+      const disposable = chevron.packages.serviceHub.provide(
         'atom.repository-provider',
         '0.1.0',
         fakeRepositoryProvider
       );
       await conditionPromise(
-        () => atom.project.repositoryProviders.length > 1
+        () => chevron.project.repositoryProviders.length > 1
       );
       disposable.dispose();
-      atom.project.addPath(temp.mkdirSync('atom-project'));
-      expect(atom.project.getRepositories()).toEqual([null]);
+      chevron.project.addPath(temp.mkdirSync('atom-project'));
+      expect(chevron.project.getRepositories()).toEqual([null]);
     });
   });
 
@@ -508,7 +508,7 @@ describe('Project', () => {
     let onDidChangeFilesCallback = null;
 
     beforeEach(async () => {
-      serviceDisposable = atom.packages.serviceHub.provide(
+      serviceDisposable = chevron.packages.serviceHub.provide(
         'atom.directory-provider',
         '0.1.0',
         {
@@ -523,16 +523,16 @@ describe('Project', () => {
       );
       onDidChangeFilesCallback = null;
 
-      await conditionPromise(() => atom.project.directoryProviders.length > 0);
+      await conditionPromise(() => chevron.project.directoryProviders.length > 0);
     });
 
     it("uses the provider's custom directories for any paths that it handles", () => {
       const localPath = temp.mkdirSync('local-path');
       const remotePath = 'ssh://foreign-directory:8080/does-exist';
 
-      atom.project.setPaths([localPath, remotePath]);
+      chevron.project.setPaths([localPath, remotePath]);
 
-      let directories = atom.project.getDirectories();
+      let directories = chevron.project.getDirectories();
       expect(directories[0].getPath()).toBe(localPath);
       expect(directories[0] instanceof Directory).toBe(true);
       expect(directories[1].getPath()).toBe(remotePath);
@@ -541,21 +541,21 @@ describe('Project', () => {
       // It does not add new remote paths that do not exist
       const nonExistentRemotePath =
         'ssh://another-directory:8080/does-not-exist';
-      atom.project.addPath(nonExistentRemotePath);
-      expect(atom.project.getDirectories().length).toBe(2);
+      chevron.project.addPath(nonExistentRemotePath);
+      expect(chevron.project.getDirectories().length).toBe(2);
 
       // It adds new remote paths if their directories exist.
       const newRemotePath = 'ssh://another-directory:8080/does-exist';
-      atom.project.addPath(newRemotePath);
-      directories = atom.project.getDirectories();
+      chevron.project.addPath(newRemotePath);
+      directories = chevron.project.getDirectories();
       expect(directories[2].getPath()).toBe(newRemotePath);
       expect(directories[2] instanceof DummyDirectory).toBe(true);
     });
 
     it('stops using the provider when the service is removed', () => {
       serviceDisposable.dispose();
-      atom.project.setPaths(['ssh://foreign-directory:8080/does-exist']);
-      expect(atom.project.getDirectories().length).toBe(0);
+      chevron.project.setPaths(['ssh://foreign-directory:8080/does-exist']);
+      expect(chevron.project.getDirectories().length).toBe(0);
     });
 
     it('uses the custom onDidChangeFiles as the watcher if available', async () => {
@@ -563,13 +563,13 @@ describe('Project', () => {
       await stopAllWatchers();
 
       const remotePath = 'ssh://another-directory:8080/does-exist';
-      atom.project.setPaths([remotePath]);
-      await atom.project.getWatcherPromise(remotePath);
+      chevron.project.setPaths([remotePath]);
+      await chevron.project.getWatcherPromise(remotePath);
 
       expect(onDidChangeFilesCallback).not.toBeNull();
 
       const changeSpy = jasmine.createSpy('atom.project.onDidChangeFiles');
-      const disposable = atom.project.onDidChangeFiles(changeSpy);
+      const disposable = chevron.project.onDidChangeFiles(changeSpy);
 
       const events = [{ action: 'created', path: remotePath + '/test.txt' }];
       onDidChangeFilesCallback(events);
@@ -585,12 +585,12 @@ describe('Project', () => {
     beforeEach(() => {
       absolutePath = require.resolve('./fixtures/dir/a');
       newBufferHandler = jasmine.createSpy('newBufferHandler');
-      atom.project.onDidAddBuffer(newBufferHandler);
+      chevron.project.onDidAddBuffer(newBufferHandler);
     });
 
     describe("when given an absolute path that isn't currently open", () => {
       it("returns a new edit session for the given path and emits 'buffer-created'", async () => {
-        const editor = await atom.workspace.open(absolutePath);
+        const editor = await chevron.workspace.open(absolutePath);
         expect(editor.buffer.getPath()).toBe(absolutePath);
         expect(newBufferHandler).toHaveBeenCalledWith(editor.buffer);
       });
@@ -598,7 +598,7 @@ describe('Project', () => {
 
     describe("when given a relative path that isn't currently opened", () => {
       it("returns a new edit session for the given path (relative to the project root) and emits 'buffer-created'", async () => {
-        const editor = await atom.workspace.open(absolutePath);
+        const editor = await chevron.workspace.open(absolutePath);
         expect(editor.buffer.getPath()).toBe(absolutePath);
         expect(newBufferHandler).toHaveBeenCalledWith(editor.buffer);
       });
@@ -606,13 +606,13 @@ describe('Project', () => {
 
     describe('when passed the path to a buffer that is currently opened', () => {
       it('returns a new edit session containing currently opened buffer', async () => {
-        const editor = await atom.workspace.open(absolutePath);
+        const editor = await chevron.workspace.open(absolutePath);
         newBufferHandler.reset();
 
-        const { buffer } = await atom.workspace.open(absolutePath);
+        const { buffer } = await chevron.workspace.open(absolutePath);
         expect(buffer).toBe(editor.buffer);
 
-        const { buffer: relativeBuffer } = await atom.workspace.open('a');
+        const { buffer: relativeBuffer } = await chevron.workspace.open('a');
         expect(relativeBuffer).toBe(editor.buffer);
         expect(newBufferHandler).not.toHaveBeenCalled();
       });
@@ -620,7 +620,7 @@ describe('Project', () => {
 
     describe('when not passed a path', () => {
       it("returns a new edit session and emits 'buffer-created'", async () => {
-        const editor = await atom.workspace.open();
+        const editor = await chevron.workspace.open();
         expect(editor.buffer.getPath()).toBeUndefined();
         expect(newBufferHandler).toHaveBeenCalledWith(editor.buffer);
       });
@@ -631,7 +631,7 @@ describe('Project', () => {
     let buffer = null;
 
     beforeEach(async () => {
-      buffer = await atom.project.bufferForPath('a');
+      buffer = await chevron.project.bufferForPath('a');
       buffer.retain();
     });
 
@@ -639,11 +639,11 @@ describe('Project', () => {
 
     describe('when opening a previously opened path', () => {
       it('does not create a new buffer', async () => {
-        expect(await atom.project.bufferForPath('a')).toBe(buffer);
-        expect(await atom.project.bufferForPath('b')).not.toBe(buffer);
+        expect(await chevron.project.bufferForPath('a')).toBe(buffer);
+        expect(await chevron.project.bufferForPath('b')).not.toBe(buffer);
         const [buffer1, buffer2] = await Promise.all([
-          atom.project.bufferForPath('c'),
-          atom.project.bufferForPath('c')
+          chevron.project.bufferForPath('c'),
+          chevron.project.bufferForPath('c')
         ]);
         expect(buffer1).toBe(buffer2);
       });
@@ -654,7 +654,7 @@ describe('Project', () => {
         );
         let rejected = false;
         try {
-          await atom.project.bufferForPath('b');
+          await chevron.project.bufferForPath('b');
         } catch (error) {
           rejected = true;
           expect(error.message).toBe('Could not open file');
@@ -662,12 +662,12 @@ describe('Project', () => {
         expect(rejected).toBe(true);
 
         TextBuffer.load.andCallThrough();
-        await atom.project.bufferForPath('b');
+        await chevron.project.bufferForPath('b');
       });
 
       it('creates a new buffer if the previous buffer was destroyed', async () => {
         buffer.release();
-        expect(await atom.project.bufferForPath('b')).not.toBe(buffer);
+        expect(await chevron.project.bufferForPath('b')).not.toBe(buffer);
       });
     });
   });
@@ -675,33 +675,33 @@ describe('Project', () => {
   describe('.repositoryForDirectory(directory)', () => {
     it('resolves to null when the directory does not have a repository', async () => {
       const directory = new Directory('/tmp');
-      const result = await atom.project.repositoryForDirectory(directory);
+      const result = await chevron.project.repositoryForDirectory(directory);
       expect(result).toBeNull();
-      expect(atom.project.repositoryProviders.length).toBeGreaterThan(0);
-      expect(atom.project.repositoryPromisesByPath.size).toBe(0);
+      expect(chevron.project.repositoryProviders.length).toBeGreaterThan(0);
+      expect(chevron.project.repositoryPromisesByPath.size).toBe(0);
     });
 
     it('resolves to a GitRepository and is cached when the given directory is a Git repo', async () => {
       const directory = new Directory(path.join(__dirname, '..'));
-      const promise = atom.project.repositoryForDirectory(directory);
+      const promise = chevron.project.repositoryForDirectory(directory);
       const result = await promise;
       expect(result).toBeInstanceOf(GitRepository);
       const dirPath = directory.getRealPathSync();
       expect(result.getPath()).toBe(path.join(dirPath, '.git'));
 
       // Verify that the result is cached.
-      expect(atom.project.repositoryForDirectory(directory)).toBe(promise);
+      expect(chevron.project.repositoryForDirectory(directory)).toBe(promise);
     });
 
     it('creates a new repository if a previous one with the same directory had been destroyed', async () => {
       const directory = new Directory(path.join(__dirname, '..'));
 
-      let repository = await atom.project.repositoryForDirectory(directory);
+      let repository = await chevron.project.repositoryForDirectory(directory);
       expect(repository.isDestroyed()).toBe(false);
       repository.destroy();
       expect(repository.isDestroyed()).toBe(true);
 
-      repository = await atom.project.repositoryForDirectory(directory);
+      repository = await chevron.project.repositoryForDirectory(directory);
       expect(repository.isDestroyed()).toBe(false);
     });
   });
@@ -710,9 +710,9 @@ describe('Project', () => {
     describe('when path is a file', () => {
       it("sets its path to the file's parent directory and updates the root directory", () => {
         const filePath = require.resolve('./fixtures/dir/a');
-        atom.project.setPaths([filePath]);
-        expect(atom.project.getPaths()[0]).toEqual(path.dirname(filePath));
-        expect(atom.project.getDirectories()[0].path).toEqual(
+        chevron.project.setPaths([filePath]);
+        expect(chevron.project.getPaths()[0]).toEqual(path.dirname(filePath));
+        expect(chevron.project.getDirectories()[0].path).toEqual(
           path.dirname(filePath)
         );
       });
@@ -730,9 +730,9 @@ describe('Project', () => {
         fs.copySync(gitDirPath, path.join(directory2, '.git'));
         fs.copySync(gitDirPath, path.join(directory3, '.git'));
 
-        atom.project.setPaths([directory1, directory2, directory3]);
+        chevron.project.setPaths([directory1, directory2, directory3]);
 
-        const [repo1, repo2, repo3] = atom.project.getRepositories();
+        const [repo1, repo2, repo3] = chevron.project.getRepositories();
         expect(repo1).toBeNull();
         expect(repo2.getShortHead()).toBe('master');
         expect(repo2.getPath()).toBe(
@@ -746,10 +746,10 @@ describe('Project', () => {
 
       it('calls callbacks registered with ::onDidChangePaths', () => {
         const onDidChangePathsSpy = jasmine.createSpy('onDidChangePaths spy');
-        atom.project.onDidChangePaths(onDidChangePathsSpy);
+        chevron.project.onDidChangePaths(onDidChangePathsSpy);
 
         const paths = [temp.mkdirSync('dir1'), temp.mkdirSync('dir2')];
-        atom.project.setPaths(paths);
+        chevron.project.setPaths(paths);
 
         expect(onDidChangePathsSpy.callCount).toBe(1);
         expect(onDidChangePathsSpy.mostRecentCall.args[0]).toEqual(paths);
@@ -764,34 +764,34 @@ describe('Project', () => {
         ];
 
         try {
-          atom.project.setPaths(paths, { mustExist: true });
+          chevron.project.setPaths(paths, { mustExist: true });
           expect('no exception thrown').toBeUndefined();
         } catch (e) {
           expect(e.missingProjectPaths).toEqual([paths[1], paths[3]]);
         }
 
-        expect(atom.project.getPaths()).toEqual([paths[0], paths[2]]);
+        expect(chevron.project.getPaths()).toEqual([paths[0], paths[2]]);
       });
     });
 
     describe('when no paths are given', () => {
       it('clears its path', () => {
-        atom.project.setPaths([]);
-        expect(atom.project.getPaths()).toEqual([]);
-        expect(atom.project.getDirectories()).toEqual([]);
+        chevron.project.setPaths([]);
+        expect(chevron.project.getPaths()).toEqual([]);
+        expect(chevron.project.getDirectories()).toEqual([]);
       });
     });
 
     it('normalizes the path to remove consecutive slashes, ., and .. segments', () => {
-      atom.project.setPaths([
+      chevron.project.setPaths([
         `${require.resolve('./fixtures/dir/a')}${path.sep}b${path.sep}${
           path.sep
         }..`
       ]);
-      expect(atom.project.getPaths()[0]).toEqual(
+      expect(chevron.project.getPaths()[0]).toEqual(
         path.dirname(require.resolve('./fixtures/dir/a'))
       );
-      expect(atom.project.getDirectories()[0].path).toEqual(
+      expect(chevron.project.getDirectories()[0].path).toEqual(
         path.dirname(require.resolve('./fixtures/dir/a'))
       );
     });
@@ -800,12 +800,12 @@ describe('Project', () => {
   describe('.addPath(path, options)', () => {
     it('calls callbacks registered with ::onDidChangePaths', () => {
       const onDidChangePathsSpy = jasmine.createSpy('onDidChangePaths spy');
-      atom.project.onDidChangePaths(onDidChangePathsSpy);
+      chevron.project.onDidChangePaths(onDidChangePathsSpy);
 
-      const [oldPath] = atom.project.getPaths();
+      const [oldPath] = chevron.project.getPaths();
 
       const newPath = temp.mkdirSync('dir');
-      atom.project.addPath(newPath);
+      chevron.project.addPath(newPath);
 
       expect(onDidChangePathsSpy.callCount).toBe(1);
       expect(onDidChangePathsSpy.mostRecentCall.args[0]).toEqual([
@@ -816,35 +816,35 @@ describe('Project', () => {
 
     it("doesn't add redundant paths", () => {
       const onDidChangePathsSpy = jasmine.createSpy('onDidChangePaths spy');
-      atom.project.onDidChangePaths(onDidChangePathsSpy);
-      const [oldPath] = atom.project.getPaths();
+      chevron.project.onDidChangePaths(onDidChangePathsSpy);
+      const [oldPath] = chevron.project.getPaths();
 
       // Doesn't re-add an existing root directory
-      atom.project.addPath(oldPath);
-      expect(atom.project.getPaths()).toEqual([oldPath]);
+      chevron.project.addPath(oldPath);
+      expect(chevron.project.getPaths()).toEqual([oldPath]);
       expect(onDidChangePathsSpy).not.toHaveBeenCalled();
 
       // Doesn't add an entry for a file-path within an existing root directory
-      atom.project.addPath(path.join(oldPath, 'some-file.txt'));
-      expect(atom.project.getPaths()).toEqual([oldPath]);
+      chevron.project.addPath(path.join(oldPath, 'some-file.txt'));
+      expect(chevron.project.getPaths()).toEqual([oldPath]);
       expect(onDidChangePathsSpy).not.toHaveBeenCalled();
 
       // Does add an entry for a directory within an existing directory
       const newPath = path.join(oldPath, 'a-dir');
-      atom.project.addPath(newPath);
-      expect(atom.project.getPaths()).toEqual([oldPath, newPath]);
+      chevron.project.addPath(newPath);
+      expect(chevron.project.getPaths()).toEqual([oldPath, newPath]);
       expect(onDidChangePathsSpy).toHaveBeenCalled();
     });
 
     it("doesn't add non-existent directories", () => {
-      const previousPaths = atom.project.getPaths();
-      atom.project.addPath('/this-definitely/does-not-exist');
-      expect(atom.project.getPaths()).toEqual(previousPaths);
+      const previousPaths = chevron.project.getPaths();
+      chevron.project.addPath('/this-definitely/does-not-exist');
+      expect(chevron.project.getPaths()).toEqual(previousPaths);
     });
 
     it('optionally throws on non-existent directories', () => {
       expect(() =>
-        atom.project.addPath('/this-definitely/does-not-exist', {
+        chevron.project.addPath('/this-definitely/does-not-exist', {
           mustExist: true
         })
       ).toThrow();
@@ -852,15 +852,15 @@ describe('Project', () => {
 
     it('syncs FS IPC project roots before did-change-paths listeners', () => {
       const order = [];
-      spyOn(atom.applicationDelegate, 'setProjectRoots').andCallFake(() => {
+      spyOn(chevron.applicationDelegate, 'setProjectRoots').andCallFake(() => {
         order.push('setProjectRoots');
       });
-      atom.project.onDidChangePaths(() => {
+      chevron.project.onDidChangePaths(() => {
         order.push('did-change-paths');
       });
 
       const newPath = temp.mkdirSync('atom-project-fs-ipc');
-      atom.project.addPath(newPath);
+      chevron.project.addPath(newPath);
 
       expect(order).toEqual(['setProjectRoots', 'did-change-paths']);
     });
@@ -871,37 +871,37 @@ describe('Project', () => {
 
     beforeEach(() => {
       onDidChangePathsSpy = jasmine.createSpy('onDidChangePaths listener');
-      atom.project.onDidChangePaths(onDidChangePathsSpy);
+      chevron.project.onDidChangePaths(onDidChangePathsSpy);
     });
 
     it('removes the directory and repository for the path', () => {
-      const result = atom.project.removePath(atom.project.getPaths()[0]);
-      expect(atom.project.getDirectories()).toEqual([]);
-      expect(atom.project.getRepositories()).toEqual([]);
-      expect(atom.project.getPaths()).toEqual([]);
+      const result = chevron.project.removePath(chevron.project.getPaths()[0]);
+      expect(chevron.project.getDirectories()).toEqual([]);
+      expect(chevron.project.getRepositories()).toEqual([]);
+      expect(chevron.project.getPaths()).toEqual([]);
       expect(result).toBe(true);
       expect(onDidChangePathsSpy).toHaveBeenCalled();
     });
 
     it("does nothing if the path is not one of the project's root paths", () => {
-      const originalPaths = atom.project.getPaths();
-      const result = atom.project.removePath(originalPaths[0] + 'xyz');
+      const originalPaths = chevron.project.getPaths();
+      const result = chevron.project.removePath(originalPaths[0] + 'xyz');
       expect(result).toBe(false);
-      expect(atom.project.getPaths()).toEqual(originalPaths);
+      expect(chevron.project.getPaths()).toEqual(originalPaths);
       expect(onDidChangePathsSpy).not.toHaveBeenCalled();
     });
 
     it("doesn't destroy the repository if it is shared by another root directory", () => {
-      atom.project.setPaths([__dirname, path.join(__dirname, '..', 'src')]);
-      atom.project.removePath(__dirname);
-      expect(atom.project.getPaths()).toEqual([
+      chevron.project.setPaths([__dirname, path.join(__dirname, '..', 'src')]);
+      chevron.project.removePath(__dirname);
+      expect(chevron.project.getPaths()).toEqual([
         path.join(__dirname, '..', 'src')
       ]);
-      expect(atom.project.getRepositories()[0].isSubmodule('src')).toBe(false);
+      expect(chevron.project.getRepositories()[0].isSubmodule('src')).toBe(false);
     });
 
     it('removes a path that is represented as a URI', () => {
-      atom.packages.serviceHub.provide('atom.directory-provider', '0.1.0', {
+      chevron.packages.serviceHub.provide('atom.directory-provider', '0.1.0', {
         directoryForURISync(uri) {
           return {
             getPath() {
@@ -923,11 +923,11 @@ describe('Project', () => {
 
       const ftpURI = 'ftp://example.com/some/folder';
 
-      atom.project.setPaths([ftpURI]);
-      expect(atom.project.getPaths()).toEqual([ftpURI]);
+      chevron.project.setPaths([ftpURI]);
+      expect(chevron.project.getPaths()).toEqual([ftpURI]);
 
-      atom.project.removePath(ftpURI);
-      expect(atom.project.getPaths()).toEqual([]);
+      chevron.project.removePath(ftpURI);
+      expect(chevron.project.getPaths()).toEqual([]);
     });
   });
 
@@ -938,7 +938,7 @@ describe('Project', () => {
 
     beforeEach(() => {
       events = [];
-      sub = atom.project.onDidChangeFiles(incoming => {
+      sub = chevron.project.onDidChangeFiles(incoming => {
         events.push(...incoming);
         checkCallback();
       });
@@ -983,10 +983,10 @@ describe('Project', () => {
       // Ensure that all preexisting watchers are stopped
       await stopAllWatchers();
 
-      atom.project.setPaths([dirOne]);
-      await atom.project.getWatcherPromise(dirOne);
+      chevron.project.setPaths([dirOne]);
+      await chevron.project.getWatcherPromise(dirOne);
 
-      expect(atom.project.watcherPromisesByPath[dirTwo]).toEqual(undefined);
+      expect(chevron.project.watcherPromisesByPath[dirTwo]).toEqual(undefined);
       fs.writeFileSync(fileThree, 'three\n');
       fs.writeFileSync(fileTwo, 'two\n');
       fs.writeFileSync(fileOne, 'one\n');
@@ -1001,13 +1001,13 @@ describe('Project', () => {
       const added = [];
 
       buffers.push(
-        await atom.project.buildBuffer(require.resolve('./fixtures/dir/a'))
+        await chevron.project.buildBuffer(require.resolve('./fixtures/dir/a'))
       );
       expect(buffers.length).toBe(1);
-      atom.project.onDidAddBuffer(buffer => added.push(buffer));
+      chevron.project.onDidAddBuffer(buffer => added.push(buffer));
 
       buffers.push(
-        await atom.project.buildBuffer(require.resolve('./fixtures/dir/b'))
+        await chevron.project.buildBuffer(require.resolve('./fixtures/dir/b'))
       );
       expect(buffers.length).toBe(2);
       expect(added).toEqual([buffers[1]]);
@@ -1020,17 +1020,17 @@ describe('Project', () => {
       const observed = [];
 
       buffers.push(
-        await atom.project.buildBuffer(require.resolve('./fixtures/dir/a'))
+        await chevron.project.buildBuffer(require.resolve('./fixtures/dir/a'))
       );
       buffers.push(
-        await atom.project.buildBuffer(require.resolve('./fixtures/dir/b'))
+        await chevron.project.buildBuffer(require.resolve('./fixtures/dir/b'))
       );
       expect(buffers.length).toBe(2);
-      atom.project.observeBuffers(buffer => observed.push(buffer));
+      chevron.project.observeBuffers(buffer => observed.push(buffer));
       expect(observed).toEqual(buffers);
 
       buffers.push(
-        await atom.project.buildBuffer(require.resolve('./fixtures/dir/b'))
+        await chevron.project.buildBuffer(require.resolve('./fixtures/dir/b'))
       );
       expect(observed.length).toBe(3);
       expect(buffers.length).toBe(3);
@@ -1060,9 +1060,9 @@ describe('Project', () => {
       );
       fs.copySync(gitDirPath2, path.join(directory2, '.git'));
 
-      atom.project.setPaths([directory1]);
+      chevron.project.setPaths([directory1]);
 
-      const disposable = atom.project.observeRepositories(repo =>
+      const disposable = chevron.project.observeRepositories(repo =>
         observed.push(repo)
       );
       expect(observed.length).toBe(1);
@@ -1070,7 +1070,7 @@ describe('Project', () => {
         'ef046e9eecaa5255ea5e9817132d4001724d6ae1'
       );
 
-      atom.project.addPath(directory2);
+      chevron.project.addPath(directory2);
       expect(observed.length).toBe(2);
       expect(observed[1].getReferenceTarget('refs/heads/master')).toBe(
         'd2b0ad9cbc6f6c4372e8956e5cc5af771b2342e5'
@@ -1083,7 +1083,7 @@ describe('Project', () => {
   describe('.onDidAddRepository()', () => {
     it('invokes callback when a path is added and the path is the root of a repository', () => {
       const observed = [];
-      const disposable = atom.project.onDidAddRepository(repo =>
+      const disposable = chevron.project.onDidAddRepository(repo =>
         observed.push(repo)
       );
 
@@ -1093,7 +1093,7 @@ describe('Project', () => {
       );
       fs.copySync(fixtureRepoPath, path.join(projectRootPath, '.git'));
 
-      atom.project.addPath(projectRootPath);
+      chevron.project.addPath(projectRootPath);
       expect(observed.length).toBe(1);
       expect(observed[0].getOriginURL()).toEqual(
         'https://github.com/example-user/example-repo.git'
@@ -1104,7 +1104,7 @@ describe('Project', () => {
 
     it('invokes callback when a path is added and the path is subdirectory of a repository', () => {
       const observed = [];
-      const disposable = atom.project.onDidAddRepository(repo =>
+      const disposable = chevron.project.onDidAddRepository(repo =>
         observed.push(repo)
       );
 
@@ -1117,7 +1117,7 @@ describe('Project', () => {
       const projectSubDirPath = path.join(projectRootPath, 'sub-dir');
       fs.mkdirSync(projectSubDirPath);
 
-      atom.project.addPath(projectSubDirPath);
+      chevron.project.addPath(projectSubDirPath);
       expect(observed.length).toBe(1);
       expect(observed[0].getOriginURL()).toEqual(
         'https://github.com/example-user/example-repo.git'
@@ -1128,11 +1128,11 @@ describe('Project', () => {
 
     it('does not invoke callback when a path is added and the path is not part of a repository', () => {
       const observed = [];
-      const disposable = atom.project.onDidAddRepository(repo =>
+      const disposable = chevron.project.onDidAddRepository(repo =>
         observed.push(repo)
       );
 
-      atom.project.addPath(temp.mkdirSync('not-a-repository'));
+      chevron.project.addPath(temp.mkdirSync('not-a-repository'));
       expect(observed.length).toBe(0);
 
       disposable.dispose();
@@ -1141,41 +1141,41 @@ describe('Project', () => {
 
   describe('.relativize(path)', () => {
     it('returns the path, relative to whichever root directory it is inside of', () => {
-      atom.project.addPath(temp.mkdirSync('another-path'));
+      chevron.project.addPath(temp.mkdirSync('another-path'));
 
-      let rootPath = atom.project.getPaths()[0];
+      let rootPath = chevron.project.getPaths()[0];
       let childPath = path.join(rootPath, 'some', 'child', 'directory');
-      expect(atom.project.relativize(childPath)).toBe(
+      expect(chevron.project.relativize(childPath)).toBe(
         path.join('some', 'child', 'directory')
       );
 
-      rootPath = atom.project.getPaths()[1];
+      rootPath = chevron.project.getPaths()[1];
       childPath = path.join(rootPath, 'some', 'child', 'directory');
-      expect(atom.project.relativize(childPath)).toBe(
+      expect(chevron.project.relativize(childPath)).toBe(
         path.join('some', 'child', 'directory')
       );
     });
 
     it('returns the given path if it is not in any of the root directories', () => {
       const randomPath = path.join('some', 'random', 'path');
-      expect(atom.project.relativize(randomPath)).toBe(randomPath);
+      expect(chevron.project.relativize(randomPath)).toBe(randomPath);
     });
   });
 
   describe('.relativizePath(path)', () => {
     it('returns the root path that contains the given path, and the path relativized to that root path', () => {
-      atom.project.addPath(temp.mkdirSync('another-path'));
+      chevron.project.addPath(temp.mkdirSync('another-path'));
 
-      let rootPath = atom.project.getPaths()[0];
+      let rootPath = chevron.project.getPaths()[0];
       let childPath = path.join(rootPath, 'some', 'child', 'directory');
-      expect(atom.project.relativizePath(childPath)).toEqual([
+      expect(chevron.project.relativizePath(childPath)).toEqual([
         rootPath,
         path.join('some', 'child', 'directory')
       ]);
 
-      rootPath = atom.project.getPaths()[1];
+      rootPath = chevron.project.getPaths()[1];
       childPath = path.join(rootPath, 'some', 'child', 'directory');
-      expect(atom.project.relativizePath(childPath)).toEqual([
+      expect(chevron.project.relativizePath(childPath)).toEqual([
         rootPath,
         path.join('some', 'child', 'directory')
       ]);
@@ -1184,7 +1184,7 @@ describe('Project', () => {
     describe("when the given path isn't inside of any of the project's path", () => {
       it('returns null for the root path, and the given path unchanged', () => {
         const randomPath = path.join('some', 'random', 'path');
-        expect(atom.project.relativizePath(randomPath)).toEqual([
+        expect(chevron.project.relativizePath(randomPath)).toEqual([
           null,
           randomPath
         ]);
@@ -1194,23 +1194,23 @@ describe('Project', () => {
     describe('when the given path is a URL', () => {
       it('returns null for the root path, and the given path unchanged', () => {
         const url = 'http://the-path';
-        expect(atom.project.relativizePath(url)).toEqual([null, url]);
+        expect(chevron.project.relativizePath(url)).toEqual([null, url]);
       });
     });
 
     describe('when the given path is inside more than one root folder', () => {
       it('uses the root folder that is closest to the given path', () => {
-        atom.project.addPath(path.join(atom.project.getPaths()[0], 'a-dir'));
+        chevron.project.addPath(path.join(chevron.project.getPaths()[0], 'a-dir'));
 
         const inputPath = path.join(
-          atom.project.getPaths()[1],
+          chevron.project.getPaths()[1],
           'somewhere/something.txt'
         );
 
-        expect(atom.project.getDirectories()[0].contains(inputPath)).toBe(true);
-        expect(atom.project.getDirectories()[1].contains(inputPath)).toBe(true);
-        expect(atom.project.relativizePath(inputPath)).toEqual([
-          atom.project.getPaths()[1],
+        expect(chevron.project.getDirectories()[0].contains(inputPath)).toBe(true);
+        expect(chevron.project.getDirectories()[1].contains(inputPath)).toBe(true);
+        expect(chevron.project.relativizePath(inputPath)).toEqual([
+          chevron.project.getPaths()[1],
           path.join('somewhere', 'something.txt')
         ]);
       });
@@ -1219,18 +1219,18 @@ describe('Project', () => {
 
   describe('.contains(path)', () => {
     it('returns whether or not the given path is in one of the root directories', () => {
-      const rootPath = atom.project.getPaths()[0];
+      const rootPath = chevron.project.getPaths()[0];
       const childPath = path.join(rootPath, 'some', 'child', 'directory');
-      expect(atom.project.contains(childPath)).toBe(true);
+      expect(chevron.project.contains(childPath)).toBe(true);
 
       const randomPath = path.join('some', 'random', 'path');
-      expect(atom.project.contains(randomPath)).toBe(false);
+      expect(chevron.project.contains(randomPath)).toBe(false);
     });
   });
 
   describe('.resolvePath(uri)', () => {
     it('normalizes disk drive letter in passed path on #win32', () => {
-      expect(atom.project.resolvePath('d:\\file.txt')).toEqual('D:\\file.txt');
+      expect(chevron.project.resolvePath('d:\\file.txt')).toEqual('D:\\file.txt');
     });
   });
 });

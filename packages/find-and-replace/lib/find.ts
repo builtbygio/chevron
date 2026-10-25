@@ -69,19 +69,19 @@ module.exports = {
     this.subscriptions.add(chevron.commands.add('.find-and-replace, .project-find', 'window:focus-next-pane', () => chevron.views.getView(chevron.workspace).focus())
     );
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'project-find:show', () => {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'project-find:show', () => {
       this.createViews();
       return showPanel(this.projectFindPanel, this.findPanel, () => this.projectFindView.focusFindElement());
     })
     );
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'project-find:toggle', () => {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'project-find:toggle', () => {
       this.createViews();
       return togglePanel(this.projectFindPanel, this.findPanel, () => this.projectFindView.focusFindElement());
     })
     );
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'project-find:show-in-current-directory', ({target}) => {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'project-find:show-in-current-directory', ({target}) => {
       this.createViews();
       this.findPanel.hide();
       this.projectFindPanel.show();
@@ -90,37 +90,37 @@ module.exports = {
     })
     );
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'find-and-replace:use-selection-as-find-pattern', () => {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'find-and-replace:use-selection-as-find-pattern', () => {
       if ((this.projectFindPanel != null ? this.projectFindPanel.isVisible() : undefined) || (this.findPanel != null ? this.findPanel.isVisible() : undefined)) { return; }
       return this.createViews();
     })
     );
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'find-and-replace:use-selection-as-replace-pattern', () => {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'find-and-replace:use-selection-as-replace-pattern', () => {
       if ((this.projectFindPanel != null ? this.projectFindPanel.isVisible() : undefined) || (this.findPanel != null ? this.findPanel.isVisible() : undefined)) { return; }
       return this.createViews();
     })
     );
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'find-and-replace:toggle', () => {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'find-and-replace:toggle', () => {
       this.createViews();
       return togglePanel(this.findPanel, this.projectFindPanel, () => this.findView.focusFindEditor());
     })
     );
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'find-and-replace:show', () => {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'find-and-replace:show', () => {
       this.createViews();
       return showPanel(this.findPanel, this.projectFindPanel, () => this.findView.focusFindEditor());
     })
     );
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'find-and-replace:show-replace', () => {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'find-and-replace:show-replace', () => {
       this.createViews();
       return showPanel(this.findPanel, this.projectFindPanel, () => this.findView.focusReplaceEditor());
     })
     );
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'find-and-replace:clear-history', () => {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'find-and-replace:clear-history', () => {
       this.findHistory.clear();
       return this.replaceHistory.clear();
     })
@@ -128,7 +128,7 @@ module.exports = {
 
     // Handling cancel in the workspace + code editors
     const handleEditorCancel = ({target}) => {
-      const isMiniEditor = (target.tagName === 'ATOM-TEXT-EDITOR') && target.hasAttribute('mini');
+      const isMiniEditor = (target.tagName === 'CHEVRON-TEXT-EDITOR') && target.hasAttribute('mini');
       if (!isMiniEditor) {
         if (this.findPanel != null) {
           this.findPanel.hide();
@@ -137,7 +137,7 @@ module.exports = {
       }
     };
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', {
       'core:cancel': handleEditorCancel,
       'core:close': handleEditorCancel
     }

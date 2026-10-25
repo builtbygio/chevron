@@ -123,12 +123,13 @@ were vendored at.
      ./script/with-modern-env ./script/test
    ```
 
-   **The `atom.` → `chevron.` rewrite this step anticipates is not needed.**
-   `global.atom` was removed from the application in H3 PR 23, but
-   `spec/jasmine-test-runner.js` sets `window.atom` to the environment for
-   exactly this reason, so upstream specs referring to `atom.workspace` and
-   friends run unchanged. The 9 packages restored so far carry 646 such
-   references and none of them needs touching.
+   **Restored specs must say `chevron.`, not `atom.`.**
+   `global.atom` was removed from the application in H3 PR 23, and
+   `spec/jasmine-test-runner.js` no longer sets `window.atom`. An upstream
+   spec that still says `atom.workspace` throws `ReferenceError` on the first
+   reference. Rewrite the bare `atom` global (not string selectors, and not
+   `atom-notification` / `atom-keymap` / `atom-select-list`) before committing
+   a restored spec.
 
    A spec that fails for a reason that looks like a real bug is committed
    as-is with a `// FIXME(restored-spec): <one line>` at the top and noted in

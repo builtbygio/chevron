@@ -2,8 +2,8 @@ describe('PlainTextLanguageMode', () => {
   let editor;
 
   beforeEach(async () => {
-    atom.config.set('editor.autoIndent', true);
-    editor = await atom.workspace.open('plain.txt');
+    chevron.config.set('editor.autoIndent', true);
+    editor = await chevron.workspace.open('plain.txt');
     expect(editor.getBuffer().getLanguageMode().constructor.name).toBe(
       'PlainTextLanguageMode'
     );
@@ -28,7 +28,7 @@ describe('PlainTextLanguageMode', () => {
     expect(editor.getRootScopeDescriptor().getScopesArray()).toEqual([
       'text.plain.null-grammar'
     ]);
-    atom.config.set('editor.softWrap', true, {
+    chevron.config.set('editor.softWrap', true, {
       scopeSelector: '.text.plain.null-grammar'
     });
     expect(editor.isSoftWrapped()).toBe(true);

@@ -6,11 +6,11 @@ describe('MenuManager', function() {
 
   beforeEach(function() {
     menu = new MenuManager({
-      keymapManager: atom.keymaps,
-      packageManager: atom.packages
+      keymapManager: chevron.keymaps,
+      packageManager: chevron.packages
     });
     spyOn(menu, 'sendToBrowserProcess'); // Do not modify Atom's actual menus
-    menu.initialize({ resourcePath: atom.getLoadSettings().resourcePath });
+    menu.initialize({ resourcePath: chevron.getLoadSettings().resourcePath });
   });
 
   describe('::add(items)', function() {
@@ -113,7 +113,7 @@ describe('MenuManager', function() {
 
     it('sends the current menu template and associated key bindings to the browser process', function() {
       menu.add([{ label: 'A', submenu: [{ label: 'B', command: 'b' }] }]);
-      atom.keymaps.add('test', { 'atom-workspace': { 'ctrl-b': 'b' } });
+      chevron.keymaps.add('test', { 'chevron-workspace': { 'ctrl-b': 'b' } });
       menu.update();
       advanceClock(1);
       expect(menu.sendToBrowserProcess.argsForCall[0][1]['b']).toEqual([
@@ -125,8 +125,8 @@ describe('MenuManager', function() {
       // it would be nice to be smarter about omitting, but that would require a much
       // more dynamic interaction between the currently focused element and the menu
       menu.add([{ label: 'A', submenu: [{ label: 'B', command: 'b' }] }]);
-      atom.keymaps.add('test', { 'atom-workspace': { 'ctrl-b': 'b' } });
-      atom.keymaps.add('test', { 'atom-text-editor': { 'ctrl-b': 'unset!' } });
+      chevron.keymaps.add('test', { 'chevron-workspace': { 'ctrl-b': 'b' } });
+      chevron.keymaps.add('test', { 'chevron-text-editor': { 'ctrl-b': 'unset!' } });
       advanceClock(1);
       expect(menu.sendToBrowserProcess.argsForCall[0][1]['b']).toBeUndefined();
     });
@@ -144,8 +144,8 @@ describe('MenuManager', function() {
         }
       ]);
 
-      atom.keymaps.add('test', {
-        'atom-workspace': {
+      chevron.keymaps.add('test', {
+        'chevron-workspace': {
           'alt-b': 'b',
           'alt-shift-C': 'c',
           'alt-cmd-d': 'd'
@@ -173,8 +173,8 @@ describe('MenuManager', function() {
         }
       ]);
 
-      atom.keymaps.add('test', {
-        'atom-workspace': {
+      chevron.keymaps.add('test', {
+        'chevron-workspace': {
           'ctrl-alt-b': 'b',
           'ctrl-alt-shift-C': 'c',
           'ctrl-alt-cmd-d': 'd'
@@ -200,7 +200,7 @@ describe('MenuManager', function() {
       'keymaps',
       'keymap-1.json'
     );
-    atom.keymaps.reloadKeymap(keymapPath);
+    chevron.keymaps.reloadKeymap(keymapPath);
     expect(menu.update).toHaveBeenCalled();
   });
 });

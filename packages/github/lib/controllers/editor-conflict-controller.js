@@ -58,7 +58,7 @@ class EditorConflictController extends _react.default.Component {
     this.updateMarkerCount();
     return _react.default.createElement("div", null, this.state.conflicts.size > 0 && _react.default.createElement(_commands.default, {
       registry: this.props.commands,
-      target: "atom-text-editor"
+      target: "chevron-text-editor"
     }, _react.default.createElement(_commands.Command, {
       command: "github:resolve-as-ours",
       callback: this.getResolverUsing([_source.OURS])

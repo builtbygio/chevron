@@ -35,7 +35,7 @@ class GoToLineView {
       item: this,
       visible: false
     });
-    chevron.commands.add("atom-text-editor", "go-to-line:toggle", () => {
+    chevron.commands.add("chevron-text-editor", "go-to-line:toggle", () => {
       this.toggle();
       return false;
     });

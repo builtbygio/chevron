@@ -15,7 +15,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 describe('crash branding', () => {
   it('render-process-gone dialog reports to builtbygio/chevron', () => {
     const src = fs.readFileSync(
-      path.join(ROOT, 'src/main-process/atom-window.js'),
+      path.join(ROOT, 'src/main-process/chevron-window.js'),
       'utf8'
     );
     assert.match(src, /Chevron has crashed/);

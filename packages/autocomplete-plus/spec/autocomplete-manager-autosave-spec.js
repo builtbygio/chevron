@@ -36,24 +36,24 @@ return sort(Array.apply(this, arguments));
     fs.writeFileSync(filePath, sample)
 
     // Enable autosave
-    atom.config.set('autosave.enabled', true)
+    chevron.config.set('autosave.enabled', true)
 
     // Set to live completion
-    atom.config.set('autocomplete-plus.enableAutoActivation', true)
-    atom.config.set('editor.fontSize', '16')
+    chevron.config.set('autocomplete-plus.enableAutoActivation', true)
+    chevron.config.set('editor.fontSize', '16')
 
-    let workspaceElement = atom.views.getView(atom.workspace)
+    let workspaceElement = chevron.views.getView(chevron.workspace)
     jasmine.attachToDOM(workspaceElement)
 
-    await atom.packages.activatePackage('autosave')
+    await chevron.packages.activatePackage('autosave')
 
-    editor = await atom.workspace.open(filePath)
-    editorView = atom.views.getView(editor)
+    editor = await chevron.workspace.open(filePath)
+    editorView = chevron.views.getView(editor)
 
-    await atom.packages.activatePackage('language-javascript')
+    await chevron.packages.activatePackage('language-javascript')
 
     // Activate the package
-    mainModule = (await atom.packages.activatePackage('autocomplete-plus')).mainModule
+    mainModule = (await chevron.packages.activatePackage('autocomplete-plus')).mainModule
 
     await conditionPromise(() =>
       mainModule && mainModule.autocompleteManager && mainModule.autocompleteManager.ready
@@ -100,7 +100,7 @@ return sort(Array.apply(this, arguments));
       expect(editorView.querySelector('.autocomplete-plus')).toExist()
       // Accept suggestion
       let suggestionListView = autocompleteManager.suggestionList.suggestionListElement
-      atom.commands.dispatch(suggestionListView.element, 'autocomplete-plus:confirm')
+      chevron.commands.dispatch(suggestionListView.element, 'autocomplete-plus:confirm')
       expect(editor.getBuffer().getLastLine()).toEqual('function')
     })
   )

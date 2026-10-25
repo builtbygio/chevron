@@ -11,7 +11,7 @@ const createCustomElement = require('./create-custom-element');
 class WorkspaceAxisElement extends HTMLElement {}
 
 function createWorkspaceAxisElement() {
-  return createCustomElement('atom-workspace-axis', WorkspaceAxisElement);
+  return createCustomElement('chevron-workspace-axis', WorkspaceAxisElement);
 }
 
 class WorkspaceElement extends HTMLElement {
@@ -80,7 +80,7 @@ class WorkspaceElement extends HTMLElement {
   }
 
   updateGlobalTextEditorStyleSheet() {
-    const styleSheetSource = `atom-workspace {
+    const styleSheetSource = `chevron-workspace {
   --editor-font-size: ${this.config.get('editor.fontSize')}px;
   --editor-font-family: ${this.config.get('editor.fontFamily')};
   --editor-line-height: ${this.config.get('editor.lineHeight')};
@@ -290,7 +290,7 @@ class WorkspaceElement extends HTMLElement {
     if (
       event.ctrlKey &&
       this.config.get('editor.zoomFontWhenCtrlScrolling') &&
-      event.target.closest('atom-text-editor') != null
+      event.target.closest('chevron-text-editor') != null
     ) {
       if (event.wheelDeltaY > 0) {
         this.model.increaseFontSize();
@@ -465,11 +465,11 @@ function isTab(element) {
   return false;
 }
 
-window.customElements.define('atom-workspace-axis', WorkspaceAxisElement);
-window.customElements.define('atom-workspace', WorkspaceElement);
+window.customElements.define('chevron-workspace-axis', WorkspaceAxisElement);
+window.customElements.define('chevron-workspace', WorkspaceElement);
 
 function createWorkspaceElement() {
-  return createCustomElement('atom-workspace', WorkspaceElement);
+  return createCustomElement('chevron-workspace', WorkspaceElement);
 }
 
 module.exports = {

@@ -9,7 +9,7 @@ module.exports = {
 
   activate() {
     this.activateCallCount++;
-    return atom.workspace.addOpener(filePath => {
+    return chevron.workspace.addOpener(filePath => {
       if (filePath === 'chevron://fictitious') {
         return this.openerCount++;
       }

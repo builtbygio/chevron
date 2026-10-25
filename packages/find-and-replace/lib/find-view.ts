@@ -227,7 +227,7 @@ class FindView {
     this.findEditor.onDidStopChanging(() => this.liveSearch());
     this.refs.nextButton.addEventListener('click', e => e.shiftKey ? this.findPrevious({focusEditorAfter: true}) : this.findNext({focusEditorAfter: true}));
     this.refs.findAllButton.addEventListener('click', this.findAll.bind(this));
-    this.subscriptions.add(chevron.commands.add('atom-workspace', {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', {
       'find-and-replace:find-next': () => this.findNext({focusEditorAfter: true}),
       'find-and-replace:find-previous': () => this.findPrevious({focusEditorAfter: true}),
       'find-and-replace:find-all': () => this.findAll({focusEditorAfter: true}),
@@ -239,7 +239,7 @@ class FindView {
 
     this.refs.replaceNextButton.addEventListener('click', this.replaceNext.bind(this));
     this.refs.replaceAllButton.addEventListener('click', this.replaceAll.bind(this));
-    this.subscriptions.add(chevron.commands.add('atom-workspace', {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', {
       'find-and-replace:replace-previous': this.replacePrevious.bind(this),
       'find-and-replace:replace-next': this.replaceNext.bind(this),
       'find-and-replace:replace-all': this.replaceAll.bind(this),

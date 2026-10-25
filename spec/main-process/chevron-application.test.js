@@ -7,15 +7,15 @@ const fs = require('fs-plus');
 const electron = require('electron');
 const sandbox = require('sinon').createSandbox();
 
-const AtomApplication = require('../../src/main-process/atom-application');
+const ChevronApplication = require('../../src/main-process/chevron-application');
 const parseCommandLine = require('../../src/main-process/parse-command-line');
 const {
   emitterEventPromise,
   conditionPromise
 } = require('../async-spec-helpers');
 
-// These tests use a utility class called LaunchScenario, defined below, to manipulate AtomApplication instances that
-// (1) are stubbed to only simulate AtomWindow creation and (2) allow you to use a shorthand notation to assert the
+// These tests use a utility class called LaunchScenario, defined below, to manipulate ChevronApplication instances that
+// (1) are stubbed to only simulate ChevronWindow creation and (2) allow you to use a shorthand notation to assert the
 // application state after certain launch actions.
 //
 // Each scenario instance has access to a small set of directories and files created within a dedicated temporary
@@ -28,7 +28,7 @@ const {
 //
 // To create additional windows, call `await scenario.open({})` with similar arguments. `LaunchScenario::open()` returns
 // a Promise that resolves to the opened or re-used StubWindows. The one exception is if `urlsToOpen` are provided in the open
-// arguments; then it resolves to an Array of StubWindows, because AtomApplication processes each URL individually.
+// arguments; then it resolves to an Array of StubWindows, because ChevronApplication processes each URL individually.
 //
 // To ensure that the expected windows have been created, call `await scenario.assert('')` with a string specifying the
 // expected window contents. The specification shorthand language is as follows:
@@ -44,7 +44,7 @@ const {
 //   two project roots, `./b` and `./c`, and one open editor on `./b/2.md`. The windows are listed in their expected
 //   creation order.
 
-describe('AtomApplication', function() {
+describe('ChevronApplication', function() {
   let scenario, sinon;
 
   if (process.env.CI) {
@@ -797,7 +797,7 @@ describe('AtomApplication', function() {
         app = scenario.getApplication(0);
         app.removeWindow(w);
         sinon.stub(app, 'promptForPathToOpen');
-        global.atom = { workspace: { getActiveTextEditor() {} } };
+        global.chevron = { workspace: { getActiveTextEditor() {} } };
       });
 
       it('opens a new file', function() {
@@ -864,18 +864,18 @@ describe('AtomApplication', function() {
     });
 
     it('creates a new application when no socket is present', async function() {
-      const app0 = await AtomApplication.open({ createApplication, version });
+      const app0 = await ChevronApplication.open({ createApplication, version });
       await app0.deleteSocketSecretFile();
 
-      const app1 = await AtomApplication.open({ createApplication, version });
+      const app1 = await ChevronApplication.open({ createApplication, version });
       assert.isNotNull(app1);
       assert.notStrictEqual(app0, app1);
     });
 
     it('creates a new application for spec windows', async function() {
-      const app0 = await AtomApplication.open({ createApplication, version });
+      const app0 = await ChevronApplication.open({ createApplication, version });
 
-      const app1 = await AtomApplication.open({
+      const app1 = await ChevronApplication.open({
         createApplication,
         version,
         ...parseCommandLine(['--test', 'a'])
@@ -885,10 +885,10 @@ describe('AtomApplication', function() {
     });
 
     it('sends a request to an existing application when a socket is present', async function() {
-      const app0 = await AtomApplication.open({ createApplication, version });
+      const app0 = await ChevronApplication.open({ createApplication, version });
       assert.lengthOf(app0.getAllWindows(), 1);
 
-      const app1 = await AtomApplication.open({
+      const app1 = await ChevronApplication.open({
         createApplication,
         version,
         ...parseCommandLine(['--new-window'])
@@ -1621,7 +1621,7 @@ class LaunchScenario {
   }
 
   addApplication(options = {}) {
-    const app = new AtomApplication({
+    const app = new ChevronApplication({
       resourcePath: path.resolve(__dirname, '../..'),
       atomHomeDirPath: this.atomHome,
       preserveFocus: true,

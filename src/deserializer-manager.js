@@ -32,7 +32,7 @@ module.exports = class DeserializerManager {
   //   common approach is to register a *constructor* as the deserializer for its
   //   instances by adding a `.deserialize()` class method. When your method is
   //   called, it will be passed serialized state as the first argument and the
-  //   {AtomEnvironment} object as the second argument, which is useful if you
+  //   {ChevronEnvironment} object as the second argument, which is useful if you
   //   wish to avoid referencing the `atom` global.
   add(...deserializers) {
     for (let i = 0; i < deserializers.length; i++) {

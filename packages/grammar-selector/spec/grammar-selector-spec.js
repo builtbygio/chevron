@@ -5,22 +5,22 @@ describe('GrammarSelector', () => {
   let [editor, textGrammar, jsGrammar] = [];
 
   beforeEach(async () => {
-    jasmine.attachToDOM(atom.views.getView(atom.workspace));
-    atom.config.set('grammar-selector.showOnRightSideOfStatusBar', false);
-    atom.config.set('grammar-selector.hideDuplicateTextMateGrammars', false);
+    jasmine.attachToDOM(chevron.views.getView(chevron.workspace));
+    chevron.config.set('grammar-selector.showOnRightSideOfStatusBar', false);
+    chevron.config.set('grammar-selector.hideDuplicateTextMateGrammars', false);
 
-    await atom.packages.activatePackage('status-bar');
-    await atom.packages.activatePackage('grammar-selector');
-    await atom.packages.activatePackage('language-javascript');
-    await atom.packages.activatePackage(
+    await chevron.packages.activatePackage('status-bar');
+    await chevron.packages.activatePackage('grammar-selector');
+    await chevron.packages.activatePackage('language-javascript');
+    await chevron.packages.activatePackage(
       path.join(__dirname, 'fixtures', 'language-with-no-name')
     );
 
-    editor = await atom.workspace.open('sample.js');
+    editor = await chevron.workspace.open('sample.js');
 
     // Plain text is the null grammar; language-text is gone.
-    textGrammar = atom.grammars.nullGrammar;
-    jsGrammar = atom.grammars.grammarForScopeName('source.js');
+    textGrammar = chevron.grammars.nullGrammar;
+    jsGrammar = chevron.grammars.grammarForScopeName('source.js');
     expect(jsGrammar).toBeTruthy();
     expect(editor.getGrammar()).toBe(jsGrammar);
   });
@@ -32,7 +32,7 @@ describe('GrammarSelector', () => {
       // -1 for removing nullGrammar, +1 for adding "Auto Detect"
       // Tree-sitter names the regex and JSDoc grammars
       expect(grammarView.querySelectorAll('li').length).toBe(
-        atom.grammars
+        chevron.grammars
           .getGrammars({ includeTreeSitter: true })
           .filter(g => g.name).length
       );
@@ -43,7 +43,7 @@ describe('GrammarSelector', () => {
       grammarView
         .querySelectorAll('li')
         .forEach(li =>
-          expect(li.textContent).not.toBe(atom.grammars.nullGrammar.name)
+          expect(li.textContent).not.toBe(chevron.grammars.nullGrammar.name)
         );
       expect(grammarView.textContent.includes('Tree-sitter')).toBe(true); // check we are showing and labelling Tree-sitter grammars
     }));
@@ -68,7 +68,7 @@ describe('GrammarSelector', () => {
 
   describe("when the editor's current grammar is the null grammar", () =>
     it('displays Auto Detect as the selected grammar', async () => {
-      editor.setGrammar(atom.grammars.nullGrammar);
+      editor.setGrammar(chevron.grammars.nullGrammar);
       const grammarView = (await getGrammarView(editor)).element;
       expect(grammarView.querySelector('li.active').textContent).toBe(
         'Auto Detect'
@@ -77,7 +77,7 @@ describe('GrammarSelector', () => {
 
   describe('when editor is untitled', () =>
     it('sets the new grammar on the editor', async () => {
-      editor = await atom.workspace.open();
+      editor = await chevron.workspace.open();
       expect(editor.getGrammar()).not.toBe(jsGrammar);
 
       const grammarView = await getGrammarView(editor);
@@ -95,7 +95,7 @@ describe('GrammarSelector', () => {
 
       // Wait for status bar service hook to fire
       while (!grammarStatus || !grammarStatus.textContent) {
-        await atom.views.getNextUpdatePromise();
+        await chevron.views.getNextUpdatePromise();
         grammarStatus = document.querySelector('.grammar-status');
       }
     });
@@ -108,8 +108,8 @@ describe('GrammarSelector', () => {
     });
 
     it('displays Plain Text when the current grammar is the null grammar', async () => {
-      editor.setGrammar(atom.grammars.nullGrammar);
-      await atom.views.getNextUpdatePromise();
+      editor.setGrammar(chevron.grammars.nullGrammar);
+      await chevron.views.getNextUpdatePromise();
 
       expect(grammarStatus.querySelector('a').textContent).toBe('Plain Text');
       expect(grammarStatus).toBeVisible();
@@ -117,8 +117,8 @@ describe('GrammarSelector', () => {
         'File uses the Plain Text grammar'
       );
 
-      editor.setGrammar(atom.grammars.grammarForScopeName('source.js'));
-      await atom.views.getNextUpdatePromise();
+      editor.setGrammar(chevron.grammars.grammarForScopeName('source.js'));
+      await chevron.views.getNextUpdatePromise();
 
       expect(grammarStatus.querySelector('a').textContent).toBe('JavaScript');
       expect(grammarStatus).toBeVisible();
@@ -127,8 +127,8 @@ describe('GrammarSelector', () => {
     it('hides the label when the current grammar is null', async () => {
       jasmine.attachToDOM(editor.getElement());
       spyOn(editor, 'getGrammar').andReturn(null);
-      editor.setGrammar(atom.grammars.nullGrammar);
-      await atom.views.getNextUpdatePromise();
+      editor.setGrammar(chevron.grammars.nullGrammar);
+      await chevron.views.getNextUpdatePromise();
       expect(grammarStatus.offsetHeight).toBe(0);
     });
 
@@ -141,7 +141,7 @@ describe('GrammarSelector', () => {
           statusBar.getRightTiles().map(tile => tile.getItem())
         ).not.toContain(grammarStatus);
 
-        atom.config.set('grammar-selector.showOnRightSideOfStatusBar', true);
+        chevron.config.set('grammar-selector.showOnRightSideOfStatusBar', true);
 
         expect(
           statusBar.getLeftTiles().map(tile => tile.getItem())
@@ -150,7 +150,7 @@ describe('GrammarSelector', () => {
           grammarStatus
         );
 
-        atom.config.set('grammar-selector.showOnRightSideOfStatusBar', false);
+        chevron.config.set('grammar-selector.showOnRightSideOfStatusBar', false);
 
         expect(statusBar.getLeftTiles().map(tile => tile.getItem())).toContain(
           grammarStatus
@@ -162,16 +162,16 @@ describe('GrammarSelector', () => {
 
     describe("when the editor's grammar changes", () =>
       it('displays the new grammar of the editor', async () => {
-        editor.setGrammar(atom.grammars.nullGrammar);
-        await atom.views.getNextUpdatePromise();
+        editor.setGrammar(chevron.grammars.nullGrammar);
+        await chevron.views.getNextUpdatePromise();
 
         expect(grammarStatus.querySelector('a').textContent).toBe('Plain Text');
         expect(getTooltipText(grammarStatus)).toBe(
           'File uses the Plain Text grammar'
         );
 
-        editor.setGrammar(atom.grammars.grammarForScopeName('source.a'));
-        await atom.views.getNextUpdatePromise();
+        editor.setGrammar(chevron.grammars.grammarForScopeName('source.a'));
+        await chevron.views.getNextUpdatePromise();
 
         expect(grammarStatus.querySelector('a').textContent).toBe('source.a');
         expect(getTooltipText(grammarStatus)).toBe(
@@ -182,7 +182,7 @@ describe('GrammarSelector', () => {
     describe('when toggling hideDuplicateTextMateGrammars', () => {
       it('shows only the Tree-sitter if true and both exist', async () => {
         // the main JS grammar has both a TextMate and Tree-sitter implementation
-        atom.config.set('grammar-selector.hideDuplicateTextMateGrammars', true);
+        chevron.config.set('grammar-selector.hideDuplicateTextMateGrammars', true);
         const grammarView = await getGrammarView(editor);
         const observedNames = new Set();
         grammarView.element.querySelectorAll('li').forEach(li => {
@@ -192,7 +192,7 @@ describe('GrammarSelector', () => {
         });
 
         // check the seen JS is actually the Tree-sitter one
-        const list = atom.workspace.getModalPanels()[0].item;
+        const list = chevron.workspace.getModalPanels()[0].item;
         for (const item of list.items) {
           if (item.name === 'JavaScript') {
             expect(item.constructor.name === 'TreeSitterGrammar');
@@ -202,14 +202,14 @@ describe('GrammarSelector', () => {
 
       // There are no TextMate grammars left to duplicate a Tree-sitter one.
       it('shows each grammar once if false', async () => {
-        await atom.packages.activatePackage('language-c');
-        atom.config.set(
+        await chevron.packages.activatePackage('language-c');
+        chevron.config.set(
           'grammar-selector.hideDuplicateTextMateGrammars',
           false
         );
         await getGrammarView(editor);
 
-        const listItems = atom.workspace.getModalPanels()[0].item.items;
+        const listItems = chevron.workspace.getModalPanels()[0].item.items;
         const cpp = listItems.filter(grammar => grammar.name === 'C++');
         expect(cpp.length).toBe(1);
         expect(cpp[0].constructor.name).toBe('TreeSitterGrammar');
@@ -220,7 +220,7 @@ describe('GrammarSelector', () => {
       it('adds a label to identify it as Tree-sitter', async () => {
         const grammarView = await getGrammarView(editor);
         const elements = grammarView.element.querySelectorAll('li');
-        const listItems = atom.workspace.getModalPanels()[0].item.items;
+        const listItems = chevron.workspace.getModalPanels()[0].item.items;
         for (let i = 0; i < listItems.length; i++) {
           if (listItems[i].constructor.name === 'TreeSitterGrammar') {
             expect(
@@ -236,7 +236,7 @@ describe('GrammarSelector', () => {
     describe('when clicked', () =>
       it('shows the grammar selector modal', () => {
         const eventHandler = jasmine.createSpy('eventHandler');
-        atom.commands.add(
+        chevron.commands.add(
           editor.getElement(),
           'grammar-selector:show',
           eventHandler
@@ -248,19 +248,19 @@ describe('GrammarSelector', () => {
     describe('when the package is deactivated', () =>
       it('removes the view', () => {
         spyOn(grammarTile, 'destroy');
-        atom.packages.deactivatePackage('grammar-selector');
+        chevron.packages.deactivatePackage('grammar-selector');
         expect(grammarTile.destroy).toHaveBeenCalled();
       }));
   });
 });
 
 function getTooltipText(element) {
-  const [tooltip] = atom.tooltips.findTooltips(element);
+  const [tooltip] = chevron.tooltips.findTooltips(element);
   return tooltip.getTitle();
 }
 
 async function getGrammarView(editor) {
-  atom.commands.dispatch(editor.getElement(), 'grammar-selector:show');
+  chevron.commands.dispatch(editor.getElement(), 'grammar-selector:show');
   await SelectListView.getScheduler().getNextUpdatePromise();
-  return atom.workspace.getModalPanels()[0].getItem();
+  return chevron.workspace.getModalPanels()[0].getItem();
 }

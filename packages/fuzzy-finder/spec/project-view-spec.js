@@ -29,7 +29,7 @@ describe('ProjectView', () => {
     fs.writeFileSync(file1Path, 'a')
     const file2Path = path.join(projectPath, 'b')
     fs.writeFileSync(file2Path, 'b')
-    atom.project.setPaths([projectPath])
+    chevron.project.setPaths([projectPath])
 
     projectView.setTeletypeService({
       async getRemoteEditors () {
@@ -53,7 +53,7 @@ describe('ProjectView', () => {
   it('shows remote editors even when there is no open project', async () => {
     const projectView = new ProjectView([], metricsReporter)
 
-    atom.project.setPaths([])
+    chevron.project.setPaths([])
     projectView.setTeletypeService({
       async getRemoteEditors () {
         return [
@@ -73,7 +73,7 @@ describe('ProjectView', () => {
   it('gracefully defaults to empty list if teletype is unable to provide remote editors', async () => {
     const projectView = new ProjectView([], metricsReporter)
 
-    atom.project.setPaths([])
+    chevron.project.setPaths([])
     projectView.setTeletypeService({
       async getRemoteEditors () {
         return null

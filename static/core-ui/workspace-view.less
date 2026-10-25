@@ -1,7 +1,7 @@
 @import "ui-variables";
 @import "utils";
 
-atom-workspace {
+chevron-workspace {
   contain: @contain_all;
   display: flex;
   flex-direction: column;
@@ -12,12 +12,12 @@ atom-workspace {
   background-color: var(--app-background-color);
   font-family: var(--font-family);
 
-  atom-workspace-axis {
+  chevron-workspace-axis {
     contain: @contain_except_layout_paint;
     position: relative;
   }
 
-  atom-workspace-axis.horizontal {
+  chevron-workspace-axis.horizontal {
     contain: @contain_except_layout_paint;
     display: flex;
     flex: 1;
@@ -25,7 +25,7 @@ atom-workspace {
     min-height: 0;
   }
 
-  atom-workspace-axis.vertical {
+  chevron-workspace-axis.vertical {
     contain: @contain_except_layout_paint;
     display: flex;
     flex: 1;

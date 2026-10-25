@@ -18,19 +18,19 @@ describe('MarkdownPreviewView', function () {
     // Makes _.debounce work
     jasmine.useRealClock()
 
-    spyOn(atom.packages, 'hasActivatedInitialPackages').andReturn(true)
+    spyOn(chevron.packages, 'hasActivatedInitialPackages').andReturn(true)
 
-    const filePath = atom.project
+    const filePath = chevron.project
       .getDirectories()[0]
       .resolve('subdir/file.markdown')
     preview = new MarkdownPreviewView({ filePath })
     jasmine.attachToDOM(preview.element)
 
-    waitsForPromise(() => atom.packages.activatePackage('language-ruby'))
+    waitsForPromise(() => chevron.packages.activatePackage('language-ruby'))
 
-    waitsForPromise(() => atom.packages.activatePackage('language-javascript'))
+    waitsForPromise(() => chevron.packages.activatePackage('language-javascript'))
 
-    waitsForPromise(() => atom.packages.activatePackage('markdown-preview'))
+    waitsForPromise(() => chevron.packages.activatePackage('markdown-preview'))
   })
 
   afterEach(() => preview.destroy())
@@ -75,7 +75,7 @@ describe('MarkdownPreviewView', function () {
     })
 
     it('recreates the preview when serialized/deserialized', function () {
-      newPreview = atom.deserializers.deserialize(preview.serialize())
+      newPreview = chevron.deserializers.deserialize(preview.serialize())
       jasmine.attachToDOM(newPreview.element)
       expect(newPreview.getPath()).toBe(preview.getPath())
     })
@@ -89,40 +89,40 @@ describe('MarkdownPreviewView', function () {
       const serialized = preview.serialize()
       fs.removeSync(filePath)
 
-      newPreview = atom.deserializers.deserialize(serialized)
+      newPreview = chevron.deserializers.deserialize(serialized)
       expect(newPreview).toBeUndefined()
     })
 
     it('serializes the editor id when opened for an editor', function () {
       preview.destroy()
 
-      waitsForPromise(() => atom.workspace.open('new.markdown'))
+      waitsForPromise(() => chevron.workspace.open('new.markdown'))
 
       runs(function () {
         preview = new MarkdownPreviewView({
-          editorId: atom.workspace.getActiveTextEditor().id
+          editorId: chevron.workspace.getActiveTextEditor().id
         })
 
         jasmine.attachToDOM(preview.element)
         expect(preview.getPath()).toBe(
-          atom.workspace.getActiveTextEditor().getPath()
+          chevron.workspace.getActiveTextEditor().getPath()
         )
 
-        newPreview = atom.deserializers.deserialize(preview.serialize())
+        newPreview = chevron.deserializers.deserialize(preview.serialize())
         jasmine.attachToDOM(newPreview.element)
         expect(newPreview.getPath()).toBe(preview.getPath())
       })
     })
   })
 
-  describe('code block conversion to atom-text-editor tags', function () {
+  describe('code block conversion to chevron-text-editor tags', function () {
     beforeEach(function () {
       waitsForPromise(() => preview.renderMarkdown())
     })
 
     it('removes line decorations on rendered code blocks', function () {
       const editor = preview.element.querySelector(
-        "atom-text-editor[data-grammar='text plain null-grammar']"
+        "chevron-text-editor[data-grammar='text plain null-grammar']"
       )
       const decorations = editor
         .getModel()
@@ -132,16 +132,16 @@ describe('MarkdownPreviewView', function () {
 
     it('sets the editors as read-only', function () {
       preview.element
-        .querySelectorAll('atom-text-editor')
+        .querySelectorAll('chevron-text-editor')
         .forEach(editorElement =>
           expect(editorElement.getAttribute('tabindex')).toBeNull()
         )
     })
 
     describe("when the code block's fence name has a matching grammar", function () {
-      it('assigns the grammar on the atom-text-editor', function () {
+      it('assigns the grammar on the chevron-text-editor', function () {
         const rubyEditor = preview.element.querySelector(
-          "atom-text-editor[data-grammar='source ruby']"
+          "chevron-text-editor[data-grammar='source ruby']"
         )
         expect(rubyEditor.getModel().getText()).toBe(`\
 def func
@@ -151,7 +151,7 @@ end\
 
         // nested in a list item
         const jsEditor = preview.element.querySelector(
-          "atom-text-editor[data-grammar='source js']"
+          "chevron-text-editor[data-grammar='source js']"
         )
         expect(jsEditor.getModel().getText()).toBe(`\
 if a === 3 {
@@ -164,7 +164,7 @@ if a === 3 {
     describe("when the code block's fence name doesn't have a matching grammar", function () {
       it('does not assign a specific grammar', function () {
         const plainEditor = preview.element.querySelector(
-          "atom-text-editor[data-grammar='text plain null-grammar']"
+          "chevron-text-editor[data-grammar='text plain null-grammar']"
         )
         expect(plainEditor.getModel().getText()).toBe(`\
 function f(x) {
@@ -178,16 +178,16 @@ function f(x) {
       it('updates the editor grammar', function () {
         let renderSpy = null
 
-        if (typeof atom.grammars.onDidRemoveGrammar !== 'function') {
+        if (typeof chevron.grammars.onDidRemoveGrammar !== 'function') {
           // TODO: Remove once atom.grammars.onDidRemoveGrammar is released
-          waitsForPromise(() => atom.packages.activatePackage('language-gfm'))
+          waitsForPromise(() => chevron.packages.activatePackage('language-gfm'))
         }
 
         runs(
           () => (renderSpy = spyOn(preview, 'renderMarkdown').andCallThrough())
         )
 
-        waitsForPromise(() => atom.packages.deactivatePackage('language-ruby'))
+        waitsForPromise(() => chevron.packages.deactivatePackage('language-ruby'))
 
         waitsFor(
           'renderMarkdown to be called after disabling a language',
@@ -196,12 +196,12 @@ function f(x) {
 
         runs(function () {
           const rubyEditor = preview.element.querySelector(
-            "atom-text-editor[data-grammar='source ruby']"
+            "chevron-text-editor[data-grammar='source ruby']"
           )
           expect(rubyEditor).toBeNull()
         })
 
-        waitsForPromise(() => atom.packages.activatePackage('language-ruby'))
+        waitsForPromise(() => chevron.packages.activatePackage('language-ruby'))
 
         waitsFor(
           'renderMarkdown to be called after enabling a language',
@@ -210,7 +210,7 @@ function f(x) {
 
         runs(function () {
           const rubyEditor = preview.element.querySelector(
-            "atom-text-editor[data-grammar='source ruby']"
+            "chevron-text-editor[data-grammar='source ruby']"
           )
           expect(rubyEditor.getModel().getText()).toBe(`\
 def func
@@ -231,7 +231,7 @@ end\
       it('resolves to a path relative to the file', function () {
         const image = preview.element.querySelector('img[alt=Image1]')
         expect(image.getAttribute('src')).toBe(
-          atom.project.getDirectories()[0].resolve('subdir/image1.png')
+          chevron.project.getDirectories()[0].resolve('subdir/image1.png')
         )
       })
     })
@@ -240,7 +240,7 @@ end\
       it('resolves to a path relative to the project root', function () {
         const image = preview.element.querySelector('img[alt=Image2]')
         expect(image.src).toMatch(
-          url.parse(atom.project.getDirectories()[0].resolve('tmp/image2.png'))
+          url.parse(chevron.project.getDirectories()[0].resolve('tmp/image2.png'))
         )
       })
     })
@@ -249,7 +249,7 @@ end\
       it("doesn't change the URL when allowUnsafeProtocols is true", function () {
         preview.destroy()
 
-        atom.config.set('markdown-preview.allowUnsafeProtocols', true)
+        chevron.config.set('markdown-preview.allowUnsafeProtocols', true)
 
         const filePath = path.join(temp.mkdirSync('atom'), 'foo.md')
         fs.writeFileSync(filePath, `![absolute](${filePath})`)
@@ -269,7 +269,7 @@ end\
     it('removes the URL when allowUnsafeProtocols is false', function () {
       preview.destroy()
 
-      atom.config.set('markdown-preview.allowUnsafeProtocols', false)
+      chevron.config.set('markdown-preview.allowUnsafeProtocols', false)
 
       const filePath = path.join(temp.mkdirSync('atom'), 'foo.md')
       fs.writeFileSync(filePath, `![absolute](${filePath})`)
@@ -296,7 +296,7 @@ end\
   describe('gfm newlines', function () {
     describe('when gfm newlines are not enabled', function () {
       it('creates a single paragraph with <br>', function () {
-        atom.config.set('markdown-preview.breakOnSingleNewline', false)
+        chevron.config.set('markdown-preview.breakOnSingleNewline', false)
 
         waitsForPromise(() => preview.renderMarkdown())
 
@@ -310,7 +310,7 @@ end\
 
     describe('when gfm newlines are enabled', function () {
       it('creates a single paragraph with no <br>', function () {
-        atom.config.set('markdown-preview.breakOnSingleNewline', true)
+        chevron.config.set('markdown-preview.breakOnSingleNewline', true)
 
         waitsForPromise(() => preview.renderMarkdown())
 
@@ -325,7 +325,7 @@ end\
 
   describe('yaml front matter', function () {
     it('creates a table with the YAML variables', function () {
-      atom.config.set('markdown-preview.breakOnSingleNewline', true)
+      chevron.config.set('markdown-preview.breakOnSingleNewline', true)
 
       waitsForPromise(() => preview.renderMarkdown())
 
@@ -350,7 +350,7 @@ end\
 
       const selection = window.getSelection()
       selection.removeAllRanges()
-      selection.selectAllChildren(document.querySelector('atom-text-editor'))
+      selection.selectAllChildren(document.querySelector('chevron-text-editor'))
 
       waitsFor(
         () => preview.element.classList.contains('has-selection') === true
@@ -367,13 +367,13 @@ end\
   describe('when core:save-as is triggered', function () {
     beforeEach(function () {
       preview.destroy()
-      const filePath = atom.project
+      const filePath = chevron.project
         .getDirectories()[0]
         .resolve('subdir/code-block.md')
       preview = new MarkdownPreviewView({ filePath })
       // Add to workspace for core:save-as command to be propagated up to the workspace
-      waitsForPromise(() => atom.workspace.open(preview))
-      runs(() => jasmine.attachToDOM(atom.views.getView(atom.workspace)))
+      waitsForPromise(() => chevron.workspace.open(preview))
+      runs(() => jasmine.attachToDOM(chevron.views.getView(chevron.workspace)))
     })
 
     it('saves the rendered HTML and opens it', function () {
@@ -396,9 +396,9 @@ end\
       ]
 
       const atomTextEditorStyles = [
-        'atom-text-editor .line { color: brown; }\natom-text-editor .number { color: cyan; }',
-        'atom-text-editor :host .something { color: black; }',
-        'atom-text-editor .hr { background: url(atom://markdown-preview/assets/hr.png); }'
+        'chevron-text-editor .line { color: brown; }\nchevron-text-editor .number { color: cyan; }',
+        'chevron-text-editor :host .something { color: black; }',
+        'chevron-text-editor .hr { background: url(atom://markdown-preview/assets/hr.png); }'
       ]
 
       waitsForPromise(() => preview.renderMarkdown())
@@ -408,7 +408,7 @@ end\
         spyOn(preview, 'getSaveDialogOptions').andReturn({
           defaultPath: outputPath
         })
-        spyOn(atom.applicationDelegate, 'showSaveDialog').andCallFake(function (
+        spyOn(chevron.applicationDelegate, 'showSaveDialog').andCallFake(function (
           options,
           callback
         ) {
@@ -426,11 +426,11 @@ end\
       })
 
       waitsForPromise(() =>
-        atom.commands.dispatch(preview.element, 'core:save-as')
+        chevron.commands.dispatch(preview.element, 'core:save-as')
       )
 
       waitsFor(() => {
-        const activeEditor = atom.workspace.getActiveTextEditor()
+        const activeEditor = chevron.workspace.getActiveTextEditor()
         return activeEditor && activeEditor.getPath() === outputPath
       })
 
@@ -463,18 +463,18 @@ end\
       const unrelatedStyle = '.something else { color: red; }'
 
       beforeEach(function () {
-        atom.styles.addStyleSheet(textEditorStyle, {
-          context: 'atom-text-editor'
+        chevron.styles.addStyleSheet(textEditorStyle, {
+          context: 'chevron-text-editor'
         })
 
-        atom.styles.addStyleSheet(unrelatedStyle, {
+        chevron.styles.addStyleSheet(unrelatedStyle, {
           context: 'unrelated-context'
         })
 
         return (extractedStyles = preview.getTextEditorStyles())
       })
 
-      it('returns an array containing atom-text-editor css style strings', function () {
+      it('returns an array containing chevron-text-editor css style strings', function () {
         expect(extractedStyles.indexOf(textEditorStyle)).toBeGreaterThan(-1)
       })
 
@@ -489,7 +489,7 @@ end\
       preview.destroy()
       preview.element.remove()
 
-      const filePath = atom.project
+      const filePath = chevron.project
         .getDirectories()[0]
         .resolve('subdir/code-block.md')
       preview = new MarkdownPreviewView({ filePath })
@@ -500,15 +500,15 @@ end\
 
     describe('when there is no text selected', function () {
       it('copies the rendered HTML of the entire Markdown document to the clipboard', function () {
-        expect(atom.clipboard.read()).toBe('initial clipboard content')
+        expect(chevron.clipboard.read()).toBe('initial clipboard content')
 
         waitsForPromise(() =>
-          atom.commands.dispatch(preview.element, 'core:copy')
+          chevron.commands.dispatch(preview.element, 'core:copy')
         )
 
         runs(() => {
           const element = document.createElement('div')
-          element.innerHTML = atom.clipboard.read()
+          element.innerHTML = chevron.clipboard.read()
           expect(element.querySelector('h1').innerText).toBe('Code Block')
           expect(
             element.querySelector(
@@ -534,12 +534,12 @@ end\
         const selection = window.getSelection()
         selection.removeAllRanges()
         const range = document.createRange()
-        range.setStart(document.querySelector('atom-text-editor'), 0)
+        range.setStart(document.querySelector('chevron-text-editor'), 0)
         range.setEnd(document.querySelector('p').firstChild, 3)
         selection.addRange(range)
 
-        atom.commands.dispatch(preview.element, 'core:copy')
-        const clipboardText = atom.clipboard.read()
+        chevron.commands.dispatch(preview.element, 'core:copy')
+        const clipboardText = chevron.clipboard.read()
 
         // Chromium no longer puts a blank line between the code block and the
         // paragraph when it serializes a selection across them.
@@ -555,7 +555,7 @@ enc\
 
   describe('when markdown-preview:select-all is triggered', function () {
     it('selects the entire Markdown preview', function () {
-      const filePath = atom.project
+      const filePath = chevron.project
         .getDirectories()[0]
         .resolve('subdir/code-block.md')
       const preview2 = new MarkdownPreviewView({ filePath })
@@ -564,7 +564,7 @@ enc\
       waitsForPromise(() => preview.renderMarkdown())
 
       runs(function () {
-        atom.commands.dispatch(preview.element, 'markdown-preview:select-all')
+        chevron.commands.dispatch(preview.element, 'markdown-preview:select-all')
         const { commonAncestorContainer } = window.getSelection().getRangeAt(0)
         expect(commonAncestorContainer).toEqual(preview.element)
       })
@@ -572,7 +572,7 @@ enc\
       waitsForPromise(() => preview2.renderMarkdown())
 
       runs(() => {
-        atom.commands.dispatch(preview2.element, 'markdown-preview:select-all')
+        chevron.commands.dispatch(preview2.element, 'markdown-preview:select-all')
         const selection = window.getSelection()
         expect(selection.rangeCount).toBe(1)
         const { commonAncestorContainer } = selection.getRangeAt(0)
@@ -589,11 +589,11 @@ enc\
 
       runs(function () {
         const originalZoomLevel = getComputedStyle(preview.element).zoom
-        atom.commands.dispatch(preview.element, 'markdown-preview:zoom-in')
+        chevron.commands.dispatch(preview.element, 'markdown-preview:zoom-in')
         expect(getComputedStyle(preview.element).zoom).toBeGreaterThan(
           originalZoomLevel
         )
-        atom.commands.dispatch(preview.element, 'markdown-preview:zoom-out')
+        chevron.commands.dispatch(preview.element, 'markdown-preview:zoom-out')
         expect(getComputedStyle(preview.element).zoom).toBe(originalZoomLevel)
       })
     })

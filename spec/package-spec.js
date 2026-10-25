@@ -7,18 +7,18 @@ describe('Package', function() {
   const build = (constructor, packagePath) =>
     new constructor({
       path: packagePath,
-      packageManager: atom.packages,
-      config: atom.config,
-      styleManager: atom.styles,
-      notificationManager: atom.notifications,
-      keymapManager: atom.keymaps,
-      commandRegistry: atom.command,
-      grammarRegistry: atom.grammars,
-      themeManager: atom.themes,
-      menuManager: atom.menu,
-      contextMenuManager: atom.contextMenu,
-      deserializerManager: atom.deserializers,
-      viewRegistry: atom.views
+      packageManager: chevron.packages,
+      config: chevron.config,
+      styleManager: chevron.styles,
+      notificationManager: chevron.notifications,
+      keymapManager: chevron.keymaps,
+      commandRegistry: chevron.command,
+      grammarRegistry: chevron.grammars,
+      themeManager: chevron.themes,
+      menuManager: chevron.menu,
+      contextMenuManager: chevron.contextMenu,
+      deserializerManager: chevron.deserializers,
+      viewRegistry: chevron.views
     });
 
   const buildPackage = packagePath => build(Package, packagePath);
@@ -27,14 +27,14 @@ describe('Package', function() {
 
   describe('when the package contains incompatible native modules', function() {
     beforeEach(function() {
-      atom.packages.devMode = false;
+      chevron.packages.devMode = false;
       mockLocalStorage();
     });
 
-    afterEach(() => (atom.packages.devMode = true));
+    afterEach(() => (chevron.packages.devMode = true));
 
     it('does not activate it', function() {
-      const packagePath = atom.project
+      const packagePath = chevron.project
         .getDirectories()[0]
         .resolve('packages/package-with-incompatible-native-module');
       const pack = buildPackage(packagePath);
@@ -46,7 +46,7 @@ describe('Package', function() {
     });
 
     it('detects the package as incompatible even if .node file is loaded conditionally', function() {
-      const packagePath = atom.project
+      const packagePath = chevron.project
         .getDirectories()[0]
         .resolve(
           'packages/package-with-incompatible-native-module-loaded-conditionally'
@@ -60,14 +60,14 @@ describe('Package', function() {
     });
 
     it("utilizes _atomModuleCache if present to determine the package's native dependencies", function() {
-      let packagePath = atom.project
+      let packagePath = chevron.project
         .getDirectories()[0]
         .resolve('packages/package-with-ignored-incompatible-native-module');
       let pack = buildPackage(packagePath);
       expect(pack.getNativeModuleDependencyPaths().length).toBe(1); // doesn't see the incompatible module
       expect(pack.isCompatible()).toBe(true);
 
-      packagePath = __guard__(atom.project.getDirectories()[0], x =>
+      packagePath = __guard__(chevron.project.getDirectories()[0], x =>
         x.resolve('packages/package-with-cached-incompatible-native-module')
       );
       pack = buildPackage(packagePath);
@@ -75,7 +75,7 @@ describe('Package', function() {
     });
 
     it('caches the incompatible native modules in local storage', function() {
-      const packagePath = atom.project
+      const packagePath = chevron.project
         .getDirectories()[0]
         .resolve('packages/package-with-incompatible-native-module');
       expect(buildPackage(packagePath).isCompatible()).toBe(false);
@@ -88,16 +88,16 @@ describe('Package', function() {
     });
 
     it('logs an error to the console describing the problem', function() {
-      const packagePath = atom.project
+      const packagePath = chevron.project
         .getDirectories()[0]
         .resolve('packages/package-with-incompatible-native-module');
 
       spyOn(console, 'warn');
-      spyOn(atom.notifications, 'addFatalError');
+      spyOn(chevron.notifications, 'addFatalError');
 
       buildPackage(packagePath).activateNow();
 
-      expect(atom.notifications.addFatalError).not.toHaveBeenCalled();
+      expect(chevron.notifications.addFatalError).not.toHaveBeenCalled();
       expect(console.warn.callCount).toBe(1);
       expect(console.warn.mostRecentCall.args[0]).toContain(
         'it requires one or more incompatible native modules (native-module)'
@@ -107,14 +107,14 @@ describe('Package', function() {
 
   describe('::rebuild()', function() {
     beforeEach(function() {
-      atom.packages.devMode = false;
+      chevron.packages.devMode = false;
       mockLocalStorage();
     });
 
-    afterEach(() => (atom.packages.devMode = true));
+    afterEach(() => (chevron.packages.devMode = true));
 
     it('returns a promise resolving to the results of `apm rebuild`', async function() {
-      const packagePath = __guard__(atom.project.getDirectories()[0], x =>
+      const packagePath = __guard__(chevron.project.getDirectories()[0], x =>
         x.resolve('packages/package-with-index')
       );
       const pack = buildPackage(packagePath);
@@ -139,7 +139,7 @@ describe('Package', function() {
     });
 
     it('persists build failures in local storage', function() {
-      const packagePath = __guard__(atom.project.getDirectories()[0], x =>
+      const packagePath = __guard__(chevron.project.getDirectories()[0], x =>
         x.resolve('packages/package-with-index')
       );
       const pack = buildPackage(packagePath);
@@ -173,7 +173,7 @@ describe('Package', function() {
     });
 
     it('sets cached incompatible modules to an empty array when the rebuild completes (there may be a build error, but rebuilding *deletes* native modules)', function() {
-      const packagePath = __guard__(atom.project.getDirectories()[0], x =>
+      const packagePath = __guard__(chevron.project.getDirectories()[0], x =>
         x.resolve('packages/package-with-incompatible-native-module')
       );
       const pack = buildPackage(packagePath);
@@ -196,7 +196,7 @@ describe('Package', function() {
     let [editorElement, theme] = [];
 
     beforeEach(function() {
-      editorElement = document.createElement('atom-text-editor');
+      editorElement = document.createElement('chevron-text-editor');
       jasmine.attachToDOM(editorElement);
     });
 
@@ -211,7 +211,7 @@ describe('Package', function() {
         expect(getComputedStyle(editorElement).paddingBottom).not.toBe(
           '1234px'
         );
-        const themePath = __guard__(atom.project.getDirectories()[0], x =>
+        const themePath = __guard__(chevron.project.getDirectories()[0], x =>
           x.resolve('packages/theme-with-index-css')
         );
         theme = buildThemePackage(themePath);
@@ -223,7 +223,7 @@ describe('Package', function() {
         expect(getComputedStyle(editorElement).paddingBottom).not.toBe(
           '1234px'
         );
-        const themePath = __guard__(atom.project.getDirectories()[0], x =>
+        const themePath = __guard__(chevron.project.getDirectories()[0], x =>
           x.resolve('packages/theme-with-index-less')
         );
         theme = buildThemePackage(themePath);
@@ -238,7 +238,7 @@ describe('Package', function() {
         expect(getComputedStyle(editorElement).paddingRight).not.toBe('102px');
         expect(getComputedStyle(editorElement).paddingBottom).not.toBe('103px');
 
-        const themePath = __guard__(atom.project.getDirectories()[0], x =>
+        const themePath = __guard__(chevron.project.getDirectories()[0], x =>
           x.resolve('packages/theme-with-package-file')
         );
         theme = buildThemePackage(themePath);
@@ -254,7 +254,7 @@ describe('Package', function() {
         expect(getComputedStyle(editorElement).paddingRight).not.toBe('20px');
         expect(getComputedStyle(editorElement).paddingBottom).not.toBe('30px');
 
-        const themePath = __guard__(atom.project.getDirectories()[0], x =>
+        const themePath = __guard__(chevron.project.getDirectories()[0], x =>
           x.resolve('packages/theme-without-package-file')
         );
         theme = buildThemePackage(themePath);
@@ -266,7 +266,7 @@ describe('Package', function() {
 
     describe('reloading a theme', function() {
       beforeEach(function() {
-        const themePath = __guard__(atom.project.getDirectories()[0], x =>
+        const themePath = __guard__(chevron.project.getDirectories()[0], x =>
           x.resolve('packages/theme-with-package-file')
         );
         theme = buildThemePackage(themePath);
@@ -282,7 +282,7 @@ describe('Package', function() {
 
     describe('events', function() {
       beforeEach(function() {
-        const themePath = __guard__(atom.project.getDirectories()[0], x =>
+        const themePath = __guard__(chevron.project.getDirectories()[0], x =>
           x.resolve('packages/theme-with-package-file')
         );
         theme = buildThemePackage(themePath);
@@ -302,10 +302,10 @@ describe('Package', function() {
     let [packagePath, metadata] = [];
 
     beforeEach(function() {
-      packagePath = __guard__(atom.project.getDirectories()[0], x =>
+      packagePath = __guard__(chevron.project.getDirectories()[0], x =>
         x.resolve('packages/package-with-different-directory-name')
       );
-      metadata = atom.packages.loadPackageMetadata(packagePath, true);
+      metadata = chevron.packages.loadPackageMetadata(packagePath, true);
     });
 
     it('uses the package name defined in package.json', () =>
@@ -314,7 +314,7 @@ describe('Package', function() {
 
   describe('the initialize() hook', function() {
     it('gets called when the package is activated', function() {
-      const packagePath = atom.project
+      const packagePath = chevron.project
         .getDirectories()[0]
         .resolve('packages/package-with-deserializers');
       const pack = buildPackage(packagePath);
@@ -328,7 +328,7 @@ describe('Package', function() {
     });
 
     it('gets called when a deserializer is used', function() {
-      const packagePath = atom.project
+      const packagePath = chevron.project
         .getDirectories()[0]
         .resolve('packages/package-with-deserializers');
       const pack = buildPackage(packagePath);
@@ -337,7 +337,7 @@ describe('Package', function() {
       spyOn(mainModule, 'initialize');
       pack.load();
       expect(mainModule.initialize).not.toHaveBeenCalled();
-      atom.deserializers.deserialize({ deserializer: 'Deserializer1', a: 'b' });
+      chevron.deserializers.deserialize({ deserializer: 'Deserializer1', a: 'b' });
       expect(mainModule.initialize).toHaveBeenCalled();
     });
   });

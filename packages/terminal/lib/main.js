@@ -21,7 +21,7 @@ module.exports = {
     );
 
     this.subscriptions.add(
-      chevron.commands.add('atom-workspace', {
+      chevron.commands.add('chevron-workspace', {
         'terminal:open': () => this.open(),
         'terminal:toggle': () => this.toggle(),
         'tasks:run': () => this.chooseTask()

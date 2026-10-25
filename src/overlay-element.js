@@ -4,10 +4,10 @@ const createCustomElement = require('./create-custom-element');
 
 class OverlayElement extends HTMLElement {}
 
-window.customElements.define('atom-overlay', OverlayElement);
+window.customElements.define('chevron-overlay', OverlayElement);
 
 function createOverlayElement() {
-  return createCustomElement('atom-overlay', OverlayElement);
+  return createCustomElement('chevron-overlay', OverlayElement);
 }
 
 module.exports = {

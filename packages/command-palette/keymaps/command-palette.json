@@ -1,11 +1,11 @@
 {
-  ".platform-darwin, .platform-darwin .command-palette atom-text-editor": {
+  ".platform-darwin, .platform-darwin .command-palette chevron-text-editor": {
     "cmd-shift-p": "command-palette:toggle"
   },
-  ".platform-win32, .platform-win32 .command-palette atom-text-editor": {
+  ".platform-win32, .platform-win32 .command-palette chevron-text-editor": {
     "ctrl-shift-p": "command-palette:toggle"
   },
-  ".platform-linux, .platform-linux .command-palette atom-text-editor": {
+  ".platform-linux, .platform-linux .command-palette chevron-text-editor": {
     "ctrl-shift-p": "command-palette:toggle"
   }
 }

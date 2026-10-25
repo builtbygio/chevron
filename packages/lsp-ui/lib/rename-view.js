@@ -46,7 +46,7 @@ class RenameView {
         visible: true
       });
 
-      // atom-text-editor custom element gets model after attach
+      // chevron-text-editor custom element gets model after attach
       requestAnimationFrame(() => {
         try {
           this._miniEditor =

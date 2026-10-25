@@ -116,7 +116,7 @@
         "command": "github:toggle-expanded-commit-message-editor"
       }
     ],
-    ".item-views > atom-text-editor": [
+    ".item-views > chevron-text-editor": [
       {
         "label": "View Unstaged Changes",
         "command": "github:view-unstaged-changes-for-current-file"

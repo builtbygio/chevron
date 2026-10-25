@@ -9,7 +9,7 @@ const {
 
 // Handles requests with the 'chevron' protocol.
 //
-// It's created by {AtomApplication} upon instantiation and is used to create a
+// It's created by {ChevronApplication} upon instantiation and is used to create a
 // custom resource loader for 'chevron://' URLs.
 //
 // The following directories are searched in order:

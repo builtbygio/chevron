@@ -1,5 +1,5 @@
 {
-  ".platform-darwin atom-text-editor": {
+  ".platform-darwin chevron-text-editor": {
     "ctrl-shift-o": "link:open"
   }
 }

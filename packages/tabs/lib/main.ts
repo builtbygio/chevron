@@ -57,7 +57,7 @@ module.exports = {
 
     // If the command bubbles up without being handled by a particular pane,
     // close all tabs in all panes
-    this.subscriptions.add(chevron.commands.add('atom-workspace', {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', {
       'tabs:close-all-tabs': () => {
         // We loop backwards because the panes are
         // removed from the array as we go

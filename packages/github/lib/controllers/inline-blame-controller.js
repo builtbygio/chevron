@@ -61,7 +61,7 @@ class InlineBlameController {
     this.typing = false;
     this.bufferVersion = 0;
     this.unsaved = null;
-    this.subscriptions = new _eventKit.CompositeDisposable(config.observe('github.inlineBlame', enabled => this.setEnabled(enabled)), commands.add('atom-workspace', {
+    this.subscriptions = new _eventKit.CompositeDisposable(config.observe('github.inlineBlame', enabled => this.setEnabled(enabled)), commands.add('chevron-workspace', {
       'github:toggle-inline-blame': () => config.set('github.inlineBlame', !config.get('github.inlineBlame'))
     }), workspace.observeActiveTextEditor(editor => this.setEditor(editor)), contextPool.onDidUpdateRepository(context => this.didChangeContext(context)), contextPool.onDidChangeRepositoryState(context => this.didChangeContext(context)), contextPool.onDidChangePoolContexts(() => this.schedule(0)));
   } // A repository is still loading when the window opens; blame once it is present.

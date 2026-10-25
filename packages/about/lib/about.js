@@ -23,7 +23,7 @@ module.exports = class About {
     );
 
     this.subscriptions.add(
-      chevron.commands.add('atom-workspace', 'about:view-release-notes', () => {
+      chevron.commands.add('chevron-workspace', 'about:view-release-notes', () => {
         shell = shell || require('electron').shell;
         shell.openExternal(
           this.state.updateManager.getReleaseNotesURLForCurrentVersion()

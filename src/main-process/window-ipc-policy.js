@@ -4,7 +4,7 @@
  * What a renderer may ask of its own window and of the settings file.
  *
  * chevron:window-method used to call `window[method](...args)` for whatever
- * name arrived, so a renderer could invoke any AtomWindow method, internal
+ * name arrived, so a renderer could invoke any ChevronWindow method, internal
  * ones included. chevron:set-user-settings wrote the settings JSON to any
  * path the renderer named. Both now accept only what the renderer is known
  * to send. The preload world has Node already, so this is defence in depth,

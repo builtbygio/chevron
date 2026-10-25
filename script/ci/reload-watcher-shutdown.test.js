@@ -22,14 +22,14 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const ENVIRONMENT = path.join(ROOT, 'src', 'atom-environment.js');
+const ENVIRONMENT = path.join(ROOT, 'src', 'chevron-environment.js');
 const SMOKE = path.join(ROOT, 'script', 'ci', 'smoke-test.js');
 
 const source = fs.readFileSync(ENVIRONMENT, 'utf8');
 
 function methodBody(text, name) {
   const start = text.indexOf(`${name}(`);
-  assert.notStrictEqual(start, -1, `${name} not found in atom-environment.js`);
+  assert.notStrictEqual(start, -1, `${name} not found in chevron-environment.js`);
   let depth = 0;
   for (let i = text.indexOf('{', start); i < text.length; i++) {
     if (text[i] === '{') depth++;

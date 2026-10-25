@@ -16,7 +16,7 @@ const CharacterPattern = new RegExp(`\
 
 module.exports = {
   activate() {
-    return this.commandDisposable = chevron.commands.add('atom-text-editor', {
+    return this.commandDisposable = chevron.commands.add('chevron-text-editor', {
       'autoflow:reflow-selection': event => {
         return this.reflowSelection(event.currentTarget.getModel());
       }

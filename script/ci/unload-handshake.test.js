@@ -3,7 +3,7 @@
 /**
  * A window that never answers must not keep the application alive.
  *
- * `before-quit` awaits AtomWindow#prepareToUnload for every window. That
+ * `before-quit` awaits ChevronWindow#prepareToUnload for every window. That
  * promise used to settle on exactly one event -- the renderer's reply -- so a
  * renderer that died, or that stayed responsive but never answered, left it
  * pending forever. `app.quit()` was never reached, `will-quit` never ran, and
@@ -184,9 +184,9 @@ describe('the unload handshake always ends', () => {
   });
 });
 
-describe('AtomWindow wires every ending', () => {
+describe('ChevronWindow wires every ending', () => {
   const source = fs.readFileSync(
-    path.join(ROOT, 'src', 'main-process', 'atom-window.js'), 'utf8'
+    path.join(ROOT, 'src', 'main-process', 'chevron-window.js'), 'utf8'
   );
   const handshake = source.slice(
     source.indexOf('async prepareToUnload()'),

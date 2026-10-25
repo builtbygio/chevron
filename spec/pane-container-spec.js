@@ -4,15 +4,15 @@ describe('PaneContainer', () => {
   let confirm, params;
 
   beforeEach(() => {
-    confirm = spyOn(atom.applicationDelegate, 'confirm').andCallFake(
+    confirm = spyOn(chevron.applicationDelegate, 'confirm').andCallFake(
       (options, callback) => callback(0)
     );
     params = {
       location: 'center',
-      config: atom.config,
-      deserializerManager: atom.deserializers,
-      applicationDelegate: atom.applicationDelegate,
-      viewRegistry: atom.views
+      config: chevron.config,
+      deserializerManager: chevron.deserializers,
+      applicationDelegate: chevron.applicationDelegate,
+      viewRegistry: chevron.views
     };
   });
 
@@ -29,7 +29,7 @@ describe('PaneContainer', () => {
           return { deserializer: 'Item' };
         }
       }
-      atom.deserializers.add(Item);
+      chevron.deserializers.add(Item);
 
       containerA = new PaneContainer(params);
       pane1A = containerA.getActivePane();
@@ -43,7 +43,7 @@ describe('PaneContainer', () => {
       expect(pane3A.focused).toBe(true);
 
       const containerB = new PaneContainer(params);
-      containerB.deserialize(containerA.serialize(), atom.deserializers);
+      containerB.deserialize(containerA.serialize(), chevron.deserializers);
       const pane3B = containerB.getPanes()[2];
       expect(pane3B.focused).toBe(true);
     });
@@ -53,7 +53,7 @@ describe('PaneContainer', () => {
       expect(containerA.getActivePane()).toBe(pane3A);
 
       const containerB = new PaneContainer(params);
-      containerB.deserialize(containerA.serialize(), atom.deserializers);
+      containerB.deserialize(containerA.serialize(), chevron.deserializers);
       const pane3B = containerB.getPanes()[2];
       expect(containerB.getActivePane()).toBe(pane3B);
     });
@@ -63,7 +63,7 @@ describe('PaneContainer', () => {
       const state = containerA.serialize();
       state.activePaneId = -22;
       const containerB = new PaneContainer(params);
-      containerB.deserialize(state, atom.deserializers);
+      containerB.deserialize(state, chevron.deserializers);
       expect(containerB.getActivePane()).toBe(containerB.getPanes()[0]);
     });
 
@@ -76,7 +76,7 @@ describe('PaneContainer', () => {
         it('leaves the empty panes intact', () => {
           const state = containerA.serialize();
           const containerB = new PaneContainer(params);
-          containerB.deserialize(state, atom.deserializers);
+          containerB.deserialize(state, chevron.deserializers);
           const [leftPane, column] = containerB.getRoot().getChildren();
           const [topPane, bottomPane] = column.getChildren();
 
@@ -87,11 +87,11 @@ describe('PaneContainer', () => {
 
       describe("if the 'core.destroyEmptyPanes' config option is true", () =>
         it('removes empty panes on deserialization', () => {
-          atom.config.set('core.destroyEmptyPanes', true);
+          chevron.config.set('core.destroyEmptyPanes', true);
 
           const state = containerA.serialize();
           const containerB = new PaneContainer(params);
-          containerB.deserialize(state, atom.deserializers);
+          containerB.deserialize(state, chevron.deserializers);
           const [leftPane, rightPane] = containerB.getRoot().getChildren();
 
           expect(leftPane.getItems().length).toBe(1);

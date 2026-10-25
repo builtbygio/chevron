@@ -1,11 +1,11 @@
 {
-  ".platform-darwin atom-text-editor": {
+  ".platform-darwin chevron-text-editor": {
     "ctrl-shift-u": "encoding-selector:show"
   },
-  ".platform-win32 atom-text-editor": {
+  ".platform-win32 chevron-text-editor": {
     "ctrl-shift-u": "encoding-selector:show"
   },
-  ".platform-linux atom-text-editor": {
+  ".platform-linux chevron-text-editor": {
     "ctrl-shift-u": "encoding-selector:show"
   }
 }

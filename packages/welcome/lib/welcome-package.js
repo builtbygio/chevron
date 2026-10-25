@@ -57,7 +57,7 @@ class WelcomePackage {
     );
     this.subscriptions.add(
       chevron.commands.add(
-        "atom-workspace",
+        "chevron-workspace",
         "welcome:show",
         () => this.showWelcome()
       )

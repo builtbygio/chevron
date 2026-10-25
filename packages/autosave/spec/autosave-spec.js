@@ -5,19 +5,19 @@ describe('Autosave', () => {
   let workspaceElement, initialActiveItem, otherItem1, otherItem2
 
   beforeEach(async () => {
-    workspaceElement = atom.views.getView(atom.workspace)
+    workspaceElement = chevron.views.getView(chevron.workspace)
     jasmine.attachToDOM(workspaceElement)
 
-    await atom.packages.activatePackage('autosave')
+    await chevron.packages.activatePackage('autosave')
 
-    await atom.workspace.open('sample.js')
+    await chevron.workspace.open('sample.js')
 
-    initialActiveItem = atom.workspace.getActiveTextEditor()
+    initialActiveItem = chevron.workspace.getActiveTextEditor()
 
-    if (atom.workspace.createItemForURI != null) {
-      otherItem1 = await atom.workspace.createItemForURI('other.txt')
+    if (chevron.workspace.createItemForURI != null) {
+      otherItem1 = await chevron.workspace.createItemForURI('other.txt')
     } else {
-      otherItem1 = await atom.workspace.open('other.txt', {activateItem: false})
+      otherItem1 = await chevron.workspace.open('other.txt', {activateItem: false})
     }
 
     otherItem2 = otherItem1.copy()
@@ -29,8 +29,8 @@ describe('Autosave', () => {
 
   describe('when the item is not modified', () => {
     it('does not autosave the item', () => {
-      atom.config.set('autosave.enabled', true)
-      atom.workspace.getActivePane().splitRight({items: [otherItem1]})
+      chevron.config.set('autosave.enabled', true)
+      chevron.workspace.getActivePane().splitRight({items: [otherItem1]})
       expect(initialActiveItem.save).not.toHaveBeenCalled()
     })
   })
@@ -39,14 +39,14 @@ describe('Autosave', () => {
     beforeEach(() => initialActiveItem.setText('i am modified'))
 
     it('autosaves newly added items', async () => {
-      const newItem = await atom.workspace.createItemForURI('notyet.js')
+      const newItem = await chevron.workspace.createItemForURI('notyet.js')
       spyOn(newItem, 'isModified').andReturn(true)
 
-      atom.config.set('autosave.enabled', true)
-      spyOn(atom.workspace.getActivePane(), 'saveItem').andCallFake(() => Promise.resolve())
-      atom.workspace.getActivePane().addItem(newItem)
+      chevron.config.set('autosave.enabled', true)
+      spyOn(chevron.workspace.getActivePane(), 'saveItem').andCallFake(() => Promise.resolve())
+      chevron.workspace.getActivePane().addItem(newItem)
 
-      expect(atom.workspace.getActivePane().saveItem).toHaveBeenCalledWith(newItem)
+      expect(chevron.workspace.getActivePane().saveItem).toHaveBeenCalledWith(newItem)
     })
 
     describe('when a pane loses focus', () => {
@@ -55,7 +55,7 @@ describe('Autosave', () => {
         expect(initialActiveItem.save).not.toHaveBeenCalled()
 
         workspaceElement.focus()
-        atom.config.set('autosave.enabled', true)
+        chevron.config.set('autosave.enabled', true)
         document.body.focus()
         expect(initialActiveItem.save).toHaveBeenCalled()
       })
@@ -65,9 +65,9 @@ describe('Autosave', () => {
         expect(initialActiveItem.save).not.toHaveBeenCalled()
 
         workspaceElement.focus()
-        atom.config.set('autosave.enabled', true)
+        chevron.config.set('autosave.enabled', true)
 
-        const originalPath = atom.workspace.getActiveTextEditor().getPath()
+        const originalPath = chevron.workspace.getActiveTextEditor().getPath()
         const tmpPath = `${originalPath}~`
         fs.renameSync(originalPath, tmpPath)
 
@@ -78,11 +78,11 @@ describe('Autosave', () => {
       })
 
       it('suppresses autosave if the focused element is contained by the editor, such as occurs when opening the autocomplete menu', () => {
-        atom.config.set('autosave.enabled', true)
+        chevron.config.set('autosave.enabled', true)
         const focusStealer = document.createElement('div')
         focusStealer.setAttribute('tabindex', -1)
 
-        const textEditorElement = atom.views.getView(atom.workspace.getActiveTextEditor())
+        const textEditorElement = chevron.views.getView(chevron.workspace.getActiveTextEditor())
         textEditorElement.appendChild(focusStealer)
         focusStealer.focus()
         expect(initialActiveItem.save).not.toHaveBeenCalled()
@@ -91,14 +91,14 @@ describe('Autosave', () => {
 
     describe('when a new pane is created', () => {
       it('saves the item if autosave is enabled and the item has a uri', () => {
-        const leftPane = atom.workspace.getActivePane()
+        const leftPane = chevron.workspace.getActivePane()
         const rightPane = leftPane.splitRight()
         expect(initialActiveItem.save).not.toHaveBeenCalled()
 
         rightPane.destroy()
         leftPane.activate()
 
-        atom.config.set('autosave.enabled', true)
+        chevron.config.set('autosave.enabled', true)
         leftPane.splitRight()
         expect(initialActiveItem.save).toHaveBeenCalled()
       })
@@ -107,17 +107,17 @@ describe('Autosave', () => {
     describe('when an item is destroyed', () => {
       describe('when the item is the active item', () => {
         it('does not save the item if autosave is enabled and the item has a uri', async () => {
-          let leftPane = atom.workspace.getActivePane()
+          let leftPane = chevron.workspace.getActivePane()
           const rightPane = leftPane.splitRight({items: [otherItem1]})
           leftPane.activate()
-          expect(initialActiveItem).toBe(atom.workspace.getActivePaneItem())
+          expect(initialActiveItem).toBe(chevron.workspace.getActivePaneItem())
           leftPane.destroyItem(initialActiveItem)
           expect(initialActiveItem.save).not.toHaveBeenCalled()
 
           otherItem2.setText('I am also modified')
-          atom.config.set('autosave.enabled', true)
+          chevron.config.set('autosave.enabled', true)
           leftPane = rightPane.splitLeft({items: [otherItem2]})
-          expect(otherItem2).toBe(atom.workspace.getActivePaneItem())
+          expect(otherItem2).toBe(chevron.workspace.getActivePaneItem())
           await leftPane.destroyItem(otherItem2)
           expect(otherItem2.save).toHaveBeenCalled()
         })
@@ -125,17 +125,17 @@ describe('Autosave', () => {
 
       describe('when the item is NOT the active item', () => {
         it('does not save the item if autosave is enabled and the item has a uri', () => {
-          let leftPane = atom.workspace.getActivePane()
+          let leftPane = chevron.workspace.getActivePane()
           const rightPane = leftPane.splitRight({items: [otherItem1]})
-          expect(initialActiveItem).not.toBe(atom.workspace.getActivePaneItem())
+          expect(initialActiveItem).not.toBe(chevron.workspace.getActivePaneItem())
           leftPane.destroyItem(initialActiveItem)
           expect(initialActiveItem.save).not.toHaveBeenCalled()
 
           otherItem2.setText('I am also modified')
-          atom.config.set('autosave.enabled', true)
+          chevron.config.set('autosave.enabled', true)
           leftPane = rightPane.splitLeft({items: [otherItem2]})
           rightPane.focus()
-          expect(otherItem2).not.toBe(atom.workspace.getActivePaneItem())
+          expect(otherItem2).not.toBe(chevron.workspace.getActivePaneItem())
           leftPane.destroyItem(otherItem2)
           expect(otherItem2.save).toHaveBeenCalled()
         })
@@ -144,15 +144,15 @@ describe('Autosave', () => {
 
     describe('when the item does not have a URI', () => {
       it('does not save the item', async () => {
-        await atom.workspace.open()
+        await chevron.workspace.open()
 
-        const pathLessItem = atom.workspace.getActiveTextEditor()
+        const pathLessItem = chevron.workspace.getActiveTextEditor()
         spyOn(pathLessItem, 'save').andCallThrough()
         pathLessItem.setText('text!')
         expect(pathLessItem.getURI()).toBeFalsy()
 
-        atom.config.set('autosave.enabled', true)
-        atom.workspace.getActivePane().destroyItem(pathLessItem)
+        chevron.config.set('autosave.enabled', true)
+        chevron.workspace.getActivePane().destroyItem(pathLessItem)
         expect(pathLessItem.save).not.toHaveBeenCalled()
       })
     })
@@ -160,9 +160,9 @@ describe('Autosave', () => {
 
   describe('when the window is blurred', () => {
     it('saves all items', () => {
-      atom.config.set('autosave.enabled', true)
+      chevron.config.set('autosave.enabled', true)
 
-      const leftPane = atom.workspace.getActivePane()
+      const leftPane = chevron.workspace.getActivePane()
       leftPane.splitRight({items: [otherItem1]})
 
       initialActiveItem.insertText('a')
@@ -177,9 +177,9 @@ describe('Autosave', () => {
 
   describe('when the package is deactivated', () => {
     it('saves all items and waits for saves to complete', () => {
-      atom.config.set('autosave.enabled', true)
+      chevron.config.set('autosave.enabled', true)
 
-      const leftPane = atom.workspace.getActivePane()
+      const leftPane = chevron.workspace.getActivePane()
       leftPane.splitRight({items: [otherItem1]})
 
       initialActiveItem.insertText('a')
@@ -200,7 +200,7 @@ describe('Autosave', () => {
         })
       })
 
-      let deactivatePromise = atom.packages.deactivatePackage('autosave')
+      let deactivatePromise = chevron.packages.deactivatePackage('autosave')
       if (!deactivatePromise || !deactivatePromise.then || typeof deactivatePromise.then !== 'function') {
         // Atom does not support asynchronous package deactivation.
         // This keeps us from failing on 1.20
@@ -237,22 +237,22 @@ describe('Autosave', () => {
     initialActiveItem.save.andThrow(saveError)
 
     const errorCallback = jasmine.createSpy('errorCallback').andCallFake(({preventDefault}) => preventDefault())
-    atom.onWillThrowError(errorCallback)
-    spyOn(atom.notifications, 'addWarning')
+    chevron.onWillThrowError(errorCallback)
+    spyOn(chevron.notifications, 'addWarning')
 
     initialActiveItem.insertText('a')
-    atom.config.set('autosave.enabled', true)
+    chevron.config.set('autosave.enabled', true)
 
-    await atom.workspace.destroyActivePaneItem()
+    await chevron.workspace.destroyActivePaneItem()
     expect(initialActiveItem.save).toHaveBeenCalled()
-    expect(atom.notifications.addWarning.callCount > 0 || errorCallback.callCount > 0).toBe(true)
+    expect(chevron.notifications.addWarning.callCount > 0 || errorCallback.callCount > 0).toBe(true)
   })
 
   describe('dontSaveIf service', () => {
     it("doesn't save a paneItem if a predicate function registered via the dontSaveIf service returns true", async () => {
-      atom.workspace.getActivePane().addItem(otherItem1)
-      atom.config.set('autosave.enabled', true)
-      const service = atom.packages.getActivePackage('autosave').mainModule.provideService()
+      chevron.workspace.getActivePane().addItem(otherItem1)
+      chevron.config.set('autosave.enabled', true)
+      const service = chevron.packages.getActivePackage('autosave').mainModule.provideService()
       service.dontSaveIf(paneItem => paneItem === initialActiveItem)
 
       initialActiveItem.setText('foo')

@@ -11,18 +11,18 @@ describe('Provider API Legacy', () => {
     jasmine.snapshotDeprecations()
 
     // Set to live completion
-    atom.config.set('autocomplete-plus.enableAutoActivation', true)
-    atom.config.set('editor.fontSize', '16')
+    chevron.config.set('autocomplete-plus.enableAutoActivation', true)
+    chevron.config.set('editor.fontSize', '16')
 
     // Set the completion delay
-    atom.config.set('autocomplete-plus.autoActivationDelay', 100)
+    chevron.config.set('autocomplete-plus.autoActivationDelay', 100)
 
-    let workspaceElement = atom.views.getView(atom.workspace)
+    let workspaceElement = chevron.views.getView(chevron.workspace)
     jasmine.attachToDOM(workspaceElement)
 
-    await atom.packages.activatePackage('language-javascript')
-    editor = await atom.workspace.open('sample.js')
-    mainModule = (await atom.packages.activatePackage('autocomplete-plus')).mainModule
+    await chevron.packages.activatePackage('language-javascript')
+    editor = await chevron.workspace.open('sample.js')
+    mainModule = (await chevron.packages.activatePackage('autocomplete-plus')).mainModule
     await conditionPromise(() => {
       autocompleteManager = mainModule.autocompleteManager
       return autocompleteManager
@@ -72,7 +72,7 @@ describe('Provider API Legacy', () => {
         requestHandler (options) { return [{word: 'ohai', prefix: 'ohai'}] }
       }
 
-      registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', new SampleProvider())
+      registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', new SampleProvider())
 
       expect(grim.getDeprecationsLength() - numberDeprecations).toBe(3)
 
@@ -105,7 +105,7 @@ describe('Provider API Legacy', () => {
           ]
         }
       }
-      registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', new SampleProvider())
+      registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', new SampleProvider())
       let numberDeprecations = grim.getDeprecationsLength()
       triggerAutocompletion(editor, true, 'o')
       await waitForAutocomplete(editor)
@@ -141,7 +141,7 @@ describe('Provider API Legacy', () => {
           ]
         }
       }
-      registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', new SampleProvider())
+      registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', new SampleProvider())
       let numberDeprecations = grim.getDeprecationsLength()
       triggerAutocompletion(editor, true, 'o')
       await waitForAutocomplete(editor)
@@ -168,7 +168,7 @@ describe('Provider API Legacy', () => {
         requestHandler (options) { return [{word: 'ohai', prefix: 'ohai'}] }
       }
 
-      registration = atom.packages.serviceHub.provide('autocomplete.provider', '1.1.0', {providers: [testProvider]})
+      registration = chevron.packages.serviceHub.provide('autocomplete.provider', '1.1.0', {providers: [testProvider]})
 
       expect(autocompleteManager.providerManager.applicableProviders(['workspace-center'], '.source.js').length).toEqual(2)
     })
@@ -194,7 +194,7 @@ describe('Provider API Legacy', () => {
         selector: '.source.js,.source.coffee',
         requestHandler (options) { return [ {word: 'ohai', prefix: 'ohai'} ] }
       }
-      registration = atom.packages.serviceHub.provide('autocomplete.provider', '1.0.0', {provider: testProvider})
+      registration = chevron.packages.serviceHub.provide('autocomplete.provider', '1.0.0', {provider: testProvider})
 
       spyOn(testProvider, 'requestHandler')
       triggerAutocompletion(editor, true, 'o')
@@ -231,7 +231,7 @@ describe('Provider API Legacy', () => {
         selector: '.source.js,.source.coffee'
       }
       // Register the test provider
-      registration = atom.packages.serviceHub.provide('autocomplete.provider', '1.0.0', {provider: testProvider})
+      registration = chevron.packages.serviceHub.provide('autocomplete.provider', '1.0.0', {provider: testProvider})
 
       expect(autocompleteManager.providerManager.store).toBeDefined()
       expect(autocompleteManager.providerManager.applicableProviders(['workspace-center'], '.source.js').length).toEqual(2)
@@ -268,7 +268,7 @@ describe('Provider API Legacy', () => {
         selector: '.source.js,.source.coffee'
       }
       // Register the test provider
-      registration = atom.packages.serviceHub.provide('autocomplete.provider', '1.0.0', {provider: testProvider})
+      registration = chevron.packages.serviceHub.provide('autocomplete.provider', '1.0.0', {provider: testProvider})
 
       expect(autocompleteManager.providerManager.store).toBeDefined()
       expect(autocompleteManager.providerManager.applicableProviders(['workspace-center'], '.source.js').length).toEqual(2)
@@ -314,7 +314,7 @@ describe('Provider API Legacy', () => {
         dispose () { }
       }
       // Register the test provider
-      registration = atom.packages.serviceHub.provide('autocomplete.provider', '1.0.0', {provider: testProvider})
+      registration = chevron.packages.serviceHub.provide('autocomplete.provider', '1.0.0', {provider: testProvider})
 
       expect(autocompleteManager.providerManager.store).toBeDefined()
       expect(autocompleteManager.providerManager.applicableProviders(['workspace-center'], '.source.js').length).toEqual(2)

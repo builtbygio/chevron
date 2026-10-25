@@ -345,7 +345,7 @@ On linux there are currently problems with watch sizes. See
   stylesheetElementForId(id) {
     const escapedId = id.replace(/\\/g, '\\\\');
     return document.head.querySelector(
-      `atom-styles style[source-path="${escapedId}"]`
+      `chevron-styles style[source-path="${escapedId}"]`
     );
   }
 

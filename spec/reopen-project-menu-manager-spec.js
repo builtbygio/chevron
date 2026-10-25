@@ -57,7 +57,7 @@ describe('ReopenProjectMenuManager', () => {
       expect(commandRegistry.add).toHaveBeenCalled();
       const cmdCall = commandRegistry.add.calls[0];
       expect(cmdCall.args.length).toBe(2);
-      expect(cmdCall.args[0]).toBe('atom-workspace');
+      expect(cmdCall.args[0]).toBe('chevron-workspace');
       expect(typeof cmdCall.args[1]['application:reopen-project']).toBe(
         'function'
       );

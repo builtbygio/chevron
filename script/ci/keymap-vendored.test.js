@@ -24,7 +24,7 @@ const { findDuplicateKey, readKeymapFile } = require(
 
 describe('vendored keymap reader', () => {
   it('accepts a keymap with no duplicates', () => {
-    assert.equal(findDuplicateKey('{"atom-text-editor":{"ctrl-s":"core:save"}}'), null);
+    assert.equal(findDuplicateKey('{"chevron-text-editor":{"ctrl-s":"core:save"}}'), null);
   });
 
   it('finds a duplicate key at the top level', () => {
@@ -51,7 +51,7 @@ describe('vendored keymap reader', () => {
   it('throws on a duplicate, naming the key and the file', () => {
     const dir = makeTempDir('chevron-keymap-');
     const file = path.join(dir, 'keymap.json');
-    fs.writeFileSync(file, '{"atom-workspace":{"ctrl-x":"a","ctrl-x":"b"}}');
+    fs.writeFileSync(file, '{"chevron-workspace":{"ctrl-x":"a","ctrl-x":"b"}}');
     assert.throws(() => readKeymapFile(file), /ctrl-x/);
     assert.throws(() => readKeymapFile(file), /keymap\.json/);
   });
@@ -59,9 +59,9 @@ describe('vendored keymap reader', () => {
   it('reads a valid keymap', () => {
     const dir = makeTempDir('chevron-keymap-');
     const file = path.join(dir, 'keymap.json');
-    fs.writeFileSync(file, '{"atom-text-editor":{"ctrl-s":"core:save"}}');
+    fs.writeFileSync(file, '{"chevron-text-editor":{"ctrl-s":"core:save"}}');
     assert.deepEqual(readKeymapFile(file), {
-      'atom-text-editor': { 'ctrl-s': 'core:save' }
+      'chevron-text-editor': { 'ctrl-s': 'core:save' }
     });
   });
 

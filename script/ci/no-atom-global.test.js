@@ -4,9 +4,9 @@
  * H3 PR 23 stream — bundled package code uses the `chevron` global, not `atom`.
  * Run: node --test script/ci/no-atom-global.test.js
  *
- * Covers in-repo `packages/` and the owned `builtbygio` pins. Once this has
- * held through a dogfood cycle, `global.atom` can be dropped from
- * initialize-application-window.js.
+ * Covers in-repo `packages/` and the owned `builtbygio` pins. `global.atom`
+ * is already gone from initialize-application-window.js. The Jasmine runner
+ * no longer invents `window.atom` either; specs say `chevron.*`.
  */
 
 const { describe, it } = require('node:test');
@@ -23,7 +23,7 @@ const BARE_ATOM = /(?<![.\w$-])atom\.(?=[a-zA-Z_$])/;
 
 /**
  * `atom` used as a value rather than a namespace. A short list of unambiguous
- * shapes, not "bare atom anywhere" -- `atom-text-editor`, `declare const
+ * shapes, not "bare atom anywhere" -- `chevron-text-editor`, `declare const
  * atom` and github.com/atom/… URLs are all legitimate.
  */
 const ATOM_AS_VALUE = [
@@ -124,7 +124,7 @@ describe('bundled packages use the chevron global (PR 23 stream)', () => {
     // Two real cases this guard must tolerate, both found during the
     // conversion: a CSS filename and a command selector.
     assert.ok(!BARE_ATOM.test(maskStrings("resolveStylesheet('../static/atom.less')")));
-    assert.ok(!BARE_ATOM.test(maskStrings('commands.add("atom-text-editor", …)')));
+    assert.ok(!BARE_ATOM.test(maskStrings('commands.add("chevron-text-editor", …)')));
     assert.ok(isComment('    // atom.autoUpdater.onUpdateAvailable =>'));
     // …and one that must still be caught.
     assert.ok(BARE_ATOM.test(maskStrings('  const x = atom.workspace.getPaths()')));
@@ -139,7 +139,7 @@ describe('bundled packages use the chevron global (PR 23 stream)', () => {
     assert.ok(asValue('  return chevron[name] != null ? atom[name] : null'));
     assert.ok(asValue('  atom && chevron.inDevMode()'));
     // …but not a custom element tag or a project URL
-    assert.ok(!asValue('  <atom-text-editor mini></atom-text-editor>'));
+    assert.ok(!asValue('  <chevron-text-editor mini></chevron-text-editor>'));
     assert.ok(!asValue('  // see github.com/atom/autocomplete-plus/wiki'));
   });
 });

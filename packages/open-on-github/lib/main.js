@@ -23,7 +23,7 @@ function getSelectedRange () {
 module.exports = {
   activate () {
     this.commandsSubscription = new Disposable()
-    this.commandsSubscription = chevron.commands.add('atom-pane', {
+    this.commandsSubscription = chevron.commands.add('chevron-pane', {
       'open-on-github:file': pathCommand((itemPath) => {
         GitHubFile.fromPath(itemPath).open(getSelectedRange())
       }),

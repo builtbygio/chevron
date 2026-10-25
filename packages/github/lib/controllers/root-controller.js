@@ -313,7 +313,7 @@ class RootController extends _react.default.Component {
     const devMode = global.atom && global.atom.inDevMode();
     return _react.default.createElement(_react.Fragment, null, _react.default.createElement(_commands.default, {
       registry: this.props.commands,
-      target: "atom-workspace"
+      target: "chevron-workspace"
     }, devMode && _react.default.createElement(_commands.Command, {
       command: "github:install-react-dev-tools",
       callback: this.installReactDevTools
@@ -378,7 +378,7 @@ class RootController extends _react.default.Component {
 
       return _react.default.createElement(_commands.default, {
         registry: this.props.commands,
-        target: "atom-workspace"
+        target: "chevron-workspace"
       }, _react.default.createElement(_commands.Command, {
         command: "github:publish-repository",
         callback: () => this.openPublishDialog(this.props.repository)

@@ -70,7 +70,7 @@ function createWindowProxy() {
           ipcRenderer.send('chevron:wc-send', wcId, channel, ...args)
       };
     },
-    // showSaveDialog was patched onto BrowserWindow by AtomWindow; use IPC
+    // showSaveDialog was patched onto BrowserWindow by ChevronWindow; use IPC
     showSaveDialog(options, callback) {
       const promise = ipcRenderer.invoke('chevron:show-save-dialog', options || {});
       if (typeof callback === 'function') {

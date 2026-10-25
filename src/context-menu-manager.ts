@@ -29,8 +29,8 @@ const platformContextMenu = __guard__(__guard__(require('../package.json'), x1 =
 // ## Context Menu CSON Format
 //
 // ```coffee
-// 'atom-workspace': [{label: 'Help', command: 'application:open-documentation'}]
-// 'atom-text-editor': [{
+// 'chevron-workspace': [{label: 'Help', command: 'application:open-documentation'}]
+// 'chevron-text-editor': [{
 //   label: 'History',
 //   submenu: [
 //     {label: 'Undo', command:'core:undo'}
@@ -44,7 +44,7 @@ const platformContextMenu = __guard__(__guard__(require('../package.json'), x1 =
 //
 // ```coffee
 // 'context-menu':
-//   'atom-workspace': [{label: 'Help', command: 'application:open-documentation'}]
+//   'chevron-workspace': [{label: 'Help', command: 'application:open-documentation'}]
 //   ...
 // ```
 //
@@ -88,8 +88,8 @@ module.exports =
   //
   // ```coffee
   // atom.contextMenu.add {
-  //   'atom-workspace': [{label: 'Help', command: 'application:open-documentation'}]
-  //   'atom-text-editor': [{
+  //   'chevron-workspace': [{label: 'Help', command: 'application:open-documentation'}]
+  //   'chevron-text-editor': [{
   //     label: 'History',
   //     submenu: [
   //       {label: 'Undo', command:'core:undo'}
@@ -278,7 +278,7 @@ module.exports =
     this.activeElement = null;
     this.itemSets = [];
     const inspectElement = {
-      'atom-workspace': [{
+      'chevron-workspace': [{
         label: 'Inspect Element',
         command: 'application:inspect',
         devMode: true,

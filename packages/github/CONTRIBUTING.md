@@ -110,7 +110,7 @@ Generating lcov data allows you to integrate an Atom package like [atom-lcov](ht
 If you prefer the graphical test runner, it may be altered to generate lcov coverage data by adding a command like the following to your `init.js` file:
 
 ```js
-atom.commands.add('atom-workspace', {
+atom.commands.add('chevron-workspace', {
   'me:run-package-specs': () => {
     atom.workspace.getElement().runPackageSpecs({
       env: Object.assign({}, process.env, {ATOM_GITHUB_BABEL_ENV: 'coverage'})

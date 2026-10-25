@@ -10,29 +10,29 @@ describe("DeprecationCop", function() {
   let [activationPromise, workspaceElement] = Array.from([]);
 
   beforeEach(function() {
-    workspaceElement = atom.views.getView(atom.workspace);
-    activationPromise = atom.packages.activatePackage('deprecation-cop');
-    return expect(atom.workspace.getActivePane().getActiveItem()).not.toExist();
+    workspaceElement = chevron.views.getView(chevron.workspace);
+    activationPromise = chevron.packages.activatePackage('deprecation-cop');
+    return expect(chevron.workspace.getActivePane().getActiveItem()).not.toExist();
   });
 
   describe("when the deprecation-cop:view event is triggered", () => it("displays the deprecation cop pane", function() {
-    atom.commands.dispatch(workspaceElement, 'deprecation-cop:view');
+    chevron.commands.dispatch(workspaceElement, 'deprecation-cop:view');
 
     waitsForPromise(() => activationPromise);
 
     let deprecationCopView = null;
-    waitsFor(() => deprecationCopView = atom.workspace.getActivePane().getActiveItem());
+    waitsFor(() => deprecationCopView = chevron.workspace.getActivePane().getActiveItem());
 
     return runs(() => expect(deprecationCopView instanceof DeprecationCopView).toBeTruthy());
   }));
 
   return describe("deactivating the package", () => it("removes the deprecation cop pane item", function() {
-    atom.commands.dispatch(workspaceElement, 'deprecation-cop:view');
+    chevron.commands.dispatch(workspaceElement, 'deprecation-cop:view');
 
     waitsForPromise(() => activationPromise);
 
-    waitsForPromise(() => Promise.resolve(atom.packages.deactivatePackage('deprecation-cop'))); // Wrapped for Promise & non-Promise deactivate
+    waitsForPromise(() => Promise.resolve(chevron.packages.deactivatePackage('deprecation-cop'))); // Wrapped for Promise & non-Promise deactivate
 
-    return runs(() => expect(atom.workspace.getActivePane().getActiveItem()).not.toExist());
+    return runs(() => expect(chevron.workspace.getActivePane().getActiveItem()).not.toExist());
   }));
 });

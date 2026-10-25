@@ -26,11 +26,11 @@ const {clipboard} = require('electron');
 const rendererIpc = require('../src/renderer-ipc');
 
 const jasmineStyle = document.createElement('style');
-jasmineStyle.textContent = atom.themes.loadStylesheet(atom.themes.resolveStylesheet('../static/jasmine'));
+jasmineStyle.textContent = chevron.themes.loadStylesheet(chevron.themes.resolveStylesheet('../static/jasmine'));
 document.head.appendChild(jasmineStyle);
 
 const fixturePackagesPath = path.resolve(__dirname, './fixtures/packages');
-atom.packages.packageDirPaths.unshift(fixturePackagesPath);
+chevron.packages.packageDirPaths.unshift(fixturePackagesPath);
 
 document.querySelector('html').style.overflow = 'auto';
 document.body.style.overflow = 'auto';
@@ -75,7 +75,7 @@ if (process.env.CI) {
   jasmine.getEnv().defaultTimeoutInterval = 5000;
 }
 
-const {testPaths} = atom.getLoadSettings();
+const {testPaths} = chevron.getLoadSettings();
 
 if (specPackagePath = FindParentDir.sync(testPaths[0], 'package.json')) {
   const packageMetadata = require(path.join(specPackagePath, 'package.json'));
@@ -90,9 +90,9 @@ if ((specDirectory = FindParentDir.sync(testPaths[0], 'fixtures'))) {
 
 beforeEach(function() {
   // Do not clobber recent project history
-  spyOn(Object.getPrototypeOf(atom.history), 'saveState').andReturn(Promise.resolve());
+  spyOn(Object.getPrototypeOf(chevron.history), 'saveState').andReturn(Promise.resolve());
 
-  atom.project.setPaths([specProjectPath]);
+  chevron.project.setPaths([specProjectPath]);
 
   window.resetTimeouts();
   spyOn(_._, "now").andCallFake(() => window.now);
@@ -100,24 +100,24 @@ beforeEach(function() {
   spyOn(window, "setTimeout").andCallFake(window.fakeSetTimeout);
   spyOn(window, "clearTimeout").andCallFake(window.fakeClearTimeout);
 
-  const spy = spyOn(atom.packages, 'resolvePackagePath').andCallFake(function(packageName) {
+  const spy = spyOn(chevron.packages, 'resolvePackagePath').andCallFake(function(packageName) {
     if (specPackageName && (packageName === specPackageName)) {
       return resolvePackagePath(specPackagePath);
     } else {
       return resolvePackagePath(packageName);
     }
   });
-  var resolvePackagePath = _.bind(spy.originalValue, atom.packages);
+  var resolvePackagePath = _.bind(spy.originalValue, chevron.packages);
 
   // prevent specs from modifying Atom's menus
-  spyOn(atom.menu, 'sendToBrowserProcess');
+  spyOn(chevron.menu, 'sendToBrowserProcess');
 
   // reset config before each spec
-  atom.config.set("core.destroyEmptyPanes", false);
-  atom.config.set("editor.fontFamily", "Courier");
-  atom.config.set("editor.fontSize", 16);
-  atom.config.set("editor.autoIndent", false);
-  atom.config.set("core.disabledPackages", ["package-that-throws-an-exception",
+  chevron.config.set("core.destroyEmptyPanes", false);
+  chevron.config.set("editor.fontFamily", "Courier");
+  chevron.config.set("editor.fontSize", 16);
+  chevron.config.set("editor.autoIndent", false);
+  chevron.config.set("core.disabledPackages", ["package-that-throws-an-exception",
     "package-with-broken-package-json", "package-with-broken-keymap"]);
   advanceClock(1000);
   window.setTimeout.reset();
@@ -178,7 +178,7 @@ afterEach(function() {
   ensureNoDeprecatedFunctionCalls();
   ensureNoDeprecatedStylesheets();
 
-  waitsForPromise(() => atom.reset());
+  waitsForPromise(() => chevron.reset());
 
   return runs(function() {
     if (!window.debugContent) { document.getElementById('jasmine-content').innerHTML = ''; }
@@ -223,8 +223,8 @@ var ensureNoDeprecatedFunctionCalls = function() {
 };
 
 var ensureNoDeprecatedStylesheets = function() {
-  const deprecations = _.clone(atom.styles.getDeprecations());
-  atom.styles.clearDeprecations();
+  const deprecations = _.clone(chevron.styles.getDeprecations());
+  chevron.styles.clearDeprecations();
   return (() => {
     const result = [];
     for (var sourcePath in deprecations) {
@@ -265,12 +265,12 @@ let grimDeprecationsSnapshot = null;
 let stylesDeprecationsSnapshot = null;
 jasmine.snapshotDeprecations = function() {
   grimDeprecationsSnapshot = _.clone(Grim.deprecations);
-  return stylesDeprecationsSnapshot = _.clone(atom.styles.deprecationsBySourcePath);
+  return stylesDeprecationsSnapshot = _.clone(chevron.styles.deprecationsBySourcePath);
 };
 
 jasmine.restoreDeprecationsSnapshot = function() {
   Grim.deprecations = grimDeprecationsSnapshot;
-  return atom.styles.deprecationsBySourcePath = stylesDeprecationsSnapshot;
+  return chevron.styles.deprecationsBySourcePath = stylesDeprecationsSnapshot;
 };
 
 jasmine.useRealClock = function() {

@@ -1,5 +1,5 @@
 {
-  "atom-text-editor": {
+  "chevron-text-editor": {
     "ctrl-shift-m": "markdown-preview:toggle"
   },
   ".platform-darwin .markdown-preview": {

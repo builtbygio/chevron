@@ -11,7 +11,7 @@
     }
   ],
   "context-menu": {
-    "atom-text-editor:not([mini])": [
+    "chevron-text-editor:not([mini])": [
       {
         "label": "Change Encoding",
         "command": "encoding-selector:show"

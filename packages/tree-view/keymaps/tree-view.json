@@ -84,7 +84,7 @@
     "home": "core:move-to-top",
     "end": "core:move-to-bottom"
   },
-  ".tree-view-dialog atom-text-editor[mini]": {
+  ".tree-view-dialog chevron-text-editor[mini]": {
     "enter": "core:confirm",
     "escape": "core:cancel"
   }

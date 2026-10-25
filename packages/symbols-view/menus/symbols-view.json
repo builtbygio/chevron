@@ -20,7 +20,7 @@
     }
   ],
   "context-menu": {
-    "atom-text-editor:not([mini])": [
+    "chevron-text-editor:not([mini])": [
       {
         "label": "Go to Declaration",
         "command": "symbols-view:go-to-declaration"

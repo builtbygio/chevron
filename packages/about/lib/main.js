@@ -51,7 +51,7 @@ module.exports = {
     );
 
     this.subscriptions.add(
-      chevron.commands.add('atom-workspace', 'about:clear-update-state', () => {
+      chevron.commands.add('chevron-workspace', 'about:clear-update-state', () => {
         this.clearUpdateState();
       })
     );

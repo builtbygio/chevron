@@ -49,7 +49,7 @@ module.exports = {
 
     const snippets = this
 
-    this.subscriptions.add(chevron.commands.add('atom-text-editor', {
+    this.subscriptions.add(chevron.commands.add('chevron-text-editor', {
       'snippets:expand'(event) {
         const editor = this.getModel()
         if (snippets.snippetToExpandUnderCursor(editor)) {

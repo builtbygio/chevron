@@ -4,7 +4,7 @@
   "main": "./lib/command-palette-package",
   "description": "Find and run available commands using `cmd-shift-p` (macOS) or `ctrl-shift-p` (Linux/Windows).",
   "activationCommands": {
-    "atom-workspace": [
+    "chevron-workspace": [
       "command-palette:toggle"
     ]
   },

@@ -5,10 +5,10 @@
   "description": "Jump to a function/method in the current editor with `cmd-r`.",
   "license": "MIT",
   "activationCommands": {
-    "atom-workspace": [
+    "chevron-workspace": [
       "symbols-view:toggle-project-symbols"
     ],
-    "atom-text-editor": [
+    "chevron-text-editor": [
       "symbols-view:go-to-declaration",
       "symbols-view:return-from-declaration",
       "symbols-view:toggle-file-symbols"

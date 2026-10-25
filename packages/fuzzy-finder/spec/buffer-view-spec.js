@@ -7,9 +7,9 @@ describe('BufferView', () => {
   it('shows the avatar for editors that are remote', async () => {
     const bufferView = new BufferView({incrementCounter: () => {}})
 
-    const localEditor1 = await atom.workspace.open(path.join(temp.path(), 'a'))
-    const localEditor2 = await atom.workspace.open(path.join(temp.path(), 'b'))
-    const remoteEditor1 = await atom.workspace.open(path.join(temp.path(), 'c'))
+    const localEditor1 = await chevron.workspace.open(path.join(temp.path(), 'a'))
+    const localEditor2 = await chevron.workspace.open(path.join(temp.path(), 'b'))
+    const remoteEditor1 = await chevron.workspace.open(path.join(temp.path(), 'c'))
     remoteEditor1.getURI = () => 'remote1-uri'
     const fakeTeletypeService = {
       async getRemoteEditors () {

@@ -26,7 +26,7 @@ test('opens a workspace window', async () => {
   const chevron = await launchChevron({ prepareHome: quietFirstRun });
   try {
     await expect(
-      chevron.window.locator('atom-workspace').first()
+      chevron.window.locator('chevron-workspace').first()
     ).toBeVisible({ timeout: 45000 });
 
     const title = await chevron.window.title();

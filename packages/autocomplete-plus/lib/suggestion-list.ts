@@ -24,7 +24,7 @@ class SuggestionList {
     this.emitter = new Emitter()
     this.subscriptions = new CompositeDisposable()
 
-    this.subscriptions.add(chevron.commands.add('atom-text-editor.autocomplete-active', {
+    this.subscriptions.add(chevron.commands.add('chevron-text-editor.autocomplete-active', {
       'autocomplete-plus:confirm': this.confirmSelection,
       'autocomplete-plus:confirmIfNonDefault': this.confirmSelectionIfNonDefault,
       'autocomplete-plus:cancel': this.cancel
@@ -66,8 +66,8 @@ class SuggestionList {
     }
 
     this.bindings.add(chevron.keymaps.add(
-      'atom-text-editor.autocomplete-active',
-      {'atom-text-editor.autocomplete-active': keys})
+      'chevron-text-editor.autocomplete-active',
+      {'chevron-text-editor.autocomplete-active': keys})
     )
 
     const useCoreMovementCommands = chevron.config.get('autocomplete-plus.useCoreMovementCommands')

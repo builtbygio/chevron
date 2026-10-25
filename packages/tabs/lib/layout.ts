@@ -92,7 +92,7 @@ module.exports = {
     if (this.test.pane) {
       return this.test.pane
     } else {
-      const element = this.getElement(this.lastCoords, 'atom-pane')
+      const element = this.getElement(this.lastCoords, 'chevron-pane')
       if (element) {
         return element.getModel()
       }

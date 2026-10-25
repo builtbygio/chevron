@@ -40,7 +40,7 @@ let SequenceCount = 0;
 // Here is a command that inserts the current date in an editor:
 //
 // ```coffee
-// atom.commands.add 'atom-text-editor',
+// atom.commands.add 'chevron-text-editor',
 //   'user:insert-date': (event) ->
 //     editor = @getModel()
 //     editor.insertText(new Date().toLocaleString())

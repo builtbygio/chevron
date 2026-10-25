@@ -9,7 +9,7 @@ class CommandPalettePackage {
   activate () {
     this.commandPaletteView = new CommandPaletteView()
     this.disposables = new CompositeDisposable()
-    this.disposables.add(chevron.commands.add('atom-workspace', {
+    this.disposables.add(chevron.commands.add('chevron-workspace', {
       'command-palette:toggle': () => {
         this.commandPaletteView.toggle()
       },

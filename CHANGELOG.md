@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The core classes and workspace elements use Chevron names.** `AtomEnvironment`, `AtomApplication` and `AtomWindow` are `ChevronEnvironment`, `ChevronApplication` and `ChevronWindow`. The workspace elements (`atom-workspace`, `atom-text-editor`, `atom-pane`, and the panel, overlay and styles tags) are `chevron-*`. Specs and bundled packages call `chevron.*`; the Jasmine runner no longer sets `window.atom`. `atom-notification`, `atom-keymap` and `atom-select-list` are unchanged, and saved window state still uses the `AtomEnvironments` store key.
+
 - **`remote-compat` no longer keeps a synchronous copy of the getters that already had `invoke`.** Display size, user defaults, the Windows jump list, the beep, `app.getPath`, `app.getVersion` and protocol-client registration return promises, and the `sendSync` twins for those channels are gone. Clipboard reads, the synchronous confirm dialog, and boot settings stay synchronous.
 
 - **The git worker and `isVisible()` no longer use `sendSync`.** Opening a worker, loading its URL, asking whether it is destroyed, and destroying it return promises, and so does `getCurrentWindow().isVisible()`. GitHub awaits those. The rest of the window proxy stays synchronous, because size, position, fullscreen and the menu bar are still read on the same turn. Clipboard, confirm, boot settings and the filesystem IPC are unchanged.

@@ -16,7 +16,7 @@
     }
   ],
   "context-menu": {
-    "atom-text-editor:not([mini])": [
+    "chevron-text-editor:not([mini])": [
       {
         "label": "Correct Spelling",
         "command": "spell-check:correct-misspelling"

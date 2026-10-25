@@ -177,7 +177,7 @@ module.exports = {
       Object.assign(encodings, posixOnlyEncodings)
     }
 
-    commandSubscription = chevron.commands.add('atom-text-editor', 'encoding-selector:show', () => {
+    commandSubscription = chevron.commands.add('chevron-text-editor', 'encoding-selector:show', () => {
       if (!encodingListView) encodingListView = new EncodingListView(encodings)
       encodingListView.toggle()
     })

@@ -37,7 +37,7 @@ class Panel extends _react.default.Component {
     this.panel = null;
     this.didCloseItem = false;
     this.domNode = document.createElement('div');
-    this.domNode.className = 'react-atom-panel';
+    this.domNode.className = 'react-chevron-panel';
   }
 
   componentDidMount() {

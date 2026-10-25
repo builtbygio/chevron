@@ -8,11 +8,11 @@ describe("Built-in Status Bar Tiles", function() {
   let [statusBar, workspaceElement, dummyView] = Array.from([]);
 
   beforeEach(function() {
-    workspaceElement = atom.views.getView(atom.workspace);
+    workspaceElement = chevron.views.getView(chevron.workspace);
     dummyView = document.createElement("div");
     statusBar = null;
 
-    waitsForPromise(() => atom.packages.activatePackage('status-bar'));
+    waitsForPromise(() => chevron.packages.activatePackage('status-bar'));
 
     return runs(() => statusBar = workspaceElement.querySelector("status-bar"));
   });
@@ -21,22 +21,22 @@ describe("Built-in Status Bar Tiles", function() {
     let [editor, buffer, fileInfo, cursorPosition, selectionCount] = Array.from([]);
 
     beforeEach(function() {
-      waitsForPromise(() => atom.workspace.open('sample.js'));
+      waitsForPromise(() => chevron.workspace.open('sample.js'));
 
       return runs(function() {
         let launchMode;
         [launchMode, fileInfo, cursorPosition, selectionCount] =
           Array.from(statusBar.getLeftTiles().map(tile => tile.getItem()));
-        editor = atom.workspace.getActiveTextEditor();
+        editor = chevron.workspace.getActiveTextEditor();
         return buffer = editor.getBuffer();
       });
     });
 
     describe("when associated with an unsaved buffer", () => it("displays 'untitled' instead of the buffer's path, but still displays the buffer position", function() {
-      waitsForPromise(() => atom.workspace.open());
+      waitsForPromise(() => chevron.workspace.open());
 
       return runs(function() {
-        atom.views.performDocumentUpdate();
+        chevron.views.performDocumentUpdate();
         expect(fileInfo.currentPath.textContent).toBe('untitled');
         expect(cursorPosition.textContent).toBe('1:1');
         return expect(selectionCount).toBeHidden();
@@ -44,7 +44,7 @@ describe("Built-in Status Bar Tiles", function() {
     }));
 
     describe("when the associated editor's path changes", () => it("updates the path in the status bar", function() {
-      waitsForPromise(() => atom.workspace.open('sample.txt'));
+      waitsForPromise(() => chevron.workspace.open('sample.txt'));
 
       return runs(() => expect(fileInfo.currentPath.textContent).toBe('sample.txt'));
     }));
@@ -53,7 +53,7 @@ describe("Built-in Status Bar Tiles", function() {
       beforeEach(function() {
         jasmine.attachToDOM(workspaceElement);
         dummyView.getPath = () => 'remote://server:123/folder/remote_file.txt';
-        return atom.workspace.getActivePane().activateItem(dummyView);
+        return chevron.workspace.getActivePane().activateItem(dummyView);
       });
 
       it("updates the path in the status bar", function() {
@@ -64,56 +64,56 @@ describe("Built-in Status Bar Tiles", function() {
 
       it("when the path is clicked", function() {
         fileInfo.currentPath.click();
-        return expect(atom.clipboard.read()).toBe('/folder/remote_file.txt');
+        return expect(chevron.clipboard.read()).toBe('/folder/remote_file.txt');
       });
 
       return it("calls relativize with the remote URL on shift-click", function() {
-        const spy = spyOn(atom.project, 'relativize').andReturn('remote_file.txt');
+        const spy = spyOn(chevron.project, 'relativize').andReturn('remote_file.txt');
         const event = new MouseEvent('click', {shiftKey: true});
         fileInfo.dispatchEvent(event);
-        expect(atom.clipboard.read()).toBe('remote_file.txt');
+        expect(chevron.clipboard.read()).toBe('remote_file.txt');
         return expect(spy).toHaveBeenCalledWith('remote://server:123/folder/remote_file.txt');
       });
     });
 
     describe("when file info tile is clicked", () => it("copies the absolute path into the clipboard if available", function() {
-      waitsForPromise(() => atom.workspace.open('sample.txt'));
+      waitsForPromise(() => chevron.workspace.open('sample.txt'));
 
       return runs(function() {
         fileInfo.click();
-        return expect(atom.clipboard.read()).toBe(fileInfo.getActiveItem().getPath());
+        return expect(chevron.clipboard.read()).toBe(fileInfo.getActiveItem().getPath());
       });
     }));
 
     describe("when the file info tile is shift-clicked", () => it("copies the relative path into the clipboard if available", function() {
-      waitsForPromise(() => atom.workspace.open('sample.txt'));
+      waitsForPromise(() => chevron.workspace.open('sample.txt'));
 
       return runs(function() {
         const event = new MouseEvent('click', {shiftKey: true});
         fileInfo.dispatchEvent(event);
-        return expect(atom.clipboard.read()).toBe('sample.txt');
+        return expect(chevron.clipboard.read()).toBe('sample.txt');
       });
     }));
 
     describe("when path of an unsaved buffer is clicked", () => it("copies the 'untitled' into clipboard", function() {
-      waitsForPromise(() => atom.workspace.open());
+      waitsForPromise(() => chevron.workspace.open());
 
       return runs(function() {
         fileInfo.currentPath.click();
-        return expect(atom.clipboard.read()).toBe('untitled');
+        return expect(chevron.clipboard.read()).toBe('untitled');
       });
     }));
 
     describe("when buffer's path is not clicked", () => it("doesn't display a path tooltip", function() {
       jasmine.attachToDOM(workspaceElement);
-      waitsForPromise(() => atom.workspace.open());
+      waitsForPromise(() => chevron.workspace.open());
 
       return runs(() => expect(document.querySelector('.tooltip')).not.toExist());
     }));
 
     describe("when buffer's path is clicked", () => it("displays path tooltip and the tooltip disappears after ~2 seconds", function() {
       jasmine.attachToDOM(workspaceElement);
-      waitsForPromise(() => atom.workspace.open());
+      waitsForPromise(() => chevron.workspace.open());
 
       return runs(function() {
         fileInfo.currentPath.click();
@@ -127,7 +127,7 @@ describe("Built-in Status Bar Tiles", function() {
     describe("when saved buffer's path is clicked", function() {
       it("displays a tooltip containing text 'Copied:' and an absolute native path", function() {
         jasmine.attachToDOM(workspaceElement);
-        waitsForPromise(() => atom.workspace.open('sample.txt'));
+        waitsForPromise(() => chevron.workspace.open('sample.txt'));
 
         return runs(function() {
           fileInfo.currentPath.click();
@@ -138,7 +138,7 @@ describe("Built-in Status Bar Tiles", function() {
       it("displays a tooltip containing text 'Copied:' for an absolute Unix path", function() {
         jasmine.attachToDOM(workspaceElement);
         dummyView.getPath = () => '/user/path/for/my/file.txt';
-        atom.workspace.getActivePane().activateItem(dummyView);
+        chevron.workspace.getActivePane().activateItem(dummyView);
 
         return runs(function() {
           fileInfo.currentPath.click();
@@ -149,7 +149,7 @@ describe("Built-in Status Bar Tiles", function() {
       return it("displays a tooltip containing text 'Copied:' for an absolute Windows path", function() {
         jasmine.attachToDOM(workspaceElement);
         dummyView.getPath = () => 'c:\\user\\path\\for\\my\\file.txt';
-        atom.workspace.getActivePane().activateItem(dummyView);
+        chevron.workspace.getActivePane().activateItem(dummyView);
 
         return runs(function() {
           fileInfo.currentPath.click();
@@ -160,7 +160,7 @@ describe("Built-in Status Bar Tiles", function() {
 
     describe("when unsaved buffer's path is clicked", () => it("displays a tooltip containing text 'Copied: untitled", function() {
       jasmine.attachToDOM(workspaceElement);
-      waitsForPromise(() => atom.workspace.open());
+      waitsForPromise(() => chevron.workspace.open());
 
       return runs(function() {
         fileInfo.currentPath.click();
@@ -181,10 +181,10 @@ describe("Built-in Status Bar Tiles", function() {
         const filePath = path.join(os.tmpdir(), "atom-whitespace.txt");
         fs.writeFileSync(filePath, "");
 
-        waitsForPromise(() => atom.workspace.open(filePath));
+        waitsForPromise(() => chevron.workspace.open(filePath));
 
         runs(function() {
-          editor = atom.workspace.getActiveTextEditor();
+          editor = chevron.workspace.getActiveTextEditor();
           expect(fileInfo.classList.contains('buffer-modified')).toBe(false);
           editor.insertText("\n");
           advanceClock(buffer.stoppedChangingDelay);
@@ -222,10 +222,10 @@ describe("Built-in Status Bar Tiles", function() {
       it("updates the buffer modified indicator for the new buffer", function() {
         expect(fileInfo.classList.contains('buffer-modified')).toBe(false);
 
-        waitsForPromise(() => atom.workspace.open('sample.txt'));
+        waitsForPromise(() => chevron.workspace.open('sample.txt'));
 
         return runs(function() {
-          editor = atom.workspace.getActiveTextEditor();
+          editor = chevron.workspace.getActiveTextEditor();
           editor.insertText("\n");
           advanceClock(buffer.stoppedChangingDelay);
           return expect(fileInfo.classList.contains('buffer-modified')).toBe(true);
@@ -236,7 +236,7 @@ describe("Built-in Status Bar Tiles", function() {
         const oldBuffer = editor.getBuffer();
         expect(fileInfo.classList.contains('buffer-modified')).toBe(false);
 
-        waitsForPromise(() => atom.workspace.open('sample.txt'));
+        waitsForPromise(() => chevron.workspace.open('sample.txt'));
 
         return runs(function() {
           oldBuffer.setText("new text");
@@ -250,21 +250,21 @@ describe("Built-in Status Bar Tiles", function() {
       it("updates the cursor position in the status bar", function() {
         jasmine.attachToDOM(workspaceElement);
         editor.setCursorScreenPosition([1, 2]);
-        atom.views.performDocumentUpdate();
+        chevron.views.performDocumentUpdate();
         return expect(cursorPosition.textContent).toBe('2:3');
       });
 
       return it("does not throw an exception if the cursor is moved as the result of the active pane item changing to a non-editor (regression)", function() {
-        waitsForPromise(() => Promise.resolve(atom.packages.deactivatePackage('status-bar'))); // Wrapped so works with Promise & non-Promise deactivate
-        runs(() => atom.workspace.onDidChangeActivePaneItem(() => editor.setCursorScreenPosition([1, 2])));
-        waitsForPromise(() => atom.packages.activatePackage('status-bar'));
+        waitsForPromise(() => Promise.resolve(chevron.packages.deactivatePackage('status-bar'))); // Wrapped so works with Promise & non-Promise deactivate
+        runs(() => chevron.workspace.onDidChangeActivePaneItem(() => editor.setCursorScreenPosition([1, 2])));
+        waitsForPromise(() => chevron.packages.activatePackage('status-bar'));
         return runs(function() {
           statusBar = workspaceElement.querySelector("status-bar");
           cursorPosition = statusBar.getLeftTiles()[2].getItem();
 
-          atom.workspace.getActivePane().activateItem(document.createElement('div'));
+          chevron.workspace.getActivePane().activateItem(document.createElement('div'));
           expect(editor.getCursorScreenPosition()).toEqual([1, 2]);
-          atom.views.performDocumentUpdate();
+          chevron.views.performDocumentUpdate();
           return expect(cursorPosition).toBeHidden();
         });
       });
@@ -275,29 +275,29 @@ describe("Built-in Status Bar Tiles", function() {
         jasmine.attachToDOM(workspaceElement);
 
         editor.setSelectedBufferRange([[0, 0], [0, 0]]);
-        atom.views.performDocumentUpdate();
+        chevron.views.performDocumentUpdate();
         expect(selectionCount.textContent).toBe('');
 
         editor.setSelectedBufferRange([[0, 0], [0, 2]]);
-        atom.views.performDocumentUpdate();
+        chevron.views.performDocumentUpdate();
         expect(selectionCount.textContent).toBe('(1, 2)');
 
         editor.setSelectedBufferRange([[0, 0], [1, 30]]);
-        atom.views.performDocumentUpdate();
+        chevron.views.performDocumentUpdate();
         return expect(selectionCount.textContent).toBe("(2, 60)");
       });
 
       return it("does not throw an exception if the cursor is moved as the result of the active pane item changing to a non-editor (regression)", function() {
-        waitsForPromise(() => Promise.resolve(atom.packages.deactivatePackage('status-bar'))); // Wrapped so works with Promise & non-Promise deactivate
-        runs(() => atom.workspace.onDidChangeActivePaneItem(() => editor.setSelectedBufferRange([[1, 2], [1, 3]])));
-        waitsForPromise(() => atom.packages.activatePackage('status-bar'));
+        waitsForPromise(() => Promise.resolve(chevron.packages.deactivatePackage('status-bar'))); // Wrapped so works with Promise & non-Promise deactivate
+        runs(() => chevron.workspace.onDidChangeActivePaneItem(() => editor.setSelectedBufferRange([[1, 2], [1, 3]])));
+        waitsForPromise(() => chevron.packages.activatePackage('status-bar'));
         return runs(function() {
           statusBar = workspaceElement.querySelector("status-bar");
           selectionCount = statusBar.getLeftTiles()[3].getItem();
 
-          atom.workspace.getActivePane().activateItem(document.createElement('div'));
+          chevron.workspace.getActivePane().activateItem(document.createElement('div'));
           expect(editor.getSelectedBufferRange()).toEqual([[1, 2], [1, 3]]);
-          atom.views.performDocumentUpdate();
+          chevron.views.performDocumentUpdate();
           return expect(selectionCount).toBeHidden();
         });
       });
@@ -305,22 +305,22 @@ describe("Built-in Status Bar Tiles", function() {
 
     describe("when the active pane item does not implement getCursorBufferPosition()", () => it("hides the cursor position view", function() {
       jasmine.attachToDOM(workspaceElement);
-      atom.workspace.getActivePane().activateItem(dummyView);
-      atom.views.performDocumentUpdate();
+      chevron.workspace.getActivePane().activateItem(dummyView);
+      chevron.views.performDocumentUpdate();
       return expect(cursorPosition).toBeHidden();
     }));
 
     describe("when the active pane item implements getTitle() but not getPath()", () => it("displays the title", function() {
       jasmine.attachToDOM(workspaceElement);
       dummyView.getTitle = () => 'View Title';
-      atom.workspace.getActivePane().activateItem(dummyView);
+      chevron.workspace.getActivePane().activateItem(dummyView);
       expect(fileInfo.currentPath.textContent).toBe('View Title');
       return expect(fileInfo.currentPath).toBeVisible();
     }));
 
     describe("when the active pane item neither getTitle() nor getPath()", () => it("hides the path view", function() {
       jasmine.attachToDOM(workspaceElement);
-      atom.workspace.getActivePane().activateItem(dummyView);
+      chevron.workspace.getActivePane().activateItem(dummyView);
       return expect(fileInfo.currentPath).toBeHidden();
     }));
 
@@ -334,7 +334,7 @@ describe("Built-in Status Bar Tiles", function() {
         };
       };
       dummyView.getTitle = () => 'View Title';
-      atom.workspace.getActivePane().activateItem(dummyView);
+      chevron.workspace.getActivePane().activateItem(dummyView);
       expect(fileInfo.currentPath.textContent).toBe('View Title');
       dummyView.getTitle = () => 'New Title';
       for (var callback of callbacks) { callback(); }
@@ -342,52 +342,52 @@ describe("Built-in Status Bar Tiles", function() {
     }));
 
     describe('the cursor position tile', function() {
-      beforeEach(() => atom.config.set('status-bar.cursorPositionFormat', 'foo %L bar %C'));
+      beforeEach(() => chevron.config.set('status-bar.cursorPositionFormat', 'foo %L bar %C'));
 
       it('respects a format string', function() {
         jasmine.attachToDOM(workspaceElement);
         editor.setCursorScreenPosition([1, 2]);
-        atom.views.performDocumentUpdate();
+        chevron.views.performDocumentUpdate();
         return expect(cursorPosition.textContent).toBe('foo 2 bar 3');
       });
 
       it('updates when the configuration changes', function() {
         jasmine.attachToDOM(workspaceElement);
         editor.setCursorScreenPosition([1, 2]);
-        atom.views.performDocumentUpdate();
+        chevron.views.performDocumentUpdate();
         expect(cursorPosition.textContent).toBe('foo 2 bar 3');
 
-        atom.config.set('status-bar.cursorPositionFormat', 'baz %C quux %L');
-        atom.views.performDocumentUpdate();
+        chevron.config.set('status-bar.cursorPositionFormat', 'baz %C quux %L');
+        chevron.views.performDocumentUpdate();
         return expect(cursorPosition.textContent).toBe('baz 3 quux 2');
       });
 
       return describe("when clicked", () => it("triggers the go-to-line toggle event", function() {
         const eventHandler = jasmine.createSpy('eventHandler');
-        atom.commands.add('atom-text-editor', 'go-to-line:toggle', eventHandler);
+        chevron.commands.add('chevron-text-editor', 'go-to-line:toggle', eventHandler);
         cursorPosition.click();
         return expect(eventHandler).toHaveBeenCalled();
       }));
     });
 
     return describe('the selection count tile', function() {
-      beforeEach(() => atom.config.set('status-bar.selectionCountFormat', '%L foo %C bar selected'));
+      beforeEach(() => chevron.config.set('status-bar.selectionCountFormat', '%L foo %C bar selected'));
 
       it('respects a format string', function() {
         jasmine.attachToDOM(workspaceElement);
         editor.setSelectedBufferRange([[0, 0], [1, 30]]);
-        atom.views.performDocumentUpdate();
+        chevron.views.performDocumentUpdate();
         return expect(selectionCount.textContent).toBe("2 foo 60 bar selected");
       });
 
       it('updates when the configuration changes', function() {
         jasmine.attachToDOM(workspaceElement);
         editor.setSelectedBufferRange([[0, 0], [1, 30]]);
-        atom.views.performDocumentUpdate();
+        chevron.views.performDocumentUpdate();
         expect(selectionCount.textContent).toBe("2 foo 60 bar selected");
 
-        atom.config.set('status-bar.selectionCountFormat', 'Selection: baz %C quux %L');
-        atom.views.performDocumentUpdate();
+        chevron.config.set('status-bar.selectionCountFormat', 'Selection: baz %C quux %L');
+        chevron.views.performDocumentUpdate();
         return expect(selectionCount.textContent).toBe("Selection: baz 60 quux 2");
       });
 
@@ -397,7 +397,7 @@ describe("Built-in Status Bar Tiles", function() {
         buffer.setText(buffer.getText().replace(lineEndingRegExp, '\n'));
         jasmine.attachToDOM(workspaceElement);
         editor.setSelectedBufferRange([[0, 0], [1, 0]]);
-        atom.views.performDocumentUpdate();
+        chevron.views.performDocumentUpdate();
         return expect(selectionCount.textContent).toBe("1 foo 30 bar selected");
       });
 
@@ -407,7 +407,7 @@ describe("Built-in Status Bar Tiles", function() {
         buffer.setText(buffer.getText().replace(lineEndingRegExp, '\r\n'));
         jasmine.attachToDOM(workspaceElement);
         editor.setSelectedBufferRange([[0, 0], [1, 0]]);
-        atom.views.performDocumentUpdate();
+        chevron.views.performDocumentUpdate();
         return expect(selectionCount.textContent).toBe("1 foo 31 bar selected");
       });
     });
@@ -418,7 +418,7 @@ describe("Built-in Status Bar Tiles", function() {
 
     const hover = function(element, fn) {
       // FIXME: Only use hoverDefaults once Atom 1.13 is on stable
-      const hoverDelay = (atom.tooltips.defaults.delay != null ? atom.tooltips.defaults.delay.show : undefined) != null ? (atom.tooltips.defaults.delay != null ? atom.tooltips.defaults.delay.show : undefined) : atom.tooltips.hoverDefaults.delay.show;
+      const hoverDelay = (chevron.tooltips.defaults.delay != null ? chevron.tooltips.defaults.delay.show : undefined) != null ? (chevron.tooltips.defaults.delay != null ? chevron.tooltips.defaults.delay.show : undefined) : chevron.tooltips.hoverDefaults.delay.show;
       element.dispatchEvent(new CustomEvent('mouseenter', {bubbles: false}));
       element.dispatchEvent(new CustomEvent('mouseover', {bubbles: true}));
       advanceClock(hoverDelay);
@@ -429,7 +429,7 @@ describe("Built-in Status Bar Tiles", function() {
     };
 
     const setupWorkingDir = function(name) {
-      const dir = atom.project.getDirectories()[0];
+      const dir = chevron.project.getDirectories()[0];
       const target = `${os.tmpdir()}/${name}`;
       const targetGit = target + '/.git';
       fs.copySync(dir.resolve('git/working-dir'), path.resolve(target));
@@ -448,11 +448,11 @@ describe("Built-in Status Bar Tiles", function() {
 
       it("shows the number of commits that can be pushed/pulled", function() {
         const workingDir = setupWorkingDir('ahead-behind-repo');
-        atom.project.setPaths([workingDir]);
-        const filePath = atom.project.getDirectories()[0].resolve('a.txt');
-        const repo = atom.project.getRepositories()[0];
+        chevron.project.setPaths([workingDir]);
+        const filePath = chevron.project.getDirectories()[0].resolve('a.txt');
+        const repo = chevron.project.getRepositories()[0];
 
-        waitsForPromise(() => atom.workspace.open(filePath)
+        waitsForPromise(() => chevron.workspace.open(filePath)
           .then(() => repo.refreshStatus()));
 
         return runs(function() {
@@ -466,11 +466,11 @@ describe("Built-in Status Bar Tiles", function() {
 
       return it("stays hidden when no commits can be pushed/pulled", function() {
         const workingDir = setupWorkingDir('no-ahead-behind-repo');
-        atom.project.setPaths([workingDir]);
-        const filePath = atom.project.getDirectories()[0].resolve('a.txt');
-        const repo = atom.project.getRepositories()[0];
+        chevron.project.setPaths([workingDir]);
+        const filePath = chevron.project.getDirectories()[0].resolve('a.txt');
+        const repo = chevron.project.getRepositories()[0];
 
-        waitsForPromise(() => atom.workspace.open(filePath)
+        waitsForPromise(() => chevron.workspace.open(filePath)
           .then(() => repo.refreshStatus()));
 
         return runs(function() {
@@ -485,7 +485,7 @@ describe("Built-in Status Bar Tiles", function() {
     describe("the git branch label", function() {
       let projectPath = null;
       beforeEach(function() {
-        projectPath = atom.project.getDirectories()[0].resolve('git/working-dir');
+        projectPath = chevron.project.getDirectories()[0].resolve('git/working-dir');
         fs.moveSync(path.join(projectPath, 'git.git'), path.join(projectPath, '.git'));
         return jasmine.attachToDOM(workspaceElement);
       });
@@ -493,47 +493,47 @@ describe("Built-in Status Bar Tiles", function() {
       afterEach(() => fs.moveSync(path.join(projectPath, '.git'), path.join(projectPath, 'git.git')));
 
       it("displays the current branch for files in repositories", function() {
-        atom.project.setPaths([projectPath]);
+        chevron.project.setPaths([projectPath]);
 
-        waitsForPromise(() => atom.workspace.open('a.txt'));
+        waitsForPromise(() => chevron.workspace.open('a.txt'));
 
         runs(function() {
-          const currentBranch = atom.project.getRepositories()[0].getShortHead();
+          const currentBranch = chevron.project.getRepositories()[0].getShortHead();
           expect(gitView.branchArea).toBeVisible();
           expect(gitView.branchLabel.textContent).toBe(currentBranch);
 
-          atom.workspace.getActivePane().destroyItems();
+          chevron.workspace.getActivePane().destroyItems();
           expect(gitView.branchArea).toBeVisible();
           expect(gitView.branchLabel.textContent).toBe(currentBranch);
 
-          return atom.workspace.getActivePane().activateItem(dummyView);
+          return chevron.workspace.getActivePane().activateItem(dummyView);
         });
 
         return runs(() => expect(gitView.branchArea).not.toBeVisible());
       });
 
       it("displays the current branch tooltip", function() {
-        atom.project.setPaths([projectPath]);
+        chevron.project.setPaths([projectPath]);
 
-        waitsForPromise(() => atom.workspace.open('a.txt'));
+        waitsForPromise(() => chevron.workspace.open('a.txt'));
 
         return runs(function() {
-          const currentBranch = atom.project.getRepositories()[0].getShortHead();
+          const currentBranch = chevron.project.getRepositories()[0].getShortHead();
           return hover(gitView.branchArea, () => expect(document.body.querySelector(".tooltip").innerText)
             .toBe(`On branch ${currentBranch}`));
         });
       });
 
       it("doesn't display the current branch for a file not in a repository", function() {
-        atom.project.setPaths([os.tmpdir()]);
+        chevron.project.setPaths([os.tmpdir()]);
 
-        waitsForPromise(() => atom.workspace.open(path.join(os.tmpdir(), 'temp.txt')));
+        waitsForPromise(() => chevron.workspace.open(path.join(os.tmpdir(), 'temp.txt')));
 
         return runs(() => expect(gitView.branchArea).toBeHidden());
       });
 
       return it("doesn't display the current branch for a file outside the current project", function() {
-        waitsForPromise(() => atom.workspace.open(path.join(os.tmpdir(), 'atom-specs', 'not-in-project.txt')));
+        waitsForPromise(() => chevron.workspace.open(path.join(os.tmpdir(), 'atom-specs', 'not-in-project.txt')));
 
         return runs(() => expect(gitView.branchArea).toBeHidden());
       });
@@ -543,11 +543,11 @@ describe("Built-in Status Bar Tiles", function() {
       let [repo, filePath, originalPathText, newPath, ignorePath, ignoredPath, projectPath] = Array.from([]);
 
       beforeEach(function() {
-        projectPath = atom.project.getDirectories()[0].resolve('git/working-dir');
+        projectPath = chevron.project.getDirectories()[0].resolve('git/working-dir');
         fs.moveSync(path.join(projectPath, 'git.git'), path.join(projectPath, '.git'));
-        atom.project.setPaths([projectPath]);
-        filePath = atom.project.getDirectories()[0].resolve('a.txt');
-        newPath = atom.project.getDirectories()[0].resolve('new.txt');
+        chevron.project.setPaths([projectPath]);
+        filePath = chevron.project.getDirectories()[0].resolve('a.txt');
+        newPath = chevron.project.getDirectories()[0].resolve('new.txt');
         fs.writeFileSync(newPath, "I'm new here");
         ignorePath = path.join(projectPath, '.gitignore');
         fs.writeFileSync(ignorePath, 'ignored.txt');
@@ -555,7 +555,7 @@ describe("Built-in Status Bar Tiles", function() {
         fs.writeFileSync(ignoredPath, '');
         jasmine.attachToDOM(workspaceElement);
 
-        repo = atom.project.getRepositories()[0];
+        repo = chevron.project.getRepositories()[0];
         originalPathText = fs.readFileSync(filePath, 'utf8');
         return waitsForPromise(() => repo.refreshStatus());
       });
@@ -569,7 +569,7 @@ describe("Built-in Status Bar Tiles", function() {
       });
 
       it("displays the modified icon for a changed file", function() {
-        waitsForPromise(() => atom.workspace.open(filePath)
+        waitsForPromise(() => chevron.workspace.open(filePath)
           .then(function() {
             fs.writeFileSync(filePath, "i've changed for the worse");
             return repo.refreshStatus();
@@ -578,7 +578,7 @@ describe("Built-in Status Bar Tiles", function() {
       });
 
       it("displays the 1 line added and not committed tooltip", function() {
-        waitsForPromise(() => atom.workspace.open(filePath)
+        waitsForPromise(() => chevron.workspace.open(filePath)
           .then(function() {
             fs.writeFileSync(filePath, "i've changed for the worse");
             return repo.refreshStatus();
@@ -589,7 +589,7 @@ describe("Built-in Status Bar Tiles", function() {
       });
 
       it("displays the x lines added and not committed tooltip", function() {
-        waitsForPromise(() => atom.workspace.open(filePath)
+        waitsForPromise(() => chevron.workspace.open(filePath)
           .then(function() {
             fs.writeFileSync(filePath, `i've changed${os.EOL}for the worse`);
             return repo.refreshStatus();
@@ -600,14 +600,14 @@ describe("Built-in Status Bar Tiles", function() {
       });
 
       it("doesn't display the modified icon for an unchanged file", function() {
-        waitsForPromise(() => atom.workspace.open(filePath)
+        waitsForPromise(() => chevron.workspace.open(filePath)
           .then(() => repo.refreshStatus()));
 
         return runs(() => expect(gitView.gitStatusIcon).toHaveText(''));
       });
 
       it("displays the new icon for a new file", function() {
-        waitsForPromise(() => atom.workspace.open(newPath)
+        waitsForPromise(() => chevron.workspace.open(newPath)
           .then(() => repo.refreshStatus()));
 
         return runs(function() {
@@ -618,7 +618,7 @@ describe("Built-in Status Bar Tiles", function() {
       });
 
       it("displays the 1 line added and not committed to new file tooltip", function() {
-        waitsForPromise(() => atom.workspace.open(newPath)
+        waitsForPromise(() => chevron.workspace.open(newPath)
           .then(() => repo.refreshStatus()));
 
         return runs(() => hover(gitView.gitStatusIcon, () => expect(document.body.querySelector(".tooltip").innerText)
@@ -627,7 +627,7 @@ describe("Built-in Status Bar Tiles", function() {
 
       it("displays the x lines added and not committed to new file tooltip", function() {
         fs.writeFileSync(newPath, `I'm new${os.EOL}here`);
-        waitsForPromise(() => atom.workspace.open(newPath)
+        waitsForPromise(() => chevron.workspace.open(newPath)
           .then(() => repo.refreshStatus()));
 
         return runs(() => hover(gitView.gitStatusIcon, () => expect(document.body.querySelector(".tooltip").innerText)
@@ -635,7 +635,7 @@ describe("Built-in Status Bar Tiles", function() {
       });
 
       it("displays the ignored icon for an ignored file", function() {
-        waitsForPromise(() => atom.workspace.open(ignoredPath));
+        waitsForPromise(() => chevron.workspace.open(ignoredPath));
 
         return runs(function() {
           expect(gitView.gitStatusIcon).toHaveClass('icon-diff-ignored');
@@ -645,7 +645,7 @@ describe("Built-in Status Bar Tiles", function() {
       });
 
       it("updates when a status-changed event occurs", function() {
-        waitsForPromise(() => atom.workspace.open(filePath)
+        waitsForPromise(() => chevron.workspace.open(filePath)
           .then(function() {
             fs.writeFileSync(filePath, "i've changed for the worse");
             return repo.refreshStatus();
@@ -662,7 +662,7 @@ describe("Built-in Status Bar Tiles", function() {
       });
 
       it("displays the diff stat for modified files", function() {
-        waitsForPromise(() => atom.workspace.open(filePath)
+        waitsForPromise(() => chevron.workspace.open(filePath)
           .then(function() {
             fs.writeFileSync(filePath, "i've changed for the worse");
             return repo.refreshStatus();
@@ -671,14 +671,14 @@ describe("Built-in Status Bar Tiles", function() {
       });
 
       it("displays the diff stat for new files", function() {
-        waitsForPromise(() => atom.workspace.open(newPath)
+        waitsForPromise(() => chevron.workspace.open(newPath)
           .then(() => repo.refreshStatus()));
 
         return runs(() => expect(gitView.gitStatusIcon).toHaveText('+1'));
       });
 
       return it("does not display for files not in the current project", function() {
-        waitsForPromise(() => atom.workspace.open('/tmp/atom-specs/not-in-project.txt'));
+        waitsForPromise(() => chevron.workspace.open('/tmp/atom-specs/not-in-project.txt'));
 
         return runs(() => expect(gitView.gitStatusIcon).toBeHidden());
       });
@@ -694,13 +694,13 @@ describe("Built-in Status Bar Tiles", function() {
     });
 
     it("is hidden for an editor that is not in large-file mode", async function() {
-      await atom.workspace.open('sample.js');
+      await chevron.workspace.open('sample.js');
       expect(tile.style.display).toBe('none');
     });
 
     it("shows for one that is, and a click switches full features back on", async function() {
-      const editor = await atom.workspace.open('sample.js');
-      atom.project.setLargeFileMode(editor.getBuffer(), true);
+      const editor = await chevron.workspace.open('sample.js');
+      chevron.project.setLargeFileMode(editor.getBuffer(), true);
       expect(tile.style.display).toBe('');
       expect(tile.textContent).toBe('Large file');
 

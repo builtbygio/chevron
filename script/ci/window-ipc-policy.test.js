@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * chevron:window-method calls only the AtomWindow methods renderers send,
+ * chevron:window-method calls only the ChevronWindow methods renderers send,
  * and chevron:set-user-settings writes only the config file main owns.
  *
  * Run: node --test script/ci/window-ipc-policy.test.js
@@ -36,13 +36,13 @@ describe('chevron:window-method', () => {
     assert.deepEqual([...sentMethods()].sort(), [...WINDOW_METHODS].sort());
   });
 
-  it('allows only methods AtomWindow defines', () => {
-    const source = read('src/main-process/atom-window.js');
+  it('allows only methods ChevronWindow defines', () => {
+    const source = read('src/main-process/chevron-window.js');
     for (const method of WINDOW_METHODS) {
       assert.match(
         source,
         new RegExp(`^\\s+(?:async\\s+)?${method}\\(`, 'm'),
-        `${method} is not an AtomWindow method`
+        `${method} is not an ChevronWindow method`
       );
     }
   });
@@ -66,7 +66,7 @@ describe('chevron:window-method', () => {
   });
 
   it('is checked before the window is touched', () => {
-    const source = read('src/main-process/atom-application.js');
+    const source = read('src/main-process/chevron-application.js');
     const handler = source.slice(source.indexOf("'chevron:window-method'"));
     assert.ok(
       handler.indexOf('isAllowedWindowMethod(method)') <
@@ -101,7 +101,7 @@ describe('chevron:set-user-settings', () => {
   });
 
   it('is what the handler writes to', () => {
-    const source = read('src/main-process/atom-application.js');
+    const source = read('src/main-process/chevron-application.js');
     const handler = source.slice(source.indexOf("'chevron:set-user-settings'"));
     assert.match(handler, /userSettingsTarget\(filePath, this\.configFilePath\)/);
     assert.match(handler, /ConfigFile\.at\(target\)/);

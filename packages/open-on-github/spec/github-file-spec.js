@@ -28,8 +28,8 @@ describe('GitHubFile', function () {
     }
 
     async function setupGithubFile (filePath = 'some-dir/some-file.md') {
-      atom.project.setPaths([workingDirPath])
-      editor = await atom.workspace.open(filePath)
+      chevron.project.setPaths([workingDirPath])
+      editor = await chevron.workspace.open(filePath)
       githubFile = GitHubFile.fromPath(editor.getPath())
       return githubFile
     }
@@ -51,7 +51,7 @@ describe('GitHubFile', function () {
 
         describe('when text is selected', () => {
           it('opens the GitHub.com blob URL for the file with the selection range in the hash', () => {
-            atom.config.set('open-on-github.includeLineNumbersInUrls', true)
+            chevron.config.set('open-on-github.includeLineNumbersInUrls', true)
             spyOn(githubFile, 'openURLInBrowser')
             githubFile.open([[0, 0], [1, 1]])
             expect(githubFile.openURLInBrowser).toHaveBeenCalledWith('https://github.com/some-user/some-repo/blob/master/some-dir/some-file.md#L1-L2')
@@ -60,7 +60,7 @@ describe('GitHubFile', function () {
 
         describe("when the file has a '#' in its name", () => {
           it('opens the GitHub.com blob URL for the file', async () => {
-            editor = await atom.workspace.open('a/b#/test#hash.md')
+            editor = await chevron.workspace.open('a/b#/test#hash.md')
             githubFile = GitHubFile.fromPath(editor.getPath())
             spyOn(githubFile, 'openURLInBrowser')
             githubFile.open()
@@ -168,9 +168,9 @@ describe('GitHubFile', function () {
         })
 
         it('shows a warning', () => {
-          spyOn(atom.notifications, 'addWarning')
+          spyOn(chevron.notifications, 'addWarning')
           githubFile.open()
-          expect(atom.notifications.addWarning).toHaveBeenCalledWith('No URL defined for remote: null')
+          expect(chevron.notifications.addWarning).toHaveBeenCalledWith('No URL defined for remote: null')
         })
       })
 
@@ -181,10 +181,10 @@ describe('GitHubFile', function () {
         })
 
         it('does nothing', () => {
-          spyOn(atom.notifications, 'addWarning')
+          spyOn(chevron.notifications, 'addWarning')
           githubFile.open()
-          expect(atom.notifications.addWarning).toHaveBeenCalled()
-          expect(atom.notifications.addWarning.mostRecentCall.args[0]).toContain('No repository found')
+          expect(chevron.notifications.addWarning).toHaveBeenCalled()
+          expect(chevron.notifications.addWarning.mostRecentCall.args[0]).toContain('No repository found')
         })
       })
 
@@ -283,7 +283,7 @@ describe('GitHubFile', function () {
 
         describe('when text is selected', () => {
           it('opens the GitHub.com blame URL for the file with the selection range in the hash', () => {
-            atom.config.set('open-on-github.includeLineNumbersInUrls', true)
+            chevron.config.set('open-on-github.includeLineNumbersInUrls', true)
             spyOn(githubFile, 'openURLInBrowser')
             githubFile.blame([[0, 0], [1, 1]])
             expect(githubFile.openURLInBrowser).toHaveBeenCalledWith('https://github.com/some-user/some-repo/blame/master/some-dir/some-file.md#L1-L2')
@@ -316,9 +316,9 @@ describe('GitHubFile', function () {
 
         it('shows a warning and does not attempt to open a URL', () => {
           spyOn(githubFile, 'openURLInBrowser')
-          spyOn(atom.notifications, 'addWarning')
+          spyOn(chevron.notifications, 'addWarning')
           githubFile.blame()
-          expect(atom.notifications.addWarning).toHaveBeenCalledWith('Blames do not exist for wikis')
+          expect(chevron.notifications.addWarning).toHaveBeenCalledWith('Blames do not exist for wikis')
           expect(githubFile.openURLInBrowser).not.toHaveBeenCalled()
         })
       })
@@ -333,9 +333,9 @@ describe('GitHubFile', function () {
 
         it('shows a warning and does not attempt to open a URL', () => {
           spyOn(githubFile, 'openURLInBrowser')
-          spyOn(atom.notifications, 'addWarning')
+          spyOn(chevron.notifications, 'addWarning')
           githubFile.blame()
-          expect(atom.notifications.addWarning).toHaveBeenCalledWith('Blames do not exist for gists')
+          expect(chevron.notifications.addWarning).toHaveBeenCalledWith('Blames do not exist for gists')
           expect(githubFile.openURLInBrowser).not.toHaveBeenCalled()
         })
       })
@@ -367,9 +367,9 @@ describe('GitHubFile', function () {
 
         it('shows a warning and does not attempt to open a URL', () => {
           spyOn(githubFile, 'openURLInBrowser')
-          spyOn(atom.notifications, 'addWarning')
+          spyOn(chevron.notifications, 'addWarning')
           githubFile.openBranchCompare()
-          expect(atom.notifications.addWarning).toHaveBeenCalledWith('Branches do not exist for wikis')
+          expect(chevron.notifications.addWarning).toHaveBeenCalledWith('Branches do not exist for wikis')
           expect(githubFile.openURLInBrowser).not.toHaveBeenCalled()
         })
       })
@@ -384,9 +384,9 @@ describe('GitHubFile', function () {
 
         it('shows a warning and does not attempt to open a URL', () => {
           spyOn(githubFile, 'openURLInBrowser')
-          spyOn(atom.notifications, 'addWarning')
+          spyOn(chevron.notifications, 'addWarning')
           githubFile.openBranchCompare()
-          expect(atom.notifications.addWarning).toHaveBeenCalledWith('Branches do not exist for gists')
+          expect(chevron.notifications.addWarning).toHaveBeenCalledWith('Branches do not exist for gists')
           expect(githubFile.openURLInBrowser).not.toHaveBeenCalled()
         })
       })
@@ -460,21 +460,21 @@ describe('GitHubFile', function () {
 
         beforeEach(async () => {
           setupWorkingDir(fixtureName)
-          atom.config.set('open-on-github.includeLineNumbersInUrls', true)
+          chevron.config.set('open-on-github.includeLineNumbersInUrls', true)
           await setupGithubFile()
         })
 
         describe('when text is selected', () => {
           it('copies the URL to the clipboard with the selection range in the hash', () => {
             githubFile.copyURL([[0, 0], [1, 1]])
-            expect(atom.clipboard.read()).toBe('https://github.com/some-user/some-repo/blob/80b7897ceb6bd7531708509b50afeab36a4b73fd/some-dir/some-file.md#L1-L2')
+            expect(chevron.clipboard.read()).toBe('https://github.com/some-user/some-repo/blob/80b7897ceb6bd7531708509b50afeab36a4b73fd/some-dir/some-file.md#L1-L2')
           })
         })
 
         describe('when no text is selected', () => {
           it('copies the URL to the clipboard with the cursor location in the hash', () => {
             githubFile.copyURL([[2, 1], [2, 1]])
-            expect(atom.clipboard.read()).toBe('https://github.com/some-user/some-repo/blob/80b7897ceb6bd7531708509b50afeab36a4b73fd/some-dir/some-file.md#L3')
+            expect(chevron.clipboard.read()).toBe('https://github.com/some-user/some-repo/blob/80b7897ceb6bd7531708509b50afeab36a4b73fd/some-dir/some-file.md#L3')
           })
         })
       })
@@ -484,13 +484,13 @@ describe('GitHubFile', function () {
 
         beforeEach(async () => {
           setupWorkingDir(fixtureName)
-          atom.config.set('open-on-github.includeLineNumbersInUrls', true)
+          chevron.config.set('open-on-github.includeLineNumbersInUrls', true)
           await setupGithubFile()
         })
 
         it('copies the GitHub.com wiki URL to the clipboard and ignores any selection ranges', () => {
           githubFile.copyURL([[0, 0], [1, 1]])
-          expect(atom.clipboard.read()).toBe('https://github.com/some-user/some-repo/wiki/some-file/80b7897ceb6bd7531708509b50afeab36a4b73fd')
+          expect(chevron.clipboard.read()).toBe('https://github.com/some-user/some-repo/wiki/some-file/80b7897ceb6bd7531708509b50afeab36a4b73fd')
         })
       })
 
@@ -499,21 +499,21 @@ describe('GitHubFile', function () {
 
         beforeEach(async () => {
           setupWorkingDir(fixtureName)
-          atom.config.set('open-on-github.includeLineNumbersInUrls', true)
+          chevron.config.set('open-on-github.includeLineNumbersInUrls', true)
           await setupGithubFile('some-file.md')
         })
 
         describe('when text is selected', () => {
           it('copies the gist.github.com URL with the selection range with the selection range appended', () => {
             githubFile.copyURL([[0, 0], [1, 1]])
-            expect(atom.clipboard.read()).toBe('https://gist.github.com/s0m3ha5h/80b7897ceb6bd7531708509b50afeab36a4b73fd#file-some-file-md-L1-L2')
+            expect(chevron.clipboard.read()).toBe('https://gist.github.com/s0m3ha5h/80b7897ceb6bd7531708509b50afeab36a4b73fd#file-some-file-md-L1-L2')
           })
         })
 
         describe('when no text is selected', () => {
           it('copies the gist.github.com URL with the selection range with the cursor location appended', () => {
             githubFile.copyURL([[2, 1], [2, 1]])
-            expect(atom.clipboard.read()).toBe('https://gist.github.com/s0m3ha5h/80b7897ceb6bd7531708509b50afeab36a4b73fd#file-some-file-md-L3')
+            expect(chevron.clipboard.read()).toBe('https://gist.github.com/s0m3ha5h/80b7897ceb6bd7531708509b50afeab36a4b73fd#file-some-file-md-L3')
           })
         })
       })
@@ -592,9 +592,9 @@ describe('GitHubFile', function () {
 
         it('shows a warning and does not attempt to open a URL', () => {
           spyOn(githubFile, 'openURLInBrowser')
-          spyOn(atom.notifications, 'addWarning')
+          spyOn(chevron.notifications, 'addWarning')
           githubFile.openIssues()
-          expect(atom.notifications.addWarning).toHaveBeenCalledWith('Issues do not exist for wikis')
+          expect(chevron.notifications.addWarning).toHaveBeenCalledWith('Issues do not exist for wikis')
           expect(githubFile.openURLInBrowser).not.toHaveBeenCalled()
         })
       })
@@ -609,9 +609,9 @@ describe('GitHubFile', function () {
 
         it('shows a warning and does not attempt to open a URL', () => {
           spyOn(githubFile, 'openURLInBrowser')
-          spyOn(atom.notifications, 'addWarning')
+          spyOn(chevron.notifications, 'addWarning')
           githubFile.openIssues()
-          expect(atom.notifications.addWarning).toHaveBeenCalledWith('Issues do not exist for gists')
+          expect(chevron.notifications.addWarning).toHaveBeenCalledWith('Issues do not exist for gists')
           expect(githubFile.openURLInBrowser).not.toHaveBeenCalled()
         })
       })
@@ -643,9 +643,9 @@ describe('GitHubFile', function () {
 
         it('shows a warning and does not attempt to open a URL', () => {
           spyOn(githubFile, 'openURLInBrowser')
-          spyOn(atom.notifications, 'addWarning')
+          spyOn(chevron.notifications, 'addWarning')
           githubFile.openPullRequests()
-          expect(atom.notifications.addWarning).toHaveBeenCalledWith('Pull requests do not exist for wikis')
+          expect(chevron.notifications.addWarning).toHaveBeenCalledWith('Pull requests do not exist for wikis')
           expect(githubFile.openURLInBrowser).not.toHaveBeenCalled()
         })
       })
@@ -660,9 +660,9 @@ describe('GitHubFile', function () {
 
         it('shows a warning and does not attempt to open a URL', () => {
           spyOn(githubFile, 'openURLInBrowser')
-          spyOn(atom.notifications, 'addWarning')
+          spyOn(chevron.notifications, 'addWarning')
           githubFile.openPullRequests()
-          expect(atom.notifications.addWarning).toHaveBeenCalledWith('Pull requests do not exist for gists')
+          expect(chevron.notifications.addWarning).toHaveBeenCalledWith('Pull requests do not exist for gists')
           expect(githubFile.openURLInBrowser).not.toHaveBeenCalled()
         })
       })
@@ -754,10 +754,10 @@ describe('GitHubFile', function () {
   })
 
   it('activates when a command is triggered on the active editor', async () => {
-    const activationPromise = atom.packages.activatePackage('open-on-github')
+    const activationPromise = chevron.packages.activatePackage('open-on-github')
 
-    await atom.workspace.open()
-    atom.commands.dispatch(atom.views.getView(atom.workspace.getActivePane()), 'open-on-github:file')
+    await chevron.workspace.open()
+    chevron.commands.dispatch(chevron.views.getView(chevron.workspace.getActivePane()), 'open-on-github:file')
     await activationPromise
   })
 })

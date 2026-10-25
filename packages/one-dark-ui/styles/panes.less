@@ -1,13 +1,13 @@
 
-atom-pane-container {
+chevron-pane-container {
 
-  atom-pane {
+  chevron-pane {
     position: relative;
     border-right: 1px solid @base-border-color;
     border-bottom: 1px solid @base-border-color;
 
     .item-views {
-      // prevent atom-text-editor from leaking ouside might improve performance
+      // prevent chevron-text-editor from leaking ouside might improve performance
       overflow: hidden;
     }
   }
@@ -15,8 +15,8 @@ atom-pane-container {
 }
 
 // Hide right-most border
-atom-pane:only-child,
-atom-pane-axis.pane-row > atom-pane:last-child,
-atom-pane-axis.pane-column:last-child > atom-pane {
+chevron-pane:only-child,
+chevron-pane-axis.pane-row > chevron-pane:last-child,
+chevron-pane-axis.pane-column:last-child > chevron-pane {
   border-right: none;
 }

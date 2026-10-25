@@ -808,7 +808,7 @@ function activate() {
 
   if (env && env.commands) {
     disposables.add(
-      env.commands.add('atom-workspace', {
+      env.commands.add('chevron-workspace', {
         'chevron-lsp:trust-project': async () => {
           const root = commandProjectRoot(env);
           if (!root) {

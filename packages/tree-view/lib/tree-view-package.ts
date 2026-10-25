@@ -7,7 +7,7 @@ module.exports =
 class TreeViewPackage {
   activate () {
     this.disposables = new CompositeDisposable()
-    this.disposables.add(chevron.commands.add('atom-workspace', {
+    this.disposables.add(chevron.commands.add('chevron-workspace', {
       'tree-view:show': () => this.getTreeViewInstance().show(),
       'tree-view:toggle': () => this.getTreeViewInstance().toggle(),
       'tree-view:toggle-focus': () => this.getTreeViewInstance().toggleFocus(),

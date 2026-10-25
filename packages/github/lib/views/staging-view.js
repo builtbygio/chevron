@@ -345,7 +345,7 @@ class StagingView extends _react.default.Component {
       callback: this.undoLastDiscardFromCoreUndo
     })), _react.default.createElement(_commands.default, {
       registry: this.props.commands,
-      target: "atom-workspace"
+      target: "chevron-workspace"
     }, _react.default.createElement(_commands.Command, {
       command: "github:stage-all-changes",
       callback: this.stageAll
