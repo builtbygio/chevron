@@ -3,6 +3,7 @@ const ChildProcess = require('child_process');
 const path = require('path');
 const fs = require('fs-plus');
 const BufferedProcess = require('../src/buffered-process');
+const { conditionPromise } = require('./async-spec-helpers');
 
 describe('BufferedProcess', function() {
   describe('when a bad command is specified', function() {
@@ -16,7 +17,8 @@ describe('BufferedProcess', function() {
 
     describe('when there is an error handler specified', function() {
       describe('when an error event is emitted by the process', () =>
-        it('calls the error handler and does not throw an exception', function() {
+        it('calls the error handler and does not throw an exception', async function() {
+          jasmine.useRealClock();
           const bufferedProcess = new BufferedProcess({
             command: 'bad-command-nope1',
             args: ['nothing'],
@@ -28,19 +30,17 @@ describe('BufferedProcess', function() {
             .andCallFake(error => error.handle());
           bufferedProcess.onWillThrowError(errorSpy);
 
-          waitsFor(() => errorSpy.callCount > 0);
-
-          runs(function() {
-            expect(window.onerror).not.toHaveBeenCalled();
-            expect(errorSpy).toHaveBeenCalled();
-            expect(errorSpy.mostRecentCall.args[0].error.message).toContain(
-              'spawn bad-command-nope1 ENOENT'
-            );
-          });
+          await conditionPromise(() => errorSpy.callCount > 0);
+          expect(window.onerror).not.toHaveBeenCalled();
+          expect(errorSpy).toHaveBeenCalled();
+          expect(errorSpy.mostRecentCall.args[0].error.message).toContain(
+            'spawn bad-command-nope1 ENOENT'
+          );
         }));
 
       describe('when an error is thrown spawning the process', () =>
-        it('calls the error handler and does not throw an exception', function() {
+        it('calls the error handler and does not throw an exception', async function() {
+          jasmine.useRealClock();
           spyOn(ChildProcess, 'spawn').andCallFake(function() {
             const error = new Error('Something is really wrong');
             error.code = 'EAGAIN';
@@ -58,42 +58,38 @@ describe('BufferedProcess', function() {
             .andCallFake(error => error.handle());
           bufferedProcess.onWillThrowError(errorSpy);
 
-          waitsFor(() => errorSpy.callCount > 0);
-
-          runs(function() {
-            expect(window.onerror).not.toHaveBeenCalled();
-            expect(errorSpy).toHaveBeenCalled();
-            expect(errorSpy.mostRecentCall.args[0].error.message).toContain(
-              'Something is really wrong'
-            );
-          });
+          await conditionPromise(() => errorSpy.callCount > 0);
+          expect(window.onerror).not.toHaveBeenCalled();
+          expect(errorSpy).toHaveBeenCalled();
+          expect(errorSpy.mostRecentCall.args[0].error.message).toContain(
+            'Something is really wrong'
+          );
         }));
     });
 
     describe('when there is not an error handler specified', () =>
-      it('does throw an exception', function() {
+      it('does throw an exception', async function() {
+        jasmine.useRealClock();
         new BufferedProcess({
           command: 'bad-command-nope2',
           args: ['nothing'],
           options: { shell: false }
         });
 
-        waitsFor(() => window.onerror.callCount > 0);
-
-        runs(function() {
-          expect(window.onerror).toHaveBeenCalled();
-          expect(window.onerror.mostRecentCall.args[0]).toContain(
-            'Failed to spawn command `bad-command-nope2`'
-          );
-          expect(window.onerror.mostRecentCall.args[4].name).toBe(
-            'BufferedProcessError'
-          );
-        });
+        await conditionPromise(() => window.onerror.callCount > 0);
+        expect(window.onerror).toHaveBeenCalled();
+        expect(window.onerror.mostRecentCall.args[0]).toContain(
+          'Failed to spawn command `bad-command-nope2`'
+        );
+        expect(window.onerror.mostRecentCall.args[4].name).toBe(
+          'BufferedProcessError'
+        );
       }));
   });
 
   describe('when autoStart is false', () =>
-    it('doesnt start unless start method is called', function() {
+    it('doesnt start unless start method is called', async function() {
+      jasmine.useRealClock();
       let stdout = '';
       let stderr = '';
       const exitCallback = jasmine.createSpy('exit callback');
@@ -115,14 +111,13 @@ describe('BufferedProcess', function() {
       cpmProcess.start();
       expect(cpmProcess.started).toBe(true);
 
-      waitsFor(() => exitCallback.callCount === 1);
-      runs(function() {
-        expect(stdout).toContain('Usage: cpm');
-        expect(stderr).toEqual('');
-      });
+      await conditionPromise(() => exitCallback.callCount === 1);
+      expect(stdout).toContain('Usage: cpm');
+      expect(stderr).toEqual('');
     }));
 
-  it('calls the specified stdout, stderr, and exit callbacks', function() {
+  it('calls the specified stdout, stderr, and exit callbacks', async function() {
+    jasmine.useRealClock();
     let stdout = '';
     let stderr = '';
     const exitCallback = jasmine.createSpy('exit callback');
@@ -139,15 +134,13 @@ describe('BufferedProcess', function() {
       exit: exitCallback
     });
 
-    waitsFor(() => exitCallback.callCount === 1);
-
-    runs(function() {
-      expect(stdout).toContain('Usage: cpm');
-      expect(stderr).toEqual('');
-    });
+    await conditionPromise(() => exitCallback.callCount === 1);
+    expect(stdout).toContain('Usage: cpm');
+    expect(stderr).toEqual('');
   });
 
-  it('calls the specified stdout callback with whole lines', function() {
+  it('calls the specified stdout callback with whole lines', async function() {
+    jasmine.useRealClock();
     const exitCallback = jasmine.createSpy('exit callback');
     const loremPath = require.resolve('./fixtures/lorem.txt');
     const content = fs.readFileSync(loremPath).toString();
@@ -167,12 +160,9 @@ describe('BufferedProcess', function() {
       exit: exitCallback
     });
 
-    waitsFor(() => exitCallback.callCount === 1);
-
-    runs(function() {
-      expect(allLinesEndWithNewline).toBe(true);
-      expect(stdout).toBe(content);
-    });
+    await conditionPromise(() => exitCallback.callCount === 1);
+    expect(allLinesEndWithNewline).toBe(true);
+    expect(stdout).toBe(content);
   });
 
   describe('on Windows', function() {

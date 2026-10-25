@@ -113,7 +113,7 @@ describe('Package', function() {
 
     afterEach(() => (atom.packages.devMode = true));
 
-    it('returns a promise resolving to the results of `apm rebuild`', function() {
+    it('returns a promise resolving to the results of `apm rebuild`', async function() {
       const packagePath = __guard__(atom.project.getDirectories()[0], x =>
         x.resolve('packages/package-with-index')
       );
@@ -130,16 +130,12 @@ describe('Package', function() {
         stderr: 'stderr output'
       });
 
-      waitsFor(done =>
-        promise.then(function(result) {
-          expect(result).toEqual({
-            code: 0,
-            stdout: 'stdout output',
-            stderr: 'stderr output'
-          });
-          done();
-        })
-      );
+      const result = await promise;
+      expect(result).toEqual({
+        code: 0,
+        stdout: 'stdout output',
+        stderr: 'stderr output'
+      });
     });
 
     it('persists build failures in local storage', function() {
@@ -204,13 +200,11 @@ describe('Package', function() {
       jasmine.attachToDOM(editorElement);
     });
 
-    afterEach(() =>
-      waitsForPromise(function() {
-        if (theme != null) {
-          return Promise.resolve(theme.deactivate());
-        }
-      })
-    );
+    afterEach(async () => {
+      if (theme != null) {
+        await theme.deactivate();
+      }
+    });
 
     describe('when the theme contains a single style file', function() {
       it('loads and applies css', function() {
@@ -295,11 +289,11 @@ describe('Package', function() {
         theme.activate();
       });
 
-      it('deactivated event fires on .deactivate()', function() {
-        let spy;
-        theme.onDidDeactivate((spy = jasmine.createSpy()));
-        waitsForPromise(() => Promise.resolve(theme.deactivate()));
-        runs(() => expect(spy).toHaveBeenCalled());
+      it('deactivated event fires on .deactivate()', async function() {
+        const spy = jasmine.createSpy();
+        theme.onDidDeactivate(spy);
+        await theme.deactivate();
+        expect(spy).toHaveBeenCalled();
       });
     });
   });

@@ -222,7 +222,8 @@ describe('Pane', () => {
       expect(itemB.isDestroyed()).toBe(true);
     });
 
-    it('adds the new item before destroying any existing pending item', () => {
+    it('adds the new item before destroying any existing pending item', async () => {
+      jasmine.useRealClock();
       const eventOrder = [];
 
       const pane = new Pane(paneParams({ items: [] }));
@@ -240,9 +241,8 @@ describe('Pane', () => {
 
       pane.addItem(itemB);
 
-      waitsFor(() => eventOrder.length === 2);
-
-      runs(() => expect(eventOrder).toEqual(['add', 'remove']));
+      await conditionPromise(() => eventOrder.length === 2);
+      expect(eventOrder).toEqual(['add', 'remove']);
     });
 
     it('subscribes to be notified when item terminates its pending state', () => {
@@ -919,7 +919,8 @@ describe('Pane', () => {
     });
 
     describe("when the item's saveAs rejects with a well-known IO error", () => {
-      it('creates a notification', () => {
+      it('creates a notification', async () => {
+        jasmine.useRealClock();
         pane.getActiveItem().saveAs = () => {
           const error = new Error("EACCES, permission denied '/foo'");
           error.path = '/foo';
@@ -927,7 +928,7 @@ describe('Pane', () => {
           return Promise.reject(error);
         };
 
-        waitsFor(done => {
+        await new Promise(done => {
           const subscription = atom.notifications.onDidAddNotification(function(
             notification
           ) {
@@ -943,7 +944,8 @@ describe('Pane', () => {
     });
 
     describe("when the item's saveAs throws a well-known IO error", () => {
-      it('creates a notification', () => {
+      it('creates a notification', async () => {
+        jasmine.useRealClock();
         pane.getActiveItem().saveAs = () => {
           const error = new Error("EACCES, permission denied '/foo'");
           error.path = '/foo';
@@ -951,7 +953,7 @@ describe('Pane', () => {
           throw error;
         };
 
-        waitsFor(done => {
+        await new Promise(done => {
           const subscription = atom.notifications.onDidAddNotification(function(
             notification
           ) {
@@ -1006,7 +1008,8 @@ describe('Pane', () => {
     });
 
     describe("when the item's saveAs method throws a well-known IO error", () => {
-      it('creates a notification', () => {
+      it('creates a notification', async () => {
+        jasmine.useRealClock();
         pane.getActiveItem().saveAs = () => {
           const error = new Error("EACCES, permission denied '/foo'");
           error.path = '/foo';
@@ -1014,7 +1017,7 @@ describe('Pane', () => {
           return Promise.reject(error);
         };
 
-        waitsFor(done => {
+        await new Promise(done => {
           const subscription = atom.notifications.onDidAddNotification(function(
             notification
           ) {
