@@ -119,7 +119,7 @@ class BranchMenuView extends _react.default.Component {
 
     const newBranchEditor = _react.default.createElement("div", {
       className: branchEditorClasses
-    }, _react.default.createElement("atom-text-editor", {
+    }, _react.default.createElement("chevron-text-editor", {
       ref: e => {
         this.editorElement = e;
       },
@@ -149,7 +149,7 @@ class BranchMenuView extends _react.default.Component {
       className: "github-BranchMenuView"
     }, _react.default.createElement(_commands.default, {
       registry: this.props.commands,
-      target: ".github-BranchMenuView-editor atom-text-editor[mini]"
+      target: ".github-BranchMenuView-editor chevron-text-editor[mini]"
     }, _react.default.createElement(_commands.Command, {
       command: "tool-panel:unfocus",
       callback: this.cancelCreateNewBranch

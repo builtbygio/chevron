@@ -126,7 +126,7 @@ class CommitView extends _react.default.Component {
       ref: this.refRoot.setter
     }, _react.default.createElement(_commands.default, {
       registry: this.props.commands,
-      target: "atom-workspace"
+      target: "chevron-workspace"
     }, _react.default.createElement(_commands.Command, {
       command: "github:commit",
       callback: this.commit

@@ -10,7 +10,7 @@ module.exports = {
 
     this.disposables = new CompositeDisposable()
 
-    this.disposables.add(chevron.commands.add('atom-workspace', {
+    this.disposables.add(chevron.commands.add('chevron-workspace', {
       'fuzzy-finder:toggle-file-finder': () => {
         this.createProjectView().toggle()
       },

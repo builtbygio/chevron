@@ -132,7 +132,7 @@ class StatusBarTileController extends _react.default.Component {
     const fetchInProgress = operationStates.isFetchInProgress();
     return _react.default.createElement(_react.Fragment, null, _react.default.createElement(_commands.default, {
       registry: this.props.commands,
-      target: "atom-workspace"
+      target: "chevron-workspace"
     }, _react.default.createElement(_commands.Command, {
       command: "github:fetch",
       callback: this.fetch(repoProps)

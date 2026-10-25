@@ -95,7 +95,7 @@ describe('BufferedProcess', function() {
       const exitCallback = jasmine.createSpy('exit callback');
       const cpmProcess = new BufferedProcess({
         autoStart: false,
-        command: atom.packages.getApmPath(),
+        command: chevron.packages.getApmPath(),
         args: ['-h'],
         options: {},
         stdout(lines) {
@@ -122,7 +122,7 @@ describe('BufferedProcess', function() {
     let stderr = '';
     const exitCallback = jasmine.createSpy('exit callback');
     new BufferedProcess({
-      command: atom.packages.getApmPath(),
+      command: chevron.packages.getApmPath(),
       args: ['-h'],
       options: {},
       stdout(lines) {

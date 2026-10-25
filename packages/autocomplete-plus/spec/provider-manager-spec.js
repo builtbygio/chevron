@@ -6,7 +6,7 @@ describe('Provider Manager', () => {
   let [providerManager, testProvider, registration] = []
 
   beforeEach(() => {
-    atom.config.set('autocomplete-plus.enableBuiltinProvider', true)
+    chevron.config.set('autocomplete-plus.enableBuiltinProvider', true)
     providerManager = new ProviderManager()
     providerManager.initialize()
     testProvider = {
@@ -37,7 +37,7 @@ describe('Provider Manager', () => {
   })
 
   describe('when no providers have been registered, and enableBuiltinProvider is true', () => {
-    beforeEach(() => atom.config.set('autocomplete-plus.enableBuiltinProvider', true))
+    beforeEach(() => chevron.config.set('autocomplete-plus.enableBuiltinProvider', true))
 
     it('is constructed correctly', () => {
       expect(providerManager.providers).toBeDefined()
@@ -244,7 +244,7 @@ describe('Provider Manager', () => {
   })
 
   describe('when no providers have been registered, and enableBuiltinProvider is false', () => {
-    beforeEach(() => atom.config.set('autocomplete-plus.enableBuiltinProvider', false))
+    beforeEach(() => chevron.config.set('autocomplete-plus.enableBuiltinProvider', false))
 
     it('does not register the default provider for all scopes', () => {
       expect(providerManager.applicableProviders(['workspace-center'], '*').length).toBe(0)
@@ -257,7 +257,7 @@ describe('Provider Manager', () => {
     let [testProvider1, testProvider2, testProvider3, testProvider4, testProvider5] = []
 
     beforeEach(() => {
-      atom.config.set('autocomplete-plus.enableBuiltinProvider', true)
+      chevron.config.set('autocomplete-plus.enableBuiltinProvider', true)
       providerManager = new ProviderManager()
       providerManager.initialize()
 
@@ -374,25 +374,25 @@ describe('Provider Manager', () => {
 
     it('does not return providers if the scopeChain exactly matches a global blacklist item', () => {
       expect(providerManager.applicableProviders(['workspace-center'], '.source.js .comment')).toHaveLength(4)
-      atom.config.set('autocomplete-plus.scopeBlacklist', ['.source.js .comment'])
+      chevron.config.set('autocomplete-plus.scopeBlacklist', ['.source.js .comment'])
       expect(providerManager.applicableProviders(['workspace-center'], '.source.js .comment')).toHaveLength(0)
     })
 
     it('does not return providers if the scopeChain matches a global blacklist item with a wildcard', () => {
       expect(providerManager.applicableProviders(['workspace-center'], '.source.js .comment')).toHaveLength(4)
-      atom.config.set('autocomplete-plus.scopeBlacklist', ['.source.js *'])
+      chevron.config.set('autocomplete-plus.scopeBlacklist', ['.source.js *'])
       expect(providerManager.applicableProviders(['workspace-center'], '.source.js .comment')).toHaveLength(0)
     })
 
     it('does not return providers if the scopeChain matches a global blacklist item with a wildcard one level of depth below the current scope', () => {
       expect(providerManager.applicableProviders(['workspace-center'], '.source.js .comment')).toHaveLength(4)
-      atom.config.set('autocomplete-plus.scopeBlacklist', ['.source.js *'])
+      chevron.config.set('autocomplete-plus.scopeBlacklist', ['.source.js *'])
       expect(providerManager.applicableProviders(['workspace-center'], '.source.js .comment .other')).toHaveLength(0)
     })
 
     it('does return providers if the scopeChain does not match a global blacklist item with a wildcard', () => {
       expect(providerManager.applicableProviders(['workspace-center'], '.source.js .comment')).toHaveLength(4)
-      atom.config.set('autocomplete-plus.scopeBlacklist', ['.source.coffee *'])
+      chevron.config.set('autocomplete-plus.scopeBlacklist', ['.source.coffee *'])
       expect(providerManager.applicableProviders(['workspace-center'], '.source.js .comment')).toHaveLength(4)
     })
 
@@ -433,7 +433,7 @@ describe('Provider Manager', () => {
     let [accessoryProvider1, accessoryProvider2, verySpecificProvider, mainProvider, defaultProvider] = []
 
     beforeEach(() => {
-      atom.config.set('autocomplete-plus.enableBuiltinProvider', true)
+      chevron.config.set('autocomplete-plus.enableBuiltinProvider', true)
       providerManager = new ProviderManager()
       providerManager.initialize()
       defaultProvider = providerManager.defaultProvider
@@ -502,7 +502,7 @@ describe('Provider Manager', () => {
   describe('when suggestionPriorities are the same', () => {
     let [provider1, provider2, provider3] = []
     beforeEach(() => {
-      atom.config.set('autocomplete-plus.enableBuiltinProvider', true)
+      chevron.config.set('autocomplete-plus.enableBuiltinProvider', true)
       providerManager = new ProviderManager()
       providerManager.initialize()
 

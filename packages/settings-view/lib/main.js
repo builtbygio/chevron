@@ -37,7 +37,7 @@ module.exports = {
       }
     })
 
-    chevron.commands.add('atom-workspace', {
+    chevron.commands.add('chevron-workspace', {
       'settings-view:open' () { chevron.workspace.open(CONFIG_URI) },
       'settings-view:core' () { chevron.workspace.open(`${CONFIG_URI}/core`) },
       'settings-view:editor' () { chevron.workspace.open(`${CONFIG_URI}/editor`) },
@@ -52,7 +52,7 @@ module.exports = {
     })
 
     if (process.platform === 'win32' && require('chevron').WinShell != null) {
-      chevron.commands.add('atom-workspace', {'settings-view:system' () { chevron.workspace.open(`${CONFIG_URI}/system`) }})
+      chevron.commands.add('chevron-workspace', {'settings-view:system' () { chevron.workspace.open(`${CONFIG_URI}/system`) }})
     }
 
     if (!localStorage.getItem('hasSeenDeprecatedNotification')) {

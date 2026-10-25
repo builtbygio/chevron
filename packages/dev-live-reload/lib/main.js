@@ -21,7 +21,7 @@ module.exports = {
     const UIWatcher = require('./ui-watcher');
     this.uiWatcher = new UIWatcher({ themeManager: chevron.themes });
     this.commandDisposable = chevron.commands.add(
-      'atom-workspace',
+      'chevron-workspace',
       'dev-live-reload:reload-all',
       () => this.uiWatcher.reloadAll()
     );

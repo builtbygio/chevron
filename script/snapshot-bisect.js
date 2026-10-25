@@ -188,7 +188,7 @@ function patchInitForMode(source, snapshotMode) {
   const clipboard = new Clipboard();
   TextEditor.setClipboard(clipboard);
   TextEditor.viewForItem = item => atom.views.getView(item);
-  const atomEnvironment = new AtomEnvironment({
+  const atomEnvironment = new ChevronEnvironment({
     clipboard,
     applicationDelegate: new ApplicationDelegate(),
     enablePersistence: true
@@ -221,7 +221,7 @@ if (!global.isGeneratingSnapshot) {
     );
   }
 
-  // Evaluate modules into the snapshot cache but do not construct AtomEnvironment
+  // Evaluate modules into the snapshot cache but do not construct ChevronEnvironment
   // (constructor heap is what v8_context_snapshot_generator SIGTRAPs on).
   if (
     snapshotMode === 'core' ||
@@ -235,7 +235,7 @@ if (!global.isGeneratingSnapshot) {
   const clipboard = new Clipboard();
   TextEditor.setClipboard(clipboard);
   TextEditor.viewForItem = item => atom.views.getView(item);
-  const atomEnvironment = new AtomEnvironment({
+  const atomEnvironment = new ChevronEnvironment({
     clipboard,
     applicationDelegate: new ApplicationDelegate(),
     enablePersistence: true

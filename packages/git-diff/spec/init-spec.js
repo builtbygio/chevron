@@ -18,27 +18,27 @@ describe('git-diff', () => {
       path.join(projectPath, 'git.git'),
       path.join(projectPath, '.git')
     );
-    atom.project.setPaths([projectPath]);
+    chevron.project.setPaths([projectPath]);
 
-    jasmine.attachToDOM(atom.workspace.getElement());
+    jasmine.attachToDOM(chevron.workspace.getElement());
 
-    waitsForPromise(() => atom.workspace.open('sample.js'));
+    waitsForPromise(() => chevron.workspace.open('sample.js'));
 
     runs(() => {
-      editor = atom.workspace.getActiveTextEditor();
-      element = atom.views.getView(editor);
+      editor = chevron.workspace.getActiveTextEditor();
+      element = chevron.views.getView(editor);
     });
   });
 
   describe('When the module is deactivated', () => {
     it('removes all registered command hooks after deactivation.', () => {
-      waitsForPromise(() => atom.packages.activatePackage('git-diff'));
-      waitsForPromise(() => atom.packages.deactivatePackage('git-diff'));
+      waitsForPromise(() => chevron.packages.activatePackage('git-diff'));
+      waitsForPromise(() => chevron.packages.deactivatePackage('git-diff'));
       runs(() => {
         // NOTE: don't use enable and disable from the Public API.
-        expect(atom.packages.isPackageActive('git-diff')).toBe(false);
+        expect(chevron.packages.isPackageActive('git-diff')).toBe(false);
 
-        atom.commands
+        chevron.commands
           .findCommands({ target: element })
           .filter(({ name }) => commands.includes(name))
           .forEach(command => expect(commands).not.toContain(command.name));

@@ -57,10 +57,10 @@ const stat = util.promisify(fs.stat);
 
 let nextId = 0;
 
-// Essential: Atom global for dealing with packages, themes, menus, and the window.
+// Essential: Chevron global for dealing with packages, themes, menus, and the window.
 //
-// An instance of this class is always available as the `atom` global.
-class AtomEnvironment {
+// An instance of this class is always available as the `chevron` global.
+class ChevronEnvironment {
   /*
   Section: Properties
   */
@@ -242,7 +242,7 @@ class AtomEnvironment {
 
   initialize(params = {}) {
     // This will force TextEditorElement to register the custom element, so that
-    // using `document.createElement('atom-text-editor')` works if it's called
+    // using `document.createElement('chevron-text-editor')` works if it's called
     // before opening a buffer.
     require('./text-editor-element');
 
@@ -1859,9 +1859,9 @@ or use Pane::saveItemAs for programmatic saving.`);
   }
 }
 
-AtomEnvironment.version = 1;
-AtomEnvironment.prototype.saveStateDebounceInterval = 1000;
-module.exports = AtomEnvironment;
+ChevronEnvironment.version = 1;
+ChevronEnvironment.prototype.saveStateDebounceInterval = 1000;
+module.exports = ChevronEnvironment;
 
 /* eslint-disable */
 

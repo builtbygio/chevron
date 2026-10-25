@@ -334,7 +334,7 @@ module.exports = class Package {
       if (match) {
         context = match[1];
       } else if (this.metadata.theme === 'syntax') {
-        context = 'atom-text-editor';
+        context = 'chevron-text-editor';
       }
 
       this.stylesheetDisposables.add(

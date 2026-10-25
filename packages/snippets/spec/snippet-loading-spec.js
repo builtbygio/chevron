@@ -7,26 +7,26 @@ describe("Snippet Loading", () => {
 
   beforeEach(() => {
     configDirPath = temp.mkdirSync('atom-config-dir-');
-    spyOn(atom, 'getConfigDirPath').andReturn(configDirPath);
+    spyOn(chevron, 'getConfigDirPath').andReturn(configDirPath);
 
     spyOn(console, 'warn');
-    if (atom.notifications != null) { spyOn(atom.notifications, 'addError'); }
+    if (chevron.notifications != null) { spyOn(chevron.notifications, 'addError'); }
 
-    spyOn(atom.packages, 'getLoadedPackages').andReturn([
-      atom.packages.loadPackage(path.join(__dirname, 'fixtures', 'package-with-snippets')),
-      atom.packages.loadPackage(path.join(__dirname, 'fixtures', 'package-with-broken-snippets')),
+    spyOn(chevron.packages, 'getLoadedPackages').andReturn([
+      chevron.packages.loadPackage(path.join(__dirname, 'fixtures', 'package-with-snippets')),
+      chevron.packages.loadPackage(path.join(__dirname, 'fixtures', 'package-with-broken-snippets')),
     ]);
   });
 
   afterEach(() => {
-    waitsForPromise(() => Promise.resolve(atom.packages.deactivatePackages('snippets')));
+    waitsForPromise(() => Promise.resolve(chevron.packages.deactivatePackages('snippets')));
     runs(() => {
-      jasmine.unspy(atom.packages, 'getLoadedPackages');
+      jasmine.unspy(chevron.packages, 'getLoadedPackages');
     });
   });
 
   const activateSnippetsPackage = () => {
-    waitsForPromise(() => atom.packages.activatePackage("snippets").then(({mainModule}) => {
+    waitsForPromise(() => chevron.packages.activatePackage("snippets").then(({mainModule}) => {
       snippetsService = mainModule.provideSnippets();
       mainModule.loaded = false;
     }));
@@ -93,14 +93,14 @@ describe("Snippet Loading", () => {
 
   describe("::loadPackageSnippets(callback)", () => {
     beforeEach(() => { // simulate a list of packages where the javascript core package is returned at the end
-       atom.packages.getLoadedPackages.andReturn([
-        atom.packages.loadPackage(path.join(__dirname, 'fixtures', 'package-with-snippets')),
-        atom.packages.loadPackage('language-javascript')
+       chevron.packages.getLoadedPackages.andReturn([
+        chevron.packages.loadPackage(path.join(__dirname, 'fixtures', 'package-with-snippets')),
+        chevron.packages.loadPackage('language-javascript')
       ])
     });
 
     it("allows other packages to override core packages' snippets", () => {
-      waitsForPromise(() => atom.packages.activatePackage("language-javascript"));
+      waitsForPromise(() => chevron.packages.activatePackage("language-javascript"));
 
       activateSnippetsPackage();
 
@@ -115,7 +115,7 @@ describe("Snippet Loading", () => {
     it("invokes listeners when all snippets are loaded", () => {
       let loadedCallback = null;
 
-      waitsFor("package to activate", done => atom.packages.activatePackage("snippets").then(({mainModule}) => {
+      waitsFor("package to activate", done => chevron.packages.activatePackage("snippets").then(({mainModule}) => {
         mainModule.onDidLoadSnippets(loadedCallback = jasmine.createSpy('onDidLoadSnippets callback'));
         done();
       }));
@@ -187,54 +187,54 @@ describe("Snippet Loading", () => {
 
     runs(() => {
       expect(console.warn).toHaveBeenCalled();
-      if (atom.notifications != null) {
-        expect(atom.notifications.addError).toHaveBeenCalled();
+      if (chevron.notifications != null) {
+        expect(chevron.notifications.addError).toHaveBeenCalled();
       }
     });
   });
 
   describe("packages-with-snippets-disabled feature", () => {
     it("disables no snippets if the config option is empty", () => {
-      const originalConfig = atom.config.get('core.packagesWithSnippetsDisabled');
-      atom.config.set('core.packagesWithSnippetsDisabled', []);
+      const originalConfig = chevron.config.get('core.packagesWithSnippetsDisabled');
+      chevron.config.set('core.packagesWithSnippetsDisabled', []);
 
       activateSnippetsPackage();
       runs(() => {
         const snippets = snippetsService.snippetsForScopes(['.package-with-snippets-unique-scope']);
         expect(Object.keys(snippets).length).toBe(1);
-        atom.config.set('core.packagesWithSnippetsDisabled', originalConfig);
+        chevron.config.set('core.packagesWithSnippetsDisabled', originalConfig);
       });
     });
 
     it("still includes a disabled package's snippets in the list of unparsed snippets", () => {
-      let originalConfig = atom.config.get('core.packagesWithSnippetsDisabled');
-      atom.config.set('core.packagesWithSnippetsDisabled', []);
+      let originalConfig = chevron.config.get('core.packagesWithSnippetsDisabled');
+      chevron.config.set('core.packagesWithSnippetsDisabled', []);
 
       activateSnippetsPackage();
       runs(() => {
-        atom.config.set('core.packagesWithSnippetsDisabled', ['package-with-snippets']);
+        chevron.config.set('core.packagesWithSnippetsDisabled', ['package-with-snippets']);
         const allSnippets = snippetsService.getUnparsedSnippets();
         const scopedSnippet = allSnippets.find(s => s.selectorString === '.package-with-snippets-unique-scope');
         expect(scopedSnippet).not.toBe(undefined);
-        atom.config.set('core.packagesWithSnippetsDisabled', originalConfig);
+        chevron.config.set('core.packagesWithSnippetsDisabled', originalConfig);
       });
     });
 
     it("never loads a package's snippets when that package is disabled in config", () => {
-      const originalConfig = atom.config.get('core.packagesWithSnippetsDisabled');
-      atom.config.set('core.packagesWithSnippetsDisabled', ['package-with-snippets']);
+      const originalConfig = chevron.config.get('core.packagesWithSnippetsDisabled');
+      chevron.config.set('core.packagesWithSnippetsDisabled', ['package-with-snippets']);
 
       activateSnippetsPackage();
       runs(() => {
         const snippets = snippetsService.snippetsForScopes(['.package-with-snippets-unique-scope']);
         expect(Object.keys(snippets).length).toBe(0);
-        atom.config.set('core.packagesWithSnippetsDisabled', originalConfig);
+        chevron.config.set('core.packagesWithSnippetsDisabled', originalConfig);
       });
     });
 
     it("unloads and/or reloads snippets from a package if the config option is changed after activation", () => {
-      const originalConfig = atom.config.get('core.packagesWithSnippetsDisabled');
-      atom.config.set('core.packagesWithSnippetsDisabled', []);
+      const originalConfig = chevron.config.get('core.packagesWithSnippetsDisabled');
+      chevron.config.set('core.packagesWithSnippetsDisabled', []);
 
       activateSnippetsPackage();
       runs(() => {
@@ -242,16 +242,16 @@ describe("Snippet Loading", () => {
         expect(Object.keys(snippets).length).toBe(1);
 
         // Disable it.
-        atom.config.set('core.packagesWithSnippetsDisabled', ['package-with-snippets']);
+        chevron.config.set('core.packagesWithSnippetsDisabled', ['package-with-snippets']);
         snippets = snippetsService.snippetsForScopes(['.package-with-snippets-unique-scope']);
         expect(Object.keys(snippets).length).toBe(0);
 
         // Re-enable it.
-        atom.config.set('core.packagesWithSnippetsDisabled', []);
+        chevron.config.set('core.packagesWithSnippetsDisabled', []);
         snippets = snippetsService.snippetsForScopes(['.package-with-snippets-unique-scope']);
         expect(Object.keys(snippets).length).toBe(1);
 
-        atom.config.set('core.packagesWithSnippetsDisabled', originalConfig);
+        chevron.config.set('core.packagesWithSnippetsDisabled', originalConfig);
       });
     });
   });

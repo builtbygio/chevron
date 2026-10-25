@@ -16,7 +16,7 @@ describe("DeprecationCopView", function() {
   beforeEach(function() {
     spyOn(_, 'debounce').andCallFake(func => (function() { return func.apply(this, arguments); }));
 
-    workspaceElement = atom.views.getView(atom.workspace);
+    workspaceElement = chevron.views.getView(chevron.workspace);
     jasmine.attachToDOM(workspaceElement);
 
     jasmine.snapshotDeprecations();
@@ -25,13 +25,13 @@ describe("DeprecationCopView", function() {
     deprecatedMethod();
 
     spyOn(Grim, 'deprecate'); // Don't fail tests if when using deprecated APIs in deprecation cop's activation
-    const activationPromise = atom.packages.activatePackage('deprecation-cop');
+    const activationPromise = chevron.packages.activatePackage('deprecation-cop');
 
-    atom.commands.dispatch(workspaceElement, 'deprecation-cop:view');
+    chevron.commands.dispatch(workspaceElement, 'deprecation-cop:view');
 
     waitsForPromise(() => activationPromise);
 
-    waitsFor(() => deprecationCopView = atom.workspace.getActivePane().getActiveItem());
+    waitsFor(() => deprecationCopView = chevron.workspace.getActivePane().getActiveItem());
 
     return runs(() => jasmine.unspy(Grim, 'deprecate'));
   });
@@ -44,12 +44,12 @@ describe("DeprecationCopView", function() {
   });
 
   // TODO: Remove conditional when the new StyleManager deprecation APIs reach stable.
-  if (atom.styles.getDeprecations != null) {
+  if (chevron.styles.getDeprecations != null) {
     it("displays deprecated selectors", function() {
-      atom.styles.addStyleSheet("atom-text-editor::shadow { color: red }", {sourcePath: path.join('some-dir', 'packages', 'package-1', 'file-1.css')});
-      atom.styles.addStyleSheet("atom-text-editor::shadow { color: yellow }", {context: 'atom-text-editor', sourcePath: path.join('some-dir', 'packages', 'package-1', 'file-2.css')});
-      atom.styles.addStyleSheet('atom-text-editor::shadow { color: blue }', {sourcePath: path.join('another-dir', 'packages', 'package-2', 'file-3.css')});
-      atom.styles.addStyleSheet('atom-text-editor::shadow { color: gray }', {sourcePath: path.join('another-dir', 'node_modules', 'package-3', 'file-4.css')});
+      chevron.styles.addStyleSheet("chevron-text-editor::shadow { color: red }", {sourcePath: path.join('some-dir', 'packages', 'package-1', 'file-1.css')});
+      chevron.styles.addStyleSheet("chevron-text-editor::shadow { color: yellow }", {context: 'chevron-text-editor', sourcePath: path.join('some-dir', 'packages', 'package-1', 'file-2.css')});
+      chevron.styles.addStyleSheet('chevron-text-editor::shadow { color: blue }', {sourcePath: path.join('another-dir', 'packages', 'package-2', 'file-3.css')});
+      chevron.styles.addStyleSheet('chevron-text-editor::shadow { color: gray }', {sourcePath: path.join('another-dir', 'node_modules', 'package-3', 'file-4.css')});
 
       const promise = etch.getScheduler().getNextUpdatePromise();
       waitsForPromise(() => promise);
@@ -63,7 +63,7 @@ describe("DeprecationCopView", function() {
 
         const packageDeprecationItems = packageItems[0].querySelectorAll("li.source-file");
         expect(packageDeprecationItems.length).toBe(2);
-        expect(packageDeprecationItems[0].textContent).toMatch(/atom-text-editor/);
+        expect(packageDeprecationItems[0].textContent).toMatch(/chevron-text-editor/);
         expect(packageDeprecationItems[0].querySelector("a").href).toMatch('some-dir/packages/package-1/file-1.css');
         expect(packageDeprecationItems[1].textContent).toMatch(/:host/);
         return expect(packageDeprecationItems[1].querySelector("a").href).toMatch('some-dir/packages/package-1/file-2.css');

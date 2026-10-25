@@ -143,7 +143,7 @@ module.exports =
       return false;
     }
 
-    // Simulate an atom-text-editor element attached to a atom-workspace element attached
+    // Simulate an chevron-text-editor element attached to a chevron-workspace element attached
     // to a body element that has the same classes as the current body element.
     if (this.testEditor == null) {
       // Use new document so that custom elements don't actually get created
@@ -152,14 +152,14 @@ module.exports =
       const testBody = testDocument.createElement('body');
       testBody.classList.add(...Array.from(this.classesForElement(document.body) || []));
 
-      const testWorkspace = testDocument.createElement('atom-workspace');
-      let workspaceClasses = this.classesForElement(document.body.querySelector('atom-workspace'));
+      const testWorkspace = testDocument.createElement('chevron-workspace');
+      let workspaceClasses = this.classesForElement(document.body.querySelector('chevron-workspace'));
       if (workspaceClasses.length === 0) { workspaceClasses = ['workspace']; }
       testWorkspace.classList.add(...Array.from(workspaceClasses || []));
 
       testBody.appendChild(testWorkspace);
 
-      this.testEditor = testDocument.createElement('atom-text-editor');
+      this.testEditor = testDocument.createElement('chevron-text-editor');
       this.testEditor.classList.add('editor');
       testWorkspace.appendChild(this.testEditor);
     }

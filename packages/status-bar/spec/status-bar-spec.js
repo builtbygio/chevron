@@ -3,9 +3,9 @@ describe("Status Bar package", function() {
   let [editor, statusBar, statusBarService, workspaceElement, mainModule] = Array.from([]);
 
   beforeEach(function() {
-    workspaceElement = atom.views.getView(atom.workspace);
+    workspaceElement = chevron.views.getView(chevron.workspace);
 
-    return waitsForPromise(() => atom.packages.activatePackage('status-bar').then(function(pack) {
+    return waitsForPromise(() => chevron.packages.activatePackage('status-bar').then(function(pack) {
       statusBar = workspaceElement.querySelector("status-bar");
       statusBarService = pack.mainModule.provideStatusBar();
       return ({mainModule} = pack);
@@ -14,12 +14,12 @@ describe("Status Bar package", function() {
 
   describe("@activate()", () => it("appends only one status bar", function() {
     expect(workspaceElement.querySelectorAll('status-bar').length).toBe(1);
-    atom.workspace.getActivePane().splitRight({copyActiveItem: true});
+    chevron.workspace.getActivePane().splitRight({copyActiveItem: true});
     return expect(workspaceElement.querySelectorAll('status-bar').length).toBe(1);
   }));
 
   describe("@deactivate()", () => it("removes the status bar view", function() {
-    waitsForPromise(() => Promise.resolve(atom.packages.deactivatePackage('status-bar'))); // Wrapped so works with Promise & non-Promise deactivate
+    waitsForPromise(() => Promise.resolve(chevron.packages.deactivatePackage('status-bar'))); // Wrapped so works with Promise & non-Promise deactivate
     return runs(() => expect(workspaceElement.querySelector('status-bar')).toBeNull());
   }));
 
@@ -27,13 +27,13 @@ describe("Status Bar package", function() {
     beforeEach(() => jasmine.attachToDOM(workspaceElement));
 
     describe("when it is true", function() {
-      beforeEach(() => atom.config.set('status-bar.isVisible', true));
+      beforeEach(() => chevron.config.set('status-bar.isVisible', true));
 
       return it("shows status bar", () => expect(workspaceElement.querySelector('status-bar').parentNode).toBeVisible());
     });
 
     return describe("when it is false", function() {
-      beforeEach(() => atom.config.set('status-bar.isVisible', false));
+      beforeEach(() => chevron.config.set('status-bar.isVisible', false));
 
       return it("hides status bar", () => expect(workspaceElement.querySelector('status-bar').parentNode).not.toBeVisible());
     });
@@ -42,22 +42,22 @@ describe("Status Bar package", function() {
   describe("when status-bar:toggle is triggered", function() {
     beforeEach(function() {
       jasmine.attachToDOM(workspaceElement);
-      return atom.config.set('status-bar.isVisible', true);
+      return chevron.config.set('status-bar.isVisible', true);
     });
 
     it("hides or shows the status bar", function() {
-      atom.commands.dispatch(workspaceElement, 'status-bar:toggle');
+      chevron.commands.dispatch(workspaceElement, 'status-bar:toggle');
       expect(workspaceElement.querySelector('status-bar').parentNode).not.toBeVisible();
-      atom.commands.dispatch(workspaceElement, 'status-bar:toggle');
+      chevron.commands.dispatch(workspaceElement, 'status-bar:toggle');
       return expect(workspaceElement.querySelector('status-bar').parentNode).toBeVisible();
     });
 
     return it("toggles the value of isVisible in config file", function() {
-      expect(atom.config.get('status-bar.isVisible')).toBe(true);
-      atom.commands.dispatch(workspaceElement, 'status-bar:toggle');
-      expect(atom.config.get('status-bar.isVisible')).toBe(false);
-      atom.commands.dispatch(workspaceElement, 'status-bar:toggle');
-      return expect(atom.config.get('status-bar.isVisible')).toBe(true);
+      expect(chevron.config.get('status-bar.isVisible')).toBe(true);
+      chevron.commands.dispatch(workspaceElement, 'status-bar:toggle');
+      expect(chevron.config.get('status-bar.isVisible')).toBe(false);
+      chevron.commands.dispatch(workspaceElement, 'status-bar:toggle');
+      return expect(chevron.config.get('status-bar.isVisible')).toBe(true);
     });
   });
 
@@ -65,26 +65,26 @@ describe("Status Bar package", function() {
     let [containers] = Array.from([]);
 
     beforeEach(function() {
-      containers = atom.workspace.panelContainers;
+      containers = chevron.workspace.panelContainers;
       jasmine.attachToDOM(workspaceElement);
 
-      return waitsForPromise(() => atom.workspace.open('sample.js'));
+      return waitsForPromise(() => chevron.workspace.open('sample.js'));
     });
 
     it("expects the setting to be enabled by default", function() {
-      expect(atom.config.get('status-bar.fullWidth')).toBeTruthy();
+      expect(chevron.config.get('status-bar.fullWidth')).toBeTruthy();
       return expect(containers.footer.panels).toContain(mainModule.statusBarPanel);
     });
 
     return describe("when setting is changed", function() {
       it("fits status bar to editor's width", function() {
-        atom.config.set('status-bar.fullWidth', false);
+        chevron.config.set('status-bar.fullWidth', false);
         expect(containers.bottom.panels).toContain(mainModule.statusBarPanel);
         return expect(containers.footer.panels).not.toContain(mainModule.statusBarPanel);
       });
 
       return it("restores the status-bar location when re-enabling setting", function() {
-        atom.config.set('status-bar.fullWidth', true);
+        chevron.config.set('status-bar.fullWidth', true);
         expect(containers.footer.panels).toContain(mainModule.statusBarPanel);
         return expect(containers.bottom.panels).not.toContain(mainModule.statusBarPanel);
       });

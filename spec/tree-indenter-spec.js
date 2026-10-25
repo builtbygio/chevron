@@ -54,11 +54,11 @@ describe('TreeIndenter', () => {
 
   beforeEach(async () => {
     jasmine.useRealClock();
-    editor = await atom.workspace.open('');
+    editor = await chevron.workspace.open('');
     buffer = editor.getBuffer();
     editor.displayLayer.reset({ foldCharacter: '…' });
 
-    grammar = new TreeSitterGrammar(atom.grammars, jsGrammarPath, {
+    grammar = new TreeSitterGrammar(chevron.grammars, jsGrammarPath, {
       parser: 'tree-sitter-javascript'
     });
   });

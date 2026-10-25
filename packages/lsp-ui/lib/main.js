@@ -543,13 +543,13 @@ module.exports = {
       const editorFor = event => {
         const element =
           event && event.target && event.target.closest
-            ? event.target.closest('atom-text-editor')
+            ? event.target.closest('chevron-text-editor')
             : null;
         return element && element.getModel ? element.getModel() : null;
       };
       disposables.add(
         e.contextMenu.add({
-          'atom-text-editor:not([mini])': [
+          'chevron-text-editor:not([mini])': [
             {
               label: 'Go to Implementation',
               command: 'chevron-lsp:go-to-implementation',
@@ -574,7 +574,7 @@ module.exports = {
     // Escape dismisses hover / definition / lists
     if (e && e.commands) {
       disposables.add(
-        e.commands.add('atom-workspace', {
+        e.commands.add('chevron-workspace', {
           'core:cancel': () => {
             clearHoverTimer();
             if (hoverView) hoverView.hide();

@@ -9,21 +9,21 @@ describe('Async providers', () => {
     jasmine.useRealClock()
 
     // Set to live completion
-    atom.config.set('autocomplete-plus.enableAutoActivation', true)
-    atom.config.set('editor.fontSize', '16')
+    chevron.config.set('autocomplete-plus.enableAutoActivation', true)
+    chevron.config.set('editor.fontSize', '16')
 
     // Set the completion delay
-    atom.config.set('autocomplete-plus.autoActivationDelay', 100)
+    chevron.config.set('autocomplete-plus.autoActivationDelay', 100)
 
-    let workspaceElement = atom.views.getView(atom.workspace)
+    let workspaceElement = chevron.views.getView(chevron.workspace)
     jasmine.attachToDOM(workspaceElement)
 
-    editor = await atom.workspace.open('sample.js')
+    editor = await chevron.workspace.open('sample.js')
 
-    await atom.packages.activatePackage('language-javascript')
+    await chevron.packages.activatePackage('language-javascript')
 
     // Activate the package
-    mainModule = (await atom.packages.activatePackage('autocomplete-plus')).mainModule
+    mainModule = (await chevron.packages.activatePackage('autocomplete-plus')).mainModule
 
     await conditionPromise(() => {
       autocompleteManager = mainModule.autocompleteManager
@@ -55,7 +55,7 @@ describe('Async providers', () => {
         },
         scopeSelector: '.source.js'
       }
-      registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testAsyncProvider)
+      registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testAsyncProvider)
     })
 
     it('should provide completions when a provider returns a promise that results in an array of suggestions', async () => {
@@ -87,11 +87,11 @@ describe('Async providers', () => {
           })
         }
       }
-      registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testAsyncProvider)
+      registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testAsyncProvider)
     })
 
     it('does not show the suggestion list when it is triggered then no longer needed', async () => {
-      editorView = atom.views.getView(editor)
+      editorView = chevron.views.getView(editor)
 
       editor.moveToBottom()
       editor.insertText('o')

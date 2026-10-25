@@ -11,7 +11,7 @@ const TRAILING_PUNCTUATION_REGEX = /[.,;:!?]+$/;
 module.exports = {
   activate() {
     this.commandDisposable = chevron.commands.add(
-      'atom-text-editor',
+      'chevron-text-editor',
       'link:open',
       () => this.openLink()
     );

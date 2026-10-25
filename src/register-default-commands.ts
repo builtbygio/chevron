@@ -14,7 +14,7 @@ const {collectSettingsSources, formatSettingsSources} = require('./settings-sour
 
 module.exports = function({commandRegistry, commandInstaller, config, notificationManager, project, clipboard, workspace}) {
   commandRegistry.add(
-    'atom-workspace',
+    'chevron-workspace',
     {
       'pane:show-next-recently-used-item'() { return this.getModel().getActivePane().activateNextRecentlyUsedItem(); },
       'pane:show-previous-recently-used-item'() { return this.getModel().getActivePane().activatePreviousRecentlyUsedItem(); },
@@ -105,7 +105,7 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
 
   if (process.platform === 'darwin') {
     commandRegistry.add(
-      'atom-workspace',
+      'chevron-workspace',
       'window:install-shell-commands',
       (() => commandInstaller.installShellCommandsInteractively()),
       false
@@ -116,7 +116,7 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
   // default; `timecop` reports what boot cost, this reports what a package
   // costs afterwards.
   commandRegistry.add(
-    'atom-workspace',
+    'chevron-workspace',
     {
       'package-profiler:start'() {
         profiler.start();
@@ -149,7 +149,7 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
   // Which source each of the active file's settings came from: project, user
   // or default (docs/reference/config-precedence.md).
   commandRegistry.add(
-    'atom-workspace',
+    'chevron-workspace',
     'config:show-effective-settings',
     () => {
       const editor = workspace.getActiveTextEditor();
@@ -171,7 +171,7 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
   );
 
   commandRegistry.add(
-    'atom-pane',
+    'chevron-pane',
     {
       'pane:save-items'() { return this.getModel().saveItems(); },
       'pane:split-left'() { return this.getModel().splitLeft(); },
@@ -195,7 +195,7 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
   );
 
   commandRegistry.add(
-    'atom-text-editor',
+    'chevron-text-editor',
     stopEventPropagation({
       'core:move-left'() { return this.moveLeft(); },
       'core:move-right'() { return this.moveRight(); },
@@ -240,7 +240,7 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
   );
 
   commandRegistry.add(
-    'atom-text-editor:not([readonly])',
+    'chevron-text-editor:not([readonly])',
     stopEventPropagation({
       'core:undo'() { return this.undo(); },
       'core:redo'() { return this.redo(); }
@@ -249,7 +249,7 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
   );
 
   commandRegistry.add(
-    'atom-text-editor',
+    'chevron-text-editor',
     stopEventPropagationAndGroupUndo(
       config,
       {
@@ -261,7 +261,7 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
   );
 
   commandRegistry.add(
-    'atom-text-editor:not([readonly])',
+    'chevron-text-editor:not([readonly])',
     stopEventPropagationAndGroupUndo(
       config,
       {
@@ -294,7 +294,7 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
   );
 
   commandRegistry.add(
-    'atom-text-editor:not([mini])',
+    'chevron-text-editor:not([mini])',
     stopEventPropagation({
       'core:move-up'() { return this.moveUp(); },
       'core:move-down'() { return this.moveDown(); },
@@ -371,7 +371,7 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
   );
 
   return commandRegistry.add(
-    'atom-text-editor:not([mini]):not([readonly])',
+    'chevron-text-editor:not([mini]):not([readonly])',
     stopEventPropagationAndGroupUndo(
       config,
       {

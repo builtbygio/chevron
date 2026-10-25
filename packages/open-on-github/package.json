@@ -6,7 +6,7 @@
   "repository": "https://github.com/builtbygio/open-on-github",
   "license": "MIT",
   "activationCommands": {
-    "atom-pane": [
+    "chevron-pane": [
       "open-on-github:blame",
       "open-on-github:branch-compare",
       "open-on-github:copy-url",

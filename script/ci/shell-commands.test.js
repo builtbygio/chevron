@@ -16,7 +16,7 @@ const installer = fs.readFileSync(
   'utf8'
 );
 const environment = fs.readFileSync(
-  path.join(ROOT, 'src/atom-environment.js'),
+  path.join(ROOT, 'src/chevron-environment.js'),
   'utf8'
 );
 

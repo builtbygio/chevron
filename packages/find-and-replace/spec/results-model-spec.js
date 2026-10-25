@@ -8,12 +8,12 @@ describe("ResultsModel", () => {
   let editor, resultsModel, reporterSpy;
 
   beforeEach(async () => {
-    atom.config.set("core.excludeVcsIgnoredPaths", false);
-    atom.config.set("find-and-replace.searchContextLineCountBefore", 2);
-    atom.config.set("find-and-replace.searchContextLineCountAfter", 3);
-    atom.project.setPaths([path.join(__dirname, "fixtures/project")]);
+    chevron.config.set("core.excludeVcsIgnoredPaths", false);
+    chevron.config.set("find-and-replace.searchContextLineCountBefore", 2);
+    chevron.config.set("find-and-replace.searchContextLineCountAfter", 3);
+    chevron.project.setPaths([path.join(__dirname, "fixtures/project")]);
 
-    editor = await atom.workspace.open("sample.js");
+    editor = await chevron.workspace.open("sample.js");
     reporterSpy = {
       sendSearchEvent: jasmine.createSpy()
     }
@@ -83,10 +83,10 @@ describe("ResultsModel", () => {
     });
 
     it("ignores changes in untitled buffers", async () => {
-      await atom.workspace.open();
+      await chevron.workspace.open();
       await resultsModel.search("items", "*.js", "");
 
-      editor = atom.workspace.getCenter().getActiveTextEditor();
+      editor = chevron.workspace.getCenter().getActiveTextEditor();
       editor.setText("items\nitems");
       spyOn(editor, "scan").andCallThrough();
       advanceClock(editor.buffer.stoppedChangingDelay);

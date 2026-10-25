@@ -112,12 +112,12 @@ class PanelContainerElement extends HTMLElement {
   }
 }
 
-window.customElements.define('atom-panel-container', PanelContainerElement);
+window.customElements.define('chevron-panel-container', PanelContainerElement);
 
 const createCustomElement = require('./create-custom-element');
 
 function createPanelContainerElement() {
-  return createCustomElement('atom-panel-container', PanelContainerElement);
+  return createCustomElement('chevron-panel-container', PanelContainerElement);
 }
 
 module.exports = {

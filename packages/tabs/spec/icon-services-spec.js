@@ -13,12 +13,12 @@ describe('icon services', () => {
   beforeEach(() => {
     iconServices = getIconServices()
 
-    waitsForPromise(() => atom.workspace.open(path.join(__dirname, 'fixtures', 'sample.js')))
+    waitsForPromise(() => chevron.workspace.open(path.join(__dirname, 'fixtures', 'sample.js')))
 
-    waitsForPromise(() => atom.packages.activatePackage('tabs'))
+    waitsForPromise(() => chevron.packages.activatePackage('tabs'))
 
     runs(() => {
-      tab = atom.workspace.getElement().querySelector('.tab')
+      tab = chevron.workspace.getElement().querySelector('.tab')
       expect(tab.itemTitle.className).toBe('title')
     })
   })
@@ -44,7 +44,7 @@ describe('icon services', () => {
 
     it('allows a service to replace the default', () => {
       const provider = {iconClassForPath: () => 'foo bar'}
-      const disposable = atom.packages.serviceHub.provide('atom.file-icons', '1.0.0', provider)
+      const disposable = chevron.packages.serviceHub.provide('atom.file-icons', '1.0.0', provider)
       expect(iconServices.fileIcons).toBe(provider)
       expect(tab.itemTitle.className).toBe('title icon foo bar')
       disposable.dispose()
@@ -54,7 +54,7 @@ describe('icon services', () => {
 
     it('accepts an array of strings as icon-classes', () => {
       const provider = {iconClassForPath: () => ['foo', 'bar']}
-      const disposable = atom.packages.serviceHub.provide('atom.file-icons', '1.0.0', provider)
+      const disposable = chevron.packages.serviceHub.provide('atom.file-icons', '1.0.0', provider)
       expect(iconServices.fileIcons).toBe(provider)
       expect(tab.itemTitle.className).toBe('title icon foo bar')
       disposable.dispose()
@@ -75,7 +75,7 @@ describe('icon services', () => {
           element.classList.remove('foo', 'bar', 'icon')
         })
       }
-      const disposable = atom.packages.serviceHub.provide('file-icons.element-icons', '1.0.0', provider)
+      const disposable = chevron.packages.serviceHub.provide('file-icons.element-icons', '1.0.0', provider)
       expect(iconServices.elementIcons).toBe(provider)
       expect(tab.itemTitle.className).toBe('title icon foo bar')
       disposable.dispose()
@@ -92,8 +92,8 @@ describe('icon services', () => {
           element.classList.remove('bar')
         })
       }
-      atom.packages.serviceHub.provide('atom.file-icons', '1.0.0', basicProvider)
-      atom.packages.serviceHub.provide('file-icons.element-icons', '1.0.0', elementProvider)
+      chevron.packages.serviceHub.provide('atom.file-icons', '1.0.0', basicProvider)
+      chevron.packages.serviceHub.provide('file-icons.element-icons', '1.0.0', elementProvider)
       expect(iconServices.fileIcons).toBe(basicProvider)
       expect(iconServices.elementIcons).toBe(elementProvider)
       expect(tab.itemTitle.className).toBe('title icon bar')

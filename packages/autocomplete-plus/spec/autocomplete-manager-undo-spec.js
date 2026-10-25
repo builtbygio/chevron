@@ -9,24 +9,24 @@ describe('Autocomplete Manager', () => {
 
   beforeEach(() => {
     // Set to live completion
-    atom.config.set('autocomplete-plus.enableAutoActivation', true)
-    atom.config.set('editor.fontSize', '16')
+    chevron.config.set('autocomplete-plus.enableAutoActivation', true)
+    chevron.config.set('editor.fontSize', '16')
 
-    let workspaceElement = atom.views.getView(atom.workspace)
+    let workspaceElement = chevron.views.getView(chevron.workspace)
     jasmine.attachToDOM(workspaceElement)
   })
 
   describe('Undo a completion', () => {
     beforeEach(async () => {
       jasmine.useRealClock()
-      atom.config.set('autocomplete-plus.enableAutoActivation', true)
+      chevron.config.set('autocomplete-plus.enableAutoActivation', true)
 
-      editor = await atom.workspace.open('sample.js')
+      editor = await chevron.workspace.open('sample.js')
 
-      await atom.packages.activatePackage('language-javascript')
+      await chevron.packages.activatePackage('language-javascript')
 
       // Activate the package
-      mainModule = (await atom.packages.activatePackage('autocomplete-plus')).mainModule
+      mainModule = (await chevron.packages.activatePackage('autocomplete-plus')).mainModule
 
       await conditionPromise(() =>
         mainModule.autocompleteManager && mainModule.autocompleteManager.ready
@@ -42,8 +42,8 @@ describe('Autocomplete Manager', () => {
       await waitForAutocomplete(editor)
 
       // Accept suggestion
-      editorView = atom.views.getView(editor)
-      atom.commands.dispatch(editorView, 'autocomplete-plus:confirm')
+      editorView = chevron.views.getView(editor)
+      chevron.commands.dispatch(editorView, 'autocomplete-plus:confirm')
 
       expect(editor.getBuffer().getLastLine()).toEqual('function')
 

@@ -14,27 +14,27 @@ describe('the status bar', () => {
     spyOn(window.localStorage, 'getItem').andCallFake(key => {
       return storage[key];
     });
-    spyOn(atom, 'getVersion').andCallFake(() => {
+    spyOn(chevron, 'getVersion').andCallFake(() => {
       return atomVersion;
     });
 
-    workspaceElement = atom.views.getView(atom.workspace);
+    workspaceElement = chevron.views.getView(chevron.workspace);
 
-    await atom.packages.activatePackage('status-bar');
-    await atom.workspace.open('sample.js');
+    await chevron.packages.activatePackage('status-bar');
+    await chevron.workspace.open('sample.js');
     jasmine.attachToDOM(workspaceElement);
   });
 
   afterEach(async () => {
-    await atom.packages.deactivatePackage('about');
-    await atom.packages.deactivatePackage('status-bar');
+    await chevron.packages.deactivatePackage('about');
+    await chevron.packages.deactivatePackage('status-bar');
   });
 
   describe('on a stable version', function() {
     beforeEach(async () => {
       atomVersion = '1.2.3';
 
-      await atom.packages.activatePackage('about');
+      await chevron.packages.activatePackage('about');
     });
 
     describe('with no update', () => {
@@ -64,18 +64,18 @@ describe('the status bar', () => {
         MockUpdater.finishDownloadingUpdate('42.0.0');
         expect(workspaceElement).toContain('.about-release-notes');
 
-        await atom.packages.deactivatePackage('about');
+        await chevron.packages.deactivatePackage('about');
         expect(workspaceElement).not.toContain('.about-release-notes');
 
-        await atom.packages.activatePackage('about');
+        await chevron.packages.activatePackage('about');
         await Promise.resolve(); // Service consumption hooks are deferred until the next tick
         expect(workspaceElement).toContain('.about-release-notes');
 
-        await atom.packages.deactivatePackage('about');
+        await chevron.packages.deactivatePackage('about');
         expect(workspaceElement).not.toContain('.about-release-notes');
 
         atomVersion = '42.0.0';
-        await atom.packages.activatePackage('about');
+        await chevron.packages.activatePackage('about');
 
         await Promise.resolve(); // Service consumption hooks are deferred until the next tick
         expect(workspaceElement).not.toContain('.about-release-notes');
@@ -84,10 +84,10 @@ describe('the status bar', () => {
       it('does not show the view if Atom is updated to a newer version than notified', async () => {
         MockUpdater.finishDownloadingUpdate('42.0.0');
 
-        await atom.packages.deactivatePackage('about');
+        await chevron.packages.deactivatePackage('about');
 
         atomVersion = '43.0.0';
-        await atom.packages.activatePackage('about');
+        await chevron.packages.activatePackage('about');
 
         await Promise.resolve(); // Service consumption hooks are deferred until the next tick
         expect(workspaceElement).not.toContain('.about-release-notes');
@@ -99,7 +99,7 @@ describe('the status bar', () => {
     beforeEach(async () => {
       atomVersion = '1.2.3-beta4';
 
-      await atom.packages.activatePackage('about');
+      await chevron.packages.activatePackage('about');
     });
 
     describe('with no update', () => {
@@ -129,18 +129,18 @@ describe('the status bar', () => {
         MockUpdater.finishDownloadingUpdate('42.0.0');
         expect(workspaceElement).toContain('.about-release-notes');
 
-        await atom.packages.deactivatePackage('about');
+        await chevron.packages.deactivatePackage('about');
         expect(workspaceElement).not.toContain('.about-release-notes');
 
-        await atom.packages.activatePackage('about');
+        await chevron.packages.activatePackage('about');
         await Promise.resolve(); // Service consumption hooks are deferred until the next tick
         expect(workspaceElement).toContain('.about-release-notes');
 
-        await atom.packages.deactivatePackage('about');
+        await chevron.packages.deactivatePackage('about');
         expect(workspaceElement).not.toContain('.about-release-notes');
 
         atomVersion = '42.0.0';
-        await atom.packages.activatePackage('about');
+        await chevron.packages.activatePackage('about');
 
         await Promise.resolve(); // Service consumption hooks are deferred until the next tick
         expect(workspaceElement).not.toContain('.about-release-notes');
@@ -149,10 +149,10 @@ describe('the status bar', () => {
       it('does not show the view if Atom is updated to a newer version than notified', async () => {
         MockUpdater.finishDownloadingUpdate('42.0.0');
 
-        await atom.packages.deactivatePackage('about');
+        await chevron.packages.deactivatePackage('about');
 
         atomVersion = '43.0.0';
-        await atom.packages.activatePackage('about');
+        await chevron.packages.activatePackage('about');
 
         await Promise.resolve(); // Service consumption hooks are deferred until the next tick
         expect(workspaceElement).not.toContain('.about-release-notes');
@@ -164,7 +164,7 @@ describe('the status bar', () => {
     beforeEach(async () => {
       atomVersion = '1.2.3-dev-0123abcd';
 
-      await atom.packages.activatePackage('about');
+      await chevron.packages.activatePackage('about');
     });
 
     describe('with no update', () => {

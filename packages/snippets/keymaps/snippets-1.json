@@ -1,5 +1,5 @@
 {
-  "atom-text-editor:not([mini])": {
+  "chevron-text-editor:not([mini])": {
     "tab": "snippets:expand"
   }
 }

@@ -191,7 +191,7 @@ describe('the navigation commands, in the real client', () => {
   let originalLoad;
   let lspEvent = null;
   const registered = [];
-  const element = { tagName: 'ATOM-TEXT-EDITOR' };
+  const element = { tagName: 'CHEVRON-TEXT-EDITOR' };
   const editor = {
     getPath: () => path.join(projectRoot, 'thing.navtest'),
     getGrammar: () => ({ scopeName: 'source.navtest' }),
@@ -459,7 +459,7 @@ describe('lsp-ui wiring', () => {
   const read = file => fs.readFileSync(path.join(ROOT, 'packages', 'lsp-ui', file), 'utf8');
 
   it('binds both commands to keys', () => {
-    const keymap = JSON.parse(read('keymaps/lsp-ui.json'))['atom-workspace atom-text-editor:not([mini])'];
+    const keymap = JSON.parse(read('keymaps/lsp-ui.json'))['chevron-workspace chevron-text-editor:not([mini])'];
     assert.strictEqual(keymap['ctrl-f12'], 'chevron-lsp:go-to-implementation');
     assert.strictEqual(keymap['ctrl-shift-f12'], 'chevron-lsp:go-to-type-definition');
   });

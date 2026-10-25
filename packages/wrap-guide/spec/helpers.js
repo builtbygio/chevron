@@ -1,7 +1,7 @@
 const helpers = {
   getWrapGuides () {
     wrapGuides = []
-    for (const editor of atom.workspace.getTextEditors()) {
+    for (const editor of chevron.workspace.getTextEditors()) {
       const guide = editor.getElement().querySelector('.wrap-guide')
       if (guide) wrapGuides.push(guide)
     }

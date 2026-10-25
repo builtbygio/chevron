@@ -11,7 +11,7 @@ module.exports = class Whitespace {
       return this.handleEvents(editor)
     }))
 
-    this.subscriptions.add(chevron.commands.add('atom-workspace', {
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', {
       'whitespace:remove-trailing-whitespace': () => {
         let editor = chevron.workspace.getActiveTextEditor()
 

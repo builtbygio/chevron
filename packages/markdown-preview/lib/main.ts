@@ -31,7 +31,7 @@ module.exports = {
           grammar.replace(/\./g, ' ')
         )) {
           this.commandSubscriptions.add(
-            chevron.commands.add(`atom-text-editor[data-grammar='${grammar}']`, {
+            chevron.commands.add(`chevron-text-editor[data-grammar='${grammar}']`, {
               'markdown-preview:toggle': () => this.toggle(),
               'markdown-preview:copy-html': {
                 displayName: 'Markdown Preview: Copy HTML',

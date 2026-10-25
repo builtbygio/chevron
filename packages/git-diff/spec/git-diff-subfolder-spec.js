@@ -31,18 +31,18 @@ describe('GitDiff when targeting nested repository', () => {
       path.join(nestedPath, '.git')
     );
 
-    atom.project.setPaths([projectPath]);
+    chevron.project.setPaths([projectPath]);
 
-    jasmine.attachToDOM(atom.workspace.getElement());
+    jasmine.attachToDOM(chevron.workspace.getElement());
 
     waitsForPromise(async () => {
-      await atom.workspace.open(path.join(nestedPath, 'sample.js'));
-      await atom.packages.activatePackage('git-diff');
+      await chevron.workspace.open(path.join(nestedPath, 'sample.js'));
+      await chevron.packages.activatePackage('git-diff');
     });
 
     runs(() => {
-      editor = atom.workspace.getActiveTextEditor();
-      editorElement = atom.views.getView(editor);
+      editor = chevron.workspace.getActiveTextEditor();
+      editorElement = chevron.views.getView(editor);
     });
   });
 

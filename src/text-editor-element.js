@@ -11,7 +11,7 @@ class TextEditorElement extends HTMLElement {
 
   get shadowRoot() {
     Grim.deprecate(dedent`
-      The contents of \`atom-text-editor\` elements are no longer encapsulated
+      The contents of \`chevron-text-editor\` elements are no longer encapsulated
       within a shadow DOM boundary. Please, stop using \`shadowRoot\` and access
       the editor contents directly instead.
     `);
@@ -21,7 +21,7 @@ class TextEditorElement extends HTMLElement {
 
   get rootElement() {
     Grim.deprecate(dedent`
-      The contents of \`atom-text-editor\` elements are no longer encapsulated
+      The contents of \`chevron-text-editor\` elements are no longer encapsulated
       within a shadow DOM boundary. Please, stop using \`rootElement\` and access
       the editor contents directly instead.
     `);
@@ -40,7 +40,7 @@ class TextEditorElement extends HTMLElement {
   // under contextIsolation, a native customElements.define() in the preload
   // realm does not upgrade parser-created nodes. The polyfill does upgrade
   // them -- but it upgrades them without calling this class's constructor, so
-  // an <atom-text-editor> written into an HTML string (which is how the
+  // an <chevron-text-editor> written into an HTML string (which is how the
   // styleguide and several packages build their examples) reached
   // connectedCallback with no emitter and threw an uncaught TypeError.
   //
@@ -381,10 +381,10 @@ class TextEditorElement extends HTMLElement {
 
   static createTextEditorElement() {
     const createCustomElement = require('./create-custom-element');
-    return createCustomElement('atom-text-editor', TextEditorElement);
+    return createCustomElement('chevron-text-editor', TextEditorElement);
   }
 }
 
-window.customElements.define('atom-text-editor', TextEditorElement);
+window.customElements.define('chevron-text-editor', TextEditorElement);
 
 module.exports = TextEditorElement;

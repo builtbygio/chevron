@@ -37,7 +37,7 @@ module.exports = {
         return this.updateStatusBarVisibility();
       });
 
-    chevron.commands.add('atom-workspace', 'status-bar:toggle', () => {
+    chevron.commands.add('chevron-workspace', 'status-bar:toggle', () => {
       if (this.statusBarPanel.isVisible()) {
         return chevron.config.set('status-bar.isVisible', false);
       } else {

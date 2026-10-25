@@ -39,26 +39,26 @@ describe('Autocomplete Manager', () => {
     jasmine.useRealClock()
     gutterWidth = null
     // Set to live completion
-    atom.config.set('autocomplete-plus.enableAutoActivation', true)
-    atom.config.set('editor.fontSize', '16')
+    chevron.config.set('autocomplete-plus.enableAutoActivation', true)
+    chevron.config.set('editor.fontSize', '16')
 
     // Set the completion delay
-    atom.config.set('autocomplete-plus.autoActivationDelay', 100)
+    chevron.config.set('autocomplete-plus.autoActivationDelay', 100)
 
-    workspaceElement = atom.views.getView(atom.workspace)
+    workspaceElement = chevron.views.getView(chevron.workspace)
     jasmine.attachToDOM(workspaceElement)
 
-    atom.config.set('autocomplete-plus.maxVisibleSuggestions', 10)
-    atom.config.set('autocomplete-plus.consumeSuffix', true)
+    chevron.config.set('autocomplete-plus.maxVisibleSuggestions', 10)
+    chevron.config.set('autocomplete-plus.consumeSuffix', true)
   })
 
   describe('when an external provider is registered', () => {
     let provider
 
     beforeEach(async () => {
-      editor = await atom.workspace.open('')
-      editorView = atom.views.getView(editor)
-      mainModule = (await atom.packages.activatePackage('autocomplete-plus')).mainModule
+      editor = await chevron.workspace.open('')
+      editorView = chevron.views.getView(editor)
+      mainModule = (await chevron.packages.activatePackage('autocomplete-plus')).mainModule
       await conditionPromise(() => mainModule.autocompleteManager)
 
       provider = {
@@ -81,7 +81,7 @@ describe('Autocomplete Manager', () => {
 
       let suggestion, triggerPosition
       let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-      atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+      chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
 
       expect(provider.onDidInsertSuggestion).toHaveBeenCalled();
 
@@ -115,13 +115,13 @@ describe('Autocomplete Manager', () => {
       await waitForAutocomplete(editor)
 
       expect(editorView.querySelector('.autocomplete-plus')).toExist()
-      atom.commands.dispatch(editorView, 'autocomplete-plus:confirm')
+      chevron.commands.dispatch(editorView, 'autocomplete-plus:confirm')
       expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
     })
 
     it('works after closing one of the copied tabs', async () => {
-      atom.workspace.paneForItem(editor).splitRight({copyActiveItem: true})
-      atom.workspace.getActivePane().destroy()
+      chevron.workspace.paneForItem(editor).splitRight({copyActiveItem: true})
+      chevron.workspace.getActivePane().destroy()
 
       editor.insertNewline()
       editor.insertText('f')
@@ -175,8 +175,8 @@ describe('Autocomplete Manager', () => {
     })
 
     it('only shows for the editor that currently has focus', async () => {
-      let editor2 = atom.workspace.paneForItem(editor).splitRight({copyActiveItem: true}).getActiveItem()
-      let editorView2 = atom.views.getView(editor2)
+      let editor2 = chevron.workspace.paneForItem(editor).splitRight({copyActiveItem: true}).getActiveItem()
+      let editorView2 = chevron.views.getView(editor2)
       editorView.focus()
 
       expect(editorView).toHaveFocus()
@@ -198,7 +198,7 @@ describe('Autocomplete Manager', () => {
       expect(editorView.querySelector('.autocomplete-plus')).toExist()
       expect(editorView2.querySelector('.autocomplete-plus')).not.toExist()
 
-      atom.commands.dispatch(editorView, 'autocomplete-plus:confirm')
+      chevron.commands.dispatch(editorView, 'autocomplete-plus:confirm')
 
       expect(editorView).toHaveFocus()
       expect(editorView2).not.toHaveFocus()
@@ -223,7 +223,7 @@ describe('Autocomplete Manager', () => {
 
     describe('when the fileBlacklist option is set', () => {
       beforeEach(() => {
-        atom.config.set('autocomplete-plus.fileBlacklist', ['.*', '*.md'])
+        chevron.config.set('autocomplete-plus.fileBlacklist', ['.*', '*.md'])
         editor.getBuffer().setPath('blacklisted.md')
       })
 
@@ -247,14 +247,14 @@ describe('Autocomplete Manager', () => {
         editor.insertText('a')
 
         await waitForAutocompleteToDisappear(editor)
-        atom.commands.dispatch(editorView, 'autocomplete-plus:cancel')
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:cancel')
 
         editor.getBuffer().setPath('not-blackslisted.txt')
         editor.insertText('a')
         await waitForAutocomplete(editor)
 
         expect(editorView.querySelector('.autocomplete-plus')).toExist()
-        atom.commands.dispatch(editorView, 'autocomplete-plus:cancel')
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:cancel')
 
         editor.getBuffer().setPath('blackslisted.md')
         editor.insertText('a')
@@ -338,7 +338,7 @@ describe('Autocomplete Manager', () => {
         ({ autocompleteManager } = mainModule)
         expect(editorView.querySelector('.autocomplete-plus')).toExist()
 
-        atom.commands.dispatch(editorView, 'autocomplete-plus:confirm')
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:confirm')
 
         expect(editor.lineTextForBufferRow(0)).toBe('shift:extra:shift')
         expect(editor.getCursorBufferPosition()).toEqual([0, 17])
@@ -365,8 +365,8 @@ describe('Autocomplete Manager', () => {
         triggerAutocompletion(editor, false, 'h')
 
         ;({ autocompleteManager } = mainModule)
-        editorView = atom.views.getView(editor)
-        atom.commands.dispatch(editorView, 'autocomplete-plus:confirm')
+        editorView = chevron.views.getView(editor)
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:confirm')
 
         expect(editor.lineTextForBufferRow(0)).toBe('sh:extra:ah')
         expect(editor.getSelections().length).toEqual(2)
@@ -379,7 +379,7 @@ describe('Autocomplete Manager', () => {
 
     describe('suppression for editorView classes', () => {
       beforeEach(() => {
-        atom.config.set(
+        chevron.config.set(
           'autocomplete-plus.suppressActivationForEditorClasses',
           ['vim-mode.command-mode', 'vim-mode . visual-mode', ' vim-mode.operator-pending-mode ', ' ']
         )
@@ -552,7 +552,7 @@ describe('Autocomplete Manager', () => {
 
           mainModule.consumeProvider(provider, 4)
 
-          atom.config.set('editor.nonWordCharacters', '-')
+          chevron.config.set('editor.nonWordCharacters', '-')
           editor.insertText(' $foo-$ba')
           editor.insertText('r')
           await suggestionsPromise
@@ -608,7 +608,7 @@ describe('Autocomplete Manager', () => {
 
     describe('when number of suggestions > maxVisibleSuggestions', () => {
       beforeEach(() => {
-        atom.config.set('autocomplete-plus.maxVisibleSuggestions', 2)
+        chevron.config.set('autocomplete-plus.maxVisibleSuggestions', 2)
       })
 
       describe('when a suggestion description is not specified', () => {
@@ -626,35 +626,35 @@ describe('Autocomplete Manager', () => {
           let scroller = suggestionList.querySelector('.suggestion-list-scroller')
 
           expect(scroller.scrollTop).toBe(0)
-          atom.commands.dispatch(suggestionList, 'core:move-down')
+          chevron.commands.dispatch(suggestionList, 'core:move-down')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[1]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(0)
 
-          atom.commands.dispatch(suggestionList, 'core:move-down')
+          chevron.commands.dispatch(suggestionList, 'core:move-down')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[2]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(itemHeight)
 
-          atom.commands.dispatch(suggestionList, 'core:move-down')
+          chevron.commands.dispatch(suggestionList, 'core:move-down')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[3]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(itemHeight * 2)
 
-          atom.commands.dispatch(suggestionList, 'core:move-down')
+          chevron.commands.dispatch(suggestionList, 'core:move-down')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[0]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(0)
 
-          atom.commands.dispatch(suggestionList, 'core:move-up')
+          chevron.commands.dispatch(suggestionList, 'core:move-up')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[3]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(itemHeight * 2)
 
-          atom.commands.dispatch(suggestionList, 'core:move-up')
+          chevron.commands.dispatch(suggestionList, 'core:move-up')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[2]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(itemHeight * 2)
 
-          atom.commands.dispatch(suggestionList, 'core:move-up')
+          chevron.commands.dispatch(suggestionList, 'core:move-up')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[1]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(itemHeight)
 
-          atom.commands.dispatch(suggestionList, 'core:move-up')
+          chevron.commands.dispatch(suggestionList, 'core:move-up')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[0]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(0)
         })
@@ -665,23 +665,23 @@ describe('Autocomplete Manager', () => {
           let scroller = suggestionList.querySelector('.suggestion-list-scroller')
           expect(scroller.scrollTop).toBe(0)
 
-          atom.commands.dispatch(suggestionList, 'core:page-down')
+          chevron.commands.dispatch(suggestionList, 'core:page-down')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[2]).toHaveClass('selected')
 
-          atom.commands.dispatch(suggestionList, 'core:page-down')
+          chevron.commands.dispatch(suggestionList, 'core:page-down')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[3]).toHaveClass('selected')
 
-          atom.commands.dispatch(suggestionList, 'core:page-down')
+          chevron.commands.dispatch(suggestionList, 'core:page-down')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[3]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(itemHeight * 2)
 
-          atom.commands.dispatch(suggestionList, 'core:page-up')
+          chevron.commands.dispatch(suggestionList, 'core:page-up')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[1]).toHaveClass('selected')
 
-          atom.commands.dispatch(suggestionList, 'core:page-up')
+          chevron.commands.dispatch(suggestionList, 'core:page-up')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[0]).toHaveClass('selected')
 
-          atom.commands.dispatch(suggestionList, 'core:page-up')
+          chevron.commands.dispatch(suggestionList, 'core:page-up')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[0]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(0)
         })
@@ -692,19 +692,19 @@ describe('Autocomplete Manager', () => {
           let scroller = suggestionList.querySelector('.suggestion-list-scroller')
           expect(scroller.scrollTop).toBe(0)
 
-          atom.commands.dispatch(suggestionList, 'core:move-to-bottom')
+          chevron.commands.dispatch(suggestionList, 'core:move-to-bottom')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[3]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(itemHeight * 2)
 
-          atom.commands.dispatch(suggestionList, 'core:move-to-bottom')
+          chevron.commands.dispatch(suggestionList, 'core:move-to-bottom')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[3]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(itemHeight * 2)
 
-          atom.commands.dispatch(suggestionList, 'core:move-to-top')
+          chevron.commands.dispatch(suggestionList, 'core:move-to-top')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[0]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(0)
 
-          atom.commands.dispatch(suggestionList, 'core:move-to-top')
+          chevron.commands.dispatch(suggestionList, 'core:move-to-top')
           expect(editorView.querySelectorAll('.autocomplete-plus li')[0]).toHaveClass('selected')
           expect(scroller.scrollTop).toBe(0)
         })
@@ -819,21 +819,21 @@ describe('Autocomplete Manager', () => {
       })
 
       it('binds to custom commands when unset, and binds back to core commands when set', () => {
-        atom.commands.dispatch(suggestionList, 'core:move-down')
+        chevron.commands.dispatch(suggestionList, 'core:move-down')
         expect(editorView.querySelectorAll('.autocomplete-plus li')[1]).toHaveClass('selected')
 
-        atom.config.set('autocomplete-plus.useCoreMovementCommands', false)
+        chevron.config.set('autocomplete-plus.useCoreMovementCommands', false)
 
-        atom.commands.dispatch(suggestionList, 'core:move-down')
+        chevron.commands.dispatch(suggestionList, 'core:move-down')
         expect(editorView.querySelectorAll('.autocomplete-plus li')[1]).toHaveClass('selected')
-        atom.commands.dispatch(suggestionList, 'autocomplete-plus:move-down')
+        chevron.commands.dispatch(suggestionList, 'autocomplete-plus:move-down')
         expect(editorView.querySelectorAll('.autocomplete-plus li')[2]).toHaveClass('selected')
 
-        atom.config.set('autocomplete-plus.useCoreMovementCommands', true)
+        chevron.config.set('autocomplete-plus.useCoreMovementCommands', true)
 
-        atom.commands.dispatch(suggestionList, 'autocomplete-plus:move-down')
+        chevron.commands.dispatch(suggestionList, 'autocomplete-plus:move-down')
         expect(editorView.querySelectorAll('.autocomplete-plus li')[2]).toHaveClass('selected')
-        atom.commands.dispatch(suggestionList, 'core:move-down')
+        chevron.commands.dispatch(suggestionList, 'core:move-down')
         expect(editorView.querySelectorAll('.autocomplete-plus li')[3]).toHaveClass('selected')
       })
     })
@@ -842,7 +842,7 @@ describe('Autocomplete Manager', () => {
       let [suggestionList] = []
 
       beforeEach(async () => {
-        atom.config.set('autocomplete-plus.useCoreMovementCommands', false)
+        chevron.config.set('autocomplete-plus.useCoreMovementCommands', false)
         triggerAutocompletion(editor, true, 'a')
         await waitForAutocomplete(editor)
 
@@ -851,25 +851,25 @@ describe('Autocomplete Manager', () => {
       })
 
       it('responds to all the custom movement commands and to no core commands', () => {
-        atom.commands.dispatch(suggestionList, 'core:move-down')
+        chevron.commands.dispatch(suggestionList, 'core:move-down')
         expect(editorView.querySelectorAll('.autocomplete-plus li')[0]).toHaveClass('selected')
 
-        atom.commands.dispatch(suggestionList, 'autocomplete-plus:move-down')
+        chevron.commands.dispatch(suggestionList, 'autocomplete-plus:move-down')
         expect(editorView.querySelectorAll('.autocomplete-plus li')[1]).toHaveClass('selected')
 
-        atom.commands.dispatch(suggestionList, 'autocomplete-plus:move-up')
+        chevron.commands.dispatch(suggestionList, 'autocomplete-plus:move-up')
         expect(editorView.querySelectorAll('.autocomplete-plus li')[0]).toHaveClass('selected')
 
-        atom.commands.dispatch(suggestionList, 'autocomplete-plus:page-down')
+        chevron.commands.dispatch(suggestionList, 'autocomplete-plus:page-down')
         expect(editorView.querySelectorAll('.autocomplete-plus li')[0]).not.toHaveClass('selected')
 
-        atom.commands.dispatch(suggestionList, 'autocomplete-plus:page-up')
+        chevron.commands.dispatch(suggestionList, 'autocomplete-plus:page-up')
         expect(editorView.querySelectorAll('.autocomplete-plus li')[0]).toHaveClass('selected')
 
-        atom.commands.dispatch(suggestionList, 'autocomplete-plus:move-to-bottom')
+        chevron.commands.dispatch(suggestionList, 'autocomplete-plus:move-to-bottom')
         expect(editorView.querySelectorAll('.autocomplete-plus li')[3]).toHaveClass('selected')
 
-        atom.commands.dispatch(suggestionList, 'autocomplete-plus:move-to-top')
+        chevron.commands.dispatch(suggestionList, 'autocomplete-plus:move-to-top')
         expect(editorView.querySelectorAll('.autocomplete-plus li')[0]).toHaveClass('selected')
       })
     })
@@ -883,7 +883,7 @@ describe('Autocomplete Manager', () => {
       })
 
       describe('when the snippets package is enabled', () => {
-        beforeEach(() => atom.packages.activatePackage('snippets'))
+        beforeEach(() => chevron.packages.activatePackage('snippets'))
 
         it('displays the snippet without the `${1:}` in its own class', async () => {
           triggerAutocompletion(editor, true, 'm')
@@ -902,7 +902,7 @@ describe('Autocomplete Manager', () => {
           await waitForAutocomplete(editor)
 
           let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-          atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+          chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
           expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
           expect(editor.getSelectedText()).toBe('something')
         })
@@ -917,11 +917,11 @@ describe('Autocomplete Manager', () => {
           expect(wordElements[3].textContent).toBe('namespace\\method4(something)')
 
           // Select last item
-          atom.commands.dispatch(editorView, 'core:move-up')
+          chevron.commands.dispatch(editorView, 'core:move-up')
 
           // Value in editor
           let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-          atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+          chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
           expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
           expect(editor.getText()).toBe('namespace\\method4(something)')
         })
@@ -995,7 +995,7 @@ describe('Autocomplete Manager', () => {
         })
 
         describe('when the snippets package is enabled', () => {
-          beforeEach(() => atom.packages.activatePackage('snippets'))
+          beforeEach(() => chevron.packages.activatePackage('snippets'))
 
           it('does not highlight the snippet html; ref issue 301', async () => {
             spyOn(provider, 'getSuggestions').andCallFake(() => [{snippet: 'ab(${1:c})c'}])
@@ -1049,7 +1049,7 @@ describe('Autocomplete Manager', () => {
 
         expect(editorView.querySelector('.autocomplete-plus')).toExist()
         let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-        atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+        chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
         expect(editor.getText()).toBe('something')
       })
 
@@ -1062,13 +1062,13 @@ describe('Autocomplete Manager', () => {
 
         expect(editorView.querySelector('.autocomplete-plus')).toExist()
         let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-        atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+        chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
         expect(editor.getText()).toBe('abc.something')
       })
 
       describe('providers using the 4.0 API', () => {
         it('replaces the entire prefix by default, regardless of the characters it contains', async () => {
-          atom.config.set('editor.nonWordCharacters', '-')
+          chevron.config.set('editor.nonWordCharacters', '-')
           provider = {
             scopeSelector: '*',
             inclusionPriority: 100,
@@ -1088,7 +1088,7 @@ describe('Autocomplete Manager', () => {
 
           expect(editorView.querySelector('.autocomplete-plus')).toExist()
           let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-          atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+          chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
           expect(editor.getText()).toBe('$food $food')
         })
       })
@@ -1111,7 +1111,7 @@ describe('Autocomplete Manager', () => {
         await waitForAutocomplete(editor)
 
         let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-        atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+        chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
         expect(editor.getText()).toBe('something')
         expect(suggestion.replacementPrefix).toBe('som')
         expect(suggestion.isPrefixModified).toBe(true)
@@ -1123,7 +1123,7 @@ describe('Autocomplete Manager', () => {
         await waitForAutocomplete(editor)
 
         let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-        atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+        chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
         expect(editor.getText()).toBe('something')
         expect(suggestion.replacementPrefix).toBe('somet')
         expect(suggestion.isPrefixModified).toBe(true)
@@ -1132,7 +1132,7 @@ describe('Autocomplete Manager', () => {
 
     describe("when autocomplete-plus.suggestionListFollows is 'Cursor'", () => {
       beforeEach(() => {
-        atom.config.set('autocomplete-plus.suggestionListFollows', 'Cursor')
+        chevron.config.set('autocomplete-plus.suggestionListFollows', 'Cursor')
       })
 
       it('places the suggestion list at the cursor', async () => {
@@ -1183,7 +1183,7 @@ describe('Autocomplete Manager', () => {
 
     describe("when autocomplete-plus.suggestionListFollows is 'Word'", () => {
       beforeEach(() => {
-        atom.config.set('autocomplete-plus.suggestionListFollows', 'Word')
+        chevron.config.set('autocomplete-plus.suggestionListFollows', 'Word')
       })
 
       it('opens to the correct position, and correctly closes on cancel', async () => {
@@ -1302,7 +1302,7 @@ describe('Autocomplete Manager', () => {
 
         // Accept suggestion
         let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-        atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+        chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
 
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
       })
@@ -1318,21 +1318,21 @@ describe('Autocomplete Manager', () => {
           await waitForAutocomplete(editor)
 
           let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-          atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+          chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
 
           expect(editor.getText()).toBe('ok then a.someMethod()')
         })
       })
 
       describe('when the alternate keyboard integration is used', () => {
-        beforeEach(() => atom.config.set('autocomplete-plus.confirmCompletion', 'tab always, enter when suggestion explicitly selected'))
+        beforeEach(() => chevron.config.set('autocomplete-plus.confirmCompletion', 'tab always, enter when suggestion explicitly selected'))
 
         it('inserts the word on tab and moves the cursor to the end of the word', async () => {
           triggerAutocompletion(editor, false, 'a')
           await waitForAutocomplete(editor)
 
-          let key = atom.keymaps.constructor.buildKeydownEvent('tab', {target: document.activeElement})
-          atom.keymaps.handleKeyboardEvent(key)
+          let key = chevron.keymaps.constructor.buildKeydownEvent('tab', {target: document.activeElement})
+          chevron.keymaps.handleKeyboardEvent(key)
 
           expect(editor.getText()).toBe('ok then ab')
 
@@ -1345,8 +1345,8 @@ describe('Autocomplete Manager', () => {
           triggerAutocompletion(editor, false, 'a')
           await waitForAutocomplete(editor)
 
-          let key = atom.keymaps.constructor.buildKeydownEvent('enter', {keyCode: 13, target: document.activeElement})
-          atom.keymaps.handleKeyboardEvent(key)
+          let key = chevron.keymaps.constructor.buildKeydownEvent('enter', {keyCode: 13, target: document.activeElement})
+          chevron.keymaps.handleKeyboardEvent(key)
           expect(editor.getText()).toBe('ok then a\n')
         })
 
@@ -1354,10 +1354,10 @@ describe('Autocomplete Manager', () => {
           triggerAutocompletion(editor, false, 'a')
           await waitForAutocomplete(editor)
 
-          editorView = atom.views.getView(editor)
-          atom.commands.dispatch(editorView, 'core:move-down')
-          let key = atom.keymaps.constructor.buildKeydownEvent('enter', {keyCode: 13, target: document.activeElement})
-          atom.keymaps.handleKeyboardEvent(key)
+          editorView = chevron.views.getView(editor)
+          chevron.commands.dispatch(editorView, 'core:move-down')
+          let key = chevron.keymaps.constructor.buildKeydownEvent('enter', {keyCode: 13, target: document.activeElement})
+          chevron.keymaps.handleKeyboardEvent(key)
 
           expect(editor.getText()).toBe('ok then abc')
 
@@ -1368,14 +1368,14 @@ describe('Autocomplete Manager', () => {
       })
 
       describe('when tab is used to accept suggestions', () => {
-        beforeEach(() => atom.config.set('autocomplete-plus.confirmCompletion', 'tab'))
+        beforeEach(() => chevron.config.set('autocomplete-plus.confirmCompletion', 'tab'))
 
         it('inserts the word and moves the cursor to the end of the word', async () => {
           triggerAutocompletion(editor, false, 'a')
           await waitForAutocomplete(editor)
 
-          let key = atom.keymaps.constructor.buildKeydownEvent('tab', {target: document.activeElement})
-          atom.keymaps.handleKeyboardEvent(key)
+          let key = chevron.keymaps.constructor.buildKeydownEvent('tab', {target: document.activeElement})
+          chevron.keymaps.handleKeyboardEvent(key)
 
           expect(editor.getText()).toBe('ok then ab')
 
@@ -1388,21 +1388,21 @@ describe('Autocomplete Manager', () => {
           triggerAutocompletion(editor, false, 'a')
           await waitForAutocomplete(editor)
 
-          let key = atom.keymaps.constructor.buildKeydownEvent('enter', {keyCode: 13, target: document.activeElement})
-          atom.keymaps.handleKeyboardEvent(key)
+          let key = chevron.keymaps.constructor.buildKeydownEvent('enter', {keyCode: 13, target: document.activeElement})
+          chevron.keymaps.handleKeyboardEvent(key)
           expect(editor.getText()).toBe('ok then a\n')
         })
       })
 
       describe('when enter is used to accept suggestions', () => {
-        beforeEach(() => atom.config.set('autocomplete-plus.confirmCompletion', 'enter'))
+        beforeEach(() => chevron.config.set('autocomplete-plus.confirmCompletion', 'enter'))
 
         it('inserts the word and moves the cursor to the end of the word', async () => {
           triggerAutocompletion(editor, false, 'a')
           await waitForAutocomplete(editor)
 
-          let key = atom.keymaps.constructor.buildKeydownEvent('enter', {target: document.activeElement})
-          atom.keymaps.handleKeyboardEvent(key)
+          let key = chevron.keymaps.constructor.buildKeydownEvent('enter', {target: document.activeElement})
+          chevron.keymaps.handleKeyboardEvent(key)
 
           expect(editor.getText()).toBe('ok then ab')
 
@@ -1415,8 +1415,8 @@ describe('Autocomplete Manager', () => {
           triggerAutocompletion(editor, false, 'a')
           await waitForAutocomplete(editor)
 
-          let key = atom.keymaps.constructor.buildKeydownEvent('tab', {keyCode: 13, target: document.activeElement})
-          atom.keymaps.handleKeyboardEvent(key)
+          let key = chevron.keymaps.constructor.buildKeydownEvent('tab', {keyCode: 13, target: document.activeElement})
+          chevron.keymaps.handleKeyboardEvent(key)
           expect(editor.getText()).toBe('ok then a ')
         })
       })
@@ -1433,7 +1433,7 @@ describe('Autocomplete Manager', () => {
           await waitForAutocomplete(editor)
 
           let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-          atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+          chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
 
           expect(editor.getText()).toBe('oneomgtwothree')
         })
@@ -1443,7 +1443,7 @@ describe('Autocomplete Manager', () => {
             {text: 'oneomgtwo', replacementPrefix: 'one'}
           ])
 
-          atom.config.set('autocomplete-plus.consumeSuffix', false)
+          chevron.config.set('autocomplete-plus.consumeSuffix', false)
 
           editor.setText('ontwothree')
           editor.setCursorBufferPosition([0, 2])
@@ -1451,7 +1451,7 @@ describe('Autocomplete Manager', () => {
           await waitForAutocomplete(editor)
 
           let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-          atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+          chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
 
           expect(editor.getText()).toBe('oneomgtwotwothree')
         })
@@ -1467,7 +1467,7 @@ describe('Autocomplete Manager', () => {
           await waitForAutocomplete(editor)
 
           let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-          atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+          chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
 
           expect(editor.getText()).toBe('(oneomgtwo())three')
         })
@@ -1484,7 +1484,7 @@ describe('Autocomplete Manager', () => {
           await waitForAutocomplete(editor)
 
           let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-          atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+          chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
 
           expect(editor.getText()).toBe('oneomgTwotwothree')
         })
@@ -1493,7 +1493,7 @@ describe('Autocomplete Manager', () => {
 
     describe('when auto-activation is disabled', () => {
       beforeEach(() => {
-        atom.config.set('autocomplete-plus.enableAutoActivation', false)
+        chevron.config.set('autocomplete-plus.enableAutoActivation', false)
       })
 
       it('does not show suggestions after a delay', async () => {
@@ -1507,7 +1507,7 @@ describe('Autocomplete Manager', () => {
         await timeoutPromise(100)
 
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
-        atom.commands.dispatch(editorView, 'autocomplete-plus:activate')
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:activate')
         await waitForAutocomplete(editor)
 
         expect(editorView.querySelector('.autocomplete-plus')).toExist()
@@ -1518,7 +1518,7 @@ describe('Autocomplete Manager', () => {
         await timeoutPromise(100)
 
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
-        atom.commands.dispatch(editorView, 'autocomplete-plus:activate')
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:activate')
         await waitForAutocomplete(editor)
 
         editor.insertText('b')
@@ -1532,7 +1532,7 @@ describe('Autocomplete Manager', () => {
         await timeoutPromise(100)
 
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
-        atom.commands.dispatch(editorView, 'autocomplete-plus:activate')
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:activate')
         await timeoutPromise(100)
 
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
@@ -1546,7 +1546,7 @@ describe('Autocomplete Manager', () => {
         await timeoutPromise(100)
 
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
-        atom.commands.dispatch(editorView, 'autocomplete-plus:activate', {activatedManually: false})
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:activate', {activatedManually: false})
         await waitForAutocomplete(editor)
       })
 
@@ -1556,9 +1556,9 @@ describe('Autocomplete Manager', () => {
         triggerAutocompletion(editor)
         await timeoutPromise(100)
 
-        atom.config.set('autocomplete-plus.enableAutoConfirmSingleSuggestion', false)
+        chevron.config.set('autocomplete-plus.enableAutoConfirmSingleSuggestion', false)
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
-        atom.commands.dispatch(editorView, 'autocomplete-plus:activate')
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:activate')
         await waitForAutocomplete(editor)
       })
 
@@ -1573,7 +1573,7 @@ describe('Autocomplete Manager', () => {
         await timeoutPromise(100)
 
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
-        atom.commands.dispatch(editorView, 'autocomplete-plus:activate')
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:activate')
         await waitForAutocomplete(editor)
 
         expect(receivedOptions).toBeDefined()
@@ -1589,7 +1589,7 @@ describe('Autocomplete Manager', () => {
         })
 
         editor.insertText('a')
-        atom.commands.dispatch(editorView, 'autocomplete-plus:activate')
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:activate')
         await waitForAutocomplete(editor)
 
         expect(editorView.querySelectorAll('.autocomplete-plus li')).toHaveLength(2)
@@ -1617,7 +1617,7 @@ def`
 
           expect(editorView.querySelector('.autocomplete-plus')).toExist()
           let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-          atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+          chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
           expect(editor.getText()).toBe(`asomething asomething
 defm`
           )
@@ -1627,7 +1627,7 @@ defm`
       describe('when snippets are used', () => {
         beforeEach(async () => {
           spyOn(provider, 'getSuggestions').andCallFake(() => [{snippet: 'ok(${1:omg})', replacementPrefix: 'bcm'}])
-          await atom.packages.activatePackage('snippets')
+          await chevron.packages.activatePackage('snippets')
         })
 
         it('only replaces the suggestion at cursors whos prefix matches the replacementPrefix', async () => {
@@ -1642,7 +1642,7 @@ def`
 
           expect(editorView.querySelector('.autocomplete-plus')).toExist()
           let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
-          atom.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
+          chevron.commands.dispatch(suggestionListView, 'autocomplete-plus:confirm')
           expect(editor.getText()).toBe(`aok(omg) aok(omg)
 defm`
           )
@@ -1662,7 +1662,7 @@ defm`
         expect(items[2]).not.toHaveClass('selected')
 
         // Select previous item
-        atom.commands.dispatch(editorView, 'core:move-up')
+        chevron.commands.dispatch(editorView, 'core:move-up')
 
         items = editorView.querySelectorAll('.autocomplete-plus li')
         expect(items[0]).not.toHaveClass('selected')
@@ -1680,7 +1680,7 @@ defm`
         await waitForAutocomplete(editor)
 
         // two items displayed, should not close
-        atom.commands.dispatch(editorView, 'core:move-up')
+        chevron.commands.dispatch(editorView, 'core:move-up')
         await timeoutPromise(1)
 
         let autocomplete = editorView.querySelector('.autocomplete-plus')
@@ -1693,7 +1693,7 @@ defm`
         expect(autocomplete).toExist()
 
         // one item displayed, should close
-        atom.commands.dispatch(editorView, 'core:move-up')
+        chevron.commands.dispatch(editorView, 'core:move-up')
         await timeoutPromise(1)
 
         autocomplete = editorView.querySelector('.autocomplete-plus')
@@ -1716,7 +1716,7 @@ defm`
         let autocomplete = editorView.querySelector('.autocomplete-plus')
         expect(autocomplete).toExist()
 
-        atom.commands.dispatch(editorView, 'core:move-up')
+        chevron.commands.dispatch(editorView, 'core:move-up')
 
         autocomplete = editorView.querySelector('.autocomplete-plus')
         expect(autocomplete).toExist()
@@ -1737,7 +1737,7 @@ defm`
         expect(items[2]).not.toHaveClass('selected')
 
         // Select next item
-        atom.commands.dispatch(editorView, 'core:move-down')
+        chevron.commands.dispatch(editorView, 'core:move-down')
 
         items = editorView.querySelectorAll('.autocomplete-plus li')
         expect(items[0]).not.toHaveClass('selected')
@@ -1759,13 +1759,13 @@ defm`
         let suggestionListView = editorView.querySelector('.autocomplete-plus autocomplete-suggestion-list')
         items = editorView.querySelectorAll('.autocomplete-plus li')
 
-        atom.commands.dispatch(suggestionListView, 'core:move-down')
+        chevron.commands.dispatch(suggestionListView, 'core:move-down')
         expect(items[1]).toHaveClass('selected')
 
-        atom.commands.dispatch(suggestionListView, 'core:move-down')
+        chevron.commands.dispatch(suggestionListView, 'core:move-down')
         expect(items[2]).toHaveClass('selected')
 
-        atom.commands.dispatch(suggestionListView, 'core:move-down')
+        chevron.commands.dispatch(suggestionListView, 'core:move-down')
         expect(items[0]).toHaveClass('selected')
       })
     })
@@ -1993,48 +1993,48 @@ defm`
       // The command opens through the application delegate, not electron.shell.
       it('triggers openExternal on keybind if there is a description with a link', async () => {
         spyOn(provider, 'getSuggestions').andCallFake(() => [{text: 'ab', description: 'it is ab', descriptionMoreURL: 'https://example.com/ab'}])
-        spyOn(atom.applicationDelegate, 'openExternal')
+        spyOn(chevron.applicationDelegate, 'openExternal')
 
         triggerAutocompletion(editor, true, 'a')
         await waitForAutocomplete(editor)
 
         expect(editorView.querySelector('.autocomplete-plus')).toExist()
-        atom.commands.dispatch(editorView, 'autocomplete-plus:navigate-to-description-more-link')
-        expect(atom.applicationDelegate.openExternal).toHaveBeenCalledWith('https://example.com/ab')
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:navigate-to-description-more-link')
+        expect(chevron.applicationDelegate.openExternal).toHaveBeenCalledWith('https://example.com/ab')
       })
 
       it('does not trigger openExternal on keybind if the description has no link', async () => {
         spyOn(provider, 'getSuggestions').andCallFake(() => [{text: 'ab', description: 'it is ab'}])
-        spyOn(atom.applicationDelegate, 'openExternal')
+        spyOn(chevron.applicationDelegate, 'openExternal')
 
         triggerAutocompletion(editor, true, 'a')
         await waitForAutocomplete(editor)
 
-        atom.commands.dispatch(editorView, 'autocomplete-plus:navigate-to-description-more-link')
-        expect(atom.applicationDelegate.openExternal).not.toHaveBeenCalled()
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:navigate-to-description-more-link')
+        expect(chevron.applicationDelegate.openExternal).not.toHaveBeenCalled()
       })
 
       it('does not trigger openExternal on keybind if there is not a description', async () => {
         spyOn(provider, 'getSuggestions').andCallFake(() => [{text: 'ab'}])
-        spyOn(atom.applicationDelegate, 'openExternal')
+        spyOn(chevron.applicationDelegate, 'openExternal')
 
         triggerAutocompletion(editor, true, 'a')
         await waitForAutocomplete(editor)
 
         expect(editorView.querySelector('.autocomplete-plus')).toExist()
-        atom.commands.dispatch(editorView, 'autocomplete-plus:navigate-to-description-more-link')
-        expect(atom.applicationDelegate.openExternal).not.toHaveBeenCalled()
+        chevron.commands.dispatch(editorView, 'autocomplete-plus:navigate-to-description-more-link')
+        expect(chevron.applicationDelegate.openExternal).not.toHaveBeenCalled()
       })
     })
   })
 
   describe('when opening a file without a path', () => {
     beforeEach(async () => {
-      editor = await atom.workspace.open('')
-      editorView = atom.views.getView(editor)
+      editor = await chevron.workspace.open('')
+      editorView = chevron.views.getView(editor)
 
       // Activate the package
-      mainModule = (await atom.packages.activatePackage('autocomplete-plus')).mainModule
+      mainModule = (await chevron.packages.activatePackage('autocomplete-plus')).mainModule
 
       await conditionPromise(() => {
         return mainModule && mainModule.autocompleteManager && mainModule.autocompleteManager.ready
@@ -2046,7 +2046,7 @@ defm`
     })
 
     describe('when strict matching is used', () => {
-      beforeEach(() => atom.config.set('autocomplete-plus.strictMatching', true))
+      beforeEach(() => chevron.config.set('autocomplete-plus.strictMatching', true))
 
       it('using strict matching does not cause issues when typing', async () => {
         editor.moveToBottom()
@@ -2065,14 +2065,14 @@ defm`
 
   describe('when opening a javascript file', () => {
     beforeEach(async () => {
-      atom.config.set('autocomplete-plus.enableAutoActivation', true)
+      chevron.config.set('autocomplete-plus.enableAutoActivation', true)
 
-      editor = await atom.workspace.open('sample.js')
-      editorView = atom.views.getView(editor)
+      editor = await chevron.workspace.open('sample.js')
+      editorView = chevron.views.getView(editor)
 
-      await atom.packages.activatePackage('language-javascript')
+      await chevron.packages.activatePackage('language-javascript')
 
-      mainModule = (await atom.packages.activatePackage('autocomplete-plus')).mainModule
+      mainModule = (await chevron.packages.activatePackage('autocomplete-plus')).mainModule
 
       await conditionPromise(() => {
         autocompleteManager = mainModule.autocompleteManager
@@ -2084,7 +2084,7 @@ defm`
 
     describe('when the built-in provider is disabled', () =>
       it('should not show the suggestion list', async () => {
-        atom.config.set('autocomplete-plus.enableBuiltinProvider', false)
+        chevron.config.set('autocomplete-plus.enableBuiltinProvider', false)
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
         triggerAutocompletion(editor)
         await timeoutPromise(100)
@@ -2120,7 +2120,7 @@ defm`
       })
 
       it('shows the suggestion list on backspace if allowed', async () => {
-        atom.config.set('autocomplete-plus.backspaceTriggersAutocomplete', true)
+        chevron.config.set('autocomplete-plus.backspaceTriggersAutocomplete', true)
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
 
         editor.moveToBottom()
@@ -2133,13 +2133,13 @@ defm`
         await waitForAutocompleteToDisappear(editor)
 
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
-        let key = atom.keymaps.constructor.buildKeydownEvent('backspace', {target: document.activeElement})
-        atom.keymaps.handleKeyboardEvent(key)
+        let key = chevron.keymaps.constructor.buildKeydownEvent('backspace', {target: document.activeElement})
+        chevron.keymaps.handleKeyboardEvent(key)
         await timeoutPromise(100)
 
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
-        key = atom.keymaps.constructor.buildKeydownEvent('backspace', {target: document.activeElement})
-        atom.keymaps.handleKeyboardEvent(key)
+        key = chevron.keymaps.constructor.buildKeydownEvent('backspace', {target: document.activeElement})
+        chevron.keymaps.handleKeyboardEvent(key)
         await waitForAutocomplete(editor)
 
         expect(editorView.querySelector('.autocomplete-plus')).toExist()
@@ -2147,7 +2147,7 @@ defm`
       })
 
       it('does not shows the suggestion list on backspace if disallowed', async () => {
-        atom.config.set('autocomplete-plus.backspaceTriggersAutocomplete', false)
+        chevron.config.set('autocomplete-plus.backspaceTriggersAutocomplete', false)
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
 
         editor.moveToBottom()
@@ -2159,12 +2159,12 @@ defm`
         editor.insertText('\r')
 
         await waitForAutocompleteToDisappear(editor)
-        let key = atom.keymaps.constructor.buildKeydownEvent('backspace', {target: document.activeElement})
-        atom.keymaps.handleKeyboardEvent(key)
+        let key = chevron.keymaps.constructor.buildKeydownEvent('backspace', {target: document.activeElement})
+        chevron.keymaps.handleKeyboardEvent(key)
 
         await waitForAutocompleteToDisappear(editor)
-        key = atom.keymaps.constructor.buildKeydownEvent('backspace', {target: document.activeElement})
-        atom.keymaps.handleKeyboardEvent(key)
+        key = chevron.keymaps.constructor.buildKeydownEvent('backspace', {target: document.activeElement})
+        chevron.keymaps.handleKeyboardEvent(key)
         await timeoutPromise(100)
 
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
@@ -2180,8 +2180,8 @@ defm`
         await waitForAutocomplete(editor)
         expect(editorView.querySelector('.autocomplete-plus')).toExist()
 
-        let key = atom.keymaps.constructor.buildKeydownEvent('backspace', {target: document.activeElement})
-        atom.keymaps.handleKeyboardEvent(key)
+        let key = chevron.keymaps.constructor.buildKeydownEvent('backspace', {target: document.activeElement})
+        chevron.keymaps.handleKeyboardEvent(key)
         await waitForAutocomplete(editor)
 
         expect(editorView.querySelector('.autocomplete-plus')).toExist()
@@ -2189,13 +2189,13 @@ defm`
       })
 
       it("does not open the suggestion on backspace when it's closed", async () => {
-        atom.config.set('autocomplete-plus.backspaceTriggersAutocomplete', false)
+        chevron.config.set('autocomplete-plus.backspaceTriggersAutocomplete', false)
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
 
         editor.setCursorBufferPosition([2, 39]) // at the end of `items`
 
-        let key = atom.keymaps.constructor.buildKeydownEvent('backspace', {target: document.activeElement})
-        atom.keymaps.handleKeyboardEvent(key)
+        let key = chevron.keymaps.constructor.buildKeydownEvent('backspace', {target: document.activeElement})
+        chevron.keymaps.handleKeyboardEvent(key)
 
         await timeoutPromise(100)
         expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
@@ -2254,11 +2254,11 @@ defm`
         triggerAutocompletion(editor, false)
 
         autocompleteManager.hideSuggestionList()
-        editorView = atom.views.getView(editor)
-        atom.commands.dispatch(editorView, 'core:move-down')
+        editorView = chevron.views.getView(editor)
+        chevron.commands.dispatch(editorView, 'core:move-down')
         expect(editor.getCursorBufferPosition().row).toBe(1)
 
-        atom.commands.dispatch(editorView, 'core:move-up')
+        chevron.commands.dispatch(editorView, 'core:move-up')
         expect(editor.getCursorBufferPosition().row).toBe(0)
       })
     })
@@ -2266,12 +2266,12 @@ defm`
 
   describe('when a long completion exists', () => {
     beforeEach(async () => {
-      atom.config.set('autocomplete-plus.enableAutoActivation', true)
+      chevron.config.set('autocomplete-plus.enableAutoActivation', true)
 
-      editor = await atom.workspace.open('samplelong.js')
+      editor = await chevron.workspace.open('samplelong.js')
 
       // Activate the package
-      mainModule = (await atom.packages.activatePackage('autocomplete-plus')).mainModule
+      mainModule = (await chevron.packages.activatePackage('autocomplete-plus')).mainModule
 
       await conditionPromise(() => mainModule.autocompleteManager)
       autocompleteManager = mainModule.autocompleteManager
@@ -2296,7 +2296,7 @@ defm`
 
     beforeEach(async () => {
       // Activate package.
-      const pck = await atom.packages.activatePackage('autocomplete-plus')
+      const pck = await chevron.packages.activatePackage('autocomplete-plus')
       mainModule = pck.mainModule
 
       autocompleteManager = mainModule.autocompleteManager
@@ -2316,14 +2316,14 @@ defm`
       }
       mainModule.consumeProvider(centerProvider)
 
-      editor = await atom.workspace.open('')
-      editorView = atom.views.getView(editor)
+      editor = await chevron.workspace.open('')
+      editorView = chevron.views.getView(editor)
 
       // Create an editor in the bottom panel,
       // requesting autocompletions from a given label.
       bottomEditor = new TextEditor()
-      bottomEditorView = atom.views.getView(bottomEditor)
-      atom.workspace.addBottomPanel({item: bottomEditorView, visible: true})
+      bottomEditorView = chevron.views.getView(bottomEditor)
+      chevron.workspace.addBottomPanel({item: bottomEditorView, visible: true})
       autocompleteDisposable = autocompleteManager.watchEditor(
         bottomEditor,
         ['bottom-label']

@@ -48,8 +48,8 @@ describe('chevron package API exports', () => {
 
   it('no product source sets or reads global.atom', () => {
     // The alias is gone entirely. main-process global.atomApplication is a
-    // different object and out of scope for PR 23. The Jasmine harness sets
-    // its own window.atom and lives under spec/, which is not scanned here.
+    // different object and out of scope for PR 23. The Jasmine harness lives
+    // under spec/, which is not scanned here, and it does not set window.atom.
     const roots = ['src', 'static', 'exports'];
     const hits = [];
     const walk = dir => {
@@ -76,7 +76,7 @@ describe('chevron package API exports', () => {
 
   it('main process sets chevronApplication and no atomApplication alias', () => {
     const src = fs.readFileSync(
-      path.join(ROOT, 'src/main-process/atom-application.js'),
+      path.join(ROOT, 'src/main-process/chevron-application.js'),
       'utf8'
     );
     assert.ok(src.includes('global.chevronApplication'));

@@ -1,8 +1,8 @@
 
 // Editor in a panel
 
-// TODO: Find a better selector, maybe a new class like atom-text-editor[medium]
-atom-panel-container atom-text-editor.is-focused {
+// TODO: Find a better selector, maybe a new class like chevron-text-editor[medium]
+chevron-panel-container chevron-text-editor.is-focused {
   .focus();
 }
 
@@ -10,7 +10,7 @@ atom-panel-container atom-text-editor.is-focused {
 // Mini
 // Usually just single line inputs
 
-atom-text-editor[mini] {
+chevron-text-editor[mini] {
   overflow: auto;
   font-size: @ui-input-size;
   line-height: @ui-line-height;

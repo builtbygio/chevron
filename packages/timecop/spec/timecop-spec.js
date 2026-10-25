@@ -1,5 +1,5 @@
 const path = require('path')
-const CompileCache = require(path.join(atom.getLoadSettings().resourcePath, 'src', 'compile-cache'))
+const CompileCache = require(path.join(chevron.getLoadSettings().resourcePath, 'src', 'compile-cache'))
 
 const {it, fit, ffit, beforeEach, afterEach} = require('./async-spec-helpers') // eslint-disable-line no-unused-vars
 
@@ -10,9 +10,9 @@ describe('Timecop', () => {
       '.tsx': {hits: 1, misses: 2}
     })
 
-    atom.themes.lessCache.cache.stats.misses = 12
+    chevron.themes.lessCache.cache.stats.misses = 12
 
-    await atom.packages.activatePackage('timecop')
+    await chevron.packages.activatePackage('timecop')
   })
 
   describe('the Timecop view', () => {
@@ -42,15 +42,15 @@ describe('Timecop', () => {
         })
       ]
 
-      spyOn(atom.packages, 'getLoadedPackages').andReturn(packages)
-      spyOn(atom.packages, 'getActivePackages').andReturn(packages)
-      spyOn(atom.packages, 'hasLoadedInitialPackages').andReturn(true)
-      spyOn(atom.packages, 'hasActivatedInitialPackages').andReturn(true)
+      spyOn(chevron.packages, 'getLoadedPackages').andReturn(packages)
+      spyOn(chevron.packages, 'getActivePackages').andReturn(packages)
+      spyOn(chevron.packages, 'hasLoadedInitialPackages').andReturn(true)
+      spyOn(chevron.packages, 'hasActivatedInitialPackages').andReturn(true)
 
-      timecopView = await atom.workspace.open('chevron://timecop')
+      timecopView = await chevron.workspace.open('chevron://timecop')
     })
 
-    afterEach(() => jasmine.unspy(atom.packages, 'getLoadedPackages'))
+    afterEach(() => jasmine.unspy(chevron.packages, 'getLoadedPackages'))
 
     it('shows the packages that loaded slowly', () => {
       const loadingPanel = timecopView.refs.packageLoadingPanel
@@ -75,7 +75,7 @@ describe('Timecop', () => {
       let profiler, panel
 
       beforeEach(() => {
-        profiler = atom.packageProfiler
+        profiler = chevron.packageProfiler
         profiler.stop()
         profiler.reset()
         panel = timecopView.refs.sessionPanel

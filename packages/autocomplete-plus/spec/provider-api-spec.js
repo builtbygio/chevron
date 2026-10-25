@@ -9,19 +9,19 @@ describe('Provider API', () => {
     jasmine.useRealClock()
 
     // Set to live completion
-    atom.config.set('autocomplete-plus.enableAutoActivation', true)
-    atom.config.set('editor.fontSize', '16')
+    chevron.config.set('autocomplete-plus.enableAutoActivation', true)
+    chevron.config.set('editor.fontSize', '16')
 
     // Set the completion delay
-    atom.config.set('autocomplete-plus.autoActivationDelay', 100)
+    chevron.config.set('autocomplete-plus.autoActivationDelay', 100)
 
-    let workspaceElement = atom.views.getView(atom.workspace)
+    let workspaceElement = chevron.views.getView(chevron.workspace)
     jasmine.attachToDOM(workspaceElement)
 
     // Activate the package
-    await atom.packages.activatePackage('language-javascript')
-    editor = await atom.workspace.open('sample.js')
-    mainModule = (await atom.packages.activatePackage('autocomplete-plus')).mainModule
+    await chevron.packages.activatePackage('language-javascript')
+    editor = await chevron.workspace.open('sample.js')
+    mainModule = (await chevron.packages.activatePackage('autocomplete-plus')).mainModule
 
     await conditionPromise(() => {
       autocompleteManager = mainModule.autocompleteManager
@@ -49,7 +49,7 @@ describe('Provider API', () => {
         }
 
         expect(autocompleteManager.providerManager.applicableProviders(['workspace-center'], '.source.js').length).toEqual(1)
-        registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', [testProvider])
+        registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', [testProvider])
         return expect(autocompleteManager.providerManager.applicableProviders(['workspace-center'], '.source.js').length).toEqual(2)
       })
 
@@ -60,7 +60,7 @@ describe('Provider API', () => {
         }
 
         expect(autocompleteManager.providerManager.applicableProviders(['workspace-center'], '.source.js').length).toEqual(1)
-        registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
+        registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
         expect(autocompleteManager.providerManager.applicableProviders(['workspace-center'], '.source.js').length).toEqual(2)
       })
 
@@ -76,9 +76,9 @@ describe('Provider API', () => {
         }
 
         expect(autocompleteManager.providerManager.applicableProviders(['workspace-center'], '.source.js').length).toEqual(1)
-        registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
+        registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
         expect(autocompleteManager.providerManager.applicableProviders(['workspace-center'], '.source.js').length).toEqual(2)
-        registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider2)
+        registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider2)
         expect(autocompleteManager.providerManager.applicableProviders(['testProvider2'], '.source.js').length).toEqual(1)
         expect(autocompleteManager.providerManager.applicableProviders(['testProvider2', 'workspace-center'], '.source.js').length).toEqual(3)
       })
@@ -89,7 +89,7 @@ describe('Provider API', () => {
           getSuggestions (options) { return [{text: 'ohai', replacementPrefix: 'ohai'}] }
         }
 
-        registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
+        registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
 
         spyOn(testProvider, 'getSuggestions')
         triggerAutocompletion(editor, true, 'o')
@@ -119,7 +119,7 @@ describe('Provider API', () => {
             }]
           }
         }
-        registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
+        registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
 
         triggerAutocompletion(editor, true, 'o')
         await waitForAutocomplete(editor)
@@ -145,7 +145,7 @@ describe('Provider API', () => {
             }]
           }
         }
-        registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
+        registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
 
         triggerAutocompletion(editor, true, 'o')
         await waitForAutocomplete(editor)
@@ -167,7 +167,7 @@ describe('Provider API', () => {
             }]
           }
         }
-        registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
+        registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
 
         triggerAutocompletion(editor, true, 'o')
         await waitForAutocomplete(editor)
@@ -193,7 +193,7 @@ describe('Provider API', () => {
             return Object.assign({}, suggestion, {description: 'foo'})
           }
         }
-        registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
+        registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
 
         triggerAutocompletion(editor, true, 'o')
         await waitForAutocomplete(editor)
@@ -221,7 +221,7 @@ describe('Provider API', () => {
             ]
           }
         }
-        registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
+        registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
 
         editor.insertText('o')
         editor.insertText('k')
@@ -248,7 +248,7 @@ describe('Provider API', () => {
             ]
           }
         }
-        registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
+        registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
 
         editor.insertText('h')
         await waitForAutocomplete(editor)
@@ -273,7 +273,7 @@ describe('Provider API', () => {
             ]
           }
         }
-        registration = atom.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
+        registration = chevron.packages.serviceHub.provide('autocomplete.provider', '2.0.0', testProvider)
 
         editor.insertText('h')
         editor.insertText(' ')

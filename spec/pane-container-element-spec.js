@@ -4,10 +4,10 @@ const PaneAxis = require('../src/pane-axis');
 
 const params = {
   location: 'center',
-  config: atom.config,
-  confirm: atom.confirm.bind(atom),
-  viewRegistry: atom.views,
-  applicationDelegate: atom.applicationDelegate
+  config: chevron.config,
+  confirm: chevron.confirm.bind(chevron),
+  viewRegistry: chevron.views,
+  applicationDelegate: chevron.applicationDelegate
 };
 
 describe('PaneContainerElement', function() {
@@ -18,35 +18,35 @@ describe('PaneContainerElement', function() {
           child.nodeName.toLowerCase()
         );
 
-      const paneAxis = new PaneAxis({}, atom.views);
+      const paneAxis = new PaneAxis({}, chevron.views);
       var paneAxisElement = paneAxis.getElement();
 
       expect(childTagNames()).toEqual([]);
 
-      paneAxis.addChild(new PaneAxis({}, atom.views));
-      expect(childTagNames()).toEqual(['atom-pane-axis']);
+      paneAxis.addChild(new PaneAxis({}, chevron.views));
+      expect(childTagNames()).toEqual(['chevron-pane-axis']);
 
-      paneAxis.addChild(new PaneAxis({}, atom.views));
+      paneAxis.addChild(new PaneAxis({}, chevron.views));
       expect(childTagNames()).toEqual([
-        'atom-pane-axis',
-        'atom-pane-resize-handle',
-        'atom-pane-axis'
+        'chevron-pane-axis',
+        'chevron-pane-resize-handle',
+        'chevron-pane-axis'
       ]);
 
-      paneAxis.addChild(new PaneAxis({}, atom.views));
+      paneAxis.addChild(new PaneAxis({}, chevron.views));
       expect(childTagNames()).toEqual([
-        'atom-pane-axis',
-        'atom-pane-resize-handle',
-        'atom-pane-axis',
-        'atom-pane-resize-handle',
-        'atom-pane-axis'
+        'chevron-pane-axis',
+        'chevron-pane-resize-handle',
+        'chevron-pane-axis',
+        'chevron-pane-resize-handle',
+        'chevron-pane-axis'
       ]);
 
       paneAxis.removeChild(paneAxis.getChildren()[2]);
       expect(childTagNames()).toEqual([
-        'atom-pane-axis',
-        'atom-pane-resize-handle',
-        'atom-pane-axis'
+        'chevron-pane-axis',
+        'chevron-pane-resize-handle',
+        'chevron-pane-axis'
       ]);
     });
 
@@ -65,13 +65,13 @@ describe('PaneContainerElement', function() {
       rightPane.destroy();
       expect(containerElement).toHaveClass('panes');
       expect(containerElement.contains(leftPaneElement)).toBe(true);
-      expect(containerElement.querySelectorAll('atom-pane').length).toBe(1);
+      expect(containerElement.querySelectorAll('chevron-pane').length).toBe(1);
       expect(document.activeElement).toBe(leftPaneElement);
     });
   });
 
   describe('when a pane is split', () =>
-    it('builds appropriately-oriented atom-pane-axis elements', function() {
+    it('builds appropriately-oriented chevron-pane-axis elements', function() {
       const container = new PaneContainer(params);
       const containerElement = container.getElement();
 
@@ -80,13 +80,13 @@ describe('PaneContainerElement', function() {
       const pane3 = pane2.splitDown();
 
       const horizontalPanes = containerElement.querySelectorAll(
-        'atom-pane-container > atom-pane-axis.horizontal > atom-pane'
+        'chevron-pane-container > chevron-pane-axis.horizontal > chevron-pane'
       );
       expect(horizontalPanes.length).toBe(1);
       expect(horizontalPanes[0]).toBe(pane1.getElement());
 
       let verticalPanes = containerElement.querySelectorAll(
-        'atom-pane-container > atom-pane-axis.horizontal > atom-pane-axis.vertical > atom-pane'
+        'chevron-pane-container > chevron-pane-axis.horizontal > chevron-pane-axis.vertical > chevron-pane'
       );
       expect(verticalPanes.length).toBe(2);
       expect(verticalPanes[0]).toBe(pane2.getElement());
@@ -94,7 +94,7 @@ describe('PaneContainerElement', function() {
 
       pane1.destroy();
       verticalPanes = containerElement.querySelectorAll(
-        'atom-pane-container > atom-pane-axis.vertical > atom-pane'
+        'chevron-pane-container > chevron-pane-axis.vertical > chevron-pane'
       );
       expect(verticalPanes.length).toBe(2);
       expect(verticalPanes[0]).toBe(pane2.getElement());
@@ -150,10 +150,10 @@ describe('PaneContainerElement', function() {
       })();
 
     const getResizeElement = i =>
-      containerElement.querySelectorAll('atom-pane-resize-handle')[i];
+      containerElement.querySelectorAll('chevron-pane-resize-handle')[i];
 
     const getPaneElement = i =>
-      containerElement.querySelectorAll('atom-pane')[i];
+      containerElement.querySelectorAll('chevron-pane')[i];
 
     it('adds and removes panes in the direction that the pane is being dragged', async function() {
       jasmine.useRealClock();
@@ -259,11 +259,11 @@ describe('PaneContainerElement', function() {
         expect(leftPane.getFlexScale()).toBe(1);
         expect(rightPane.getFlexScale()).toBe(1);
 
-        atom.commands.dispatch(leftPane.getElement(), 'pane:increase-size');
+        chevron.commands.dispatch(leftPane.getElement(), 'pane:increase-size');
         expect(leftPane.getFlexScale()).toBe(1.1);
         expect(rightPane.getFlexScale()).toBe(1);
 
-        atom.commands.dispatch(rightPane.getElement(), 'pane:increase-size');
+        chevron.commands.dispatch(rightPane.getElement(), 'pane:increase-size');
         expect(leftPane.getFlexScale()).toBe(1.1);
         expect(rightPane.getFlexScale()).toBe(1.1);
       }));
@@ -273,11 +273,11 @@ describe('PaneContainerElement', function() {
         expect(leftPane.getFlexScale()).toBe(1);
         expect(rightPane.getFlexScale()).toBe(1);
 
-        atom.commands.dispatch(leftPane.getElement(), 'pane:decrease-size');
+        chevron.commands.dispatch(leftPane.getElement(), 'pane:decrease-size');
         expect(leftPane.getFlexScale()).toBe(1 / 1.1);
         expect(rightPane.getFlexScale()).toBe(1);
 
-        atom.commands.dispatch(rightPane.getElement(), 'pane:decrease-size');
+        chevron.commands.dispatch(rightPane.getElement(), 'pane:decrease-size');
         expect(leftPane.getFlexScale()).toBe(1 / 1.1);
         expect(rightPane.getFlexScale()).toBe(1 / 1.1);
       }));
@@ -295,10 +295,10 @@ describe('PaneContainerElement', function() {
       it('does not increases the size of the pane', function() {
         expect(singlePane.getFlexScale()).toBe(1);
 
-        atom.commands.dispatch(singlePane.getElement(), 'pane:increase-size');
+        chevron.commands.dispatch(singlePane.getElement(), 'pane:increase-size');
         expect(singlePane.getFlexScale()).toBe(1);
 
-        atom.commands.dispatch(singlePane.getElement(), 'pane:increase-size');
+        chevron.commands.dispatch(singlePane.getElement(), 'pane:increase-size');
         expect(singlePane.getFlexScale()).toBe(1);
       }));
 
@@ -306,10 +306,10 @@ describe('PaneContainerElement', function() {
       it('does not decreases the size of the pane', function() {
         expect(singlePane.getFlexScale()).toBe(1);
 
-        atom.commands.dispatch(singlePane.getElement(), 'pane:decrease-size');
+        chevron.commands.dispatch(singlePane.getElement(), 'pane:decrease-size');
         expect(singlePane.getFlexScale()).toBe(1);
 
-        atom.commands.dispatch(singlePane.getElement(), 'pane:decrease-size');
+        chevron.commands.dispatch(singlePane.getElement(), 'pane:decrease-size');
         expect(singlePane.getFlexScale()).toBe(1);
       }));
   });

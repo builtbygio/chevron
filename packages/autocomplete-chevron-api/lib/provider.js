@@ -12,7 +12,7 @@ const path = require('path');
 
 const CLASSES = require('../completions.json');
 
-const propertyPrefixPattern = /(?:^|\[|\(|,|=|:|\s)\s*(atom\.(?:[a-zA-Z]+\.?){0,2})$/;
+const propertyPrefixPattern = /(?:^|\[|\(|,|=|:|\s)\s*(chevron\.(?:[a-zA-Z]+\.?){0,2})$/;
 
 module.exports = {
   selector: '.source.coffee, .source.js',
@@ -82,7 +82,7 @@ module.exports = {
 
   loadCompletions() {
     if (this.completions == null) { this.completions = {}; }
-    return this.loadProperty('atom', 'AtomEnvironment', CLASSES);
+    return this.loadProperty('chevron', 'ChevronEnvironment', CLASSES);
   },
 
   getCompletions(line) {

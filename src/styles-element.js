@@ -148,12 +148,12 @@ class StylesElement extends HTMLElement {
   }
 }
 
-window.customElements.define('atom-styles', StylesElement);
+window.customElements.define('chevron-styles', StylesElement);
 
 const createCustomElement = require('./create-custom-element');
 
 function createStylesElement() {
-  return createCustomElement('atom-styles', StylesElement);
+  return createCustomElement('chevron-styles', StylesElement);
 }
 
 module.exports = {

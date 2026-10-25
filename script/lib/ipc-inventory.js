@@ -13,7 +13,7 @@ const REGISTRATION = /\bipcMain\s*\.\s*(handle|on)\s*\(\s*(['"`])((?:\\.|(?!\2)[
 
 // src/ipc-helpers.js registers on ipcMain too, one call removed: on() takes
 // the emitter as its first argument, respondTo() is ipcMain.on underneath.
-// Missing these left 31 channels in atom-application.js outside the gate.
+// Missing these left 31 channels in chevron-application.js outside the gate.
 const HELPER_REGISTRATION = /\bipcHelpers\s*\.\s*(?:on\s*\(\s*ipcMain\s*,|respondTo\s*\()\s*(['"`])((?:\\.|(?!\1)[^\\])*)\1/g;
 
 // Comments blanked, keeping length and newlines so offsets still give the

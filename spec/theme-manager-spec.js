@@ -5,12 +5,12 @@ const { conditionPromise } = require('./async-spec-helpers');
 
 describe('atom.themes', function() {
   beforeEach(async function() {
-    spyOn(atom, 'inSpecMode').andReturn(false);
+    spyOn(chevron, 'inSpecMode').andReturn(false);
     spyOn(console, 'warn');
   });
 
   afterEach(async function() {
-    await atom.themes.deactivateThemes();
+    await chevron.themes.deactivateThemes();
     try {
       temp.cleanupSync();
     } catch (error) {}
@@ -19,30 +19,30 @@ describe('atom.themes', function() {
   describe('theme getters and setters', function() {
     beforeEach(async function() {
       jasmine.snapshotDeprecations();
-      atom.packages.loadPackages();
+      chevron.packages.loadPackages();
     });
 
     afterEach(() => jasmine.restoreDeprecationsSnapshot());
 
     describe('getLoadedThemes', () =>
       it('gets all the loaded themes', function() {
-        const themes = atom.themes.getLoadedThemes();
+        const themes = chevron.themes.getLoadedThemes();
         expect(themes.length).toBeGreaterThan(2);
       }));
 
     describe('getActiveThemes', () =>
       it('gets all the active themes', async function() {
-        await atom.themes.activateThemes();
-        const names = atom.config.get('core.themes');
+        await chevron.themes.activateThemes();
+        const names = chevron.config.get('core.themes');
         expect(names.length).toBeGreaterThan(0);
-        const themes = atom.themes.getActiveThemes();
+        const themes = chevron.themes.getActiveThemes();
         expect(themes).toHaveLength(names.length);
       }));
   });
 
   describe('when the core.themes config value contains invalid entry', () =>
     it('ignores theme', function() {
-      atom.config.set('core.themes', [
+      chevron.config.set('core.themes', [
         'chevron-light-ui',
         null,
         undefined,
@@ -54,7 +54,7 @@ describe('atom.themes', function() {
         'chevron-dark-ui'
       ]);
 
-      expect(atom.themes.getEnabledThemeNames()).toEqual([
+      expect(chevron.themes.getEnabledThemeNames()).toEqual([
         'chevron-dark-ui',
         'chevron-light-ui'
       ]);
@@ -63,38 +63,38 @@ describe('atom.themes', function() {
 
   describe('legacy atom-* theme names', () =>
     it('maps atom-dark-ui / atom-light-ui to chevron-* packages', function() {
-      atom.config.set('core.themes', ['atom-light-ui', 'atom-dark-ui']);
-      expect(atom.themes.getEnabledThemeNames()).toEqual([
+      chevron.config.set('core.themes', ['atom-light-ui', 'atom-dark-ui']);
+      expect(chevron.themes.getEnabledThemeNames()).toEqual([
         'chevron-dark-ui',
         'chevron-light-ui'
       ]);
     }));
 
   describe('core.followSystemTheme', function() {
-    beforeEach(() => atom.config.set('core.themes', ['one-dark-ui', 'one-dark-syntax']));
+    beforeEach(() => chevron.config.set('core.themes', ['one-dark-ui', 'one-dark-syntax']));
 
     it('leaves the configured themes alone while off', function() {
-      atom.config.set('core.followSystemTheme', false);
-      spyOn(atom.applicationDelegate, 'shouldUseDarkColors').andReturn(false);
-      expect(atom.themes.getEnabledThemeNames()).toEqual([
+      chevron.config.set('core.followSystemTheme', false);
+      spyOn(chevron.applicationDelegate, 'shouldUseDarkColors').andReturn(false);
+      expect(chevron.themes.getEnabledThemeNames()).toEqual([
         'one-dark-syntax',
         'one-dark-ui'
       ]);
     });
 
     it('activates the light counterparts on a light desktop', function() {
-      atom.config.set('core.followSystemTheme', true);
-      spyOn(atom.applicationDelegate, 'shouldUseDarkColors').andReturn(false);
-      expect(atom.themes.getEnabledThemeNames()).toEqual([
+      chevron.config.set('core.followSystemTheme', true);
+      spyOn(chevron.applicationDelegate, 'shouldUseDarkColors').andReturn(false);
+      expect(chevron.themes.getEnabledThemeNames()).toEqual([
         'one-light-syntax',
         'one-light-ui'
       ]);
     });
 
     it('keeps the dark themes on a dark desktop', function() {
-      atom.config.set('core.followSystemTheme', true);
-      spyOn(atom.applicationDelegate, 'shouldUseDarkColors').andReturn(true);
-      expect(atom.themes.getEnabledThemeNames()).toEqual([
+      chevron.config.set('core.followSystemTheme', true);
+      spyOn(chevron.applicationDelegate, 'shouldUseDarkColors').andReturn(true);
+      expect(chevron.themes.getEnabledThemeNames()).toEqual([
         'one-dark-syntax',
         'one-dark-ui'
       ]);
@@ -103,29 +103,29 @@ describe('atom.themes', function() {
     it('reloads the themes when the OS appearance changes', async function() {
       jasmine.useRealClock();
       let nativeThemeListener;
-      spyOn(atom.applicationDelegate, 'onDidChangeNativeTheme').andCallFake(callback => {
+      spyOn(chevron.applicationDelegate, 'onDidChangeNativeTheme').andCallFake(callback => {
         nativeThemeListener = callback;
         return { dispose() {} };
       });
-      const dark = spyOn(atom.applicationDelegate, 'shouldUseDarkColors').andReturn(true);
-      spyOn(atom.styles, 'getUserStyleSheetPath').andCallFake(() => null);
-      atom.config.set('core.followSystemTheme', true);
+      const dark = spyOn(chevron.applicationDelegate, 'shouldUseDarkColors').andReturn(true);
+      spyOn(chevron.styles, 'getUserStyleSheetPath').andCallFake(() => null);
+      chevron.config.set('core.followSystemTheme', true);
 
-      await atom.themes.activateThemes();
+      await chevron.themes.activateThemes();
 
       let didChangeActiveThemesHandler;
-      expect(atom.themes.getActiveThemes().map(t => t.name).sort()).toEqual([
+      expect(chevron.themes.getActiveThemes().map(t => t.name).sort()).toEqual([
         'one-dark-syntax',
         'one-dark-ui'
       ]);
-      atom.themes.onDidChangeActiveThemes(
+      chevron.themes.onDidChangeActiveThemes(
         (didChangeActiveThemesHandler = jasmine.createSpy())
       );
       dark.andReturn(false);
       nativeThemeListener({ shouldUseDarkColors: false });
 
       await conditionPromise(() => didChangeActiveThemesHandler.callCount === 1);
-      expect(atom.themes.getActiveThemes().map(t => t.name).sort()).toEqual([
+      expect(chevron.themes.getActiveThemes().map(t => t.name).sort()).toEqual([
         'one-light-syntax',
         'one-light-ui'
       ]);
@@ -134,13 +134,13 @@ describe('atom.themes', function() {
 
   describe('::getImportPaths()', function() {
     it('returns the theme directories before the themes are loaded', function() {
-      atom.config.set('core.themes', [
+      chevron.config.set('core.themes', [
         'theme-with-index-less',
         'chevron-dark-ui',
         'chevron-light-ui'
       ]);
 
-      const paths = atom.themes.getImportPaths();
+      const paths = chevron.themes.getImportPaths();
 
       // syntax theme is not a dir at this time, so only two.
       expect(paths.length).toBe(2);
@@ -149,8 +149,8 @@ describe('atom.themes', function() {
     });
 
     it('ignores themes that cannot be resolved to a directory', function() {
-      atom.config.set('core.themes', ['definitely-not-a-theme']);
-      expect(() => atom.themes.getImportPaths()).not.toThrow();
+      chevron.config.set('core.themes', ['definitely-not-a-theme']);
+      expect(() => chevron.themes.getImportPaths()).not.toThrow();
     });
   });
 
@@ -158,14 +158,14 @@ describe('atom.themes', function() {
     it('add/removes stylesheets to reflect the new config value', async function() {
       jasmine.useRealClock();
       let didChangeActiveThemesHandler;
-      atom.themes.onDidChangeActiveThemes(
+      chevron.themes.onDidChangeActiveThemes(
         (didChangeActiveThemesHandler = jasmine.createSpy())
       );
-      spyOn(atom.styles, 'getUserStyleSheetPath').andCallFake(() => null);
+      spyOn(chevron.styles, 'getUserStyleSheetPath').andCallFake(() => null);
 
-      await atom.themes.activateThemes();
+      await chevron.themes.activateThemes();
       didChangeActiveThemesHandler.reset();
-      atom.config.set('core.themes', []);
+      chevron.config.set('core.themes', []);
 
       await conditionPromise(
         () => didChangeActiveThemesHandler.callCount === 1,
@@ -173,7 +173,7 @@ describe('atom.themes', function() {
       );
       didChangeActiveThemesHandler.reset();
       expect(document.querySelectorAll('style.theme')).toHaveLength(0);
-      atom.config.set('core.themes', ['chevron-dark-ui']);
+      chevron.config.set('core.themes', ['chevron-dark-ui']);
 
       await conditionPromise(
         () => didChangeActiveThemesHandler.callCount === 1,
@@ -186,7 +186,7 @@ describe('atom.themes', function() {
           .querySelector('style[priority="1"]')
           .getAttribute('source-path')
       ).toMatch(/chevron-dark-ui/);
-      atom.config.set('core.themes', ['chevron-light-ui', 'chevron-dark-ui']);
+      chevron.config.set('core.themes', ['chevron-light-ui', 'chevron-dark-ui']);
 
       await conditionPromise(
         () => didChangeActiveThemesHandler.callCount === 1,
@@ -204,41 +204,41 @@ describe('atom.themes', function() {
           .querySelectorAll('style[priority="1"]')[1]
           .getAttribute('source-path')
       ).toMatch(/chevron-light-ui/);
-      atom.config.set('core.themes', []);
+      chevron.config.set('core.themes', []);
 
       await conditionPromise(() => didChangeActiveThemesHandler.callCount === 1);
       didChangeActiveThemesHandler.reset();
       expect(document.querySelectorAll('style[priority="1"]')).toHaveLength(2);
       // chevron-dark-ui has a directory path, the syntax one doesn't
-      atom.config.set('core.themes', [
+      chevron.config.set('core.themes', [
         'theme-with-index-less',
         'chevron-dark-ui'
       ]);
 
       await conditionPromise(() => didChangeActiveThemesHandler.callCount === 1);
       expect(document.querySelectorAll('style[priority="1"]')).toHaveLength(2);
-      const importPaths = atom.themes.getImportPaths();
+      const importPaths = chevron.themes.getImportPaths();
       expect(importPaths.length).toBe(1);
       expect(importPaths[0]).toContain('chevron-dark-ui');
     });
 
     it('adds theme-* classes to the workspace for each active theme', async function() {
       jasmine.useRealClock();
-      atom.config.set('core.themes', ['chevron-dark-ui', 'chevron-dark-syntax']);
+      chevron.config.set('core.themes', ['chevron-dark-ui', 'chevron-dark-syntax']);
 
       let didChangeActiveThemesHandler;
-      atom.themes.onDidChangeActiveThemes(
+      chevron.themes.onDidChangeActiveThemes(
         (didChangeActiveThemesHandler = jasmine.createSpy())
       );
-      await atom.themes.activateThemes();
+      await chevron.themes.activateThemes();
 
-      const workspaceElement = atom.workspace.getElement();
+      const workspaceElement = chevron.workspace.getElement();
       expect(workspaceElement).toHaveClass('theme-chevron-dark-ui');
 
-      atom.themes.onDidChangeActiveThemes(
+      chevron.themes.onDidChangeActiveThemes(
         (didChangeActiveThemesHandler = jasmine.createSpy())
       );
-      atom.config.set('core.themes', [
+      chevron.config.set('core.themes', [
         'theme-with-ui-variables',
         'theme-with-syntax-variables'
       ]);
@@ -257,7 +257,7 @@ describe('atom.themes', function() {
   describe('when a theme fails to load', () =>
     it('logs a warning', function() {
       console.warn.reset();
-      atom.packages
+      chevron.packages
         .activatePackage('a-theme-that-will-not-be-found')
         .then(function() {}, function() {});
       expect(console.warn.callCount).toBe(1);
@@ -273,19 +273,19 @@ describe('atom.themes', function() {
 
     it('synchronously loads css at the given path and installs a style tag for it in the head', function() {
       let styleElementAddedHandler;
-      atom.styles.onDidAddStyleElement(
+      chevron.styles.onDidAddStyleElement(
         (styleElementAddedHandler = jasmine.createSpy(
           'styleElementAddedHandler'
         ))
       );
 
       const cssPath = getAbsolutePath(
-        atom.project.getDirectories()[0],
+        chevron.project.getDirectories()[0],
         'css.css'
       );
       const lengthBefore = document.querySelectorAll('head style').length;
 
-      atom.themes.requireStylesheet(cssPath);
+      chevron.themes.requireStylesheet(cssPath);
       expect(document.querySelectorAll('head style').length).toBe(
         lengthBefore + 1
       );
@@ -300,7 +300,7 @@ describe('atom.themes', function() {
 
       // doesn't append twice
       styleElementAddedHandler.reset();
-      atom.themes.requireStylesheet(cssPath);
+      chevron.themes.requireStylesheet(cssPath);
       expect(document.querySelectorAll('head style').length).toBe(
         lengthBefore + 1
       );
@@ -315,11 +315,11 @@ describe('atom.themes', function() {
 
     it('synchronously loads and parses less files at the given path and installs a style tag for it in the head', function() {
       const lessPath = getAbsolutePath(
-        atom.project.getDirectories()[0],
+        chevron.project.getDirectories()[0],
         'sample.less'
       );
       const lengthBefore = document.querySelectorAll('head style').length;
-      atom.themes.requireStylesheet(lessPath);
+      chevron.themes.requireStylesheet(lessPath);
       expect(document.querySelectorAll('head style').length).toBe(
         lengthBefore + 1
       );
@@ -339,7 +339,7 @@ h2 {
 `);
 
       // doesn't append twice
-      atom.themes.requireStylesheet(lessPath);
+      chevron.themes.requireStylesheet(lessPath);
       expect(document.querySelectorAll('head style').length).toBe(
         lengthBefore + 1
       );
@@ -351,21 +351,21 @@ h2 {
     });
 
     it('supports requiring css and less stylesheets without an explicit extension', function() {
-      atom.themes.requireStylesheet(path.join(__dirname, 'fixtures', 'css'));
+      chevron.themes.requireStylesheet(path.join(__dirname, 'fixtures', 'css'));
       expect(
         document
           .querySelector('head style[source-path*="css.css"]')
           .getAttribute('source-path')
       ).toEqualPath(
-        getAbsolutePath(atom.project.getDirectories()[0], 'css.css')
+        getAbsolutePath(chevron.project.getDirectories()[0], 'css.css')
       );
-      atom.themes.requireStylesheet(path.join(__dirname, 'fixtures', 'sample'));
+      chevron.themes.requireStylesheet(path.join(__dirname, 'fixtures', 'sample'));
       expect(
         document
           .querySelector('head style[source-path*="sample.less"]')
           .getAttribute('source-path')
       ).toEqualPath(
-        getAbsolutePath(atom.project.getDirectories()[0], 'sample.less')
+        getAbsolutePath(chevron.project.getDirectories()[0], 'sample.less')
       );
 
       document.querySelector('head style[source-path*="css.css"]').remove();
@@ -376,11 +376,11 @@ h2 {
       const cssPath = require.resolve('./fixtures/css.css');
 
       expect(getComputedStyle(document.body).fontWeight).not.toBe('700');
-      const disposable = atom.themes.requireStylesheet(cssPath);
+      const disposable = chevron.themes.requireStylesheet(cssPath);
       expect(getComputedStyle(document.body).fontWeight).toBe('700');
 
       let styleElementRemovedHandler;
-      atom.styles.onDidRemoveStyleElement(
+      chevron.styles.onDidRemoveStyleElement(
         (styleElementRemovedHandler = jasmine.createSpy(
           'styleElementRemovedHandler'
         ))
@@ -396,20 +396,20 @@ h2 {
 
   describe('base style sheet loading', function() {
     beforeEach(async function() {
-      const workspaceElement = atom.workspace.getElement();
-      jasmine.attachToDOM(atom.workspace.getElement());
-      workspaceElement.appendChild(document.createElement('atom-text-editor'));
+      const workspaceElement = chevron.workspace.getElement();
+      jasmine.attachToDOM(chevron.workspace.getElement());
+      workspaceElement.appendChild(document.createElement('chevron-text-editor'));
 
-      await atom.themes.activateThemes();
+      await chevron.themes.activateThemes();
     });
 
     it("loads the correct values from the theme's ui-variables file", async function() {
       jasmine.useRealClock();
       let didChangeActiveThemesHandler;
-      atom.themes.onDidChangeActiveThemes(
+      chevron.themes.onDidChangeActiveThemes(
         (didChangeActiveThemesHandler = jasmine.createSpy())
       );
-      atom.config.set('core.themes', [
+      chevron.config.set('core.themes', [
         'theme-with-ui-variables',
         'theme-with-syntax-variables'
       ]);
@@ -419,14 +419,14 @@ h2 {
       // Base CSS reads custom properties that bundled themes publish at build
       // time, so only the theme's own stylesheets see these fixture variables.
       expect(
-        getComputedStyle(document.querySelector('atom-text-editor')).paddingTop
+        getComputedStyle(document.querySelector('chevron-text-editor')).paddingTop
       ).toBe('150px');
       expect(
-        getComputedStyle(document.querySelector('atom-text-editor'))
+        getComputedStyle(document.querySelector('chevron-text-editor'))
           .paddingRight
       ).toBe('150px');
       expect(
-        getComputedStyle(document.querySelector('atom-text-editor'))
+        getComputedStyle(document.querySelector('chevron-text-editor'))
           .paddingBottom
       ).toBe('150px');
     });
@@ -435,17 +435,17 @@ h2 {
       it('loads the correct values from the fallback ui-variables', async function() {
         jasmine.useRealClock();
         let didChangeActiveThemesHandler;
-        atom.themes.onDidChangeActiveThemes(
+        chevron.themes.onDidChangeActiveThemes(
           (didChangeActiveThemesHandler = jasmine.createSpy())
         );
-        atom.config.set('core.themes', [
+        chevron.config.set('core.themes', [
           'theme-with-incomplete-ui-variables',
           'theme-with-syntax-variables'
         ]);
 
         await conditionPromise(() => didChangeActiveThemesHandler.callCount > 0);
         expect(
-          getComputedStyle(document.querySelector('atom-text-editor'))
+          getComputedStyle(document.querySelector('chevron-text-editor'))
             .backgroundColor
         ).toBe('rgb(0, 152, 255)');
       }));
@@ -459,7 +459,7 @@ h2 {
         userStylesheetPath,
         'body {border-style: dotted !important;}'
       );
-      spyOn(atom.styles, 'getUserStyleSheetPath').andReturn(userStylesheetPath);
+      spyOn(chevron.styles, 'getUserStyleSheetPath').andReturn(userStylesheetPath);
     });
 
     describe('when the user stylesheet changes', function() {
@@ -471,26 +471,26 @@ h2 {
         jasmine.useRealClock();
         let styleElementAddedHandler, styleElementRemovedHandler;
 
-        await atom.themes.activateThemes();
+        await chevron.themes.activateThemes();
 
-        atom.styles.onDidRemoveStyleElement(
+        chevron.styles.onDidRemoveStyleElement(
           (styleElementRemovedHandler = jasmine.createSpy(
             'styleElementRemovedHandler'
           ))
         );
-        atom.styles.onDidAddStyleElement(
+        chevron.styles.onDidAddStyleElement(
           (styleElementAddedHandler = jasmine.createSpy(
             'styleElementAddedHandler'
           ))
         );
 
-        spyOn(atom.themes, 'loadUserStylesheet').andCallThrough();
+        spyOn(chevron.themes, 'loadUserStylesheet').andCallThrough();
 
         expect(getComputedStyle(document.body).borderStyle).toBe('dotted');
         fs.writeFileSync(userStylesheetPath, 'body {border-style: dashed}');
 
         await conditionPromise(
-          () => atom.themes.loadUserStylesheet.callCount === 1
+          () => chevron.themes.loadUserStylesheet.callCount === 1
         );
         expect(getComputedStyle(document.body).borderStyle).toBe('dashed');
 
@@ -508,7 +508,7 @@ h2 {
         fs.removeSync(userStylesheetPath);
 
         await conditionPromise(
-          () => atom.themes.loadUserStylesheet.callCount === 2
+          () => chevron.themes.loadUserStylesheet.callCount === 2
         );
         expect(styleElementRemovedHandler).toHaveBeenCalled();
         expect(
@@ -521,24 +521,24 @@ h2 {
     describe('when there is an error reading the stylesheet', function() {
       let addErrorHandler = null;
       beforeEach(async function() {
-        atom.themes.loadUserStylesheet();
-        spyOn(atom.themes.lessCache, 'cssForFile').andCallFake(function() {
+        chevron.themes.loadUserStylesheet();
+        spyOn(chevron.themes.lessCache, 'cssForFile').andCallFake(function() {
           throw new Error('EACCES permission denied "styles.less"');
         });
-        atom.notifications.onDidAddNotification(
+        chevron.notifications.onDidAddNotification(
           (addErrorHandler = jasmine.createSpy())
         );
       });
 
       it('creates an error notification and does not add the stylesheet', function() {
-        atom.themes.loadUserStylesheet();
+        chevron.themes.loadUserStylesheet();
         expect(addErrorHandler).toHaveBeenCalled();
         const note = addErrorHandler.mostRecentCall.args[0];
         expect(note.getType()).toBe('error');
         expect(note.getMessage()).toContain('Error loading');
         expect(
-          atom.styles.styleElementsBySourcePath[
-            atom.styles.getUserStyleSheetPath()
+          chevron.styles.styleElementsBySourcePath[
+            chevron.styles.getUserStyleSheetPath()
           ]
         ).toBeUndefined();
       });
@@ -553,14 +553,14 @@ h2 {
             throw new Error('Unable to watch path');
           }
         });
-        spyOn(atom.themes, 'loadStylesheet').andReturn('');
-        atom.notifications.onDidAddNotification(
+        spyOn(chevron.themes, 'loadStylesheet').andReturn('');
+        chevron.notifications.onDidAddNotification(
           (addErrorHandler = jasmine.createSpy())
         );
       });
 
       it('creates an error notification', function() {
-        atom.themes.loadUserStylesheet();
+        chevron.themes.loadUserStylesheet();
         expect(addErrorHandler).toHaveBeenCalled();
         const note = addErrorHandler.mostRecentCall.args[0];
         expect(note.getType()).toBe('error');
@@ -570,9 +570,9 @@ h2 {
 
     it("adds a notification when a theme's stylesheet is invalid", function() {
       const addErrorHandler = jasmine.createSpy();
-      atom.notifications.onDidAddNotification(addErrorHandler);
+      chevron.notifications.onDidAddNotification(addErrorHandler);
       expect(() =>
-        atom.packages
+        chevron.packages
           .activatePackage('theme-with-invalid-styles')
           .then(function() {}, function() {})
       ).not.toThrow();
@@ -586,16 +586,16 @@ h2 {
   describe('when a non-existent theme is present in the config', function() {
     beforeEach(async function() {
       console.warn.reset();
-      atom.config.set('core.themes', [
+      chevron.config.set('core.themes', [
         'non-existent-dark-ui',
         'non-existent-dark-syntax'
       ]);
 
-      await atom.themes.activateThemes();
+      await chevron.themes.activateThemes();
     });
 
     it('uses the default one-dark UI and syntax themes and logs a warning', function() {
-      const activeThemeNames = atom.themes.getActiveThemeNames();
+      const activeThemeNames = chevron.themes.getActiveThemeNames();
       expect(console.warn.callCount).toBe(2);
       expect(activeThemeNames.length).toBe(2);
       expect(activeThemeNames).toContain('one-dark-ui');
@@ -606,13 +606,13 @@ h2 {
   describe('when in safe mode', function() {
     describe('when the enabled UI and syntax themes are bundled with Chevron', function() {
       beforeEach(async function() {
-        atom.config.set('core.themes', ['chevron-light-ui', 'chevron-dark-syntax']);
+        chevron.config.set('core.themes', ['chevron-light-ui', 'chevron-dark-syntax']);
 
-        await atom.themes.activateThemes();
+        await chevron.themes.activateThemes();
       });
 
       it('uses the enabled themes', function() {
-        const activeThemeNames = atom.themes.getActiveThemeNames();
+        const activeThemeNames = chevron.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
         expect(activeThemeNames).toContain('chevron-light-ui');
         expect(activeThemeNames).toContain('chevron-dark-syntax');
@@ -621,16 +621,16 @@ h2 {
 
     describe('when the enabled UI and syntax themes are not bundled with Chevron', function() {
       beforeEach(async function() {
-        atom.config.set('core.themes', [
+        chevron.config.set('core.themes', [
           'installed-dark-ui',
           'installed-dark-syntax'
         ]);
 
-        await atom.themes.activateThemes();
+        await chevron.themes.activateThemes();
       });
 
       it('uses the default dark UI and syntax themes', function() {
-        const activeThemeNames = atom.themes.getActiveThemeNames();
+        const activeThemeNames = chevron.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
         expect(activeThemeNames).toContain('one-dark-ui');
         expect(activeThemeNames).toContain('one-dark-syntax');
@@ -639,16 +639,16 @@ h2 {
 
     describe('when the enabled UI theme is not bundled with Chevron', function() {
       beforeEach(async function() {
-        atom.config.set('core.themes', [
+        chevron.config.set('core.themes', [
           'installed-dark-ui',
           'chevron-light-syntax'
         ]);
 
-        await atom.themes.activateThemes();
+        await chevron.themes.activateThemes();
       });
 
       it('uses the default one-dark UI theme', function() {
-        const activeThemeNames = atom.themes.getActiveThemeNames();
+        const activeThemeNames = chevron.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
         expect(activeThemeNames).toContain('one-dark-ui');
         expect(activeThemeNames).toContain('chevron-light-syntax');
@@ -657,16 +657,16 @@ h2 {
 
     describe('when the enabled syntax theme is not bundled with Chevron', function() {
       beforeEach(async function() {
-        atom.config.set('core.themes', [
+        chevron.config.set('core.themes', [
           'chevron-light-ui',
           'installed-dark-syntax'
         ]);
 
-        await atom.themes.activateThemes();
+        await chevron.themes.activateThemes();
       });
 
       it('uses the default one-dark syntax theme', function() {
-        const activeThemeNames = atom.themes.getActiveThemeNames();
+        const activeThemeNames = chevron.themes.getActiveThemeNames();
         expect(activeThemeNames.length).toBe(2);
         expect(activeThemeNames).toContain('chevron-light-ui');
         expect(activeThemeNames).toContain('one-dark-syntax');

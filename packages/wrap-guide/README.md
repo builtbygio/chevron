@@ -22,7 +22,7 @@ You can customize where the column is placed for different file types by opening
 It is possible to configure the color and/or width of the line by adding the following CSS/LESS to your `styles.less`:
 
 ```css
-atom-text-editor .wrap-guide {
+chevron-text-editor .wrap-guide {
   width: 10px;
   background-color: red;
 }

@@ -8,10 +8,10 @@ const temp = require('temp').track();
 const sandbox = require('sinon').createSandbox();
 const dedent = require('dedent');
 
-const AtomWindow = require('../../src/main-process/atom-window');
+const ChevronWindow = require('../../src/main-process/chevron-window');
 const { emitterEventPromise } = require('../async-spec-helpers');
 
-describe('AtomWindow', function() {
+describe('ChevronWindow', function() {
   let sinon, app, service;
 
   beforeEach(function() {
@@ -88,7 +88,7 @@ describe('AtomWindow', function() {
     });
 
     it('creates a real, properly configured BrowserWindow', async function() {
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         resourcePath,
         windowInitializationScript,
         headless: true,
@@ -126,12 +126,12 @@ describe('AtomWindow', function() {
       it('sets titleBarStyle to "hidden" for a custom title bar on non-spec windows', function() {
         app.config['core.titleBar'] = 'custom';
 
-        const { browserWindow: w0 } = new AtomWindow(app, service, {
+        const { browserWindow: w0 } = new ChevronWindow(app, service, {
           browserWindowConstructor: StubBrowserWindow
         });
         assert.strictEqual(w0.options.titleBarStyle, 'hidden');
 
-        const { browserWindow: w1 } = new AtomWindow(app, service, {
+        const { browserWindow: w1 } = new ChevronWindow(app, service, {
           browserWindowConstructor: StubBrowserWindow,
           isSpec: true
         });
@@ -141,12 +141,12 @@ describe('AtomWindow', function() {
       it('sets titleBarStyle to "hiddenInset" for a custom inset title bar on non-spec windows', function() {
         app.config['core.titleBar'] = 'custom-inset';
 
-        const { browserWindow: w0 } = new AtomWindow(app, service, {
+        const { browserWindow: w0 } = new ChevronWindow(app, service, {
           browserWindowConstructor: StubBrowserWindow
         });
         assert.strictEqual(w0.options.titleBarStyle, 'hiddenInset');
 
-        const { browserWindow: w1 } = new AtomWindow(app, service, {
+        const { browserWindow: w1 } = new ChevronWindow(app, service, {
           browserWindowConstructor: StubBrowserWindow,
           isSpec: true
         });
@@ -155,12 +155,12 @@ describe('AtomWindow', function() {
       it('sets frame to "false" for a hidden title bar on non-spec windows', function() {
         app.config['core.titleBar'] = 'hidden';
 
-        const { browserWindow: w0 } = new AtomWindow(app, service, {
+        const { browserWindow: w0 } = new ChevronWindow(app, service, {
           browserWindowConstructor: StubBrowserWindow
         });
         assert.isFalse(w0.options.frame);
 
-        const { browserWindow: w1 } = new AtomWindow(app, service, {
+        const { browserWindow: w1 } = new ChevronWindow(app, service, {
           browserWindowConstructor: StubBrowserWindow,
           isSpec: true
         });
@@ -170,12 +170,12 @@ describe('AtomWindow', function() {
       it('sets frame to "false" for a hidden title bar on non-spec windows', function() {
         app.config['core.titleBar'] = 'hidden';
 
-        const { browserWindow: w0 } = new AtomWindow(app, service, {
+        const { browserWindow: w0 } = new ChevronWindow(app, service, {
           browserWindowConstructor: StubBrowserWindow
         });
         assert.isFalse(w0.options.frame);
 
-        const { browserWindow: w1 } = new AtomWindow(app, service, {
+        const { browserWindow: w1 } = new ChevronWindow(app, service, {
           browserWindowConstructor: StubBrowserWindow,
           isSpec: true
         });
@@ -201,7 +201,7 @@ describe('AtomWindow', function() {
         }
       ];
 
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         locationsToOpen
       });
@@ -217,7 +217,7 @@ describe('AtomWindow', function() {
     });
 
     it('does not open an initial null location', async function() {
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         locationsToOpen: [{ pathToOpen: null }]
       });
@@ -230,7 +230,7 @@ describe('AtomWindow', function() {
     });
 
     it('does not open initial locations in spec mode', async function() {
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         locationsToOpen: [{ pathToOpen: 'file.txt' }],
         isSpec: true
@@ -244,7 +244,7 @@ describe('AtomWindow', function() {
     });
 
     it('focuses the webView for specs', function() {
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         isSpec: true
       });
@@ -255,7 +255,7 @@ describe('AtomWindow', function() {
 
   describe('project root tracking', function() {
     it('knows when it has no roots', function() {
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow
       });
       assert.isFalse(w.hasProjectPaths());
@@ -270,7 +270,7 @@ describe('AtomWindow', function() {
         { pathToOpen: null }
       ];
 
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         locationsToOpen
       });
@@ -293,7 +293,7 @@ describe('AtomWindow', function() {
         { pathToOpen: 'new-file.txt' }
       ];
 
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow
       });
       assert.deepEqual(w.projectRoots, []);
@@ -309,7 +309,7 @@ describe('AtomWindow', function() {
         { pathToOpen: 'directory0', exists: true, isDirectory: true }
       ];
 
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         locationsToOpen
       });
@@ -336,7 +336,7 @@ describe('AtomWindow', function() {
         { pathToOpen: null }
       ];
 
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         locationsToOpen
       });
@@ -348,7 +348,7 @@ describe('AtomWindow', function() {
         { pathToOpen: 'directory0', exists: true, isDirectory: true },
         { pathToOpen: 'directory1', exists: true, isDirectory: true }
       ];
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         locationsToOpen
       });
@@ -362,7 +362,7 @@ describe('AtomWindow', function() {
         { pathToOpen: 'directory0', exists: true, isDirectory: true },
         { pathToOpen: 'directory1', exists: true, isDirectory: true }
       ];
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         locationsToOpen
       });
@@ -402,7 +402,7 @@ describe('AtomWindow', function() {
         { pathToOpen: 'directory0', exists: true, isDirectory: true },
         { pathToOpen: 'directory1', exists: true, isDirectory: true }
       ];
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         locationsToOpen
       });
@@ -426,7 +426,7 @@ describe('AtomWindow', function() {
         { pathToOpen: 'directory0', exists: true, isDirectory: true },
         { pathToOpen: 'directory1', exists: true, isDirectory: true }
       ];
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         locationsToOpen
       });
@@ -445,7 +445,7 @@ describe('AtomWindow', function() {
         { pathToOpen: 'directory0', exists: true, isDirectory: true },
         { pathToOpen: 'directory1', exists: true, isDirectory: true }
       ];
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         locationsToOpen
       });
@@ -477,7 +477,7 @@ describe('AtomWindow', function() {
 
   describe('headless renderer exit', function() {
     function gone(details) {
-      const w = new AtomWindow(app, service, {
+      const w = new ChevronWindow(app, service, {
         browserWindowConstructor: StubBrowserWindow,
         headless: true
       });

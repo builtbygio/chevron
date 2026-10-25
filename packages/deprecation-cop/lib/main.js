@@ -14,7 +14,7 @@ class DeprecationCopPackage {
       })
     );
     this.disposables.add(
-      chevron.commands.add('atom-workspace', 'deprecation-cop:view', () => {
+      chevron.commands.add('chevron-workspace', 'deprecation-cop:view', () => {
         chevron.workspace.open(ViewURI);
       })
     );

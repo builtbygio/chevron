@@ -15,7 +15,7 @@ All packages/themes that have updates will be listed under the _Updates_ section
 Want to learn more? Check out the [Getting Started: Atom Basics](http://flight-manual.atom.io/getting-started/sections/atom-basics/#settings-and-preferences) and [Using Atom: Atom Packages](http://flight-manual.atom.io/using-atom/sections/atom-packages) sections in the Atom Flight Manual.
 
 ### Commands and Keybindings
-All of the following commands are under the `atom-workspace` selector.
+All of the following commands are under the `chevron-workspace` selector.
 
 |Command|Description|Keybinding (Linux)|Keybinding (macOS)|Keybinding (Windows)|
 |-------|-----------|------------------|-----------------|--------------------|

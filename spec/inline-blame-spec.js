@@ -34,10 +34,10 @@ describe('inline blame', () => {
     git(['add', 'a.txt']);
     git(['commit', '-q', '-m', 'First lines']);
 
-    atom.project.setPaths([dir]);
-    jasmine.attachToDOM(atom.workspace.getElement());
-    await atom.packages.activatePackage('github');
-    editor = await atom.workspace.open(path.join(dir, 'a.txt'));
+    chevron.project.setPaths([dir]);
+    jasmine.attachToDOM(chevron.workspace.getElement());
+    await chevron.packages.activatePackage('github');
+    editor = await chevron.workspace.open(path.join(dir, 'a.txt'));
     editor.setCursorBufferPosition([1, 0]);
     await conditionPromise(() => annotation(), 'the blame annotation', 15000);
   });
@@ -49,12 +49,12 @@ describe('inline blame', () => {
   });
 
   it('opens the commit on click without moving the cursor', () => {
-    spyOn(atom.workspace, 'open').andReturn(Promise.resolve());
+    spyOn(chevron.workspace, 'open').andReturn(Promise.resolve());
     annotation().dispatchEvent(
       new MouseEvent('mousedown', { bubbles: true, button: 0 })
     );
-    expect(atom.workspace.open).toHaveBeenCalled();
-    expect(atom.workspace.open.mostRecentCall.args[0]).toMatch(
+    expect(chevron.workspace.open).toHaveBeenCalled();
+    expect(chevron.workspace.open.mostRecentCall.args[0]).toMatch(
       /^atom-github:\/\/commit-detail\?/
     );
     expect(editor.getCursorBufferPosition().toArray()).toEqual([1, 0]);
@@ -80,7 +80,7 @@ describe('inline blame', () => {
   });
 
   it('goes away when github.inlineBlame is off', () => {
-    atom.config.set('github.inlineBlame', false);
+    chevron.config.set('github.inlineBlame', false);
     expect(annotation()).toBe(null);
   });
 });

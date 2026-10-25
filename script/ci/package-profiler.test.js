@@ -309,7 +309,7 @@ describe('save hooks', () => {
   });
 
   it('the environment instruments the real TextBuffer', () => {
-    const source = fs.readFileSync(path.join(ROOT, 'src', 'atom-environment.js'), 'utf8');
+    const source = fs.readFileSync(path.join(ROOT, 'src', 'chevron-environment.js'), 'utf8');
     assert.match(source, /profiler\.instrumentBufferSaves\(TextBuffer\)/);
     assert.match(source, /this\.packageProfiler = profiler/);
   });

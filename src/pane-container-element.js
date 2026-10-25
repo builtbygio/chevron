@@ -48,12 +48,12 @@ class PaneContainerElement extends HTMLElement {
   }
 }
 
-window.customElements.define('atom-pane-container', PaneContainerElement);
+window.customElements.define('chevron-pane-container', PaneContainerElement);
 
 const createCustomElement = require('./create-custom-element');
 
 function createPaneContainerElement() {
-  return createCustomElement('atom-pane-container', PaneContainerElement);
+  return createCustomElement('chevron-pane-container', PaneContainerElement);
 }
 
 module.exports = {

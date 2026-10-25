@@ -5,7 +5,7 @@
   "version": "0.219.12",
   "license": "MIT",
   "activationCommands": {
-    "atom-workspace": [
+    "chevron-workspace": [
       "project-find:show",
       "project-find:toggle",
       "project-find:show-in-current-directory",

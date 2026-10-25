@@ -8,18 +8,18 @@ describe('ImageEditorStatusView', () => {
   beforeEach(async () => {
     jasmine.useRealClock() // Needed for conditionPromise
 
-    const workspaceElement = atom.views.getView(atom.workspace)
-    filePath = atom.project.getDirectories()[0].resolve('binary-file.png')
-    filePath2 = atom.project.getDirectories()[0].resolve('binary-file-2.png')
+    const workspaceElement = chevron.views.getView(chevron.workspace)
+    filePath = chevron.project.getDirectories()[0].resolve('binary-file.png')
+    filePath2 = chevron.project.getDirectories()[0].resolve('binary-file-2.png')
     jasmine.attachToDOM(workspaceElement)
 
-    await atom.packages.activatePackage('image-view')
-    await atom.packages.activatePackage('status-bar')
+    await chevron.packages.activatePackage('image-view')
+    await chevron.packages.activatePackage('status-bar')
     statusBar = workspaceElement.querySelector('status-bar')
   })
 
   it('displays the size of the image', async () => {
-    const editor = await atom.workspace.open(filePath)
+    const editor = await chevron.workspace.open(filePath)
     const view = editor.view
     view.element.style.height = '100px'
 
@@ -30,7 +30,7 @@ describe('ImageEditorStatusView', () => {
   })
 
   it('updates when a different image is opened', async () => {
-    let editor = await atom.workspace.open(filePath)
+    let editor = await chevron.workspace.open(filePath)
     let view = editor.view
     view.element.style.height = '100px'
 
@@ -39,7 +39,7 @@ describe('ImageEditorStatusView', () => {
     let imageSizeStatus = statusBar.leftPanel.querySelector('.status-image')
     expect(imageSizeStatus.textContent).toBe('10x10 392B')
 
-    editor = await atom.workspace.open(filePath2)
+    editor = await chevron.workspace.open(filePath2)
     view = editor.view
     view.element.style.height = '100px'
 
@@ -50,7 +50,7 @@ describe('ImageEditorStatusView', () => {
   })
 
   it('updates when the image is reloaded', async () => {
-    const editor = await atom.workspace.open(filePath)
+    const editor = await chevron.workspace.open(filePath)
     const view = editor.view
     view.element.style.height = '100px'
 

@@ -11,10 +11,10 @@ const img1 = path.resolve(__dirname, './fixtures/project/img1.png')
 describe('getActivePath', function () {
   let workspaceElement
   beforeEach(async function () {
-    workspaceElement = atom.views.getView(atom.workspace)
-    await atom.packages.activatePackage('tabs')
-    await atom.packages.activatePackage('tree-view')
-    atom.project.setPaths([projectPath])
+    workspaceElement = chevron.views.getView(chevron.workspace)
+    await chevron.packages.activatePackage('tabs')
+    await chevron.packages.activatePackage('tree-view')
+    chevron.project.setPaths([projectPath])
   })
 
   it('returns project path when no target', function () {
@@ -28,18 +28,18 @@ describe('getActivePath', function () {
   })
 
   it('returns active file path when workspace is selected', async function () {
-    await atom.workspace.open(file1)
-    await atom.workspace.open(file2)
+    await chevron.workspace.open(file1)
+    await chevron.workspace.open(file2)
 
     const itemPath = getActivePath(workspaceElement)
     expect(itemPath).toBe(file2)
   })
 
   it('returns file path when tree view is selected', async function () {
-    await atom.workspace.open(file1)
-    await atom.workspace.open(file2)
+    await chevron.workspace.open(file1)
+    await chevron.workspace.open(file2)
 
-    const { treeView } = atom.packages.getLoadedPackage('tree-view').mainModule
+    const { treeView } = chevron.packages.getLoadedPackage('tree-view').mainModule
     const file1Target = treeView.selectEntryForPath(file1)
 
     const itemPath = getActivePath(file1Target)
@@ -47,8 +47,8 @@ describe('getActivePath', function () {
   })
 
   it('returns file path when tab is selected', async function () {
-    await atom.workspace.open(file1)
-    await atom.workspace.open(file2)
+    await chevron.workspace.open(file1)
+    await chevron.workspace.open(file2)
     const file1Target = workspaceElement.querySelector(".tab-bar [data-name='file1.txt']")
 
     const itemPath = getActivePath(file1Target)
@@ -56,18 +56,18 @@ describe('getActivePath', function () {
   })
 
   it('returns project when active pane is not a file', async function () {
-    await atom.packages.activatePackage('settings-view')
-    await atom.workspace.open(file1)
-    await atom.workspace.open('chevron://config')
+    await chevron.packages.activatePackage('settings-view')
+    await chevron.workspace.open(file1)
+    await chevron.workspace.open('chevron://config')
 
     const itemPath = getActivePath(workspaceElement)
     expect(itemPath).toBe(projectPath)
   })
 
   it('returns active pane path when it is not a text file', async function () {
-    await atom.packages.activatePackage('image-view')
-    await atom.workspace.open(file1)
-    await atom.workspace.open(img1)
+    await chevron.packages.activatePackage('image-view')
+    await chevron.workspace.open(file1)
+    await chevron.workspace.open(img1)
 
     const itemPath = getActivePath(workspaceElement)
     expect(itemPath).toBe(img1)

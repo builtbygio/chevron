@@ -12,7 +12,7 @@
     "alt-g =": "github:clone",
     "alt-g r": "github:open-reviews-tab"
   },
-  "atom-text-editor": {
+  "chevron-text-editor": {
     "alt-m 1": "github:resolve-as-ours",
     "alt-m 2": "github:resolve-as-theirs",
     "alt-m 3": "github:resolve-as-base",
@@ -50,17 +50,17 @@
   ".platform-win32 .github-StagingView.unstaged-changes-focused": {
     "ctrl-backspace": "github:discard-changes-in-selected-files"
   },
-  ".github-CommitView-editor atom-text-editor:not([mini])": {
+  ".github-CommitView-editor chevron-text-editor:not([mini])": {
     "tab": "core:focus-next",
     "shift-tab": "core:focus-previous"
   },
-  ".platform-darwin .github-CommitView-editor atom-text-editor:not([mini])": {
+  ".platform-darwin .github-CommitView-editor chevron-text-editor:not([mini])": {
     "cmd-enter": "github:commit"
   },
-  ".platform-win32 .github-CommitView-editor atom-text-editor:not([mini])": {
+  ".platform-win32 .github-CommitView-editor chevron-text-editor:not([mini])": {
     "ctrl-enter": "github:commit"
   },
-  ".platform-linux .github-CommitView-editor atom-text-editor:not([mini])": {
+  ".platform-linux .github-CommitView-editor chevron-text-editor:not([mini])": {
     "ctrl-enter": "github:commit"
   },
   ".github-CommitView-commitPreview": {
@@ -88,35 +88,35 @@
   ".platform-win32 .github-RecentCommits, .platform-linux .github-RecentCommits": {
     "ctrl-left": "github:dive"
   },
-  ".github-FilePatchView atom-text-editor:not([mini])": {
+  ".github-FilePatchView chevron-text-editor:not([mini])": {
     "/": "github:toggle-patch-selection-mode",
     "backspace": "github:discard-selected-lines",
     "enter": "core:confirm",
     "right": "github:surface",
     "o": "github:jump-to-file"
   },
-  ".platform-darwin .github-FilePatchView atom-text-editor:not([mini])": {
+  ".platform-darwin .github-FilePatchView chevron-text-editor:not([mini])": {
     "cmd-/": "github:toggle-patch-selection-mode",
     "cmd-backspace": "github:discard-selected-lines",
     "cmd-enter": "core:confirm",
     "cmd-right": "github:surface",
     "cmd-o": "github:jump-to-file"
   },
-  ".platform-win32 .github-FilePatchView atom-text-editor:not([mini])": {
+  ".platform-win32 .github-FilePatchView chevron-text-editor:not([mini])": {
     "ctrl-/": "github:toggle-patch-selection-mode",
     "ctrl-backspace": "github:discard-selected-lines",
     "ctrl-enter": "core:confirm",
     "ctrl-right": "github:surface",
     "ctrl-o": "github:jump-to-file"
   },
-  ".platform-linux .github-FilePatchView atom-text-editor:not([mini])": {
+  ".platform-linux .github-FilePatchView chevron-text-editor:not([mini])": {
     "ctrl-/": "github:toggle-patch-selection-mode",
     "ctrl-backspace": "github:discard-selected-lines",
     "ctrl-enter": "core:confirm",
     "ctrl-right": "github:surface",
     "ctrl-o": "github:jump-to-file"
   },
-  ".github-FilePatchView--hunkMode atom-text-editor:not([mini])": {
+  ".github-FilePatchView--hunkMode chevron-text-editor:not([mini])": {
     "down": "github:select-next-hunk",
     "up": "github:select-previous-hunk"
   },
@@ -162,13 +162,13 @@
     "ctrl-=": "github:more-context",
     "ctrl--": "github:less-context"
   },
-  ".platform-darwin .github-Reviews atom-text-editor": {
+  ".platform-darwin .github-Reviews chevron-text-editor": {
     "cmd-enter": "github:submit-comment"
   },
-  ".platform-win32 .github-Reviews atom-text-editor": {
+  ".platform-win32 .github-Reviews chevron-text-editor": {
     "ctrl-enter": "github:submit-comment"
   },
-  ".platform-linux .github-Reviews atom-text-editor": {
+  ".platform-linux .github-Reviews chevron-text-editor": {
     "ctrl-enter": "github:submit-comment"
   }
 }

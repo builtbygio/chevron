@@ -41,7 +41,7 @@ describe('TextEditorComponent', () => {
     // Force scrollbars to be visible regardless of local system configuration
     const scrollbarStyle = document.createElement('style');
     scrollbarStyle.textContent =
-      'atom-text-editor ::-webkit-scrollbar { -webkit-appearance: none }';
+      'chevron-text-editor ::-webkit-scrollbar { -webkit-appearance: none }';
     jasmine.attachToDOM(scrollbarStyle);
 
     if (verticalScrollbarWidth == null) {
@@ -921,12 +921,12 @@ describe('TextEditorComponent', () => {
     });
 
     it('adds the data-grammar attribute and updates it when the grammar changes', async () => {
-      await atom.packages.activatePackage('language-javascript');
+      await chevron.packages.activatePackage('language-javascript');
 
       const { editor, element, component } = buildComponent();
       expect(element.dataset.grammar).toBe('text plain null-grammar');
 
-      atom.grammars.assignLanguageMode(editor.getBuffer(), 'source.js');
+      chevron.grammars.assignLanguageMode(editor.getBuffer(), 'source.js');
       await component.getNextUpdatePromise();
       expect(element.dataset.grammar).toBe('source js');
     });
@@ -4100,7 +4100,7 @@ describe('TextEditorComponent', () => {
     describe('on the lines', () => {
       describe('when there is only one cursor', () => {
         it('positions the cursor on single-click or when middle-clicking', async () => {
-          atom.config.set('editor.selectionClipboard', true);
+          chevron.config.set('editor.selectionClipboard', true);
           for (const button of [0, 1]) {
             const { component, editor } = buildComponent();
             const { lineHeight } = component.measurements;
@@ -4271,7 +4271,7 @@ describe('TextEditorComponent', () => {
         });
 
         it('adds or removes cursors when holding cmd or ctrl when single-clicking', () => {
-          atom.config.set('editor.multiCursorOnClick', true);
+          chevron.config.set('editor.multiCursorOnClick', true);
           const { component, editor } = buildComponent({ platform: 'darwin' });
           expect(editor.getCursorScreenPositions()).toEqual([[0, 0]]);
 
@@ -4352,7 +4352,7 @@ describe('TextEditorComponent', () => {
         });
 
         it('adds word selections when holding cmd or ctrl when double-clicking', () => {
-          atom.config.set('editor.multiCursorOnClick', true);
+          chevron.config.set('editor.multiCursorOnClick', true);
           const { component, editor } = buildComponent();
           editor.addCursorAtScreenPosition([1, 16], { autoscroll: false });
           expect(editor.getCursorScreenPositions()).toEqual([[0, 0], [1, 16]]);
@@ -4379,7 +4379,7 @@ describe('TextEditorComponent', () => {
         });
 
         it('adds line selections when holding cmd or ctrl when triple-clicking', () => {
-          atom.config.set('editor.multiCursorOnClick', true);
+          chevron.config.set('editor.multiCursorOnClick', true);
           const { component, editor } = buildComponent();
           editor.addCursorAtScreenPosition([1, 16], { autoscroll: false });
           expect(editor.getCursorScreenPositions()).toEqual([[0, 0], [1, 16]]);
@@ -4419,7 +4419,7 @@ describe('TextEditorComponent', () => {
         });
 
         it('does not add cursors when holding cmd or ctrl when single-clicking', () => {
-          atom.config.set('editor.multiCursorOnClick', false);
+          chevron.config.set('editor.multiCursorOnClick', false);
           const { component, editor } = buildComponent({ platform: 'darwin' });
           expect(editor.getCursorScreenPositions()).toEqual([[0, 0]]);
 
@@ -4461,7 +4461,7 @@ describe('TextEditorComponent', () => {
         });
 
         it('does not add word selections when holding cmd or ctrl when double-clicking', () => {
-          atom.config.set('editor.multiCursorOnClick', false);
+          chevron.config.set('editor.multiCursorOnClick', false);
           const { component, editor } = buildComponent();
 
           component.didMouseDownOnContent(
@@ -4485,7 +4485,7 @@ describe('TextEditorComponent', () => {
         });
 
         it('does not add line selections when holding cmd or ctrl when triple-clicking', () => {
-          atom.config.set('editor.multiCursorOnClick', false);
+          chevron.config.set('editor.multiCursorOnClick', false);
           const { component, editor } = buildComponent();
 
           const { clientX, clientY } = clientPositionForCharacter(
@@ -4607,7 +4607,7 @@ describe('TextEditorComponent', () => {
         });
 
         it('expands the last selection on drag', () => {
-          atom.config.set('editor.multiCursorOnClick', true);
+          chevron.config.set('editor.multiCursorOnClick', true);
           const { component, editor } = buildComponent();
           spyOn(component, 'handleMouseDragUntilMouseUp');
 
@@ -4848,7 +4848,7 @@ describe('TextEditorComponent', () => {
         const { component, editor } = buildComponent({ platform: 'linux' });
 
         // Middle mouse pasting.
-        atom.config.set('editor.selectionClipboard', true);
+        chevron.config.set('editor.selectionClipboard', true);
         editor.setSelectedBufferRange([[1, 6], [1, 10]]);
         await conditionPromise(
           () => clipboard.readText('selection') === 'sort'
@@ -4863,7 +4863,7 @@ describe('TextEditorComponent', () => {
         editor.undo();
 
         // Doesn't paste when middle mouse button is clicked
-        atom.config.set('editor.selectionClipboard', false);
+        chevron.config.set('editor.selectionClipboard', false);
         editor.setSelectedBufferRange([[1, 6], [1, 10]]);
         component.didMouseDownOnContent({
           button: 1,
@@ -4874,7 +4874,7 @@ describe('TextEditorComponent', () => {
         expect(editor.lineTextForBufferRow(10)).toBe('');
 
         // Ensure left clicks don't interfere.
-        atom.config.set('editor.selectionClipboard', true);
+        chevron.config.set('editor.selectionClipboard', true);
         editor.setSelectedBufferRange([[1, 2], [1, 5]]);
         await conditionPromise(
           () => clipboard.readText('selection') === 'var'
@@ -6213,7 +6213,7 @@ function buildEditor(params = {}) {
   ]) {
     if (params[paramName] != null) editorParams[paramName] = params[paramName];
   }
-  atom.grammars.autoAssignLanguageMode(buffer);
+  chevron.grammars.autoAssignLanguageMode(buffer);
   const editor = new TextEditor(editorParams);
   editor.testAutoscrollRequests = [];
   editor.onDidRequestAutoscroll(request => {

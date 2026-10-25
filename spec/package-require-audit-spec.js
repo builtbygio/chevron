@@ -56,7 +56,7 @@ describe('package-require-audit / N3.2 + S1.0 classifyCallerPath', function() {
 
   it('classifies src as core', function() {
     expect(
-      classifyCallerPath('/home/user/Workspace/chevron/src/atom-environment.js')
+      classifyCallerPath('/home/user/Workspace/chevron/src/chevron-environment.js')
     ).toBe('core');
   });
 

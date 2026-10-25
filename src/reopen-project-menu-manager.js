@@ -18,7 +18,7 @@ module.exports = class ReopenProjectMenuManager {
           this.update();
         }
       ),
-      commands.add('atom-workspace', {
+      commands.add('chevron-workspace', {
         'application:reopen-project': this.reopenProjectCommand.bind(this)
       })
     );

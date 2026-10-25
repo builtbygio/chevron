@@ -54,7 +54,7 @@ class MRUListView {
       this.pane.onDidDestroy(() => this.destroy()))
 
     this.subscriptions.add(
-      chevron.commands.add('atom-workspace', {
+      chevron.commands.add('chevron-workspace', {
         'core:cancel': (event) => {
           if (this.hide()) event.stopPropagation()
         }

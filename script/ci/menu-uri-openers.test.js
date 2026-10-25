@@ -37,7 +37,7 @@ const OWNERS = {
 };
 
 function menuUris() {
-  const src = read('src/main-process/atom-application.js');
+  const src = read('src/main-process/chevron-application.js');
   const uris = new Set();
   for (const m of src.matchAll(
     /openPathOnEvent\([\s\S]{0,80}?'(chevron:\/\/[^']+)'/g
@@ -99,7 +99,7 @@ describe('menu URIs have openers', () => {
   it('core-owned URIs appear in the default opener switch', () => {
     const cases = new Set(
       [
-        ...read('src/atom-environment.js').matchAll(
+        ...read('src/chevron-environment.js').matchAll(
           /case '(chevron:\/\/[^']+)'/g
         )
       ].map(m => m[1])
@@ -122,7 +122,7 @@ describe('menu URIs have openers', () => {
   });
 
   it('nothing uses the .atom host spelling any more', () => {
-    assert.doesNotMatch(read('src/atom-environment.js'), /\.atom\\\//);
+    assert.doesNotMatch(read('src/chevron-environment.js'), /\.atom\\\//);
     for (const uri of [...uris, ...Object.keys(OWNERS)]) {
       assert.ok(!uri.startsWith('chevron://.atom/'), `${uri} uses .atom`);
     }

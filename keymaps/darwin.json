@@ -99,7 +99,7 @@
     "cmd-8": "pane:show-item-8",
     "cmd-9": "pane:show-item-9"
   },
-  "atom-text-editor": {
+  "chevron-text-editor": {
     "alt-left": "editor:move-to-beginning-of-word",
     "alt-right": "editor:move-to-end-of-word",
     "alt-shift-left": "editor:select-to-beginning-of-word",
@@ -147,7 +147,7 @@
     "ctrl-alt-backspace": "editor:delete-to-beginning-of-subword",
     "ctrl-alt-delete": "editor:delete-to-end-of-subword"
   },
-  "atom-workspace atom-text-editor:not([mini])": {
+  "chevron-workspace chevron-text-editor:not([mini])": {
     "alt-cmd-z": "editor:checkout-head-revision",
     "cmd-<": "editor:scroll-to-cursor",
     "alt-cmd-ctrl-f": "editor:fold-selection",
@@ -180,7 +180,7 @@
     "cmd-k cmd-8": "editor:fold-at-indent-level-8",
     "cmd-k cmd-9": "editor:fold-at-indent-level-9"
   },
-  "atom-workspace atom-pane": {
+  "chevron-workspace chevron-pane": {
     "cmd-alt-=": "pane:increase-size",
     "cmd-alt--": "pane:decrease-size"
   },

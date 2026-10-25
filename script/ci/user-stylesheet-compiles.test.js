@@ -69,7 +69,7 @@ describeApp('in the built app', () => {
 
   it('compiles a stock user stylesheet', async () => {
     const stock =
-      '/* Your Stylesheet */\n.tree-view {\n}\natom-text-editor {\n}\n';
+      '/* Your Stylesheet */\n.tree-view {\n}\nchevron-text-editor {\n}\n';
     const result = await less.render(FALLBACK_IMPORTS + stock, {
       filename: path.join(APP, 'styles.less'),
       paths: [variablesDir, path.join(APP, 'static')]

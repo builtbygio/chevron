@@ -120,7 +120,7 @@ module.exports = {
 
         // Hook up the UI and processing.
         this.subs.add(
-            chevron.commands.add('atom-workspace', {
+            chevron.commands.add('chevron-workspace', {
                 'spell-check:toggle': () => this.toggle(),
             })
         );

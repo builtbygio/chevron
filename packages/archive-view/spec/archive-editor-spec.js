@@ -28,18 +28,18 @@ describe('ArchiveEditor', () => {
   describe('.deactivate()', () => {
     it('removes all ArchiveEditorViews from the workspace and does not open any new ones', async () => {
       const getArchiveEditorViews = () => {
-        return atom.workspace.getPaneItems().filter(item => item instanceof ArchiveEditorView)
+        return chevron.workspace.getPaneItems().filter(item => item instanceof ArchiveEditorView)
       }
-      await atom.packages.activatePackage('archive-view')
-      await atom.workspace.open(path.join(__dirname, 'fixtures', 'nested.tar'))
-      await atom.workspace.open(path.join(__dirname, 'fixtures', 'invalid.zip'))
-      await atom.workspace.open()
+      await chevron.packages.activatePackage('archive-view')
+      await chevron.workspace.open(path.join(__dirname, 'fixtures', 'nested.tar'))
+      await chevron.workspace.open(path.join(__dirname, 'fixtures', 'invalid.zip'))
+      await chevron.workspace.open()
       expect(getArchiveEditorViews().length).toBe(2)
 
-      await atom.packages.deactivatePackage('archive-view')
+      await chevron.packages.deactivatePackage('archive-view')
       expect(getArchiveEditorViews().length).toBe(0)
 
-      await atom.workspace.open(path.join(__dirname, 'fixtures', 'nested.tar'))
+      await chevron.workspace.open(path.join(__dirname, 'fixtures', 'nested.tar'))
       expect(getArchiveEditorViews().length).toBe(0)
     })
   })

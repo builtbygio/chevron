@@ -1,6 +1,6 @@
 {
   "context-menu": {
-    "atom-text-editor .syntax--markup.syntax--underline.syntax--link": [
+    "chevron-text-editor .syntax--markup.syntax--underline.syntax--link": [
       {
         "label": "Open link",
         "command": "link:open"

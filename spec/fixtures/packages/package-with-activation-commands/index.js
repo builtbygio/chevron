@@ -10,7 +10,7 @@ module.exports = {
   activate() {
     this.activateCallCount++;
 
-    return atom.commands.add('atom-workspace', 'activation-command', () => {
+    return chevron.commands.add('chevron-workspace', 'activation-command', () => {
       return this.activationCommandCallCount++;
     });
   }

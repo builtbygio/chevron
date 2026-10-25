@@ -55,7 +55,7 @@ class PaneResizeHandleElement extends HTMLElement {
     e.stopPropagation();
     if (!this.overlay) {
       this.overlay = document.createElement('div');
-      this.overlay.classList.add('atom-pane-cursor-overlay');
+      this.overlay.classList.add('chevron-pane-cursor-overlay');
       this.overlay.classList.add(this.isHorizontal ? 'horizontal' : 'vertical');
       this.appendChild(this.overlay);
     }
@@ -128,7 +128,7 @@ class PaneResizeHandleElement extends HTMLElement {
 }
 
 window.customElements.define(
-  'atom-pane-resize-handle',
+  'chevron-pane-resize-handle',
   PaneResizeHandleElement
 );
 
@@ -136,7 +136,7 @@ const createCustomElement = require('./create-custom-element');
 
 function createPaneResizeHandleElement() {
   return createCustomElement(
-    'atom-pane-resize-handle',
+    'chevron-pane-resize-handle',
     PaneResizeHandleElement
   );
 }

@@ -12,7 +12,7 @@ describe('editorconfig', () => {
 
   function open (name) {
     let editor
-    waitsForPromise(() => atom.workspace.open(path.join(dir, name)).then(e => { editor = e }))
+    waitsForPromise(() => chevron.workspace.open(path.join(dir, name)).then(e => { editor = e }))
     return () => editor
   }
 
@@ -29,15 +29,15 @@ describe('editorconfig', () => {
       'trim_trailing_whitespace = false',
       'insert_final_newline = true'
     ].join('\n'))
-    atom.project.setPaths([dir])
-    atom.config.set('editor.tabLength', 2)
-    atom.config.set('editor.tabType', 'soft')
-    atom.config.set('whitespace.removeTrailingWhitespace', true)
-    atom.config.set('whitespace.ensureSingleTrailingNewline', false)
+    chevron.project.setPaths([dir])
+    chevron.config.set('editor.tabLength', 2)
+    chevron.config.set('editor.tabType', 'soft')
+    chevron.config.set('whitespace.removeTrailingWhitespace', true)
+    chevron.config.set('whitespace.ensureSingleTrailingNewline', false)
 
-    waitsForPromise(() => atom.packages.activatePackage('status-bar'))
-    waitsForPromise(() => atom.packages.activatePackage('whitespace'))
-    waitsForPromise(() => atom.packages.activatePackage('editorconfig'))
+    waitsForPromise(() => chevron.packages.activatePackage('status-bar'))
+    waitsForPromise(() => chevron.packages.activatePackage('whitespace'))
+    waitsForPromise(() => chevron.packages.activatePackage('editorconfig'))
   })
 
   it('applies indentation, line length and line endings to the editor', () => {
@@ -60,8 +60,8 @@ describe('editorconfig', () => {
 
   it("loses to the project root's .chevron/config.json", () => {
     write('.chevron/config.json', JSON.stringify({editor: {tabLength: 5}}))
-    atom.project.setPaths([])
-    atom.project.setPaths([dir])
+    chevron.project.setPaths([])
+    chevron.project.setPaths([dir])
     const editor = open('a.txt')
     waitsFor('the root config tab length', () => editor().getTabLength() === 5)
     runs(() => expect(editor().getSoftTabs()).toBe(false))
@@ -96,7 +96,7 @@ describe('editorconfig', () => {
   it('stands down when disabled', () => {
     const editor = open('a.txt')
     waitsFor(() => editor().getTabLength() === 3)
-    runs(() => atom.config.set('editorconfig.enabled', false))
+    runs(() => chevron.config.set('editorconfig.enabled', false))
     waitsFor('the user tab length', () => editor().getTabLength() === 2)
     runs(() => expect(editor().getSoftTabs()).toBe(true))
   })
@@ -105,7 +105,7 @@ describe('editorconfig', () => {
     let tile
     runs(() => {
       tile = document.querySelector('.editorconfig-status') ||
-        atom.workspace.getFooterPanels()[0].getItem().getRightTiles()
+        chevron.workspace.getFooterPanels()[0].getItem().getRightTiles()
           .map(t => t.getItem())
           .find(item => item.classList && item.classList.contains('editorconfig-status'))
       expect(tile).toBeTruthy()

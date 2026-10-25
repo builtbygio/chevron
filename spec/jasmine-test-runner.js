@@ -64,17 +64,14 @@ module.exports = function({logFile, headless, testPaths, buildAtomEnvironment}) 
   const applicationDelegate = new ApplicationDelegate();
   applicationDelegate.setRepresentedFilename = function() {};
   applicationDelegate.setWindowDocumentEdited = function() {};
-  // Bundled package code calls `chevron.*` (H3 PR 23 conversion), while the
-  // existing specs still say `atom.*`. Both names must resolve here or every
-  // package suite dies on the first activatePackage with
-  // "ReferenceError: chevron is not defined".
+  // Specs and bundled packages both call `chevron.*`. There is no `window.atom`
+  // alias; a spec that still says `atom.*` dies on the first reference.
   const chevronEnvironment = buildAtomEnvironment({
     applicationDelegate, window, document,
     configDirPath: atomHome,
     enablePersistence: false
   });
   window.chevron = chevronEnvironment;
-  window.atom = chevronEnvironment;
 
   require('./spec-helper');
   if (process.env.JANKY_SHA1 || process.env.CI) { disableFocusMethods(); }

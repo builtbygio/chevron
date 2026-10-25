@@ -23,10 +23,10 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const APPLICATION = path.join(
-  ROOT, 'src', 'main-process', 'atom-application.js'
+  ROOT, 'src', 'main-process', 'chevron-application.js'
 );
 
-// Mirrors sweepStaleSockets in atom-application.js.
+// Mirrors sweepStaleSockets in chevron-application.js.
 const sweep = async (dir, ownPath) => {
   const removed = [];
   await Promise.all(
@@ -140,7 +140,7 @@ describe('stale socket sweep', () => {
   });
 });
 
-describe('atom-application still wires the cleanup', () => {
+describe('chevron-application still wires the cleanup', () => {
   const src = fs.readFileSync(APPLICATION, 'utf8');
 
   it('sweeps on startup', () => {

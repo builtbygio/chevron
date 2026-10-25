@@ -9,7 +9,7 @@ module.exports = {
     this.subscriptions.add(chevron.workspace.addOpener(filePath => {
       if (filePath === STYLEGUIDE_URI) return this.createStyleguideView({uri: STYLEGUIDE_URI})
     }))
-    this.subscriptions.add(chevron.commands.add('atom-workspace', 'styleguide:show', () => chevron.workspace.open(STYLEGUIDE_URI))
+    this.subscriptions.add(chevron.commands.add('chevron-workspace', 'styleguide:show', () => chevron.workspace.open(STYLEGUIDE_URI))
     )
   },
 

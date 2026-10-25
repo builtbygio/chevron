@@ -9,9 +9,9 @@ describe('ImageEditorView', () => {
   beforeEach(async () => {
     jasmine.useRealClock() // Needed for conditionPromise
 
-    workspaceElement = atom.views.getView(atom.workspace)
-    filePath = atom.project.getDirectories()[0].resolve('binary-file.png')
-    filePath2 = atom.project.getDirectories()[0].resolve('binary-file-2.png')
+    workspaceElement = chevron.views.getView(chevron.workspace)
+    filePath = chevron.project.getDirectories()[0].resolve('binary-file.png')
+    filePath2 = chevron.project.getDirectories()[0].resolve('binary-file-2.png')
     editor = new ImageEditor(filePath)
     view = new ImageEditorView(editor)
     view.element.style.height = '100px'
@@ -50,14 +50,14 @@ describe('ImageEditorView', () => {
   describe('image-view:reload', () => {
     it('reloads the image', () => {
       spyOn(view, 'updateImageURI')
-      atom.commands.dispatch(view.element, 'image-view:reload')
+      chevron.commands.dispatch(view.element, 'image-view:reload')
       expect(view.updateImageURI).toHaveBeenCalled()
     })
   })
 
   describe('image-view:zoom-in', () => {
     it('increases the image size by 25%', () => {
-      atom.commands.dispatch(view.element, 'image-view:zoom-in')
+      chevron.commands.dispatch(view.element, 'image-view:zoom-in')
       expect(view.refs.image.offsetWidth).toBe(13)
       expect(view.refs.image.offsetHeight).toBe(13)
     })
@@ -65,7 +65,7 @@ describe('ImageEditorView', () => {
 
   describe('image-view:zoom-out', () => {
     it('decreases the image size by 25%', () => {
-      atom.commands.dispatch(view.element, 'image-view:zoom-out')
+      chevron.commands.dispatch(view.element, 'image-view:zoom-out')
       expect(view.refs.image.offsetWidth).toBe(8)
       expect(view.refs.image.offsetHeight).toBe(8)
     })
@@ -73,10 +73,10 @@ describe('ImageEditorView', () => {
 
   describe('image-view:reset-zoom', () => {
     it('restores the image to the original size', () => {
-      atom.commands.dispatch(view.element, 'image-view:zoom-in')
+      chevron.commands.dispatch(view.element, 'image-view:zoom-in')
       expect(view.refs.image.offsetWidth).not.toBe(10)
       expect(view.refs.image.offsetHeight).not.toBe(10)
-      atom.commands.dispatch(view.element, 'image-view:reset-zoom')
+      chevron.commands.dispatch(view.element, 'image-view:reset-zoom')
       expect(view.refs.image.offsetWidth).toBe(10)
       expect(view.refs.image.offsetHeight).toBe(10)
     })
@@ -124,18 +124,18 @@ describe('ImageEditorView', () => {
       view.destroy()
       jasmine.attachToDOM(workspaceElement)
 
-      waitsForPromise(() => atom.packages.activatePackage('image-view'))
+      waitsForPromise(() => chevron.packages.activatePackage('image-view'))
     })
 
     it('correctly calculates originalWidth and originalHeight for all opened images', async () => {
       let imageEditor1 = null
       let imageEditor2 = null
 
-      await Promise.all([atom.workspace.open(filePath), atom.workspace.open(filePath2)])
+      await Promise.all([chevron.workspace.open(filePath), chevron.workspace.open(filePath2)])
 
-      expect(atom.workspace.getActivePane().getItems().length).toBe(2)
-      imageEditor1 = atom.workspace.getActivePane().getItems()[0]
-      imageEditor2 = atom.workspace.getActivePane().getItems()[1]
+      expect(chevron.workspace.getActivePane().getItems().length).toBe(2)
+      imageEditor1 = chevron.workspace.getActivePane().getItems()[0]
+      imageEditor2 = chevron.workspace.getActivePane().getItems()[1]
       expect(imageEditor1 instanceof ImageEditor).toBe(true)
       expect(imageEditor2 instanceof ImageEditor).toBe(true)
 

@@ -2,13 +2,13 @@ const {it, fit, ffit, beforeEach, afterEach} = require('./async-spec-helpers') /
 
 describe('Style Guide', () => {
   beforeEach(async () => {
-    await atom.packages.activatePackage('styleguide')
+    await chevron.packages.activatePackage('styleguide')
   })
 
   describe('the Styleguide view', () => {
     let styleGuideView
     beforeEach(async () => {
-      styleGuideView = await atom.workspace.open('chevron://styleguide')
+      styleGuideView = await chevron.workspace.open('chevron://styleguide')
     })
 
     it('opens the style guide', () => {

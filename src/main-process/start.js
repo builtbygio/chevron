@@ -167,13 +167,13 @@ module.exports = function start(resourcePath, devResourcePath, startTime) {
     StartupTime.addMarker('main-process:electron-onready:end');
     app.removeListener('open-file', addPathToOpen);
     app.removeListener('open-url', addUrlToOpen);
-    const AtomApplication = require(path.join(
+    const ChevronApplication = require(path.join(
       args.resourcePath,
       'src',
       'main-process',
-      'atom-application'
+      'chevron-application'
     ));
-    AtomApplication.open(args);
+    ChevronApplication.open(args);
   });
 };
 

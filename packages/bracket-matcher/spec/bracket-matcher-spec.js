@@ -6,26 +6,26 @@ describe('bracket matching', () => {
   let editorElement, editor, buffer
 
   beforeEach(() => {
-    atom.config.set('bracket-matcher.autocompleteBrackets', true)
+    chevron.config.set('bracket-matcher.autocompleteBrackets', true)
 
-    waitsForPromise(() => atom.packages.activatePackage('bracket-matcher'))
+    waitsForPromise(() => chevron.packages.activatePackage('bracket-matcher'))
 
-    waitsForPromise(() => atom.packages.activatePackage('language-javascript'))
+    waitsForPromise(() => chevron.packages.activatePackage('language-javascript'))
 
-    waitsForPromise(() => atom.packages.activatePackage('language-xml'))
+    waitsForPromise(() => chevron.packages.activatePackage('language-xml'))
 
-    waitsForPromise(() => atom.workspace.open('sample.js'))
+    waitsForPromise(() => chevron.workspace.open('sample.js'))
 
     runs(() => {
-      editor = atom.workspace.getActiveTextEditor()
-      editorElement = atom.views.getView(editor)
+      editor = chevron.workspace.getActiveTextEditor()
+      editorElement = chevron.views.getView(editor)
       buffer = editor.getBuffer()
     })
   })
 
   describe('matching bracket highlighting', () => {
     beforeEach(() => {
-      atom.config.set('bracket-matcher.highlightMatchingLineNumber', true)
+      chevron.config.set('bracket-matcher.highlightMatchingLineNumber', true)
     })
 
     function expectNoHighlights () {
@@ -293,7 +293,7 @@ describe('bracket matching', () => {
 
     describe('when highlightMatchingLineNumber config is disabled', () => {
       it('does not highlight the gutter', () => {
-        atom.config.set('bracket-matcher.highlightMatchingLineNumber', false)
+        chevron.config.set('bracket-matcher.highlightMatchingLineNumber', false)
         editor.moveToEndOfLine()
         editor.moveLeft()
         const gutterDecorations = editor.getLineNumberDecorations().filter(gutterDecoration => gutterDecoration.properties.class === 'bracket-matcher')
@@ -313,14 +313,14 @@ describe('bracket matching', () => {
     forEachLanguageWithTags(scopeName => {
       describe(`${scopeName} tag matching`, () => {
         beforeEach(() => {
-          waitsForPromise(() => atom.packages.activatePackage('language-html'))
-          waitsForPromise(() => atom.workspace.open('sample.xml'))
+          waitsForPromise(() => chevron.packages.activatePackage('language-html'))
+          waitsForPromise(() => chevron.workspace.open('sample.xml'))
 
           runs(() => {
-            editor = atom.workspace.getActiveTextEditor()
-            editorElement = atom.views.getView(editor)
+            editor = chevron.workspace.getActiveTextEditor()
+            editorElement = chevron.views.getView(editor)
             buffer = editor.buffer
-            atom.grammars.assignLanguageMode(buffer, scopeName)
+            chevron.grammars.assignLanguageMode(buffer, scopeName)
             buffer.getLanguageMode().syncOperationLimit = Infinity
           })
         })
@@ -544,7 +544,7 @@ describe('bracket matching', () => {
       it('moves the cursor to after the ending pair', () => {
         editor.moveToEndOfLine()
         editor.moveLeft()
-        atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
         expect(editor.getCursorBufferPosition()).toEqual([12, 1])
       })
     })
@@ -552,7 +552,7 @@ describe('bracket matching', () => {
     describe('when the cursor is after the starting pair', () => {
       it('moves the cursor to before the ending pair', () => {
         editor.moveToEndOfLine()
-        atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
         expect(editor.getCursorBufferPosition()).toEqual([12, 0])
       })
     })
@@ -560,7 +560,7 @@ describe('bracket matching', () => {
     describe('when the cursor is before the ending pair', () => {
       it('moves the cursor to after the starting pair', () => {
         editor.setCursorBufferPosition([12, 0])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
         expect(editor.getCursorBufferPosition()).toEqual([0, 29])
       })
     })
@@ -568,7 +568,7 @@ describe('bracket matching', () => {
     describe('when the cursor is after the ending pair', () => {
       it('moves the cursor to before the starting pair', () => {
         editor.setCursorBufferPosition([12, 1])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
         expect(editor.getCursorBufferPosition()).toEqual([0, 28])
       })
     })
@@ -577,7 +577,7 @@ describe('bracket matching', () => {
       describe('when within a `{}` pair', () => {
         it('moves the cursor to before the enclosing brace', () => {
           editor.setCursorBufferPosition([11, 2])
-          atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+          chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
           expect(editor.getCursorBufferPosition()).toEqual([0, 28])
         })
       })
@@ -585,7 +585,7 @@ describe('bracket matching', () => {
       describe('when within a `()` pair', () => {
         it('moves the cursor to before the enclosing brace', () => {
           editor.setCursorBufferPosition([2, 14])
-          atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+          chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
           expect(editor.getCursorBufferPosition()).toEqual([2, 7])
         })
       })
@@ -593,13 +593,13 @@ describe('bracket matching', () => {
       forEachLanguageWithTags(scopeName => {
         describe(`in ${scopeName} files`, () => {
           beforeEach(() => {
-            waitsForPromise(() => atom.workspace.open('sample.xml'))
+            waitsForPromise(() => chevron.workspace.open('sample.xml'))
 
             runs(() => {
-              editor = atom.workspace.getActiveTextEditor()
-              editorElement = atom.views.getView(editor)
+              editor = chevron.workspace.getActiveTextEditor()
+              editorElement = chevron.views.getView(editor)
               buffer = editor.buffer
-              atom.grammars.assignLanguageMode(buffer, scopeName)
+              chevron.grammars.assignLanguageMode(buffer, scopeName)
               buffer.getLanguageMode().syncOperationLimit = Infinity
             })
           })
@@ -607,7 +607,7 @@ describe('bracket matching', () => {
           describe('when within a <tag></tag> pair', () => {
             it('moves the cursor to the starting tag', () => {
               editor.setCursorBufferPosition([5, 10])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([4, 9])
             })
           })
@@ -615,43 +615,43 @@ describe('bracket matching', () => {
           describe('when on a starting <tag>', () => {
             it('moves the cursor to the end </tag>', () => {
               editor.setCursorBufferPosition([1, 2])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([15, 2])
 
               editor.setCursorBufferPosition([1, 3])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([15, 4])
 
               editor.setCursorBufferPosition([1, 4])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([15, 5])
 
               editor.setCursorBufferPosition([1, 5])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([15, 6])
 
               editor.setCursorBufferPosition([1, 6])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([15, 7])
 
               editor.setCursorBufferPosition([1, 7])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([15, 8])
 
               editor.setCursorBufferPosition([1, 8])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([15, 8])
 
               editor.setCursorBufferPosition([1, 9])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([15, 8])
 
               editor.setCursorBufferPosition([1, 10])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([15, 8])
 
               editor.setCursorBufferPosition([1, 16])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([15, 8])
             })
           })
@@ -659,35 +659,35 @@ describe('bracket matching', () => {
           describe('when on an ending </tag>', () => {
             it('moves the cursor to the start <tag>', () => {
               editor.setCursorBufferPosition([15, 2])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([1, 2])
 
               editor.setCursorBufferPosition([15, 3])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([1, 3])
 
               editor.setCursorBufferPosition([15, 4])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([1, 3])
 
               editor.setCursorBufferPosition([15, 5])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([1, 4])
 
               editor.setCursorBufferPosition([15, 6])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([1, 5])
 
               editor.setCursorBufferPosition([15, 7])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([1, 6])
 
               editor.setCursorBufferPosition([15, 8])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([1, 7])
 
               editor.setCursorBufferPosition([15, 9])
-              atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
+              chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-matching-bracket')
               expect(editor.getCursorBufferPosition()).toEqual([1, 7])
             })
           })
@@ -700,7 +700,7 @@ describe('bracket matching', () => {
     describe('when within a `{}` pair', () => {
       it('moves the cursor to before the enclosing brace', () => {
         editor.setCursorBufferPosition([11, 2])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-enclosing-bracket')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-enclosing-bracket')
         expect(editor.getCursorBufferPosition()).toEqual([0, 28])
       })
     })
@@ -708,7 +708,7 @@ describe('bracket matching', () => {
     describe('when within a `()` pair', () => {
       it('moves the cursor to before the enclosing brace', () => {
         editor.setCursorBufferPosition([2, 14])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-enclosing-bracket')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-enclosing-bracket')
         expect(editor.getCursorBufferPosition()).toEqual([2, 7])
       })
     })
@@ -716,7 +716,7 @@ describe('bracket matching', () => {
     describe('when not within a pair', () => {
       it('does not do anything', () => {
         editor.setCursorBufferPosition([0, 3])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:go-to-enclosing-bracket')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:go-to-enclosing-bracket')
         expect(editor.getCursorBufferPosition()).toEqual([0, 3])
       })
     })
@@ -726,7 +726,7 @@ describe('bracket matching', () => {
     describe('when the cursor on the left side of a bracket', () => {
       it('selects the text inside the brackets', () => {
         editor.setCursorBufferPosition([0, 28])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
         expect(editor.getSelectedBufferRange()).toEqual([[0, 29], [12, 0]])
       })
     })
@@ -734,7 +734,7 @@ describe('bracket matching', () => {
     describe('when the cursor on the right side of a bracket', () => {
       it('selects the text inside the brackets', () => {
         editor.setCursorBufferPosition([1, 30])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
         expect(editor.getSelectedBufferRange()).toEqual([[1, 30], [9, 2]])
       })
     })
@@ -742,7 +742,7 @@ describe('bracket matching', () => {
     describe('when the cursor is inside the brackets', () => {
       it('selects the text for the closest outer brackets', () => {
         editor.setCursorBufferPosition([6, 6])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
         expect(editor.getSelectedBufferRange()).toEqual([[4, 29], [7, 4]])
       })
     })
@@ -753,25 +753,25 @@ describe('bracket matching', () => {
         editor.setCursorBufferPosition([0, 500])
 
         const start = Date.now()
-        atom.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
         expect(editor.getSelectedBufferRange()).toEqual([[0, 500], [0, 500]])
         expect(Date.now() - start).toBeLessThan(5000)
       })
     })
 
     it('does not error when a bracket is already highlighted (regression)', () => {
-      atom.grammars.assignLanguageMode(editor, null)
+      chevron.grammars.assignLanguageMode(editor, null)
       editor.setText("(ok)")
       editor.selectAll()
-      atom.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
     })
 
     describe('when there are multiple cursors', () => {
       beforeEach(() => {
-        waitsForPromise(() => atom.workspace.open('multiplecursor.md'))
+        waitsForPromise(() => chevron.workspace.open('multiplecursor.md'))
         runs(() => {
-          editor = atom.workspace.getActiveTextEditor()
-          editorElement = atom.views.getView(editor)
+          editor = chevron.workspace.getActiveTextEditor()
+          editorElement = chevron.views.getView(editor)
         })
       })
       it('selects text inside the multiple cursors', () => {
@@ -781,7 +781,7 @@ describe('bracket matching', () => {
         editor.addCursorAtBufferPosition([3, 6])
         editor.addCursorAtBufferPosition([4, 6])
 
-        atom.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
 
         const selectedRanges = editor.getSelectedBufferRanges();
         expect(selectedRanges.length).toBe(6)
@@ -799,11 +799,11 @@ describe('bracket matching', () => {
     forEachLanguageWithTags(scopeName => {
       describe(`${scopeName} tag matching`, () => {
         beforeEach(() => {
-          waitsForPromise(() => atom.workspace.open('sample.xml'))
+          waitsForPromise(() => chevron.workspace.open('sample.xml'))
 
           runs(() => {
-            editor = atom.workspace.getActiveTextEditor()
-            editorElement = atom.views.getView(editor)
+            editor = chevron.workspace.getActiveTextEditor()
+            editorElement = chevron.views.getView(editor)
             buffer = editor.buffer
           })
         })
@@ -811,7 +811,7 @@ describe('bracket matching', () => {
         describe('when the cursor is on a starting tag', () => {
           it('selects the text inside the starting/closing tag', () => {
             editor.setCursorBufferPosition([4, 9])
-            atom.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
+            chevron.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
             expect(editor.getSelectedBufferRange()).toEqual([[4, 13], [6, 8]])
           })
         })
@@ -819,7 +819,7 @@ describe('bracket matching', () => {
         describe('when the cursor is on an ending tag', () => {
           it('selects the text inside the starting/closing tag', () => {
             editor.setCursorBufferPosition([14, 9])
-            atom.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
+            chevron.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
             expect(editor.getSelectedBufferRange()).toEqual([[10, 9], [14, 4]])
           })
         })
@@ -827,14 +827,14 @@ describe('bracket matching', () => {
         describe('when the cursor is inside a tag', () => {
           it('selects the text inside the starting/closing tag', () => {
             editor.setCursorBufferPosition([12, 8])
-            atom.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
+            chevron.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
             expect(editor.getSelectedBufferRange()).toEqual([[11, 11], [13, 6]])
           })
         })
 
         it('does not select attributes inside tags', () => {
           editor.setCursorBufferPosition([1, 10])
-          atom.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
+          chevron.commands.dispatch(editorElement, 'bracket-matcher:select-inside-brackets')
           expect(editor.getSelectedBufferRange()).toEqual([[1, 17], [15, 2]])
         })
       })
@@ -845,7 +845,7 @@ describe('bracket matching', () => {
     describe('when the cursor is not in front of any pair', () => {
       it('performs a regular backspace action', () => {
         editor.setCursorBufferPosition([0, 1])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
         expect(editor.lineTextForBufferRow(0)).toEqual('ar quicksort = function () {')
         expect(editor.getCursorBufferPosition()).toEqual([0, 0])
       })
@@ -854,7 +854,7 @@ describe('bracket matching', () => {
     describe('when the cursor is at the beginning of a line', () => {
       it('performs a regular backspace action', () => {
         editor.setCursorBufferPosition([12, 0])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
         expect(editor.lineTextForBufferRow(11)).toEqual('  return sort(Array.apply(this, arguments));};')
         expect(editor.getCursorBufferPosition()).toEqual([11, 44])
       })
@@ -863,7 +863,7 @@ describe('bracket matching', () => {
     describe('when the cursor is on the left side of a starting pair', () => {
       it('performs a regular backspace action', () => {
         editor.setCursorBufferPosition([0, 28])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
         expect(editor.lineTextForBufferRow(0)).toEqual('var quicksort = function (){')
         expect(editor.getCursorBufferPosition()).toEqual([0, 27])
       })
@@ -872,7 +872,7 @@ describe('bracket matching', () => {
     describe('when the cursor is on the left side of an ending pair', () => {
       it('performs a regular backspace action', () => {
         editor.setCursorBufferPosition([7, 4])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
         expect(editor.lineTextForBufferRow(7)).toEqual('  }')
         expect(editor.getCursorBufferPosition()).toEqual([7, 2])
       })
@@ -881,7 +881,7 @@ describe('bracket matching', () => {
     describe('when the cursor is on the right side of a starting pair, the ending pair on another line', () => {
       it('removes both pairs', () => {
         editor.setCursorBufferPosition([0, 29])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
         expect(editor.lineTextForBufferRow(0)).toEqual('var quicksort = function () ')
         expect(editor.lineTextForBufferRow(12)).toEqual(';')
         expect(editor.getCursorBufferPosition()).toEqual([0, 28])
@@ -891,7 +891,7 @@ describe('bracket matching', () => {
     describe('when the cursor is on the right side of an ending pair, the starting pair on another line', () => {
       it('removes both pairs', () => {
         editor.setCursorBufferPosition([7, 5])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
         expect(editor.lineTextForBufferRow(4)).toEqual('    while(items.length > 0) ')
         expect(editor.lineTextForBufferRow(7)).toEqual('    ')
         expect(editor.getCursorBufferPosition()).toEqual([7, 4])
@@ -901,7 +901,7 @@ describe('bracket matching', () => {
     describe('when the cursor is on the right side of a starting pair, the ending pair on the same line', () => {
       it('removes both pairs', () => {
         editor.setCursorBufferPosition([11, 14])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
         expect(editor.lineTextForBufferRow(11)).toEqual('  return sortArray.apply(this, arguments);')
         expect(editor.getCursorBufferPosition()).toEqual([11, 13])
       })
@@ -910,7 +910,7 @@ describe('bracket matching', () => {
     describe('when the cursor is on the right side of an ending pair, the starting pair on the same line', () => {
       it('removes both pairs', () => {
         editor.setCursorBufferPosition([11, 43])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
         expect(editor.lineTextForBufferRow(11)).toEqual('  return sortArray.apply(this, arguments);')
         expect(editor.getCursorBufferPosition()).toEqual([11, 41])
       })
@@ -919,7 +919,7 @@ describe('bracket matching', () => {
     describe('when a starting pair is selected', () => {
       it('removes both pairs', () => {
         editor.setSelectedBufferRange([[11, 13], [11, 14]])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
         expect(editor.lineTextForBufferRow(11)).toEqual('  return sortArray.apply(this, arguments);')
         expect(editor.getCursorBufferPosition()).toEqual([11, 13])
       })
@@ -928,7 +928,7 @@ describe('bracket matching', () => {
     describe('when an ending pair is selected', () => {
       it('removes both pairs', () => {
         editor.setSelectedBufferRange([[11, 42], [11, 43]])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-matching-brackets')
         expect(editor.lineTextForBufferRow(11)).toEqual('  return sortArray.apply(this, arguments);')
         expect(editor.getCursorBufferPosition()).toEqual([11, 41])
       })
@@ -944,7 +944,7 @@ describe('bracket matching', () => {
       it('does not change the text', () => {
         editor.insertText('"woah(')
         editor.selectAll()
-        atom.commands.dispatch(editorElement, 'bracket-matcher:remove-brackets-from-selection')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-brackets-from-selection')
         expect(editor.buffer.getText()).toBe('"woah(')
       })
     })
@@ -954,7 +954,7 @@ describe('bracket matching', () => {
         beforeEach(() => {
           editor.buffer.setText('it "does something", :meta => true')
           editor.setSelectedBufferRange([[0, 3], [0, 19]])
-          atom.commands.dispatch(editorElement, 'bracket-matcher:remove-brackets-from-selection')
+          chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-brackets-from-selection')
         })
 
         it('removes the brackets', () => {
@@ -970,7 +970,7 @@ describe('bracket matching', () => {
         beforeEach(() => {
           editor.buffer.setText('it ("does something" do\nend)')
           editor.setSelectedBufferRange([[0, 3], [1, 4]])
-          atom.commands.dispatch(editorElement, 'bracket-matcher:remove-brackets-from-selection')
+          chevron.commands.dispatch(editorElement, 'bracket-matcher:remove-brackets-from-selection')
         })
 
         it('removes the brackets', () => {
@@ -987,7 +987,7 @@ describe('bracket matching', () => {
   describe('matching bracket insertion', () => {
     beforeEach(() => {
       editor.buffer.setText('')
-      atom.config.set('editor.autoIndent', true)
+      chevron.config.set('editor.autoIndent', true)
     })
 
     describe('when more than one character is inserted', () => {
@@ -1009,7 +1009,7 @@ describe('bracket matching', () => {
 
     describe('when autocompleteBrackets configuration is disabled globally', () => {
       it('does not insert a matching bracket', () => {
-        atom.config.set('bracket-matcher.autocompleteBrackets', false)
+        chevron.config.set('bracket-matcher.autocompleteBrackets', false)
         editor.buffer.setText('}')
         editor.setCursorBufferPosition([0, 0])
         editor.insertText('{')
@@ -1020,8 +1020,8 @@ describe('bracket matching', () => {
 
     describe('when autocompleteBrackets configuration is disabled in scope', () => {
       it('does not insert a matching bracket', () => {
-        atom.config.set('bracket-matcher.autocompleteBrackets', true)
-        atom.config.set('bracket-matcher.autocompleteBrackets', false, {scopeSelector: '.source.js'})
+        chevron.config.set('bracket-matcher.autocompleteBrackets', true)
+        chevron.config.set('bracket-matcher.autocompleteBrackets', false, {scopeSelector: '.source.js'})
         editor.buffer.setText('}')
         editor.setCursorBufferPosition([0, 0])
         editor.insertText('{')
@@ -1032,7 +1032,7 @@ describe('bracket matching', () => {
 
     describe('when autocompleteCharacters configuration is set globally', () => {
       it('inserts a matching angle bracket', () => {
-        atom.config.set('bracket-matcher.autocompleteCharacters', ['<>'])
+        chevron.config.set('bracket-matcher.autocompleteCharacters', ['<>'])
         editor.setCursorBufferPosition([0, 0])
         editor.insertText('<')
         expect(buffer.lineForRow(0)).toBe('<>')
@@ -1042,7 +1042,7 @@ describe('bracket matching', () => {
 
     describe('when autocompleteCharacters configuration is set in scope', () => {
       it('inserts a matching angle bracket', () => {
-        atom.config.set('bracket-matcher.autocompleteCharacters', ['<>'], {scopeSelector: '.source.js'})
+        chevron.config.set('bracket-matcher.autocompleteCharacters', ['<>'], {scopeSelector: '.source.js'})
         editor.setCursorBufferPosition([0, 0])
         editor.insertText('<')
         expect(buffer.lineForRow(0)).toBe('<>')
@@ -1050,7 +1050,7 @@ describe('bracket matching', () => {
       })
 
       it('emits a buffer change event after the cursor is in place', () => {
-        atom.config.set('bracket-matcher.autocompleteCharacters', ['<>'], {scopeSelector: '.source.js'})
+        chevron.config.set('bracket-matcher.autocompleteCharacters', ['<>'], {scopeSelector: '.source.js'})
 
         let lastPosition = null
         const sub = editor.getBuffer().onDidChange(() => {
@@ -1245,7 +1245,7 @@ describe('bracket matching', () => {
 
       describe('when the bracket-matcher.wrapSelectionsInBrackets is falsy globally', () => {
         it('does not wrap the selection in brackets', () => {
-          atom.config.set('bracket-matcher.wrapSelectionsInBrackets', false)
+          chevron.config.set('bracket-matcher.wrapSelectionsInBrackets', false)
           editor.setText('text')
           editor.moveToBottom()
           editor.selectToTop()
@@ -1258,8 +1258,8 @@ describe('bracket matching', () => {
 
       describe('when the bracket-matcher.wrapSelectionsInBrackets is falsy in scope', () => {
         it('does not wrap the selection in brackets', () => {
-          atom.config.set('bracket-matcher.wrapSelectionsInBrackets', true)
-          atom.config.set('bracket-matcher.wrapSelectionsInBrackets', false, {scopeSelector: '.source.js'})
+          chevron.config.set('bracket-matcher.wrapSelectionsInBrackets', true)
+          chevron.config.set('bracket-matcher.wrapSelectionsInBrackets', false, {scopeSelector: '.source.js'})
           editor.setText('text')
           editor.moveToBottom()
           editor.selectToTop()
@@ -1496,7 +1496,7 @@ describe('bracket matching', () => {
 
       describe('when editor.autoIndent is disabled', () => {
         beforeEach(() => {
-          atom.config.set('editor.autoIndent', false)
+          chevron.config.set('editor.autoIndent', false)
         })
 
         it('does not auto-indent the empty line and closing bracket', () => {
@@ -1514,7 +1514,7 @@ describe('bracket matching', () => {
     describe('when in language specific scope', () => {
       describe('string interpolation', () => {
         beforeEach(() => {
-          waitsForPromise(() => atom.packages.activatePackage('language-ruby'))
+          waitsForPromise(() => chevron.packages.activatePackage('language-ruby'))
 
           runs(() => buffer.setPath('foo.rb'))
         })
@@ -1598,7 +1598,7 @@ describe('bracket matching', () => {
     })
 
     it('does not delete end bracket even if it directly precedes a begin bracket if autocomplete is turned off globally', () => {
-      atom.config.set('bracket-matcher.autocompleteBrackets', false)
+      chevron.config.set('bracket-matcher.autocompleteBrackets', false)
       buffer.setText('')
       editor.setCursorBufferPosition([0, 0])
       editor.insertText('{')
@@ -1611,8 +1611,8 @@ describe('bracket matching', () => {
     })
 
     it('does not delete end bracket even if it directly precedes a begin bracket if autocomplete is turned off in scope', () => {
-      atom.config.set('bracket-matcher.autocompleteBrackets', true)
-      atom.config.set('bracket-matcher.autocompleteBrackets', false, {scopeSelector: '.source.js'})
+      chevron.config.set('bracket-matcher.autocompleteBrackets', true)
+      chevron.config.set('bracket-matcher.autocompleteBrackets', false, {scopeSelector: '.source.js'})
       buffer.setText('')
       editor.setCursorBufferPosition([0, 0])
       editor.insertText('{')
@@ -1627,18 +1627,18 @@ describe('bracket matching', () => {
 
   describe('bracket-matcher:close-tag', () => {
     beforeEach(() => {
-      waitsForPromise(() => atom.workspace.open('sample.html'))
+      waitsForPromise(() => chevron.workspace.open('sample.html'))
 
       runs(() => {
-        editor = atom.workspace.getActiveTextEditor()
-        editorElement = atom.views.getView(editor)
+        editor = chevron.workspace.getActiveTextEditor()
+        editorElement = chevron.views.getView(editor)
         buffer = editor.buffer
       })
     })
 
     it('closes the first unclosed tag', () => {
       editor.setCursorBufferPosition([5, 14])
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
 
       expect(editor.getCursorBufferPosition()).toEqual([5, 18])
       expect(editor.getTextInRange([[5, 14], [5, 18]])).toEqual('</a>')
@@ -1646,8 +1646,8 @@ describe('bracket matching', () => {
 
     it('closes the following unclosed tags if called repeatedly', () => {
       editor.setCursorBufferPosition([5, 14])
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
 
       expect(editor.getCursorBufferPosition()).toEqual([5, 22])
       expect(editor.getTextInRange([[5, 18], [5, 22]])).toEqual('</p>')
@@ -1655,49 +1655,49 @@ describe('bracket matching', () => {
 
     it('does not close any tag if no unclosed tag can be found at the insertion point', () => {
       editor.setCursorBufferPosition([5, 14])
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
 
       // closing all currently open tags
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
       editor.setCursorBufferPosition([13, 11])
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
       editor.setCursorBufferPosition([15, 0])
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
 
       // positioning on an already closed tag
       editor.setCursorBufferPosition([11, 9])
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
       expect(editor.getCursorBufferPosition()).toEqual([11, 9])
     })
 
     it('does not get confused in case of nested identical tags -- tag not closing', () => {
       editor.setCursorBufferPosition([13, 11])
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
 
       expect(editor.getCursorBufferPosition()).toEqual([13, 16])
     })
 
     it('does not get confused in case of nested identical tags -- tag closing', () => {
       editor.setCursorBufferPosition([13, 11])
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
 
       expect(editor.getCursorBufferPosition()).toEqual([13, 16])
       expect(editor.getTextInRange([[13, 10], [13, 16]])).toEqual('</div>')
 
-      atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+      chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
 
       expect(editor.getCursorBufferPosition()).toEqual([13, 16])
     })
 
     it('does not get confused in case of nested self closing tags', () => {
-      waitsForPromise(() => atom.workspace.open('sample.xml'))
+      waitsForPromise(() => chevron.workspace.open('sample.xml'))
 
       runs(() => {
-        editor = atom.workspace.getActiveTextEditor()
-        editorElement = atom.views.getView(editor)
+        editor = chevron.workspace.getActiveTextEditor()
+        editorElement = chevron.views.getView(editor)
 
         editor.setText(`\
 <bar name="test">
@@ -1707,7 +1707,7 @@ describe('bracket matching', () => {
         )
 
         editor.setCursorBufferPosition([2, 0])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
 
         expect(editor.getCursorBufferPosition().row).toEqual(2)
         expect(editor.getCursorBufferPosition().column).toEqual(6)
@@ -1716,11 +1716,11 @@ describe('bracket matching', () => {
     })
 
     it('does not get confused in case of self closing tags after the cursor', () => {
-      waitsForPromise(() => atom.workspace.open('sample.xml'))
+      waitsForPromise(() => chevron.workspace.open('sample.xml'))
 
       runs(() => {
-        editor = atom.workspace.getActiveTextEditor()
-        editorElement = atom.views.getView(editor)
+        editor = chevron.workspace.getActiveTextEditor()
+        editorElement = chevron.views.getView(editor)
 
         editor.setText(`\
 <bar>
@@ -1733,7 +1733,7 @@ describe('bracket matching', () => {
         )
 
         editor.setCursorBufferPosition([1, 0])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
 
         expect(editor.getCursorBufferPosition().row).toEqual(1)
         expect(editor.getCursorBufferPosition().column).toEqual(0)
@@ -1742,11 +1742,11 @@ describe('bracket matching', () => {
     })
 
     it('does not get confused in case of nested self closing tags with `>` in their attributes', () => {
-      waitsForPromise(() => atom.workspace.open('sample.xml'))
+      waitsForPromise(() => chevron.workspace.open('sample.xml'))
 
       runs(() => {
-        editor = atom.workspace.getActiveTextEditor()
-        editorElement = atom.views.getView(editor)
+        editor = chevron.workspace.getActiveTextEditor()
+        editorElement = chevron.views.getView(editor)
 
         editor.setText(`\
 <bar name="test">
@@ -1756,7 +1756,7 @@ describe('bracket matching', () => {
         )
 
         editor.setCursorBufferPosition([2, 0])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
 
         expect(editor.getCursorBufferPosition().row).toEqual(2)
         expect(editor.getCursorBufferPosition().column).toEqual(6)
@@ -1769,7 +1769,7 @@ describe('bracket matching', () => {
         )
 
         editor.setCursorBufferPosition([1, 0])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
 
         expect(editor.getCursorBufferPosition().row).toEqual(1)
         expect(editor.getCursorBufferPosition().column).toEqual(6)
@@ -1778,11 +1778,11 @@ describe('bracket matching', () => {
     })
 
     it('does not get confused in case of self closing tags with `>` in their attributes after the cursor', () => {
-      waitsForPromise(() => atom.workspace.open('sample.xml'))
+      waitsForPromise(() => chevron.workspace.open('sample.xml'))
 
       runs(() => {
-        editor = atom.workspace.getActiveTextEditor()
-        editorElement = atom.views.getView(editor)
+        editor = chevron.workspace.getActiveTextEditor()
+        editorElement = chevron.views.getView(editor)
 
         editor.setText(`\
 <bar>
@@ -1795,7 +1795,7 @@ describe('bracket matching', () => {
         )
 
         editor.setCursorBufferPosition([1, 0])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:close-tag')
 
         expect(editor.getCursorBufferPosition().row).toEqual(1)
         expect(editor.getCursorBufferPosition().column).toEqual(0)
@@ -1808,7 +1808,7 @@ describe('bracket matching', () => {
     describe('when the cursor on the left side of an opening bracket', () => {
       beforeEach(() => {
         editor.setCursorBufferPosition([0, 28])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:select-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:select-matching-brackets')
       })
 
       it('selects the brackets', () => {
@@ -1825,7 +1825,7 @@ describe('bracket matching', () => {
     describe('when the cursor on the right side of an opening bracket', () => {
       beforeEach(() => {
         editor.setCursorBufferPosition([1, 30])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:select-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:select-matching-brackets')
       })
 
       it('selects the brackets', () => {
@@ -1842,7 +1842,7 @@ describe('bracket matching', () => {
     describe('when the cursor on the left side of an closing bracket', () => {
       beforeEach(() => {
         editor.setCursorBufferPosition([12, 0])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:select-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:select-matching-brackets')
       })
 
       it('selects the brackets', () => {
@@ -1859,7 +1859,7 @@ describe('bracket matching', () => {
     describe("when the cursor isn't near to a bracket", () => {
       beforeEach(() => {
         editor.setCursorBufferPosition([1, 5])
-        atom.commands.dispatch(editorElement, 'bracket-matcher:select-matching-brackets')
+        chevron.commands.dispatch(editorElement, 'bracket-matcher:select-matching-brackets')
       })
 
       it("doesn't selects the brackets", () => {
@@ -1893,7 +1893,7 @@ describe('bracket matching', () => {
     })
 
     it('does skip over brackets that have already been skipped when alwaysSkipClosingPairs is set', () => {
-      atom.config.set('bracket-matcher.alwaysSkipClosingPairs', true)
+      chevron.config.set('bracket-matcher.alwaysSkipClosingPairs', true)
       editor.insertText('()')
       editor.moveLeft()
       editor.insertText(')')

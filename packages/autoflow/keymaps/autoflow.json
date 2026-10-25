@@ -1,8 +1,8 @@
 {
-  ".platform-darwin atom-text-editor": {
+  ".platform-darwin chevron-text-editor": {
     "alt-cmd-q": "autoflow:reflow-selection"
   },
-  ".platform-win32 atom-text-editor, .platform-linux atom-text-editor": {
+  ".platform-win32 chevron-text-editor, .platform-linux chevron-text-editor": {
     "ctrl-shift-q": "autoflow:reflow-selection"
   }
 }

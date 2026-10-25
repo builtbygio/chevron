@@ -205,7 +205,7 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
    - **`atom://` — STAYS at Wave 3, DELETED in Wave 4.** The blocker was `image-view/styles/image-view.less` shipping a live `atom://image-view/images/transparent-background.png`. Wave 4 converted that pin and removed the alias.  
    - **Bug fixed on the way:** `handleLinkClick` rewrote canonical `chevron://` links *to* `atom://` before calling `uriHandlerRegistry.handleURI`, so correct links tripped the registry's "atom:// is a deprecated alias" warning. It now passes the scheme through; only `atom://` warns.  
 4. **Wave 4 — done. `atom://` is gone.** `@builtbygio/image-view@0.64.3` emits `chevron://`, clearing the last shipped emitter across all 94 pins; then the alias came out of core: the opener fallback (`alternateSchemeURI`), `atom-paths` normalization, the `atom:` branch and deprecation warning in `URIHandlerRegistry`, the `atom` scheme in `AtomProtocolHandler` / `atom-protocol-path`, the CLI URL check, the OS protocol registration, and the macOS `CFBundleURLSchemes` entry. **`chevron://` is now the only product URI scheme.**  
-   - The app was emitting `atom://` **itself** — `atom://about`, `atom://config` and five `atom://.atom/*` menu URIs in `atom-application.js`. Converted; missing them would have broken About and Settings.  
+   - The app was emitting `atom://` **itself** — `atom://about`, `atom://config` and five `atom://.atom/*` menu URIs in `chevron-application.js`. Converted; missing them would have broken About and Settings.  
    - `script/ci/no-atom-uri.test.js` only scanned `lib/` and `src/`, which is why it never saw image-view's `styles/`. It now walks the whole package.  
    - The `.atom` **host** spelling is gone too: `packages/welcome` and `@builtbygio/snippets@1.5.6` emit/match `chevron://.chevron/*`, so core's normalization was deleted.  
    - **Regression caught while doing that:** moving the menu URI to `chevron://.chevron/snippets` broke *Open Your Snippets*. Core's default opener has no snippets case (it is the package's job) and snippets matched only `chevron://.atom/snippets` — the deleted `atom://` fallback had been bridging them silently. Fixed in snippets 1.5.6 and gated by `script/ci/menu-uri-openers.test.js`, which holds an explicit menu-URI → owner table.  
@@ -221,7 +221,7 @@ Post-1.1.0 modernization continues the architecture doc with wrap-then-delete. *
 ### Known dogfood leftovers (found 2026-08-13)
 
 - **Fixed in #108:** empty tree-view — `collectDefaultRoots` used `atomApplication.windows` (never set); must use `getAllWindows()`. `/tmp` projects hid this. Keep the custom elements polyfill (contextIsolation); do not Grim-wrap `registerElement`.  
-- Jasmine harness still defines `window.atom` for ~7500 spec references. Product `require('atom')` is `MODULE_NOT_FOUND`.
+- Specs call `chevron.*`. The Jasmine harness does not define `window.atom`. Product `require('atom')` is `MODULE_NOT_FOUND`.
 
 **Catalog is vendored** (2026-08-28): all 94 editor packages live in `packages/` as
 `workspace:@builtbygio/<id>@*`. There is no publish step and no pin to drift. The owned

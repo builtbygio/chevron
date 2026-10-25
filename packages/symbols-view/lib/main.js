@@ -23,12 +23,12 @@ module.exports = __toCommonJS(main_exports);
 var main_default = {
   activate() {
     this.stack = [];
-    this.workspaceSubscription = chevron.commands.add("atom-workspace", {
+    this.workspaceSubscription = chevron.commands.add("chevron-workspace", {
       "symbols-view:toggle-project-symbols": () => {
         this.createProjectView().toggle();
       }
     });
-    this.editorSubscription = chevron.commands.add("atom-text-editor", {
+    this.editorSubscription = chevron.commands.add("chevron-text-editor", {
       "symbols-view:toggle-file-symbols": () => {
         this.createFileView().toggle();
       },

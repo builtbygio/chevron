@@ -49,7 +49,7 @@ function activate() {
   let selectorDisposable;
   let selector;
   disposables.add(
-    chevron.commands.add("atom-text-editor", {
+    chevron.commands.add("chevron-text-editor", {
       "line-ending-selector:show": () => {
         if (!selectorDisposable) {
           selector = new import_selector.Selector([
@@ -62,11 +62,11 @@ function activate() {
         selector.show();
       },
       "line-ending-selector:convert-to-LF": (event) => {
-        const editorElement = event.target.closest("atom-text-editor");
+        const editorElement = event.target.closest("chevron-text-editor");
         setLineEnding(editorElement.getModel(), "\n");
       },
       "line-ending-selector:convert-to-CRLF": (event) => {
-        const editorElement = event.target.closest("atom-text-editor");
+        const editorElement = event.target.closest("chevron-text-editor");
         setLineEnding(editorElement.getModel(), "\r\n");
       }
     })

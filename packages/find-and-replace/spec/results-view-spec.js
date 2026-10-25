@@ -23,7 +23,7 @@ describe('ResultsView', () => {
   let projectFindView, resultsView, searchPromise, workspaceElement;
 
   function getResultsPane() {
-    let pane = atom.workspace.paneForURI(ResultsPaneView.URI);
+    let pane = chevron.workspace.paneForURI(ResultsPaneView.URI);
     if (pane) return pane.itemForURI(ResultsPaneView.URI);
   }
 
@@ -70,14 +70,14 @@ describe('ResultsView', () => {
   }
 
   beforeEach(async () => {
-    workspaceElement = atom.views.getView(atom.workspace);
+    workspaceElement = chevron.views.getView(chevron.workspace);
     workspaceElement.style.height = '1000px';
     jasmine.attachToDOM(workspaceElement);
 
-    atom.config.set('core.excludeVcsIgnoredPaths', false);
-    atom.project.setPaths([path.join(__dirname, 'fixtures/project')]);
+    chevron.config.set('core.excludeVcsIgnoredPaths', false);
+    chevron.project.setPaths([path.join(__dirname, 'fixtures/project')]);
 
-    let activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
+    let activationPromise = chevron.packages.activatePackage("find-and-replace").then(function({mainModule}) {
       mainModule.createViews();
       ({projectFindView} = mainModule);
       const spy = spyOn(projectFindView, 'confirm').andCallFake(() => {
@@ -85,7 +85,7 @@ describe('ResultsView', () => {
       });
     });
 
-    atom.commands.dispatch(workspaceElement, 'project-find:show');
+    chevron.commands.dispatch(workspaceElement, 'project-find:show');
 
     await activationPromise;
   });
@@ -93,7 +93,7 @@ describe('ResultsView', () => {
   describe("when the result is for a long line", () => {
     it("renders the context around the match", async () => {
       projectFindView.findEditor.setText('ghijkl');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsView = getResultsView();
@@ -108,12 +108,12 @@ describe('ResultsView', () => {
 
   describe("when there are multiple project paths", () => {
     beforeEach(() => {
-      atom.project.addPath(temp.mkdirSync("another-project-path"))
+      chevron.project.addPath(temp.mkdirSync("another-project-path"))
     });
 
     it("includes the basename of the project path that contains the match", async () => {
       projectFindView.findEditor.setText('ghijkl');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsView = getResultsView();
@@ -131,7 +131,7 @@ describe('ResultsView', () => {
 
     it("renders the replacement when doing a search and there is a replacement pattern", async () => {
       projectFindView.replaceEditor.setText('cats');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsView = getResultsView();
@@ -142,7 +142,7 @@ describe('ResultsView', () => {
     });
 
     it("renders the replacement when changing the text in the replacement field", async () => {
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsView = getResultsView();
@@ -173,7 +173,7 @@ describe('ResultsView', () => {
       projectFindView.refs.regexOptionButton.click();
       projectFindView.findEditor.setText('function ?(\\([^)]*\\))');
       projectFindView.replaceEditor.setText('$1 =>')
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsView = getResultsView();
@@ -324,7 +324,7 @@ describe('ResultsView', () => {
 
     it("selects the path when when core:move-to-top is triggered and first item is collapsed", async () => {
       await resultsView.moveToTop();
-      atom.commands.dispatch(resultsView.element, 'core:move-left');
+      chevron.commands.dispatch(resultsView.element, 'core:move-left');
       await resultsView.moveToTop();
 
       expect(resultsView.refs.listView.element.querySelector('.path-row').parentElement).toHaveClass('selected');
@@ -334,7 +334,7 @@ describe('ResultsView', () => {
   describe("expanding and collapsing results", () => {
     it('preserves the selected file when collapsing all results', async () => {
       projectFindView.findEditor.setText('items');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsView = getResultsView();
@@ -372,7 +372,7 @@ describe('ResultsView', () => {
 
     it('re-expands all results when running a new search', async () => {
       projectFindView.findEditor.setText('items');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsView = getResultsView();
@@ -381,7 +381,7 @@ describe('ResultsView', () => {
       expect(resultsView.element.querySelector('.collapsed')).not.toBe(null);
 
       projectFindView.findEditor.setText('sort');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       expect(resultsView.element.querySelector('.collapsed')).toBe(null);
@@ -389,7 +389,7 @@ describe('ResultsView', () => {
 
     it('preserves the collapsed state of the right files when results are removed', async () => {
       projectFindView.findEditor.setText('push');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
       resultsView = getResultsView();
 
@@ -409,7 +409,7 @@ describe('ResultsView', () => {
 
     it('preserves the collapsed state of the right files when results are added', async () => {
       projectFindView.findEditor.setText('push');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
       resultsView = getResultsView();
 
@@ -436,10 +436,10 @@ describe('ResultsView', () => {
 
   describe("opening results", () => {
     beforeEach(async () => {
-      await atom.workspace.open('sample.js');
+      await chevron.workspace.open('sample.js');
 
       projectFindView.findEditor.setText('items');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsView = getResultsView();
@@ -448,7 +448,7 @@ describe('ResultsView', () => {
 
     function paneItemOpening(pending = null) {
       return new Promise(resolve => {
-        const subscription = atom.workspace.onDidOpen(({pane, item}) => {
+        const subscription = chevron.workspace.onDidOpen(({pane, item}) => {
           if (pending === null || (pane.getPendingItem() === item) === pending) {
             resolve()
             subscription.dispose()
@@ -460,17 +460,17 @@ describe('ResultsView', () => {
     it("opens the file containing the result when 'core:confirm' is called", async () => {
       // open something in sample.coffee
       resultsView.element.focus();
-      _.times(3, () => atom.commands.dispatch(resultsView.element, 'core:move-down'));
-      atom.commands.dispatch(resultsView.element, 'core:confirm');
+      _.times(3, () => chevron.commands.dispatch(resultsView.element, 'core:move-down'));
+      chevron.commands.dispatch(resultsView.element, 'core:confirm');
       await paneItemOpening()
-      expect(atom.workspace.getCenter().getActivePaneItem().getPath()).toContain('sample.');
+      expect(chevron.workspace.getCenter().getActivePaneItem().getPath()).toContain('sample.');
 
       // open something in sample.js
       resultsView.element.focus();
-      _.times(6, () => atom.commands.dispatch(resultsView.element, 'core:move-down'));
-      atom.commands.dispatch(resultsView.element, 'core:confirm');
+      _.times(6, () => chevron.commands.dispatch(resultsView.element, 'core:move-down'));
+      chevron.commands.dispatch(resultsView.element, 'core:confirm');
       await paneItemOpening()
-      expect(atom.workspace.getCenter().getActivePaneItem().getPath()).toContain('sample.');
+      expect(chevron.workspace.getCenter().getActivePaneItem().getPath()).toContain('sample.');
     });
 
     it("opens the file containing the result in a non-pending state when the search result is double-clicked", async () => {
@@ -484,57 +484,57 @@ describe('ResultsView', () => {
       expect(click2.defaultPrevented).toBe(true);
 
       await paneItemOpening(false)
-      const editor = atom.workspace.getCenter().getActiveTextEditor();
-      expect(atom.workspace.getCenter().getActivePane().getPendingItem()).toBe(null);
-      expect(atom.views.getView(editor)).toHaveFocus();
+      const editor = chevron.workspace.getCenter().getActiveTextEditor();
+      expect(chevron.workspace.getCenter().getActivePane().getPendingItem()).toBe(null);
+      expect(chevron.views.getView(editor)).toHaveFocus();
     });
 
     it("opens the file containing the result in a pending state when the search result is single-clicked", async () => {
       const pathNode = resultsView.refs.listView.element.querySelectorAll(".match-row")[0];
       pathNode.dispatchEvent(buildMouseEvent('mousedown', {target: pathNode, which: 1}));
       await paneItemOpening()
-      const editor = atom.workspace.getCenter().getActiveTextEditor();
-      expect(atom.workspace.getCenter().getActivePane().getPendingItem()).toBe(editor);
-      expect(atom.views.getView(editor)).toHaveFocus();
+      const editor = chevron.workspace.getCenter().getActiveTextEditor();
+      expect(chevron.workspace.getCenter().getActivePane().getPendingItem()).toBe(editor);
+      expect(chevron.views.getView(editor)).toHaveFocus();
     })
 
     describe("the `projectSearchResultsPaneSplitDirection` option", () => {
       beforeEach(() => {
-        spyOn(atom.workspace, 'open').andCallThrough()
+        spyOn(chevron.workspace, 'open').andCallThrough()
       });
 
       it("does not create a split when the option is 'none'", async () => {
-        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'none');
-        atom.commands.dispatch(resultsView.element, 'core:move-down');
-        atom.commands.dispatch(resultsView.element, 'core:confirm');
+        chevron.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'none');
+        chevron.commands.dispatch(resultsView.element, 'core:move-down');
+        chevron.commands.dispatch(resultsView.element, 'core:confirm');
         await paneItemOpening()
-        expect(atom.workspace.open.mostRecentCall.args[1].split).toBeUndefined();
+        expect(chevron.workspace.open.mostRecentCall.args[1].split).toBeUndefined();
       });
 
       it("always opens the file in the left pane when the option is 'right'", async () => {
-        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right');
-        atom.commands.dispatch(resultsView.element, 'core:move-down');
-        atom.commands.dispatch(resultsView.element, 'core:confirm');
+        chevron.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right');
+        chevron.commands.dispatch(resultsView.element, 'core:move-down');
+        chevron.commands.dispatch(resultsView.element, 'core:confirm');
         await paneItemOpening()
-        expect(atom.workspace.open.mostRecentCall.args[1].split).toBe('left');
+        expect(chevron.workspace.open.mostRecentCall.args[1].split).toBe('left');
       });
 
       it("always opens the file in the pane above when the options is 'down'", async () => {
-        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'down')
-        atom.commands.dispatch(resultsView.element, 'core:move-down');
-        atom.commands.dispatch(resultsView.element, 'core:confirm');
+        chevron.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'down')
+        chevron.commands.dispatch(resultsView.element, 'core:move-down');
+        chevron.commands.dispatch(resultsView.element, 'core:confirm');
         await paneItemOpening()
-        expect(atom.workspace.open.mostRecentCall.args[1].split).toBe('up');
+        expect(chevron.workspace.open.mostRecentCall.args[1].split).toBe('up');
       });
     });
   });
 
   describe("arrowing through the list", () => {
     it("arrows through the entire list without selecting paths and overshooting the boundaries", async () => {
-      await atom.workspace.open('sample.js');
+      await chevron.workspace.open('sample.js');
 
       projectFindView.findEditor.setText('items');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsView = getResultsView();
@@ -582,7 +582,7 @@ describe('ResultsView', () => {
     describe("when there are a list of items", () => {
       beforeEach(async () => {
         projectFindView.findEditor.setText('items');
-        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        chevron.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
         resultsView = getResultsView();
       });
@@ -651,13 +651,13 @@ describe('ResultsView', () => {
   describe("when the results view is empty", () => {
     it("ignores core:confirm and other commands for selecting results", async () => {
       const resultsView = buildResultsView({ empty: true });
-      atom.commands.dispatch(resultsView.element, 'core:confirm');
-      atom.commands.dispatch(resultsView.element, 'core:move-down');
-      atom.commands.dispatch(resultsView.element, 'core:move-up');
-      atom.commands.dispatch(resultsView.element, 'core:move-to-top');
-      atom.commands.dispatch(resultsView.element, 'core:move-to-bottom');
-      atom.commands.dispatch(resultsView.element, 'core:page-down');
-      atom.commands.dispatch(resultsView.element, 'core:page-up');
+      chevron.commands.dispatch(resultsView.element, 'core:confirm');
+      chevron.commands.dispatch(resultsView.element, 'core:move-down');
+      chevron.commands.dispatch(resultsView.element, 'core:move-up');
+      chevron.commands.dispatch(resultsView.element, 'core:move-to-top');
+      chevron.commands.dispatch(resultsView.element, 'core:move-to-bottom');
+      chevron.commands.dispatch(resultsView.element, 'core:page-down');
+      chevron.commands.dispatch(resultsView.element, 'core:page-up');
     });
 
     it("won't show the preview-controls", async () => {
@@ -671,9 +671,9 @@ describe('ResultsView', () => {
       const resultsView = buildResultsView();
 
       resultsView.selectFirstResult();
-      _.times(3, () => atom.commands.dispatch(resultsView.element, 'core:move-down'));
-      atom.commands.dispatch(resultsView.element, 'core:copy');
-      expect(atom.clipboard.read()).toBe('goodnight moon');
+      _.times(3, () => chevron.commands.dispatch(resultsView.element, 'core:move-down'));
+      chevron.commands.dispatch(resultsView.element, 'core:copy');
+      expect(chevron.clipboard.read()).toBe('goodnight moon');
     });
   });
 
@@ -683,29 +683,29 @@ describe('ResultsView', () => {
 
       resultsView.selectFirstResult();
       // await resultsView.collapseResult();
-      atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
-      expect(atom.clipboard.read()).toBe('/a/b.txt');
+      chevron.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
+      expect(chevron.clipboard.read()).toBe('/a/b.txt');
 
-      atom.commands.dispatch(resultsView.element, 'core:move-down');
-      atom.commands.dispatch(resultsView.element, 'core:move-down');
-      atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
-      expect(atom.clipboard.read()).toBe('/c/d.txt');
+      chevron.commands.dispatch(resultsView.element, 'core:move-down');
+      chevron.commands.dispatch(resultsView.element, 'core:move-down');
+      chevron.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
+      expect(chevron.clipboard.read()).toBe('/c/d.txt');
 
-      atom.commands.dispatch(resultsView.element, 'core:move-up');
-      atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
-      expect(atom.clipboard.read()).toBe('/a/b.txt');
+      chevron.commands.dispatch(resultsView.element, 'core:move-up');
+      chevron.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
+      expect(chevron.clipboard.read()).toBe('/a/b.txt');
     });
   });
 
   describe("fonts", () => {
     it('respect the editor.fontFamily setting', async () => {
-      atom.config.set('editor.fontFamily', 'Courier');
+      chevron.config.set('editor.fontFamily', 'Courier');
       const resultsView = buildResultsView();
 
       await etch.update(resultsView);
       expect(resultsView.element.style.fontFamily).toBe('Courier');
 
-      atom.config.set('editor.fontFamily', 'Helvetica');
+      chevron.config.set('editor.fontFamily', 'Helvetica');
       await etch.update(resultsView);
       expect(resultsView.element.style.fontFamily).toBe('Helvetica');
     })
@@ -735,11 +735,11 @@ describe('ResultsView', () => {
               : ['third-icon-class', 'fourth-icon-class']
           }
         }
-        const disposable = atom.packages.serviceHub.provide('atom.file-icons', '1.0.0', provider);
+        const disposable = chevron.packages.serviceHub.provide('atom.file-icons', '1.0.0', provider);
         expect(getIconServices().fileIcons).toBe(provider)
 
         projectFindView.findEditor.setText('i');
-        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        chevron.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         resultsView = getResultsView();
@@ -750,7 +750,7 @@ describe('ResultsView', () => {
 
         disposable.dispose();
         projectFindView.findEditor.setText('e');
-        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        chevron.commands.dispatch(projectFindView.element, 'core:confirm');
 
         await searchPromise;
         resultsView = getResultsView();
@@ -785,10 +785,10 @@ describe('ResultsView', () => {
         let disposable
 
         waitsForPromise(() => {
-          disposable = atom.packages.serviceHub.provide('file-icons.element-icons', '1.0.0', provider)
+          disposable = chevron.packages.serviceHub.provide('file-icons.element-icons', '1.0.0', provider)
           expect(getIconServices().elementIcons).toBe(provider)
           projectFindView.findEditor.setText('i');
-          atom.commands.dispatch(projectFindView.element, 'core:confirm');
+          chevron.commands.dispatch(projectFindView.element, 'core:confirm');
           return searchPromise
         })
 
@@ -803,7 +803,7 @@ describe('ResultsView', () => {
 
           disposable.dispose()
           projectFindView.findEditor.setText('e')
-          atom.commands.dispatch(projectFindView.element, 'core:confirm')
+          chevron.commands.dispatch(projectFindView.element, 'core:confirm')
         })
 
         waitsForPromise(() => searchPromise)
@@ -824,7 +824,7 @@ describe('ResultsView', () => {
   describe('updating the search while viewing results', () => {
     it('resets the results message', async () => {
       projectFindView.findEditor.setText('a');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsPane = getResultsPane();
@@ -832,7 +832,7 @@ describe('ResultsView', () => {
       expect(resultsPane.refs.previewCount.textContent).toContain('3 files');
 
       projectFindView.findEditor.setText('');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await etch.update(resultsPane);
       expect(resultsPane.refs.previewCount.textContent).toContain('Project search results');
     })
@@ -840,13 +840,13 @@ describe('ResultsView', () => {
 
   describe('search result context lines', () => {
     beforeEach(async () => {
-      atom.config.set('find-and-replace.searchContextLineCountBefore', 4);
-      atom.config.set('find-and-replace.searchContextLineCountAfter', 3);
-      atom.config.set('find-and-replace.leadingContextLineCount', 0);
-      atom.config.set('find-and-replace.trailingContextLineCount', 0);
+      chevron.config.set('find-and-replace.searchContextLineCountBefore', 4);
+      chevron.config.set('find-and-replace.searchContextLineCountAfter', 3);
+      chevron.config.set('find-and-replace.leadingContextLineCount', 0);
+      chevron.config.set('find-and-replace.trailingContextLineCount', 0);
 
       projectFindView.findEditor.setText('items.');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsView = getResultsView();
@@ -918,7 +918,7 @@ describe('ResultsView', () => {
   describe('selected result and match index', () => {
     beforeEach(async () => {
       projectFindView.findEditor.setText('push');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      chevron.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsView = getResultsView();

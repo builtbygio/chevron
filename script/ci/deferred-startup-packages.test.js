@@ -86,11 +86,11 @@ describe('deferred startup packages', () => {
     }
     assert.ok(
       /if\s*\(\s*!global\.isGeneratingSnapshot\s*\)/.test(init),
-      'must skip AtomEnvironment construction during snapshot generation'
+      'must skip ChevronEnvironment construction during snapshot generation'
     );
     assert.ok(
       init.includes('function installEnvironment'),
-      'must construct AtomEnvironment at runtime via installEnvironment'
+      'must construct ChevronEnvironment at runtime via installEnvironment'
     );
   });
 

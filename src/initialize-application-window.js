@@ -1,4 +1,4 @@
-const AtomEnvironment = require('./atom-environment');
+const ChevronEnvironment = require('./chevron-environment');
 const ApplicationDelegate = require('./application-delegate');
 const Clipboard = require('./clipboard');
 const TextEditor = require('./text-editor');
@@ -11,7 +11,7 @@ require('./module-cache');
 
 // electron-link only follows static require()s. Keep this list aligned with
 // first-paint packages (see SNAPSHOT_STARTUP_PACKAGES). Do not construct
-// AtomEnvironment while generating the snapshot: that heap is what
+// ChevronEnvironment while generating the snapshot: that heap is what
 // v8_context_snapshot_generator SIGTRAPs on under Electron 43 / V8 15.
 if (global.isGeneratingSnapshot) {
   require('autoflow');
@@ -41,9 +41,9 @@ function installEnvironment() {
 
   // Chevron-only product global. The `global.atom` alias was removed in H3
   // PR 23 once the catalog conversion stream finished; nothing in core or the
-  // bundled packages reads it. The Jasmine harness sets its own `window.atom`
-  // (spec/jasmine-test-runner.js) and is unaffected.
-  const atomEnvironment = new AtomEnvironment({
+  // bundled packages reads it. The Jasmine harness uses `window.chevron` too
+  // (spec/jasmine-test-runner.js).
+  const atomEnvironment = new ChevronEnvironment({
     clipboard,
     applicationDelegate: new ApplicationDelegate(),
     enablePersistence: true
@@ -158,7 +158,7 @@ module.exports = function({ blobStore }) {
     // Workaround for focus getting cleared upon window creation
     const windowFocused = function() {
       window.removeEventListener('focus', windowFocused);
-      setTimeout(() => document.querySelector('atom-workspace').focus(), 0);
+      setTimeout(() => document.querySelector('chevron-workspace').focus(), 0);
     };
     window.addEventListener('focus', windowFocused);
 

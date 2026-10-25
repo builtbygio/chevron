@@ -10,7 +10,7 @@
     "atom": "*"
   },
   "activationCommands": {
-    "atom-workspace": [
+    "chevron-workspace": [
       "terminal:open",
       "terminal:toggle",
       "tasks:run"

@@ -1,4 +1,4 @@
-// This is loaded by atom-environment.coffee. See
+// This is loaded by chevron-environment.coffee. See
 // docs/reference/atom-architecture.md for more information about config
 // schemas.
 const configSchema = {

@@ -2,7 +2,7 @@
 @import "syntax-variables";
 
 // result markers
-atom-text-editor {
+chevron-text-editor {
   .find-result .region {
     background-color: transparent;
     border-radius: var(--component-border-radius);
@@ -24,8 +24,8 @@ atom-text-editor {
   }
 }
 
-atom-workspace.find-visible {
-  atom-text-editor {
+chevron-workspace.find-visible {
+  chevron-text-editor {
     .find-result,
     .current-result {
       display: block;
@@ -132,7 +132,7 @@ atom-workspace.find-visible {
 
   .editor-container {
     position: relative;
-    atom-text-editor {
+    chevron-text-editor {
       width: 100%;
     }
   }
@@ -161,7 +161,7 @@ atom-workspace.find-visible {
     flex: 2;
   }
 
-  .find-container atom-text-editor {
+  .find-container chevron-text-editor {
     padding-right: 64px; // leave some room for the results count
   }
 
@@ -353,7 +353,7 @@ atom-workspace.find-visible {
   }
 }
 
-.find-container atom-text-editor, .replace-container atom-text-editor {
+.find-container chevron-text-editor, .replace-container chevron-text-editor {
   // Styles for regular expression highlighting
   .syntax--regexp {
     .syntax--escape {

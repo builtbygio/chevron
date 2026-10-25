@@ -20,10 +20,10 @@ describe("DeprecationCopStatusBarView", function() {
 
     jasmine.snapshotDeprecations();
 
-    workspaceElement = atom.views.getView(atom.workspace);
+    workspaceElement = chevron.views.getView(chevron.workspace);
     jasmine.attachToDOM(workspaceElement);
-    waitsForPromise(() => atom.packages.activatePackage('status-bar'));
-    waitsForPromise(() => atom.packages.activatePackage('deprecation-cop'));
+    waitsForPromise(() => chevron.packages.activatePackage('status-bar'));
+    waitsForPromise(() => chevron.packages.activatePackage('deprecation-cop'));
 
     return waitsFor(() => statusBarView = workspaceElement.querySelector('.deprecation-cop-status'));
   });
@@ -56,15 +56,15 @@ describe("DeprecationCopStatusBarView", function() {
   });
 
   // TODO: Remove conditional when the new StyleManager deprecation APIs reach stable.
-  if (atom.styles.getDeprecations != null) {
+  if (chevron.styles.getDeprecations != null) {
     it("increments when there are deprecated selectors", function() {
-      atom.styles.addStyleSheet(`\
-atom-text-editor::shadow { color: red; }\
+      chevron.styles.addStyleSheet(`\
+chevron-text-editor::shadow { color: red; }\
 `, {sourcePath: 'file-1'});
       expect(statusBarView.textContent).toBe('1 deprecation');
       expect(statusBarView).toBeVisible();
-      atom.styles.addStyleSheet(`\
-atom-text-editor::shadow { color: blue; }\
+      chevron.styles.addStyleSheet(`\
+chevron-text-editor::shadow { color: blue; }\
 `, {sourcePath: 'file-2'});
       expect(statusBarView.textContent).toBe('2 deprecations');
       return expect(statusBarView).toBeVisible();
@@ -72,10 +72,10 @@ atom-text-editor::shadow { color: blue; }\
   }
 
   return it('opens deprecation cop tab when clicked', function() {
-    expect(atom.workspace.getActivePane().getActiveItem()).not.toExist();
+    expect(chevron.workspace.getActivePane().getActiveItem()).not.toExist();
 
     return waitsFor(function(done) {
-      atom.workspace.onDidOpen(function({item}) {
+      chevron.workspace.onDidOpen(function({item}) {
         expect(item instanceof DeprecationCopView).toBe(true);
         return done();
       });

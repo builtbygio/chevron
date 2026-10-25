@@ -17,7 +17,7 @@ module.exports = {
     bookmarksView = null;
     disposables = new CompositeDisposable();
 
-    chevron.commands.add('atom-workspace', 'bookmarks:view-all', function() {
+    chevron.commands.add('chevron-workspace', 'bookmarks:view-all', function() {
       if (bookmarksView == null) {
         bookmarksView = new BookmarksView(editorsBookmarks);
       }

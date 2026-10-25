@@ -11,26 +11,26 @@ describe("Snippets extension", () => {
       param = {};
     }
     const {shift} = param;
-    const event = atom.keymaps.constructor.buildKeydownEvent('tab', {shift, target: editorElement});
-    atom.keymaps.handleKeyboardEvent(event);
+    const event = chevron.keymaps.constructor.buildKeydownEvent('tab', {shift, target: editorElement});
+    chevron.keymaps.handleKeyboardEvent(event);
   };
 
   beforeEach(() => {
     spyOn(Snippets, 'loadAll');
     spyOn(Snippets, 'getUserSnippetsPath').andReturn('');
 
-    waitsForPromise(() => atom.workspace.open('sample.js'));
-    waitsForPromise(() => atom.packages.activatePackage('language-javascript'));
-    waitsForPromise(() => atom.packages.activatePackage('snippets'));
+    waitsForPromise(() => chevron.workspace.open('sample.js'));
+    waitsForPromise(() => chevron.packages.activatePackage('language-javascript'));
+    waitsForPromise(() => chevron.packages.activatePackage('snippets'));
 
     runs(() => {
-      editor = atom.workspace.getActiveTextEditor();
-      editorElement = atom.views.getView(editor);
+      editor = chevron.workspace.getActiveTextEditor();
+      editorElement = chevron.views.getView(editor);
     });
   });
 
   afterEach(() => {
-    waitsForPromise(() => atom.packages.deactivatePackage('snippets'));
+    waitsForPromise(() => chevron.packages.deactivatePackage('snippets'));
   });
 
   describe("provideSnippets interface", () => {
@@ -52,8 +52,8 @@ describe("Snippets extension", () => {
         Snippets.doneLoading();
         expect(snippetsInterface.bundledSnippetsLoaded()).toBe(true);
 
-        waitsForPromise(() => atom.packages.deactivatePackage('snippets'));
-        waitsForPromise(() => atom.packages.activatePackage('snippets'));
+        waitsForPromise(() => chevron.packages.deactivatePackage('snippets'));
+        waitsForPromise(() => chevron.packages.activatePackage('snippets'));
 
         runs(() => {
           expect(snippetsInterface.bundledSnippetsLoaded()).toBe(false);
@@ -73,12 +73,12 @@ describe("Snippets extension", () => {
   });
 
   it("returns false for snippetToExpandUnderCursor if getSnippets returns {}", () => {
-    const snippets = atom.packages.getActivePackage('snippets').mainModule;
+    const snippets = chevron.packages.getActivePackage('snippets').mainModule;
     expect(snippets.snippetToExpandUnderCursor(editor)).toEqual(false);
   });
 
   it("ignores invalid snippets in the config", () => {
-    const snippets = atom.packages.getActivePackage('snippets').mainModule;
+    const snippets = chevron.packages.getActivePackage('snippets').mainModule;
 
     let invalidSnippets = null;
     spyOn(snippets.scopedPropertyStore, 'getPropertyValue').andCallFake(() => invalidSnippets);
@@ -333,12 +333,12 @@ third tabstop $3\
       it("does not register the snippet", () => {
         editor.setText('');
         editor.insertText('bad1');
-        atom.commands.dispatch(editorElement, 'snippets:expand');
+        chevron.commands.dispatch(editorElement, 'snippets:expand');
         expect(editor.getText()).toBe('bad1');
 
         editor.setText('');
         editor.setText('bad2');
-        atom.commands.dispatch(editorElement, 'snippets:expand');
+        chevron.commands.dispatch(editorElement, 'snippets:expand');
         expect(editor.getText()).toBe('bad2');
       });
     });
@@ -404,7 +404,7 @@ third tabstop $3\
           it("destroys the inner tab stop if the outer tab stop is modified", () => {
             editor.setText('');
             editor.insertText('t5');
-            atom.commands.dispatch(editorElement, 'snippets:expand');
+            chevron.commands.dispatch(editorElement, 'snippets:expand');
             expect(editor.lineTextForBufferRow(0)).toBe('"key": value');
             expect(editor.getSelectedBufferRange()).toEqual([[0, 0], [0, 5]]);
             editor.insertText("foo");
@@ -432,8 +432,8 @@ third tabstop $3\
           it("correctly places the tab stops (regression)", () => {
             editor.setText('');
             editor.insertText('t7');
-            atom.commands.dispatch(editorElement, 'snippets:expand');
-            atom.commands.dispatch(editorElement, 'snippets:next-tab-stop');
+            chevron.commands.dispatch(editorElement, 'snippets:expand');
+            chevron.commands.dispatch(editorElement, 'snippets:next-tab-stop');
             expect(editor.getCursorBufferPosition()).toEqual([3, 25]);
           });
         });
@@ -535,7 +535,7 @@ third tabstop $3\
           it("does not indent the next line", () => {
             editor.setCursorScreenPosition([2, Infinity]);
             editor.insertText(' t1');
-            atom.commands.dispatch(editorElement, 'snippets:expand');
+            chevron.commands.dispatch(editorElement, 'snippets:expand');
             expect(editor.lineTextForBufferRow(3)).toBe("    var pivot = items.shift(), current, left = [], right = [];");
           });
         });
@@ -545,7 +545,7 @@ third tabstop $3\
             expect(editor.getSoftTabs()).toBeTruthy();
             editor.setCursorScreenPosition([2, Infinity]);
             editor.insertText(' t3');
-            atom.commands.dispatch(editorElement, 'snippets:expand');
+            chevron.commands.dispatch(editorElement, 'snippets:expand');
             expect(editor.lineTextForBufferRow(2)).toBe("    if (items.length <= 1) return items; line 1");
             expect(editor.lineTextForBufferRow(3)).toBe("      line 2");
             expect(editor.getCursorBufferPosition()).toEqual([3, 12]);
@@ -565,9 +565,9 @@ third tabstop $3\
           expect(editor.getSoftTabs()).toBeTruthy();
           editor.setCursorScreenPosition([2, Infinity]);
           editor.insertText(' t3');
-          atom.commands.dispatch(editorElement, 'snippets:expand');
+          chevron.commands.dispatch(editorElement, 'snippets:expand');
           expect(editor.getCursorBufferPosition()).toEqual([3, 12]);
-          atom.commands.dispatch(editorElement, 'snippets:next-tab-stop');
+          chevron.commands.dispatch(editorElement, 'snippets:next-tab-stop');
           expect(editor.getCursorBufferPosition()).toEqual([4, 4]);
         });
 
@@ -575,7 +575,7 @@ third tabstop $3\
           editor.setCursorScreenPosition([2, Infinity]);
           editor.insertNewline();
           editor.insertText('t4b');
-          atom.commands.dispatch(editorElement, 'snippets:expand');
+          chevron.commands.dispatch(editorElement, 'snippets:expand');
 
           expect(editor.lineTextForBufferRow(3)).toBe("     = line 1 {"); // 4 + 1 spaces (because the tab stop is invisible)
           expect(editor.lineTextForBufferRow(4)).toBe("      line 2");
@@ -587,25 +587,25 @@ third tabstop $3\
           editor.setCursorScreenPosition([2, Infinity]);
           editor.insertNewline();
           editor.insertText('t4');
-          atom.commands.dispatch(editorElement, 'snippets:expand');
+          chevron.commands.dispatch(editorElement, 'snippets:expand');
 
           expect(editor.getSelectedBufferRange()).toEqual([[3, 9], [3, 10]]);
-          atom.commands.dispatch(editorElement, 'snippets:next-tab-stop');
+          chevron.commands.dispatch(editorElement, 'snippets:next-tab-stop');
           expect(editor.getSelectedBufferRange()).toEqual([[4, 6], [4, 13]]);
 
           editor.insertText('t4');
-          atom.commands.dispatch(editorElement, 'snippets:expand');
+          chevron.commands.dispatch(editorElement, 'snippets:expand');
 
           expect(editor.getSelectedBufferRange()).toEqual([[4, 11], [4, 12]]);
-          atom.commands.dispatch(editorElement, 'snippets:next-tab-stop');
+          chevron.commands.dispatch(editorElement, 'snippets:next-tab-stop');
           expect(editor.getSelectedBufferRange()).toEqual([[5, 8], [5, 15]]);
 
           editor.setText(''); // Clear editor
           editor.insertText('t4');
-          atom.commands.dispatch(editorElement, 'snippets:expand');
+          chevron.commands.dispatch(editorElement, 'snippets:expand');
 
           expect(editor.getSelectedBufferRange()).toEqual([[0, 5], [0, 6]]);
-          atom.commands.dispatch(editorElement, 'snippets:next-tab-stop');
+          chevron.commands.dispatch(editorElement, 'snippets:next-tab-stop');
           expect(editor.getSelectedBufferRange()).toEqual([[1, 2], [1, 9]]);
         });
       });
@@ -1109,7 +1109,7 @@ foo\
     describe("when the editor is not a pane item (regression)", () => {
       it("handles tab stops correctly", () => {
         editor = new TextEditor();
-        atom.grammars.assignLanguageMode(editor, 'source.js');
+        chevron.grammars.assignLanguageMode(editor, 'source.js');
         editorElement = editor.getElement();
 
         editor.insertText('t2');
@@ -1130,15 +1130,15 @@ foo\
   describe("when chevron://.chevron/snippets is opened", () => {
     it("opens the user snippets file", () => {
       jasmine.unspy(Snippets, 'getUserSnippetsPath');
-      atom.workspace.destroyActivePaneItem();
+      chevron.workspace.destroyActivePaneItem();
       const configDirPath = temp.mkdirSync('atom-config-dir-');
-      spyOn(atom, 'getConfigDirPath').andReturn(configDirPath);
-      atom.workspace.open('chevron://.chevron/snippets');
+      spyOn(chevron, 'getConfigDirPath').andReturn(configDirPath);
+      chevron.workspace.open('chevron://.chevron/snippets');
 
-      waitsFor(() => atom.workspace.getActiveTextEditor() != null);
+      waitsFor(() => chevron.workspace.getActiveTextEditor() != null);
 
       runs(() => {
-        expect(atom.workspace.getActiveTextEditor().getURI()).toBe(path.join(configDirPath, 'snippets.json'));
+        expect(chevron.workspace.getActiveTextEditor().getURI()).toBe(path.join(configDirPath, 'snippets.json'));
       });
     });
   });
@@ -1174,12 +1174,12 @@ foo\
 
       delete Snippets.availableSnippetsView;
 
-      atom.commands.dispatch(editorElement, "snippets:available");
+      chevron.commands.dispatch(editorElement, "snippets:available");
 
-      waitsFor(() => atom.workspace.getModalPanels().length === 1);
+      waitsFor(() => chevron.workspace.getModalPanels().length === 1);
 
       runs(() => {
-        availableSnippetsView = atom.workspace.getModalPanels()[0].getItem();
+        availableSnippetsView = chevron.workspace.getModalPanels()[0].getItem();
       });
     });
 
@@ -1204,8 +1204,8 @@ foo\
     });
 
     it("closes the dialog when triggered again", () => {
-      atom.commands.dispatch(availableSnippetsView.selectListView.refs.queryEditor.element, 'snippets:available');
-      expect(atom.workspace.getModalPanels().length).toBe(0);
+      chevron.commands.dispatch(availableSnippetsView.selectListView.refs.queryEditor.element, 'snippets:available');
+      expect(chevron.workspace.getModalPanels().length).toBe(0);
     });
   });
 });

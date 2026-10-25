@@ -25,16 +25,16 @@ describe('ImageEditor', () => {
 
   describe('.activate()', () => {
     it('registers a project opener that handles image file extension', async () => {
-      await atom.packages.activatePackage('image-view')
+      await chevron.packages.activatePackage('image-view')
 
-      let item = await atom.workspace.open(path.join(__dirname, 'fixtures', 'binary-file.png'))
+      let item = await chevron.workspace.open(path.join(__dirname, 'fixtures', 'binary-file.png'))
 
       expect(item.getTitle()).toBe('binary-file.png')
-      atom.workspace.destroyActivePaneItem()
+      chevron.workspace.destroyActivePaneItem()
 
-      await atom.packages.deactivatePackage('image-view')
+      await chevron.packages.deactivatePackage('image-view')
 
-      item = await atom.workspace.open(path.join(__dirname, 'fixtures', 'binary-file.png'))
+      item = await chevron.workspace.open(path.join(__dirname, 'fixtures', 'binary-file.png'))
 
       expect(item instanceof ImageEditor).toBe(false)
     })
@@ -46,11 +46,11 @@ describe('ImageEditor', () => {
     beforeEach(async () => {
       pendingSpy = jasmine.createSpy('onDidTerminatePendingState')
 
-      await atom.packages.activatePackage('image-view')
+      await chevron.packages.activatePackage('image-view')
     })
 
     it('is called when pending state gets terminated for the active ImageEditor', async () => {
-      const item = await atom.workspace.open(path.join(__dirname, 'fixtures', 'binary-file.png'), {pending: true})
+      const item = await chevron.workspace.open(path.join(__dirname, 'fixtures', 'binary-file.png'), {pending: true})
 
       expect(item.getTitle()).toBe('binary-file.png')
       item.onDidTerminatePendingState(pendingSpy)
@@ -59,7 +59,7 @@ describe('ImageEditor', () => {
     })
 
     it('is not called when the ImageEditor is not pending', async () => {
-      const item = await atom.workspace.open(path.join(__dirname, 'fixtures', 'binary-file.png'), {pending: false})
+      const item = await chevron.workspace.open(path.join(__dirname, 'fixtures', 'binary-file.png'), {pending: false})
 
       expect(item.getTitle()).toBe('binary-file.png')
       item.onDidTerminatePendingState(pendingSpy)
@@ -70,9 +70,9 @@ describe('ImageEditor', () => {
 
   describe('::getAllowedLocations', () => {
     it('ensures that ImageEditor opens in workspace center', async () => {
-      await atom.packages.activatePackage('image-view')
+      await chevron.packages.activatePackage('image-view')
 
-      const item = await atom.workspace.open(path.join(__dirname, 'fixtures', 'binary-file.png'), {location: 'right'})
+      const item = await chevron.workspace.open(path.join(__dirname, 'fixtures', 'binary-file.png'), {location: 'right'})
 
       expect(item.getTitle()).toBe('binary-file.png')
     })
@@ -80,15 +80,15 @@ describe('ImageEditor', () => {
 
   describe('when the image gets reopened', () => {
     beforeEach(async () => {
-      await atom.packages.activatePackage('image-view')
+      await chevron.packages.activatePackage('image-view')
     })
 
     it('should not change the URI between each reopen', async () => {
-      let item = await atom.workspace.open(path.join(__dirname, 'fixtures', 'binary-file.png'))
+      let item = await chevron.workspace.open(path.join(__dirname, 'fixtures', 'binary-file.png'))
 
       const uri = item.getURI()
-      atom.workspace.destroyActivePaneItem()
-      item = await atom.workspace.reopenItem()
+      chevron.workspace.destroyActivePaneItem()
+      item = await chevron.workspace.reopenItem()
 
       expect(item.getURI()).toBe(uri)
     })

@@ -236,7 +236,7 @@ class AutocompleteManager {
   }
 
   handleCommands () {
-    return this.subscriptions.add(chevron.commands.add('atom-text-editor', {
+    return this.subscriptions.add(chevron.commands.add('chevron-text-editor', {
       'autocomplete-plus:activate': (event) => {
         this.shouldDisplaySuggestions = true
         let activatedManually = true

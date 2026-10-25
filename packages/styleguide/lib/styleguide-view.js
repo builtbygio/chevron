@@ -407,11 +407,11 @@ class StyleguideView {
             `)), /* @__PURE__ */ import_etch.default.dom(import_styleguide_section.default, { onDidInitialize: this.didInitializeSection.bind(this), name: "layout", title: "Layout" }, /* @__PURE__ */ import_etch.default.dom("p", null, "A few things that might be useful for general layout."), /* @__PURE__ */ import_etch.default.dom("h2", null, ".block"), /* @__PURE__ */ import_etch.default.dom("p", null, "Sometimes you need to separate components vertically. Say in a form."), this.renderExampleHTML(import_dedent.default`
               <div class='block'>
                 <label>You might want to type something here.</label>
-                <atom-text-editor mini>Something you typed...</atom-text-editor>
+                <chevron-text-editor mini>Something you typed...</chevron-text-editor>
               </div>
               <div class='block'>
                 <label class='icon icon-file-directory'>Another field with an icon</label>
-                <atom-text-editor mini>Something else you typed...</atom-text-editor>
+                <chevron-text-editor mini>Something else you typed...</chevron-text-editor>
               </div>
               <div class='block'>
                 <button class='btn'>Do it</button>
@@ -604,20 +604,20 @@ class StyleguideView {
                 </div>
               </div>
             `)), /* @__PURE__ */ import_etch.default.dom(import_styleguide_section.default, { onDidInitialize: this.didInitializeSection.bind(this), name: "panel", title: "Panels" }, /* @__PURE__ */ import_etch.default.dom("p", null, "A container attached to some side of the Atom UI."), this.renderExampleHTML(import_dedent.default`
-              <atom-panel>
+              <chevron-panel>
                 Some content
-              </atom-panel>
+              </chevron-panel>
             `), /* @__PURE__ */ import_etch.default.dom("h2", null, "Inset Panel"), /* @__PURE__ */ import_etch.default.dom("p", null, "Use inside a panel"), this.renderExampleHTML(import_dedent.default`
-              <atom-panel class='padded'>
+              <chevron-panel class='padded'>
                 <div class="inset-panel padded">Some inset content</div>
-              </atom-panel>
+              </chevron-panel>
             `), /* @__PURE__ */ import_etch.default.dom("h2", null, "With a heading"), this.renderExampleHTML(import_dedent.default`
-              <atom-panel class='padded'>
+              <chevron-panel class='padded'>
                 <div class="inset-panel">
                   <div class="panel-heading">An inset-panel heading</div>
                   <div class="panel-body padded">Some Content</div>
                 </div>
-              </atom-panel>
+              </chevron-panel>
             `)), /* @__PURE__ */ import_etch.default.dom(import_styleguide_section.default, { onDidInitialize: this.didInitializeSection.bind(this), name: "list-group", title: "List Group" }, /* @__PURE__ */ import_etch.default.dom("p", null, "Use for anything that requires a list."), this.renderExampleHTML(import_dedent.default`
               <ul class='list-group'>
                 <li class='list-item'><span>Normal item</span></li>
@@ -783,7 +783,7 @@ class StyleguideView {
                 </li>
               </ul>
             `)), /* @__PURE__ */ import_etch.default.dom(import_styleguide_section.default, { onDidInitialize: this.didInitializeSection.bind(this), name: "select-list", title: "Select List" }, /* @__PURE__ */ import_etch.default.dom("p", null, "This is how you will typically specify a ", /* @__PURE__ */ import_etch.default.dom("code", null, ".select-list"), "."), /* @__PURE__ */ import_etch.default.dom(import_example_select_list_view.default, null), /* @__PURE__ */ import_etch.default.dom("p", null, "The list items have many options you can use, and shows you how they will display."), /* @__PURE__ */ import_etch.default.dom("h2", null, "Basic example with one item selected"), this.renderExampleHTML(import_dedent.default`
-              <atom-panel class='modal'>
+              <chevron-panel class='modal'>
                 <div class='select-list'>
                   <ol class='list-group'>
                     <li class='selected'>one</li>
@@ -791,9 +791,9 @@ class StyleguideView {
                     <li>three</li>
                   </ol>
                 </div>
-              </atom-panel>
+              </chevron-panel>
             `), /* @__PURE__ */ import_etch.default.dom("h2", null, "Single line with icons"), this.renderExampleHTML(import_dedent.default`
-              <atom-panel class='modal'>
+              <chevron-panel class='modal'>
                 <div class='select-list'>
                   <ol class='list-group'>
                     <li class='selected'>
@@ -812,9 +812,9 @@ class StyleguideView {
                     </li>
                   </ol>
                 </div>
-              </atom-panel>
+              </chevron-panel>
             `), /* @__PURE__ */ import_etch.default.dom("h2", null, "Single line with key-bindings"), this.renderExampleHTML(import_dedent.default`
-              <atom-panel class='modal'>
+              <chevron-panel class='modal'>
                 <div class='select-list'>
                   <ol class='list-group'>
                     <li class='selected'>
@@ -843,9 +843,9 @@ class StyleguideView {
                     </li>
                   </ol>
                 </div>
-              </atom-panel>
+              </chevron-panel>
             `), /* @__PURE__ */ import_etch.default.dom("h2", null, "Multiple lines with no icons"), this.renderExampleHTML(import_dedent.default`
-              <atom-panel class='modal'>
+              <chevron-panel class='modal'>
                 <div class='select-list'>
                   <ol class='list-group'>
                     <li class='two-lines'>
@@ -859,9 +859,9 @@ class StyleguideView {
                     </li>
                   </ol>
                 </div>
-              </atom-panel>
+              </chevron-panel>
             `), /* @__PURE__ */ import_etch.default.dom("h2", null, "Multiple lines with icons"), this.renderExampleHTML(import_dedent.default`
-              <atom-panel class='modal'>
+              <chevron-panel class='modal'>
                 <div class='select-list'>
                   <ol class='list-group'>
                     <li class='two-lines'>
@@ -883,9 +883,9 @@ class StyleguideView {
                     </li>
                   </ol>
                 </div>
-              </atom-panel>
+              </chevron-panel>
             `), /* @__PURE__ */ import_etch.default.dom("h2", null, "Using mark-active class to indicate the active item"), /* @__PURE__ */ import_etch.default.dom("p", null, "Use ..."), this.renderExampleHTML(import_dedent.default`
-              <atom-panel class='modal'>
+              <chevron-panel class='modal'>
                 <div class='select-list'>
                   <ol class='list-group mark-active'>
                     <li class='selected'>Selected &mdash; user is arrowing through the list.</li>
@@ -893,27 +893,27 @@ class StyleguideView {
                     <li class='selected active'>Selected AND Active!</li>
                   </ol>
                 </div>
-              </atom-panel>
+              </chevron-panel>
             `), /* @__PURE__ */ import_etch.default.dom("h2", null, "Error messages"), this.renderExampleHTML(import_dedent.default`
-              <atom-panel class='modal'>
+              <chevron-panel class='modal'>
                 <div class='select-list'>
-                  <atom-text-editor mini>I searched for this</atom-text-editor>
+                  <chevron-text-editor mini>I searched for this</chevron-text-editor>
                   <div class='error-message'>Nothing has been found!</div>
                 </div>
-              </atom-panel>
+              </chevron-panel>
             `), /* @__PURE__ */ import_etch.default.dom("h2", null, "Loading message"), this.renderExampleHTML(import_dedent.default`
-              <atom-panel class='modal'>
+              <chevron-panel class='modal'>
                 <div class='select-list'>
-                  <atom-text-editor mini>User input</atom-text-editor>
+                  <chevron-text-editor mini>User input</chevron-text-editor>
                   <div class='loading'>
                     <span class='loading-message'>Chill, bro. Things are loading.</span>
                     <span class='badge'>1234</span>
                   </div>
                 </div>
-              </atom-panel>
+              </chevron-panel>
             `)), /* @__PURE__ */ import_etch.default.dom(import_styleguide_section.default, { onDidInitialize: this.didInitializeSection.bind(this), name: "popover-list", title: "Popover List" }, /* @__PURE__ */ import_etch.default.dom("p", null, "A ", /* @__PURE__ */ import_etch.default.dom("code", null, ".popover-list"), " is a ", /* @__PURE__ */ import_etch.default.dom("code", null, ".select-list"), " that is meant to popover the code for something like autocomplete."), /* @__PURE__ */ import_etch.default.dom("h2", null, "Basic example with one item selected"), this.renderExampleHTML(import_dedent.default`
               <div class='select-list popover-list'>
-                <atom-text-editor mini>'User types here..'</atom-text-editor>
+                <chevron-text-editor mini>'User types here..'</chevron-text-editor>
                 <ol class='list-group'>
                   <li class='selected'>one</li>
                   <li>two</li>
@@ -921,9 +921,9 @@ class StyleguideView {
                 </ol>
               </div>
             `)), /* @__PURE__ */ import_etch.default.dom(import_styleguide_section.default, { onDidInitialize: this.didInitializeSection.bind(this), name: "modal-panel", title: "Modals" }, /* @__PURE__ */ import_etch.default.dom("p", null, "Modals are like dialog boxes."), this.renderExampleHTML(import_dedent.default`
-              <atom-panel class='modal'>
+              <chevron-panel class='modal'>
                 <div>Some content</div>
-              </atom-panel>
+              </chevron-panel>
             `)), /* @__PURE__ */ import_etch.default.dom(import_styleguide_section.default, { onDidInitialize: this.didInitializeSection.bind(this), name: "tooltips", title: "Tooltips" }, /* @__PURE__ */ import_etch.default.dom("p", null, "You do not create the markup directly. You call", /* @__PURE__ */ import_etch.default.dom("code", null, `element.setTooltip(title, {command, commandElement}={})`), ". Passing in a ", /* @__PURE__ */ import_etch.default.dom("code", null, "command"), " (like ", /* @__PURE__ */ import_etch.default.dom("code", null, "find-and-replace:show-find"), ") and", /* @__PURE__ */ import_etch.default.dom("code", null, "commandElement"), " (context for the command) will yield a tip with a keystroke."), this.renderExampleHTML(import_dedent.default`
               <div class='tooltip top'>
                 <div class='tooltip-arrow'></div>

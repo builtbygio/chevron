@@ -22,7 +22,7 @@
  *    The elimination test walks packages/ for leftover theme variables but
  *    only walks static/ for the build-time-function check. So
  *    static/scaffolding.less kept `html { color: @text-color }` and
- *    static/core-ui/workspace-view.less kept `atom-workspace { color:
+ *    static/core-ui/workspace-view.less kept `chevron-workspace { color:
  *    @text-color }`. Both compile once, against the base variables, which are
  *    the light defaults -- so the document and the workspace were pinned to
  *    #333 text on every theme, and anything that did not set its own colour

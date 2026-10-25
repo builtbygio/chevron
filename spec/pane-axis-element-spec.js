@@ -4,21 +4,21 @@ const Pane = require('../src/pane');
 
 const buildPane = () =>
   new Pane({
-    applicationDelegate: atom.applicationDelegate,
-    config: atom.config,
-    deserializerManager: atom.deserializers,
-    notificationManager: atom.notifications,
-    viewRegistry: atom.views
+    applicationDelegate: chevron.applicationDelegate,
+    config: chevron.config,
+    deserializerManager: chevron.deserializers,
+    notificationManager: chevron.notifications,
+    viewRegistry: chevron.views
   });
 
 describe('PaneAxisElement', () =>
   it('correctly subscribes and unsubscribes to the underlying model events on attach/detach', function() {
     const container = new PaneContainer({
-      config: atom.config,
-      applicationDelegate: atom.applicationDelegate,
-      viewRegistry: atom.views
+      config: chevron.config,
+      applicationDelegate: chevron.applicationDelegate,
+      viewRegistry: chevron.views
     });
-    const axis = new PaneAxis({}, atom.views);
+    const axis = new PaneAxis({}, chevron.views);
     axis.setContainer(container);
     const axisElement = axis.getElement();
 

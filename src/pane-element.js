@@ -221,12 +221,12 @@ class PaneElement extends HTMLElement {
   }
 }
 
-window.customElements.define('atom-pane', PaneElement);
+window.customElements.define('chevron-pane', PaneElement);
 
 const createCustomElement = require('./create-custom-element');
 
 function createPaneElement() {
-  return createCustomElement('atom-pane', PaneElement);
+  return createCustomElement('chevron-pane', PaneElement);
 }
 
 module.exports = {

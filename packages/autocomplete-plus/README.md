@@ -27,7 +27,7 @@ Press `UP` and `DOWN` to select another suggestion, press `TAB` or `ENTER` to co
 Additionally, the confirm keymap can be customized in your keymap.cson:
 
 ```coffeescript
-'atom-text-editor.autocomplete-active':
+'chevron-text-editor.autocomplete-active':
   'tab': 'unset!'
   'ctrl-shift-a': 'autocomplete-plus:confirm'
 ```
@@ -53,7 +53,7 @@ Or by adding this to your config file:
 Then add these to your keymap file:
 
 ```coffeescript
-'body atom-text-editor.autocomplete-active':
+'body chevron-text-editor.autocomplete-active':
   'ctrl-p': 'autocomplete-plus:move-up'
   'ctrl-n': 'autocomplete-plus:move-down'
   'pageup': 'autocomplete-plus:page-up'

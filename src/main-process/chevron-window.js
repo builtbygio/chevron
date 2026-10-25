@@ -147,9 +147,9 @@ function isAllowedGuestNavigationUrl(navigationUrl, allowedFileRoots) {
 let includeShellLoadTime = true;
 let nextId = 0;
 
-module.exports = class AtomWindow extends EventEmitter {
+module.exports = class ChevronWindow extends EventEmitter {
   constructor(atomApplication, fileRecoveryService, settings = {}) {
-    StartupTime.addMarker('main-process:atom-window:start');
+    StartupTime.addMarker('main-process:chevron-window:start');
 
     super();
 
@@ -282,7 +282,7 @@ module.exports = class AtomWindow extends EventEmitter {
     );
     this.loadSettings.initialProjectRoots = this.projectRoots;
 
-    StartupTime.addMarker('main-process:atom-window:end');
+    StartupTime.addMarker('main-process:chevron-window:end');
 
     // Expose the startup markers to the renderer process, so we can have unified
     // measures about startup time between the main process and the renderer process.
@@ -493,7 +493,7 @@ module.exports = class AtomWindow extends EventEmitter {
     // New editor windows go through main IPC (application:new-window, etc.).
     this.browserWindow.webContents.setWindowOpenHandler(({ url }) => {
       console.warn(
-        `AtomWindow: blocked window.open from renderer (${String(url)})`
+        `ChevronWindow: blocked window.open from renderer (${String(url)})`
       );
       return { action: 'deny' };
     });
@@ -524,7 +524,7 @@ module.exports = class AtomWindow extends EventEmitter {
     session.setPermissionRequestHandler((_wc, permission, callback) => {
       if (deniedPermissions.has(permission)) {
         console.warn(
-          `AtomWindow: denied permission request "${permission}"`
+          `ChevronWindow: denied permission request "${permission}"`
         );
         callback(false);
         return;
@@ -535,7 +535,7 @@ module.exports = class AtomWindow extends EventEmitter {
         return;
       }
       console.warn(
-        `AtomWindow: denied unknown permission request "${permission}"`
+        `ChevronWindow: denied unknown permission request "${permission}"`
       );
       callback(false);
     });
@@ -597,7 +597,7 @@ module.exports = class AtomWindow extends EventEmitter {
 
     guestWebContents.setWindowOpenHandler(({ url: guestUrl }) => {
       console.warn(
-        `AtomWindow: blocked window.open from guest webview (${String(
+        `ChevronWindow: blocked window.open from guest webview (${String(
           guestUrl
         )})`
       );
@@ -607,7 +607,7 @@ module.exports = class AtomWindow extends EventEmitter {
     guestWebContents.on('will-navigate', (event, navigationUrl) => {
       if (!isAllowedGuestNavigationUrl(navigationUrl, fileRoots)) {
         console.warn(
-          `AtomWindow: blocked guest navigation to ${String(navigationUrl)}`
+          `ChevronWindow: blocked guest navigation to ${String(navigationUrl)}`
         );
         event.preventDefault();
       }
@@ -616,7 +616,7 @@ module.exports = class AtomWindow extends EventEmitter {
     guestWebContents.on('will-redirect', (event, navigationUrl) => {
       if (!isAllowedGuestNavigationUrl(navigationUrl, fileRoots)) {
         console.warn(
-          `AtomWindow: blocked guest redirect to ${String(navigationUrl)}`
+          `ChevronWindow: blocked guest redirect to ${String(navigationUrl)}`
         );
         event.preventDefault();
       }
@@ -626,7 +626,7 @@ module.exports = class AtomWindow extends EventEmitter {
     const guestSession = guestWebContents.session;
     guestSession.setPermissionRequestHandler((_wc, permission, callback) => {
       console.warn(
-        `AtomWindow: denied guest permission request "${permission}"`
+        `ChevronWindow: denied guest permission request "${permission}"`
       );
       callback(false);
     });

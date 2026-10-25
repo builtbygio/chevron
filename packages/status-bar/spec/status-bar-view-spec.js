@@ -13,7 +13,7 @@ describe("StatusBarView", function() {
   beforeEach(function() {
     statusBarView = new StatusBarView();
 
-    return atom.views.addViewProvider(TestItem, function(model) {
+    return chevron.views.addViewProvider(TestItem, function(model) {
       const element = document.createElement("item-view");
       element.model = model;
       return element;

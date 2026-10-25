@@ -6,32 +6,32 @@ const UnrecognizedItem = require('./item/unrecognized-item');
 describe('Find', () => {
   describe('updating the find model', () => {
     beforeEach(async () => {
-      atom.workspace.addOpener(EmbeddedEditorItem.opener)
-      atom.workspace.addOpener(UnrecognizedItem.opener)
-      atom.workspace.addOpener(DeferredEditorItem.opener)
+      chevron.workspace.addOpener(EmbeddedEditorItem.opener)
+      chevron.workspace.addOpener(UnrecognizedItem.opener)
+      chevron.workspace.addOpener(DeferredEditorItem.opener)
 
-      const activationPromise = atom.packages.activatePackage('find-and-replace')
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'find-and-replace:show')
+      const activationPromise = chevron.packages.activatePackage('find-and-replace')
+      chevron.commands.dispatch(chevron.views.getView(chevron.workspace), 'find-and-replace:show')
       await activationPromise
 
       spyOn(BufferSearch.prototype, 'setEditor')
     })
 
     it("sets the find model's editor whenever an editor is focused", async () => {
-      let editor = await atom.workspace.open()
+      let editor = await chevron.workspace.open()
       expect(BufferSearch.prototype.setEditor).toHaveBeenCalledWith(editor)
 
-      editor = await atom.workspace.open('sample.js')
+      editor = await chevron.workspace.open('sample.js')
       expect(BufferSearch.prototype.setEditor).toHaveBeenCalledWith(editor)
     })
 
     it("sets the find model's editor to an embedded text editor", async () => {
-      const embedded = await atom.workspace.open(EmbeddedEditorItem.uri)
+      const embedded = await chevron.workspace.open(EmbeddedEditorItem.uri)
       expect(BufferSearch.prototype.setEditor).toHaveBeenCalledWith(embedded.refs.theEditor)
     })
 
     it("sets the find model's editor to an embedded text editor after activation", async () => {
-      const deferred = await atom.workspace.open(DeferredEditorItem.uri)
+      const deferred = await chevron.workspace.open(DeferredEditorItem.uri)
       expect(BufferSearch.prototype.setEditor).not.toHaveBeenCalled()
 
       await deferred.showEditor()
@@ -42,7 +42,7 @@ describe('Find', () => {
     })
 
     it("sets the find model's editor to null if a non-editor is focused", async () => {
-      await atom.workspace.open(UnrecognizedItem.uri)
+      await chevron.workspace.open(UnrecognizedItem.uri)
       expect(BufferSearch.prototype.setEditor).toHaveBeenCalledWith(null)
     })
   })

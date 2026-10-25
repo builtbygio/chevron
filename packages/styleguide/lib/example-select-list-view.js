@@ -68,7 +68,7 @@ class ExampleSelectListView {
     console.log("cancelled");
   }
   render() {
-    return /* @__PURE__ */ import_etch.default.dom("div", { className: "example" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "example-rendered" }, /* @__PURE__ */ import_etch.default.dom("atom-panel", { className: "modal" }, /* @__PURE__ */ import_etch.default.dom(
+    return /* @__PURE__ */ import_etch.default.dom("div", { className: "example" }, /* @__PURE__ */ import_etch.default.dom("div", { className: "example-rendered" }, /* @__PURE__ */ import_etch.default.dom("chevron-panel", { className: "modal" }, /* @__PURE__ */ import_etch.default.dom(
       import_atom_select_list.default,
       {
         items: ["one", "two", "three"],

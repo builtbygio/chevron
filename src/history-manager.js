@@ -13,7 +13,7 @@ class HistoryManager {
     this.disposables = new CompositeDisposable();
     this.disposables.add(
       commands.add(
-        'atom-workspace',
+        'chevron-workspace',
         { 'application:clear-project-history': this.clearProjects.bind(this) },
         false
       )

@@ -27,7 +27,7 @@ module.exports = async function({ blobStore }) {
   try {
     const path = require('path');
     const CompileCache = require('./compile-cache');
-    const AtomEnvironment = require('../src/atom-environment');
+    const ChevronEnvironment = require('../src/chevron-environment');
     const ApplicationDelegate = require('../src/application-delegate');
     const Clipboard = require('../src/clipboard');
     const TextEditor = require('../src/text-editor');
@@ -136,7 +136,7 @@ module.exports = async function({ blobStore }) {
       if (!params.hasOwnProperty('onlyLoadBaseStyleSheets')) {
         params.onlyLoadBaseStyleSheets = true;
       }
-      const atomEnvironment = new AtomEnvironment(params);
+      const atomEnvironment = new ChevronEnvironment(params);
       atomEnvironment.initialize(params);
       TextEditor.setScheduler(atomEnvironment.views);
       return atomEnvironment;

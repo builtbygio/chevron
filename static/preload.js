@@ -12,7 +12,7 @@
  * - **Page world:** no Node, no electron, empty shell (static/index.html).
  * - **This preload world:** full Node + electron; boots Atom; loads packages.
  * - **Guest <webview>:** sandboxed, no Node, no this preload (see
- *   AtomWindow will-attach-webview).
+ *   ChevronWindow will-attach-webview).
  * - **GitHub worker BrowserWindows:** separate Node windows via remote-compat
  *   IPC (still a trusted exception; Phase N later).
  *

@@ -386,7 +386,7 @@ const PROBE_EXPR = `(function() {
                 diag.focused = document.activeElement
                   ? document.activeElement.tagName
                   : null;
-                diag.anyOverlay = document.querySelectorAll('atom-overlay').length;
+                diag.anyOverlay = document.querySelectorAll('chevron-overlay').length;
               } catch (e) {
                 diag.error = String(e && e.message);
               }
@@ -754,7 +754,7 @@ const ROOT_CONFIG_EXPR = `(function() {
 })()`;
 
 // The styleguide renders one of every core UI element, including
-// <atom-text-editor> written as markup rather than constructed. The polyfill
+// <chevron-text-editor> written as markup rather than constructed. The polyfill
 // this replaced upgraded that path without running the constructor, which made
 // the styleguide the page where an element assuming its constructor ran throws,
 // and nothing here opened it.
@@ -793,7 +793,7 @@ const STYLEGUIDE_EXPR = `(function() {
         raised: raised,
         opened: !!(element && element.querySelector),
         editors: element && element.querySelectorAll
-          ? element.querySelectorAll('atom-text-editor').length
+          ? element.querySelectorAll('chevron-text-editor').length
           : 0
       });
     }, 2500);
@@ -831,7 +831,7 @@ const PROJECT_FIND_EXPR = `(function() {
     setTimeout(function() {
       var panel = document.querySelector('.project-find');
       if (!panel) return finish({ error: 'project-find panel did not open' });
-      var editors = panel.querySelectorAll('atom-text-editor');
+      var editors = panel.querySelectorAll('chevron-text-editor');
       if (!editors.length) return finish({ error: 'project-find has no input' });
 
       editors[0].getModel().setText('ripgrepOnlyToken');
@@ -895,7 +895,7 @@ const SEARCH_ERROR_EXPR = `(function() {
       restore();
       finish({ error: 'project-find panel is not open' });
     } else {
-      var editors = panel.querySelectorAll('atom-text-editor');
+      var editors = panel.querySelectorAll('chevron-text-editor');
       editors[0].getModel().setText('somethingThatWillFail');
       chevron.commands.dispatch(panel, 'core:confirm');
       var tries = 0;
@@ -1425,7 +1425,7 @@ const CODE_CONTEXT_EXPR = `(function() {
           keyboard.cursorRowAfterEnter = editor.getCursorBufferPosition().row;
           var active = document.activeElement;
           keyboard.editorFocusedAfterEnter = Boolean(
-            active && active.closest && active.closest('atom-text-editor')
+            active && active.closest && active.closest('chevron-text-editor')
           );
           done(keyboard);
         } catch (error) {
@@ -1467,7 +1467,7 @@ const CODE_CONTEXT_EXPR = `(function() {
               outline.cursorRowAfterClick = editor.getCursorBufferPosition().row;
               var active = document.activeElement;
               outline.editorFocused = Boolean(
-                active && active.closest && active.closest('atom-text-editor')
+                active && active.closest && active.closest('chevron-text-editor')
               );
               var outer = labelRow(view, /Outer/);
               if (outer) outer.querySelector('.outline-twisty').click();
@@ -2900,7 +2900,7 @@ async function main() {
         }
         if (!styleguide.editors) {
           failures.push(
-            'styleguide rendered no atom-text-editor elements (the ones written as markup are the point)'
+            'styleguide rendered no chevron-text-editor elements (the ones written as markup are the point)'
           );
         }
       }

@@ -15,8 +15,8 @@ describe('PathLoader', () => {
     fs.mkdirSync(rootB)
     fs.writeFileSync(path.join(rootA, 'one.txt'), '1')
     fs.writeFileSync(path.join(rootB, 'two.txt'), '2')
-    atom.project.setPaths([rootA, rootB])
-    atom.config.set('fuzzy-finder.useRipGrep', false)
+    chevron.project.setPaths([rootA, rootB])
+    chevron.config.set('fuzzy-finder.useRipGrep', false)
   })
 
   afterEach(() => fs.rmSync(base, {recursive: true, force: true}))

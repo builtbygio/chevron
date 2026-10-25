@@ -218,7 +218,7 @@ module.exports = SpellCheckView = class SpellCheckView {
             if (corrections.length > 0) {
                 this.spellCheckModule.contextMenuEntries.push({
                     menuItem: chevron.contextMenu.add({
-                        'atom-text-editor': [{ type: 'separator' }],
+                        'chevron-text-editor': [{ type: 'separator' }],
                     }),
                 });
 
@@ -244,7 +244,7 @@ module.exports = SpellCheckView = class SpellCheckView {
 
                     // Add new menu item for correction.
                     contextMenuEntry.menuItem = chevron.contextMenu.add({
-                        'atom-text-editor': [
+                        'chevron-text-editor': [
                             { label: correction.label, command: commandName },
                         ],
                     });
@@ -256,7 +256,7 @@ module.exports = SpellCheckView = class SpellCheckView {
 
                 return this.spellCheckModule.contextMenuEntries.push({
                     menuItem: chevron.contextMenu.add({
-                        'atom-text-editor': [{ type: 'separator' }],
+                        'chevron-text-editor': [{ type: 'separator' }],
                     }),
                 });
             }

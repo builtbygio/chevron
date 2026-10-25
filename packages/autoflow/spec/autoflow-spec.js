@@ -12,28 +12,28 @@ describe("Autoflow package", function() {
     beforeEach(function() {
       let activationPromise = null;
 
-      waitsForPromise(() => atom.workspace.open());
+      waitsForPromise(() => chevron.workspace.open());
 
       runs(function() {
-        editor = atom.workspace.getActiveTextEditor();
-        editorElement = atom.views.getView(editor);
+        editor = chevron.workspace.getActiveTextEditor();
+        editorElement = chevron.views.getView(editor);
 
-        atom.config.set('editor.preferredLineLength', 30);
-        atom.config.set('editor.tabLength', tabLength);
+        chevron.config.set('editor.preferredLineLength', 30);
+        chevron.config.set('editor.tabLength', tabLength);
 
-        activationPromise = atom.packages.activatePackage('autoflow');
+        activationPromise = chevron.packages.activatePackage('autoflow');
 
-        return atom.commands.dispatch(editorElement, 'autoflow:reflow-selection');
+        return chevron.commands.dispatch(editorElement, 'autoflow:reflow-selection');
       });
 
       return waitsForPromise(() => activationPromise);
     });
 
     it("uses the preferred line length based on the editor's scope", function() {
-      atom.config.set('editor.preferredLineLength', 4, {scopeSelector: '.text.plain.null-grammar'});
+      chevron.config.set('editor.preferredLineLength', 4, {scopeSelector: '.text.plain.null-grammar'});
       editor.setText("foo bar");
       editor.selectAll();
-      atom.commands.dispatch(editorElement, 'autoflow:reflow-selection');
+      chevron.commands.dispatch(editorElement, 'autoflow:reflow-selection');
 
       return expect(editor.getText()).toBe(`\
 foo
@@ -46,7 +46,7 @@ bar\
       editor.setText("\t\tThis is the first paragraph and it is longer than the preferred line length so it should be reflowed.\n\n\t\tThis is a short paragraph.\n\n\t\tAnother long paragraph, it should also be reflowed with the use of this single command.");
 
       editor.selectAll();
-      atom.commands.dispatch(editorElement, 'autoflow:reflow-selection');
+      chevron.commands.dispatch(editorElement, 'autoflow:reflow-selection');
 
       const exedOut = editor.getText().replace(/\t/g, Array(tabLength+1).join('X'));
       return expect(exedOut).toBe("XXXXXXXXThis is the first\nXXXXXXXXparagraph and it is\nXXXXXXXXlonger than the\nXXXXXXXXpreferred line length\nXXXXXXXXso it should be\nXXXXXXXXreflowed.\n\nXXXXXXXXThis is a short\nXXXXXXXXparagraph.\n\nXXXXXXXXAnother long\nXXXXXXXXparagraph, it should\nXXXXXXXXalso be reflowed with\nXXXXXXXXthe use of this single\nXXXXXXXXcommand.");
@@ -63,7 +63,7 @@ Another long paragraph, it should also be reflowed with the use of this single c
       );
 
       editor.selectAll();
-      atom.commands.dispatch(editorElement, 'autoflow:reflow-selection');
+      chevron.commands.dispatch(editorElement, 'autoflow:reflow-selection');
 
       return expect(editor.getText()).toBe(`\
 This is the first paragraph
@@ -96,7 +96,7 @@ converted into a space.
 
       editor.setCursorBufferPosition([1, 0]);
       editor.selectToBufferPosition([6, 0]);
-      atom.commands.dispatch(editorElement, 'autoflow:reflow-selection');
+      chevron.commands.dispatch(editorElement, 'autoflow:reflow-selection');
 
       return expect(editor.getText()).toBe(`\
 v--- SELECTION STARTS AT THE BEGINNING OF THE NEXT LINE (pos 1,0)
@@ -130,7 +130,7 @@ This is a following paragraph, which shouldn't be modified by a reflow of the pr
       );
 
       editor.setCursorBufferPosition([3, 5]);
-      atom.commands.dispatch(editorElement, 'autoflow:reflow-selection');
+      chevron.commands.dispatch(editorElement, 'autoflow:reflow-selection');
 
       return expect(editor.getText()).toBe(`\
 This is a preceding paragraph, which shouldn't be modified by a reflow of the following paragraph.
@@ -152,7 +152,7 @@ This is a following paragraph, which shouldn't be modified by a reflow of the pr
       editor.setText("this-is-a-super-long-word-that-shouldn't-break-autoflow and these are some smaller words");
 
       editor.selectAll();
-      atom.commands.dispatch(editorElement, 'autoflow:reflow-selection');
+      chevron.commands.dispatch(editorElement, 'autoflow:reflow-selection');
 
       return expect(editor.getText()).toBe(`\
 this-is-a-super-long-word-that-shouldn't-break-autoflow
