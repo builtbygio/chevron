@@ -11,13 +11,13 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _helpers = require("../helpers");
 
-var _atomTextEditor = _interopRequireDefault(require("../atom/atom-text-editor"));
+var _atomTextEditor = _interopRequireDefault(require("../chevron/chevron-text-editor"));
 
-var _decoration = _interopRequireDefault(require("../atom/decoration"));
+var _decoration = _interopRequireDefault(require("../chevron/decoration"));
 
-var _markerLayer = _interopRequireDefault(require("../atom/marker-layer"));
+var _markerLayer = _interopRequireDefault(require("../chevron/marker-layer"));
 
-var _gutter = _interopRequireDefault(require("../atom/gutter"));
+var _gutter = _interopRequireDefault(require("../chevron/gutter"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

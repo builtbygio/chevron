@@ -10,7 +10,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { ipcMain, app, BrowserWindow } = require('electron');
-const { pathContained } = require('./atom-protocol-path');
+const { pathContained } = require('./chevron-protocol-path');
 const guard = require('./ipc-guard');
 const { isSafeAbsolutePath } = guard;
 

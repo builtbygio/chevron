@@ -97,11 +97,11 @@ describe('URI scheme (Wave 4)', () => {
   });
 
   it('the main-process protocol handler serves only chevron', () => {
-    const src = read('src/main-process/atom-protocol-handler.js');
+    const src = read('src/main-process/chevron-protocol-handler.js');
     assert.match(src, /registerScheme\('chevron'\)/);
     assert.doesNotMatch(src, /\['atom', 'chevron'\]/);
 
-    const paths = read('src/main-process/atom-protocol-path.js');
+    const paths = read('src/main-process/chevron-protocol-path.js');
     assert.doesNotMatch(paths, /startsWith\('atom:\/\/'\)/);
     assert.match(paths, /startsWith\('chevron:\/\/'\)/);
   });
@@ -140,7 +140,7 @@ describe('URI scheme (Wave 4)', () => {
   });
 
   it('macOS declares only the chevron URL scheme', () => {
-    const plist = read('resources/mac/atom-Info.plist');
+    const plist = read('resources/mac/chevron-Info.plist');
     const block = plist.slice(
       plist.indexOf('CFBundleURLSchemes'),
       plist.indexOf('CFBundleDocumentTypes')

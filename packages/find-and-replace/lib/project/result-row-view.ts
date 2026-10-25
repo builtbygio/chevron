@@ -58,7 +58,7 @@ class ResultPathRowView {
         {
           className: [
             // This triggers the CSS displaying the "expand / collapse" arrows
-            // See `styles/lists.less` in the atom-ui repository for details
+            // See static/chevron-ui/styles/lists.less for details
             'list-nested-item',
             groupData.isCollapsed ? 'collapsed' : '',
             this.props.isSelected ? 'selected' : ''

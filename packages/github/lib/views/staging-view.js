@@ -35,7 +35,7 @@ var _refHolder = _interopRequireDefault(require("../models/ref-holder"));
 
 var _changedFileItem = _interopRequireDefault(require("../items/changed-file-item"));
 
-var _commands = _interopRequireWildcard(require("../atom/commands"));
+var _commands = _interopRequireWildcard(require("../chevron/commands"));
 
 var _helpers = require("../helpers");
 

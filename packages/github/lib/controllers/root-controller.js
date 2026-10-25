@@ -17,9 +17,9 @@ var _eventKit = require("event-kit");
 
 var _yubikiri = _interopRequireDefault(require("yubikiri"));
 
-var _statusBar = _interopRequireDefault(require("../atom/status-bar"));
+var _statusBar = _interopRequireDefault(require("../chevron/status-bar"));
 
-var _paneItem = _interopRequireDefault(require("../atom/pane-item"));
+var _paneItem = _interopRequireDefault(require("../chevron/pane-item"));
 
 var _openIssueishDialog = require("../views/open-issueish-dialog");
 
@@ -29,7 +29,7 @@ var _createDialog = require("../views/create-dialog");
 
 var _observeModel = _interopRequireDefault(require("../views/observe-model"));
 
-var _commands = _interopRequireWildcard(require("../atom/commands"));
+var _commands = _interopRequireWildcard(require("../chevron/commands"));
 
 var _changedFileItem = _interopRequireDefault(require("../items/changed-file-item"));
 

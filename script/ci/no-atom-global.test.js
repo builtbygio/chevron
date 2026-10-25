@@ -123,7 +123,7 @@ describe('bundled packages use the chevron global (PR 23 stream)', () => {
   it('string literals and comments are not rewritten', () => {
     // Two real cases this guard must tolerate, both found during the
     // conversion: a CSS filename and a command selector.
-    assert.ok(!BARE_ATOM.test(maskStrings("resolveStylesheet('../static/atom.less')")));
+    assert.ok(!BARE_ATOM.test(maskStrings("resolveStylesheet('../static/chevron.less')")));
     assert.ok(!BARE_ATOM.test(maskStrings('commands.add("chevron-text-editor", …)')));
     assert.ok(isComment('    // atom.autoUpdater.onUpdateAvailable =>'));
     // …and one that must still be caught.

@@ -184,23 +184,23 @@ This is a high-level overview of the structure of the React component tree that 
 ## `MultiFilePatchView` Atlas
 
 > [`<MultiFilePatchView>`](/lib/views/multi-file-patch-view.js)
-> > [`<AtomTextEditor>`](lib/atom/atom-text-editor.js)
+> > [`<AtomTextEditor>`](lib/chevron/chevron-text-editor.js)
 > >
 > > React wrapper of an [Atom TextEditor](https://atom.io/docs/api/latest/TextEditor). Each `MultiFilePatchView` contains one `AtomTextEditor`, regardless of the number of file patch.
 > >
-> > > [`<Gutter>`](lib/atom/gutter.js)
+> > > [`<Gutter>`](lib/chevron/gutter.js)
 > > >
 > > > React wrapper of Atom's [Gutter](https://atom.io/docs/api/latest/Gutter) class.
 > >
-> > > [`<MarkerLayer>`](lib/atom/marker-layer.js)
+> > > [`<MarkerLayer>`](lib/chevron/marker-layer.js)
 > > > >
 > > > > React wrapper of Atom's [MarkerLayer](https://atom.io/docs/api/latest/MarkerLayer) class.
 > > > >
-> > > > [`<Marker>`](lib/atom/marker.js)
+> > > > [`<Marker>`](lib/chevron/marker.js)
 > > > >
 > > > > React wrapper of Atom's [DisplayMarker](https://atom.io/docs/api/latest/DisplayMarker) class.
 > > > >
-> > > > > [`<Decoration>`](lib/atom/decoration.js)
+> > > > > [`<Decoration>`](lib/chevron/decoration.js)
 > > > > >
 > > > > > React wrapper of Atom's [Decoration](https://atom.io/docs/api/latest/Decoration) class.
 > > > > >

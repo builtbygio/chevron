@@ -19,7 +19,7 @@ var _lodash = _interopRequireDefault(require("lodash.memoize"));
 
 var _fsExtra = _interopRequireDefault(require("fs-extra"));
 
-var _octicon = _interopRequireDefault(require("../atom/octicon"));
+var _octicon = _interopRequireDefault(require("../chevron/octicon"));
 
 var _helpers = require("../helpers");
 

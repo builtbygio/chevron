@@ -21,7 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **The core classes and workspace elements use Chevron names.** `AtomEnvironment`, `AtomApplication` and `AtomWindow` are `ChevronEnvironment`, `ChevronApplication` and `ChevronWindow`. The workspace elements (`atom-workspace`, `atom-text-editor`, `atom-pane`, and the panel, overlay and styles tags) are `chevron-*`. Specs and bundled packages call `chevron.*`; the Jasmine runner no longer sets `window.atom`. `atom-notification`, `atom-keymap` and `atom-select-list` are unchanged, and saved window state still uses the `AtomEnvironments` store key.
+- **The remaining first-party Atom names in the editor are Chevron names.** Notifications use `chevron-notification` and `chevron-notifications`. The GitHub editor wrappers live in `lib/chevron`. The base sheet is `static/chevron.less`, the component library is `static/chevron-ui`, and a theme's `styles/ui.less` replaces `styles/atom.less`. Stylesheets scoped to the editor are named `*.chevron-text-editor.less`, which is the context the editor asks for. `atom-select-list`, `atom-keymap`, and the `AtomEnvironments` IndexedDB name are unchanged. The macOS `NSPrincipalClass` stays `AtomApplication`.
+
+- **The core classes and workspace elements use Chevron names.** `AtomEnvironment`, `AtomApplication` and `AtomWindow` are `ChevronEnvironment`, `ChevronApplication` and `ChevronWindow`. The workspace elements (`atom-workspace`, `atom-text-editor`, `atom-pane`, and the panel, overlay and styles tags) are `chevron-*`. Specs and bundled packages call `chevron.*`; the Jasmine runner no longer sets `window.atom`. `atom-keymap` and `atom-select-list` are unchanged, and saved window state still uses the `AtomEnvironments` store key.
 
 - **`remote-compat` no longer keeps a synchronous copy of the getters that already had `invoke`.** Display size, user defaults, the Windows jump list, the beep, `app.getPath`, `app.getVersion` and protocol-client registration return promises, and the `sendSync` twins for those channels are gone. Clipboard reads, the synchronous confirm dialog, and boot settings stay synchronous.
 

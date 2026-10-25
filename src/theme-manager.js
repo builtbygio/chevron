@@ -339,7 +339,7 @@ On linux there are currently problems with watch sizes. See
   }
 
   reloadBaseStylesheets() {
-    this.requireStylesheet('../static/atom', -2, true);
+    this.requireStylesheet('../static/chevron', -2, true);
   }
 
   stylesheetElementForId(id) {

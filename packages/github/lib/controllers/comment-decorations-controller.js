@@ -18,9 +18,9 @@ var _editorCommentDecorationsController = _interopRequireDefault(require("./edit
 
 var _reviewsItem = _interopRequireDefault(require("../items/reviews-item"));
 
-var _gutter = _interopRequireDefault(require("../atom/gutter"));
+var _gutter = _interopRequireDefault(require("../chevron/gutter"));
 
-var _commands = _interopRequireWildcard(require("../atom/commands"));
+var _commands = _interopRequireWildcard(require("../chevron/commands"));
 
 var _propTypes2 = require("../prop-types");
 

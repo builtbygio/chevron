@@ -1,5 +1,5 @@
 const { remote } = require('electron');
-const atomPaths = require('../src/atom-paths');
+const atomPaths = require('../src/chevron-paths');
 const fs = require('fs-plus');
 const path = require('path');
 const app = remote.app;
@@ -133,7 +133,7 @@ describe('AtomPaths', () => {
       };
       delete process.env.ATOM_HOME;
       delete process.env.CHEVRON_HOME;
-      tempAtomHomePath = temp.mkdirSync('atom-paths-specs-userdata-home');
+      tempAtomHomePath = temp.mkdirSync('chevron-paths-specs-userdata-home');
       // Chevron default home under the temp "user home"
       tempAtomConfigPath = path.join(tempAtomHomePath, '.chevron');
       fs.mkdirSync(tempAtomConfigPath);

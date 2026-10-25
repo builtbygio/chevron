@@ -3,7 +3,7 @@
 /**
  * Path confinement helpers for chevron:// resolution.
  * Kept free of Electron requires so unit tests can load under host Node.
- * See Electron BP P0.1 / atom-protocol-handler.js.
+ * See Electron BP P0.1 / chevron-protocol-handler.js.
  */
 
 const path = require('path');
@@ -53,7 +53,7 @@ function decodeEscapes(raw) {
  * absolute / still-`..`. Decoding comes before the `..` check, so `%2e%2e`
  * is rejected like `..`.
  */
-function relativePathFromAtomUrl(url) {
+function relativePathFromChevronUrl(url) {
   if (typeof url !== 'string' || url.length === 0) return null;
 
   let raw;
@@ -82,5 +82,5 @@ function relativePathFromAtomUrl(url) {
 
 module.exports = {
   pathContained,
-  relativePathFromAtomUrl
+  relativePathFromChevronUrl
 };

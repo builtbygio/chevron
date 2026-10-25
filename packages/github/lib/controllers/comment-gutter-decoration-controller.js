@@ -13,9 +13,9 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _propTypes2 = require("../prop-types");
 
-var _decoration = _interopRequireDefault(require("../atom/decoration"));
+var _decoration = _interopRequireDefault(require("../chevron/decoration"));
 
-var _marker = _interopRequireDefault(require("../atom/marker"));
+var _marker = _interopRequireDefault(require("../chevron/marker"));
 
 var _reviewsItem = _interopRequireDefault(require("../items/reviews-item"));
 

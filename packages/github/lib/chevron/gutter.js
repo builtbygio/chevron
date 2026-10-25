@@ -15,7 +15,7 @@ var _helpers = require("../helpers");
 
 var _propTypes2 = require("../prop-types");
 
-var _atomTextEditor = require("./atom-text-editor");
+var _atomTextEditor = require("./chevron-text-editor");
 
 var _refHolder = _interopRequireDefault(require("../models/ref-holder"));
 

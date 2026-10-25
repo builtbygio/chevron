@@ -1,5 +1,3 @@
-declare const atom: any
-
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -72,7 +70,7 @@ module.exports =
       this.buttonListTemplate = TemplateHelper.create(ButtonListTemplate);
       this.buttonTemplate = TemplateHelper.create(ButtonTemplate);
 
-      this.element = document.createElement('atom-notification');
+      this.element = document.createElement('chevron-notification');
       if (this.model.getType() === 'fatal') { this.issue = new NotificationIssue(this.model); }
       this.renderPromise = this.render().catch(function(e) {
         console.error(e.message);

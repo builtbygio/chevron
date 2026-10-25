@@ -16,7 +16,7 @@ describe('UIWatcher', () => {
   describe("when a base theme's file changes", () => {
     beforeEach(() => {
       spyOn(chevron.themes, 'resolveStylesheet').andReturn(
-        path.join(__dirname, 'fixtures', 'static', 'atom.less')
+        path.join(__dirname, 'fixtures', 'static', 'chevron.less')
       );
       uiWatcher = new UIWatcher();
     });

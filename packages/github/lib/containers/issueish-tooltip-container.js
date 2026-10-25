@@ -12,7 +12,7 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _classnames = _interopRequireDefault(require("classnames"));
 
-var _octicon = _interopRequireDefault(require("../atom/octicon"));
+var _octicon = _interopRequireDefault(require("../chevron/octicon"));
 
 var _helpers = require("../helpers");
 

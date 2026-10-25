@@ -78,7 +78,7 @@ describe('Wave 3 gates', () => {
       assert.doesNotMatch(src, /atom:\/\//);
       assert.match(src, /chevron:\/\/image-view\//);
     }
-    const handler = read('src/main-process/atom-protocol-handler.js');
+    const handler = read('src/main-process/chevron-protocol-handler.js');
     assert.match(handler, /registerScheme\('chevron'\)/);
   });
 

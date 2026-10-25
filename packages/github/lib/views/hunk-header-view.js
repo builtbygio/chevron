@@ -17,9 +17,9 @@ var _propTypes2 = require("../prop-types");
 
 var _refHolder = _interopRequireDefault(require("../models/ref-holder"));
 
-var _tooltip = _interopRequireDefault(require("../atom/tooltip"));
+var _tooltip = _interopRequireDefault(require("../chevron/tooltip"));
 
-var _keystroke = _interopRequireDefault(require("../atom/keystroke"));
+var _keystroke = _interopRequireDefault(require("../chevron/keystroke"));
 
 var _commitDetailItem = _interopRequireDefault(require("../items/commit-detail-item"));
 
