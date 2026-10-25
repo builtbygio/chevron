@@ -1,6 +1,6 @@
 const ChevronWindow = require('./chevron-window');
 const ApplicationMenu = require('./application-menu');
-const AtomProtocolHandler = require('./atom-protocol-handler');
+const ChevronProtocolHandler = require('./chevron-protocol-handler');
 const AutoUpdateManager = require('./auto-update-manager');
 const StorageFolder = require('../storage-folder');
 const Config = require('../config');
@@ -351,7 +351,7 @@ module.exports = class ChevronApplication extends EventEmitter {
       this.version,
       this.autoUpdateManager
     );
-    this.atomProtocolHandler = new AtomProtocolHandler(
+    this.protocolHandler = new ChevronProtocolHandler(
       this.resourcePath,
       this.safeMode
     );

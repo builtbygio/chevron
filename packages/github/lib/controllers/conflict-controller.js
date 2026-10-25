@@ -15,9 +15,9 @@ var _helpers = require("../helpers");
 
 var _source = require("../models/conflicts/source");
 
-var _decoration = _interopRequireDefault(require("../atom/decoration"));
+var _decoration = _interopRequireDefault(require("../chevron/decoration"));
 
-var _octicon = _interopRequireDefault(require("../atom/octicon"));
+var _octicon = _interopRequireDefault(require("../chevron/octicon"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

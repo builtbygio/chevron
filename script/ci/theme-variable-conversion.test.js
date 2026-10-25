@@ -28,7 +28,7 @@
  *    #333 text on every theme, and anything that did not set its own colour
  *    inherited it.
  *
- * 3. static/atom-ui/ was never converted either.
+ * 3. static/chevron-ui/ was never converted either.
  *
  *    Fixing (2) named the two files that had been found by hand, so the gate
  *    only ever walked those two. The component library beside them kept 58
@@ -156,7 +156,7 @@ describe('static/ takes its colours from the theme, not the light defaults', () 
     // Install) are <a class="icon">, and a.icon outranks both the inherited
     // colour and the plain `a` rule.
     const source = fs.readFileSync(
-      path.join(ROOT, 'static', 'atom-ui', 'styles', 'icons.less'),
+      path.join(ROOT, 'static', 'chevron-ui', 'styles', 'icons.less'),
       'utf8'
     );
     assert.match(

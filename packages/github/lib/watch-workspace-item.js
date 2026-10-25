@@ -7,7 +7,7 @@ exports.watchWorkspaceItem = watchWorkspaceItem;
 
 var _chevron = require("chevron");
 
-var _uriPattern = _interopRequireDefault(require("./atom/uri-pattern"));
+var _uriPattern = _interopRequireDefault(require("./chevron/uri-pattern"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

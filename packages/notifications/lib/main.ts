@@ -128,7 +128,7 @@ If so please open an issue on the package spawning the process.\
     })
     );
 
-    this.notificationsElement = document.createElement('atom-notifications');
+    this.notificationsElement = document.createElement('chevron-notifications');
     chevron.views.getView(chevron.workspace).appendChild(this.notificationsElement);
 
     return this.isInitialized = true;

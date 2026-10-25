@@ -5,7 +5,7 @@ const os = require('os');
 const path = require('path');
 
 /**
- * Package home (aligned with src/atom-paths.js — Chevron-only default).
+ * Package home (aligned with src/chevron-paths.js — Chevron-only default).
  */
 function getPackageHome() {
   if (process.env.CHEVRON_HOME) return process.env.CHEVRON_HOME;

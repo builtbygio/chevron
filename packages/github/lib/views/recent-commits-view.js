@@ -15,7 +15,7 @@ var _classnames = _interopRequireDefault(require("classnames"));
 
 var _nodeEmoji = require("node-emoji");
 
-var _commands = _interopRequireWildcard(require("../atom/commands"));
+var _commands = _interopRequireWildcard(require("../chevron/commands"));
 
 var _refHolder = _interopRequireDefault(require("../models/ref-holder"));
 

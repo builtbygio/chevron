@@ -21,17 +21,17 @@ var _reporterProxy = require("../reporter-proxy");
 
 var _propTypes2 = require("../prop-types");
 
-var _atomTextEditor = _interopRequireDefault(require("../atom/atom-text-editor"));
+var _atomTextEditor = _interopRequireDefault(require("../chevron/chevron-text-editor"));
 
-var _marker = _interopRequireDefault(require("../atom/marker"));
+var _marker = _interopRequireDefault(require("../chevron/marker"));
 
-var _markerLayer = _interopRequireDefault(require("../atom/marker-layer"));
+var _markerLayer = _interopRequireDefault(require("../chevron/marker-layer"));
 
-var _decoration = _interopRequireDefault(require("../atom/decoration"));
+var _decoration = _interopRequireDefault(require("../chevron/decoration"));
 
-var _gutter = _interopRequireDefault(require("../atom/gutter"));
+var _gutter = _interopRequireDefault(require("../chevron/gutter"));
 
-var _commands = _interopRequireWildcard(require("../atom/commands"));
+var _commands = _interopRequireWildcard(require("../chevron/commands"));
 
 var _filePatchHeaderView = _interopRequireDefault(require("./file-patch-header-view"));
 

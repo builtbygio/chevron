@@ -13,7 +13,7 @@ var _classnames = _interopRequireDefault(require("classnames"));
 
 var _propTypes2 = require("../prop-types");
 
-var _tooltip = _interopRequireDefault(require("../atom/tooltip"));
+var _tooltip = _interopRequireDefault(require("../chevron/tooltip"));
 
 var _refHolder = _interopRequireDefault(require("../models/ref-holder"));
 

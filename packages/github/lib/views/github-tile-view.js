@@ -9,7 +9,7 @@ var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
-var _octicon = _interopRequireDefault(require("../atom/octicon"));
+var _octicon = _interopRequireDefault(require("../chevron/octicon"));
 
 var _reporterProxy = require("../reporter-proxy");
 

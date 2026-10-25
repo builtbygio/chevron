@@ -4,8 +4,8 @@ const path = require('path');
 const { pathToFileURL } = require('url');
 const {
   pathContained,
-  relativePathFromAtomUrl
-} = require('./atom-protocol-path');
+  relativePathFromChevronUrl
+} = require('./chevron-protocol-path');
 
 // Handles requests with the 'chevron' protocol.
 //
@@ -21,7 +21,7 @@ const {
 // Security (Electron BP P0.1): resolved files must stay under the chosen root.
 // Traversal via chevron://../../… must not escape package/asset trees.
 
-module.exports = class AtomProtocolHandler {
+module.exports = class ChevronProtocolHandler {
   constructor(resourcePath, safeMode) {
     this.loadPaths = [];
 
@@ -33,11 +33,11 @@ module.exports = class AtomProtocolHandler {
     this.loadPaths.push(path.join(process.env.ATOM_HOME, 'packages'));
     this.loadPaths.push(path.join(resourcePath, 'node_modules'));
 
-    this.registerAtomProtocol();
+    this.registerProtocol();
   }
 
   // chevron:// is the only product scheme (the atom:// alias went in Wave 4).
-  registerAtomProtocol() {
+  registerProtocol() {
     this.registerScheme('chevron');
   }
 
@@ -52,7 +52,7 @@ module.exports = class AtomProtocolHandler {
   }
 
   resolveAtomUrl(url) {
-    const relativePath = relativePathFromAtomUrl(url);
+    const relativePath = relativePathFromChevronUrl(url);
     if (!relativePath) return undefined;
 
     const atomHome = process.env.ATOM_HOME;
@@ -112,4 +112,4 @@ function isFile(filePath, boundary) {
 
 // Re-export helpers for tests / tooling.
 module.exports.pathContained = pathContained;
-module.exports.relativePathFromAtomUrl = relativePathFromAtomUrl;
+module.exports.relativePathFromChevronUrl = relativePathFromChevronUrl;

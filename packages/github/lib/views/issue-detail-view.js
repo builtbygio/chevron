@@ -16,7 +16,7 @@ var _issueishTimelineView = _interopRequireDefault(require("./issueish-timeline-
 
 var _emojiReactionsController = require("../controllers/emoji-reactions-controller");
 
-var _octicon = _interopRequireDefault(require("../atom/octicon"));
+var _octicon = _interopRequireDefault(require("../chevron/octicon"));
 
 var _issueishBadge = _interopRequireDefault(require("../views/issueish-badge"));
 

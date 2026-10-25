@@ -12,9 +12,9 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _reactSelect = _interopRequireDefault(require("react-select"));
 
-var _commands = _interopRequireWildcard(require("../atom/commands"));
+var _commands = _interopRequireWildcard(require("../chevron/commands"));
 
-var _atomTextEditor = _interopRequireDefault(require("../atom/atom-text-editor"));
+var _atomTextEditor = _interopRequireDefault(require("../chevron/chevron-text-editor"));
 
 var _refHolder = _interopRequireDefault(require("../models/ref-holder"));
 

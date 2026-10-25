@@ -74,7 +74,7 @@ describe('stylesheets are compiled at build time', () => {
     });
 
     it('still tells different files apart', () => {
-      assert.ok(!samePath('D:/a/index.less', 'D:/a/styles/atom.less'));
+      assert.ok(!samePath('D:/a/index.less', 'D:/a/styles/ui.less'));
       assert.ok(!samePath('/a/index.less', '/a/index2.less'));
     });
 

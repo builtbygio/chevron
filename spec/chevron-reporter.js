@@ -7,7 +7,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-let AtomReporter;
+let ChevronReporter;
 const path = require('path');
 const process = require('process');
 const _ = require('underscore-plus');
@@ -60,8 +60,8 @@ const formatStackTrace = function(spec, message, stackTrace) {
 };
 
 module.exports =
-(AtomReporter = (function() {
-  AtomReporter = class AtomReporter {
+(ChevronReporter = (function() {
+  ChevronReporter = class ChevronReporter {
     static initClass() {
   
       this.prototype.startedAt = null;
@@ -302,8 +302,8 @@ module.exports =
       }
     }
   };
-  AtomReporter.initClass();
-  return AtomReporter;
+  ChevronReporter.initClass();
+  return ChevronReporter;
 })());
 
 class SuiteResultView {

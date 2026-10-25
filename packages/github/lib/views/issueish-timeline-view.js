@@ -14,7 +14,7 @@ var _propTypes2 = require("../prop-types");
 
 var _helpers = require("../helpers");
 
-var _octicon = _interopRequireDefault(require("../atom/octicon"));
+var _octicon = _interopRequireDefault(require("../chevron/octicon"));
 
 var _commitsView = require("./timeline-items/commits-view.js");
 

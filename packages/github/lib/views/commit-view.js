@@ -15,9 +15,9 @@ var _classnames = _interopRequireDefault(require("classnames"));
 
 var _reactSelect = _interopRequireDefault(require("react-select"));
 
-var _tooltip = _interopRequireDefault(require("../atom/tooltip"));
+var _tooltip = _interopRequireDefault(require("../chevron/tooltip"));
 
-var _atomTextEditor = _interopRequireDefault(require("../atom/atom-text-editor"));
+var _atomTextEditor = _interopRequireDefault(require("../chevron/chevron-text-editor"));
 
 var _coAuthorForm = _interopRequireDefault(require("./co-author-form"));
 
@@ -25,7 +25,7 @@ var _recentCommitsView = _interopRequireDefault(require("./recent-commits-view")
 
 var _stagingView = _interopRequireDefault(require("./staging-view"));
 
-var _commands = _interopRequireWildcard(require("../atom/commands"));
+var _commands = _interopRequireWildcard(require("../chevron/commands"));
 
 var _refHolder = _interopRequireDefault(require("../models/ref-holder"));
 

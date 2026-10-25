@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   extends: 'stylelint-config-standard',
-  ignoreFiles: [path.resolve(__dirname, 'static', 'atom.less')],
+  ignoreFiles: [path.resolve(__dirname, 'static', 'chevron.less')],
   rules: {
     'color-hex-case': null, // TODO: enable?
     'max-empty-lines': null, // TODO: enable?

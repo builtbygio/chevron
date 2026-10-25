@@ -15,7 +15,7 @@ var _refHolder = _interopRequireDefault(require("../models/ref-holder"));
 
 var _timeago = _interopRequireDefault(require("./timeago"));
 
-var _octicon = _interopRequireDefault(require("../atom/octicon"));
+var _octicon = _interopRequireDefault(require("../chevron/octicon"));
 
 var _githubDotcomMarkdown = _interopRequireDefault(require("./github-dotcom-markdown"));
 

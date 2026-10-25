@@ -15,7 +15,7 @@ var _moment = _interopRequireDefault(require("moment"));
 
 var _multiFilePatchController = _interopRequireDefault(require("../controllers/multi-file-patch-controller"));
 
-var _commands = _interopRequireWildcard(require("../atom/commands"));
+var _commands = _interopRequireWildcard(require("../chevron/commands"));
 
 var _refHolder = _interopRequireDefault(require("../models/ref-holder"));
 

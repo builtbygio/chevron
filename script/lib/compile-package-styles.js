@@ -141,7 +141,7 @@ module.exports = function() {
   }
 
   // Compile everything before writing anything. Stylesheets import each other
-  // by relative path -- static/atom-ui/styles/private/forms.less pulls in
+  // by relative path -- static/chevron-ui/styles/private/forms.less pulls in
   // ../mixins/mixins -- so deleting a source as soon as it is compiled breaks
   // the imports of every file compiled after it.
   const results = [];
@@ -186,7 +186,7 @@ module.exports = function() {
 
   // A theme has exactly one entry: index.less imports its partials in a fixed
   // order, and each partial depends on variables an earlier import established
-  // -- styles/atom.less reads @scrollbar-background-color, which
+  // -- styles/ui.less reads @scrollbar-background-color, which
   // styles/ui-variables-custom.less defines. So the partials cannot be
   // compiled standalone, and are simply dropped once index.css contains them.
   // prebuild-less-cache drew the same line: it compiled the theme main path

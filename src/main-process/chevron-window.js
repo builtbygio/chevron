@@ -13,7 +13,7 @@ const url = require('url');
 const { fileURLToPath } = require('url');
 const { EventEmitter } = require('events');
 const StartupTime = require('../startup-time');
-const { pathContained } = require('./atom-protocol-path');
+const { pathContained } = require('./chevron-protocol-path');
 const { prepareToUnloadHandshake } = require('./unload-handshake');
 
 // Linux window/taskbar icon. Prefer real filesystem paths (asar.unpacked or

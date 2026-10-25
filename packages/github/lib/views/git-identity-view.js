@@ -9,7 +9,7 @@ var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
-var _atomTextEditor = _interopRequireDefault(require("../atom/atom-text-editor"));
+var _atomTextEditor = _interopRequireDefault(require("../chevron/chevron-text-editor"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

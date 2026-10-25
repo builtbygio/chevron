@@ -20,7 +20,7 @@ var _checkSuiteView = require("./check-suite-view");
 
 var _buildStatus = require("../models/build-status");
 
-var _octicon = _interopRequireDefault(require("../atom/octicon"));
+var _octicon = _interopRequireDefault(require("../chevron/octicon"));
 
 var _statusDonutChart = _interopRequireDefault(require("./status-donut-chart"));
 

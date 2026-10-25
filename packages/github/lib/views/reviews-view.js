@@ -17,11 +17,11 @@ var _eventKit = require("event-kit");
 
 var _propTypes2 = require("../prop-types");
 
-var _tooltip = _interopRequireDefault(require("../atom/tooltip"));
+var _tooltip = _interopRequireDefault(require("../chevron/tooltip"));
 
-var _commands = _interopRequireWildcard(require("../atom/commands"));
+var _commands = _interopRequireWildcard(require("../chevron/commands"));
 
-var _atomTextEditor = _interopRequireDefault(require("../atom/atom-text-editor"));
+var _atomTextEditor = _interopRequireDefault(require("../chevron/chevron-text-editor"));
 
 var _issueishLink = require("./issueish-link");
 
@@ -39,7 +39,7 @@ var _actionableReviewView = _interopRequireDefault(require("./actionable-review-
 
 var _checkoutButton = _interopRequireDefault(require("./checkout-button"));
 
-var _octicon = _interopRequireDefault(require("../atom/octicon"));
+var _octicon = _interopRequireDefault(require("../chevron/octicon"));
 
 var _timeago = _interopRequireDefault(require("./timeago"));
 

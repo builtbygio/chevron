@@ -198,8 +198,8 @@ var buildReporter = function({logFile, headless, resolveWithExitCode}) {
     return buildTerminalReporter(logFile, resolveWithExitCode);
   } else {
     let reporter;
-    const AtomReporter = require('./atom-reporter');
-    return reporter = new AtomReporter();
+    const ChevronReporter = require('./chevron-reporter');
+    return reporter = new ChevronReporter();
   }
 };
 

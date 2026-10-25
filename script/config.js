@@ -13,7 +13,7 @@ const intermediateAppPath = path.join(buildOutputPath, 'app');
 const symbolsPath = path.join(buildOutputPath, 'symbols');
 const electronDownloadPath = path.join(repositoryRootPath, 'electron');
 const homeDirPath = process.env.HOME || process.env.USERPROFILE;
-// Dual-support config home (see src/atom-paths.js): CHEVRON_HOME → ATOM_HOME →
+// Dual-support config home (see src/chevron-paths.js): CHEVRON_HOME → ATOM_HOME →
 // existing ~/.chevron → default ~/.atom.
 const atomHomeDirPath = (() => {
   if (process.env.CHEVRON_HOME) return process.env.CHEVRON_HOME;

@@ -6,7 +6,7 @@ module.exports = class BaseThemeWatcher extends Watcher {
   constructor() {
     super();
     this.stylesheetsPath = path.dirname(
-      chevron.themes.resolveStylesheet('../static/atom.less')
+      chevron.themes.resolveStylesheet('../static/chevron.less')
     );
     this.watch();
   }

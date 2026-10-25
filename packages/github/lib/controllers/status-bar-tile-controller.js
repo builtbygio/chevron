@@ -19,9 +19,9 @@ var _changedFilesCountView = _interopRequireDefault(require("../views/changed-fi
 
 var _githubTileView = _interopRequireDefault(require("../views/github-tile-view"));
 
-var _tooltip = _interopRequireDefault(require("../atom/tooltip"));
+var _tooltip = _interopRequireDefault(require("../chevron/tooltip"));
 
-var _commands = _interopRequireWildcard(require("../atom/commands"));
+var _commands = _interopRequireWildcard(require("../chevron/commands"));
 
 var _observeModel = _interopRequireDefault(require("../views/observe-model"));
 

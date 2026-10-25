@@ -45,7 +45,7 @@ module.exports = function() {
       CONFIG.repositoryRootPath,
       'resources',
       'mac',
-      'atom-Info.plist'
+      'chevron-Info.plist'
     ),
     helperBundleId: 'dev.builtbygio.chevron.helper',
     icon: path.join(

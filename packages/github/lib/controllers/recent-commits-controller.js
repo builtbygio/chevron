@@ -15,7 +15,7 @@ var _eventKit = require("event-kit");
 
 var _commitDetailItem = _interopRequireDefault(require("../items/commit-detail-item"));
 
-var _uriPattern = _interopRequireDefault(require("../atom/uri-pattern"));
+var _uriPattern = _interopRequireDefault(require("../chevron/uri-pattern"));
 
 var _recentCommitsView = _interopRequireDefault(require("../views/recent-commits-view"));
 

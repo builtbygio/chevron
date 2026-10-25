@@ -11,9 +11,9 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _classnames = _interopRequireDefault(require("classnames"));
 
-var _commands = _interopRequireWildcard(require("../atom/commands"));
+var _commands = _interopRequireWildcard(require("../chevron/commands"));
 
-var _panel = _interopRequireDefault(require("../atom/panel"));
+var _panel = _interopRequireDefault(require("../chevron/panel"));
 
 var _tabbable = require("./tabbable");
 

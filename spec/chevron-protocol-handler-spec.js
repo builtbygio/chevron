@@ -6,10 +6,10 @@
 const path = require('path');
 const {
   pathContained,
-  relativePathFromAtomUrl
-} = require('../src/main-process/atom-protocol-path');
+  relativePathFromChevronUrl
+} = require('../src/main-process/chevron-protocol-path');
 
-describe('atom-protocol-handler path confinement (P0.1)', function() {
+describe('chevron-protocol-handler path confinement (P0.1)', function() {
   describe('pathContained', function() {
     it('allows the root itself and children', function() {
       const root = path.resolve('/tmp/chevron-assets');
@@ -33,36 +33,36 @@ describe('atom-protocol-handler path confinement (P0.1)', function() {
     });
   });
 
-  describe('relativePathFromAtomUrl', function() {
+  describe('relativePathFromChevronUrl', function() {
     it('parses chevron:// package paths', function() {
-      expect(relativePathFromAtomUrl('chevron://tree-view/styles/tree.less')).toBe(
+      expect(relativePathFromChevronUrl('chevron://tree-view/styles/tree.less')).toBe(
         path.join('tree-view', 'styles', 'tree.less')
       );
       expect(
-        relativePathFromAtomUrl('chevron://settings-view/lib/main.js')
+        relativePathFromChevronUrl('chevron://settings-view/lib/main.js')
       ).toBe(path.join('settings-view', 'lib', 'main.js'));
     });
 
     it('rejects traversal and absolute paths', function() {
-      expect(relativePathFromAtomUrl('chevron://../../etc/passwd')).toBe(null);
-      expect(relativePathFromAtomUrl('chevron://foo/../../../etc/hosts')).toBe(
+      expect(relativePathFromChevronUrl('chevron://../../etc/passwd')).toBe(null);
+      expect(relativePathFromChevronUrl('chevron://foo/../../../etc/hosts')).toBe(
         null
       );
-      expect(relativePathFromAtomUrl('chevron://assets/../../../etc/hosts')).toBe(
+      expect(relativePathFromChevronUrl('chevron://assets/../../../etc/hosts')).toBe(
         null
       );
-      expect(relativePathFromAtomUrl('chevron:///etc/passwd')).toBe(null);
+      expect(relativePathFromChevronUrl('chevron:///etc/passwd')).toBe(null);
     });
 
     it('strips query and hash', function() {
       expect(
-        relativePathFromAtomUrl('chevron://tree-view/x.js?cache=1#frag')
+        relativePathFromChevronUrl('chevron://tree-view/x.js?cache=1#frag')
       ).toBe(path.join('tree-view', 'x.js'));
     });
 
     it('rejects empty', function() {
-      expect(relativePathFromAtomUrl('chevron://')).toBe(null);
-      expect(relativePathFromAtomUrl('')).toBe(null);
+      expect(relativePathFromChevronUrl('chevron://')).toBe(null);
+      expect(relativePathFromChevronUrl('')).toBe(null);
     });
   });
 });

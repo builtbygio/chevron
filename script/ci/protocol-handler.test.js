@@ -48,7 +48,7 @@ describe('chevron:// protocol handler', () => {
   const originalResolve = Module._resolveFilename;
   const originalAtomHome = process.env.ATOM_HOME;
   let electron;
-  let AtomProtocolHandler;
+  let ChevronProtocolHandler;
   let tmp;
   let resourcePath;
   let atomHome;
@@ -86,11 +86,11 @@ describe('chevron:// protocol handler', () => {
       ROOT,
       'src',
       'main-process',
-      'atom-protocol-handler.js'
+      'chevron-protocol-handler.js'
     );
     delete require.cache[modulePath];
-    AtomProtocolHandler = require(modulePath);
-    new AtomProtocolHandler(resourcePath, false);
+    ChevronProtocolHandler = require(modulePath);
+    new ChevronProtocolHandler(resourcePath, false);
     handler = electron.handled[0] && electron.handled[0].handler;
   });
 

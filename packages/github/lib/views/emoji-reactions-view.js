@@ -14,7 +14,7 @@ var _classnames = _interopRequireDefault(require("classnames"));
 
 var _reactionPickerController = _interopRequireDefault(require("../controllers/reaction-picker-controller"));
 
-var _tooltip = _interopRequireDefault(require("../atom/tooltip"));
+var _tooltip = _interopRequireDefault(require("../chevron/tooltip"));
 
 var _refHolder = _interopRequireDefault(require("../models/ref-holder"));
 

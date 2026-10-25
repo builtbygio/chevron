@@ -13,7 +13,7 @@ var _path = _interopRequireDefault(require("path"));
 
 var _propTypes2 = require("../prop-types");
 
-var _octicon = _interopRequireDefault(require("../atom/octicon"));
+var _octicon = _interopRequireDefault(require("../chevron/octicon"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

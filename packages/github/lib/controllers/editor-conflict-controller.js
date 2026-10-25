@@ -13,7 +13,7 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _compareSets = _interopRequireDefault(require("compare-sets"));
 
-var _commands = _interopRequireWildcard(require("../atom/commands"));
+var _commands = _interopRequireWildcard(require("../chevron/commands"));
 
 var _conflict = _interopRequireDefault(require("../models/conflicts/conflict"));
 

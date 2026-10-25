@@ -20,7 +20,7 @@ var _reporterProxy = require("../reporter-proxy");
 
 var _periodicRefresher = _interopRequireDefault(require("../periodic-refresher"));
 
-var _octicon = _interopRequireDefault(require("../atom/octicon"));
+var _octicon = _interopRequireDefault(require("../chevron/octicon"));
 
 var _prChangedFilesContainer = _interopRequireDefault(require("../containers/pr-changed-files-container"));
 

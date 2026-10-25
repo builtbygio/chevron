@@ -15,9 +15,9 @@ var _propTypes2 = require("../prop-types");
 
 var _reporterProxy = require("../reporter-proxy");
 
-var _marker = _interopRequireDefault(require("../atom/marker"));
+var _marker = _interopRequireDefault(require("../chevron/marker"));
 
-var _decoration = _interopRequireDefault(require("../atom/decoration"));
+var _decoration = _interopRequireDefault(require("../chevron/decoration"));
 
 var _reviewsItem = _interopRequireDefault(require("../items/reviews-item"));
 

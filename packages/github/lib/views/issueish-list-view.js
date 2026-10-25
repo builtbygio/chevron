@@ -23,7 +23,7 @@ var _relayStub = require("../relay-stub");
 
 var _queryErrorTile = _interopRequireDefault(require("./query-error-tile"));
 
-var _octicon = _interopRequireDefault(require("../atom/octicon"));
+var _octicon = _interopRequireDefault(require("../chevron/octicon"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
