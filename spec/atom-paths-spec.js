@@ -12,11 +12,23 @@ describe('AtomPaths', () => {
     '.chevron'
   );
 
-  afterEach(async () => {
-    delete process.env.CHEVRON_HOME;
-    delete process.env.ATOM_HOME;
-    atomPaths.setAtomHome(await app.getPath('home'));
-  });
+  // app.getPath yields. The spec window applies the launch environment on
+  // that turn, and the launch ATOM_HOME is this suite's temp directory, so
+  // a delete or assignment made before the await is gone when it resolves.
+  // Establish the env this example cares about after the await, in the same
+  // turn as setAtomHome.
+  async function setHome(applyEnv) {
+    const home = await app.getPath('home');
+    if (applyEnv) applyEnv();
+    atomPaths.setAtomHome(home);
+  }
+
+  afterEach(() =>
+    setHome(() => {
+      delete process.env.CHEVRON_HOME;
+      delete process.env.ATOM_HOME;
+    })
+  );
 
   describe('SetAtomHomePath (Chevron-only)', () => {
     describe('when a portable .chevron folder exists', () => {
@@ -35,7 +47,10 @@ describe('AtomPaths', () => {
       });
 
       it('sets home to the portable .chevron folder if it has permission', async () => {
-        atomPaths.setAtomHome(await app.getPath('home'));
+        await setHome(() => {
+          delete process.env.CHEVRON_HOME;
+          delete process.env.ATOM_HOME;
+        });
         expect(process.env.CHEVRON_HOME).toEqual(portableChevronHomePath);
         expect(process.env.ATOM_HOME).toEqual(portableChevronHomePath);
       });
@@ -44,9 +59,11 @@ describe('AtomPaths', () => {
         if (process.platform === 'win32') return;
 
         const readOnlyPath = temp.mkdirSync('atom-path-spec-no-write-access');
-        process.env.ATOM_HOME = readOnlyPath;
         fs.chmodSync(portableChevronHomePath, 444);
-        atomPaths.setAtomHome(await app.getPath('home'));
+        await setHome(() => {
+          delete process.env.CHEVRON_HOME;
+          process.env.ATOM_HOME = readOnlyPath;
+        });
         expect(process.env.ATOM_HOME).toEqual(readOnlyPath);
         expect(process.env.CHEVRON_HOME).toEqual(readOnlyPath);
       });
@@ -66,8 +83,10 @@ describe('AtomPaths', () => {
 
       it('leaves home unmodified if ATOM_HOME was already set (legacy override)', async () => {
         const temporaryHome = temp.mkdirSync('atom-spec-setatomhomepath');
-        process.env.ATOM_HOME = temporaryHome;
-        atomPaths.setAtomHome(await app.getPath('home'));
+        await setHome(() => {
+          delete process.env.CHEVRON_HOME;
+          process.env.ATOM_HOME = temporaryHome;
+        });
         expect(process.env.ATOM_HOME).toEqual(temporaryHome);
         expect(process.env.CHEVRON_HOME).toEqual(temporaryHome);
       });
@@ -75,18 +94,21 @@ describe('AtomPaths', () => {
       it('prefers CHEVRON_HOME over ATOM_HOME when both are set', async () => {
         const chevronHome = temp.mkdirSync('chevron-home-env');
         const atomHome = temp.mkdirSync('atom-home-env');
-        process.env.CHEVRON_HOME = chevronHome;
-        process.env.ATOM_HOME = atomHome;
-        atomPaths.setAtomHome(await app.getPath('home'));
+        await setHome(() => {
+          process.env.CHEVRON_HOME = chevronHome;
+          process.env.ATOM_HOME = atomHome;
+        });
         expect(process.env.CHEVRON_HOME).toEqual(chevronHome);
         expect(process.env.ATOM_HOME).toEqual(chevronHome);
       });
 
       it('defaults to ~/.chevron (not ~/.atom)', async () => {
-        const expectedPath = path.join(await app.getPath('home'), '.chevron');
-        atomPaths.setAtomHome(await app.getPath('home'));
-        expect(process.env.CHEVRON_HOME).toEqual(expectedPath);
-        expect(process.env.ATOM_HOME).toEqual(expectedPath);
+        const home = await app.getPath('home');
+        delete process.env.CHEVRON_HOME;
+        delete process.env.ATOM_HOME;
+        atomPaths.setAtomHome(home);
+        expect(process.env.CHEVRON_HOME).toEqual(path.join(home, '.chevron'));
+        expect(process.env.ATOM_HOME).toEqual(path.join(home, '.chevron'));
       });
     });
   });
