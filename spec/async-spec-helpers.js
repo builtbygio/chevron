@@ -2,7 +2,8 @@
 // still unless a spec advances the clock, so a false condition never timed out.
 async function conditionPromise(
   condition,
-  description = 'anonymous condition'
+  description = 'anonymous condition',
+  timeout = 5000
 ) {
   const startTime = performance.now();
 
@@ -18,7 +19,7 @@ async function conditionPromise(
       return;
     }
 
-    if (performance.now() - startTime > 5000) {
+    if (performance.now() - startTime > timeout) {
       throw new Error('Timed out waiting on ' + description);
     }
   }

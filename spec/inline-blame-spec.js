@@ -2,6 +2,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { conditionPromise } = require('./async-spec-helpers');
 
 // The github package's inline blame (#424), in a real editor: the annotation
 // is drawn, takes the mouse, and leaves the cursor alone when clicked.
@@ -23,7 +24,7 @@ describe('inline blame', () => {
   const annotation = () =>
     editor.getElement().querySelector('.github-InlineBlame');
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jasmine.useRealClock();
     dir = fs.realpathSync(
       fs.mkdtempSync(path.join(os.tmpdir(), 'inline-blame-spec-'))
@@ -35,14 +36,10 @@ describe('inline blame', () => {
 
     atom.project.setPaths([dir]);
     jasmine.attachToDOM(atom.workspace.getElement());
-    waitsForPromise(() => atom.packages.activatePackage('github'));
-    waitsForPromise(() =>
-      atom.workspace.open(path.join(dir, 'a.txt')).then(e => {
-        editor = e;
-      })
-    );
-    runs(() => editor.setCursorBufferPosition([1, 0]));
-    waitsFor('the blame annotation', () => annotation(), 15000);
+    await atom.packages.activatePackage('github');
+    editor = await atom.workspace.open(path.join(dir, 'a.txt'));
+    editor.setCursorBufferPosition([1, 0]);
+    await conditionPromise(() => annotation(), 'the blame annotation', 15000);
   });
 
   it("annotates the cursor's line with author, age and summary", () => {
@@ -71,15 +68,13 @@ describe('inline blame', () => {
     expect(tooltip.textContent).toContain('gio@example.com');
   });
 
-  it('says "Not committed yet" for an unsaved line', () => {
-    runs(() => {
-      editor.setCursorBufferPosition([0, 0]);
-      editor.insertText('new line\n');
-      editor.setCursorBufferPosition([0, 0]);
-    });
-    waitsFor(
-      'the uncommitted annotation',
+  it('says "Not committed yet" for an unsaved line', async () => {
+    editor.setCursorBufferPosition([0, 0]);
+    editor.insertText('new line\n');
+    editor.setCursorBufferPosition([0, 0]);
+    await conditionPromise(
       () => annotation() && annotation().textContent === 'Not committed yet',
+      'the uncommitted annotation',
       15000
     );
   });
