@@ -937,8 +937,7 @@ describe('Config', () => {
       atom.config.onDidChange('foo.bar.baz', changeSpy);
     });
 
-    it('allows only one change event for the duration of the given promise if it gets resolved', () => {
-      let promiseResult = null;
+    it('allows only one change event for the duration of the given promise if it gets resolved', async () => {
       const transactionPromise = atom.config.transactAsync(() => {
         atom.config.set('foo.bar.baz', 1);
         atom.config.set('foo.bar.baz', 2);
@@ -946,24 +945,16 @@ describe('Config', () => {
         return Promise.resolve('a result');
       });
 
-      waitsForPromise(() =>
-        transactionPromise.then(result => {
-          promiseResult = result;
-        })
-      );
-
-      runs(() => {
-        expect(promiseResult).toBe('a result');
-        expect(changeSpy.callCount).toBe(1);
-        expect(changeSpy.argsForCall[0][0]).toEqual({
-          newValue: 3,
-          oldValue: undefined
-        });
+      const promiseResult = await transactionPromise;
+      expect(promiseResult).toBe('a result');
+      expect(changeSpy.callCount).toBe(1);
+      expect(changeSpy.argsForCall[0][0]).toEqual({
+        newValue: 3,
+        oldValue: undefined
       });
     });
 
-    it('allows only one change event for the duration of the given promise if it gets rejected', () => {
-      let promiseError = null;
+    it('allows only one change event for the duration of the given promise if it gets rejected', async () => {
       const transactionPromise = atom.config.transactAsync(() => {
         atom.config.set('foo.bar.baz', 1);
         atom.config.set('foo.bar.baz', 2);
@@ -971,25 +962,22 @@ describe('Config', () => {
         return Promise.reject(new Error('an error'));
       });
 
-      waitsForPromise(() =>
-        transactionPromise.catch(error => {
-          promiseError = error;
-        })
-      );
-
-      runs(() => {
-        expect(promiseError.message).toBe('an error');
-        expect(changeSpy.callCount).toBe(1);
-        expect(changeSpy.argsForCall[0][0]).toEqual({
-          newValue: 3,
-          oldValue: undefined
-        });
+      let promiseError = null;
+      try {
+        await transactionPromise;
+      } catch (error) {
+        promiseError = error;
+      }
+      expect(promiseError.message).toBe('an error');
+      expect(changeSpy.callCount).toBe(1);
+      expect(changeSpy.argsForCall[0][0]).toEqual({
+        newValue: 3,
+        oldValue: undefined
       });
     });
 
-    it('allows only one change event even when the given callback throws', () => {
+    it('allows only one change event even when the given callback throws', async () => {
       const error = new Error('Oops!');
-      let promiseError = null;
       const transactionPromise = atom.config.transactAsync(() => {
         atom.config.set('foo.bar.baz', 1);
         atom.config.set('foo.bar.baz', 2);
@@ -997,19 +985,17 @@ describe('Config', () => {
         throw error;
       });
 
-      waitsForPromise(() =>
-        transactionPromise.catch(e => {
-          promiseError = e;
-        })
-      );
-
-      runs(() => {
-        expect(promiseError).toBe(error);
-        expect(changeSpy.callCount).toBe(1);
-        expect(changeSpy.argsForCall[0][0]).toEqual({
-          newValue: 3,
-          oldValue: undefined
-        });
+      let promiseError = null;
+      try {
+        await transactionPromise;
+      } catch (e) {
+        promiseError = e;
+      }
+      expect(promiseError).toBe(error);
+      expect(changeSpy.callCount).toBe(1);
+      expect(changeSpy.argsForCall[0][0]).toEqual({
+        newValue: 3,
+        oldValue: undefined
       });
     });
   });

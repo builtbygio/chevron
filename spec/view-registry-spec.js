@@ -192,23 +192,22 @@ describe('ViewRegistry', () => {
   });
 
   describe('::getNextUpdatePromise()', () =>
-    it('returns a promise that resolves at the end of the next update cycle', () => {
+    it('returns a promise that resolves at the end of the next update cycle', async () => {
+      jasmine.useRealClock();
       let updateCalled = false;
       let readCalled = false;
 
-      waitsFor('getNextUpdatePromise to resolve', done => {
-        registry.getNextUpdatePromise().then(() => {
-          expect(updateCalled).toBe(true);
-          expect(readCalled).toBe(true);
-          done();
-        });
-
-        registry.updateDocument(() => {
-          updateCalled = true;
-        });
-        registry.readDocument(() => {
-          readCalled = true;
-        });
+      const pending = registry.getNextUpdatePromise().then(() => {
+        expect(updateCalled).toBe(true);
+        expect(readCalled).toBe(true);
       });
+
+      registry.updateDocument(() => {
+        updateCalled = true;
+      });
+      registry.readDocument(() => {
+        readCalled = true;
+      });
+      await pending;
     }));
 });

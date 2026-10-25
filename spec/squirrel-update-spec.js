@@ -2,6 +2,7 @@ const electron = require('electron');
 const fs = require('fs-plus');
 const path = require('path');
 const temp = require('temp').track();
+const { conditionPromise } = require('./async-spec-helpers');
 
 electron.app = {
   getName() {
@@ -70,41 +71,26 @@ describe('Windows Squirrel Update', function() {
     } catch (error) {}
   });
 
-  it('quits the app on all squirrel events', function() {
+  it('quits the app on all squirrel events', async function() {
+    jasmine.useRealClock();
     expect(SquirrelUpdate.handleStartupEvent('--squirrel-install')).toBe(true);
 
-    waitsFor(() => electron.app.quit.callCount === 1);
+    await conditionPromise(() => electron.app.quit.callCount === 1);
+    electron.app.quit.reset();
+    expect(SquirrelUpdate.handleStartupEvent('--squirrel-updated')).toBe(true);
 
-    runs(function() {
-      electron.app.quit.reset();
-      expect(SquirrelUpdate.handleStartupEvent('--squirrel-updated')).toBe(
-        true
-      );
-    });
-
-    waitsFor(() => electron.app.quit.callCount === 1);
-
-    runs(function() {
-      electron.app.quit.reset();
-      expect(SquirrelUpdate.handleStartupEvent('--squirrel-uninstall')).toBe(
-        true
-      );
-    });
-
-    waitsFor(() => electron.app.quit.callCount === 1);
-
-    runs(function() {
-      electron.app.quit.reset();
-      expect(SquirrelUpdate.handleStartupEvent('--squirrel-obsolete')).toBe(
-        true
-      );
-    });
-
-    waitsFor(() => electron.app.quit.callCount === 1);
-
-    runs(() =>
-      expect(SquirrelUpdate.handleStartupEvent('--not-squirrel')).toBe(false)
+    await conditionPromise(() => electron.app.quit.callCount === 1);
+    electron.app.quit.reset();
+    expect(SquirrelUpdate.handleStartupEvent('--squirrel-uninstall')).toBe(
+      true
     );
+
+    await conditionPromise(() => electron.app.quit.callCount === 1);
+    electron.app.quit.reset();
+    expect(SquirrelUpdate.handleStartupEvent('--squirrel-obsolete')).toBe(true);
+
+    await conditionPromise(() => electron.app.quit.callCount === 1);
+    expect(SquirrelUpdate.handleStartupEvent('--not-squirrel')).toBe(false);
   });
 
   describe('Desktop shortcut', function() {
@@ -133,21 +119,22 @@ describe('Windows Squirrel Update', function() {
       expect(fs.existsSync(desktopShortcutPath)).toBe(false));
 
     describe('on install', function() {
-      beforeEach(function() {
+      beforeEach(async function() {
+        jasmine.useRealClock();
         SquirrelUpdate.handleStartupEvent('--squirrel-install');
-        waitsFor(() => electron.app.quit.callCount === 1);
+        await conditionPromise(() => electron.app.quit.callCount === 1);
       });
 
       it('creates desktop shortcut', () =>
         expect(fs.existsSync(desktopShortcutPath)).toBe(true));
 
       describe('when shortcut is deleted and then app is updated', function() {
-        beforeEach(function() {
+        beforeEach(async function() {
           fs.removeSync(desktopShortcutPath);
           expect(fs.existsSync(desktopShortcutPath)).toBe(false);
 
           SquirrelUpdate.handleStartupEvent('--squirrel-updated');
-          waitsFor(() => electron.app.quit.callCount === 2);
+          await conditionPromise(() => electron.app.quit.callCount === 2);
         });
 
         it('does not recreate shortcut', () =>
@@ -155,9 +142,9 @@ describe('Windows Squirrel Update', function() {
       });
 
       describe('when shortcut is kept and app is updated', function() {
-        beforeEach(function() {
+        beforeEach(async function() {
           SquirrelUpdate.handleStartupEvent('--squirrel-updated');
-          waitsFor(() => electron.app.quit.callCount === 2);
+          await conditionPromise(() => electron.app.quit.callCount === 2);
         });
 
         it('still has desktop shortcut', () =>
