@@ -23,7 +23,8 @@ function createWindowProxy() {
     isFullScreen: () => !!windowCall('isFullScreen'),
     isFocused: () => !!windowCall('isFocused'),
     isMinimized: () => !!windowCall('isMinimized'),
-    isVisible: () => !!windowCall('isVisible'),
+    isVisible: () =>
+      ipcRenderer.invoke('chevron:browser-window-is-visible').then(visible => !!visible),
     isWebViewFocused: () => !!windowCall('isWebViewFocused'),
     setSize: (w, h) => windowCall('setSize', w, h),
     setPosition: (x, y) => windowCall('setPosition', x, y),

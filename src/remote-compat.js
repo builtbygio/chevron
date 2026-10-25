@@ -130,13 +130,15 @@ function createWebContentsProxy(webContentsId, windowId) {
       return this;
     },
     isDestroyed() {
-      return ipcRenderer.sendSync('chevron:wc-is-destroyed-sync', webContentsId);
+      return ipcRenderer
+        .invoke('chevron:wc-is-destroyed', webContentsId)
+        .then(destroyed => !!destroyed);
     }
   };
 }
 
-function createUtilityWorkerWindow() {
-  const created = ipcRenderer.sendSync('chevron:utility-worker-create-sync');
+async function createUtilityWorkerWindow() {
+  const created = await ipcRenderer.invoke('chevron:utility-worker-create');
   if (!created) {
     throw new Error('Failed to create utilityProcess git worker via IPC');
   }
@@ -175,48 +177,35 @@ function createUtilityWorkerWindow() {
         return this;
       },
       isDestroyed() {
-        return !!ipcRenderer.sendSync(
-          'chevron:utility-worker-is-destroyed-sync',
-          windowId
-        );
+        return ipcRenderer
+          .invoke('chevron:utility-worker-is-destroyed', windowId)
+          .then(destroyed => !!destroyed);
       }
     },
     loadURL(url) {
-      return ipcRenderer.sendSync(
-        'chevron:utility-worker-load-sync',
-        windowId,
-        url
-      );
+      return ipcRenderer.invoke('chevron:utility-worker-load', windowId, url);
     },
     destroy() {
       workerEventHandlers.delete(windowId);
-      return ipcRenderer.sendSync(
-        'chevron:utility-worker-destroy-sync',
-        windowId
-      );
+      return ipcRenderer.invoke('chevron:utility-worker-destroy', windowId);
     },
     isDestroyed() {
-      return !!ipcRenderer.sendSync(
-        'chevron:utility-worker-is-destroyed-sync',
-        windowId
-      );
+      return ipcRenderer
+        .invoke('chevron:utility-worker-is-destroyed', windowId)
+        .then(destroyed => !!destroyed);
     }
   };
 }
 
-function BrowserWindow(options) {
-  if (!(this instanceof BrowserWindow)) {
-    return new BrowserWindow(options);
-  }
-  // Git workers are utilityProcess only (architecture H1 PR 9).
-  const utilWin = createUtilityWorkerWindow();
-  this.id = utilWin.id;
-  this.webContents = utilWin.webContents;
-  this.loadURL = utilWin.loadURL.bind(utilWin);
-  this.destroy = utilWin.destroy.bind(utilWin);
-  this.isDestroyed = utilWin.isDestroyed.bind(utilWin);
-  this.__chevronUtilityWorker = true;
+// Git workers are utilityProcess only (architecture H1 PR 9). Creating one
+// yields, so callers open it instead of constructing it on the same turn.
+function BrowserWindow() {
+  throw new Error('Call BrowserWindow.open()');
 }
+
+BrowserWindow.open = function() {
+  return createUtilityWorkerWindow();
+};
 
 BrowserWindow.fromId = function(id) {
   return {
@@ -227,10 +216,12 @@ BrowserWindow.fromId = function(id) {
       }
     },
     isDestroyed() {
-      return !!ipcRenderer.sendSync('chevron:bw-id-call-sync', id, 'isDestroyed');
+      return ipcRenderer
+        .invoke('chevron:bw-id-call', id, 'isDestroyed')
+        .then(destroyed => !!destroyed);
     },
     destroy() {
-      return ipcRenderer.sendSync('chevron:bw-id-call-sync', id, 'destroy');
+      return ipcRenderer.invoke('chevron:bw-id-call', id, 'destroy');
     }
   };
 };

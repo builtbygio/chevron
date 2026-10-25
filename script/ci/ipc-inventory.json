@@ -61,8 +61,18 @@
     ]
   },
   {
-    "channel": "chevron:bw-id-call-sync",
-    "kind": "on",
+    "channel": "chevron:browser-window-is-visible",
+    "kind": "handle",
+    "file": "src/main-process/register-renderer-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "read"
+    ]
+  },
+  {
+    "channel": "chevron:bw-id-call",
+    "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
     "validation": "full",
@@ -834,8 +844,8 @@
     ]
   },
   {
-    "channel": "chevron:utility-worker-create-sync",
-    "kind": "on",
+    "channel": "chevron:utility-worker-create",
+    "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
     "validation": "full",
@@ -844,8 +854,8 @@
     ]
   },
   {
-    "channel": "chevron:utility-worker-destroy-sync",
-    "kind": "on",
+    "channel": "chevron:utility-worker-destroy",
+    "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
     "validation": "full",
@@ -864,8 +874,8 @@
     ]
   },
   {
-    "channel": "chevron:utility-worker-is-destroyed-sync",
-    "kind": "on",
+    "channel": "chevron:utility-worker-is-destroyed",
+    "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "any-window",
     "validation": "full",
@@ -874,8 +884,8 @@
     ]
   },
   {
-    "channel": "chevron:utility-worker-load-sync",
-    "kind": "on",
+    "channel": "chevron:utility-worker-load",
+    "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
     "validation": "full",
@@ -895,8 +905,8 @@
     ]
   },
   {
-    "channel": "chevron:wc-is-destroyed-sync",
-    "kind": "on",
+    "channel": "chevron:wc-is-destroyed",
+    "kind": "handle",
     "file": "src/main-process/register-renderer-ipc.js",
     "scope": "owner-window",
     "validation": "full",

@@ -340,26 +340,41 @@ class RendererProcess {
     this.onExecStarted = onExecStarted;
     // A utilityProcess worker behind remote-compat's BrowserWindow shim, which
     // takes no options: there is no window to show and no webPreferences.
-    this.win = new BrowserWindow();
-    this.webContents = this.win.webContents; // this.webContents.openDevTools();
-
+    // Opening it yields, so requests wait on this.opened.
+    this.win = null;
+    this.webContents = null;
+    this.destroyed = false;
     this.emitter = new _eventKit.Emitter();
     this.subscriptions = new _eventKit.CompositeDisposable();
-    this.registerListeners();
-    this.win.loadURL(loadUrl);
-    this.win.webContents.on('crashed', this.handleDestroy);
-    this.win.webContents.on('destroyed', this.handleDestroy);
     this.subscriptions.add(new _eventKit.Disposable(() => {
-      if (!this.win.isDestroyed()) {
-        this.win.webContents.removeListener('crashed', this.handleDestroy);
-        this.win.webContents.removeListener('destroyed', this.handleDestroy);
-        this.win.destroy();
-      }
+      const win = this.win;
+      if (!win) return;
+      win.isDestroyed().then(destroyed => {
+        if (destroyed) return;
+        win.webContents.removeListener('crashed', this.handleDestroy);
+        win.webContents.removeListener('destroyed', this.handleDestroy);
+        return win.destroy();
+      });
     }), this.emitter);
     this.ready = false;
     this.readyPromise = new Promise(resolve => {
       this.resolveReady = resolve;
     });
+    this.opened = this.open(loadUrl);
+  }
+
+  async open(loadUrl) {
+    const win = await BrowserWindow.open();
+    if (this.destroyed) {
+      await win.destroy();
+      return;
+    }
+    this.win = win;
+    this.webContents = win.webContents;
+    this.registerListeners();
+    win.webContents.on('crashed', this.handleDestroy);
+    win.webContents.on('destroyed', this.handleDestroy);
+    await win.loadURL(loadUrl);
   }
 
   isReady() {
@@ -403,7 +418,7 @@ class RendererProcess {
   }
 
   executeOperation(operation) {
-    return operation.execute(payload => {
+    return this.opened.then(() => operation.execute(payload => {
       if (this.destroyed) {
         return null;
       }
@@ -412,11 +427,11 @@ class RendererProcess {
         type: 'git-exec',
         data: payload
       });
-    });
+    }));
   }
 
   cancelOperation(operation) {
-    return operation.cancel(payload => {
+    return this.opened.then(() => operation.cancel(payload => {
       if (this.destroyed) {
         return null;
       }
@@ -425,7 +440,7 @@ class RendererProcess {
         type: 'git-cancel',
         data: payload
       });
-    });
+    }));
   }
 
   getPid() {
