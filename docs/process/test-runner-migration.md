@@ -268,6 +268,7 @@ conversions are local rewrites:
 | `waitsForPromise(() => p)` | `await p` |
 | `waitsFor(() => cond)` | `await conditionPromise(() => cond)` |
 | `waitsFor('label', () => cond)` | `await conditionPromise(() => cond, 'label')` |
+| `waitsFor('label', () => cond, ms)` | `await conditionPromise(() => cond, 'label', ms)` |
 | `runs(() => { A })` | `A` inline, in sequence |
 | `it('…', () => { runs…; waits…; runs… })` | `it('…', async () => { … })` |
 

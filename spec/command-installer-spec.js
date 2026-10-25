@@ -92,11 +92,11 @@ describe('CommandInstaller on #darwin', () => {
       installer.initialize('2.0.2');
     });
 
-    it("symlinks the atom command as 'atom'", () => {
+    it("symlinks the atom command as 'atom'", async () => {
       const installedAtomPath = path.join(installationPath, 'atom');
       expect(fs.isFileSync(installedAtomPath)).toBeFalsy();
 
-      waitsFor(done => {
+      await new Promise(done => {
         installer.installAtomCommand(false, error => {
           expect(error).toBeNull();
           expect(fs.realpathSync(installedAtomPath)).toBe(
@@ -111,11 +111,11 @@ describe('CommandInstaller on #darwin', () => {
       });
     });
 
-    it("symlinks the apm command as 'apm'", () => {
+    it("symlinks the apm command as 'apm'", async () => {
       const installedApmPath = path.join(installationPath, 'apm');
       expect(fs.isFileSync(installedApmPath)).toBeFalsy();
 
-      waitsFor(done => {
+      await new Promise(done => {
         installer.installApmCommand(false, error => {
           expect(error).toBeNull();
           expect(fs.realpathSync(installedApmPath)).toBe(
@@ -137,11 +137,11 @@ describe('CommandInstaller on #darwin', () => {
       installer.initialize('2.2.0-beta.0');
     });
 
-    it("symlinks the atom command as 'atom-beta'", () => {
+    it("symlinks the atom command as 'atom-beta'", async () => {
       const installedAtomPath = path.join(installationPath, 'atom-beta');
       expect(fs.isFileSync(installedAtomPath)).toBeFalsy();
 
-      waitsFor(done => {
+      await new Promise(done => {
         installer.installAtomCommand(false, error => {
           expect(error).toBeNull();
           expect(fs.realpathSync(installedAtomPath)).toBe(
@@ -156,11 +156,11 @@ describe('CommandInstaller on #darwin', () => {
       });
     });
 
-    it("symlinks the apm command as 'apm-beta'", () => {
+    it("symlinks the apm command as 'apm-beta'", async () => {
       const installedApmPath = path.join(installationPath, 'apm-beta');
       expect(fs.isFileSync(installedApmPath)).toBeFalsy();
 
-      waitsFor(done => {
+      await new Promise(done => {
         installer.installApmCommand(false, error => {
           expect(error).toBeNull();
           expect(fs.realpathSync(installedApmPath)).toBe(
@@ -180,11 +180,11 @@ describe('CommandInstaller on #darwin', () => {
       installer.initialize('2.2.0-nightly0');
     });
 
-    it("symlinks the atom command as 'atom-nightly'", () => {
+    it("symlinks the atom command as 'atom-nightly'", async () => {
       const installedAtomPath = path.join(installationPath, 'atom-nightly');
       expect(fs.isFileSync(installedAtomPath)).toBeFalsy();
 
-      waitsFor(done => {
+      await new Promise(done => {
         installer.installAtomCommand(false, error => {
           expect(error).toBeNull();
           expect(fs.realpathSync(installedAtomPath)).toBe(
@@ -199,11 +199,11 @@ describe('CommandInstaller on #darwin', () => {
       });
     });
 
-    it("symlinks the apm command as 'apm-nightly'", () => {
+    it("symlinks the apm command as 'apm-nightly'", async () => {
       const installedApmPath = path.join(installationPath, 'apm-nightly');
       expect(fs.isFileSync(installedApmPath)).toBeFalsy();
 
-      waitsFor(done => {
+      await new Promise(done => {
         installer.installApmCommand(false, error => {
           expect(error).toBeNull();
           expect(fs.realpathSync(installedApmPath)).toBe(
