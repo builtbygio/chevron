@@ -16,7 +16,7 @@ describe('WindowEventHandler', () => {
     });
     chevron.project.destroy();
     windowEventHandler = new WindowEventHandler({
-      atomEnvironment: atom,
+      atomEnvironment: chevron,
       applicationDelegate: chevron.applicationDelegate
     });
     windowEventHandler.initialize(window, document);
