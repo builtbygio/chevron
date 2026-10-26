@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The window-event-handler spec constructs the handler with `chevron`.** The rename left `atomEnvironment: atom`. With `window.atom` gone, every example in that file threw `ReferenceError`, and nightly `core-render-2` failed on it.
+
 - **The portable-home spec no longer loses to the suite's launch environment.** `app.getPath` yields, and the spec window writes the launch `ATOM_HOME` (the suite's temp directory) on that turn. The example now sets the env it cares about after that write, in the same turn as `setAtomHome`. Nightly `core-render-1` was failing on this since the getter became a promise.
 
 - **HTML autocompletion no longer throws.** `autocomplete-html` called `node.isMissing()`, and tree-sitter 0.25 makes that a boolean, so asking for a suggestion threw and the list stayed empty. Its specs are restored from atom v0.8.8, and `whitespace`'s from v0.37.8. The restore script was choosing those tags with a string compare, which treats `0.37.8` as newer than `0.37.10` and landed on an older CoffeeScript tag.
