@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Build-script stylelint is 17.x.** `stylelint-config-standard` is 40 and LESS uses `postcss-less`, clearing the old flatted / flat-cache / remark / trim highs from stylelint 9. Unused `klaw-sync` is removed so braces / micromatch go with it. Bootstrap-style `//**` comments in `static/chevron-ui` become `// **` so postcss-less can parse them.
 
+- **Build-script `extract-zip` is the Electron-hardened fork.** An override points `@electron/packager` and `electron-mksnapshot` at a small CJS shim over `@electron-internal/extract-zip`, clearing the remaining extract-zip highs. Script Node engines are `>=22.12.0` to match that native module (CI already uses Node 24).
+
 - **Runtime and tool-tree Dependabot criticals are patched.** `dompurify` is 3.4.17 and `shell-quote` is 1.11.0 in the product tree. `cpm` and the update-server lockfiles audit clean. Build-script `simple-git` is 4.x so `@simple-git/argv-parser` is patched, and `electron-mksnapshot` stays on 43.7.9 with the app Electron. A leftover `packages/about/package-lock.json` is gone.
 
 - **The window-event-handler spec constructs the handler with `chevron`.** The rename left `atomEnvironment: atom`. With `window.atom` gone, every example in that file threw `ReferenceError`, and nightly `core-render-2` failed on it.

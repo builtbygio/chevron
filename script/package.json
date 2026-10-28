@@ -2,7 +2,7 @@
   "name": "atom-build-scripts",
   "description": "Atom build scripts",
   "engines": {
-    "node": ">=20 <=24"
+    "node": ">=22.12.0 <=24"
   },
   "dependencies": {
     "@electron/fuses": "^1.8.0",
@@ -11,6 +11,7 @@
     "@electron/packager": "18.4.4",
     "@electron/universal": "2.0.3",
     "@electron/windows-sign": "2.1.0",
+    "@electron-internal/extract-zip": "1.0.1",
     "@octokit/request": "^5.4.5",
     "@playwright/test": "1.63.0",
     "7zip-bin": "^4.0.2",
@@ -59,6 +60,7 @@
     "postinstall": "node ./redownload-electron-bins.js"
   },
   "overrides": {
+    "extract-zip": "file:vendor/extract-zip",
     "minimatch@3": "3.1.4",
     "brace-expansion@1": "1.1.21",
     "brace-expansion@2": "2.1.7",
