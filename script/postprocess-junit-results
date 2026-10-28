@@ -53,7 +53,7 @@ async function postProcessJUnitXML(junitXmlPath) {
     })
   })
 
-  const $ = cheerio.load(original, { xmlMode: true })
+  const $ = cheerio.load(original, { xml: true })
   $('testcase').attr('name', (i, oldName) => `[${friendlyName}] ${oldName}`)
   const modified = $.xml()
 
