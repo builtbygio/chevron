@@ -28,36 +28,41 @@ Recommends: /usr/bin/lsb_release
 %description
 <%= description %>
 
+# Paths under %{_topdir}/BUILD are absolute so %install works when rpmbuild
+# cds into BUILD/%{name}-%{version}-build (rpm 4.20+ / Ubuntu 26 images).
+# create-rpm-package.js still stages the app, icons, desktop entry, and
+# wrappers directly under BUILD/.
+
 %install
 mkdir -p "%{buildroot}/<%= installDir %>/share/<%= appFileName %>/"
-cp -r "<%= appName %>"/* "%{buildroot}/<%= installDir %>/share/<%= appFileName %>/"
+cp -r "%{_topdir}/BUILD/<%= appName %>"/* "%{buildroot}/<%= installDir %>/share/<%= appFileName %>/"
 mkdir -p "%{buildroot}/<%= installDir %>/bin/"
 ln -sf "../share/<%= appFileName %>/resources/app/cpm/bin/cpm" "%{buildroot}/<%= installDir %>/bin/<%= cpmFileName %>"
-cp atom.sh "%{buildroot}/<%= installDir %>/bin/<%= appFileName %>"
+cp "%{_topdir}/BUILD/atom.sh" "%{buildroot}/<%= installDir %>/bin/<%= appFileName %>"
 chmod 755 "%{buildroot}/<%= installDir %>/bin/<%= appFileName %>"
 mkdir -p "%{buildroot}/<%= installDir %>/share/applications/"
-cp "<%= appFileName %>.desktop" "%{buildroot}/<%= installDir %>/share/applications/"
+cp "%{_topdir}/BUILD/<%= appFileName %>.desktop" "%{buildroot}/<%= installDir %>/share/applications/"
 mkdir -p "%{buildroot}/<%= installDir %>/share/polkit-1/actions/"
-cp "<%= policyFileName %>" "%{buildroot}/<%= installDir %>/share/polkit-1/actions/<%= policyFileName %>"
+cp "%{_topdir}/BUILD/<%= policyFileName %>" "%{buildroot}/<%= installDir %>/share/polkit-1/actions/<%= policyFileName %>"
 
 mkdir -p "%{buildroot}/<%= installDir %>/share/icons/hicolor/1024x1024/apps"
-cp "icons/1024.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/1024x1024/apps/<%= appFileName %>.png"
+cp "%{_topdir}/BUILD/icons/1024.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/1024x1024/apps/<%= appFileName %>.png"
 mkdir -p "%{buildroot}/<%= installDir %>/share/icons/hicolor/512x512/apps"
-cp "icons/512.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/512x512/apps/<%= appFileName %>.png"
+cp "%{_topdir}/BUILD/icons/512.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/512x512/apps/<%= appFileName %>.png"
 mkdir -p "%{buildroot}/<%= installDir %>/share/icons/hicolor/256x256/apps"
-cp "icons/256.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/256x256/apps/<%= appFileName %>.png"
+cp "%{_topdir}/BUILD/icons/256.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/256x256/apps/<%= appFileName %>.png"
 mkdir -p "%{buildroot}/<%= installDir %>/share/icons/hicolor/128x128/apps"
-cp "icons/128.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/128x128/apps/<%= appFileName %>.png"
+cp "%{_topdir}/BUILD/icons/128.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/128x128/apps/<%= appFileName %>.png"
 mkdir -p "%{buildroot}/<%= installDir %>/share/icons/hicolor/64x64/apps"
-cp "icons/64.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/64x64/apps/<%= appFileName %>.png"
+cp "%{_topdir}/BUILD/icons/64.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/64x64/apps/<%= appFileName %>.png"
 mkdir -p "%{buildroot}/<%= installDir %>/share/icons/hicolor/48x48/apps"
-cp "icons/48.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/48x48/apps/<%= appFileName %>.png"
+cp "%{_topdir}/BUILD/icons/48.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/48x48/apps/<%= appFileName %>.png"
 mkdir -p "%{buildroot}/<%= installDir %>/share/icons/hicolor/32x32/apps"
-cp "icons/32.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/32x32/apps/<%= appFileName %>.png"
+cp "%{_topdir}/BUILD/icons/32.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/32x32/apps/<%= appFileName %>.png"
 mkdir -p "%{buildroot}/<%= installDir %>/share/icons/hicolor/24x24/apps"
-cp "icons/24.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/24x24/apps/<%= appFileName %>.png"
+cp "%{_topdir}/BUILD/icons/24.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/24x24/apps/<%= appFileName %>.png"
 mkdir -p "%{buildroot}/<%= installDir %>/share/icons/hicolor/16x16/apps"
-cp "icons/16.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/16x16/apps/<%= appFileName %>.png"
+cp "%{_topdir}/BUILD/icons/16.png" "%{buildroot}/<%= installDir %>/share/icons/hicolor/16x16/apps/<%= appFileName %>.png"
 
 %files
 <%= installDir %>/bin/<%= appFileName %>

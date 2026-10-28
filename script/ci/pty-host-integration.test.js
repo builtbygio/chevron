@@ -109,6 +109,13 @@ describe('pty host', () => {
     await waitFor(child, m => m && m.type === 'host-booted');
 
     const id = 'session-missing';
+    // Either an error message or an immediate exit is an answer. Silence is
+    // the failure: main would wait forever and the pane would stay black.
+    // Register before send — a fast host can answer before the listener lands.
+    const answerP = waitFor(
+      child,
+      m => m && (m.type === 'error' || m.type === 'exit') && m.id === id
+    );
     child.send({
       type: 'spawn',
       id,
@@ -118,13 +125,7 @@ describe('pty host', () => {
       cols: 80,
       rows: 24
     });
-
-    // Either an error message or an immediate exit is an answer. Silence is
-    // the failure: main would wait forever and the pane would stay black.
-    const answer = await waitFor(
-      child,
-      m => m && (m.type === 'error' || m.type === 'exit') && m.id === id
-    );
+    const answer = await answerP;
     assert.ok(answer, 'the host said something');
 
     child.kill();
@@ -136,6 +137,10 @@ describe('pty host', () => {
     await waitFor(child, m => m && m.type === 'host-booted');
 
     const id = 'session-resize';
+    const spawned = waitFor(
+      child,
+      m => m && m.type === 'spawned' && m.id === id
+    );
     child.send({
       type: 'spawn',
       id,
@@ -145,7 +150,7 @@ describe('pty host', () => {
       cols: 80,
       rows: 24
     });
-    await waitFor(child, m => m && m.type === 'spawned' && m.id === id);
+    await spawned;
 
     child.send({ type: 'resize', id, cols: 120, rows: 40 });
 
