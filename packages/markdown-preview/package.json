@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
-    "dompurify": "3.4.13",
+    "dompurify": "3.4.17",
     "emoji-images": "^0.1.1",
     "fs-plus": "^3.0.0",
     "marked": "4.3.0",
