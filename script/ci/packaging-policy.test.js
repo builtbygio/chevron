@@ -237,6 +237,28 @@ describe('rpm spec template', () => {
       `spec placeholders with no data: ${missing}`
     );
   });
+
+  it('stages install inputs via %{_topdir}/BUILD for rpm 4.20+ cwd isolation', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const ROOT = path.resolve(__dirname, '..', '..');
+    const spec = fs.readFileSync(
+      path.join(ROOT, 'resources/linux/redhat/atom.spec.in'),
+      'utf8'
+    );
+    assert.match(
+      spec,
+      /%{_topdir}\/BUILD\/<%= appName %>/,
+      'app tree must be copied from absolute BUILD path'
+    );
+    assert.match(spec, /%{_topdir}\/BUILD\/atom\.sh/);
+    assert.match(spec, /%{_topdir}\/BUILD\/icons\//);
+    assert.doesNotMatch(
+      spec,
+      /^\s*cp -r "<%= appName %>"\/\*/m,
+      'relative BUILD paths break when rpmbuild cds into name-version-build'
+    );
+  });
 });
 
 describe('isForeignPlatformNativePath', () => {
