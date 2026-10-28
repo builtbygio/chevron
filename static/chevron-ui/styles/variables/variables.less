@@ -29,13 +29,13 @@
 //
 //## Settings for some of the most global styles.
 
-//** Background color for `<body>`.
+// ** Background color for `<body>`.
 @body-bg:               @app-background-color;
-//** Global textual link color.
+// ** Global textual link color.
 @link-color:            @brand-primary;
-//** Link hover color set via `darken()` function.
+// ** Link hover color set via `darken()` function.
 @link-hover-color:      darken(@link-color, 15%);
-//** Link hover decoration.
+// ** Link hover decoration.
 @link-hover-decoration: underline;
 
 
@@ -43,16 +43,16 @@
 //
 //## Font, line-height, and color for body text, headings, and more.
 
-//** Default monospace fonts for `<code>`, `<kbd>`, and `<pre>`.
+// ** Default monospace fonts for `<code>`, `<kbd>`, and `<pre>`.
 @font-family-monospace:   Menlo, Monaco, Consolas, "Courier New", monospace;
 
 @font-size-base:          @font-size;
 @font-size-large:         ceil((@font-size-base * 1.25)); // ~18px
 @font-size-small:         ceil((@font-size-base * 0.85)); // ~12px
 
-//** Unit-less `line-height` for use in components like buttons.
+// ** Unit-less `line-height` for use in components like buttons.
 @line-height-base:        1.428571429; // 20/14
-//** Computed "line-height" (`font-size` * `line-height`) for use with `margin`, `padding`, etc.
+// ** Computed "line-height" (`font-size` * `line-height`) for use with `margin`, `padding`, etc.
 @line-height-computed:    floor((@font-size-base * @line-height-base)); // ~20px
 
 
@@ -79,14 +79,14 @@
 @border-radius-large:       6px;
 @border-radius-small:       3px;
 
-//** Global color for active items (e.g., navs or dropdowns).
+// ** Global color for active items (e.g., navs or dropdowns).
 @component-active-color:    #fff;
-//** Global background color for active items (e.g., navs or dropdowns).
+// ** Global background color for active items (e.g., navs or dropdowns).
 @component-active-bg:       @brand-primary;
 
-//** Width of the `border` for generating carets that indicator dropdowns.
+// ** Width of the `border` for generating carets that indicator dropdowns.
 @caret-width-base:          4px;
-//** Carets increase slightly in size for larger components.
+// ** Carets increase slightly in size for larger components.
 @caret-width-large:         5px;
 
 
@@ -155,29 +155,29 @@
 //
 // ##
 
-//** Background color on `.list-group-item`
+// ** Background color on `.list-group-item`
 @list-group-bg:                 #fff;
-//** `.list-group-item` border color
+// ** `.list-group-item` border color
 @list-group-border:             #ddd;
-//** List group border radius
+// ** List group border radius
 @list-group-border-radius:      @border-radius-base;
 
-//** Background color of single list items on hover
+// ** Background color of single list items on hover
 @list-group-hover-bg:           #f5f5f5;
-//** Text color of active list items
+// ** Text color of active list items
 @list-group-active-color:       @component-active-color;
-//** Background color of active list items
+// ** Background color of active list items
 @list-group-active-bg:          @component-active-bg;
-//** Border color of active list elements
+// ** Border color of active list elements
 @list-group-active-border:      @list-group-active-bg;
-//** Text color for content within active list items
+// ** Text color for content within active list items
 @list-group-active-text-color:  lighten(@list-group-active-bg, 40%);
 
-//** Text color of disabled list items
+// ** Text color of disabled list items
 @list-group-disabled-color:      @gray-light;
-//** Background color of disabled list items
+// ** Background color of disabled list items
 @list-group-disabled-bg:         @gray-lighter;
-//** Text color for content within disabled list items
+// ** Text color for content within disabled list items
 @list-group-disabled-text-color: @list-group-disabled-color;
 
 @list-group-link-color:         #555;
@@ -189,13 +189,13 @@
 //
 //##
 
-//** Padding around the thumbnail image
+// ** Padding around the thumbnail image
 @thumbnail-padding:           4px;
-//** Thumbnail background color
+// ** Thumbnail background color
 @thumbnail-bg:                @body-bg;
-//** Thumbnail border color
+// ** Thumbnail border color
 @thumbnail-border:            #ddd;
-//** Thumbnail border radius
+// ** Thumbnail border radius
 @thumbnail-border-radius:     @border-radius-base;
 
 
@@ -203,23 +203,23 @@
 //
 //##
 
-//** Horizontal offset for forms and lists.
+// ** Horizontal offset for forms and lists.
 @component-offset-horizontal: 180px;
-//** Text muted color
+// ** Text muted color
 @text-muted:                  @gray-light;
-//** Abbreviations and acronyms border color
+// ** Abbreviations and acronyms border color
 @abbr-border-color:           @gray-light;
-//** Headings small color
+// ** Headings small color
 @headings-small-color:        @gray-light;
-//** Blockquote small color
+// ** Blockquote small color
 @blockquote-small-color:      @gray-light;
-//** Blockquote font size
+// ** Blockquote font size
 @blockquote-font-size:        (@font-size-base * 1.25);
-//** Blockquote border color
+// ** Blockquote border color
 @blockquote-border-color:     @gray-lighter;
-//** Page header border color
+// ** Page header border color
 @page-header-border-color:    @gray-lighter;
-//** Horizontal line color.
+// ** Horizontal line color.
 @hr-border:                   @gray-lighter;
 
 
@@ -227,5 +227,5 @@
 //
 //##
 
-//** Disabled cursor for form controls and buttons.
+// ** Disabled cursor for form controls and buttons.
 @cursor-disabled: not-allowed;
