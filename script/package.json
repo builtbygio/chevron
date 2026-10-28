@@ -12,7 +12,7 @@
     "@electron/universal": "2.0.3",
     "@electron/windows-sign": "2.1.0",
     "@electron-internal/extract-zip": "1.0.1",
-    "@octokit/request": "^5.4.5",
+    "@octokit/request": "9.2.4",
     "@playwright/test": "1.63.0",
     "7zip-bin": "^4.0.2",
     "electron-builder": "26.15.3",
@@ -52,9 +52,8 @@
     "stylelint": "17.16.0",
     "stylelint-config-standard": "40.0.0",
     "terser": "4.8.1",
-    "webdriverio": "^5.9.2",
     "ws": "^8.0.0",
-    "yargs": "4.8.1"
+    "yargs": "17.7.3"
   },
   "scripts": {
     "postinstall": "node ./redownload-electron-bins.js"
@@ -110,6 +109,6 @@
     "js-yaml@4": "4.3.2",
     "source-map-js": "1.2.2",
     "@xmldom/xmldom": "0.9.12",
-    "ip-address": "10.7.1"
+    "ip-address": "10.7.5"
   }
 }
