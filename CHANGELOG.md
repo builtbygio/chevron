@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Runtime and tool-tree Dependabot criticals are patched.** `dompurify` is 3.4.17 and `shell-quote` is 1.11.0 in the product tree. `cpm` and the update-server lockfiles audit clean. Build-script `simple-git` is 4.x so `@simple-git/argv-parser` is patched, and `electron-mksnapshot` stays on 43.7.9 with the app Electron. A leftover `packages/about/package-lock.json` is gone.
+
 - **The window-event-handler spec constructs the handler with `chevron`.** The rename left `atomEnvironment: atom`. With `window.atom` gone, every example in that file threw `ReferenceError`, and nightly `core-render-2` failed on it.
 
 - **The portable-home spec no longer loses to the suite's launch environment.** `app.getPath` yields, and the spec window writes the launch `ATOM_HOME` (the suite's temp directory) on that turn. The example now sets the env it cares about after that write, in the same turn as `setAtomHome`. Nightly `core-render-1` was failing on this since the getter became a promise.

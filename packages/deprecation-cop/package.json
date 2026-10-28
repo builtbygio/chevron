@@ -13,7 +13,7 @@
     "etch": "^0.14.1",
     "fs-plus": "^3.0.0",
     "grim": "^2.0.1",
-    "dompurify": "3.4.13",
+    "dompurify": "3.4.17",
     "marked": "4.3.0",
     "underscore-plus": "^1.7.0"
   },
