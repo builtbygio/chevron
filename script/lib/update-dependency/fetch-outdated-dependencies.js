@@ -1,5 +1,8 @@
+const { spawnSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 const fetch = require('node-fetch');
-const npmCheck = require('npm-check');
+const semver = require('semver');
 
 // this may be updated to use github releases instead
 const apm = async function({ dependencies, packageDependencies }) {
@@ -46,26 +49,43 @@ const npm = async function(cwd) {
   try {
     console.log('Checking npm registry...', cwd);
 
-    const currentState = await npmCheck({
-      cwd,
-      ignoreDev: true,
-      skipUnused: true
-    });
+    const result = spawnSync(
+      'npm',
+      ['outdated', '--json', '--omit=dev'],
+      { cwd, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
+    );
+    // npm outdated exits 1 when anything is outdated; still prints JSON on stdout.
+    const raw = result.stdout && result.stdout.trim();
+    if (!raw) {
+      if (result.status !== 0 && result.stderr) {
+        throw new Error(result.stderr.trim() || `npm outdated exited ${result.status}`);
+      }
+      console.log('0 outdated package(s) found');
+      return [];
+    }
 
-    const outdatedPackages = currentState
-      .get('packages')
-      .filter(p => {
-        if (p.packageJson && p.latest && p.installed) {
-          return p.latest > p.installed;
-        }
+    const outdated = JSON.parse(raw);
+    const packageJsonPath = path.join(cwd, 'package.json');
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    const declared = packageJson.dependencies || {};
+
+    const outdatedPackages = Object.keys(outdated)
+      .map(moduleName => {
+        const info = outdated[moduleName];
+        const installed = info.current;
+        const latest = info.latest;
+        if (!installed || !latest) return null;
+        if (!semver.valid(installed) || !semver.valid(latest)) return null;
+        if (!semver.gt(latest, installed)) return null;
+        return {
+          packageJson: declared[moduleName] || installed,
+          installed,
+          moduleName,
+          latest,
+          isCorePackage: false
+        };
       })
-      .map(({ packageJson, installed, moduleName, latest }) => ({
-        packageJson,
-        installed,
-        moduleName,
-        latest,
-        isCorePackage: false
-      }));
+      .filter(Boolean);
 
     console.log(`${outdatedPackages.length} outdated package(s) found`);
 
