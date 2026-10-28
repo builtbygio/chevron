@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Build-script `cheerio` is 1.2.0.** Clears the old `css-select` / `nth-check` highs; JUnit post-processing uses cheerio's `xml: true` load option.
 
+- **Watcher’s `shell-quote` override matches its direct pin (1.11.0).** Windows was failing the `@atom/watcher` rebuild with `EOVERRIDE`. The redundant root `dugite>tar` override key is gone too; nested `dugite.tar` stays, so license-checker can parse `package.json` overrides.
+
 - **Runtime and tool-tree Dependabot criticals are patched.** `dompurify` is 3.4.17 and `shell-quote` is 1.11.0 in the product tree. `cpm` and the update-server lockfiles audit clean. Build-script `simple-git` is 4.x so `@simple-git/argv-parser` is patched, and `electron-mksnapshot` stays on 43.7.9 with the app Electron. A leftover `packages/about/package-lock.json` is gone.
 
 - **The window-event-handler spec constructs the handler with `chevron`.** The rename left `atomEnvironment: atom`. With `window.atom` gone, every example in that file threw `ReferenceError`, and nightly `core-render-2` failed on it.
