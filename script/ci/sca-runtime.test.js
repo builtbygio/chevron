@@ -31,14 +31,14 @@ describe('runtime SCA declarations', () => {
   const pkg = readJson('package.json');
 
   it('root overrides pin marked, DOMPurify, and dugite tar', () => {
-    assert.strictEqual(pkg.overrides.dompurify, '3.4.13');
+    assert.strictEqual(pkg.overrides.dompurify, '3.4.17');
     assert.strictEqual(pkg.overrides.marked, '4.3.0');
     assert.strictEqual(pkg.overrides.dugite.tar, '7.5.21');
   });
 
   it('deprecation-cop declares the same marked / DOMPurify', () => {
     const cop = readJson('packages/deprecation-cop/package.json');
-    assert.strictEqual(cop.dependencies.dompurify, '3.4.13');
+    assert.strictEqual(cop.dependencies.dompurify, '3.4.17');
     assert.strictEqual(cop.dependencies.marked, '4.3.0');
   });
 
