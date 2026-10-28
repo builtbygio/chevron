@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const checker = require('license-checker-rseidelsohn');
 
 const licenseOverrides = require('../license-overrides');
 const CONFIG = require('../config');
@@ -49,6 +48,9 @@ function isBuildToolPackage(packagePath, root) {
 }
 
 module.exports = function() {
+  // Lazy-load: unit-and-cpm runs get-license-text helper tests without
+  // installing script/node_modules (same pattern as mac-universal.test.js).
+  const checker = require('license-checker-rseidelsohn');
   return new Promise((resolve, reject) => {
     checker.init(
       {
