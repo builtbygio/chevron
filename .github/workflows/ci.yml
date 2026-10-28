@@ -277,6 +277,7 @@ jobs:
           node --test script/ci/ozone-platform.test.js
           node --test script/ci/theme-variants.test.js
           node --test script/ci/mac-universal.test.js
+          node --test script/ci/get-license-text.test.js
           node --test script/ci/module-cache-determinism.test.js
           node --test script/ci/update-config.test.js
           node --test script/ci/auto-update-manager.test.js

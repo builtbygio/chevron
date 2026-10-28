@@ -340,6 +340,19 @@ function equaliseUnpacked(x64AppPath, arm64AppPath) {
   return diff;
 }
 
+// LICENSE.md is generated at package time from the host's dependency tree.
+// Optional natives can make the two arch builds diverge; @electron/universal
+// then refuses the merge. Prefer the x64 text so both sides match.
+function equaliseLicenseMd(x64AppPath, arm64AppPath) {
+  const rel = path.join('Contents', 'Resources', 'LICENSE.md');
+  const x64 = path.join(x64AppPath, rel);
+  const arm64 = path.join(arm64AppPath, rel);
+  if (!fs.existsSync(x64) || !fs.existsSync(arm64)) return false;
+  if (sameBytes(fs.readFileSync(x64), fs.readFileSync(arm64))) return false;
+  fs.copyFileSync(x64, arm64);
+  return true;
+}
+
 // Every Mach-O the merge must have made fat: the app binary, the Electron
 // framework, each helper, and every native module the packaged app loads.
 // Per-arch prebuild folders and ctags-darwin are thin by design and skipped.
@@ -477,6 +490,9 @@ async function makeMacUniversal({
     }
 
     const diff = equaliseUnpacked(stagedX64, stagedArm64);
+    if (equaliseLicenseMd(stagedX64, stagedArm64)) {
+      log('Equalised Contents/Resources/LICENSE.md from the x64 build');
+    }
     preflight(stagedX64, stagedArm64);
     log(
       `Unpacked files copied across: ${
@@ -537,6 +553,7 @@ module.exports = {
   listFiles,
   unpackedDifferences,
   equaliseUnpacked,
+  equaliseLicenseMd,
   machOToVerify,
   verifyUniversal,
   makeMacUniversal,

@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Build-script stylelint is 17.x.** `stylelint-config-standard` is 40 and LESS uses `postcss-less`, clearing the old flatted / flat-cache / remark / trim highs from stylelint 9. Unused `klaw-sync` is removed so braces / micromatch go with it. Bootstrap-style `//**` comments in `static/chevron-ui` become `// **` so postcss-less can parse them.
 
-- **Build-script `extract-zip` is the Electron-hardened fork.** An override points `@electron/packager` and `electron-mksnapshot` at a small CJS shim over `@electron-internal/extract-zip`, clearing the remaining extract-zip highs. Script Node engines are `>=22.12.0` to match that native module (CI already uses Node 24).
+- **Build-script `extract-zip` is the Electron-hardened fork.** An override points `@electron/packager` and `electron-mksnapshot` at a small CJS shim over `@electron-internal/extract-zip`, clearing the remaining extract-zip highs. Script Node engines are `>=22.12.0` to match that native module (CI already uses Node 24). Bundled `LICENSE.md` paths are repo-relative and the universal merge equalises that file across arch builds, so `@electron/universal` no longer fails on a SHA mismatch.
 
 - **Watcher’s `shell-quote` override matches its direct pin (1.11.0).** Windows was failing the `@atom/watcher` rebuild with `EOVERRIDE`. The redundant root `dugite>tar` override key is gone too; nested `dugite.tar` stays, so license-checker can parse `package.json` overrides.
 
