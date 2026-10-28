@@ -99,6 +99,35 @@ describe('unpackedDifferences', () => {
   });
 });
 
+describe('equaliseLicenseMd', () => {
+  it('copies the x64 LICENSE.md over a divergent arm64 copy', () => {
+    const root = makeTempDir('chevron-universal-license-');
+    const x64 = path.join(root, 'x64.app');
+    const arm64 = path.join(root, 'arm64.app');
+    for (const app of [x64, arm64]) {
+      fs.mkdirSync(path.join(app, 'Contents', 'Resources'), { recursive: true });
+    }
+    fs.writeFileSync(
+      path.join(x64, 'Contents', 'Resources', 'LICENSE.md'),
+      'x64-license\n'
+    );
+    fs.writeFileSync(
+      path.join(arm64, 'Contents', 'Resources', 'LICENSE.md'),
+      'arm64-license\n'
+    );
+
+    assert.equal(universal.equaliseLicenseMd(x64, arm64), true);
+    assert.equal(
+      fs.readFileSync(
+        path.join(arm64, 'Contents', 'Resources', 'LICENSE.md'),
+        'utf8'
+      ),
+      'x64-license\n'
+    );
+    assert.equal(universal.equaliseLicenseMd(x64, arm64), false);
+  });
+});
+
 describe('equaliseUnpacked', () => {
   it('copies the per-arch prebuilds across so both bundles list the same files', () => {
     const root = makeTempDir('chevron-universal-test-');

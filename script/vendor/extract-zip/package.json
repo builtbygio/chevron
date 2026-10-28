@@ -1,0 +1,12 @@
+{
+  "name": "extract-zip",
+  "version": "2.0.2-chevron.1",
+  "description": "CJS shim over @electron-internal/extract-zip for electron-mksnapshot / packager.",
+  "main": "index.js",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@electron-internal/extract-zip": "1.0.1"
+  }
+}
