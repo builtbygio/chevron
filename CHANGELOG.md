@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **A task pane keeps the tail of its output across a reload.** The shell itself is gone with the window. The pane comes back named for the task, with the last 16KB of what that run printed, and a new shell in the same directory. The command is not run again.
 
+- **`require('chevron')` exposes popup menus and utility workers.** `Menu`, `MenuItem` and `openUtilityWorkerWindow` come from the package API in the renderer, so owned packages do not go through `electron.remote` for those.
+
 ### Fixed
 
 - **Build-script Dependabot highs from pins and overrides are reduced.** `lodash.template` is 4.18.1, `terser` is 4.8.1 (same sync minify API as before), `brace-expansion@2` is 2.1.7, and `http-cache-semantics` is 4.3.0.
@@ -44,6 +46,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **HTML autocompletion no longer throws.** `autocomplete-html` called `node.isMissing()`, and tree-sitter 0.25 makes that a boolean, so asking for a suggestion threw and the list stayed empty. Its specs are restored from atom v0.8.8, and `whitespace`'s from v0.37.8. The restore script was choosing those tags with a string compare, which treats `0.37.8` as newer than `0.37.10` and landed on an older CoffeeScript tag.
 
 ### Changed
+
+- **The github package no longer uses `electron.remote`.** Staging, conflict, review and issueish menus take `Menu` / `MenuItem` from `require('chevron')`, git workers open through `openUtilityWorkerWindow`, and headless detection uses `chevron.getCurrentWindow().isVisible()`. `remote-compat` remains the implementation behind those exports and the preload `electron.remote` assignment.
+
+- **OS appearance no longer uses a `nativeTheme` sendSync pull.** Window `loadSettings` carries `nativeTheme.shouldUseDarkColors`, and later changes still arrive on `chevron:did-change-native-theme`. The unused `chevron:utility-worker-enabled-sync` channel is gone too. Clipboard, sync confirm, boot settings and FS IPC stay synchronous.
 
 - **The remaining first-party Atom names in the editor are Chevron names.** Notifications use `chevron-notification` and `chevron-notifications`. The GitHub editor wrappers live in `lib/chevron`. The base sheet is `static/chevron.less`, the component library is `static/chevron-ui`, and a theme's `styles/ui.less` replaces `styles/atom.less`. Stylesheets scoped to the editor are named `*.chevron-text-editor.less`, which is the context the editor asks for. `atom-select-list`, `atom-keymap`, and the `AtomEnvironments` IndexedDB name are unchanged. The macOS `NSPrincipalClass` stays `AtomApplication`.
 

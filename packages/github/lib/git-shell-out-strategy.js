@@ -54,7 +54,7 @@ let headlessPromise = null;
 
 function whenHeadless() {
   if (!headlessPromise) {
-    headlessPromise = require('electron').remote.getCurrentWindow().isVisible().then(visible => !visible);
+    headlessPromise = chevron.getCurrentWindow().isVisible().then(visible => !visible);
   }
   return headlessPromise;
 }

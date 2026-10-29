@@ -13,7 +13,6 @@ const {
   clipboard,
   dialog,
   ipcMain,
-  nativeTheme,
   screen,
   shell,
   app,
@@ -274,14 +273,6 @@ function validateJumpList(categories) {
   return { ok: true };
 }
 
-function nativeThemeSnapshot() {
-  return {
-    shouldUseDarkColors: !!nativeTheme.shouldUseDarkColors,
-    shouldUseHighContrastColors: !!nativeTheme.shouldUseHighContrastColors,
-    themeSource: nativeTheme.themeSource
-  };
-}
-
 function settingsViewCacheRoot() {
   return path.join(app.getPath('userData'), 'Cache', 'settings-view');
 }
@@ -513,13 +504,8 @@ module.exports = function registerRendererIpc(atomApplication) {
 
   // --- Screen / systemPreferences / shell / app (P1/P2) ---------------------
 
-  // Read-only view of Electron's nativeTheme, for core.followSystemTheme.
-  // Changes are pushed on chevron:did-change-native-theme (chevron-application).
-  ipcMain.on('chevron:native-theme-sync', event => {
-    event.returnValue = nativeThemeSnapshot();
-  });
-
-  ipcMain.handle('chevron:native-theme', () => nativeThemeSnapshot());
+  // nativeTheme for follow-system-theme is seeded on window loadSettings and
+  // pushed on chevron:did-change-native-theme. No renderer pull channel.
 
   ipcMain.handle('chevron:get-primary-display-work-area-size', () => {
     try {
@@ -841,10 +827,6 @@ module.exports = function registerRendererIpc(atomApplication) {
   });
 
   // --- utilityProcess workers (Phase S3 / #61) ------------------------------
-
-  ipcMain.on('chevron:utility-worker-enabled-sync', event => {
-    event.returnValue = packageUtilityWorker.isEnabled();
-  });
 
   ipcMain.handle('chevron:utility-worker-capabilities', () => {
     return {

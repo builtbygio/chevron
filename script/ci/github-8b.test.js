@@ -186,4 +186,41 @@ describe('github 8B React 18 (inbox stays)', () => {
     assert.doesNotMatch(dir, /electron\.remote|_electron\.remote/);
     assert.doesNotMatch(timings, /electron\.remote|_electron\.remote/);
   });
+
+  it('does not use electron.remote anywhere under lib/', () => {
+    // Menus, utility workers and isVisible go through require('chevron') /
+    // chevron.getCurrentWindow. remote-compat remains the implementation.
+    const libRoot = path.join(GITHUB, 'lib');
+    const offenders = [];
+    function walk(dir) {
+      for (const name of fs.readdirSync(dir)) {
+        const full = path.join(dir, name);
+        const st = fs.statSync(full);
+        if (st.isDirectory()) {
+          walk(full);
+          continue;
+        }
+        if (!name.endsWith('.js')) continue;
+        const src = fs.readFileSync(full, 'utf8');
+        if (/electron\.remote|require\(['"]electron['"]\)\.remote/.test(src)) {
+          offenders.push(path.relative(GITHUB, full));
+        }
+      }
+    }
+    walk(libRoot);
+    assert.deepEqual(
+      offenders,
+      [],
+      `electron.remote still used in:\n${offenders.join('\n')}`
+    );
+  });
+
+  it('takes Menu and utility workers from require("chevron")', () => {
+    const staging = read('lib/views/staging-view.js');
+    const worker = read('lib/worker-manager.js');
+    assert.match(staging, /require\(["']chevron["']\)/);
+    assert.doesNotMatch(staging, /electron['"]\)\.remote/);
+    assert.match(worker, /openUtilityWorkerWindow/);
+    assert.doesNotMatch(worker, /BrowserWindow/);
+  });
 });

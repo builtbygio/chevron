@@ -1,8 +1,11 @@
 'use strict';
 
 /**
- * Full electron.remote compatibility for Chevron packages (esp. github)
- * without @electron/remote. Built on renderer-ipc + main-process helpers.
+ * electron.remote compatibility shim without @electron/remote.
+ * Built on renderer-ipc + main-process helpers. Owned packages (github)
+ * should prefer require('chevron').Menu / MenuItem / openUtilityWorkerWindow
+ * and chevron.getCurrentWindow(); this module remains the implementation and
+ * the value assigned to electron.remote in preload.
  */
 
 const { ipcRenderer } = require('electron');

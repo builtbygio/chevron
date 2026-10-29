@@ -43,6 +43,30 @@ if (process.type === 'renderer') {
   // `Task` was removed in Wave 3: no first-party caller and no owned pin used
   // it. Run work in a utilityProcess worker instead (see docs/process/security-phase-s.md).
   chevronExport.TextEditor = require('../src/text-editor');
+
+  // Popup menus and utilityProcess workers used to go through electron.remote.
+  // Packages take them from require('chevron') instead; remote-compat stays as
+  // the implementation and as the electron.remote assignment in preload.
+  Object.defineProperties(chevronExport, {
+    Menu: {
+      enumerable: true,
+      get() {
+        return require('../src/remote-compat').Menu;
+      }
+    },
+    MenuItem: {
+      enumerable: true,
+      get() {
+        return require('../src/remote-compat').MenuItem;
+      }
+    },
+    openUtilityWorkerWindow: {
+      enumerable: true,
+      get() {
+        return require('../src/remote-compat').BrowserWindow.open;
+      }
+    }
+  });
 }
 
 module.exports = chevronExport;

@@ -131,10 +131,14 @@ module.exports = class ApplicationDelegate {
     return ipcHelpers.on(ipcRenderer, 'did-leave-full-screen', callback);
   }
 
-  // Electron's nativeTheme lives in main; this is its shouldUseDarkColors.
+  // Electron's nativeTheme lives in main. The first value is in loadSettings;
+  // later values arrive on chevron:did-change-native-theme (no sendSync).
   shouldUseDarkColors() {
-    const theme = rendererIpc.getNativeTheme();
-    return !!(theme && theme.shouldUseDarkColors);
+    if (!this._nativeTheme) {
+      const settings = this.getWindowLoadSettings() || {};
+      this._nativeTheme = settings.nativeTheme || { shouldUseDarkColors: false };
+    }
+    return !!this._nativeTheme.shouldUseDarkColors;
   }
 
   // The callback receives `{ shouldUseDarkColors }` whenever the OS
@@ -143,7 +147,10 @@ module.exports = class ApplicationDelegate {
     return ipcHelpers.on(
       ipcRenderer,
       'chevron:did-change-native-theme',
-      (_event, theme) => callback(theme)
+      (_event, theme) => {
+        this._nativeTheme = theme;
+        callback(theme);
+      }
     );
   }
 

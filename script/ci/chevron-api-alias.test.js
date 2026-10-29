@@ -32,6 +32,12 @@ describe('chevron package API exports', () => {
       chevronSrc.includes('BufferedProcess') && chevronSrc.includes('Emitter'),
       'chevron.js should export core package API symbols'
     );
+    assert.ok(
+      chevronSrc.includes('Menu') &&
+        chevronSrc.includes('MenuItem') &&
+        chevronSrc.includes('openUtilityWorkerWindow'),
+      'renderer exports include Menu / MenuItem / openUtilityWorkerWindow'
+    );
   });
 
   it('initialize-application-window sets global.chevron and no atom alias', () => {

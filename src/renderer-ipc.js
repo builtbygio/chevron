@@ -169,14 +169,6 @@ module.exports = {
     return ipcRenderer.invoke('chevron:show-save-dialog', options);
   },
 
-  getNativeTheme() {
-    return ipcRenderer.sendSync('chevron:native-theme-sync');
-  },
-
-  getNativeThemeAsync() {
-    return ipcRenderer.invoke('chevron:native-theme');
-  },
-
   getPrimaryDisplayWorkAreaSizeAsync() {
     return ipcRenderer.invoke('chevron:get-primary-display-work-area-size');
   },
