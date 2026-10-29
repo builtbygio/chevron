@@ -45,11 +45,23 @@ describe('no-server notice', () => {
     assert.match(src, /Chevron Lsp: Trust Project/);
   });
 
+  it('defers the notice so a late register can cancel it', () => {
+    assert.match(src, /scheduleNoServerNotice/);
+    assert.match(src, /pendingNoServerTimers/);
+    assert.match(src, /noServerNoticeDelayMs/);
+  });
+
   it('the scopes it recommended are indeed built in', () => {
     // If a scope ever leaves the built-in table, the notice could fire for it
     // and naming a package would become correct again.
     const builtins = fs.readFileSync(BUILTINS, 'utf8');
-    for (const scope of ['source.ts', 'source.python', 'source.rust']) {
+    for (const scope of [
+      'source.ts',
+      'source.python',
+      'source.rust',
+      'source.gfm',
+      'source.json'
+    ]) {
       assert.ok(
         builtins.includes(`'${scope}'`),
         `${scope} is expected in the built-in table`
@@ -68,5 +80,12 @@ describe('the notice offers a way to act', () => {
     assert.match(body, /buttons:\s*\[/);
     assert.match(body, /text: 'Install packages'/);
     assert.match(body, /settings-view:install-packages-and-themes/);
+  });
+
+  it('does not toast on idle shutdown', () => {
+    assert.doesNotMatch(
+      ui,
+      /Language server idle-stopped/
+    );
   });
 });

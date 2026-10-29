@@ -32,7 +32,7 @@ module.exports = {
     try {
       registration = lsp.registerServer({
         id: 'harper-ls',
-        scopes: ['source.gfm', 'text.plain'],
+        scopes: ['source.gfm', 'text.plain', 'text.plain.null-grammar'],
         command: BIN,
         args: ['--stdio']
       });

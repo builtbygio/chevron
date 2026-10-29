@@ -109,6 +109,24 @@ const OPTIONAL_SERVER_PACKAGES = [
     bins: [path.join('server', 'bin', CLANGD_EXE)],
     scopes: ['source.c', 'source.cpp', 'source.objc', 'source.objcpp'],
     args: []
+  },
+  // Markdown / plain text and JSON were only registered via consumeLsp on the
+  // optional package. That runs after open editors have already asked for a
+  // server, so Install-panel installs still looked "missing". Discover them
+  // the same way as typescript / pyright / clangd.
+  {
+    id: 'harper-ls',
+    packageName: 'chevron-lsp-markdown',
+    bins: ['bin/harper-ls'],
+    scopes: ['source.gfm', 'text.plain', 'text.plain.null-grammar'],
+    args: ['--stdio']
+  },
+  {
+    id: 'vscode-json',
+    packageName: 'chevron-lsp-json',
+    bins: [path.join('node_modules', '.bin', 'vscode-json-languageserver')],
+    scopes: ['source.json'],
+    args: ['--stdio']
   }
 ];
 
