@@ -13,8 +13,7 @@ const argv = require('yargs')
     describe:
       'Skip main process tests if they would otherwise run on your platform',
     boolean: true,
-    default: false,
-    conflicts: 'core-main'
+    default: false
   })
   .option('core-renderer', {
     describe: 'Run core renderer process tests',
@@ -43,6 +42,16 @@ const argv = require('yargs')
     describe: 'Run bundled package specs',
     boolean: true,
     default: false
+  })
+  // yargs 17 treats default:false as "set", so option-level `conflicts` rejects
+  // a bare ./script/test. Enforce mutual exclusion only when both are true.
+  .check(args => {
+    if (args.coreMain && args.skipMain) {
+      throw new Error(
+        'Arguments skip-main and core-main are mutually exclusive'
+      );
+    }
+    return true;
   })
   .help().argv;
 
@@ -461,7 +470,7 @@ function requestedTestSuites(platform) {
       coreRenderer: argv.coreRenderer,
       package: argv.package,
       coreBenchmark: argv.coreBenchmark,
-      skipMainProcessTests: argv.skipMainProcessTests
+      skipMainProcessTests: argv.skipMain
     },
     suites: {
       coreMain: runCoreMainProcessTests,

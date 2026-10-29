@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Linux RPM packaging works on Ubuntu 26 / rpm 4.20+.** `%install` in `atom.spec.in` copies from `%{_topdir}/BUILD/...` instead of relative paths, so rpmbuild’s isolated `BUILD/<name>-<version>-build` cwd no longer misses the staged app.
 
+- **`./script/test` parses again under yargs 17.** Option-level `conflicts` between `--skip-main` and `--core-main` treated both `default: false` flags as set. Mutual exclusion is checked only when both are true, and `--skip-main` is wired through to suite selection.
+
 - **Watcher’s `shell-quote` override matches its direct pin (1.11.0).** Windows was failing the `@atom/watcher` rebuild with `EOVERRIDE`. The redundant root `dugite>tar` override key is gone too; nested `dugite.tar` stays, so license-checker can parse `package.json` overrides.
 
 - **Runtime and tool-tree Dependabot criticals are patched.** `dompurify` is 3.4.17 and `shell-quote` is 1.11.0 in the product tree. `cpm` and the update-server lockfiles audit clean. Build-script `simple-git` is 4.x so `@simple-git/argv-parser` is patched, and `electron-mksnapshot` stays on 43.7.9 with the app Electron. A leftover `packages/about/package-lock.json` is gone.
