@@ -73,9 +73,12 @@ before(async () => {
   delete require.cache[INDEX];
   global.chevron = chevronStub;
   lsp = require(INDEX);
+  // Tests assert the deferred notice; keep it short.
+  lsp._internals.setNoServerNoticeDelayMs(40);
   lsp.activate();
-  // Let the editor sweep run: it finds no registration for source.gfm.
-  await new Promise(resolve => setTimeout(resolve, 50));
+  // Let the editor sweep run: it finds no registration for source.gfm,
+  // then the deferred notice fires.
+  await new Promise(resolve => setTimeout(resolve, 80));
 });
 
 after(() => {

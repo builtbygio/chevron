@@ -338,9 +338,8 @@ module.exports = {
               { dismissable: true }
             );
           } else if (msg.reason === 'idle') {
-            e.notifications.addInfo(
-              `Language server idle-stopped (${msg.serverId}). Re-open a file to start again.`
-            );
+            // Quiet on purpose: idle shutdown is normal. The next edit or
+            // file open starts the server again via ensureServerForEditor.
           }
         })
       );

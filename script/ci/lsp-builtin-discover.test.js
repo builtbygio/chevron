@@ -56,4 +56,48 @@ describe('optional chevron-lsp-* discovery', () => {
     assert.strictEqual(ts.source, 'builtin');
     assert.ok(ts.command.includes('chevron-lsp-typescript'));
   });
+
+  it('discovers harper-ls and vscode-json the same way', () => {
+    for (const id of ['harper-ls', 'vscode-json']) {
+      assert.ok(
+        OPTIONAL_SERVER_PACKAGES.some(s => s.id === id),
+        `${id} must be in OPTIONAL_SERVER_PACKAGES so Install-panel installs ` +
+          'are found without waiting on consumeLsp'
+      );
+    }
+
+    const mdBin = path.join(
+      tmp,
+      'packages',
+      'chevron-lsp-markdown',
+      'bin'
+    );
+    fs.mkdirSync(mdBin, { recursive: true });
+    const harper = path.join(mdBin, 'harper-ls');
+    fs.writeFileSync(harper, '#!/bin/sh\nexit 0\n');
+    fs.chmodSync(harper, 0o755);
+
+    const jsonBin = path.join(
+      tmp,
+      'packages',
+      'chevron-lsp-json',
+      'node_modules',
+      '.bin'
+    );
+    fs.mkdirSync(jsonBin, { recursive: true });
+    const jsonLs = path.join(jsonBin, 'vscode-json-languageserver');
+    fs.writeFileSync(jsonLs, '#!/bin/sh\nexit 0\n');
+    fs.chmodSync(jsonLs, 0o755);
+
+    const regs = resolveBuiltinRegistrations({});
+    const prose = regs.find(r => r.id === 'harper-ls');
+    assert.ok(prose, 'harper-ls registration missing');
+    assert.ok(prose.scopes.includes('source.gfm'));
+    assert.ok(prose.scopes.includes('text.plain.null-grammar'));
+    assert.ok(prose.command.includes('chevron-lsp-markdown'));
+
+    const json = regs.find(r => r.id === 'vscode-json');
+    assert.ok(json, 'vscode-json registration missing');
+    assert.ok(json.command.includes('chevron-lsp-json'));
+  });
 });

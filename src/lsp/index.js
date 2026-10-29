@@ -101,6 +101,10 @@ const MAX_LATENCY_SAMPLES = 200;
 let lastNotice = null;
 const noticedNoServer = new Set();
 const noticedTrust = new Set();
+/** Pending no-server toasts: wait so a late package register can cancel. */
+const pendingNoServerTimers = new Map();
+/** ms before a missing-server notice becomes a toast (tests may override). */
+let noServerNoticeDelayMs = 1500;
 
 const clientApi = {
   request,
@@ -232,22 +236,10 @@ async function ensureServerForEditor(editor) {
 
   const reg = resolveRegistration(scope, { resourcePath: getResourcePath() });
   if (!reg) {
-    const noticeKey = `${scope}::${projectRoot}`;
-    if (!noticedNoServer.has(noticeKey)) {
-      noticedNoServer.add(noticeKey);
-      lastNotice = {
-        kind: 'no-server',
-        scope,
-        projectRoot,
-        message:
-          `No language server for ${scope}. Use "Install packages" to ` +
-          `install the appropriate package. Then run ` +
-          `"Chevron Lsp: Trust Project".`
-      };
-      emitter.emit('did-no-server', lastNotice);
-    }
+    scheduleNoServerNotice(scope, projectRoot);
     return null;
   }
+  cancelNoServerNotice(scope);
 
   const key = sessionKey(reg.id, projectRoot);
   if (startedSessions.has(key)) {
@@ -698,6 +690,53 @@ function getAutocompleteProvider() {
   return createAutocompleteProvider(clientApi);
 }
 
+function scheduleNoServerNotice(scope, projectRoot) {
+  const noticeKey = `${scope}::${projectRoot}`;
+  if (noticedNoServer.has(noticeKey) || pendingNoServerTimers.has(noticeKey)) {
+    return;
+  }
+  const timer = setTimeout(() => {
+    pendingNoServerTimers.delete(noticeKey);
+    const again = resolveRegistration(scope, {
+      resourcePath: getResourcePath()
+    });
+    if (again || noticedNoServer.has(noticeKey)) return;
+    noticedNoServer.add(noticeKey);
+    lastNotice = {
+      kind: 'no-server',
+      scope,
+      projectRoot,
+      message:
+        `No language server for ${scope}. Use "Install packages" to ` +
+        `install the appropriate package. Then run ` +
+        `"Chevron Lsp: Trust Project".`
+    };
+    if (emitter) emitter.emit('did-no-server', lastNotice);
+  }, noServerNoticeDelayMs);
+  pendingNoServerTimers.set(noticeKey, timer);
+}
+
+function cancelNoServerNotice(scope) {
+  for (const key of Array.from(pendingNoServerTimers.keys())) {
+    if (scope == null || key.startsWith(`${scope}::`)) {
+      clearTimeout(pendingNoServerTimers.get(key));
+      pendingNoServerTimers.delete(key);
+    }
+  }
+  for (const key of Array.from(noticedNoServer)) {
+    if (scope == null || key.startsWith(`${scope}::`)) {
+      noticedNoServer.delete(key);
+    }
+  }
+  if (
+    lastNotice &&
+    lastNotice.kind === 'no-server' &&
+    (scope == null || lastNotice.scope === scope)
+  ) {
+    lastNotice = null;
+  }
+}
+
 // A package registers its server from consumeLsp, which runs after the editors
 // were already observed: the open files had asked for a server, been told there
 // was none, and nothing asked again. Installing a language server and reloading
@@ -708,9 +747,7 @@ function registerServerAndStart(spec) {
   const scopes =
     (spec && spec.scopes) || (spec && spec.scope ? [spec.scope] : []);
   for (const scope of scopes) {
-    for (const key of Array.from(noticedNoServer)) {
-      if (key.startsWith(`${scope}::`)) noticedNoServer.delete(key);
-    }
+    cancelNoServerNotice(scope);
   }
   startServersForOpenEditors().catch(() => {});
   return disposable;
@@ -1147,6 +1184,17 @@ module.exports = {
       lastNotice = null;
       noticedNoServer.clear();
       noticedTrust.clear();
+      for (const timer of pendingNoServerTimers.values()) clearTimeout(timer);
+      pendingNoServerTimers.clear();
+    },
+    get noServerNoticeDelayMs() {
+      return noServerNoticeDelayMs;
+    },
+    setNoServerNoticeDelayMs(ms) {
+      noServerNoticeDelayMs = ms;
+    },
+    get pendingNoServerCount() {
+      return pendingNoServerTimers.size;
     }
   }
 };
