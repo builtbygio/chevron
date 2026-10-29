@@ -11,8 +11,6 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _classnames = _interopRequireDefault(require("classnames"));
 
-var _electron = require("electron");
-
 var _chevron = require("chevron");
 
 var _atomTextEditor = _interopRequireDefault(require("../chevron/chevron-text-editor"));
@@ -32,7 +30,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 const {
   Menu,
   MenuItem
-} = require('electron').remote;
+} = _chevron;
 
 class ActionableReviewView extends _react.default.Component {
   constructor(props) {

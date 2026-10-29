@@ -9,7 +9,7 @@ var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
-var _electron = require("electron");
+var _chevron = require("chevron");
 
 var _helpers = require("../helpers");
 
@@ -26,7 +26,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 const {
   Menu,
   MenuItem
-} = require('electron').remote;
+} = _chevron;
 
 class ConflictController extends _react.default.Component {
   constructor(props, context) {

@@ -3,7 +3,8 @@ const {
   app,
   dialog,
   ipcMain,
-  nativeImage
+  nativeImage,
+  nativeTheme
 } = require('electron');
 const fs = require('fs');
 const os = require('os');
@@ -270,6 +271,11 @@ module.exports = class ChevronWindow extends EventEmitter {
     this.loadSettings.appName = getAppName();
     this.loadSettings.resourcePath = this.resourcePath;
     this.loadSettings.atomHome = process.env.ATOM_HOME;
+    // Seed follow-system-theme so the renderer never needs a nativeTheme sendSync.
+    // Updates arrive on chevron:did-change-native-theme.
+    this.loadSettings.nativeTheme = {
+      shouldUseDarkColors: !!nativeTheme.shouldUseDarkColors
+    };
     if (this.loadSettings.devMode == null) this.loadSettings.devMode = false;
     if (this.loadSettings.safeMode == null) this.loadSettings.safeMode = false;
     if (this.loadSettings.clearWindowState == null)

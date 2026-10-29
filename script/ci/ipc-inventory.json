@@ -462,26 +462,6 @@
     ]
   },
   {
-    "channel": "chevron:native-theme",
-    "kind": "handle",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
-    "channel": "chevron:native-theme-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
-    ]
-  },
-  {
     "channel": "chevron:open",
     "kind": "on",
     "file": "src/main-process/chevron-application.js",
@@ -861,16 +841,6 @@
     "validation": "full",
     "effect": [
       "spawn"
-    ]
-  },
-  {
-    "channel": "chevron:utility-worker-enabled-sync",
-    "kind": "on",
-    "file": "src/main-process/register-renderer-ipc.js",
-    "scope": "global",
-    "validation": "full",
-    "effect": [
-      "read"
     ]
   },
   {

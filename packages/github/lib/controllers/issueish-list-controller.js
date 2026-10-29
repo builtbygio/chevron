@@ -16,7 +16,7 @@ var _issueishListView = _interopRequireDefault(require("../views/issueish-list-v
 
 var _issueish = _interopRequireDefault(require("../models/issueish"));
 
-var _electron = require("electron");
+var _chevron = require("chevron");
 
 var _reporterProxy = require("../reporter-proxy");
 
@@ -27,7 +27,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 const {
   Menu,
   MenuItem
-} = require('electron').remote;
+} = _chevron;
 
 const StatePropType = _propTypes.default.oneOf(['EXPECTED', 'PENDING', 'SUCCESS', 'ERROR', 'FAILURE']);
 

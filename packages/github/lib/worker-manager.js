@@ -11,6 +11,8 @@ var _querystring = _interopRequireDefault(require("querystring"));
 
 var _electron = require("electron");
 
+var _chevron = require("chevron");
+
 var _eventKit = require("event-kit");
 
 var _helpers = require("./helpers");
@@ -21,9 +23,7 @@ function _objectSpread2(target) { for (var i = 1; i < arguments.length; i++) { v
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-const {
-  BrowserWindow
-} = require('electron').remote;
+const openUtilityWorkerWindow = _chevron.openUtilityWorkerWindow;
 
 class WorkerManager {
   static getInstance() {
@@ -338,8 +338,7 @@ class RendererProcess {
     this.onSpawnError = onSpawnError;
     this.onStdinError = onStdinError;
     this.onExecStarted = onExecStarted;
-    // A utilityProcess worker behind remote-compat's BrowserWindow shim, which
-    // takes no options: there is no window to show and no webPreferences.
+    // A utilityProcess worker via require('chevron').openUtilityWorkerWindow.
     // Opening it yields, so requests wait on this.opened.
     this.win = null;
     this.webContents = null;
@@ -364,7 +363,7 @@ class RendererProcess {
   }
 
   async open(loadUrl) {
-    const win = await BrowserWindow.open();
+    const win = await openUtilityWorkerWindow();
     if (this.destroyed) {
       await win.destroy();
       return;

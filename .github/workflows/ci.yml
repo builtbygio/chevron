@@ -228,6 +228,7 @@ jobs:
           node --test script/ci/wave3-gates.test.js
           node --test script/ci/replace-in-files.test.js
           node --test script/ci/wave1-ipc-slice.test.js
+          node --test script/ci/wave-ipc-native-theme.test.js
           node --test script/ci/user-config-path.test.js
           node --test script/ci/symbols-view-lsp.test.js
           node --test script/ci/smoke-probe-syntax.test.js

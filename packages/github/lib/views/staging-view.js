@@ -7,8 +7,6 @@ exports.default = void 0;
 
 var _eventKit = require("event-kit");
 
-var _electron = require("electron");
-
 var _chevron = require("chevron");
 
 var _react = _interopRequireWildcard(require("react"));
@@ -52,7 +50,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 const {
   Menu,
   MenuItem
-} = require('electron').remote;
+} = _chevron;
 
 const debounce = (fn, wait) => {
   let timeout;
