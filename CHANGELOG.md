@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] — 2026-10-29
+
 ### Added
 
 - **A task pane keeps the tail of its output across a reload.** The shell itself is gone with the window. The pane comes back named for the task, with the last 16KB of what that run printed, and a new shell in the same directory. The command is not run again.

@@ -4,7 +4,7 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 **Repo:** `builtbygio/chevron` (local: workspace `chevron`)  
 **Product:** **Chevron** — modernized Atom fork  
-**Date of this handoff:** 2026-10-18 (last tag **v1.5.0**; auto-update, Wayland and the universal macOS bundle landed; the nightly Jasmine core specs pass locally)
+**Date of this handoff:** 2026-10-29 (last tag **v1.6.0**; auto-update, Wayland and the universal macOS bundle landed; the nightly Jasmine core specs pass locally)
 
 ---
 
@@ -22,11 +22,11 @@ Context for the next Grok (or human) session. Prefer this file + CHANGELOG over 
 
 ---
 
-## Current baseline (last tag v1.5.0)
+## Current baseline (last tag v1.6.0)
 
 | Item | Value |
 |------|--------|
-| Version | Changes only at release time, and every release is a tagged bump. PRs add to `[Unreleased]` in CHANGELOG and leave `package.json` alone. `package.json` reads 1.5.0. Last published: **v1.5.0** unsigned preview ([docs/reference/releases.md](docs/reference/releases.md)) |
+| Version | Changes only at release time, and every release is a tagged bump. PRs add to `[Unreleased]` in CHANGELOG and leave `package.json` alone. `package.json` reads 1.6.0. Last published: **v1.6.0** unsigned preview ([docs/reference/releases.md](docs/reference/releases.md)) |
 | Electron | **43.7.9** (ladder complete; tracks the latest 43.x patch) |
 | Package / productName | `chevron` / **Chevron** |
 | Bundle ID | `dev.builtbygio.chevron` |

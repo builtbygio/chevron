@@ -20,20 +20,19 @@ Rather than a from-scratch rewrite, Chevron takes the harder — and more educat
 
 ## Download
 
-**[1.5.0 unsigned preview](https://github.com/builtbygio/chevron/releases/tag/v1.5.0)** — installers are attached to that GitHub Release. Binaries are **not codesigned**; macOS Gatekeeper and Windows SmartScreen will warn.
+**[1.6.0 unsigned preview](https://github.com/builtbygio/chevron/releases/tag/v1.6.0)** — installers are attached to that GitHub Release. Binaries are **not codesigned**; macOS Gatekeeper and Windows SmartScreen will warn.
 
 | Platform | File |
 |----------|------|
-| Linux x64 | `chevron_1.5.0_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz` |
-| Linux arm64 | `chevron_1.5.0_arm64.deb`, `chevron.aarch64.rpm`, `chevron-arm64.tar.gz` |
+| Linux x64 | `chevron_1.6.0_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz`, `chevron-1.6.0-x64.AppImage` |
 | macOS | `chevron-mac-universal.zip` (unsigned `.app`) |
-| Windows x64 | `chevron-1.5.0-windows-x64-setup.exe`, `chevron-x64-windows.zip` |
+| Windows x64 | `chevron-1.6.0-windows-x64-setup.exe`, `chevron-x64-windows.zip` |
 
 All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtbygio/chevron/releases). Details: [docs/reference/releases.md](docs/reference/releases.md).
 
 ## Status
 
-**1.5.0 unsigned preview** — pnpm 11 workspace, owned catalog on npmjs, One Dark default. **Owned catalog only**, Phase S **Option C** (editor `sandbox: false` on purpose). This is a dogfoodable preview, not a signed store app.
+**1.6.0 unsigned preview** — pnpm 11 workspace, owned catalog on npmjs, One Dark default. **Owned catalog only**, Phase S **Option C** (editor `sandbox: false` on purpose). This is a dogfoodable preview, not a signed store app.
 
 | Track | Notes |
 |-------|--------|
