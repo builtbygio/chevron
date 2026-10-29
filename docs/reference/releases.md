@@ -1,7 +1,7 @@
 # Chevron unsigned preview releases
 
-**Status:** 1.5.0 product contract  
-**Current tag:** [v1.5.0](https://github.com/builtbygio/chevron/releases/tag/v1.5.0)  
+**Status:** 1.6.0 product contract  
+**Current tag:** [v1.6.0](https://github.com/builtbygio/chevron/releases/tag/v1.6.0)  
 **Update URL:** https://github.com/builtbygio/chevron/releases
 
 This is a **modernization 1.0**, published as an **unsigned preview**. It is not a signed, notarized daily-driver store build.
@@ -34,15 +34,14 @@ In-app updates come from these releases through electron-updater once a build is
 
 CI on tag `v*` builds every platform and attaches artifacts to a full GitHub Release (not a pre-release: stable builds' updater reads `releases/latest`).
 
-**1.5.0:** https://github.com/builtbygio/chevron/releases/tag/v1.5.0  
-Previous: [v1.2.0](https://github.com/builtbygio/chevron/releases/tag/v1.2.0)
+**1.6.0:** https://github.com/builtbygio/chevron/releases/tag/v1.6.0  
+Previous: [v1.5.0](https://github.com/builtbygio/chevron/releases/tag/v1.5.0)
 
 | Platform | File |
 |----------|------|
-| Linux x64 | `chevron_1.5.0_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz` |
-| Linux arm64 | `chevron_1.5.0_arm64.deb`, `chevron.aarch64.rpm`, `chevron-arm64.tar.gz` |
+| Linux x64 | `chevron_1.6.0_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz`, `chevron-1.6.0-x64.AppImage` |
 | macOS | `chevron-mac-universal.zip` (unsigned `.app`) |
-| Windows x64 | `chevron-1.5.0-windows-x64-setup.exe`, `chevron-x64-windows.zip` |
+| Windows x64 | `chevron-1.6.0-windows-x64-setup.exe`, `chevron-x64-windows.zip` |
 
 Update URL to give users: **https://github.com/builtbygio/chevron/releases**
 
