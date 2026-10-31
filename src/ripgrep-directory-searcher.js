@@ -1,17 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+const { resolveRgPath } = require('./main-process/resolve-rg-path');
 
 function getIpcRenderer() {
   return require('electron').ipcRenderer;
-}
-
-function resolveRgPath(rgPath, existsFn = p => fs.existsSync(p)) {
-  const raw = rgPath || require('@vscode/ripgrep').rgPath;
-  const unpacked = String(raw).replace(/\bapp\.asar\b/, 'app.asar.unpacked');
-  for (const candidate of [unpacked, raw]) {
-    if (candidate && existsFn(candidate)) return candidate;
-  }
-  return unpacked;
 }
 
 // `ripgrep` and `scandal` have a different way of handling the trailing and leading
@@ -289,7 +281,7 @@ module.exports = class RipgrepDirectorySearcher {
   }
 
   searchInDirectory(directory, regexp, options, numPathsFound) {
-    // Delay the require of @vscode/ripgrep to not mess with the snapshot creation.
+    // Delay resolve so snapshot creation does not load @vscode/ripgrep.
     if (!this.rgPath) {
       this.rgPath = resolveRgPath();
     }

@@ -81,11 +81,9 @@ GitHub Actions (`.github/workflows/ci.yml`):
 
 | Job | Runner | What |
 |-----|--------|------|
-| `build-and-smoke-macos` | `macos-15-intel` + `macos-15` (arm64) | Bootstrap, build, zip, smoke |
 | `build-and-smoke-linux` | `ubuntu-latest` (x64) | Bootstrap, build, xvfb smoke, **deb + tar + rpm + AppImage** |
-| `build-and-smoke-windows` | `windows-latest` (x64) | Bootstrap, build, zip, smoke |
 
-The Linux job uploads `.deb`, `.tar.gz`, `.rpm` and `.AppImage` (`chevron-linux-x64`). RPM needs `rpm` / `rpmbuild` from apt. There is no arm64 job.
+CI is **Linux x64 only**. The job uploads `.deb`, `.tar.gz`, `.rpm` and `.AppImage` (`chevron-linux-x64`). RPM needs `rpm` / `rpmbuild` from apt. There is no arm64 job.
 
 ---
 

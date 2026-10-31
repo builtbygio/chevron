@@ -119,9 +119,8 @@ describe('prepareFiles', () => {
     assert.match(out.releases, /chevron_1\.5\.0_amd64\.deb/);
     assert.match(out.releases, /chevron-1\.5\.0-x64\.AppImage/);
     assert.doesNotMatch(out.releases, /Linux arm64/);
-    assert.match(out.releases, /chevron-mac-universal\.zip/);
-    assert.match(out.releases, /chevron-1\.5\.0-windows-x64-setup\.exe/);
-    assert.doesNotMatch(out.releases, /chevron-mac-x64\.zip/);
+    assert.doesNotMatch(out.releases, /chevron-mac-/);
+    assert.doesNotMatch(out.releases, /windows-x64/);
     assert.match(out.readme, /\[1\.5\.0 unsigned preview\]/);
     assert.match(out.readme, /\*\*1\.5\.0 unsigned preview\*\*/);
     assert.match(out.grok, /2026-10-18 \(last tag \*\*v1\.5\.0\*\*/);
@@ -140,8 +139,11 @@ describe('the tree this release leaves behind', () => {
     const grok = fs.readFileSync(path.join(ROOT, 'GROK.md'), 'utf8');
     assert.match(releases, new RegExp(`\\*\\*Current tag:\\*\\* \\[v${version}\\]`));
     assert.match(releases, new RegExp(`chevron_${version}_amd64\\.deb`));
-    assert.match(releases, /chevron-mac-universal\.zip/);
+    assert.doesNotMatch(releases, /chevron-mac-/);
+    assert.doesNotMatch(releases, /windows-x64-setup/);
     assert.match(readme, new RegExp(`\\[${version} unsigned preview\\]`));
+    assert.doesNotMatch(readme, /chevron-mac-/);
+    assert.doesNotMatch(readme, /windows-x64-setup/);
     assert.match(grok, new RegExp(`last tag \\*\\*v${version}\\*\\*`));
     assert.match(grok, new RegExp('`package.json` reads ' + version.replace(/\./g, '\\.')));
   });

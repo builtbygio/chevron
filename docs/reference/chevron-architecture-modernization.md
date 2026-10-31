@@ -94,7 +94,7 @@ Every leftover named here has a delete / wrap / migrate verdict. Items missed in
 | scandal search (`scan-handler.ts`) | `DefaultDirectorySearcher` | **Deleted** (PR 4) |
 | scandal replace (`replace-handler.ts`) | `Workspace.replace` | **Deleted** (PR 3 migrated to JS RegExp; Wave 1 dropped the Task worker and the file) |
 | Public `Task` | ~~`exports/chevron.js`; `src/task.ts`~~ | **Deleted** (Wave 3) — zero callers across all 94 owned pins. Use a `utilityProcess` host |
-| `@vscode/ripgrep@1.15.14` | app + fuzzy-finder | **Done** (PR 15). CJS `rgPath` + `bin/rg`. Not 1.18 (ESM + optionalDeps). |
+| `@vscode/ripgrep@1.18.0` | app + fuzzy-finder | **Done** (PR 15 + resolveRgPath). Platform optionalDep `bin/rg`; sync CJS resolver. |
 | Preload `spawn(rg)` | `src/ripgrep-directory-searcher.js` | **Done** (PR 2b) — `ipcRenderer.invoke('chevron:rg-search-*')` |
 | season / pin CSON | `language-*` 13c JSON; user dual-read | **Wrap** — Wave 1 swept all 94 pins + the app tree: **0** shipped `.cson` ([language-stack.md](./language-stack.md) *Pin CSON inventory*). `season` stays for user `.cson`, compile-cache and third-party package data. Do **not** delete yet |
 | User `config.cson` | `src/config-file.js` | **Migrated** (PR 5: JSON default, dual-read CSON) |

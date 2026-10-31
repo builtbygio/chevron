@@ -20,13 +20,11 @@ Rather than a from-scratch rewrite, Chevron takes the harder — and more educat
 
 ## Download
 
-**[1.6.0 unsigned preview](https://github.com/builtbygio/chevron/releases/tag/v1.6.0)** — installers are attached to that GitHub Release. Binaries are **not codesigned**; macOS Gatekeeper and Windows SmartScreen will warn.
+**[1.6.0 unsigned preview](https://github.com/builtbygio/chevron/releases/tag/v1.6.0)** — Linux x64 packages are attached to that GitHub Release (unsigned preview).
 
 | Platform | File |
 |----------|------|
 | Linux x64 | `chevron_1.6.0_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz`, `chevron-1.6.0-x64.AppImage` |
-| macOS | `chevron-mac-universal.zip` (unsigned `.app`) |
-| Windows x64 | `chevron-1.6.0-windows-x64-setup.exe`, `chevron-x64-windows.zip` |
 
 All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtbygio/chevron/releases). Details: [docs/reference/releases.md](docs/reference/releases.md).
 
@@ -99,9 +97,9 @@ cd chevron
 
 Platform guides:
 
-- [Linux](docs/orientation/build-instructions/linux.md) — `.deb` / `.rpm` / tarball, CI jobs
-- [macOS](docs/orientation/build-instructions/macOS.md) — Intel + Apple Silicon CI
-- [Windows](docs/orientation/build-instructions/windows.md) — VS 2022, zip artifact, CI job
+- [Linux](docs/orientation/build-instructions/linux.md) — `.deb` / `.rpm` / tarball / AppImage; **CI and releases**
+- [macOS](docs/orientation/build-instructions/macOS.md) — local builds only (no CI)
+- [Windows](docs/orientation/build-instructions/windows.md) — local builds only (no CI)
 
 ## License
 

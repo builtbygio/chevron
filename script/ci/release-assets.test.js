@@ -1,12 +1,7 @@
 'use strict';
 
 /**
- * A release carries the packages and nothing that happens to be inside one
- * (#415).
- *
- * The macOS jobs uploaded Chevron.app beside the zip, the publish job merged
- * every artifact into one folder, and `artifacts/**\/*.exe` then matched the
- * ctags-win32.exe vendored inside the bundle. Every 1.x release shipped it.
+ * A release carries the Linux packages and nothing else.
  *
  * Run: node --test script/ci/release-assets.test.js
  */
@@ -47,15 +42,17 @@ describe('release assets', () => {
     }
   });
 
-  it('publishes the x64 AppImage and no Linux arm64 job', () => {
+  it('publishes Linux packages only (no macOS or Windows jobs)', () => {
     const files = blockAfter('softprops/action-gh-release', 'files');
     assert.ok(files.includes('artifacts/*.AppImage'));
+    assert.ok(files.includes('artifacts/*.deb'));
+    assert.ok(files.includes('artifacts/*.rpm'));
+    assert.ok(files.includes('artifacts/*.tar.gz'));
+    assert.ok(!files.some(f => f.includes('.exe')));
+    assert.doesNotMatch(WORKFLOW, /build-and-smoke-macos/);
+    assert.doesNotMatch(WORKFLOW, /macos-universal/);
+    assert.doesNotMatch(WORKFLOW, /build-and-smoke-windows/);
     assert.doesNotMatch(WORKFLOW, /build-and-smoke-linux-arm64/);
     assert.doesNotMatch(WORKFLOW, /ubuntu-24\.04-arm/);
-  });
-
-  it('uploads the macOS zip, not the app bundle inside it', () => {
-    const paths = blockAfter('name: chevron-macos-${{ matrix.arch }}', 'path');
-    assert.deepEqual(paths, ['out/*.zip']);
   });
 });

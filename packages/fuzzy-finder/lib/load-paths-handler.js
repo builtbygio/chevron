@@ -3,15 +3,11 @@ const async = require('async')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
-const {GitRepository} = require('chevron')
+const {GitRepository, resolveRgPath} = require('chevron')
 const {Minimatch} = require('minimatch')
 const childProcess = require('child_process')
-const { rgPath } = require('@vscode/ripgrep')
 
 const PathsChunkSize = 100
-
-// Use the unpacked path if the ripgrep binary is in asar archive.
-const realRgPath = rgPath.replace(/\bapp\.asar\b/, 'app.asar.unpacked')
 
 // Define the maximum number of concurrent crawling processes based on the number of CPUs
 // with a maximum value of 8 and minimum of 1.
@@ -75,7 +71,7 @@ class PathLoader {
       }
 
       let output = ''
-      const result = childProcess.spawn(realRgPath, args, {cwd: this.rootPath})
+      const result = childProcess.spawn(resolveRgPath(), args, {cwd: this.rootPath})
 
       result.stdout.on('data', chunk => {
         const files = (output + chunk).split('\n')
