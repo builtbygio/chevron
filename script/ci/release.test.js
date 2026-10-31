@@ -42,7 +42,7 @@ Previous: [v1.1.0](https://github.com/builtbygio/chevron/releases/tag/v1.1.0)
 
 | Platform | File |
 |----------|------|
-| Linux x64 | \`chevron_1.2.0_amd64.deb\`, \`chevron.x86_64.rpm\`, \`chevron-amd64.tar.gz\` |
+| Linux x64 | \`chevron-1.2.0-x64.AppImage\` |
 | macOS Intel | \`chevron-mac-x64.zip\` (unsigned \`.app\`) |
 | macOS Apple Silicon | \`chevron-mac-arm64.zip\` (unsigned \`.app\`) |
 | Windows x64 | \`chevron-x64-windows.zip\` |
@@ -116,8 +116,10 @@ describe('prepareFiles', () => {
     assert.match(out.releases, /\*\*Current tag:\*\* \[v1\.5\.0\]/);
     assert.match(out.releases, /\*\*Status:\*\* 1\.5\.0 product contract/);
     assert.match(out.releases, /Previous: \[v1\.2\.0\]/);
-    assert.match(out.releases, /chevron_1\.5\.0_amd64\.deb/);
     assert.match(out.releases, /chevron-1\.5\.0-x64\.AppImage/);
+    assert.doesNotMatch(out.releases, /_amd64\.deb/);
+    assert.doesNotMatch(out.releases, /\.rpm/);
+    assert.doesNotMatch(out.releases, /\.tar\.gz/);
     assert.doesNotMatch(out.releases, /Linux arm64/);
     assert.doesNotMatch(out.releases, /chevron-mac-/);
     assert.doesNotMatch(out.releases, /windows-x64/);
@@ -138,7 +140,9 @@ describe('the tree this release leaves behind', () => {
     const readme = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
     const grok = fs.readFileSync(path.join(ROOT, 'GROK.md'), 'utf8');
     assert.match(releases, new RegExp(`\\*\\*Current tag:\\*\\* \\[v${version}\\]`));
-    assert.match(releases, new RegExp(`chevron_${version}_amd64\\.deb`));
+    assert.match(releases, new RegExp(`chevron-${version}-x64\\.AppImage`));
+    assert.doesNotMatch(releases, /_amd64\.deb/);
+    assert.doesNotMatch(releases, /\.rpm/);
     assert.doesNotMatch(releases, /chevron-mac-/);
     assert.doesNotMatch(releases, /windows-x64-setup/);
     assert.match(readme, new RegExp(`\\[${version} unsigned preview\\]`));

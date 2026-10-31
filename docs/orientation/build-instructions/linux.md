@@ -1,6 +1,6 @@
 # Building and installing Chevron on Linux
 
-**Status:** x64 CI (bootstrap, smoke, deb/rpm/tar, AppImage). Linux arm64 is not built.  
+**Status:** x64 CI (bootstrap, smoke, AppImage). Linux arm64 is not built.  
 **Host toolchain:** Node **24** + **pnpm 11** + Python **3.12** (+ `setuptools`) via `script/bootstrap-modern`  
 **Runtime:** Electron 43
 
@@ -14,7 +14,7 @@ sudo apt-get update
 sudo apt-get install -y build-essential pkg-config \
   libx11-dev libxkbfile-dev libsecret-1-dev libxss-dev \
   libgtk-3-0 libnotify4 libnss3 libgbm1 libasound2 \
-  git python3 python3-pip xvfb fakeroot dpkg-dev
+  git python3 python3-pip xvfb squashfs-tools
 
 # Node 24 (nvm recommended)
 nvm install 24 && nvm use 24
@@ -25,8 +25,7 @@ cd chevron
 
 ./script/bootstrap-modern
 ./script/with-modern-env ./script/build --no-bootstrap \
-  --create-debian-package \
-  --compress-artifacts
+  --create-appimage
 
 # Headless smoke (optional)
 xvfb-run -a node script/ci/smoke-test.js
@@ -53,24 +52,19 @@ After a successful Linux build you typically get under `out/`:
 | Artifact | Description |
 |----------|-------------|
 | `Chevron-linux-x64/` (or `arm64`) | Unpacked Electron app (run `./chevron`) |
-| `chevron_<version>_amd64.deb` | Debian/Ubuntu package |
-| `chevron-amd64.tar.gz` | Compressed app directory |
-| `chevron.<arch>.rpm` | Fedora/RHEL (`rpmbuild`; required in CI) |
+| `chevron-<version>-x64.AppImage` | Portable AppImage (what CI and releases publish) |
 
-### Install `.deb` (Ubuntu/Debian)
+### Run the AppImage
 
 ```bash
-sudo apt install ./out/chevron_*_amd64.deb
-# or:
-sudo dpkg -i ./out/chevron_*_amd64.deb
-sudo apt-get install -f   # if dependencies missing
+chmod +x out/chevron-*-x64.AppImage
+./out/chevron-*-x64.AppImage
 ```
 
-### Run from tarball
+### Run from the unpacked tree
 
 ```bash
-tar -xzf out/chevron-amd64.tar.gz
-./Chevron-linux-x64/chevron
+./out/Chevron-linux-x64/chevron
 ```
 
 ---
@@ -81,9 +75,9 @@ GitHub Actions (`.github/workflows/ci.yml`):
 
 | Job | Runner | What |
 |-----|--------|------|
-| `build-and-smoke-linux` | `ubuntu-latest` (x64) | Bootstrap, build, xvfb smoke, **deb + tar + rpm + AppImage** |
+| `build-and-smoke-linux` | `ubuntu-latest` (x64) | Bootstrap, build, xvfb smoke, **AppImage** |
 
-CI is **Linux x64 only**. The job uploads `.deb`, `.tar.gz`, `.rpm` and `.AppImage` (`chevron-linux-x64`). RPM needs `rpm` / `rpmbuild` from apt. There is no arm64 job.
+CI is **Linux x64 only**. The job uploads `.AppImage` (`chevron-linux-x64`). There is no arm64 job. `.deb` / `.rpm` / tarball are not built in CI.
 
 ---
 
@@ -141,8 +135,7 @@ native arm64 CI.
 
 Unpackaged `out/Chevron-linux-*` builds cannot setuid `chrome-sandbox` without
 root. The CI smoke test passes `--no-sandbox` when the helper is not
-root-owned mode `4755`. Installed `.deb` packages set the correct permissions
-on `/usr/share/chevron/chrome-sandbox`.
+root-owned mode `4755`.
 
 ---
 
@@ -150,17 +143,16 @@ on `/usr/share/chevron/chrome-sandbox`.
 
 ```bash
 ./script/with-modern-env ./script/build --no-bootstrap \
-  --create-debian-package \
-  --create-rpm-package \
-  --compress-artifacts
+  --create-appimage
 ```
 
 | Flag | Output |
 |------|--------|
 | (default) | Unpacked app under `out/Chevron-linux-*` |
-| `--create-debian-package` | `.deb` in `out/` |
-| `--create-rpm-package` | `.rpm` (needs `rpmbuild`) |
-| `--compress-artifacts` | `.tar.gz` of the app dir |
+| `--create-appimage` | `.AppImage` in `out/` (CI / releases) |
+| `--create-debian-package` | `.deb` in `out/` (local optional; not in CI) |
+| `--create-rpm-package` | `.rpm` (needs `rpmbuild`; local optional; not in CI) |
+| `--compress-artifacts` | `.tar.gz` of the app dir (local optional; not in CI) |
 
 ---
 
@@ -176,4 +168,4 @@ on `/usr/share/chevron/chrome-sandbox`.
 
 ---
 
-*L1 = CI green + smoke · L2 = deb/tar/rpm/AppImage artifacts. Linux CI is x64.*
+*L1 = CI green + smoke · L2 = AppImage artifact. Linux CI is x64.*

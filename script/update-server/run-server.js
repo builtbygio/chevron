@@ -1,25 +1,25 @@
+'use strict';
+
 require('colors');
 
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const port = process.env.PORT || 3456;
 
-// Local Squirrel test server only — cap request rate so CodeQL is happy
-// and a runaway client cannot hammer disk.
-const hits = [];
-app.use((req, res, next) => {
-  const now = Date.now();
-  while (hits.length && now - hits[0] > 1000) hits.shift();
-  if (hits.length >= 30) {
-    res.sendStatus(429);
-    return;
-  }
-  hits.push(now);
-  next();
-});
+// Local Squirrel test server only. express-rate-limit is a CodeQL-recognized
+// barrier for js/missing-rate-limiting on the sendFile routes below.
+app.use(
+  rateLimit({
+    windowMs: 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false
+  })
+);
 
 // Load the metadata for the local build of Atom
 const buildPath = path.resolve(__dirname, '..', '..', 'out');
@@ -44,13 +44,24 @@ const appMetadata = require(packageJsonPath);
 const versionMatch = appMetadata.version.match(/-(beta|nightly)\d+$/);
 const releaseChannel = versionMatch ? versionMatch[1] : 'stable';
 
-function safeAssetPath(fileName) {
+/**
+ * Basename-only asset under out/. Express sendFile({ root }) is the
+ * CodeQL-safe path pattern (no user string in the absolute path).
+ */
+function safeAssetName(fileName) {
   const base = path.basename(String(fileName || ''));
   if (!/^[\w.+-]+$/.test(base)) return null;
-  const full = path.resolve(buildPath, base);
-  const root = buildPath.endsWith(path.sep) ? buildPath : buildPath + path.sep;
-  if (full !== buildPath && !full.startsWith(root)) return null;
-  return full;
+  if (!fs.existsSync(path.join(buildPath, base))) return null;
+  return base;
+}
+
+function sendAsset(res, fileName) {
+  const base = safeAssetName(fileName);
+  if (!base) {
+    res.sendStatus(404);
+    return;
+  }
+  res.sendFile(base, { root: buildPath });
 }
 
 console.log(
@@ -60,13 +71,8 @@ console.log(
 );
 
 function getMacZip(req, res) {
-  console.log(`Received request for atom-mac.zip, sending it`);
-  const filePath = safeAssetPath('atom-mac.zip');
-  if (!filePath) {
-    res.sendStatus(404);
-    return;
-  }
-  res.sendFile(filePath);
+  console.log('Received request for atom-mac.zip, sending it');
+  sendAsset(res, 'atom-mac.zip');
 }
 
 function getMacUpdates(req, res) {
@@ -112,12 +118,7 @@ function getReleasesFile(fileName) {
       }
     }
 
-    const filePath = safeAssetPath(fileName);
-    if (!filePath) {
-      res.sendStatus(404);
-      return;
-    }
-    res.sendFile(filePath);
+    sendAsset(res, fileName);
   };
 }
 
@@ -125,6 +126,7 @@ function getNupkgFile(is64bit) {
   return function(req, res) {
     let nupkgFile = path.basename(String(req.params.nupkg || ''));
     if (is64bit) {
+      // Character class (not `.+`) — linear time; avoids polynomial ReDoS.
       const nupkgMatch = nupkgFile.match(
         /^atom-([A-Za-z0-9._-]+)-(delta|full)\.nupkg$/
       );
@@ -133,17 +135,12 @@ function getNupkgFile(is64bit) {
       }
     }
 
-    const filePath = safeAssetPath(nupkgFile);
     console.log(
       'Received request for %s, sending %s',
       String(req.params.nupkg || ''),
       nupkgFile
     );
-    if (!filePath) {
-      res.sendStatus(404);
-      return;
-    }
-    res.sendFile(filePath);
+    sendAsset(res, nupkgFile);
   };
 }
 

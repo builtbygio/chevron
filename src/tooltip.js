@@ -1,6 +1,7 @@
 'use strict';
 
 const EventKit = require('event-kit');
+const DOMPurify = require('dompurify');
 const tooltipComponentsByElement = new WeakMap();
 const listen = require('./delegated-listener');
 
@@ -413,26 +414,19 @@ Tooltip.prototype.setContent = function() {
   } else {
     const title = this.getTitle();
     if (this.options.html) {
-      // Attribute titles are DOM text — never reinterpret as HTML.
+      // Attribute titles are DOM text — never reinterpret as HTML
+      // (js/xss-through-dom). Caller-supplied HTML goes through DOMPurify.
       const fromAttr = this.element.getAttribute('data-original-title');
       if (fromAttr && title === fromAttr) {
         inner.textContent = fromAttr;
       } else {
-        let purify;
-        try {
-          purify = require('dompurify');
-        } catch (error) {
-          purify = null;
-        }
         const html = title == null ? '' : String(title);
-        if (purify && typeof purify.sanitize === 'function') {
-          inner.innerHTML = purify.sanitize(html, {
-            ALLOWED_TAGS: ['span', 'code', 'kbd', 'strong', 'em', 'b', 'i'],
-            ALLOWED_ATTR: ['class']
-          });
-        } else {
-          inner.textContent = html;
-        }
+        const clean = DOMPurify.sanitize(html, {
+          ALLOWED_TAGS: ['span', 'code', 'kbd', 'strong', 'em', 'b', 'i'],
+          ALLOWED_ATTR: ['class']
+        });
+        // sanitize() is a CodeQL-recognized HTML barrier before innerHTML.
+        inner.innerHTML = clean;
       }
     } else {
       inner.textContent = title == null ? '' : String(title);
