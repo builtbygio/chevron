@@ -49,12 +49,7 @@ open out/Chevron.app
 
 ## CI
 
-| Job matrix | Runner | Arch |
-|------------|--------|------|
-| `build-and-smoke-macos` | `macos-15-intel` | x64 (Intel) |
-| `build-and-smoke-macos` | `macos-15` | arm64 (Apple Silicon) |
-
-Artifacts: `chevron-macos-x64` / `chevron-macos-arm64`.
+GitHub Actions no longer runs macOS jobs. Releases are Linux x64 only. Local builds on macOS still work with the steps above.
 
 ---
 

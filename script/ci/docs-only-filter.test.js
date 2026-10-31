@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * The docs-only CI filter decides whether the five-platform build matrix runs.
+ * The docs-only CI filter decides whether the Linux build job runs.
  * A false positive means a change ships with no build verification at all.
  *
  * This exists because the inline version did exactly that. It piped the file

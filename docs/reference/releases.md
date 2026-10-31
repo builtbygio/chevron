@@ -14,7 +14,8 @@ This is a **modernization 1.0**, published as an **unsigned preview**. It is not
 | Packages | **Owned catalog only** (`builtbygio/*` + monorepo `packages/*`). No community store. |
 | Security | Phase S **Option C** — editor Chromium `sandbox: false` (intentional). Community privileged `require` restricted by default. |
 | Updates | **GitHub Releases** (this page). In-app Check for Update opens the download page; it does **not** silent-install unsigned bits. |
-| Signing | **None.** macOS Gatekeeper and Windows SmartScreen will warn. |
+| Signing | **None** (unsigned Linux preview). |
+| Platforms | **Linux x64 only** — CI and GitHub Releases no longer build macOS or Windows. |
 
 See [package-ecosystem-strategy.md](../decisions/package-ecosystem-strategy.md) and [security-phase-s-decision.md](../decisions/security-phase-s-decision.md).
 
@@ -32,7 +33,7 @@ In-app updates come from these releases through electron-updater once a build is
 
 ## Download
 
-CI on tag `v*` builds every platform and attaches artifacts to a full GitHub Release (not a pre-release: stable builds' updater reads `releases/latest`).
+CI on tag `v*` builds **Linux x64** and attaches artifacts to a full GitHub Release (not a pre-release: stable builds' updater reads `releases/latest`).
 
 **1.6.0:** https://github.com/builtbygio/chevron/releases/tag/v1.6.0  
 Previous: [v1.5.0](https://github.com/builtbygio/chevron/releases/tag/v1.5.0)
@@ -40,8 +41,6 @@ Previous: [v1.5.0](https://github.com/builtbygio/chevron/releases/tag/v1.5.0)
 | Platform | File |
 |----------|------|
 | Linux x64 | `chevron_1.6.0_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz`, `chevron-1.6.0-x64.AppImage` |
-| macOS | `chevron-mac-universal.zip` (unsigned `.app`) |
-| Windows x64 | `chevron-1.6.0-windows-x64-setup.exe`, `chevron-x64-windows.zip` |
 
 Update URL to give users: **https://github.com/builtbygio/chevron/releases**
 
@@ -78,8 +77,8 @@ git tag -a vX.Y.Z -m "Chevron X.Y.Z"
 git push origin vX.Y.Z
 ```
 
-The `publish-unsigned-preview` CI job waits for the five-platform matrix, then
-creates the GitHub Release. Its notes are the version's CHANGELOG section
+The `publish-unsigned-preview` CI job waits for the Linux build, then creates
+the GitHub Release. Its notes are the version's CHANGELOG section
 (`script/lib/release-notes.js`), and it fails if the tag does not match
 `package.json` or the CHANGELOG has no section for it.
 

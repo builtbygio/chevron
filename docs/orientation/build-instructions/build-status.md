@@ -4,11 +4,11 @@ CI for this monorepo is **GitHub Actions** (`.github/workflows/ci.yml`), not Azu
 
 | Check | What it does |
 |-------|----------------|
-| Detect docs-only changes | Skips five-platform matrix when only docs change |
+| Detect docs-only changes | Skips the Linux build when only docs change |
 | cpm + unit tests | cpm tests + `script/ci/*.test.js` (incl. bootstrap contract, LSP, pins) |
-| macOS x64 / arm64 | `bootstrap-modern --ci` + build + smoke |
 | Linux x64 | bootstrap + build + packages (deb, rpm, tar, AppImage) + smoke |
-| Windows x64 | bootstrap + build + packages + smoke |
+
+CI and GitHub Releases are **Linux x64 only** (no macOS or Windows jobs).
 
 Badge (default branch):
 

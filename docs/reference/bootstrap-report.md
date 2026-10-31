@@ -37,7 +37,7 @@ Install Python once: `brew install python@3.12 && python3.12 -m pip install setu
 
 ### CI
 
-GitHub Actions (`.github/workflows/ci.yml`): Node 24, Python 3.12, five-platform bootstrap + build + smoke. Docs-only PRs skip the platform matrix.
+GitHub Actions (`.github/workflows/ci.yml`): Node 24, Python 3.12, Linux x64 bootstrap + build + smoke. Docs-only PRs skip the Linux build.
 
 ### Overrides
 

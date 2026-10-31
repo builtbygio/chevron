@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       no_cache_build:
-        description: 'Bootstrap and build from an empty dependency cache (macOS x64 + Linux x64)'
+        description: 'Bootstrap and build from an empty dependency cache (Linux x64)'
         type: boolean
         default: false
 
@@ -38,15 +38,14 @@ concurrency:
 env:
   ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
   electron_config_cache: ${{ github.workspace }}/.cache/electron
-  # vscode-ripgrep's postinstall hits api.github.com; unauthenticated 403s
-  # on shared Mac runners. The default token is enough for public releases.
+  # Default token is enough for public release downloads (ensure-ripgrep fallback).
   GITHUB_TOKEN: ${{ github.token }}
 
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Docs-only detector. Gates the five-platform build matrix so a markdown-only
-  # change does not burn ~10 runner-hours proving that prose still compiles.
+  # Docs-only detector. Gates the Linux build so a markdown-only change does
+  # not burn a runner proving that prose still compiles.
   #
   # Deliberately a job-level `if:` rather than workflow-level `paths-ignore`:
   #   - unit tests still run on docs changes (cheap, and catches doc-adjacent
@@ -116,7 +115,7 @@ jobs:
           if [ "$code" = "true" ]; then
             echo "→ running full build matrix"
           else
-            echo "→ docs-only change: skipping five-platform build matrix"
+            echo "→ docs-only change: skipping Linux build"
           fi
 
   # ---------------------------------------------------------------------------
@@ -315,215 +314,7 @@ jobs:
           node --test script/ci/reload-watcher-shutdown.test.js
 
   # ---------------------------------------------------------------------------
-  # macOS — Intel x64 + Apple Silicon arm64
-  # ---------------------------------------------------------------------------
-  build-and-smoke-macos:
-    name: macOS ${{ matrix.arch }} bootstrap, build & smoke
-    needs: changes
-    if: needs.changes.outputs.code == 'true'
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 120
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: macos-15-intel
-            arch: x64
-          - os: macos-15
-            arch: arm64
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Enable pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          # package.json packageManager (pnpm@11.22.0) is the pin. `version: 11`
-          # here fails action-setup with "Multiple versions of pnpm specified".
-          run_install: false
-
-      - name: Use Node 24 (bootstrap host; app deps via pnpm)
-        uses: actions/setup-node@v5
-        with:
-          node-version: '24'
-
-      - name: Use Python 3.12 (setuptools provides distutils for node-gyp)
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - name: Install setuptools (distutils for node-gyp)
-        run: python -m pip install --upgrade pip setuptools
-
-      - name: Rewrite git ssh URLs to https
-        run: |
-          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
-          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
-          git config --global --add url."https://github.com/".insteadOf "git://github.com/"
-
-      - name: Resolve Electron version
-        id: meta
-        run: echo "electron=$(node -p "require('./package.json').electronVersion")" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Electron binaries and headers
-        uses: actions/cache@v5
-        with:
-          path: |
-            ${{ github.workspace }}/.cache/electron
-            ~/Library/Caches/node-gyp
-            ~/Library/Caches/electron
-          key: electron-${{ runner.os }}-${{ matrix.arch }}-${{ steps.meta.outputs.electron }}
-          restore-keys: |
-            electron-${{ runner.os }}-${{ matrix.arch }}-
-            electron-${{ runner.os }}-
-
-      - name: Cache npm + node_modules (enables native rebuild skip)
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.npm
-            ~/.local/share/pnpm/store
-            ~/Library/pnpm/store
-            node_modules
-            script/node_modules
-            cpm/node_modules
-          key: nm-${{ runner.os }}-${{ matrix.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
-          restore-keys: |
-            nm-${{ runner.os }}-${{ matrix.arch }}-node24-
-
-      - name: Bootstrap
-        run: ./script/bootstrap-modern --ci
-
-      - name: Build
-        run: ./script/with-modern-env ./script/build --no-bootstrap --compress-artifacts
-
-      - name: Launch smoke test
-        run: node script/ci/smoke-test.js
-
-      - name: Playwright e2e
-        run: npx --prefix script playwright test --config script/e2e/playwright.config.js
-      - uses: actions/upload-artifact@v6
-        if: failure()
-        with:
-          name: playwright-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/playwright-report
-          if-no-files-found: ignore
-
-      - name: Upload macOS packages
-        if: success()
-        uses: actions/upload-artifact@v6
-        with:
-          name: chevron-macos-${{ matrix.arch }}
-          # The zip only. The universal job unpacks it, and a .app here was
-          # merged into the release's artifacts, where its vendored
-          # ctags-win32.exe matched the .exe pattern and shipped as an asset.
-          path: out/*.zip
-          if-no-files-found: warn
-
-      - name: Upload build output on failure
-        if: failure()
-        uses: actions/upload-artifact@v6
-        with:
-          name: build-state-macos-${{ matrix.arch }}
-          path: |
-            out/startup.js
-            ${{ github.workspace }}/npm-debug.log
-          if-no-files-found: ignore
-
-  # ---------------------------------------------------------------------------
-  # macOS universal — one Chevron.app for Intel and Apple Silicon, merged
-  # from the two builds above with lipo. The natives are compiled on their
-  # own hosts, so nothing here cross-compiles. script/lib/make-mac-universal.js
-  # says what the merge has to work around. This is the macOS bundle a
-  # release ships; the per-arch zips stay as CI artifacts only.
-  # ---------------------------------------------------------------------------
-  macos-universal:
-    name: macOS universal merge & smoke
-    needs:
-      - changes
-      - build-and-smoke-macos
-    if: needs.changes.outputs.code == 'true'
-    runs-on: macos-15
-    timeout-minutes: 60
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Use Node 24
-        uses: actions/setup-node@v5
-        with:
-          node-version: '24'
-          # No pnpm here; see unit-and-cpm.
-          package-manager-cache: false
-
-      # @electron/universal, the smoke test's ws, and nothing native: the
-      # merge only rearranges what the build jobs compiled.
-      - name: Install build-script dependencies
-        working-directory: script
-        run: npm ci --ignore-scripts --legacy-peer-deps
-
-      - uses: actions/download-artifact@v6
-        with:
-          name: chevron-macos-x64
-          path: artifacts/x64
-
-      - uses: actions/download-artifact@v6
-        with:
-          name: chevron-macos-arm64
-          path: artifacts/arm64
-
-      # From the zips: an artifact upload flattens the symlinks a .app
-      # depends on (Frameworks/*/Versions/Current), the zip keeps them.
-      - name: Unpack the two bundles
-        run: |
-          set -euo pipefail
-          for arch in x64 arm64; do
-            ditto -x -k "artifacts/$arch/chevron-mac-$arch.zip" "bundles/$arch"
-            test -d "bundles/$arch/Chevron.app"
-          done
-
-      # Signing and notarization run when the secrets exist and are skipped,
-      # saying so, when they do not (docs/reference/auto-update.md). Without
-      # them the bundle is ad-hoc signed and stays on the download-page path.
-      - name: Merge into out/Chevron.app, sign, notarize
-        run: |
-          ./script/mac-universal \
-            --x64 bundles/x64/Chevron.app \
-            --arm64 bundles/arm64/Chevron.app \
-            --code-sign \
-            --compress-artifacts \
-            --update-metadata
-        env:
-          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-
-      - name: Launch smoke test (arm64 slice)
-        run: node script/ci/smoke-test.js
-
-      - name: Launch the x86_64 slice under Rosetta
-        run: |
-          set -euo pipefail
-          if ! arch -x86_64 /usr/bin/true 2>/dev/null; then
-            echo "Rosetta is not installed on this runner; x86_64 slice not launched"
-            exit 0
-          fi
-          arch -x86_64 out/Chevron.app/Contents/MacOS/Chevron --version
-
-      - name: Upload universal macOS package
-        if: success()
-        uses: actions/upload-artifact@v6
-        with:
-          name: chevron-macos-universal
-          path: |
-            out/chevron-mac-universal.zip
-            out/latest-mac.yml
-          if-no-files-found: error
-
-  # ---------------------------------------------------------------------------
-  # Linux x64 — deb + tar + rpm + AppImage. No arm64 job.
+  # Linux x64 — deb + tar + rpm + AppImage. CI and releases are Linux-only.
   # ---------------------------------------------------------------------------
   build-and-smoke-linux:
     name: Linux x64 bootstrap, build, smoke & packages
@@ -762,174 +553,14 @@ jobs:
           if-no-files-found: ignore
 
   # ---------------------------------------------------------------------------
-  # Windows x64 — bootstrap, build, smoke, zip artifact
-  # ---------------------------------------------------------------------------
-  build-and-smoke-windows:
-    name: Windows x64 bootstrap, build, smoke & packages
-    needs: changes
-    if: needs.changes.outputs.code == 'true'
-    # windows-2022 ships VS 2022 that node-gyp detects reliably.
-    # windows-latest currently has VS 18/2026 which older node-gyp mis-parses.
-    runs-on: windows-2022
-    timeout-minutes: 150
-    defaults:
-      run:
-        # bootstrap-modern / with-modern-env are bash; Git Bash is on the image.
-        shell: bash
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Enable pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          # package.json packageManager (pnpm@11.22.0) is the pin. `version: 11`
-          # here fails action-setup with "Multiple versions of pnpm specified".
-          run_install: false
-
-      - name: Use Node 24 (bootstrap host; app deps via pnpm)
-        uses: actions/setup-node@v5
-        with:
-          node-version: '24'
-
-      - name: Use Python 3.12
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - name: Install setuptools (distutils for node-gyp)
-        run: python -m pip install --upgrade pip setuptools
-
-      # Put cl.exe / link.exe on PATH so node-gyp (including old v5) can compile.
-      - name: Setup MSVC developer command prompt
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
-      - name: Rewrite git ssh URLs to https
-        run: |
-          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
-          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
-          git config --global --add url."https://github.com/".insteadOf "git://github.com/"
-
-      - name: Resolve Electron version
-        id: meta
-        shell: bash
-        run: echo "electron=$(node -p "require('./package.json').electronVersion")" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Electron binaries and headers
-        uses: actions/cache@v5
-        with:
-          path: |
-            ${{ github.workspace }}/.cache/electron
-            ~/AppData/Local/electron
-            ~/AppData/Local/node-gyp
-          key: electron-${{ runner.os }}-${{ runner.arch }}-${{ steps.meta.outputs.electron }}
-          restore-keys: |
-            electron-${{ runner.os }}-${{ runner.arch }}-
-            electron-${{ runner.os }}-
-
-      - name: Cache npm + node_modules (enables native rebuild skip)
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.npm
-            ~/.local/share/pnpm/store
-            ~/Library/pnpm/store
-            ~/AppData/Local/pnpm/store
-            node_modules
-            script/node_modules
-            cpm/node_modules
-          key: nm-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'script/package-lock.json', 'cpm/package-lock.json') }}-e${{ steps.meta.outputs.electron }}
-          restore-keys: |
-            nm-${{ runner.os }}-${{ runner.arch }}-node24-
-
-      - name: Bootstrap
-        run: |
-          # Windows-style path: apm.cmd spawns git via cmd.exe, not Git Bash.
-          export GIT_EXEC_PATH="C:/Program Files/Git/mingw64/libexec/git-core"
-          export PATH="/c/Program Files/Git/mingw64/libexec/git-core:/c/Program Files/Git/cmd:$PATH"
-          ./script/bootstrap-modern --ci
-        env:
-          PYTHONIOENCODING: utf-8
-          PYTHONUTF8: "1"
-          GIT_EXEC_PATH: "C:/Program Files/Git/mingw64/libexec/git-core"
-
-      # --code-sign signs the exe and dlls, and electron-builder signs the NSIS
-      # installer, when WIN_CSC_LINK exists; both skip, saying so, when it does
-      # not (docs/reference/auto-update.md).
-      - name: Build + package (zip, NSIS installer, latest.yml)
-        run: |
-          export GIT_EXEC_PATH="C:/Program Files/Git/mingw64/libexec/git-core"
-          export PATH="/c/Program Files/Git/mingw64/libexec/git-core:/c/Program Files/Git/cmd:$PATH"
-          ./script/with-modern-env ./script/build --no-bootstrap --compress-artifacts --code-sign --create-windows-installer
-        env:
-          PYTHONIOENCODING: utf-8
-          PYTHONUTF8: "1"
-          GIT_EXEC_PATH: "C:/Program Files/Git/mingw64/libexec/git-core"
-          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
-          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-          WIN_PUBLISHER_NAME: ${{ secrets.WIN_PUBLISHER_NAME }}
-
-      - name: Launch smoke test
-        run: node script/ci/smoke-test.js
-
-      - name: Playwright e2e
-        run: npx --prefix script playwright test --config script/e2e/playwright.config.js
-      - uses: actions/upload-artifact@v6
-        if: failure()
-        with:
-          name: playwright-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/playwright-report
-          if-no-files-found: ignore
-
-      # Architecture H1 PR 12: publish Windows cold-start numbers.
-      # Same harness as docs/reference/startup-snapshot-plan.md (§4). Five cold homes.
-      - name: Measure cold start
-        run: node script/ci/measure-startup.js --runs 5 --json out/startup-windows.json
-
-      - name: Upload startup measurement
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: startup-windows-x64
-          path: out/startup-windows.json
-          if-no-files-found: warn
-
-      - name: Upload Windows packages
-        if: success()
-        uses: actions/upload-artifact@v6
-        with:
-          name: chevron-windows-${{ runner.arch }}
-          path: |
-            out/*.zip
-            out/*.exe
-            out/*.blockmap
-            out/latest.yml
-          if-no-files-found: warn
-
-      - name: Upload build output on failure
-        if: failure()
-        uses: actions/upload-artifact@v6
-        with:
-          name: build-state-windows-${{ runner.arch }}
-          path: |
-            out/startup.js
-            ${{ github.workspace }}/npm-debug.log
-          if-no-files-found: ignore
-
-  # ---------------------------------------------------------------------------
-  # Tag v* → GitHub Release (UNSIGNED PREVIEW). Signing/notarization is later.
+  # Tag v* → GitHub Release (UNSIGNED PREVIEW). Linux packages only.
   # ---------------------------------------------------------------------------
   publish-unsigned-preview:
     name: Publish unsigned preview release
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
       - unit-and-cpm
-      - build-and-smoke-macos
-      - macos-universal
       - build-and-smoke-linux
-      - build-and-smoke-windows
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -949,7 +580,7 @@ jobs:
       - name: Release notes from the CHANGELOG
         run: |
           {
-            echo '**Unsigned preview.** These binaries are not codesigned or notarized, so macOS Gatekeeper and Windows SmartScreen will warn. See [docs/reference/releases.md](https://github.com/builtbygio/chevron/blob/master/docs/reference/releases.md).'
+            echo '**Unsigned preview (Linux x64).** See [docs/reference/releases.md](https://github.com/builtbygio/chevron/blob/master/docs/reference/releases.md).'
             echo
             node script/lib/release-notes.js "${GITHUB_REF_NAME}"
           } > release-notes.md
@@ -959,12 +590,6 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
-
-      # The per-arch macOS zips are the inputs of the universal merge, not
-      # releases: one Chevron.app runs on Intel and Apple Silicon.
-      - name: Keep only the universal macOS bundle
-        run: |
-          find artifacts -type f \( -name chevron-mac-x64.zip -o -name chevron-mac-arm64.zip \) -print -delete
 
       - name: List artifacts
         run: find artifacts -type f | sort
@@ -979,51 +604,35 @@ jobs:
           # Top level only: merge-multiple puts every package there, and
           # anything deeper is the inside of something else.
           files: |
-            artifacts/*.zip
             artifacts/*.deb
             artifacts/*.rpm
             artifacts/*.tar.gz
             artifacts/*.AppImage
-            artifacts/*.exe
-            artifacts/*.blockmap
-            artifacts/latest*.yml
 
   # ---------------------------------------------------------------------------
   # No-cache build. Every build job above restores node_modules from
   # actions/cache, and bootstrap skips reinstall when its fingerprint is
   # current -- so a tree first restored through a restore-keys fallback is
-  # re-saved under each new key indefinitely. That carried a package the
-  # lockfile no longer contained for weeks (#371): the macOS jobs were green
-  # because of the cache, not because the lockfile resolved the require.
+  # re-saved under each new key indefinitely (#371).
   #
-  # This job answers one question: does a clean machine build? It restores
-  # no node_modules. The Electron binary cache is kept -- it holds
+  # This job answers one question: does a clean Linux machine build? It
+  # restores no node_modules. The Electron binary cache is kept -- it holds
   # downloads, not dependency resolution, and cannot hide a missing module.
   #
   # Weekly on master, or on demand via the no_cache_build dispatch input.
-  # macOS x64 is where #371 bit; Linux x64 is the cheapest second opinion.
   # ---------------------------------------------------------------------------
   build-no-cache:
-    name: No-cache build (${{ matrix.label }})
+    name: No-cache build (Linux x64)
     if: >-
       github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && inputs.no_cache_build)
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     timeout-minutes: 120
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: macos-15-intel
-            label: macOS x64
-          - os: ubuntu-latest
-            label: Linux x64
 
     steps:
       - uses: actions/checkout@v5
 
       - name: Install system build dependencies
-        if: runner.os == 'Linux'
         run: |
           set -euo pipefail
           # Drop flaky third-party apt mirrors (e.g. Google Chrome) that break
@@ -1116,10 +725,5 @@ jobs:
       - name: Build
         run: ./script/with-modern-env ./script/build --no-bootstrap
 
-      - name: Launch smoke test
-        run: |
-          if [ "${{ runner.os }}" = "Linux" ]; then
-            xvfb-run -a node script/ci/smoke-test.js
-          else
-            node script/ci/smoke-test.js
-          fi
+      - name: Launch smoke test (Xvfb)
+        run: xvfb-run -a node script/ci/smoke-test.js

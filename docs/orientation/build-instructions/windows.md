@@ -75,13 +75,7 @@ out\Chevron x64\chevron.exe
 
 ## CI
 
-GitHub Actions (`.github/workflows/ci.yml`):
-
-| Job | Runner | What |
-|-----|--------|------|
-| `build-and-smoke-windows` | `windows-latest` (x64) | Bootstrap, build, zip, smoke |
-
-Windows jobs upload packages as workflow artifacts (`chevron-windows-*`).
+GitHub Actions no longer runs Windows jobs. Releases are Linux x64 only. Local builds on Windows still work with the steps above.
 
 ---
 
