@@ -40,7 +40,7 @@ Previous: [v1.5.0](https://github.com/builtbygio/chevron/releases/tag/v1.5.0)
 
 | Platform | File |
 |----------|------|
-| Linux x64 | `chevron_1.6.0_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz`, `chevron-1.6.0-x64.AppImage` |
+| Linux x64 | `chevron-1.6.0-x64.AppImage` |
 
 Update URL to give users: **https://github.com/builtbygio/chevron/releases**
 

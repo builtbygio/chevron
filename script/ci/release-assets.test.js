@@ -42,13 +42,14 @@ describe('release assets', () => {
     }
   });
 
-  it('publishes Linux packages only (no macOS or Windows jobs)', () => {
+  it('publishes the Linux AppImage only (no macOS or Windows jobs)', () => {
     const files = blockAfter('softprops/action-gh-release', 'files');
-    assert.ok(files.includes('artifacts/*.AppImage'));
-    assert.ok(files.includes('artifacts/*.deb'));
-    assert.ok(files.includes('artifacts/*.rpm'));
-    assert.ok(files.includes('artifacts/*.tar.gz'));
-    assert.ok(!files.some(f => f.includes('.exe')));
+    assert.deepEqual(files, ['artifacts/*.AppImage']);
+    assert.doesNotMatch(WORKFLOW, /artifacts\/\*\.deb/);
+    assert.doesNotMatch(WORKFLOW, /artifacts\/\*\.rpm/);
+    assert.doesNotMatch(WORKFLOW, /artifacts\/\*\.tar\.gz/);
+    assert.doesNotMatch(WORKFLOW, /--create-debian-package/);
+    assert.doesNotMatch(WORKFLOW, /--create-rpm-package/);
     assert.doesNotMatch(WORKFLOW, /build-and-smoke-macos/);
     assert.doesNotMatch(WORKFLOW, /macos-universal/);
     assert.doesNotMatch(WORKFLOW, /build-and-smoke-windows/);

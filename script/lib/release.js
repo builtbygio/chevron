@@ -86,7 +86,7 @@ function downloadTable(version) {
   return [
     '| Platform | File |',
     '|----------|------|',
-    `| Linux x64 | \`chevron_${version}_amd64.deb\`, \`chevron.x86_64.rpm\`, \`chevron-amd64.tar.gz\`, \`chevron-${version}-x64.AppImage\` |`
+    `| Linux x64 | \`chevron-${version}-x64.AppImage\` |`
   ].join('\n');
 }
 

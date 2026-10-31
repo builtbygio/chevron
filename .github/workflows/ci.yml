@@ -315,7 +315,7 @@ jobs:
           node --test script/ci/reload-watcher-shutdown.test.js
 
   # ---------------------------------------------------------------------------
-  # Linux x64 — deb + tar + rpm + AppImage. CI and releases are Linux-only.
+  # Linux x64 — AppImage only. CI and releases are Linux-only.
   # ---------------------------------------------------------------------------
   build-and-smoke-linux:
     name: Linux x64 bootstrap, build, smoke & packages
@@ -360,9 +360,6 @@ jobs:
             libxcb-dri3-0 \
             libxtst6 \
             xvfb \
-            fakeroot \
-            dpkg-dev \
-            rpm \
             squashfs-tools
 
       - name: Enable pnpm
@@ -482,18 +479,13 @@ jobs:
           node --test script/ci/wave3-gates.test.js
           node --test script/ci/menu-uri-openers.test.js
 
-      - name: Build + package (deb, tar, rpm, AppImage)
+      - name: Build + package (AppImage)
         run: |
           set -euo pipefail
-          command -v rpmbuild
           command -v mksquashfs
           ./script/with-modern-env ./script/build --no-bootstrap \
-            --create-debian-package \
-            --create-rpm-package \
-            --create-appimage \
-            --compress-artifacts
-          # Require deb + tar + rpm + AppImage artifacts
-          ls -la out/*.deb out/*.tar.gz out/*.rpm out/*.AppImage
+            --create-appimage
+          ls -la out/*.AppImage
 
       # Asserts on out/app, so it has to follow the build: no bundled package
       # ships .less, and no per-theme-pair compile cache is warmed.
@@ -531,15 +523,12 @@ jobs:
           path: ${{ runner.temp }}/playwright-report
           if-no-files-found: ignore
 
-      - name: Upload Linux packages
+      - name: Upload Linux AppImage
         if: success()
         uses: actions/upload-artifact@v6
         with:
           name: chevron-linux-${{ runner.arch }}
           path: |
-            out/*.deb
-            out/*.rpm
-            out/*.tar.gz
             out/*.AppImage
           if-no-files-found: error
 
@@ -605,9 +594,6 @@ jobs:
           # Top level only: merge-multiple puts every package there, and
           # anything deeper is the inside of something else.
           files: |
-            artifacts/*.deb
-            artifacts/*.rpm
-            artifacts/*.tar.gz
             artifacts/*.AppImage
 
   # ---------------------------------------------------------------------------
@@ -666,9 +652,7 @@ jobs:
             libxcb-dri3-0 \
             libxtst6 \
             xvfb \
-            fakeroot \
-            dpkg-dev \
-            rpm
+            squashfs-tools
 
       - name: Enable pnpm
         uses: pnpm/action-setup@v4

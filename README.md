@@ -24,7 +24,7 @@ Rather than a from-scratch rewrite, Chevron takes the harder — and more educat
 
 | Platform | File |
 |----------|------|
-| Linux x64 | `chevron_1.6.0_amd64.deb`, `chevron.x86_64.rpm`, `chevron-amd64.tar.gz`, `chevron-1.6.0-x64.AppImage` |
+| Linux x64 | `chevron-1.6.0-x64.AppImage` |
 
 All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtbygio/chevron/releases). Details: [docs/reference/releases.md](docs/reference/releases.md).
 
@@ -90,14 +90,14 @@ cd chevron
 ./script/with-modern-env ./script/build --no-bootstrap
 
 # macOS: out/Chevron.app (native Intel or Apple Silicon)
-# Linux:  --create-debian-package --create-rpm-package --compress-artifacts
+# Linux:  --create-appimage
 #         smoke: xvfb-run -a node script/ci/smoke-test.js
 # Windows (Git Bash): same bootstrap/build; smoke: node script/ci/smoke-test.js
 ```
 
 Platform guides:
 
-- [Linux](docs/orientation/build-instructions/linux.md) — `.deb` / `.rpm` / tarball / AppImage; **CI and releases**
+- [Linux](docs/orientation/build-instructions/linux.md) — AppImage; **CI and releases**
 - [macOS](docs/orientation/build-instructions/macOS.md) — local builds only (no CI)
 - [Windows](docs/orientation/build-instructions/windows.md) — local builds only (no CI)
 

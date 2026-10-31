@@ -1167,7 +1167,8 @@ class Config {
 
   _resetSettings(newSettings, options = {}) {
     const source = options.source;
-    newSettings = Object.assign({}, newSettings);
+    // Own keys only — Object.assign copies `__proto__` as a data property.
+    newSettings = this._copyOwnSettings(newSettings);
     if (newSettings.global != null) {
       newSettings['*'] = newSettings.global;
       delete newSettings.global;
@@ -1206,7 +1207,7 @@ class Config {
 
   resetProjectSettings(newSettings, projectFile) {
     // Sets the scope and source of all project settings to `path`.
-    newSettings = Object.assign({}, newSettings);
+    newSettings = this._copyOwnSettings(newSettings);
     const oldProjectFile = this.projectFile;
     this.projectFile = projectFile;
     if (this.projectFile != null) {
@@ -1215,6 +1216,23 @@ class Config {
       this.scopedSettingsStore.removePropertiesForSource(oldProjectFile);
       this.projectSettings = {};
     }
+  }
+
+  // Copy enumerable own keys; skip prototype-pollution vectors.
+  _copyOwnSettings(src) {
+    const out = Object.create(null);
+    if (!src || typeof src !== 'object') return out;
+    for (const key of Object.keys(src)) {
+      if (
+        key === '__proto__' ||
+        key === 'constructor' ||
+        key === 'prototype'
+      ) {
+        continue;
+      }
+      out[key] = src[key];
+    }
+    return out;
   }
 
   clearProjectSettings() {

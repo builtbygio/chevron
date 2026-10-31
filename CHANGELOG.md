@@ -11,9 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Linux releases ship the AppImage only.** CI no longer builds `.deb`, `.rpm`, or `.tar.gz`; tag releases attach `chevron-<version>-x64.AppImage`. Optional local `--create-debian-package` / `--create-rpm-package` flags remain.
+
+- **Code scanning alerts closed for re-analysis.** Config settings copies skip prototype keys; Windows `BufferedProcess` uses a fixed `cmd.exe` path; tooltip HTML goes through a top-level DOMPurify; the local Squirrel test server uses `express-rate-limit` and `sendFile({ root })`. A `codeql.yml` workflow runs on master/PRs so alerts refresh.
+
 - **`@vscode/ripgrep` is 1.18.0.** Find-in-project and fuzzy-finder resolve the binary through `src/main-process/resolve-rg-path.js` (also on `require('chevron')`): prefer `@vscode/ripgrep-<platform>-<arch>/bin/rg`, fall back to the wrapper `rgPath`, then rewrite `app.asar` → `app.asar.unpacked`. Asar unpack covers both layouts. `ensure-ripgrep` uses the resolver first; the old postinstall/GitHub fallback remains for 1.15 trees. Ships ripgrep 15.
 
-- **CI and releases are Linux x64 only.** The macOS, universal-merge, and Windows build jobs are gone; tag releases publish deb/rpm/tar/AppImage. Weekly no-cache CI is Linux-only too.
+- **CI and releases are Linux x64 only.** The macOS, universal-merge, and Windows build jobs are gone; tag releases publish the AppImage. Weekly no-cache CI is Linux-only too.
 
 - **In-range dependency bumps.** Build-script `7zip-bin` is 4.1.0, `prettier` is 1.19.1, and `ws` is 8.22.1. `cpm` takes `@electron/rebuild` 4.2.1, `@npmcli/arborist` 10.0.4, `fs-extra` 11.4.1, and `pacote` 22.0.1.
 

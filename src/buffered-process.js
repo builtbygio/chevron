@@ -240,12 +240,9 @@ module.exports = class BufferedProcess {
   }
 
   getCmdPath() {
-    // Do not honor COMSPEC — it is attacker-controlled on some Windows setups.
-    const root = process.env.SystemRoot || process.env.windir || 'C:\\Windows';
-    if (!/^[A-Za-z]:[\\/]/.test(root)) {
-      return 'C:\\Windows\\System32\\cmd.exe';
-    }
-    return path.join(root, 'System32', 'cmd.exe');
+    // Fixed path only — never COMSPEC / SystemRoot / windir (CodeQL
+    // js/shell-command-injection-from-environment).
+    return 'C:\\Windows\\System32\\cmd.exe';
   }
 
   // Public: Terminate the process.
