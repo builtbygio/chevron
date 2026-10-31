@@ -15,7 +15,6 @@
  */
 
 const fs = require('fs');
-const path = require('path');
 const { createRequire } = require('module');
 
 const requireFromHere = createRequire(__filename);
@@ -49,7 +48,7 @@ function resolveFromPlatformPackage(resolveFn) {
   }
 }
 
-function resolveFromWrapper() {
+function defaultLoadWrapper() {
   try {
     const mod = requireFromHere('@vscode/ripgrep');
     return mod && mod.rgPath ? mod.rgPath : null;
@@ -61,11 +60,12 @@ function resolveFromWrapper() {
 function resolveRgPath(
   rgPath,
   existsFn = p => fs.existsSync(p),
-  resolveFn = id => requireFromHere.resolve(id)
+  resolveFn = id => requireFromHere.resolve(id),
+  loadWrapper = defaultLoadWrapper
 ) {
   let raw = rgPath || null;
   if (!raw) {
-    raw = resolveFromPlatformPackage(resolveFn) || resolveFromWrapper();
+    raw = resolveFromPlatformPackage(resolveFn) || loadWrapper();
   }
   if (!raw) {
     throw new Error(

@@ -1,8 +1,15 @@
 'use strict';
 
+/**
+ * Unit tests for src/resolve-rg-path.js. Fully injected — the unit-and-cpm
+ * job never installs the root app tree, so these must not require() the
+ * real @vscode/ripgrep package.
+ *
+ * Run: node --test script/ci/resolve-rg-path.test.js
+ */
+
 const { describe, it } = require('node:test');
 const assert = require('assert');
-const fs = require('fs');
 const path = require('path');
 
 const {
@@ -56,8 +63,7 @@ describe('resolve-rg-path', () => {
   });
 
   it('resolves the 1.18 platform package before the wrapper', () => {
-    const platformBin =
-      '/tmp/nm/@vscode/ripgrep-linux-x64/bin/rg';
+    const platformBin = '/tmp/nm/@vscode/ripgrep-linux-x64/bin/rg';
     const wrapperBin = '/tmp/nm/@vscode/ripgrep/bin/rg';
     const resolveFn = id => {
       if (id.endsWith('/bin/rg') || id.endsWith('/bin/rg.exe')) {
@@ -67,28 +73,57 @@ describe('resolve-rg-path', () => {
     };
     const existing = new Set([platformBin, wrapperBin]);
     assert.strictEqual(
-      resolveRgPath(undefined, p => existing.has(p), resolveFn),
+      resolveRgPath(
+        undefined,
+        p => existing.has(p),
+        resolveFn,
+        () => wrapperBin
+      ),
       platformBin
     );
   });
 
   it('falls back to the wrapper rgPath when the platform package resolve fails', () => {
-    // With 1.18 the wrapper itself points at the platform package bin; with
-    // 1.15 it points at …/ripgrep/bin/rg. Either way the fallback must work.
-    const resolved = resolveRgPath(undefined, p => fs.existsSync(p), id => {
-      throw new Error('no platform package: ' + id);
-    });
-    assert.ok(resolved.includes('@vscode/ripgrep'));
-    assert.ok(fs.existsSync(resolved), resolved);
+    const wrapperBin = '/tmp/nm/@vscode/ripgrep/bin/rg';
+    const existing = new Set([wrapperBin]);
+    const resolved = resolveRgPath(
+      undefined,
+      p => existing.has(p),
+      () => {
+        throw new Error('no platform package');
+      },
+      () => wrapperBin
+    );
+    assert.strictEqual(resolved, wrapperBin);
   });
 
-  it('resolves a real binary on this host via the platform package', () => {
-    const resolved = resolveRgPath();
-    assert.ok(fs.existsSync(resolved), resolved);
-    assert.strictEqual(path.basename(resolved), rgBinName());
-    assert.ok(
-      resolved.includes('ripgrep-') || resolved.includes(`${path.sep}ripgrep${path.sep}`),
-      resolved
+  it('throws when neither layout is available', () => {
+    assert.throws(
+      () =>
+        resolveRgPath(
+          undefined,
+          () => false,
+          () => {
+            throw new Error('no platform package');
+          },
+          () => null
+        ),
+      /ripgrep binary not found/
     );
+  });
+
+  it('rewrites a platform-package path out of app.asar', () => {
+    const asar =
+      '/app/resources/app.asar/node_modules/@vscode/ripgrep-linux-x64/bin/rg';
+    const unpacked = asar.replace('app.asar', 'app.asar.unpacked');
+    const existing = new Set([unpacked]);
+    const resolved = resolveRgPath(
+      undefined,
+      p => existing.has(p),
+      () => asar,
+      () => null
+    );
+    assert.strictEqual(resolved, unpacked);
+    assert.strictEqual(path.basename(resolved), 'rg');
   });
 });
