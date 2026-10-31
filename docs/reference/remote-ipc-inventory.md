@@ -186,7 +186,6 @@ Registered mainly in `src/main-process/atom-application.js` (`handleEvents` / IP
 | **tabs** | `remote.BrowserWindow` | **M/P** | Window list / focus; IPC |
 | **tree-view** | `remote.BrowserWindow` + ipc for DND across windows | **M/P** | Partial IPC already (`tree-view:project-folder-dropped`) |
 | **atom-pathspec** | `electron.remote.app` | **E/P** | Path helper only |
-| **devtron** | heavy remote | **D** | Dev tooling; optional disable under isolation |
 | **atom-mocha-test-runner** | remote | **D** | Specs |
 
 In-repo `packages/*` (about, link, …) mostly use **`shell`**, not remote — still needs attention when `nodeIntegration` goes false (shell via preload or IPC).
@@ -249,7 +248,7 @@ Suggested phased security:
 
 16. Remove `@electron/remote` dep, polyfill, main initialize/enable.  
 17. Remove/repurpose `exports/remote.js` with deprecation period.  
-18. Specs / benchmarks / devtron.
+18. Specs / benchmarks.
 
 ---
 
@@ -351,7 +350,7 @@ Packages: document `atomNova` (or keep `atom` APIs that already abstract Electro
 `static/index.js`, `src/get-window-load-settings.js`, `src/application-delegate.js`, `src/context-menu-manager.js`, `src/reopen-project-menu-manager.js`, `src/electron-shims.js`, `src/initialize-test-window.js`, `src/initialize-benchmark-window.js`, `exports/remote.js`, `src/main-process/start.js`, `src/main-process/atom-window.js`
 
 **Bundled:**  
-`github` (multiple), `settings-view`, `tabs`, `tree-view`, `atom-pathspec`, `devtron`, `atom-mocha-test-runner`
+`github` (multiple), `settings-view`, `tabs`, `tree-view`, `atom-pathspec`, `atom-mocha-test-runner`
 
 **Specs:**  
 `spec/atom-paths-spec.js`, `spec/auto-update-manager-spec.js`, `spec/integration/helpers/start-atom.js`

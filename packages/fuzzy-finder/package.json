@@ -16,8 +16,7 @@
     "minimatch": "^3.1.4",
     "temp": "^0.9.2",
     "underscore-plus": "^1.7.0",
-    "@vscode/ripgrep": "1.15.14",
-    "wrench": "^1.5"
+    "@vscode/ripgrep": "1.15.14"
   },
   "standard": {
     "env": {
