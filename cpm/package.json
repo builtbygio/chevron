@@ -19,12 +19,12 @@
     "directory": "cpm"
   },
   "dependencies": {
-    "@electron/rebuild": "^4.2.0",
-    "@npmcli/arborist": "^10.0.2",
+    "@electron/rebuild": "^4.2.1",
+    "@npmcli/arborist": "^10.0.4",
     "commander": "^12.1.0",
-    "fs-extra": "^11.2.0",
+    "fs-extra": "^11.4.1",
     "node-gyp-build": "^4.8.4",
-    "pacote": "^22.0.0",
+    "pacote": "^22.0.1",
     "semver": "^7.6.3",
     "yauzl": "^3.2.0"
   }

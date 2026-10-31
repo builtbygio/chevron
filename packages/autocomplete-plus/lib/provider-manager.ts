@@ -3,7 +3,6 @@ declare const atom: any
 const {CompositeDisposable, Disposable} = require('chevron')
 const {isFunction, isString} = require('./type-helpers')
 const {Selector} = require('selector-kit')
-const stableSort = require('stable')
 const grim = require('grim')
 const {selectorsMatchScopeChain} = require('./scope-helpers')
 const {API_VERSION} = require('./private-symbols')
@@ -97,7 +96,8 @@ class ProviderManager {
 
   sortProviders (providers, scopeDescriptor) {
     const scopeChain = scopeChainForScopeDescriptor(scopeDescriptor)
-    return stableSort(providers, (providerA, providerB) => {
+    // V8/Node Array#sort has been stable since Node 12; no need for `stable`.
+    return providers.sort((providerA, providerB) => {
       const priorityA = providerA.provider.suggestionPriority != null ? providerA.provider.suggestionPriority : 1
       const priorityB = providerB.provider.suggestionPriority != null ? providerB.provider.suggestionPriority : 1
       let difference = priorityB - priorityA
@@ -107,8 +107,7 @@ class ProviderManager {
         difference = specificityB - specificityA
       }
       return difference
-    }
-    )
+    })
   }
 
   filterProvidersByExcludeLowerPriority (providers) {

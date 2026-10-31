@@ -7,7 +7,6 @@ const Workspace = require('../src/workspace');
 const Project = require('../src/project');
 const platform = require('./spec-helper-platform');
 const _ = require('underscore-plus');
-const fstream = require('fstream');
 const fs = require('fs-plus');
 const ChevronEnvironment = require('../src/chevron-environment');
 const { conditionPromise } = require('./async-spec-helpers');
@@ -2537,7 +2536,7 @@ describe('Workspace', () => {
           let projectPath;
           let ignoredPath;
 
-          beforeEach(async () => {
+          beforeEach(() => {
             const sourceProjectPath = path.join(
               __dirname,
               'fixtures',
@@ -2545,14 +2544,7 @@ describe('Workspace', () => {
               'working-dir'
             );
             projectPath = path.join(temp.mkdirSync('atom'));
-
-            const writerStream = fstream.Writer(projectPath);
-            fstream.Reader(sourceProjectPath).pipe(writerStream);
-
-            await new Promise(resolve => {
-              writerStream.on('close', resolve);
-              writerStream.on('error', resolve);
-            });
+            fs.copySync(sourceProjectPath, projectPath);
 
             fs.renameSync(
               path.join(projectPath, 'git.git'),
@@ -2612,7 +2604,7 @@ describe('Workspace', () => {
         describe('when the core.followSymlinks config is used', () => {
           let projectPath;
 
-          beforeEach(async () => {
+          beforeEach(() => {
             const sourceProjectPath = path.join(
               __dirname,
               'fixtures',
@@ -2620,14 +2612,7 @@ describe('Workspace', () => {
               'a-dir'
             );
             projectPath = path.join(temp.mkdirSync('atom'));
-
-            const writerStream = fstream.Writer(projectPath);
-            fstream.Reader(sourceProjectPath).pipe(writerStream);
-
-            await new Promise(resolve => {
-              writerStream.on('close', resolve);
-              writerStream.on('error', resolve);
-            });
+            fs.copySync(sourceProjectPath, projectPath);
 
             fs.symlinkSync(
               path.join(__dirname, 'fixtures', 'dir', 'b'),
@@ -2667,7 +2652,7 @@ describe('Workspace', () => {
         describe('when there are hidden files', () => {
           let projectPath;
 
-          beforeEach(async () => {
+          beforeEach(() => {
             const sourceProjectPath = path.join(
               __dirname,
               'fixtures',
@@ -2675,14 +2660,7 @@ describe('Workspace', () => {
               'a-dir'
             );
             projectPath = path.join(temp.mkdirSync('atom'));
-
-            const writerStream = fstream.Writer(projectPath);
-            fstream.Reader(sourceProjectPath).pipe(writerStream);
-
-            await new Promise(resolve => {
-              writerStream.on('close', resolve);
-              writerStream.on('error', resolve);
-            });
+            fs.copySync(sourceProjectPath, projectPath);
 
             // Note: This won't create a hidden file on Windows, in order to more
             // accurately test this behaviour there, we should either use a package

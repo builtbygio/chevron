@@ -6,9 +6,20 @@ const fs = require('fs-plus')
 const os = require('os')
 const sinon = require('sinon')
 const temp = require('temp')
-const wrench = require('wrench')
 
 const fuzzyFinderPackage = require('..')
+
+function readdirSyncRecursive (dirPath, base = dirPath) {
+  const results = []
+  for (const name of fs.readdirSync(dirPath)) {
+    const fullPath = path.join(dirPath, name)
+    results.push(path.relative(base, fullPath))
+    if (fs.isDirectorySync(fullPath)) {
+      results.push(...readdirSyncRecursive(fullPath, base))
+    }
+  }
+  return results
+}
 const PathLoader = require('../lib/path-loader')
 const DefaultFileIcons = require('../lib/default-file-icons')
 const getIconServices = require('../lib/get-icon-services')
@@ -47,17 +58,8 @@ describe('FuzzyFinder', () => {
 
     fixturesPath = chevron.project.getPaths()[0]
 
-    wrench.copyDirSyncRecursive(
-      path.join(fixturesPath, 'root-dir1'),
-      rootDir1,
-      {forceDelete: true}
-    )
-
-    wrench.copyDirSyncRecursive(
-      path.join(fixturesPath, 'root-dir2'),
-      rootDir2,
-      {forceDelete: true}
-    )
+    fs.copySync(path.join(fixturesPath, 'root-dir1'), rootDir1)
+    fs.copySync(path.join(fixturesPath, 'root-dir2'), rootDir2)
 
     chevron.project.setPaths([rootDir1, rootDir2])
 
@@ -97,7 +99,7 @@ describe('FuzzyFinder', () => {
 
   function eachFilePath (dirPaths, fn) {
     for (let dirPath of dirPaths) {
-      wrench.readdirSyncRecursive(dirPath).filter((filePath) => {
+      readdirSyncRecursive(dirPath).filter((filePath) => {
         const fullPath = path.join(dirPath, filePath)
         if (fs.isFileSync(fullPath)) {
           fn(filePath)
