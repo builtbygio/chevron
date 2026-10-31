@@ -11,7 +11,7 @@ const {
   rgTarget,
   ensureRipgrepAt
 } = require('../lib/ensure-ripgrep');
-const { resolveRgPath } = require('../../src/ripgrep-directory-searcher');
+const { resolveRgPath } = require('../../src/resolve-rg-path');
 
 describe('ensure-ripgrep / resolveRgPath', () => {
   it('names the host binary', () => {
@@ -48,7 +48,7 @@ describe('ensure-ripgrep / resolveRgPath', () => {
     );
   });
 
-  it('maps @vscode/ripgrep 1.15.14 / ripgrep-prebuilt v13.0.0-13 targets', () => {
+  it('maps legacy ripgrep-prebuilt targets for the 1.15 fallback downloader', () => {
     assert.strictEqual(rgTarget('darwin', 'arm64'), 'aarch64-apple-darwin');
     assert.strictEqual(rgTarget('darwin', 'x64'), 'x86_64-apple-darwin');
     assert.strictEqual(rgTarget('linux', 'x64'), 'x86_64-unknown-linux-musl');
@@ -56,11 +56,11 @@ describe('ensure-ripgrep / resolveRgPath', () => {
     assert.strictEqual(rgTarget('win32', 'x64'), 'x86_64-pc-windows-msvc');
   });
 
-  it('@vscode/ripgrep is a root dependency and vscode-ripgrep is gone', () => {
+  it('@vscode/ripgrep is 1.18.0 and vscode-ripgrep is gone', () => {
     const pkg = JSON.parse(
       fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8')
     );
-    assert.strictEqual(pkg.dependencies['@vscode/ripgrep'], '1.15.14');
+    assert.strictEqual(pkg.dependencies['@vscode/ripgrep'], '1.18.0');
     assert.ok(!pkg.dependencies['vscode-ripgrep']);
   });
 });

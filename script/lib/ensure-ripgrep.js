@@ -1,16 +1,15 @@
 'use strict';
 
 /**
- * @vscode/ripgrep's postinstall downloads bin/rg. App npm install uses
- * --ignore-scripts, so find-in-project gets ENOENT under app.asar.unpacked
- * unless we fetch the binary explicitly.
+ * Make sure a ripgrep binary is on disk for packaging.
  *
- * @vscode/ripgrep@1.15.14 talks to api.github.com (microsoft/ripgrep-prebuilt
- * v13.0.0-13). Unauthenticated GETs 403 on shared CI IPs. Pass GITHUB_TOKEN
- * and fall back to the public release asset URL if postinstall still fails.
+ * @vscode/ripgrep@1.18+ ships `rg` via optionalDependencies
+ * (`@vscode/ripgrep-<platform>-<arch>`). Those install under
+ * `--ignore-scripts`, so the usual path is: resolve and chmod.
  *
- * Do not jump to @vscode/ripgrep@1.18 — that package is ESM + per-platform
- * optionalDependencies and is not a drop-in for require() / bin/rg.
+ * Older 1.15 trees put `bin/rg` beside the wrapper and filled it with
+ * postinstall (or a GitHub release fallback when the API 403s). That path
+ * remains for partially upgraded checkouts.
  */
 
 const { execFileSync, spawnSync } = require('child_process');
@@ -280,6 +279,18 @@ function syncFallback(pkgDir) {
 }
 
 function ensureRipgrep() {
+  // 1.18+: platform optionalDep is already present after ignore-scripts install.
+  try {
+    const { resolveRgPath } = require('../../src/resolve-rg-path');
+    const resolved = resolveRgPath();
+    if (resolved && fs.existsSync(resolved)) {
+      chmodRg(resolved);
+      return resolved;
+    }
+  } catch (_) {
+    /* fall through to legacy 1.15 wrapper ensure */
+  }
+
   const dirs = [
     path.join(CONFIG.repositoryRootPath, 'node_modules', RG_PACKAGE),
     path.join(CONFIG.intermediateAppPath, 'node_modules', RG_PACKAGE)

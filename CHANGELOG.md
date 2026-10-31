@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`@vscode/ripgrep` is 1.18.0.** Find-in-project and fuzzy-finder resolve the binary through `src/resolve-rg-path.js` (also on `require('chevron')`): prefer `@vscode/ripgrep-<platform>-<arch>/bin/rg`, fall back to the wrapper `rgPath`, then rewrite `app.asar` → `app.asar.unpacked`. Asar unpack covers both layouts. `ensure-ripgrep` uses the resolver first; the old postinstall/GitHub fallback remains for 1.15 trees. Ships ripgrep 15.
+
 - **In-range dependency bumps.** Build-script `7zip-bin` is 4.1.0, `prettier` is 1.19.1, and `ws` is 8.22.1. `cpm` takes `@electron/rebuild` 4.2.1, `@npmcli/arborist` 10.0.4, `fs-extra` 11.4.1, and `pacote` 22.0.1.
 
 - **Deprecated packages removed.** Unused `devtron` is gone. Spec-only `fstream` and `wrench` are replaced with `fs-plus` / small helpers. `autocomplete-plus` sorts with native stable `Array#sort` instead of the deprecated `stable` package. The `fstream` overrides go with it.

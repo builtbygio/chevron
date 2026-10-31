@@ -48,14 +48,12 @@ const NATIVE = [
 ];
 
 // Packages whose value is a file on disk rather than code. Inlining them
-// moves the code away from the asset it points at: @vscode/ripgrep computes
-// rgPath as path.join(__dirname, '../bin/rg'), so once it is inlined into
-// fuzzy-finder's bundle __dirname is the package root and the path becomes
-// node_modules/bin/rg. The binary is still there; nothing can find it.
+// moves the code away from the asset it points at. resolve-rg-path prefers
+// @vscode/ripgrep-<platform>-<arch>/bin/rg (1.18+) and falls back to the
+// 1.15 wrapper's rgPath; neither survives esbuild inlining next to a missing
+// binary. dugite embeds git beside its package root the same way.
 const BINARY_ASSETS = [
   '@vscode/ripgrep',
-  // dugite locates its embedded git as path.resolve(__dirname, '..', '..',
-  // 'git'), so inlining it points github at a git that is not there.
   'dugite'
 ];
 

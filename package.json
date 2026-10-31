@@ -18,7 +18,7 @@
     "@atom/nsfw": "npm:@builtbygio/nsfw@1.0.28",
     "@atom/source-map-support": "^0.3.4",
     "@atom/watcher": "workspace:@builtbygio/watcher@*",
-    "@vscode/ripgrep": "1.15.14",
+    "@vscode/ripgrep": "1.18.0",
     "@webcomponents/custom-elements": "1.6.0",
     "@xterm/xterm": "6.0.0",
     "about": "workspace:@builtbygio/about@*",

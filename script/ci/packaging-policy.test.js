@@ -130,6 +130,10 @@ describe('packaging policy (Stream D)', () => {
     const joined = asarUnpackExpression();
     assert.ok(globs.includes('*.node'));
     assert.ok(joined.includes(path.join('@vscode', 'ripgrep')));
+    assert.ok(
+      globs.some(g => g.includes(path.join('@vscode', 'ripgrep-*'))),
+      'asar unpack covers 1.18 platform package bins'
+    );
     assert.ok(joined.includes('dugite'));
     assert.ok(joined.includes(`${path.join('github', 'lib')}`));
     assert.ok(joined.includes('workers'));

@@ -13,6 +13,7 @@ const BufferedProcess = require('../src/buffered-process');
 const GitRepository = require('../src/git-repository');
 const Notification = require('../src/notification');
 const { watchPath } = require('../src/path-watcher');
+const { resolveRgPath } = require('../src/resolve-rg-path');
 
 const chevronExport = {
   BufferedNodeProcess,
@@ -27,7 +28,8 @@ const chevronExport = {
   Emitter,
   Disposable,
   CompositeDisposable,
-  watchPath
+  watchPath,
+  resolveRgPath
 };
 
 if (process.platform === 'win32') {

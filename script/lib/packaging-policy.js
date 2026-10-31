@@ -149,7 +149,9 @@ function asarUnpackGlobs() {
     path.join('**', 'node_modules', 'github', 'lib', '**'),
     path.join('**', 'src', 'main-process', 'workers', '**'),
     path.join('**', 'node_modules', 'dugite', '**'),
+    // 1.15: bin beside the wrapper. 1.18+: bin under ripgrep-<platform>-<arch>.
     path.join('**', 'node_modules', '@vscode', 'ripgrep', 'bin', '**'),
+    path.join('**', 'node_modules', '@vscode', 'ripgrep-*', 'bin', '**'),
     // node-pty ships more than a .node: on macOS it execs `spawn-helper`
     // beside it, and node-pty rewrites that path from app.asar to
     // app.asar.unpacked itself. The bare `*.node` glob above does not carry
