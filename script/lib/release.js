@@ -86,9 +86,7 @@ function downloadTable(version) {
   return [
     '| Platform | File |',
     '|----------|------|',
-    `| Linux x64 | \`chevron_${version}_amd64.deb\`, \`chevron.x86_64.rpm\`, \`chevron-amd64.tar.gz\`, \`chevron-${version}-x64.AppImage\` |`,
-    '| macOS | `chevron-mac-universal.zip` (unsigned `.app`) |',
-    `| Windows x64 | \`chevron-${version}-windows-x64-setup.exe\`, \`chevron-x64-windows.zip\` |`
+    `| Linux x64 | \`chevron_${version}_amd64.deb\`, \`chevron.x86_64.rpm\`, \`chevron-amd64.tar.gz\`, \`chevron-${version}-x64.AppImage\` |`
   ].join('\n');
 }
 
