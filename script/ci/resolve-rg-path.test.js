@@ -1,9 +1,12 @@
 'use strict';
 
 /**
- * Unit tests for src/resolve-rg-path.js. Fully injected — the unit-and-cpm
- * job never installs the root app tree, so these must not require() the
- * real @vscode/ripgrep package.
+ * Unit tests for src/main-process/resolve-rg-path.js. Fully injected — the
+ * unit-and-cpm job never installs the root app tree, so these must not
+ * require() the real @vscode/ripgrep package.
+ *
+ * Lives under main-process (plain CJS, no compile-cache) because bootstrap
+ * and the rg IPC host load it outside the renderer TypeScript path.
  *
  * Run: node --test script/ci/resolve-rg-path.test.js
  */
@@ -17,7 +20,7 @@ const {
   rgBinName,
   platformPackageName,
   preferUnpacked
-} = require('../../src/resolve-rg-path');
+} = require('../../src/main-process/resolve-rg-path');
 
 describe('resolve-rg-path', () => {
   it('names the host binary', () => {

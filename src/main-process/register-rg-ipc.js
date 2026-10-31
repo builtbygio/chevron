@@ -9,7 +9,7 @@
 const { spawn: defaultSpawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { resolveRgPath } = require('../ripgrep-directory-searcher');
+const { resolveRgPath } = require('./resolve-rg-path');
 
 const FLAGS_BARE = new Set([
   '--json',

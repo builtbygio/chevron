@@ -13,7 +13,7 @@ const BufferedProcess = require('../src/buffered-process');
 const GitRepository = require('../src/git-repository');
 const Notification = require('../src/notification');
 const { watchPath } = require('../src/path-watcher');
-const { resolveRgPath } = require('../src/resolve-rg-path');
+const { resolveRgPath } = require('../src/main-process/resolve-rg-path');
 
 const chevronExport = {
   BufferedNodeProcess,

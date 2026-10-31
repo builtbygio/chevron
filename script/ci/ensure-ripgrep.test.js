@@ -11,7 +11,7 @@ const {
   rgTarget,
   ensureRipgrepAt
 } = require('../lib/ensure-ripgrep');
-const { resolveRgPath } = require('../../src/resolve-rg-path');
+const { resolveRgPath } = require('../../src/main-process/resolve-rg-path');
 
 describe('ensure-ripgrep / resolveRgPath', () => {
   it('names the host binary', () => {

@@ -281,7 +281,7 @@ function syncFallback(pkgDir) {
 function ensureRipgrep() {
   // 1.18+: platform optionalDep is already present after ignore-scripts install.
   try {
-    const { resolveRgPath } = require('../../src/resolve-rg-path');
+    const { resolveRgPath } = require('../../src/main-process/resolve-rg-path');
     const resolved = resolveRgPath();
     if (resolved && fs.existsSync(resolved)) {
       chmodRg(resolved);

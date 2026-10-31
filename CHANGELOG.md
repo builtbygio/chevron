@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **`@vscode/ripgrep` is 1.18.0.** Find-in-project and fuzzy-finder resolve the binary through `src/resolve-rg-path.js` (also on `require('chevron')`): prefer `@vscode/ripgrep-<platform>-<arch>/bin/rg`, fall back to the wrapper `rgPath`, then rewrite `app.asar` → `app.asar.unpacked`. Asar unpack covers both layouts. `ensure-ripgrep` uses the resolver first; the old postinstall/GitHub fallback remains for 1.15 trees. Ships ripgrep 15.
+- **`@vscode/ripgrep` is 1.18.0.** Find-in-project and fuzzy-finder resolve the binary through `src/main-process/resolve-rg-path.js` (also on `require('chevron')`): prefer `@vscode/ripgrep-<platform>-<arch>/bin/rg`, fall back to the wrapper `rgPath`, then rewrite `app.asar` → `app.asar.unpacked`. Asar unpack covers both layouts. `ensure-ripgrep` uses the resolver first; the old postinstall/GitHub fallback remains for 1.15 trees. Ships ripgrep 15.
 
 - **CI and releases are Linux x64 only.** The macOS, universal-merge, and Windows build jobs are gone; tag releases publish deb/rpm/tar/AppImage. Weekly no-cache CI is Linux-only too.
 

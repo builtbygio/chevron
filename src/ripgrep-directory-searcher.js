@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { resolveRgPath } = require('./resolve-rg-path');
+const { resolveRgPath } = require('./main-process/resolve-rg-path');
 
 function getIpcRenderer() {
   return require('electron').ipcRenderer;
