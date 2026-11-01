@@ -1,4 +1,5 @@
-const nock = require('nock');
+// nock 15 is ESM; CJS require() exposes the function on .default.
+const nock = require('nock').default || require('nock');
 const { createPR, findPR } = require('../pull-request');
 const createPrResponse = require('./fixtures/create-pr-response.json');
 const searchResponse = require('./fixtures/search-response.json');

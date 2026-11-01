@@ -16,13 +16,15 @@ module.exports = function(aPath) {
     user === ''
       ? os.homedir()
       : (() => {
-          const passwd = passwdUser.sync(user);
+          // passwd-user 4 renamed sync → passwdUserSync and homedir → homeDirectory.
+          const lookup = passwdUser.passwdUserSync || passwdUser.sync;
+          const passwd = lookup(user);
           if (passwd === undefined) {
             throw new Error(
               `Failed to expand the tilde in ${aPath} - user "${user}" does not exist`
             );
           }
-          return passwd.homedir;
+          return passwd.homedir || passwd.homeDirectory;
         })();
 
   return `${home}${rest}`;
