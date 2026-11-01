@@ -261,6 +261,7 @@ jobs:
           node --test script/ci/crash-branding.test.js
           node --test script/ci/load-tree-sitter-language.test.js
           node --test script/ci/package-utility-worker.test.js
+          node --test script/ci/clipboard-compat.test.js
           node --test script/ci/git-utility-host-integration.test.js
           node --test script/ci/natives-fingerprint.test.js
           node --test script/ci/fs-ipc-roots.test.js
