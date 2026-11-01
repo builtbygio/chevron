@@ -63,9 +63,9 @@ describe('root dependency graph', () => {
     }
   });
 
-  it('overrides nan to 2.28.0 (Stream B / keytar)', () => {
+  it('overrides nan to 2.30.0 (Stream B / keytar)', () => {
     assert.ok(pkg.overrides, 'package.json overrides missing');
-    assert.strictEqual(pkg.overrides.nan, '2.28.0');
+    assert.strictEqual(pkg.overrides.nan, '2.30.0');
   });
 
   it('overrides runtime SCA hotspots (marked / DOMPurify / dugite tar)', () => {
