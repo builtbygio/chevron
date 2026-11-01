@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Build-script majors.** `7zip-bin` 5.2.0, `normalize-package-data` 9.0.0, `passwd-user` 4.0.0, `nock` 15.0.5. Tilde expansion uses `passwdUserSync` and `homeDirectory`. The dependency-update spec calls nock's ESM default export.
+
 - **Build-script majors.** `fs-extra` 11.4.1, `semver` 7.8.5, `@octokit/request` 10.0.16. Copy, version compare, and the dependency-update request helper keep the same call shape. Nested `semver` 5 and 6 stay on their patched overrides.
 
 - **Electron is 44.10.1.** New major: natives rebuild for the 44 ABI, and `electron-mksnapshot` moves with it. Clipboard reads and writes are promises and the module is gone from the renderer, so the main process keeps a synchronous cache (`clipboard.selection` on Linux) and the editor reads that over the existing clipboard IPC. macOS 12 is no longer supported by this Electron line.
