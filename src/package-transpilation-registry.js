@@ -7,7 +7,9 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-const minimatch = require('minimatch');
+// minimatch 9+ exports a namespace; the matcher is .minimatch.
+const minimatchModule = require('minimatch');
+const minimatch = minimatchModule.minimatch || minimatchModule;
 
 let Resolve = null;
 

@@ -727,7 +727,11 @@ See https://github.com/atom/autocomplete-plus/wiki/Provider-API`
       return this.isCurrentFileBlackListedCache
     }
 
-    if (typeof minimatch === 'undefined' || minimatch === null) { minimatch = require('minimatch') }
+    // minimatch 9+ exports a namespace; the matcher is .minimatch.
+    if (typeof minimatch === 'undefined' || minimatch === null) {
+      const mod = require('minimatch')
+      minimatch = mod.minimatch || mod
+    }
     const fileName = path.basename((left = this.buffer.getPath()) != null ? left : '')
     for (let i = 0; i < this.fileBlacklist.length; i++) {
       const blacklistGlob = this.fileBlacklist[i]

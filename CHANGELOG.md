@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`glob` 14 and `minimatch` 11.** Clears the open Dependabot mediums on both. Call sites use `glob()` / `glob.sync` from the namespace export (callback form is gone) and `minimatch.minimatch` / `Minimatch` (default export is no longer a function). Root/script/cpm overrides force `minimatch` 11.0.3; script/cpm also force `glob` 14.0.3 (product keeps pre-9 `glob` for old tooling).
+
 - **Small dependency majors.** `dedent` 1, `color` 5, `focus-trap` 8, `yargs` 18, `postcss-selector-parser` 7, `iconv-lite` 0.7, `jschardet` 4, `node-emoji` 2, `pegjs` 0.10, `multi-integer-range` 6, cpm `commander` 15. `Color.parse` unwraps `color`'s ESM default; spell-check uses `MultiRange#append([[start, end]])`; CLI and build scripts call `yargs(process.argv.slice(2))` and wrap to `process.stdout.columns` (yargs 18 dropped the singleton API and `terminalWidth`); pegjs call sites use `generate` (renamed from `buildParser`).
 
 - **Electron is 43.8.6.** Same 43.x ABI as 43.7.9; Chromium/security backports on the 43 line. `electron-mksnapshot` moves with it.

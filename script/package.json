@@ -31,7 +31,7 @@
     "eslint-plugin-promise": "^6.6.0",
     "fs-admin": "^0.20.0",
     "fs-extra": "9.0.1",
-    "glob": "7.0.3",
+    "glob": "14.0.3",
     "license-checker-rseidelsohn": "5.0.1",
     "lodash.startcase": "4.4.0",
     "lodash.template": "4.18.1",
@@ -60,7 +60,6 @@
   },
   "overrides": {
     "extract-zip": "file:vendor/extract-zip",
-    "minimatch@3": "3.1.4",
     "brace-expansion@1": "1.1.21",
     "brace-expansion@2": "2.1.7",
     "js-yaml@3": "3.15.2",
@@ -108,6 +107,8 @@
     "js-yaml@4": "4.3.2",
     "source-map-js": "1.2.2",
     "@xmldom/xmldom": "0.9.12",
-    "ip-address": "10.7.5"
+    "ip-address": "10.7.5",
+    "minimatch": "11.0.3",
+    "glob": "14.0.3"
   }
 }
