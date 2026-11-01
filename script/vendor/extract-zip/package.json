@@ -7,6 +7,6 @@
     "node": ">=22.12.0"
   },
   "dependencies": {
-    "@electron-internal/extract-zip": "1.0.1"
+    "@electron-internal/extract-zip": "1.0.8"
   }
 }
