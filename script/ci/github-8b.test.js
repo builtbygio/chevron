@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * 8B first slice: github package is React 18 + createRoot.
+ * 8B first slice: github package is React 19 + createRoot.
  * Inbox stays. Run: node --test script/ci/github-8b.test.js
  */
 
@@ -17,14 +17,14 @@ function read(rel) {
   return fs.readFileSync(path.join(GITHUB, rel), 'utf8');
 }
 
-describe('github 8B React 18 (inbox stays)', () => {
-  it('pins github 0.37 and React 18.3', () => {
+describe('github 8B React 19 (inbox stays)', () => {
+  it('pins github 0.37 and React 19.3', () => {
     const app = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')
     );
     // 0.37.x, not an exact pin: the package takes patch bumps (e.g. the PR 23
     // chevron-global conversion) and this guard is about the 8B shape —
-    // React 18, no Relay — not about a frozen version number.
+    // React 19, no Relay — not about a frozen version number.
     assert.match(app.packageDependencies.github, /^0\.37\.\d+$/);
     // 1.1.0 catalog: npm pins, 0 git SHAs (see baseline-1.1.0.test.js).
     assert.match(
@@ -33,8 +33,8 @@ describe('github 8B React 18 (inbox stays)', () => {
     );
     const pkg = JSON.parse(read('package.json'));
     assert.match(pkg.version, /^0\.37\.\d+$/);
-    assert.strictEqual(pkg.dependencies.react, '18.3.1');
-    assert.strictEqual(pkg.dependencies['react-dom'], '18.3.1');
+    assert.strictEqual(pkg.dependencies.react, '19.3.1');
+    assert.strictEqual(pkg.dependencies['react-dom'], '19.3.1');
     assert.ok(!pkg.dependencies['react-relay']);
     assert.ok(!pkg.dependencies['relay-runtime']);
   });
