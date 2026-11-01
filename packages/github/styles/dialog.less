@@ -152,27 +152,24 @@
   &-owner {
     flex: 1;
 
-    .Select-control {
+    .Select__control {
       border-color: var(--button-border-color);
     }
 
-    &.Select--single > .Select-control .Select-value.Select-value {
+    .Select__single-value {
       background: var(--button-background-color);
-    }
-
-    &.Select.has-value.Select--single > .Select-control .Select-value .Select-value-label {
       color: var(--text-color);
     }
 
-    .Select-option {
+    .Select__option {
       background: var(--button-background-color);
       color: var(--text-color);
 
-      &.is-focused {
+      &--is-focused {
         background: var(--button-background-color-selected);
       }
 
-      &.is-disabled {
+      &--is-disabled {
         color: var(--text-color-subtle);
       }
     }

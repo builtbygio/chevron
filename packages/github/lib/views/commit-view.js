@@ -45,10 +45,21 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-const TOOLTIP_DELAY = 200; // CustomEvent is a DOM primitive, which v8 can't access
-// so we're essentially lazy loading to keep snapshotting from breaking.
+const TOOLTIP_DELAY = 200;
 
-let FakeKeyDownEvent;
+const SELECT_KEYS = {
+  40: 'ArrowDown',
+  38: 'ArrowUp',
+  13: 'Enter',
+  9: 'Tab',
+  8: 'Backspace',
+  33: 'PageUp',
+  34: 'PageDown',
+  35: 'End',
+  36: 'Home',
+  46: 'Delete',
+  27: 'Escape'
+};
 
 class CommitView extends _react.default.Component {
   constructor(props, context) {
@@ -58,7 +69,8 @@ class CommitView extends _react.default.Component {
       showWorking: false,
       showCoAuthorInput: false,
       showCoAuthorForm: false,
-      coAuthorInput: ''
+      coAuthorInput: '',
+      coAuthorFilter: ''
     };
     this.timeoutHandle = null;
     this.subscriptions = new _eventKit.CompositeDisposable();
@@ -78,24 +90,22 @@ class CommitView extends _react.default.Component {
 
   proxyKeyCode(keyCode) {
     return e => {
-      if (this.refCoAuthorSelect.isEmpty()) {
+      const root = this.coAuthorDom;
+      const input = root && root.querySelector('input');
+      if (!input) {
         return;
       }
 
-      if (!FakeKeyDownEvent) {
-        FakeKeyDownEvent = class extends CustomEvent {
-          constructor(kCode) {
-            super('keydown');
-            this.keyCode = kCode;
-          }
+      const keyEvent = new KeyboardEvent('keydown', {
+        key: SELECT_KEYS[keyCode] || '',
+        keyCode,
+        which: keyCode,
+        bubbles: true,
+        cancelable: true
+      });
+      input.dispatchEvent(keyEvent);
 
-        };
-      }
-
-      const fakeEvent = new FakeKeyDownEvent(keyCode);
-      this.refCoAuthorSelect.get().handleKeyDown(fakeEvent);
-
-      if (!fakeEvent.defaultPrevented) {
+      if (!keyEvent.defaultPrevented) {
         e.abortKeyBinding();
       }
     };
@@ -279,24 +289,40 @@ class CommitView extends _react.default.Component {
     return _react.default.createElement(_observeModel.default, {
       model: this.props.userStore,
       fetchData: store => store.getUsers()
-    }, mentionableUsers => _react.default.createElement(_reactSelect.default, {
-      ref: this.refCoAuthorSelect.setter,
+    }, mentionableUsers => _react.default.createElement("div", {
       className: "github-CommitView-coAuthorEditor input-textarea native-key-bindings",
+      ref: node => {
+        this.coAuthorDom = node;
+      }
+    }, _react.default.createElement(_reactSelect.default, {
+      ref: this.refCoAuthorSelect.setter,
+      classNamePrefix: "Select",
+      unstyled: true,
       placeholder: "Co-Authors",
-      arrowRenderer: null,
-      options: mentionableUsers,
-      labelKey: "fullName",
-      valueKey: "email",
-      filterOptions: this.matchAuthors,
-      optionRenderer: this.renderCoAuthorListItem,
-      valueRenderer: this.renderCoAuthorValue,
+      options: this.matchAuthors(mentionableUsers, this.state.coAuthorFilter, this.props.selectedCoAuthors),
+      getOptionLabel: author => author.getFullName() || author.getEmail(),
+      getOptionValue: author => author.getEmail(),
+      filterOption: () => true,
+      formatOptionLabel: (author, meta) => meta.context === 'value' ? this.renderCoAuthorValue(author) : this.renderCoAuthorListItem(author),
+      onInputChange: (text, meta) => {
+        if (meta.action === 'input-change') {
+          this.setState({
+            coAuthorFilter: text
+          });
+        }
+      },
       onChange: this.onSelectedCoAuthorsChanged,
       value: this.props.selectedCoAuthors,
-      multi: true,
-      openOnClick: false,
-      openOnFocus: false,
-      tabIndex: "5"
-    }));
+      isMulti: true,
+      openMenuOnClick: false,
+      openMenuOnFocus: false,
+      menuPlacement: "top",
+      tabIndex: 5,
+      components: {
+        DropdownIndicator: () => null,
+        IndicatorSeparator: () => null
+      }
+    })));
   }
 
   renderHardWrapIcon() {
@@ -422,9 +448,13 @@ class CommitView extends _react.default.Component {
   }
 
   excludeCoAuthor() {
-    const author = this.refCoAuthorSelect.map(c => c.getFocusedOption()).getOr(null);
+    const root = this.coAuthorDom;
+    const input = root && root.querySelector('input');
+    const activeId = input && input.getAttribute('aria-activedescendant');
+    const active = activeId && document.getElementById(activeId);
+    const marked = active && active.querySelector('[data-coauthor-email]');
 
-    if (!author || author.isNew()) {
+    if (!marked || marked.getAttribute('data-coauthor-new') === '1') {
       return;
     }
 
@@ -434,7 +464,7 @@ class CommitView extends _react.default.Component {
       excluded += ', ';
     }
 
-    excluded += author.getEmail();
+    excluded += marked.getAttribute('data-coauthor-email');
     this.props.config.set('github.excludedUsers', excluded);
   }
 
@@ -547,7 +577,9 @@ class CommitView extends _react.default.Component {
     return _react.default.createElement("div", {
       className: (0, _classnames.default)('github-CommitView-coAuthorEditor-selectListItem', {
         'new-author': author.isNew()
-      })
+      }),
+      'data-coauthor-email': author.getEmail(),
+      'data-coauthor-new': author.isNew() ? '1' : '0'
     }, this.renderCoAuthorListItemField('name', author.getFullName()), author.hasLogin() && this.renderCoAuthorListItemField('login', '@' + author.getLogin()), this.renderCoAuthorListItemField('email', author.getEmail()));
   }
 
@@ -567,7 +599,8 @@ class CommitView extends _react.default.Component {
 
   onSelectedCoAuthorsChanged(selectedCoAuthors) {
     (0, _reporterProxy.incrementCounter)('selected-co-authors-changed');
-    const newAuthor = selectedCoAuthors.find(author => author.isNew());
+    const authors = selectedCoAuthors || [];
+    const newAuthor = authors.find(author => author.isNew());
 
     if (newAuthor) {
       this.setState({
@@ -575,7 +608,7 @@ class CommitView extends _react.default.Component {
         showCoAuthorForm: true
       });
     } else {
-      this.props.updateSelectedCoAuthors(selectedCoAuthors);
+      this.props.updateSelectedCoAuthors(authors);
     }
   }
 
@@ -600,7 +633,7 @@ class CommitView extends _react.default.Component {
       return CommitView.focus.COMMIT_BUTTON;
     }
 
-    if (this.refCoAuthorSelect.map(c => c.wrapper && c.wrapper.contains(element)).getOr(false)) {
+    if (this.coAuthorDom && this.coAuthorDom.contains(element)) {
       return CommitView.focus.COAUTHOR_INPUT;
     }
 
