@@ -35,7 +35,6 @@ class ChangedFilesCountView extends _react.default.Component {
 
   render() {
     return _react.default.createElement("button", {
-      ref: "changedFiles",
       className: "github-ChangedFilesCount inline-block",
       onClick: this.handleClick
     }, _react.default.createElement(_octicon.default, {

@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **GitHub package is on React 19.3.1.** `react-select` 5.10.2 and `react-tabs` 6.1.1. The co-author field and repository owner picker use the public select props (`isMulti`, `getOptionLabel`, `formatOptionLabel`). Keybindings dispatch real key events to the input. Markdown link commands attach to the view's existing ref. `ReactDOM.findDOMNode` is gone from the package. The installer exclude for `less/dist` is anchored at `node_modules/less` so it no longer drops `@emotion/unitless/dist`.
+- **GitHub package is on React 19.3.1.** `react-select` 5.10.2 and `react-tabs` 6.1.1. The co-author field and repository owner picker use the public select props (`isMulti`, `getOptionLabel`, `formatOptionLabel`). Keybindings dispatch real key events to the input. Markdown link commands attach to the view's existing ref. `ReactDOM.findDOMNode` and the unused string ref on the changed-files button are gone. React 19 rejects string refs. The installer exclude for `less/dist` is anchored at `node_modules/less` so it no longer drops `@emotion/unitless/dist`.
 
 - **Build-script majors.** `7zip-bin` 5.2.0, `normalize-package-data` 9.0.0, `passwd-user` 4.0.0, `nock` 15.0.5. Tilde expansion uses `passwdUserSync` and `homeDirectory`. The dependency-update spec calls nock's ESM default export.
 
