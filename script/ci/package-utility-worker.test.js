@@ -118,6 +118,38 @@ describe('package-utility-worker', () => {
     );
   });
 
+  it('isInsideAppTree allows app.asar.unpacked beside an asar root', () => {
+    const root = path.join('/tmp', 'resources', 'app.asar');
+    const worker = path.join(
+      '/tmp',
+      'resources',
+      'app.asar.unpacked',
+      'node_modules',
+      'github',
+      'lib',
+      'renderer.html'
+    );
+    assert.strictEqual(util.isInsideAppTree(path.join(root, 'src', 'main.js'), root), true);
+    assert.strictEqual(util.isInsideAppTree(worker, root), true);
+    assert.strictEqual(
+      util.isInsideAppTree(path.resolve(worker, '../../../../../../../etc/passwd'), root),
+      false
+    );
+    assert.strictEqual(
+      util.isInsideAppTree(
+        path.join('/tmp', 'resources', 'app.asar.unpacked-evil', 'x.html'),
+        root
+      ),
+      false
+    );
+    // A dev tree does not grow an unpacked sibling.
+    const dev = path.join('/tmp', 'chevron');
+    assert.strictEqual(
+      util.isInsideAppTree(path.join('/tmp', 'chevron.unpacked', 'x.html'), dev),
+      false
+    );
+  });
+
   it('isEnabled is always on; emergency BW env is ignored', () => {
     delete process.env.CHEVRON_GITHUB_UTILITY_WORKERS;
     delete process.env.CHEVRON_ALLOW_PACKAGE_WORKER_BROWSERWINDOW;
