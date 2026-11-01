@@ -17,7 +17,8 @@ module.exports = function parseCommandLine(processArgs) {
       // value and swallows a project path: `chevron --no-sandbox /proj`.
       'unknown-options-as-args': true
     })
-    .wrap(yargs.terminalWidth());
+    // yargs 18 dropped yargs.terminalWidth(); columns is unset when piped.
+    .wrap(process.stdout.columns || 80);
   const version = app.getVersion();
   options.usage(
     dedent`Chevron v${version}
