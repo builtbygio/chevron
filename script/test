@@ -3,7 +3,8 @@
 'use strict';
 
 require('colors');
-const argv = require('yargs')
+// yargs 18: require('yargs') is a factory; the old singleton chain is gone.
+const argv = require('yargs')(process.argv.slice(2))
   .option('core-main', {
     describe: 'Run core main process tests',
     boolean: true,

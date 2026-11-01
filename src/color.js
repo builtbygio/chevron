@@ -25,7 +25,9 @@ module.exports = class Color {
     }
 
     if (!ParsedColor) {
-      ParsedColor = require('color');
+      // color@5 is ESM; Node/Electron require(esm) yields { default }.
+      const mod = require('color');
+      ParsedColor = mod && mod.default ? mod.default : mod;
     }
 
     try {

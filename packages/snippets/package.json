@@ -14,7 +14,7 @@
     "atom-select-list": "^0.8.2",
     "fs-plus": "^3.0.0",
     "loophole": "^1",
-    "pegjs": "~0.8.0",
+    "pegjs": "~0.10.0",
     "scoped-property-store": "^0.17.0",
     "temp": "^0.9.4",
     "underscore-plus": "^1.0.0"

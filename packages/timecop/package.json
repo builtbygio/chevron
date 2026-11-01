@@ -13,7 +13,7 @@
     "TimecopView": "createTimecopView"
   },
   "dependencies": {
-    "dedent": "^0.7.0",
+    "dedent": "^1.7.2",
     "etch": "^0.14.1",
     "underscore-plus": "^1.0.0"
   },

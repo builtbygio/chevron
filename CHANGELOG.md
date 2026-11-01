@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Small dependency majors.** `dedent` 1, `color` 5, `focus-trap` 8, `yargs` 18, `postcss-selector-parser` 7, `iconv-lite` 0.7, `jschardet` 4, `node-emoji` 2, `pegjs` 0.10, `multi-integer-range` 6, cpm `commander` 15. `Color.parse` unwraps `color`'s ESM default; spell-check uses `MultiRange#append([[start, end]])`; CLI and build scripts call `yargs(process.argv.slice(2))` and wrap to `process.stdout.columns` (yargs 18 dropped the singleton API and `terminalWidth`); pegjs call sites use `generate` (renamed from `buildParser`).
+
 - **Electron is 43.8.6.** Same 43.x ABI as 43.7.9; Chromium/security backports on the 43 line. `electron-mksnapshot` moves with it.
 
 - **Easy dependency pin raises.** App/workspace: `electron-updater`, `less-cache`, `postcss`, `resolve`, `temp`, `nan`, `shell-quote`, `bytes`, `classnames`, `prop-types`, `tinycolor2`, `debug@4`, `pyright`, `tree-sitter-clojure-orchard`, watcher eslint plugins. Script: `electron-builder` 26.18, Playwright 1.64, `@electron/notarize`, `@electron-internal/extract-zip`, `colors` 1.4.0.

@@ -25,3 +25,6 @@ packages/*/build/
 packages/*/*/build/
 packages/*/bin/
 packages/*/*/bin/
+
+# pnpm content-addressable store (never commit)
+.pnpm-store/

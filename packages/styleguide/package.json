@@ -7,7 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "atom-select-list": "^0.8.2",
-    "dedent": "^0.7.0",
+    "dedent": "^1.7.2",
     "etch": "^0.14.1"
   },
   "deserializers": {

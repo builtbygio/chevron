@@ -2,7 +2,8 @@
 
 const yargs = require('yargs')
 
-const argv = yargs
+// yargs 18: require('yargs') is a factory; the old singleton chain is gone.
+const argv = yargs(process.argv.slice(2))
   .usage('Usage: $0 [options]')
   .help('help')
   .option('search-folder', {
@@ -17,7 +18,7 @@ const argv = yargs
     requiresArg: true,
     describe: 'Glob that matches JUnit XML files within searchFolder'
   })
-  .wrap(yargs.terminalWidth())
+  .wrap(process.stdout.columns || 80)
   .argv
 
 const fs = require('fs')

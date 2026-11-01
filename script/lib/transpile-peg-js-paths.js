@@ -36,8 +36,9 @@ function getPathsToTranspile() {
 function transpilePegJsPath(pegJsPath) {
   const inputCode = fs.readFileSync(pegJsPath, 'utf8');
   const jsPath = pegJsPath.replace(/pegjs$/g, 'js');
+  // pegjs 0.10 renamed buildParser → generate.
   const outputCode =
-    'module.exports = ' + peg.buildParser(inputCode, { output: 'source' });
+    'module.exports = ' + peg.generate(inputCode, { output: 'source' });
   fs.writeFileSync(jsPath, outputCode);
   fs.unlinkSync(pegJsPath);
 }
