@@ -12,9 +12,7 @@ overrides:
   tar@6: 7.5.21
   tar@7: 7.5.21
   lodash: 4.18.0
-  minimatch@0: 3.1.4
-  minimatch@2: 3.1.4
-  minimatch@3: 3.1.4
+  minimatch: link:vendor/minimatch-cjs
   brace-expansion@1: 1.1.21
   brace-expansion@2: 2.1.7
   js-yaml@3: 3.15.2
@@ -385,8 +383,11 @@ importers:
         specifier: workspace:@builtbygio/markdown-preview@*
         version: link:packages/markdown-preview
       minimatch:
-        specifier: 3.1.4
-        version: 3.1.4
+        specifier: link:vendor/minimatch-cjs
+        version: link:vendor/minimatch-cjs
+      minimatch-core:
+        specifier: npm:minimatch@11.0.3
+        version: minimatch@11.0.3
       mocha:
         specifier: 11.8.0
         version: 11.8.0
@@ -577,8 +578,8 @@ importers:
         specifier: 4.3.0
         version: 4.3.0
       minimatch:
-        specifier: 3.1.4
-        version: 3.1.4
+        specifier: link:../../vendor/minimatch-cjs
+        version: link:../../vendor/minimatch-cjs
       selector-kit:
         specifier: ^0.1
         version: 0.1.0
@@ -762,8 +763,8 @@ importers:
         specifier: ~1.8.2
         version: 1.8.2
       minimatch:
-        specifier: 3.1.4
-        version: 3.1.4
+        specifier: link:../../vendor/minimatch-cjs
+        version: link:../../vendor/minimatch-cjs
       temp:
         specifier: ^0.9.4
         version: 0.9.4
@@ -1362,8 +1363,8 @@ importers:
         specifier: ^3.0.0
         version: 3.1.1
       minimatch:
-        specifier: 3.1.4
-        version: 3.1.4
+        specifier: link:../../vendor/minimatch-cjs
+        version: link:../../vendor/minimatch-cjs
       pathwatcher:
         specifier: npm:@builtbygio/pathwatcher@8.1.2
         version: '@builtbygio/pathwatcher@8.1.2'
@@ -1503,6 +1504,9 @@ packages:
   '@isaacs/fs-minipass@4.0.1':
     resolution: {integrity: sha512-wgm9Ehl2jpeqP3zw/7mo3kRHFp5MEDhqAdwy1fTGkHAwnkGOVsgpvQhL8B5n1qlb01jV3n/bI0ZfZp5lWA1k4w==}
     engines: {node: '>=18.0.0'}
+
+  '@isaacs/nonrecursive-glob-match@1.0.3':
+    resolution: {integrity: sha512-SI7kyKHq4XXDRozw+r9GlRZkia1ZkFrpLW98r2IC2Bpr8YkFGE3fvjzmxCG0x78A++69HmDNrDvSMYBZmHGpKA==}
 
   '@one-ini/wasm@0.2.1':
     resolution: {integrity: sha512-TUqERXGNTifZ9y2g3wPxQrw3HpHv/02DsW3D90T9x0hhonrL1ZqpSmNrU2XkoIq0fP1N6gZfVQzy2Fw1ZvGBNg==}
@@ -1795,9 +1799,6 @@ packages:
   babel-code-frame@6.26.0:
     resolution: {integrity: sha512-XqYMR2dfdGMW+hd0IUZ2PwK+fGeFkOxZJ0wY+JaQAHzt1Zx8LcvpiZD2NiGkEG8qx0CfkAOr5xt76d1e8vG90g==}
 
-  balanced-match@1.0.2:
-    resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
-
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
@@ -1819,12 +1820,6 @@ packages:
 
   boolbase@1.0.0:
     resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
-
-  brace-expansion@1.1.21:
-    resolution: {integrity: sha512-9zeA+KLZNNzglF2TPKRQEDyx6Yby7daAkuy8MiPzpXPsYDWi/DRM8jmwUDxokQjYqBpv5DgPiwD4h4ZZSy1Ujw==}
-
-  brace-expansion@2.1.7:
-    resolution: {integrity: sha512-uZbew1NqdmPDTMJ8ah1y+b+9QEJrfkXFk3RcTQw3X0jW/xRUvFKsg1CfQdSYGdTbXZWExtU3J3ccxtnfw1Fi0g==}
 
   brace-expansion@5.0.12:
     resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
@@ -2048,9 +2043,6 @@ packages:
 
   compare-sets@1.0.1:
     resolution: {integrity: sha512-T6oMf6zg7TwAzFsHrXBlplFS7YdckKHb9tRFl9Xm1SZrOTzyc70d+abw0cLHhczbXKcjiKKhSd0GJd6xyog90w==}
-
-  concat-map@0.0.1:
-    resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
   console-control-strings@1.1.0:
     resolution: {integrity: sha512-ty/fTekppD2fIwRvnZAVdeOiGd1c7YXEixbgJTNzqcxJWKQnjJ/V1bNEEE6hygpM3WjwHFUVK6HTjWSzV4a8sQ==}
@@ -3254,16 +3246,9 @@ packages:
   min-document@2.19.2:
     resolution: {integrity: sha512-8S5I8db/uZN8r9HSLFVWPdJCvYOejMcEC82VIzNUc6Zkklf/d1gg2psfE79/vyhWOj4+J8MtwmoOz3TmvaGu5A==}
 
-  minimatch@10.2.6:
-    resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
+  minimatch@11.0.3:
+    resolution: {integrity: sha512-iny/40PEGkNJQ5/Pv6z3nm6FbRAby32GeZRjCUJk2WnNDbgPSTcdI+DDvLqsgBdD4cD5sMtMheqPPnehCCa8Nw==}
     engines: {node: 18 || 20 || >=22}
-
-  minimatch@3.1.4:
-    resolution: {integrity: sha512-twmL+S8+7yIsE9wsqgzU3E8/LumN3M3QELrBZ20OdmQ9jB2JvW5oZtBEmft84k/Gs5CG9mqtWc6Y9vW+JEzGxw==}
-
-  minimatch@9.0.9:
-    resolution: {integrity: sha512-OBwBN9AL4dqmETlpS2zasx+vTeWclWzkblfZk7KTA5j3jeOONz/tRCnZomUyvNg83wL5Zv9Ss6HMJXAgL8R2Yg==}
-    engines: {node: '>=16 || 14 >=14.17'}
 
   minimist@0.2.4:
     resolution: {integrity: sha512-Pkrrm8NjyQ8yVt8Am9M+yUt74zE3iokhzbG1bFVNjLB92vwM71hf40RkEsryg98BujhVOncKm/C1xROxZ030LQ==}
@@ -4778,6 +4763,8 @@ snapshots:
     dependencies:
       minipass: 7.1.3
 
+  '@isaacs/nonrecursive-glob-match@1.0.3': {}
+
   '@one-ini/wasm@0.2.1': {}
 
   '@pkgjs/parseargs@0.11.0':
@@ -5062,8 +5049,6 @@ snapshots:
       esutils: 2.0.3
       js-tokens: 3.0.2
 
-  balanced-match@1.0.2: {}
-
   balanced-match@4.0.4: {}
 
   base64-js@1.5.1: {}
@@ -5084,15 +5069,6 @@ snapshots:
       readable-stream: 3.6.2
 
   boolbase@1.0.0: {}
-
-  brace-expansion@1.1.21:
-    dependencies:
-      balanced-match: 1.0.2
-      concat-map: 0.0.1
-
-  brace-expansion@2.1.7:
-    dependencies:
-      balanced-match: 1.0.2
 
   brace-expansion@5.0.12:
     dependencies:
@@ -5327,8 +5303,6 @@ snapshots:
 
   compare-sets@1.0.1: {}
 
-  concat-map@0.0.1: {}
-
   console-control-strings@1.1.0: {}
 
   contains-path@0.1.0: {}
@@ -5526,7 +5500,7 @@ snapshots:
     dependencies:
       '@one-ini/wasm': 0.2.1
       commander: 14.0.3
-      minimatch: 10.2.6
+      minimatch: link:vendor/minimatch-cjs
       semver: 7.8.5
 
   electron-updater@6.8.11(supports-color@8.1.1):
@@ -5794,7 +5768,7 @@ snapshots:
       eslint-module-utils: 2.14.0(eslint-import-resolver-node@0.3.10(supports-color@8.1.1))(eslint@5.4.0(supports-color@8.1.1))(supports-color@8.1.1)
       has: 1.0.4
       lodash: 4.18.0
-      minimatch: 3.1.4
+      minimatch: link:vendor/minimatch-cjs
       read-pkg-up: 2.0.0
       resolve: 1.22.13
     transitivePeerDependencies:
@@ -5817,7 +5791,7 @@ snapshots:
       hasown: 2.0.4
       is-core-module: 2.16.2
       is-glob: 4.0.3
-      minimatch: 3.1.4
+      minimatch: link:vendor/minimatch-cjs
       object.fromentries: 2.0.8
       object.groupby: 1.0.3
       object.values: 1.2.1
@@ -5835,7 +5809,7 @@ snapshots:
       eslint-plugin-es: 1.4.1(eslint@5.4.0(supports-color@8.1.1))
       eslint-utils: 1.4.3
       ignore: 4.0.6
-      minimatch: 3.1.4
+      minimatch: link:vendor/minimatch-cjs
       resolve: 1.22.13
       semver: 5.7.2
 
@@ -5862,7 +5836,7 @@ snapshots:
       estraverse: 5.3.0
       hasown: 2.0.4
       jsx-ast-utils: 2.4.1
-      minimatch: 3.1.4
+      minimatch: link:vendor/minimatch-cjs
       object.entries: 1.1.9
       object.fromentries: 2.0.8
       object.values: 1.2.1
@@ -5913,7 +5887,7 @@ snapshots:
       json-stable-stringify-without-jsonify: 1.0.1
       levn: 0.3.0
       lodash: 4.18.0
-      minimatch: 3.1.4
+      minimatch: link:vendor/minimatch-cjs
       mkdirp: 0.5.6
       natural-compare: 1.4.0
       optionator: 0.8.3
@@ -6024,7 +5998,7 @@ snapshots:
   fileset@0.1.8:
     dependencies:
       glob: 3.2.11
-      minimatch: 3.1.4
+      minimatch: link:vendor/minimatch-cjs
 
   find-parent-dir@0.3.1: {}
 
@@ -6127,7 +6101,7 @@ snapshots:
   gaze@0.3.4:
     dependencies:
       fileset: 0.1.8
-      minimatch: 3.1.4
+      minimatch: link:vendor/minimatch-cjs
 
   generator-function@2.0.1: {}
 
@@ -6171,7 +6145,7 @@ snapshots:
     dependencies:
       foreground-child: 3.3.1
       jackspeak: 3.4.3
-      minimatch: 9.0.9
+      minimatch: link:vendor/minimatch-cjs
       minipass: 7.1.3
       package-json-from-dist: 1.0.1
       path-scurry: 1.11.1
@@ -6179,14 +6153,14 @@ snapshots:
   glob@3.2.11:
     dependencies:
       inherits: 2.0.4
-      minimatch: 3.1.4
+      minimatch: link:vendor/minimatch-cjs
 
   glob@7.1.1:
     dependencies:
       fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
-      minimatch: 3.1.4
+      minimatch: link:vendor/minimatch-cjs
       once: 1.4.0
       path-is-absolute: 1.0.1
 
@@ -6195,7 +6169,7 @@ snapshots:
       fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
-      minimatch: 3.1.4
+      minimatch: link:vendor/minimatch-cjs
       once: 1.4.0
       path-is-absolute: 1.0.1
 
@@ -6744,17 +6718,10 @@ snapshots:
     dependencies:
       dom-walk: 0.1.2
 
-  minimatch@10.2.6:
+  minimatch@11.0.3:
     dependencies:
+      '@isaacs/nonrecursive-glob-match': 1.0.3
       brace-expansion: 5.0.12
-
-  minimatch@3.1.4:
-    dependencies:
-      brace-expansion: 1.1.21
-
-  minimatch@9.0.9:
-    dependencies:
-      brace-expansion: 2.1.7
 
   minimist@0.2.4: {}
 
@@ -6816,7 +6783,7 @@ snapshots:
       is-path-inside: 3.0.3
       js-yaml: 4.3.2
       log-symbols: 4.1.0
-      minimatch: 9.0.9
+      minimatch: link:vendor/minimatch-cjs
       ms: 2.1.3
       picocolors: 1.1.1
       serialize-javascript: 7.1.3

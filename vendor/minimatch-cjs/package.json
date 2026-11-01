@@ -1,0 +1,10 @@
+{
+  "name": "minimatch-cjs",
+  "version": "11.0.3",
+  "description": "minimatch 11 with a callable CJS default export for glob@7 / rimraf callers",
+  "main": "index.js",
+  "license": "ISC",
+  "dependencies": {
+    "minimatch-core": "npm:minimatch@11.0.3"
+  }
+}

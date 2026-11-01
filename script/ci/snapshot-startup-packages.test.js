@@ -84,7 +84,9 @@ describe('snapshot startup packages', () => {
           'tree-view',
           'node_modules',
           'minimatch',
-          'minimatch.js'
+          'dist',
+          'commonjs',
+          'index.js'
         )
       ),
       true,

@@ -159,6 +159,12 @@ function asarUnpackGlobs() {
     // terminal that opens and immediately dies -- on macOS only.
     path.join('**', 'node_modules', 'node-pty', 'build', 'Release', '**'),
     path.join('**', 'node_modules', 'node-pty', 'prebuilds', '**'),
+    // minimatch 11 (and brace-expansion / @isaacs/*) use package exports;
+    // keep them on the real filesystem so require() resolves outside asar.
+    path.join('**', 'node_modules', 'minimatch', '**'),
+    path.join('**', 'node_modules', 'brace-expansion', '**'),
+    path.join('**', 'node_modules', 'balanced-match', '**'),
+    path.join('**', 'node_modules', '@isaacs', '**'),
     path.join('**', 'resources', 'atom.png'),
     path.join('**', 'resources', 'chevron.png'),
     path.join('**', 'resources', 'icons', '**'),

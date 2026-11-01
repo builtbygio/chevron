@@ -117,8 +117,9 @@ function shouldExcludeModule({
     requiredModuleRelativePath.endsWith(
       path.join('node_modules', 'htmlparser2', 'lib', 'index.js')
     ) ||
-    requiredModuleRelativePath.endsWith(
-      path.join('node_modules', 'minimatch', 'minimatch.js')
+    // minimatch 9+ ships dist/commonjs/index.js (no top-level minimatch.js).
+    requiredModuleRelativePath.includes(
+      path.join('node_modules', 'minimatch', path.sep)
     ) ||
     requiredModuleRelativePath.endsWith(
       path.join('node_modules', 'superstring', 'index.js')
@@ -158,8 +159,10 @@ function shouldExcludeModule({
       path.join('..', 'node_modules', 'debug', 'node.js') ||
     requiredModuleRelativePath ===
       path.join('..', 'node_modules', 'git-utils', 'src', 'git.js') ||
-    requiredModuleRelativePath ===
-      path.join('..', 'node_modules', 'glob', 'glob.js') ||
+    // glob 9+ ships dist/commonjs (no top-level glob.js).
+    requiredModuleRelativePath.includes(
+      path.join('node_modules', 'glob', path.sep)
+    ) ||
     requiredModuleRelativePath ===
       path.join('..', 'node_modules', 'iconv-lite', 'lib', 'index.js') ||
     requiredModuleRelativePath ===
@@ -183,15 +186,9 @@ function shouldExcludeModule({
       path.join('..', 'node_modules', 'resolve', 'index.js') ||
     requiredModuleRelativePath ===
       path.join('..', 'node_modules', 'resolve', 'lib', 'core.js') ||
-    requiredModuleRelativePath ===
-      path.join(
-        '..',
-        'node_modules',
-        'settings-view',
-        'node_modules',
-        'glob',
-        'glob.js'
-      ) ||
+    requiredModuleRelativePath.includes(
+      path.join('node_modules', 'settings-view', 'node_modules', 'glob')
+    ) ||
     requiredModuleRelativePath ===
       path.join(
         '..',
