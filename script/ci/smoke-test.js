@@ -2246,6 +2246,27 @@ async function main() {
           `smoke-test: app exited during startup (code=${appExitInfo.code}, signal=${appExitInfo.signal})`
         );
         console.error(appOutput.slice(-8000) || '(no stdout/stderr captured)');
+        const setupErrorLog = path.join(atomHome, 'setup-error.log');
+        if (fs.existsSync(setupErrorLog)) {
+          console.error('smoke-test: setup-error.log:');
+          console.error(fs.readFileSync(setupErrorLog, 'utf8').slice(-8000));
+        } else {
+          console.error('smoke-test: no setup-error.log in ATOM_HOME');
+        }
+        // electronUserData may hold chromium logs when stderr was empty.
+        const userData = path.join(atomHome, 'electronUserData');
+        try {
+          const names = fs.readdirSync(userData);
+          console.error('smoke-test: electronUserData entries:', names.join(', '));
+          for (const name of names) {
+            if (!/\.(log|txt)$/i.test(name)) continue;
+            const full = path.join(userData, name);
+            console.error(`smoke-test: ${name}:`);
+            console.error(fs.readFileSync(full, 'utf8').slice(-4000));
+          }
+        } catch (error) {
+          console.error('smoke-test: electronUserData unreadable', error.message);
+        }
         process.exit(1);
       }
       try {
