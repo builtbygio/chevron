@@ -108,7 +108,6 @@
     "source-map-js": "1.2.2",
     "@xmldom/xmldom": "0.9.12",
     "ip-address": "10.7.5",
-    "minimatch": "11.0.3",
-    "glob": "14.0.3"
+    "minimatch": "11.0.3"
   }
 }
