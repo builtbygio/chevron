@@ -57,7 +57,18 @@ const BINARY_ASSETS = [
   'dugite'
 ];
 
-const EXTERNAL = [...RUNTIME_PROVIDED, ...NATIVE, ...BINARY_ASSETS];
+// minimatch 9+ is a dual ESM/CJS package (`type: module` + exports). Inlining
+// it into tree-view / fuzzy-finder / autocomplete-plus has produced a silent
+// main-process exit(1) on Linux smoke with no stderr; keep it as a real
+// require against node_modules instead.
+const DUAL_PACKAGE = ['minimatch'];
+
+const EXTERNAL = [
+  ...RUNTIME_PROVIDED,
+  ...NATIVE,
+  ...BINARY_ASSETS,
+  ...DUAL_PACKAGE
+];
 
 // Everything that bundles cleanly today. Explicit rather than derived: what a
 // package pulls in changes when its dependencies change, and a list that
