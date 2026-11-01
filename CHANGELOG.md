@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **GitHub git workers load from an AppImage.** The utility-worker allowlist was the `app.asar` directory. The GitHub package correctly points `renderer.html` at the sibling `app.asar.unpacked` tree, so every window logged `rejected loadURL` and the git worker never received `init`. That unpacked tree is now part of the app root. Paths that escape it are still refused.
+
 - **Opening a Markdown or JSON file no longer claims there is no language server when one is already installed.** Core discovers `chevron-lsp-markdown` (harper-ls) and `chevron-lsp-json` under `$CHEVRON_HOME/packages` the same way it already finds TypeScript, Python and clangd, instead of waiting on a late `consumeLsp` registration. The "no language server" toast is also deferred briefly so a registration that arrives after the first editor sweep can cancel it. Idle server shutdown no longer posts a notification.
 
 - **Build-script Dependabot highs from pins and overrides are reduced.** `lodash.template` is 4.18.1, `terser` is 4.8.1 (same sync minify API as before), `brace-expansion@2` is 2.1.7, and `http-cache-semantics` is 4.3.0.

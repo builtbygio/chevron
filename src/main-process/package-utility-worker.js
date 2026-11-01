@@ -50,6 +50,24 @@ function allocateIds() {
 const APP_ROOT = path.resolve(__dirname, '..', '..');
 
 /**
+ * True when `resolvedPath` is the app root or a file inside it.
+ *
+ * A packaged app's `__dirname` lives in `app.asar`, but github's worker HTML
+ * is unpacked beside that archive (`app.asar.unpacked`). That sibling is the
+ * same application. Anything else, including a path that escapes via `..`,
+ * is refused.
+ */
+function isInsideAppTree(resolvedPath, appRoot) {
+  const resolved = path.resolve(resolvedPath);
+  const base = path.resolve(appRoot);
+  const inside = root =>
+    resolved === root || resolved.startsWith(root + path.sep);
+  if (inside(base)) return true;
+  if (base.endsWith('.asar')) return inside(`${base}.unpacked`);
+  return false;
+}
+
+/**
  * The file a worker is being asked to load, or null.
  *
  * Only a `file:` URL inside the application's own tree. The renderer names
@@ -76,8 +94,7 @@ function workerLoadFilePath(loadUrl) {
   const resolved = path.resolve(
     process.platform === 'win32' ? filePath.replace(/^\/(?=[A-Za-z]:)/, '') : filePath
   );
-  const base = path.resolve(APP_ROOT);
-  if (resolved !== base && !resolved.startsWith(base + path.sep)) return null;
+  if (!isInsideAppTree(resolved, APP_ROOT)) return null;
   return resolved;
 }
 
@@ -284,6 +301,7 @@ module.exports = {
   getWorker,
   destroy,
   parseWorkerLoadUrl,
+  isInsideAppTree,
   // test helpers
   _workers: workers,
   _resetForTests() {
