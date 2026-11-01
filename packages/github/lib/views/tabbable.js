@@ -119,7 +119,20 @@ const TabbableTextEditor = makeTabbable(_atomTextEditor.default, {
 // so we're essentially lazy loading to keep snapshotting from breaking.
 
 exports.TabbableTextEditor = TabbableTextEditor;
-let FakeKeyDownEvent;
+
+const SELECT_KEYS = {
+  40: 'ArrowDown',
+  38: 'ArrowUp',
+  13: 'Enter',
+  9: 'Tab',
+  8: 'Backspace',
+  33: 'PageUp',
+  34: 'PageDown',
+  35: 'End',
+  36: 'Home',
+  46: 'Delete',
+  27: 'Escape'
+};
 
 class WrapSelect extends _react.default.Component {
   constructor(props) {
@@ -167,9 +180,40 @@ class WrapSelect extends _react.default.Component {
     }), _react.default.createElement(_commands.Command, {
       command: "github:selectbox-escape",
       callback: this.proxyKeyCode(27)
-    })), _react.default.createElement(_reactSelect.default, _extends({
-      ref: this.refSelect.setter
-    }, (0, _helpers.unusedProps)(this.props, this.constructor.propTypes))));
+    })), _react.default.createElement(_reactSelect.default, {
+      ref: this.refSelect.setter,
+      className: this.props.className,
+      classNamePrefix: "Select",
+      unstyled: true,
+      options: this.props.options,
+      value: this.props.value,
+      onChange: this.props.onChange,
+      placeholder: this.props.placeholder,
+      isClearable: !!this.props.clearable,
+      isDisabled: !!this.props.disabled,
+      isMulti: !!this.props.multi,
+      openMenuOnClick: this.props.openOnClick !== false,
+      openMenuOnFocus: !!this.props.openOnFocus,
+      tabIndex: this.props.tabIndex,
+      getOptionLabel: option => this.props.labelKey ? option[this.props.labelKey] : option.login || option.label || '',
+      getOptionValue: option => this.props.valueKey ? option[this.props.valueKey] : option.id || option.value || '',
+      isOptionDisabled: option => !!option.disabled,
+      formatOptionLabel: (option, meta) => {
+        if (meta.context === 'value' && this.props.valueRenderer) {
+          return this.props.valueRenderer(option);
+        }
+
+        if (this.props.optionRenderer) {
+          return this.props.optionRenderer(option);
+        }
+
+        return option.login || option.label || '';
+      },
+      components: this.props.arrowRenderer === null ? {
+        DropdownIndicator: () => null,
+        IndicatorSeparator: () => null
+      } : undefined
+    }));
   }
 
   focus() {
@@ -177,21 +221,23 @@ class WrapSelect extends _react.default.Component {
   }
 
   proxyKeyCode(keyCode) {
-    return e => this.refSelect.map(select => {
-      if (!FakeKeyDownEvent) {
-        FakeKeyDownEvent = class extends CustomEvent {
-          constructor(kCode) {
-            super('keydown');
-            this.keyCode = kCode;
-          }
+    return () => {
+      const root = this.props.refElement.getOr(null);
+      const input = root && root.querySelector('input');
 
-        };
+      if (!input) {
+        return null;
       }
 
-      const fakeEvent = new FakeKeyDownEvent(keyCode);
-      select.handleKeyDown(fakeEvent);
+      input.dispatchEvent(new KeyboardEvent('keydown', {
+        key: SELECT_KEYS[keyCode] || '',
+        keyCode,
+        which: keyCode,
+        bubbles: true,
+        cancelable: true
+      }));
       return null;
-    });
+    };
   }
 
 }

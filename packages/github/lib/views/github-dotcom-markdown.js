@@ -7,8 +7,6 @@ exports.default = exports.BareGithubDotcomMarkdown = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
-var _reactDom = _interopRequireDefault(require("react-dom"));
-
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _eventKit = require("event-kit");
@@ -60,7 +58,7 @@ class BareGithubDotcomMarkdown extends _react.default.Component {
   }
 
   componentDidMount() {
-    this.commandSubscriptions = chevron.commands.add(_reactDom.default.findDOMNode(this), {
+    this.commandSubscriptions = chevron.commands.add(this.component, {
       'github:open-link-in-new-tab': this.openLinkInNewTab,
       'github:open-link-in-browser': this.openLinkInBrowser,
       'github:open-link-in-this-tab': this.openLinkInThisTab

@@ -33,7 +33,9 @@ const EXCLUDE_REGEXPS_SOURCES = [
   escapeRegExp('.gitattributes'),
   escapeRegExp('.gitkeep'),
   escapeRegExp(path.join('git-utils', 'deps')),
-  escapeRegExp(path.join('less', 'dist')),
+  // Anchor on node_modules/less. A bare `less/dist` also matches
+  // `@emotion/unitless/dist`, which react-select 5 needs.
+  escapeRegExp(path.join('node_modules', 'less', 'dist')),
   escapeRegExp(path.join('npm', 'doc')),
   escapeRegExp(path.join('npm', 'html')),
   escapeRegExp(path.join('npm', 'man')),
