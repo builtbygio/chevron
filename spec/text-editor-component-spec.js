@@ -11,7 +11,6 @@ const fs = require('fs');
 const path = require('path');
 const Grim = require('grim');
 const electron = require('electron');
-const clipboard = electron.clipboard;
 
 const SAMPLE_TEXT = fs.readFileSync(
   path.join(__dirname, 'fixtures', 'sample.js'),
@@ -4836,13 +4835,27 @@ describe('TextEditorComponent', () => {
       });
 
       it('pastes the previously selected text when clicking the middle mouse button on Linux', async () => {
+        let selectionClipboard = '';
         spyOn(electron.ipcRenderer, 'send').andCallFake(function(
           eventName,
           selectedText
         ) {
           if (eventName === 'chevron:write-text-to-selection-clipboard') {
-            clipboard.writeText(selectedText, 'selection');
+            selectionClipboard = selectedText;
           }
+        });
+        const sendSync = electron.ipcRenderer.sendSync;
+        spyOn(electron.ipcRenderer, 'sendSync').andCallFake(function(
+          eventName,
+          type
+        ) {
+          if (
+            eventName === 'chevron:clipboard-read-text-sync' &&
+            type === 'selection'
+          ) {
+            return selectionClipboard;
+          }
+          return sendSync.apply(this, arguments);
         });
 
         const { component, editor } = buildComponent({ platform: 'linux' });
@@ -4850,15 +4863,13 @@ describe('TextEditorComponent', () => {
         // Middle mouse pasting.
         chevron.config.set('editor.selectionClipboard', true);
         editor.setSelectedBufferRange([[1, 6], [1, 10]]);
-        await conditionPromise(
-          () => clipboard.readText('selection') === 'sort'
-        );
+        await conditionPromise(() => selectionClipboard === 'sort');
         component.didMouseDownOnContent({
           button: 1,
           clientX: clientLeftForCharacter(component, 10, 0),
           clientY: clientTopForLine(component, 10)
         });
-        expect(clipboard.readText('selection')).toBe('sort');
+        expect(selectionClipboard).toBe('sort');
         expect(editor.lineTextForBufferRow(10)).toBe('sort');
         editor.undo();
 
@@ -4870,15 +4881,13 @@ describe('TextEditorComponent', () => {
           clientX: clientLeftForCharacter(component, 10, 0),
           clientY: clientTopForLine(component, 10)
         });
-        expect(clipboard.readText('selection')).toBe('sort');
+        expect(selectionClipboard).toBe('sort');
         expect(editor.lineTextForBufferRow(10)).toBe('');
 
         // Ensure left clicks don't interfere.
         chevron.config.set('editor.selectionClipboard', true);
         editor.setSelectedBufferRange([[1, 2], [1, 5]]);
-        await conditionPromise(
-          () => clipboard.readText('selection') === 'var'
-        );
+        await conditionPromise(() => selectionClipboard === 'var');
         component.didMouseDownOnContent({
           button: 0,
           detail: 1,
@@ -4894,13 +4903,27 @@ describe('TextEditorComponent', () => {
       });
 
       it('does not paste into a read only editor when clicking the middle mouse button on Linux', async () => {
+        let selectionClipboard = '';
         spyOn(electron.ipcRenderer, 'send').andCallFake(function(
           eventName,
           selectedText
         ) {
           if (eventName === 'chevron:write-text-to-selection-clipboard') {
-            clipboard.writeText(selectedText, 'selection');
+            selectionClipboard = selectedText;
           }
+        });
+        const sendSync = electron.ipcRenderer.sendSync;
+        spyOn(electron.ipcRenderer, 'sendSync').andCallFake(function(
+          eventName,
+          type
+        ) {
+          if (
+            eventName === 'chevron:clipboard-read-text-sync' &&
+            type === 'selection'
+          ) {
+            return selectionClipboard;
+          }
+          return sendSync.apply(this, arguments);
         });
 
         const { component, editor } = buildComponent({
@@ -4910,9 +4933,7 @@ describe('TextEditorComponent', () => {
 
         // Select the word 'sort' on line 2 and copy to clipboard
         editor.setSelectedBufferRange([[1, 6], [1, 10]]);
-        await conditionPromise(
-          () => clipboard.readText('selection') === 'sort'
-        );
+        await conditionPromise(() => selectionClipboard === 'sort');
 
         // Middle-click in the buffer at line 11, column 1
         component.didMouseDownOnContent({
@@ -4922,7 +4943,7 @@ describe('TextEditorComponent', () => {
         });
 
         // Ensure that the correct text was copied but not pasted
-        expect(clipboard.readText('selection')).toBe('sort');
+        expect(selectionClipboard).toBe('sort');
         expect(editor.lineTextForBufferRow(10)).toBe('');
       });
     });

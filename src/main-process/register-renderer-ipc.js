@@ -19,6 +19,7 @@ const {
   systemPreferences,
   webContents
 } = require('electron');
+const systemClipboard = require('./system-clipboard');
 const guard = require('./ipc-guard');
 const { isSafeAbsolutePath } = guard;
 const { isAllowedFsPath } = require('./register-fs-ipc');
@@ -706,8 +707,7 @@ module.exports = function registerRendererIpc(atomApplication) {
       return;
     }
     try {
-      if (type) clipboard.writeText(text, type);
-      else clipboard.writeText(text);
+      systemClipboard.writeText(text, type);
       event.returnValue = true;
     } catch (error) {
       event.returnValue = false;
@@ -720,7 +720,7 @@ module.exports = function registerRendererIpc(atomApplication) {
       return;
     }
     try {
-      event.returnValue = type ? clipboard.readText(type) : clipboard.readText();
+      event.returnValue = systemClipboard.readText(type);
     } catch (error) {
       event.returnValue = '';
     }

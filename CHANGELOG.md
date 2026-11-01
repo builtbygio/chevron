@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Electron is 44.10.1.** New major: natives rebuild for the 44 ABI, and `electron-mksnapshot` moves with it. Clipboard reads and writes are promises and the module is gone from the renderer, so the main process keeps a synchronous cache (`clipboard.selection` on Linux) and the editor reads that over the existing clipboard IPC. macOS 12 is no longer supported by this Electron line.
+
 - **`marked` is 18.1.2.** Still `require`s as CJS (`marked.parse`). Settings descriptions read the HTML token's `text` (marked 9+ no longer passes a string). Markdown preview task lists keep the `task-list-item` class from the list-item token.
 
 - **`minimatch` 11 (CJS-callable shim) and script/cpm `glob` 14.** Clears Dependabot mediums on `minimatch` (<11.0.1). `vendor/minimatch-cjs` re-exports minimatch 11 as a callable function with `.Minimatch` (what `glob@7` under `rimraf`/`fs-plus` still expects). Script/cpm take `glob` 14.0.3 for their own code; the product tree stays on `glob` 7. Script leaves nested `minimatch` alone so `npm ci`/`node-gyp` keep working; product uses the shim via pnpm. Nested product `glob` 10 (mocha) waits on a mocha follow-up.

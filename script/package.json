@@ -20,7 +20,7 @@
     "colors": "1.4.0",
     "electron-builder": "26.18.0",
     "electron-link": "^0.6.0",
-    "electron-mksnapshot": "43.8.6",
+    "electron-mksnapshot": "44.10.1",
     "esbuild": "^0.28.2",
     "eslint": "9.39.5",
     "eslint-config-prettier": "^9.1.0",
