@@ -252,7 +252,7 @@
   "overrides": {
     "nan": "2.30.0",
     "dompurify": "3.4.17",
-    "marked": "4.3.0",
+    "marked": "18.1.2",
     "dugite": {
       "tar": "7.5.21"
     },

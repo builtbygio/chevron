@@ -6,8 +6,9 @@ renderer.code = () => ''
 renderer.blockquote = () => ''
 renderer.heading = () => ''
 renderer.html = (src) => {
-  const match = src.match(/<br\s*\/?>/)
-  if (match) {
+  // marked 9+ passes a token; 4 passed the raw HTML string.
+  const text = typeof src === 'string' ? src : (src && src.text) || ''
+  if (/<br\s*\/?>/.test(text)) {
     return `<br/>`
   }
   return ''
