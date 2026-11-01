@@ -66,10 +66,16 @@ var render = function (text, filePath) {
     cheerio = require('cheerio')
 
     renderer = new marked.Renderer()
-    renderer.listitem = function (text, isTask) {
+    renderer.listitem = function (item) {
+      // marked 9+ passes a list_item token. 4 passed (text, isTask).
+      if (item && typeof item === 'object' && item.tokens) {
+        const body = this.parser.parse(item.tokens)
+        const listAttributes = item.task ? ' class="task-list-item"' : ''
+        return `<li${listAttributes}>${body}</li>\n`
+      }
+      const isTask = arguments[1]
       const listAttributes = isTask ? ' class="task-list-item"' : ''
-
-      return `<li ${listAttributes}>${text}</li>\n`
+      return `<li ${listAttributes}>${item}</li>\n`
     }
   }
 

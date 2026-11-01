@@ -70,7 +70,7 @@ describe('root dependency graph', () => {
 
   it('overrides runtime SCA hotspots (marked / DOMPurify / dugite tar)', () => {
     assert.strictEqual(pkg.overrides.dompurify, '3.4.17');
-    assert.strictEqual(pkg.overrides.marked, '4.3.0');
+    assert.strictEqual(pkg.overrides.marked, '18.1.2');
     assert.ok(pkg.overrides.dugite, 'dugite override missing');
     assert.strictEqual(pkg.overrides.dugite.tar, '7.5.21');
   });

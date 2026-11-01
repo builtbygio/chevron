@@ -32,14 +32,14 @@ describe('runtime SCA declarations', () => {
 
   it('root overrides pin marked, DOMPurify, and dugite tar', () => {
     assert.strictEqual(pkg.overrides.dompurify, '3.4.17');
-    assert.strictEqual(pkg.overrides.marked, '4.3.0');
+    assert.strictEqual(pkg.overrides.marked, '18.1.2');
     assert.strictEqual(pkg.overrides.dugite.tar, '7.5.21');
   });
 
   it('deprecation-cop declares the same marked / DOMPurify', () => {
     const cop = readJson('packages/deprecation-cop/package.json');
     assert.strictEqual(cop.dependencies.dompurify, '3.4.17');
-    assert.strictEqual(cop.dependencies.marked, '4.3.0');
+    assert.strictEqual(cop.dependencies.marked, '18.1.2');
   });
 
   it('owned sanitizer packages are workspace:@builtbygio packages', () => {
@@ -61,20 +61,20 @@ describe('runtime SCA declarations', () => {
 });
 
 describe('runtime SCA lockfile', () => {
-  it('every resolved marked is 4.3.x', () => {
+  it('every resolved marked is 18.1.x', () => {
     const hits = entriesFor(ROOT, 'marked').filter(h => splitVer(h.version));
     assert.ok(hits.length > 0, 'no marked entries in lockfile');
     for (const hit of hits) {
       const v = parseVer(hit.version);
       assert.strictEqual(
         v.major,
-        4,
-        `${hit.key} marked ${hit.version} (want 4.3.x)`
+        18,
+        `${hit.key} marked ${hit.version} (want 18.1.x)`
       );
       assert.strictEqual(
         v.minor,
-        3,
-        `${hit.key} marked ${hit.version} (want 4.3.x)`
+        1,
+        `${hit.key} marked ${hit.version} (want 18.1.x)`
       );
     }
   });
