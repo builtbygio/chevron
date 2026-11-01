@@ -8,7 +8,8 @@ try {
 
   const grammarSrc = fs.readFileSync(require.resolve('./snippet-body.pegjs'), 'utf8')
   parser = null
-  allowUnsafeEval(() => parser = PEG.buildParser(grammarSrc))
+  // pegjs 0.10 renamed buildParser → generate.
+  allowUnsafeEval(() => parser = PEG.generate(grammarSrc))
 }
 
 module.exports = parser
