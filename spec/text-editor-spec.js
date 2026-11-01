@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const temp = require('temp').track();
 const dedent = require('dedent');
-const { clipboard } = require('electron');
 const os = require('os');
 const TextEditor = require('../src/text-editor');
 const TextBuffer = require('text-buffer');
@@ -5051,7 +5050,9 @@ describe('TextEditor', () => {
           editor.cutSelectedText();
           expect(buffer.lineForRow(0)).toBe('var  = function () {');
           expect(buffer.lineForRow(1)).toBe('  var  = function(items) {');
-          expect(clipboard.readText()).toBe(['quicksort', 'sort'].join(os.EOL));
+          expect(chevron.clipboard.read()).toBe(
+            ['quicksort', 'sort'].join(os.EOL)
+          );
         });
 
         describe('when no text is selected', () => {
@@ -5193,9 +5194,6 @@ describe('TextEditor', () => {
           expect(buffer.lineForRow(2)).toBe(
             '    if (items.length <= 1) return items;'
           );
-          expect(clipboard.readText()).toBe(
-            ['quicksort', 'sort', 'items'].join(os.EOL)
-          );
           expect(chevron.clipboard.read()).toEqual(
             ['quicksort', 'sort', 'items'].join(os.EOL)
           );
@@ -5253,9 +5251,6 @@ describe('TextEditor', () => {
             expect(buffer.lineForRow(1)).toBe('  var sort = function(items) {');
             expect(buffer.lineForRow(2)).toBe(
               '    if (items.length <= 1) return items;'
-            );
-            expect(clipboard.readText()).toBe(
-              ['quicksort', 'sort', 'items'].join(os.EOL)
             );
             expect(chevron.clipboard.read()).toEqual(
               ['quicksort', 'sort', 'items'].join(os.EOL)

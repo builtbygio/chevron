@@ -19,7 +19,6 @@ const {
   BrowserWindow,
   Menu,
   app,
-  clipboard,
   dialog,
   ipcMain,
   nativeTheme,
@@ -1141,7 +1140,8 @@ module.exports = class ChevronApplication extends EventEmitter {
       ipcHelpers.on(
         ipcMain,
         'chevron:write-text-to-selection-clipboard',
-        (event, text) => clipboard.writeText(text, 'selection')
+        (event, text) =>
+          require('./system-clipboard').writeText(text, 'selection')
       )
     );
 

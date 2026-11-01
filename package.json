@@ -12,7 +12,7 @@
     "url": "https://github.com/builtbygio/chevron/issues"
   },
   "license": "MIT",
-  "electronVersion": "43.8.6",
+  "electronVersion": "44.10.1",
   "dependencies": {
     "@atom/fuzzy-native": "npm:@builtbygio/fuzzy-native@1.2.1",
     "@atom/nsfw": "npm:@builtbygio/nsfw@1.0.28",

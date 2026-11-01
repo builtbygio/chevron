@@ -6,7 +6,6 @@ const LineTopIndex = require('line-top-index');
 const TextEditor = require('./text-editor');
 const { isPairedCharacter } = require('./text-utils');
 const electron = require('electron');
-const clipboard = electron.clipboard;
 const $ = etch.dom;
 const { createOverlayElement } = require('./overlay-element');
 
@@ -2042,7 +2041,12 @@ module.exports = class TextEditorComponent {
         // runs the insertion, which autoscrolls to the cursor and opens a
         // transaction, so a middle click meant to place the cursor moved the
         // view instead.
-        const selectionText = clipboard.readText('selection');
+        // Electron 44 does not expose clipboard in the renderer. The main
+        // process keeps a sync cache, including the Linux selection clipboard.
+        const selectionText = electron.ipcRenderer.sendSync(
+          'chevron:clipboard-read-text-sync',
+          'selection'
+        );
         if (selectionText) model.insertText(selectionText);
       }
       return;
