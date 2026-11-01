@@ -4,7 +4,16 @@
 // rimraf/fs-plus) still do `const minimatch = require('minimatch'); minimatch(p, pat)`
 // and also read `.Minimatch` off that same value. Re-export the matcher function
 // with the namespace properties copied onto it.
-const core = require('minimatch-core');
+const { createRequire } = require('module');
+const path = require('path');
+// Prefer a local install (dev), then the repo-root alias pnpm always hoists.
+let core;
+try {
+  core = require('minimatch-core');
+} catch (error) {
+  const fromRoot = createRequire(path.join(__dirname, '..', '..', 'package.json'));
+  core = fromRoot('minimatch-core');
+}
 const fn = core.minimatch;
 Object.assign(fn, core);
 module.exports = fn;

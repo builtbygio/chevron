@@ -158,7 +158,8 @@
     "diff-review": "workspace:@builtbygio/diff-review@*",
     "breadcrumbs": "workspace:@builtbygio/breadcrumbs@*",
     "sticky-scroll": "workspace:@builtbygio/sticky-scroll@*",
-    "outline": "workspace:@builtbygio/outline@*"
+    "outline": "workspace:@builtbygio/outline@*",
+    "minimatch-core": "npm:minimatch@11.0.3"
   },
   "packageDependencies": {
     "one-dark-ui": "1.12.6",
