@@ -107,7 +107,6 @@
     "js-yaml@4": "4.3.2",
     "source-map-js": "1.2.2",
     "@xmldom/xmldom": "0.9.12",
-    "ip-address": "10.7.5",
-    "minimatch": "file:../vendor/minimatch-cjs"
+    "ip-address": "10.7.5"
   }
 }

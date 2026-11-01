@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **`minimatch` 11 (CJS-callable shim) and script/cpm `glob` 14.** Clears Dependabot mediums on `minimatch` (<11.0.1). `vendor/minimatch-cjs` re-exports minimatch 11 as a callable function with `.Minimatch` (what `glob@7` under `rimraf`/`fs-plus` still expects). Script/cpm take `glob` 14.0.3 for their own code; the product tree stays on `glob` 7. Nested product `glob` 10 (mocha) waits on a mocha follow-up.
+- **`minimatch` 11 (CJS-callable shim) and script/cpm `glob` 14.** Clears Dependabot mediums on `minimatch` (<11.0.1). `vendor/minimatch-cjs` re-exports minimatch 11 as a callable function with `.Minimatch` (what `glob@7` under `rimraf`/`fs-plus` still expects). Script/cpm take `glob` 14.0.3 for their own code; the product tree stays on `glob` 7. Script leaves nested `minimatch` alone so `npm ci`/`node-gyp` keep working; product uses the shim via pnpm. Nested product `glob` 10 (mocha) waits on a mocha follow-up.
 
 - **Small dependency majors.** `dedent` 1, `color` 5, `focus-trap` 8, `yargs` 18, `postcss-selector-parser` 7, `iconv-lite` 0.7, `jschardet` 4, `node-emoji` 2, `pegjs` 0.10, `multi-integer-range` 6, cpm `commander` 15. `Color.parse` unwraps `color`'s ESM default; spell-check uses `MultiRange#append([[start, end]])`; CLI and build scripts call `yargs(process.argv.slice(2))` and wrap to `process.stdout.columns` (yargs 18 dropped the singleton API and `terminalWidth`); pegjs call sites use `generate` (renamed from `buildParser`).
 
