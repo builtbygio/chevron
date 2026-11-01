@@ -9,7 +9,7 @@
     "chevron": ">=0.6.0"
   },
   "dependencies": {
-    "pyright": "1.1.391"
+    "pyright": "1.1.414"
   },
   "chevron": {
     "languageServer": {

@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Electron is 43.8.6.** Same 43.x ABI as 43.7.9; Chromium/security backports on the 43 line. `electron-mksnapshot` moves with it.
+
+- **Easy dependency pin raises.** App/workspace: `electron-updater`, `less-cache`, `postcss`, `resolve`, `temp`, `nan`, `shell-quote`, `bytes`, `classnames`, `prop-types`, `tinycolor2`, `debug@4`, `pyright`, `tree-sitter-clojure-orchard`, watcher eslint plugins. Script: `electron-builder` 26.18, Playwright 1.64, `@electron/notarize`, `@electron-internal/extract-zip`, `colors` 1.4.0.
+
 - **Linux releases ship the AppImage only.** CI no longer builds `.deb`, `.rpm`, or `.tar.gz`; tag releases attach `chevron-<version>-x64.AppImage`. Optional local `--create-debian-package` / `--create-rpm-package` flags remain.
 
 - **Code scanning alerts closed for re-analysis.** Config settings copies skip prototype keys; Windows `BufferedProcess` uses a fixed `cmd.exe` path; tooltip HTML goes through a top-level DOMPurify; the local Squirrel test server uses `express-rate-limit` and `sendFile({ root })`. A `codeql.yml` workflow runs on master/PRs so alerts refresh.

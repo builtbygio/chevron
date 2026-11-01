@@ -20,6 +20,6 @@
     "url": "https://github.com/builtbygio/chevron/issues"
   },
   "dependencies": {
-    "tree-sitter-clojure-orchard": "0.2.8"
+    "tree-sitter-clojure-orchard": "0.2.9"
   }
 }

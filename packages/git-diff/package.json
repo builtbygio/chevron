@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "fs-plus": "^3.0.0",
-    "temp": "^0.9.2"
+    "temp": "^0.9.4"
   },
   "configSchema": {
     "showIconsInEditorGutter": {

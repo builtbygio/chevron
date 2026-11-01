@@ -31,13 +31,13 @@
   },
   "homepage": "https://github.com/atom/superstring",
   "dependencies": {
-    "nan": "^2.28.0"
+    "nan": "^2.30.0"
   },
   "devDependencies": {
     "chai": "^4.3.4",
     "mocha": "^11.8.0",
     "random-seed": "^0.2.0",
-    "temp": "^0.9.2"
+    "temp": "^0.9.4"
   },
   "standard": {
     "global": [
