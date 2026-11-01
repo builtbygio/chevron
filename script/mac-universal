@@ -14,7 +14,8 @@ require('colors')
 
 const path = require('path')
 const yargs = require('yargs')
-const argv = yargs
+// yargs 18: require('yargs') is a factory; the old singleton chain is gone.
+const argv = yargs(process.argv.slice(2))
   .usage('Usage: $0 --x64 <Chevron.app> --arm64 <Chevron.app> [options]')
   .help('help')
   .describe('x64', 'The Intel build of the app bundle')
@@ -30,7 +31,7 @@ const argv = yargs
   .boolean('compress-artifacts')
   .boolean('update-metadata')
   .demand(['x64', 'arm64'])
-  .wrap(yargs.terminalWidth())
+  .wrap(process.stdout.columns || 80)
   .argv
 
 const CONFIG = require('./config')
