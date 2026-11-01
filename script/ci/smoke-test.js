@@ -2125,7 +2125,14 @@ async function main() {
   app.stdout.on('data', chunk => (appOutput += chunk));
   app.stderr.on('data', chunk => (appOutput += chunk));
   let appExited = false;
-  app.on('exit', () => (appExited = true));
+  let appExitInfo = { code: null, signal: null };
+  app.on('exit', (code, signal) => {
+    appExited = true;
+    appExitInfo = { code, signal };
+  });
+  app.on('error', err => {
+    appOutput += `\nsmoke-test spawn error: ${err.stack || err}\n`;
+  });
 
   let shutdownDone = false;
   const shutdown = () => {
@@ -2235,8 +2242,10 @@ async function main() {
     let bestBoot = null; // strongest packagesActive observation
     while (Date.now() < deadline) {
       if (appExited) {
-        console.error('smoke-test: app exited during startup');
-        console.error(appOutput.slice(-4000));
+        console.error(
+          `smoke-test: app exited during startup (code=${appExitInfo.code}, signal=${appExitInfo.signal})`
+        );
+        console.error(appOutput.slice(-8000) || '(no stdout/stderr captured)');
         process.exit(1);
       }
       try {
