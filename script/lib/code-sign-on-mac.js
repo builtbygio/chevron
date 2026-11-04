@@ -144,9 +144,9 @@ module.exports = async function codeSignOnMac(packagedAppPath) {
       );
     }
 
-    const { signAsync } = require('@electron/osx-sign');
+    const { sign } = require('@electron/osx-sign');
     console.log(`Code-signing ${packagedAppPath} as "${identity}"`);
-    await signAsync({
+    await sign({
       app: packagedAppPath,
       identity,
       keychain,
