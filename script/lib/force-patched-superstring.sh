@@ -9,9 +9,9 @@
 export PATH="/bin:/usr/bin:/usr/local/bin:/opt/homebrew/bin:${PATH:-}"
 
 _chevron_ensure_nan_cache() {
-  # Electron 43 / V8 13+ needs nan >= 2.22 (ScriptOrigin / External::Value APIs).
-  # Keep this in sync with root package-lock nan.
-  local nan_ver="2.28.0"
+  # Electron 45 / V8 15.3 removed SetPrototypeV2 and the void setter
+  # callbacks. nan 2.30 has those guards. Keep this in sync with overrides.nan.
+  local nan_ver="2.30.0"
   # Prefer OS temp (Windows Git Bash: $TMPDIR or /tmp may differ).
   local cache="${TMPDIR:-/tmp}/chevron-nan-${nan_ver}"
   if [ ! -d "$cache/package" ]; then
@@ -152,8 +152,9 @@ chevron_force_one_native() {
 
 chevron_upgrade_nan_for_electron14() {
   local repo_root="${1:-$(pwd)}"
-  local nan_src
+  local nan_src nan_ver
   nan_src="$(_chevron_ensure_nan_cache)"
+  nan_ver="$(node -p "require('$nan_src/package.json').version")"
   local upgraded=0
   local nan_dir ver needs_upgrade
 
@@ -170,7 +171,7 @@ chevron_upgrade_nan_for_electron14() {
     else
       needs_upgrade="$(node -e "
         const v=process.argv[1].split('.').map(Number);
-        const min=[2,22,0];
+        const min=[2,30,0];
         let lt=false;
         for (let i=0;i<3;i++){
           if ((v[i]||0)<min[i]){lt=true;break;}
@@ -180,7 +181,7 @@ chevron_upgrade_nan_for_electron14() {
       " "$ver" 2>/dev/null || echo 0)"
     fi
     if [ "$needs_upgrade" = "1" ]; then
-      echo "Upgrading nan ${ver:-unknown} -> 2.28.0 at $nan_dir"
+      echo "Upgrading nan ${ver:-unknown} -> ${nan_ver} at $nan_dir"
       rm -rf "$nan_dir"
       mkdir -p "$(dirname "$nan_dir")"
       cp -R "$nan_src" "$nan_dir"
