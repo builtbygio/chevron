@@ -674,7 +674,7 @@ class RootController extends _react.default.Component {
     await _fsExtra.default.writeFile(extensionFile, body);
     await new Promise((resolve, reject) => {
       unzip(extensionFile, extensionFolder, async err => {
-        if (err && !(await _fsExtra.default.exists(_path.default.join(extensionFolder, 'manifest.json')))) {
+        if (err && !(await _fsExtra.default.pathExists(_path.default.join(extensionFolder, 'manifest.json')))) {
           reject(err);
         }
 

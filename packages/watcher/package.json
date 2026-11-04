@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "event-kit": "2.5.3",
-    "fs-extra": "7.0.1",
+    "fs-extra": "11.4.1",
     "nan": "^2.30.0",
     "node-gyp-build": "^4.8.4"
   },

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **GitHub and watcher use `fs-extra` 11.4.1.** Same major as the build scripts. The extension installer checks `pathExists` (`exists` is gone). The watcher fixture cleanup no longer passes `maxBusyTries`, which `remove` no longer accepts.
+
 - **Patch pins.** `marked` 18.1.3. Watcher and the test update server override `semver@7` to 7.8.6, matching the rest of the tree.
 
 - **ESLint plugins.** `eslint-plugin-n` 18.5.0 and `eslint-plugin-promise` 7.3.0. ESLint stays 9, and `.eslintrc.json` stays in use. `eslint-config-standard` 17 still declares older peers, so script install keeps `--legacy-peer-deps`.

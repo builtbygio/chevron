@@ -81,7 +81,7 @@ class Fixture {
       console.log(`>>> polling log ${this.pollingLogFile}:\n${pollingLog}\n<<<\n`)
     }
 
-    await fs.remove(this.fixtureDir, { maxBusyTries: 1 })
+    await fs.remove(this.fixtureDir)
       .catch(err => console.warn('Unable to delete fixture directory', err))
   }
 }
