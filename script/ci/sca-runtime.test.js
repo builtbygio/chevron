@@ -32,14 +32,14 @@ describe('runtime SCA declarations', () => {
 
   it('root overrides pin marked, DOMPurify, and dugite tar', () => {
     assert.strictEqual(pkg.overrides.dompurify, '3.4.17');
-    assert.strictEqual(pkg.overrides.marked, '18.1.2');
+    assert.strictEqual(pkg.overrides.marked, '18.1.3');
     assert.strictEqual(pkg.overrides.dugite.tar, '7.5.21');
   });
 
   it('deprecation-cop declares the same marked / DOMPurify', () => {
     const cop = readJson('packages/deprecation-cop/package.json');
     assert.strictEqual(cop.dependencies.dompurify, '3.4.17');
-    assert.strictEqual(cop.dependencies.marked, '18.1.2');
+    assert.strictEqual(cop.dependencies.marked, '18.1.3');
   });
 
   it('owned sanitizer packages are workspace:@builtbygio packages', () => {
