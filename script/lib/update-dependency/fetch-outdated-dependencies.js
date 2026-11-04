@@ -1,7 +1,6 @@
 const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const fetch = require('node-fetch');
 const semver = require('semver');
 
 // this may be updated to use github releases instead

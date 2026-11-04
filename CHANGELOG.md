@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The dependency-update script uses Node's `fetch`.** The direct `node-fetch` 2 dependency is gone. Nested `node-fetch@2` stays pinned at 2.7.0. The unused direct `mkdirp` 0.5.1 pin is gone too; the build scripts already call `fs-extra`'s `mkdirpSync`.
+
 - **Build-script terser is 5.51.2.** `minify()` is async, so the snapshot generator and the bisect tool call `minify_sync` with the same keep-names options.
 
 - **Build-script stylelint is 18.0.0.** `stylelint-config-standard` is 41. Stylelint 18 removed `declaration-block-single-line-max-declarations`. The new `value-no-invalid` and `selector-no-invalid` rules stay off because they flag LESS variables, functions, and mixins. LESS still uses `postcss-less`.
