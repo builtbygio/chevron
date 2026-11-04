@@ -117,7 +117,7 @@
     "mocha-multi-reporters": "^1.5.2",
     "mock-spawn": "^0.2.6",
     "node-pty": "1.1.0",
-    "normalize-package-data": "3.0.2",
+    "normalize-package-data": "9.0.0",
     "notifications": "workspace:@builtbygio/notifications@*",
     "nslog": "npm:@builtbygio/nslog@3.2.0",
     "one-dark-syntax": "workspace:@builtbygio/one-dark-syntax@*",
