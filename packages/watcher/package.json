@@ -7,7 +7,7 @@
   "scripts": {
     "install": "node-gyp-build",
     "pre-build": "prebuildify --napi --strip",
-    "pre-build:electron": "prebuildify --napi --strip --target electron@44.10.1",
+    "pre-build:electron": "prebuildify --napi --strip --target electron@45.2.2",
     "lint": "npm run lint:js && npm run lint:cpp",
     "lint:js": "standard",
     "lint:cpp": "script/c++-lint",
