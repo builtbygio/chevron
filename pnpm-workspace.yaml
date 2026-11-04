@@ -23,6 +23,7 @@ overrides:
   dompurify: 3.4.17
   marked: 18.1.3
   'dugite>tar': 7.5.21
+  dugite: 3.3.2
   'tar@6': 7.5.21
   'tar@7': 7.5.21
   lodash: 4.18.0
@@ -69,7 +70,7 @@ overrides:
   'debug@4': 4.4.3
   'diff@3': 3.5.1
   'diff@5': 5.2.2
-  # Patch removes got from dugite 1.110; '-' drops any leftover lockfile edge.
+  # dugite 3 downloads git with Node https. Keep this so a transitive got cannot return.
   'dugite>got': '-'
   # less@2 pulls the deprecated `request` stack. less-cache only needs render().
   less: 3.13.1
@@ -99,7 +100,7 @@ overrides:
 
 patchedDependencies:
   less@3.13.1: patches/less@3.13.1.patch
-  dugite@1.110.0: patches/dugite@1.110.0.patch
+  whats-my-line@0.1.4: patches/whats-my-line@0.1.4.patch
 
 # Owned catalog is published from this repo and consumed immediately.
 # Default minimumReleaseAge (1 day) 404s just-published @builtbygio

@@ -7,7 +7,7 @@ const {
 } = require('electron');
 
 const {
-  GitProcess
+  exec: gitExec
 } = require('dugite');
 
 class AverageTracker {
@@ -115,7 +115,8 @@ ipc.on(channelName, (event, {
     };
 
     const spawnStart = performance.now();
-    GitProcess.exec(args, workingDir, options).then(({
+    if (options.stdin == null) delete options.stdin;
+    gitExec(args, workingDir, options).then(({
       stdout,
       stderr,
       exitCode

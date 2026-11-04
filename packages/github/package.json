@@ -25,7 +25,7 @@
     "classnames": "2.5.1",
     "compare-sets": "1.0.1",
     "dompurify": "3.4.17",
-    "dugite": "1.110.0",
+    "dugite": "3.3.2",
     "event-kit": "2.5.3",
     "fs-extra": "11.4.1",
     "keytar": "4.13.0",

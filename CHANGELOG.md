@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **dugite is 3.3.2.** Git commands call the `exec` export. `GitProcess` is gone. A null `stdin` is omitted so dugite does not write it. The 1.110 `got` patch is retired: dugite 3 already downloads git with Node `https`. `whats-my-line` gets the same one-line call change. Embedded git is still `dugite/git`.
+
 - **Product `glob` is 14 through a CJS shim.** `vendor/glob-cjs` is callable, has `.sync`, and supports `util.promisify`, which is what `rimraf` and `fs-plus` still do. Script and cpm already depend on glob 14 directly and are not overridden.
 
 - **Build-script `node-gyp` is 13 and `minidump` is 0.26.1.** Symbol dumping still calls `dumpSymbol`. The 0.26 package is ESM and already ships `dump_syms` for linux-x64. Script install ignores lifecycle scripts, because minidump's preinstall runs `yarn submodule`, then runs the esbuild, minidump, and mksnapshot install steps itself.
