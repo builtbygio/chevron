@@ -22,7 +22,7 @@
     "etch": "^0.14.1",
     "fs-plus": "^3.0.0",
     "fuzzaldrin": "^2.1",
-    "glob": "^7.2.3",
+    "glob": "link:../../vendor/glob-cjs",
     "marked": "18.1.3",
     "semver": "^7.8.6",
     "underscore-plus": "^1.0.6"
