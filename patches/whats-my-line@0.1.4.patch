@@ -1,0 +1,12 @@
+diff --git a/dist/index.js b/dist/index.js
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -9,7 +9,7 @@ async function translateLines(lines, repositoryPath, fileName, commitSha) {
+ }
+ exports.default = translateLines;
+ async function getDiff(respositoryPath, fileName, commitSha) {
+-    const result = await dugite_1.GitProcess.exec(['diff', commitSha, '--', fileName], respositoryPath);
++    const result = await dugite_1.exec(['diff', commitSha, '--', fileName], respositoryPath);
+     if (result.exitCode === 0) {
+         return result.stdout;
+     }

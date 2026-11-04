@@ -458,7 +458,8 @@ class GitShellOutStrategy {
         });
       };
 
-      const promise = _dugite.GitProcess.exec(args, this.workingDir, options);
+      if (options.stdin == null) delete options.stdin;
+      const promise = _dugite.exec(args, this.workingDir, options);
 
       marker && marker.mark('execute');
       return {

@@ -12,7 +12,7 @@
 
 const path = require('path');
 
-let GitProcess = null;
+let gitExec = null;
 let treeKill = null;
 let initConfig = null;
 let operationCountLimit = 10;
@@ -66,9 +66,9 @@ function resolveFromApp(moduleId) {
 }
 
 function ensureDeps() {
-  if (!GitProcess) {
+  if (!gitExec) {
     const dugitePath = resolveFromApp('dugite');
-    ({ GitProcess } = require(dugitePath));
+    ({ exec: gitExec } = require(dugitePath));
   }
   if (!treeKill) {
     try {
@@ -166,7 +166,8 @@ function handleGitExec(data) {
     }
   };
 
-  GitProcess.exec(args, workingDir, execOptions)
+  if (execOptions.stdin == null) delete execOptions.stdin;
+  gitExec(args, workingDir, execOptions)
     .then(({ stdout, stderr, exitCode }) => {
       // If processCallback never ran (edge dugite path), still record a spawn sample.
       if (spawnEnd === spawnStart) spawnEnd = Date.now();
