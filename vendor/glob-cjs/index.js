@@ -33,3 +33,9 @@ glob[promisify.custom] = function(pattern, options) {
 };
 
 module.exports = glob;
+// Static assignments so ESM `import * as glob` (mocha 12) sees these names.
+module.exports.sync = glob.sync;
+module.exports.hasMagic = core.hasMagic;
+module.exports.glob = core.glob;
+module.exports.globSync = core.globSync;
+module.exports.Glob = core.Glob;

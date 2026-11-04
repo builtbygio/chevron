@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **mocha is 12.0.3.** The package is ESM. The main-process runner uses the default export. The glob shim now publishes `hasMagic` and `glob` as named exports so mocha's `import * as glob` still sees them.
+
 - **sinon is 22.1.0.** `createSandbox`, `stub`, `spy`, `restore`, `callsFake`, and `yields` stay on the same object. The package is still `require`d from CommonJS.
 
 - **chai is 6.3.0.** Still `require`s from CommonJS. Watcher uses `chai-as-promised` 8 and unwraps its default export. Superstring's dev pin matches.

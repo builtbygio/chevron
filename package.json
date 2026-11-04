@@ -111,7 +111,7 @@
     "lsp-ui": "workspace:@builtbygio/lsp-ui@*",
     "markdown-preview": "workspace:@builtbygio/markdown-preview@*",
     "minimatch": "link:vendor/minimatch-cjs",
-    "mocha": "11.8.0",
+    "mocha": "12.0.3",
     "mocha-junit-reporter": "2.2.1",
     "mocha-multi-reporters": "^1.5.2",
     "mock-spawn": "^0.2.6",

@@ -119,8 +119,8 @@ describe('root dependency graph', () => {
     );
   });
 
-  it('mocha is 11.x (still CJS; mocha 12 is the ESM rewrite)', () => {
-    assert.match(String(pkg.dependencies.mocha), /^11\./);
+  it('mocha is 12.x', () => {
+    assert.match(String(pkg.dependencies.mocha), /^12\./);
   });
 
   it('in-repo catalog packages install from the workspace as @builtbygio aliases', () => {

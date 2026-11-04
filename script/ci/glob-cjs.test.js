@@ -39,6 +39,10 @@ describe('glob 14 CJS shim', () => {
 
       const fromPromisify = await promisify(glob)('*.txt', { cwd: root });
       assert.deepEqual(fromPromisify, ['a.txt']);
+
+      const ns = await import(path.join(__dirname, '..', '..', 'vendor', 'glob-cjs', 'index.js'));
+      assert.equal(typeof ns.hasMagic, 'function');
+      assert.equal(ns.hasMagic('*.txt'), true);
     } finally {
       removeTempDir(root);
     }
