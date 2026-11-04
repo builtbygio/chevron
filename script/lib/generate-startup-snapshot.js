@@ -105,12 +105,13 @@ module.exports = function(packagedAppPath) {
     process.stdout.write('\n');
 
     process.stdout.write('Minifying startup script');
-    const minification = terser.minify(snapshotScript, {
+    // Terser 5's minify() returns a promise. minify_sync throws instead of
+    // returning { error }.
+    const minification = terser.minify_sync(snapshotScript, {
       keep_fnames: true,
       keep_classnames: true,
       compress: { keep_fargs: true, keep_infinity: true }
     });
-    if (minification.error) throw minification.error;
     process.stdout.write('\n');
     fs.writeFileSync(snapshotScriptPath, minification.code);
 
