@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Build-script `node-gyp` is 13 and `minidump` is 0.26.1.** Symbol dumping still calls `dumpSymbol`. The 0.26 package is ESM and already ships `dump_syms` for linux-x64, so the install script's `build.js` exits without compiling Breakpad.
+- **Build-script `node-gyp` is 13 and `minidump` is 0.26.1.** Symbol dumping still calls `dumpSymbol`. The 0.26 package is ESM and already ships `dump_syms` for linux-x64. Script install ignores lifecycle scripts, because minidump's preinstall runs `yarn submodule`, then runs the esbuild, minidump, and mksnapshot install steps itself.
 
 - **Retired leftover package pins.** Recovery copies and GitHub discard history create directories with `fs.promises.mkdir` and `fs-extra.ensureDir`. `chart.js` and settings-view `hosted-git-info` had no call sites. `jasmine-reporters` is 2.5.2; the JUnit reporter takes the version 2 options object and uses `useFullTestName`.
 
