@@ -129,10 +129,10 @@
     "postcss": "8.5.32",
     "postcss-selector-parser": "7.1.7",
     "property-accessors": "^1.1.3",
-    "resolve": "1.22.13",
+    "resolve": "1.22.14",
     "scoped-property-store": "^0.17.0",
     "scrollbar-style": "workspace:@builtbygio/scrollbar-style@*",
-    "semver": "7.8.5",
+    "semver": "7.8.6",
     "settings-view": "workspace:@builtbygio/settings-view@*",
     "sinon": "9.2.1",
     "snippets": "workspace:@builtbygio/snippets@*",
@@ -159,7 +159,7 @@
     "breadcrumbs": "workspace:@builtbygio/breadcrumbs@*",
     "sticky-scroll": "workspace:@builtbygio/sticky-scroll@*",
     "outline": "workspace:@builtbygio/outline@*",
-    "minimatch-core": "npm:minimatch@11.0.3"
+    "minimatch-core": "npm:minimatch@11.0.4"
   },
   "packageDependencies": {
     "one-dark-ui": "1.12.6",

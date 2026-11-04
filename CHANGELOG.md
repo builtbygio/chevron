@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Patch pins.** `minimatch` 11.0.4 through the CJS shim, `resolve` 1.22.14, and `semver` 7.8.6 on the app, script, and cpm trees. Nested `semver` 4, 5, and 6 stay on their patched overrides.
+
 - **GitHub package is on React 19.3.1.** `react-select` 5.10.2 and `react-tabs` 6.1.1. The co-author field and repository owner picker use the public select props (`isMulti`, `getOptionLabel`, `formatOptionLabel`). Keybindings dispatch real key events to the input. Markdown link commands attach to the view's existing ref. `ReactDOM.findDOMNode` and the unused string ref on the changed-files button are gone. React 19 rejects string refs. The installer exclude for `less/dist` is anchored at `node_modules/less` so it no longer drops `@emotion/unitless/dist`.
 
 - **Build-script majors.** `7zip-bin` 5.2.0, `normalize-package-data` 9.0.0, `passwd-user` 4.0.0, `nock` 15.0.5. Tilde expansion uses `passwdUserSync` and `homeDirectory`. The dependency-update spec calls nock's ESM default export.
