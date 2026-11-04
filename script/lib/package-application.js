@@ -17,6 +17,7 @@ const {
   getHostArch
 } = require('./packaging-policy');
 const { writeUpdateConfig, githubRepoFromUrl } = require('./update-config-file');
+const { retargetCopiedSymlinks } = require('./retarget-copied-symlinks');
 const HOST_ARCH = getHostArch();
 
 module.exports = function() {
@@ -37,6 +38,14 @@ module.exports = function() {
     asar: { unpack: asarUnpackExpression() },
     buildVersion: CONFIG.appMetadata.version,
     derefSymlinks: false,
+    // Packager 20's fs.cp stores symlink targets as absolute paths back at
+    // this dir. asar 4 then rejects dugite's git helpers. Rewrite them onto
+    // the copied tree before the archive is built.
+    afterCopy: [
+      async ({ buildPath }) => {
+        retargetCopiedSymlinks(buildPath, CONFIG.intermediateAppPath);
+      }
+    ],
     // @electron/get: cacheRoot (electron-packager 15 accepted `cache`).
     download: { cacheRoot: CONFIG.electronDownloadPath },
     dir: CONFIG.intermediateAppPath,

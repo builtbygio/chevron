@@ -254,6 +254,7 @@ jobs:
           node --test script/ci/github-release-check.test.js
           node --test script/ci/sca-runtime.test.js
           node --test script/ci/packaging-policy.test.js
+          node --test script/ci/retarget-copied-symlinks.test.js
           node --test script/ci/custom-element-factory.test.js
           node --test script/ci/s4-ipc-slice.test.js
           node --test script/ci/rg-ipc.test.js
