@@ -3,15 +3,15 @@
 const { describe, it } = require('node:test');
 const assert = require('assert');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 
 const {
   retargetCopiedSymlinks
 } = require('../lib/retarget-copied-symlinks');
+const { makeTempDir, removeTempDir } = require('../lib/temp-dir');
 
 function tempTree() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-symlinks-'));
+  return makeTempDir('chevron-symlinks-');
 }
 
 describe('retargetCopiedSymlinks', () => {
@@ -38,7 +38,7 @@ describe('retargetCopiedSymlinks', () => {
       fs.realpathSync(link),
       fs.realpathSync(path.join(dest, 'git'))
     );
-    fs.rmSync(root, { recursive: true, force: true });
+    removeTempDir(root);
   });
 
   it('leaves a link that points outside both trees alone', () => {
@@ -59,6 +59,6 @@ describe('retargetCopiedSymlinks', () => {
     retargetCopiedSymlinks(dest, path.join(root, 'src'));
 
     assert.strictEqual(fs.readlinkSync(link), path.join(outside, 'other'));
-    fs.rmSync(root, { recursive: true, force: true });
+    removeTempDir(root);
   });
 });
