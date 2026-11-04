@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **ESLint plugins.** `eslint-plugin-n` 18.5.0 and `eslint-plugin-promise` 7.3.0. ESLint stays 9, and `.eslintrc.json` stays in use. `eslint-config-standard` 17 still declares older peers, so script install keeps `--legacy-peer-deps`.
+
 - **The dependency-update script uses Node's `fetch`.** The direct `node-fetch` 2 dependency is gone. Nested `node-fetch@2` stays pinned at 2.7.0. The unused direct `mkdirp` 0.5.1 pin is gone too; the build scripts already call `fs-extra`'s `mkdirpSync`.
 
 - **Build-script terser is 5.51.2.** `minify()` is async, so the snapshot generator and the bisect tool call `minify_sync` with the same keep-names options.
