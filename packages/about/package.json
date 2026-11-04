@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "etch": "^0.14.1",
-    "semver": "^7.8.5"
+    "semver": "^7.8.6"
   },
   "consumedServices": {
     "status-bar": {
