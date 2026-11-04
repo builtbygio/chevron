@@ -1,21 +1,17 @@
-require('jasmine-reporters');
+const { JUnitXmlReporter } = require('jasmine-reporters');
 
-class JasmineJUnitReporter extends jasmine.JUnitXmlReporter {
-  fullDescription(spec) {
-    let fullDescription = spec.description;
-    let currentSuite = spec.suite;
-    while (currentSuite) {
-      fullDescription = currentSuite.description + ' ' + fullDescription;
-      currentSuite = currentSuite.parentSuite;
-    }
-
-    return fullDescription;
-  }
-
-  reportSpecResults(spec) {
-    spec.description = this.fullDescription(spec);
-    return super.reportSpecResults(spec);
-  }
+// jasmine-reporters 1 took positional arguments and hung the full suite name
+// off spec.description in reportSpecResults. Version 2 takes an options object
+// and records the full name itself.
+function JasmineJUnitReporter(savePath, consolidate, useDotNotation, filePrefix, consolidateAll) {
+  return new JUnitXmlReporter({
+    savePath,
+    consolidate,
+    useDotNotation,
+    filePrefix,
+    consolidateAll,
+    useFullTestName: true
+  });
 }
 
 module.exports = { JasmineJUnitReporter };

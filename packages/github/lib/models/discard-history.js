@@ -11,8 +11,6 @@ var _os = _interopRequireDefault(require("os"));
 
 var _fsExtra = _interopRequireDefault(require("fs-extra"));
 
-var _mkdirp = _interopRequireDefault(require("mkdirp"));
-
 var _discardHistoryStores = require("./discard-history-stores");
 
 var _helpers = require("../helpers");
@@ -176,7 +174,7 @@ class DiscardHistory {
     }) => {
       const dir = _path.default.dirname(_path.default.join(tempFolderPath, filePath));
 
-      await (0, _mkdirp.default)(dir);
+      await _fsExtra.default.ensureDir(dir);
       const theirsPath = !beforeSha ? null : await this.expandBlobToFile(_path.default.join(tempFolderPath, `${filePath}-before-discard`), beforeSha);
       const commonBasePath = !afterSha ? null : await this.expandBlobToFile(_path.default.join(tempFolderPath, `${filePath}-after-discard`), afterSha);
 

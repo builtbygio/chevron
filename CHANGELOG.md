@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Retired leftover package pins.** Recovery copies and GitHub discard history create directories with `fs.promises.mkdir` and `fs-extra.ensureDir`. `chart.js` and settings-view `hosted-git-info` had no call sites. `jasmine-reporters` is 2.5.2; the JUnit reporter takes the version 2 options object and uses `useFullTestName`.
+
 - **App `normalize-package-data` is 9.0.0.** Same major as the build scripts. Package activation still calls it with the metadata object only, so warnings stay silent.
 
 - **GitHub and watcher use `fs-extra` 11.4.1.** Same major as the build scripts. The extension installer checks `pathExists` (`exists` is gone). The watcher fixture cleanup no longer passes `maxBusyTries`, which `remove` no longer accepts.
