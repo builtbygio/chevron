@@ -17,18 +17,17 @@ module.exports = function(ci) {
   // eslint-config-standard 17 still peers eslint 8 and eslint-plugin-n 16.
   // ESLint 9 is the engine, and n 18 / promise 7 are installed past those peers.
   // cwd is script/, so the repo-root .npmrc is not applied.
-  const args = [ci ? 'ci' : 'install', '--legacy-peer-deps'];
+  // Always skip lifecycle scripts. minidump 0.26's preinstall runs
+  // `yarn submodule`, which fails under the Yarn 1 on CI. The packages that
+  // actually need an install step are run explicitly below.
+  const args = [ci ? 'ci' : 'install', '--legacy-peer-deps', '--ignore-scripts'];
   const skipMksnapshot = !hostCanRunMksnapshot();
 
   if (skipMksnapshot) {
-    // electron-mksnapshot's install script hard-exits on linux/win arm hosts.
-    // Install the rest of script deps without lifecycle scripts, then finish
-    // the ones we still need (native addons).
     console.log(
       `NOTE: mksnapshot cannot run on ${process.platform}-${process.arch}; ` +
-        'using --ignore-scripts and completing select postinstalls without it.'
+        'the snapshot download will be skipped.'
     );
-    args.push('--ignore-scripts');
   }
 
   const env = Object.assign({}, process.env, {
@@ -41,12 +40,10 @@ module.exports = function(ci) {
     stdio: 'inherit'
   });
 
-  if (skipMksnapshot) {
-    finishScriptDepsWithoutMksnapshot(ci);
-  }
+  finishScriptDeps(ci, skipMksnapshot);
 };
 
-function finishScriptDepsWithoutMksnapshot(ci) {
+function finishScriptDeps(ci, skipMksnapshot) {
   // Packages that normally compile / fetch binaries during install.
   for (const pkg of ['fs-admin', 'leveldown']) {
     try {
@@ -67,8 +64,19 @@ function finishScriptDepsWithoutMksnapshot(ci) {
     }
   }
 
-  // minidump uses a custom preinstall (node build.js), not node-gyp rebuild.
+  // esbuild's postinstall fetches its binary. minidump's build.js exits
+  // immediately when dump_syms is already in the published package.
+  runNodeModuleScript('esbuild', 'install.js', 'esbuild install');
   runNodeModuleScript('minidump', 'build.js', 'minidump build');
+
+  if (!skipMksnapshot) {
+    runNodeModuleScript(
+      'electron-mksnapshot',
+      'download-mksnapshot.js',
+      'electron-mksnapshot download'
+    );
+    return;
+  }
 
   const mksnapshotDir = path.join(
     CONFIG.scriptRootPath,
