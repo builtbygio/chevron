@@ -1,0 +1,10 @@
+{
+  "name": "glob-cjs",
+  "version": "14.0.3",
+  "description": "glob 14 with a callable CJS export for rimraf and fs-plus",
+  "main": "index.js",
+  "license": "ISC",
+  "dependencies": {
+    "glob-core": "npm:glob@14.0.3"
+  }
+}
