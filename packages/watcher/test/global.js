@@ -3,7 +3,7 @@
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 
-chai.use(chaiAsPromised)
+chai.use(chaiAsPromised.default || chaiAsPromised)
 
 global.assert = chai.assert
 
