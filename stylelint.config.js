@@ -13,7 +13,6 @@ module.exports = {
     'color-function-alias-notation': null,
     'color-function-notation': null,
     'declaration-block-no-redundant-longhand-properties': null,
-    'declaration-block-single-line-max-declarations': null,
     'declaration-empty-line-before': null,
     'declaration-property-value-no-unknown': null,
     'font-family-name-quotes': null,
@@ -33,6 +32,8 @@ module.exports = {
     'property-no-vendor-prefix': null,
     'rule-empty-line-before': null,
     'selector-class-pattern': null,
+    'selector-no-invalid': null, // LESS mixins are not CSS selectors
+    'value-no-invalid': null, // LESS variables and functions are not CSS values
     'selector-no-vendor-prefix': null,
     'selector-not-notation': null,
     'selector-pseudo-element-colon-notation': null,
