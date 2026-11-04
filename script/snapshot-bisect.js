@@ -88,12 +88,11 @@ function minifySnapshot(scriptPath) {
   const src = fs.readFileSync(scriptPath, 'utf8');
   console.log(`Minifying ${Math.round(src.length / 1024)} KB`);
   const started = Date.now();
-  const result = terser.minify(src, {
+  const result = terser.minify_sync(src, {
     keep_fnames: true,
     keep_classnames: true,
     compress: { keep_fargs: true, keep_infinity: true }
   });
-  if (result.error) throw result.error;
   fs.writeFileSync(scriptPath, result.code);
   console.log(
     `Minified to ${Math.round(result.code.length / 1024)} KB in ${Date.now() -
