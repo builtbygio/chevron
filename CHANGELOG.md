@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **App `normalize-package-data` is 9.0.0.** Same major as the build scripts. Package activation still calls it with the metadata object only, so warnings stay silent.
+
 - **GitHub and watcher use `fs-extra` 11.4.1.** Same major as the build scripts. The extension installer checks `pathExists` (`exists` is gone). The watcher fixture cleanup no longer passes `maxBusyTries`, which `remove` no longer accepts.
 
 - **Patch pins.** `marked` 18.1.3. Watcher and the test update server override `semver@7` to 7.8.6, matching the rest of the tree.
