@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **chai is 6.3.0.** Still `require`s from CommonJS. Watcher uses `chai-as-promised` 8 and unwraps its default export. Superstring's dev pin matches.
+
 - **dugite is 3.3.2.** Git commands call the `exec` export. `GitProcess` is gone. A null `stdin` is omitted so dugite does not write it. The 1.110 `got` patch is retired: dugite 3 already downloads git with Node `https`. `whats-my-line` gets the same one-line call change. Embedded git is still `dugite/git`.
 
 - **Product `glob` is 14 through a CJS shim.** `vendor/glob-cjs` is callable, has `.sync`, and supports `util.promisify`, which is what `rimraf` and `fs-plus` still do. Script and cpm already depend on glob 14 directly and are not overridden.

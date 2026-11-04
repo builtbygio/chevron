@@ -42,8 +42,8 @@
   "author": "GitHub",
   "license": "MIT",
   "devDependencies": {
-    "chai": "^4.3.4",
-    "chai-as-promised": "7.1.1",
+    "chai": "6.3.0",
+    "chai-as-promised": "8.0.2",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-promise": "4.0.1",
     "eslint-plugin-react": "^7.37.5",

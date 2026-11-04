@@ -36,7 +36,7 @@
     "background-tips": "workspace:@builtbygio/background-tips@*",
     "bookmarks": "workspace:@builtbygio/bookmarks@*",
     "bracket-matcher": "workspace:@builtbygio/bracket-matcher@*",
-    "chai": "4.3.4",
+    "chai": "6.3.0",
     "chevron-dark-syntax": "workspace:@builtbygio/chevron-dark-syntax@*",
     "chevron-dark-ui": "workspace:@builtbygio/chevron-dark-ui@*",
     "chevron-light-syntax": "workspace:@builtbygio/chevron-light-syntax@*",
