@@ -1,4 +1,5 @@
-const Mocha = require('mocha');
+const mochaModule = require('mocha');
+const Mocha = mochaModule.default || mochaModule.Mocha || mochaModule;
 const fs = require('fs-plus');
 const { assert } = require('chai');
 
