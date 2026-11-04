@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Electron packaging tools.** `@electron/packager` 20.3.0, `@electron/osx-sign` 2.7.2, `@electron/fuses` 2.1.3, `@electron/universal` 3.0.6. The build script calls the named `packager` export and macOS signing calls `sign`. `derefSymlinks` stays off and the asar unpack globs stay explicit, so the Linux `Chevron-linux-<arch>` layout is unchanged. Packager 20's copy stores symlink targets as absolute paths; those that still point at the source tree are rewritten to relative links inside the copy so dugite's git helpers survive asar.
+
 - **Electron is 45.2.2.** New major. Natives rebuild for the 45 ABI, and `electron-mksnapshot` moves with it. The sandboxed-preload removal of `Buffer`, `setImmediate`, and the `events` / `timers` / `url` shims does not apply to the editor window: that preload stays `sandbox: false`. The native rebuild copies nan 2.30.0 next to superstring and watcher; 2.28 still calls `SetPrototypeV2` and the void setter callbacks that V8 15.3 removed.
 
 - **Patch pins.** `minimatch` 11.0.4 through the CJS shim, `resolve` 1.22.14, and `semver` 7.8.6 on the app, script, and cpm trees. Nested `semver` 4, 5, and 6 stay on their patched overrides.

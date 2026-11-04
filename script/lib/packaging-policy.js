@@ -15,7 +15,7 @@ const STOCK_SNAPSHOT_MIN_ELECTRON_MAJOR = 43;
 /**
  * Electron's host arch. Used to be require('@electron/get').getHostArch,
  * which only resolved because electron-packager 15 hoisted @electron/get.
- * @electron/packager 18 nests it, so resolve here.
+ * @electron/packager 20 nests it, so resolve here.
  */
 function getHostArch(env = process.env, nodeArch = process.arch) {
   const override = env.npm_config_arch || env.npm_config_target_arch;

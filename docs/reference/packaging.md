@@ -5,7 +5,7 @@
 
 ## Packager
 
-The product is assembled with **`@electron/packager` 18.4.4** (script-tree dep). That is the scoped successor of `electron-packager` 15 (same CJS API). 19+ is ESM-only / Node 22.12+ and is a later bump.
+The product is assembled with **`@electron/packager` 20.3.0** (script-tree dep). Packager 19+ is ESM-only; the build script takes the named `packager` export. `derefSymlinks` stays off and the asar unpack globs stay explicit.
 
 | Topic | Policy |
 |-------|--------|

@@ -378,11 +378,18 @@ describe('the globs handed to @electron/universal', () => {
   // Resolved from @electron/universal's own tree: the version it matches with.
   let minimatch = null;
   try {
-    const base = path.dirname(
-      require.resolve('@electron/universal/package.json', {
+    // Universal 3 does not export ./package.json. Walk up from the entry.
+    let base = path.dirname(
+      require.resolve('@electron/universal', {
         paths: [path.join(ROOT, 'script')]
       })
     );
+    while (
+      !fs.existsSync(path.join(base, 'package.json')) &&
+      base !== path.dirname(base)
+    ) {
+      base = path.dirname(base);
+    }
     const mod = require(require.resolve('minimatch', { paths: [base] }));
     minimatch = mod.minimatch || mod;
   } catch (error) {

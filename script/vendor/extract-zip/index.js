@@ -6,7 +6,7 @@ const { createRequire } = require('module');
 
 /**
  * Drop-in CJS wrapper for the Electron-hardened extractor.
- * electron-mksnapshot and @electron/packager 18 still `require('extract-zip')`
+ * electron-mksnapshot still `require('extract-zip')`
  * (CommonJS). The patched package is ESM-only, so load it via dynamic import.
  *
  * Resolve the real package from the script tree (direct dep) so nested
