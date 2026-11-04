@@ -133,7 +133,7 @@
     "scrollbar-style": "workspace:@builtbygio/scrollbar-style@*",
     "semver": "7.8.6",
     "settings-view": "workspace:@builtbygio/settings-view@*",
-    "sinon": "9.2.1",
+    "sinon": "22.1.0",
     "snippets": "workspace:@builtbygio/snippets@*",
     "spell-check": "workspace:@builtbygio/spell-check@*",
     "spellchecker": "npm:@builtbygio/spellchecker@3.7.1",
