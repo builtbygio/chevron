@@ -2,7 +2,7 @@
 
 **Status:** plan (2026-09-05) — written to be executed by another agent without this conversation
 **Decision it executes:** [test-runner-strategy.md](../decisions/test-runner-strategy.md)
-**Related:** `.github/workflows/jasmine.yml`, `script/test`, `script/lib/select-test-suites.js`, `script/ci/smoke-test.js`, [ipc-surface-hardening.md](./ipc-surface-hardening.md)
+**Related:** `script/test`, `script/lib/select-test-suites.js`, `script/ci/smoke-test.js`, [ipc-surface-hardening.md](./ipc-surface-hardening.md)
 
 ## What the decision fixed, and what it left to do
 
@@ -293,15 +293,16 @@ totals 0.
 
 **Goal:** the in-app suite blocks merges.
 
-Preconditions, all three: Phase 0 acceptance held for seven consecutive
-nightlies; Phase 1 overall acceptance; Phase 3 overall acceptance.
+Preconditions: Phase 0 acceptance, Phase 1 overall acceptance, and Phase 3
+overall acceptance. The old nightly workflow is gone, so "seven consecutive
+nightlies" is no longer a signal that can be collected.
 
-1. Add a `jasmine` job to `ci.yml` that reuses the `jasmine.yml` steps via
-   `workflow_call`, gated by `needs: changes` and `if:
-   needs.changes.outputs.code == 'true'` like the build matrix. Keep the
-   nightly for the full run; the PR gate runs the `core` shard plus the
-   package shards for packages changed in the PR (extend the
-   `changes` job to output the list).
+1. Add a `jasmine` job to `ci.yml`. The old `jasmine.yml` workflow is gone,
+   so this is a new job, gated by `needs: changes` and `if:
+   needs.changes.outputs.code == 'true'` like the build matrix. The PR gate
+   runs the `core` shard plus the package shards for packages changed in the
+   PR (extend the `changes` job to output the list). A full run stays off
+   the required PR path.
 2. Mark it required in branch protection only after five consecutive green
    PR runs.
 

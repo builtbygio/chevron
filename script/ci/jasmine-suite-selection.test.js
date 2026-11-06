@@ -108,13 +108,9 @@ describe('script/test suite selection on linux', () => {
   });
 });
 
-describe('the core shards in jasmine.yml partition the core suites', () => {
+describe('core render shards partition the core suites', () => {
   const fs = require('fs');
   const path = require('path');
-  const workflow = fs.readFileSync(
-    path.join(__dirname, '..', '..', '.github', 'workflows', 'jasmine.yml'),
-    'utf8'
-  );
 
   const suites = {
     coreMain: 'MAIN',
@@ -123,14 +119,6 @@ describe('the core shards in jasmine.yml partition the core suites', () => {
   };
   const select = env =>
     selectTestSuites({ env, platform: 'linux', arch: 'x64', suites });
-
-  it('names the three core shards', () => {
-    for (const shard of ['core-main', 'core-render-1', 'core-render-2']) {
-      assert.ok(workflow.includes(`- ${shard}`), `${shard} must be a shard`);
-    }
-    // The single `core` shard took 115 minutes and was cancelled at the cap.
-    assert.ok(!/^\s+- core$/m.test(workflow), 'the unsplit core shard is gone');
-  });
 
   it('gives every core suite to exactly one shard', () => {
     const main = select({
@@ -159,43 +147,16 @@ describe('the core shards in jasmine.yml partition the core suites', () => {
     assert.ok(first.length > 0 && second.length > 0);
   });
 
-  it('runs on pull requests only for the jasmine label', () => {
-    assert.match(workflow, /pull_request:\s*\n\s*types: \[[^\]]*\blabeled\b[^\]]*\]/);
-    const jobIf = /jasmine-linux:[\s\S]*?\n {4}if: >-\n([\s\S]*?)\n {4}runs-on:/.exec(workflow);
-    assert.ok(jobIf, 'jasmine-linux has a job-level if');
-    assert.match(jobIf[1], /github\.event\.label\.name == 'jasmine'/);
-    assert.match(jobIf[1], /contains\(github\.event\.pull_request\.labels\.\*\.name, 'jasmine'\)/);
-    // Otherwise adding any label cancels a labelled PR's run in progress.
-    assert.match(workflow, /group: >-[\s\S]*?jasmine-noop-\{0\}', github\.run_id/);
-  });
-
-  it('is the only place the full suite runs on CI', () => {
-    // CI's unsharded opt-in step never fit a job's time limit, and lacked
-    // the spec window and CJK font the render specs need.
+  it('does not run the full suite from ci.yml', () => {
+    // The unsharded opt-in step never fit a job's time limit, and lacked
+    // the spec window and CJK font the render specs need. The sharded
+    // workflow is gone too; script/test is a local run.
     const ci = fs.readFileSync(
       path.join(__dirname, '..', '..', '.github', 'workflows', 'ci.yml'),
       'utf8'
     );
     assert.doesNotMatch(ci, /\.\/script\/test\b/);
     assert.doesNotMatch(ci, /run_full_core_tests/);
-  });
-
-  it('leaves the budget room for a suite that starts just under it', () => {
-    // setup + budget + one suite at the watchdog must fit the job cap, or the
-    // job is cancelled with its results unwritten — which is what happened.
-    const cap = Number(/timeout-minutes:\s*(\d+)/.exec(workflow)[1]);
-    const budget = Number(/SPEC_TOTAL_BUDGET_MS:\s*'(\d+)'/.exec(workflow)[1]) / 60000;
-    const watchdog = Number(/SPEC_SUITE_TIMEOUT_MS:\s*'(\d+)'/.exec(workflow)[1]) / 60000;
-
-    // Bootstrap and build before the suites (~5), then after the last suite
-    // the summary, JUnit and upload (~10). At budget 95 the sum was 125
-    // against a 120 cap, and core was cancelled with its results unwritten.
-    const SETUP = 5;
-    const REPORTING = 10;
-    assert.ok(
-      budget + watchdog + SETUP + REPORTING <= cap,
-      `budget ${budget} + watchdog ${watchdog} + setup ${SETUP} + reporting ` +
-        `${REPORTING} must fit the ${cap} minute cap`
-    );
+    assert.doesNotMatch(ci, /jasmine\.yml/);
   });
 });

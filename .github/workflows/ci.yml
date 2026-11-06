@@ -146,9 +146,7 @@ jobs:
 
   # ---------------------------------------------------------------------------
   # Fast unit path — cpm + package-require-audit (no Electron package)
-  # Full Jasmine (script/test) is not a default PR gate (audit #57). It runs
-  # sharded in .github/workflows/jasmine.yml: nightly, on manual dispatch, and
-  # on pull requests labelled "jasmine".
+  # Full Jasmine (script/test) is local only. It is not a PR gate.
   # Always runs, including on docs-only changes.
   # ---------------------------------------------------------------------------
   unit-and-cpm:
