@@ -1,7 +1,7 @@
 # Three test runners, and which one new tests should use
 
 **Status:** decision (2026-09-05)
-**Related:** [security-phase-s-decision.md](./security-phase-s-decision.md), [build-architecture.md](./build-architecture.md), `.github/workflows/jasmine.yml`, `script/test`
+**Related:** [security-phase-s-decision.md](./security-phase-s-decision.md), [build-architecture.md](./build-architecture.md), `script/test`
 **Executed by:** [process/test-runner-migration.md](../process/test-runner-migration.md)
 
 ## The question, and the premise behind it
@@ -20,8 +20,8 @@ reasons that had nothing to do with Jasmine.
 | Layer | Runner | Size | Where it runs |
 |---|---|---|---|
 | Pure logic and process boundaries | `node:test` | 109 files in `script/ci/` | `unit-and-cpm` job on every PR, ~20 min, no Electron |
-| Main-process specs | Mocha 11.8 | 5 files in `spec/main-process/` | Jasmine nightly, `core` shard |
-| In-app renderer specs | `jasmine-tagged` 1.1.4 | 73 core specs in `spec/`, 12 package specs | Jasmine nightly, in the packaged app under Xvfb |
+| Main-process specs | Mocha 11.8 | 5 files in `spec/main-process/` | local `script/test` only |
+| In-app renderer specs | `jasmine-tagged` 1.1.4 | 73 core specs in `spec/`, 12 package specs | local `script/test` only, in the packaged app |
 
 Three things stand out.
 

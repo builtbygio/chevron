@@ -4,7 +4,7 @@
  * A package counts as testable only when its spec/test folder holds specs.
  *
  * bookmarks, encoding-selector and status-bar have a spec folder with only
- * fixtures in it; both script/test and jasmine.yml counted them, they ran
+ * fixtures in it; script/test counted them, they ran
  * zero specs, and their suites passed.
  *
  * Run: node --test script/ci/package-test-dir.test.js

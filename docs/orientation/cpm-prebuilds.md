@@ -68,9 +68,7 @@ Publish the package **with** the generated `prebuilds/` folder (do not npmignore
 
 At install time cpm sets Electron env (`npm_config_runtime=electron`, `npm_config_target=<version>`) and runs `node-gyp-build`.
 
-## Example GitHub Actions workflow
-
-See [`.github/workflows/cpm-prebuild-example.yml`](../.github/workflows/cpm-prebuild-example.yml). Prefer generating **prebuildify** artifacts into `prebuilds/` and publishing them in the npm tarball; optional release assets can still feed `chevron.prebuilds` URLs.
+Prefer generating **prebuildify** artifacts into `prebuilds/` and publishing them in the npm tarball; optional release assets can still feed `chevron.prebuilds` URLs.
 
 ## Language server binaries (LSP Phase 5)
 

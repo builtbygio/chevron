@@ -4,8 +4,8 @@
 gate (`unit-and-cpm`). Do not add Jasmine specs for new work.
 
 The in-app suite is `script/test`. It boots the packaged binary and runs
-Jasmine (renderer) plus mocha (main process). Keep it as a compatibility
-harness (nightly / label `jasmine`). Do **not** delete `script/test`.
+Jasmine (renderer) plus mocha (main process). Keep it as a local
+compatibility harness. Do **not** delete `script/test`.
 
 ## What runs where
 
@@ -13,15 +13,11 @@ harness (nightly / label `jasmine`). Do **not** delete `script/test`.
 |------|------|------|
 | `unit-and-cpm` | every PR / push | `cpm` tests + `script/ci/*.test.js` (no packaged app) |
 | Linux x64 smoke | every code PR | `script/ci/smoke-test.js` |
-| **Jasmine nightly** | 04:00 UTC on `master` | full `script/test` (core + packages) |
-| **Jasmine dispatch** | Actions → Jasmine → Run workflow | same as nightly |
-| **Jasmine on a PR** | PR label `jasmine` (starts when added, reruns on each push) | same as nightly, on the PR's merge commit |
+| `script/test` | local only | full in-app suite (core + packages) |
 
-All three are `jasmine.yml`, in the same seven shards. Unsharded, the full
-suite does not finish inside a job's time limit.
-
-Jasmine is **not** a required PR check. A red nightly means the suite failed
-on `master`; it does not block merges.
+There is no GitHub Actions workflow for `script/test`. It is not a PR check
+and it is not scheduled. Unsharded, the full suite does not finish inside a
+job's time limit, which is why it stayed off `ci.yml`.
 
 ## Full suite env
 
@@ -44,9 +40,8 @@ when `CI=1` on Linux.
 (headless), which otherwise never shows it. A never-shown window gets few
 animation frames, and the editor component specs await one per update:
 `text-editor-component-spec.js` took 426s and timed out (then retried six
-times); shown on Xvfb it takes about 20s. `jasmine.yml` sets it for the
-`core-render` shards only: with the window shown on Xvfb, fuzzy-finder's
-focus specs fail.
+times); shown on Xvfb it takes about 20s. Set it for render specs only:
+with the window shown on Xvfb, fuzzy-finder's focus specs fail.
 It also installs `fonts-noto-cjk` for the double-width character measurements.
 
 A Jasmine suite that exits 0 passes only if its output ends with a summary
@@ -69,13 +64,12 @@ characters (`getLineHeightInPixels()`, `baseCharacterWidth`), not pixels.
 | Step | Expected |
 |------|----------|
 | Bootstrap + Linux build | 20–50 min (warm cache) |
-| Full Jasmine | **unknown until first nightly** — budget **up to ~3 h** |
-| Workflow timeout | 240 min |
+| Full Jasmine | local `script/test`; budget was **up to ~3 h** when a workflow ran it |
 
-`jasmine.yml` shards with `ATOM_RUN_CORE_MAIN_TESTS`,
+`script/test` shards with `ATOM_RUN_CORE_MAIN_TESTS`,
 `ATOM_RUN_CORE_RENDER_TESTS=1|2` and `ATOM_PACKAGES_TO_TEST`: `core-main`,
 two `core-render` shards, and four package shards over the packages that have
-specs.
+specs. Nothing on GitHub Actions sets those variables.
 
 ## Expected flakes / first-run redness
 
@@ -95,8 +89,7 @@ Remaining redness after those fixes is real spec debt (Atom paths, Xvfb, timeout
 - settings-view specs that spawn `cpm`/`apm`
 - GitHub package update-signature errors (already treated as retryable)
 
-JUnit XML (if Jasmine writes it) uploads as the `jasmine-junit-linux-x64`
-artifact. Use that plus the job log to list real failures in #57.
+Jasmine can write JUnit XML locally. There is no workflow upload for it.
 
 ## Local
 

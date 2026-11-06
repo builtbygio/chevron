@@ -46,7 +46,7 @@ through `getApmPath()` → **cpm**. It has no search or install-from-registry.
 ## For package authors (owned packages)
 
 1. Declare **`engines.chevron`**; cpm reports it on install.
-2. Prefer shipping **prebuilds** for native addons — see [cpm-prebuilds.md](./cpm-prebuilds.md) and `.github/workflows/cpm-prebuild-example.yml`.
+2. Prefer shipping **prebuilds** for native addons — see [cpm-prebuilds.md](./cpm-prebuilds.md).
 3. `cpm install` runs `npm install --omit=dev` in the installed copy, so dependency install scripts run.
 4. Test with:
 

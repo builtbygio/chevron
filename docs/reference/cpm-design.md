@@ -506,7 +506,7 @@ Respect licenses and Pulsar terms if proxying their API; document attribution.
 - Install/rebuild **prefer prebuilds** before `@electron/rebuild` source compile.
 - Strategies: already-present `.node` → `chevron.prebuilds` URL template → `prebuild-install` → source.
 - `cpm rebuild --force-source` skips prebuilds.
-- Author docs: [cpm-prebuilds.md](../orientation/cpm-prebuilds.md); example workflow `.github/workflows/cpm-prebuild-example.yml`.
+- Author docs: [cpm-prebuilds.md](../orientation/cpm-prebuilds.md).
 
 ### Phase 4 — Retire apm tree — **DONE** (#30)
 
