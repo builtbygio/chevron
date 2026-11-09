@@ -23,6 +23,14 @@
               "command": "chevron-lsp:format-document"
             },
             {
+              "label": "Format Selection",
+              "command": "chevron-lsp:format-selection"
+            },
+            {
+              "label": "Toggle Format on Save",
+              "command": "chevron-lsp:toggle-format-on-save"
+            },
+            {
               "label": "Code Actions",
               "command": "chevron-lsp:code-actions"
             },

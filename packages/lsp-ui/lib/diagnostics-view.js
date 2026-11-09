@@ -19,6 +19,8 @@ class DiagnosticsView {
     this.element.tabIndex = -1;
     this._panel = null;
     this._markersByEditor = new WeakMap();
+    this._bulbsByEditor = new WeakMap();
+    this._bulbClickBound = new WeakSet();
   }
 
   /**
@@ -141,6 +143,70 @@ class DiagnosticsView {
       }
     }
     this._markersByEditor.set(editor, markers);
+    this.updateLightbulbs(editor, diagnostics);
+  }
+
+  updateLightbulbs(editor, diagnostics) {
+    this.clearLightbulbs(editor);
+    if (!editor.decorateMarker) return;
+    const rows = new Set();
+    for (const d of diagnostics) {
+      if (d.range && d.range.start) rows.add(d.range.start.row);
+    }
+    const markers = [];
+    for (const row of rows) {
+      try {
+        const marker = editor.markBufferRange(
+          [[row, 0], [row, 0]],
+          { invalidate: 'never' }
+        );
+        editor.decorateMarker(marker, {
+          type: 'line-number',
+          class: 'lsp-lightbulb'
+        });
+        markers.push(marker);
+      } catch (_) {
+        /* ignore */
+      }
+    }
+    this._bulbsByEditor.set(editor, markers);
+    this.bindLightbulbClicks(editor);
+  }
+
+  bindLightbulbClicks(editor) {
+    if (this._bulbClickBound.has(editor)) return;
+    const element = editor.getElement && editor.getElement();
+    if (!element || !element.addEventListener) return;
+    this._bulbClickBound.add(editor);
+    element.addEventListener('mousedown', event => {
+      const node =
+        event.target && event.target.closest
+          ? event.target.closest('.line-number.lsp-lightbulb')
+          : null;
+      if (!node) return;
+      const row = Number(node.dataset.bufferRow);
+      if (!Number.isInteger(row)) return;
+      if (editor.setCursorBufferPosition) {
+        editor.setCursorBufferPosition([row, 0]);
+      }
+      const e = global.chevron || global.atom;
+      if (e && e.commands && editor.getElement) {
+        e.commands.dispatch(editor.getElement(), 'chevron-lsp:code-actions');
+      }
+    });
+  }
+
+  clearLightbulbs(editor) {
+    const markers = this._bulbsByEditor.get(editor);
+    if (!markers) return;
+    for (const m of markers) {
+      try {
+        m.destroy();
+      } catch (_) {
+        /* ignore */
+      }
+    }
+    this._bulbsByEditor.set(editor, []);
   }
 
   clearGutter(editor) {
@@ -154,6 +220,7 @@ class DiagnosticsView {
       }
     }
     this._markersByEditor.set(editor, []);
+    this.clearLightbulbs(editor);
   }
 
   destroy() {

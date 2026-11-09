@@ -54,6 +54,11 @@
       "default": true,
       "description": "Wrap selected text in brackets or quotes when the editor contains selections and the opening bracket or quote is typed."
     },
+    "colorBrackets": {
+      "type": "boolean",
+      "default": true,
+      "description": "Colour nested brackets by depth. Quotes are not coloured."
+    },
     "highlightMatchingLineNumber": {
       "type": "boolean",
       "default": false,
