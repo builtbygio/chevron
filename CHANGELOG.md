@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The optional TypeScript language server is 6.0.3.** `chevron-lsp-typescript` still depends on TypeScript 6, because the server launches `typescript/lib/tsserver.js`. It needs Node `>=22.22.2`. The app's TypeScript pin is unchanged.
+
 - **Build-script Prettier is 3.9.10.** `eslint-plugin-prettier` is 5.5.7, which is the plugin that can load it. `prettier/prettier` stays off, so lint does not reformat the tree.
 
 - **Build-script ESLint is 10.14.0.** Flat config replaces `.eslintrc.json`. `neostandard` 0.14.1 supplies the standard rules ESLint 10 can load, and `eslint-config-prettier` is 10.1.8. `prettier/prettier` stays off. The same `n` and `promise` rules that were off stay off, including the stylistic class-member rule.
