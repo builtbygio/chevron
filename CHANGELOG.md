@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Build-script ESLint is 10.14.0.** Flat config replaces `.eslintrc.json`. `neostandard` 0.14.1 supplies the standard rules ESLint 10 can load, and `eslint-config-prettier` is 10.1.8. `prettier/prettier` stays off. The same `n` and `promise` rules that were off stay off, including the stylistic class-member rule.
+
 - **mocha is 12.0.3.** The package is ESM. The main-process runner uses the default export. The glob shim now publishes `hasMagic` and `glob` as named exports so mocha's `import * as glob` still sees them.
 
 - **sinon is 22.1.0.** `createSandbox`, `stub`, `spy`, `restore`, `callsFake`, and `yields` stay on the same object. The package is still `require`d from CommonJS.

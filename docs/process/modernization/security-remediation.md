@@ -32,7 +32,7 @@ These packages pose an immediate risk of Prototype Pollution, Command Injection,
 
 ## 3. Long-term: Infrastructure & Transitive Dependencies
 
-*   **`eslint` / `standard`:** **Done (engine).** `script/` is ESLint **9.39** + `eslint-config-standard` **17** + `eslint-plugin-n` **17**. Lint still uses `.eslintrc.json` via `ESLINT_USE_FLAT_CONFIG=false` (standard 17 is eslintrc; ESLint 10 drops that). Prettier 1 stays so `script/lint` does not mass-reformat. Flat config + ajv 8 wait on ESLint 10 / neostandard.
+*   **`eslint` / `standard`:** **Done.** `script/` is ESLint **10.14** with flat config (`eslint.config.mjs`) and `neostandard` **0.14**. `eslint-config-standard` 17 was eslintrc-only. Prettier 1 stays, and `prettier/prettier` stays off, so `script/lint` does not mass-reformat. ESLint 10 brings its own ajv 8; the `ajv@6` override remains for anything that still asks for ajv 6.
 *   **`mocha`:** **Done.** App mocha is **11.8.0** (still CJS; mocha 12 is the ESM rewrite). Main-process tests (`spec/main-process/mocha-test-runner.js`) stay on mocha. Jasmine (`script/test`) is unchanged.
 *   **`request`:** **Done for owned code.** VSTS scripts and `download-file-from-github` use `fetch`. `less-cache` is overridden to **less 3.13.1** (less 2 pulled `request`). Watcher dropped `electron-rebuild@1` / `mocha-appveyor-reporter`. Guard: `script/ci/no-request.test.js`. `pnpm why request` is empty on the app tree.
 

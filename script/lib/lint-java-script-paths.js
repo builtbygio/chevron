@@ -8,13 +8,7 @@ const CONFIG = require('../config');
 
 module.exports = async function() {
   return new Promise((resolve, reject) => {
-    const eslintArgs = [
-      '--cache',
-      '--format',
-      'json',
-      '--resolve-plugins-relative-to',
-      path.join(CONFIG.repositoryRootPath, 'script', 'node_modules')
-    ];
+    const eslintArgs = ['--cache', '--format', 'json'];
 
     if (process.argv.includes('--fix')) {
       eslintArgs.push('--fix');
@@ -27,10 +21,9 @@ module.exports = async function() {
       {
         cwd: CONFIG.repositoryRootPath,
         env: Object.assign({}, process.env, {
-          // Keep .eslintrc.json until a dedicated flat-config pass.
-          // eslint-config-standard 17 is still eslintrc; ESLint 9 honors
-          // it when this is false. ESLint 10 drops eslintrc entirely.
-          ESLINT_USE_FLAT_CONFIG: 'false'
+          // ESLint 10 has no eslintrc mode. A leftover false value would
+          // point it at .eslintrc.json, which this repo no longer uses.
+          ESLINT_USE_FLAT_CONFIG: 'true'
         })
       }
     );
