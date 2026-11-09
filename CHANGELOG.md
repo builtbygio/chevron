@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Package bundles keep `glob` as a real require.** The CJS shim finds `glob-core` from its own directory. Inlining that lookup into a package bundle pointed it at the bundle instead.
 - **A packaged build can copy scoped packages, and the TypeScript server can start.** `@atom/watcher` and the other scoped installs are symlinks. Copying the relative link into `out/` left it dangling, and the build died while creating nested modules through it. The language server was then pointed at `tsserver.js` inside `app.asar`. It is a separate Node process, so that path is not a directory and the server exited on initialize. Paths inside the archive are no longer passed to it. The optional package's own TypeScript is used instead.
 
 ### Changed
