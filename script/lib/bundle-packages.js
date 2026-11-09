@@ -63,11 +63,17 @@ const BINARY_ASSETS = [
 // require against node_modules instead.
 const DUAL_PACKAGE = ['minimatch'];
 
+// glob is the CJS shim in vendor/glob-cjs. Its fallback locates glob-core
+// from __dirname. Inlining that into a package bundle points the lookup at
+// the bundle instead of the shim.
+const PATH_SENSITIVE = ['glob'];
+
 const EXTERNAL = [
   ...RUNTIME_PROVIDED,
   ...NATIVE,
   ...BINARY_ASSETS,
-  ...DUAL_PACKAGE
+  ...DUAL_PACKAGE,
+  ...PATH_SENSITIVE
 ];
 
 // Everything that bundles cleanly today. Explicit rather than derived: what a
