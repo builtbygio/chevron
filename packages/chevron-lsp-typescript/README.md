@@ -22,8 +22,10 @@ name. Reload the window after installing to activate the package.
 ## The server
 
 [typescript-language-server](https://github.com/typescript-language-server/typescript-language-server)
-with its own copy of [TypeScript](https://www.typescriptlang.org/), both
+6.0.3 with its own copy of [TypeScript](https://www.typescriptlang.org/) 6, both
 installed as npm dependencies of this package. Nothing is downloaded separately.
+The server still launches `typescript/lib/tsserver.js`, which TypeScript 6
+ships. It needs Node `>=22.22.2`.
 
 The bundled TypeScript is what the server type-checks with. A project pinned to
 a different TypeScript version can report diagnostics that differ from its own
