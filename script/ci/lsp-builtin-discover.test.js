@@ -14,6 +14,7 @@ const { makeTempDir } = require('../lib/temp-dir');
 const {
   resolveBuiltinRegistrations,
   resolveInstalledPackageCommand,
+  resolveTsserverPath,
   OPTIONAL_SERVER_PACKAGES
 } = require('../../src/lsp/builtin-servers');
 
@@ -99,5 +100,28 @@ describe('optional chevron-lsp-* discovery', () => {
     const json = regs.find(r => r.id === 'vscode-json');
     assert.ok(json, 'vscode-json registration missing');
     assert.ok(json.command.includes('chevron-lsp-json'));
+  });
+});
+
+describe('resolveTsserverPath', () => {
+  it('does not hand the language server a path inside app.asar', () => {
+    const tmp = makeTempDir('chevron-tsserver-asar-');
+    const asarRoot = path.join(tmp, 'resources', 'app.asar');
+    const asarTs = path.join(
+      asarRoot,
+      'node_modules',
+      'typescript',
+      'lib',
+      'tsserver.js'
+    );
+    fs.mkdirSync(path.dirname(asarTs), { recursive: true });
+    fs.writeFileSync(asarTs, '// not a real tsserver\n');
+
+    const resolved = resolveTsserverPath(asarRoot);
+    assert.ok(
+      !resolved || !resolved.split(path.sep).some(part => part.endsWith('.asar')),
+      `asar path leaked: ${resolved}`
+    );
+    assert.notStrictEqual(resolved, asarTs);
   });
 });

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A packaged build can copy scoped packages, and the TypeScript server can start.** `@atom/watcher` and the other scoped installs are symlinks. Copying the relative link into `out/` left it dangling, and the build died while creating nested modules through it. The language server was then pointed at `tsserver.js` inside `app.asar`. It is a separate Node process, so that path is not a directory and the server exited on initialize. Paths inside the archive are no longer passed to it. The optional package's own TypeScript is used instead.
+
 ### Changed
 
 - **The optional TypeScript language server is 6.0.3.** `chevron-lsp-typescript` still depends on TypeScript 6, because the server launches `typescript/lib/tsserver.js`. It needs Node `>=22.22.2`. The app's TypeScript pin is unchanged.

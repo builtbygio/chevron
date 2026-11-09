@@ -15,9 +15,9 @@
  * and the fallback is `npx --yes typescript-language-server`, which downloads
  * a second copy rather than using the shipped one.
  *
- * What does provide TypeScript support is node_modules/typescript's
- * tsserver.js, found by resolveTsserverPath, and that is a library the build
- * needs anyway. This asserts it stays.
+ * The app still ships node_modules/typescript, which the in-process compile
+ * cache loads. resolveTsserverPath must not point the external language
+ * server at the copy inside app.asar: that process cannot read the archive.
  *
  * Run: node --test script/ci/no-shipped-language-servers.test.js
  */
@@ -109,9 +109,9 @@ describe('no language servers in the installer', () => {
     });
 
     it('still ships the typescript library that provides tsserver', () => {
-      // resolveTsserverPath looks for exactly this, and it is the TypeScript
-      // support that actually works. Removing it would be a real regression,
-      // unlike removing the servers above.
+      // The compile cache loads this from inside the app. The external
+      // language server does not: its path must be a real file, not this
+      // archive entry.
       assert.ok(
         fs.existsSync(
           path.join(APP, 'node_modules', 'typescript', 'lib', 'tsserver.js')
