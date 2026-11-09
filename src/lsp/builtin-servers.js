@@ -43,6 +43,14 @@ function which(cmd) {
   return null;
 }
 
+// app.asar is a file. Electron's fs can see through it; the language server
+// is a separate Node process and lstat's the path as a real directory.
+function isAsarPath(filePath) {
+  return String(filePath)
+    .split(/[/\\]/)
+    .some(part => part.endsWith('.asar'));
+}
+
 function resolveTsserverPath(resourcePath) {
   const candidates = [];
   if (resourcePath) {
@@ -56,7 +64,8 @@ function resolveTsserverPath(resourcePath) {
     /* ignore */
   }
   for (const c of candidates) {
-    if (c && fs.existsSync(c)) return c;
+    if (!c || isAsarPath(c)) continue;
+    if (fs.existsSync(c)) return c;
   }
   return null;
 }

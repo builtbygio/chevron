@@ -36,14 +36,17 @@ module.exports = function() {
   // symlinks and not nested symlinks to avoid issues where symlinked binaries
   // are duplicated in Atom's installation packages (see atom/atom#18490).
   const nodeModulesPath = path.join(CONFIG.repositoryRootPath, 'node_modules');
-  glob.sync(path.join(nodeModulesPath, '*')).forEach(entryPath => {
-    // Keep the install name (e.g. node_modules/minimatch), not the symlink
-    // target basename (vendor/minimatch-cjs). Otherwise linked shims land as
-    // the wrong package name and require('minimatch') fails in the asar.
-    const destName = path.basename(entryPath);
+  // Keep the install name (e.g. node_modules/minimatch), not the symlink
+  // target basename (vendor/minimatch-cjs). Otherwise linked shims land as
+  // the wrong package name and require('minimatch') fails in the asar.
+  //
+  // A scoped package is a symlink one level down (@atom/watcher →
+  // ../../packages/watcher). Copying that relative link into out/app makes
+  // it dangle, and the nested-module pass then mkdir's through it.
+  const copyInstalledModule = (entryPath, destName) => {
     let modulePath = entryPath;
     if (fs.lstatSync(entryPath).isSymbolicLink()) {
-      modulePath = path.resolve(nodeModulesPath, fs.readlinkSync(entryPath));
+      modulePath = path.resolve(path.dirname(entryPath), fs.readlinkSync(entryPath));
     }
     const destPath = path.join(
       CONFIG.intermediateAppPath,
@@ -53,6 +56,27 @@ module.exports = function() {
     // fs-extra copySync stats through symlinks. pnpm's hoisted
     // node_modules/.bin stubs are often dangling; skip them.
     copyModuleTree(modulePath, destPath);
+  };
+  glob.sync(path.join(nodeModulesPath, '*')).forEach(entryPath => {
+    const destName = path.basename(entryPath);
+    let stat;
+    try {
+      stat = fs.lstatSync(entryPath);
+    } catch (_) {
+      return;
+    }
+    if (
+      destName.startsWith('@') &&
+      !stat.isSymbolicLink() &&
+      stat.isDirectory()
+    ) {
+      for (const name of fs.readdirSync(entryPath)) {
+        if (name.startsWith('.')) continue;
+        copyInstalledModule(path.join(entryPath, name), path.join(destName, name));
+      }
+      return;
+    }
+    copyInstalledModule(entryPath, destName);
   });
 
   preserveNestedModules();
