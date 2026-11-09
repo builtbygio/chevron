@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Quick-fix lightbulb, format on save toggle, coloured brackets, saved workspaces, and local file history.** A diagnostic line shows a lightbulb in the gutter; clicking it runs code actions (`Ctrl-.` still does). **Language Server: Toggle Format on Save** flips `lsp.formatOnSave`. Nested `()[]{}` are coloured by depth. **File: Save Workspace** writes a `.chevron-workspace` file of the open folders, and **Open Workspace** restores them. Each save keeps the previous text under `$CHEVRON_HOME/local-history`, and **Restore Previous Version** puts it back. The text editor is exposed to assistive technology as a multiline text box.
+
 ### Fixed
 
 - **Package bundles keep `glob` as a real require.** The CJS shim finds `glob-core` from its own directory. Inlining that lookup into a package bundle pointed it at the bundle instead.

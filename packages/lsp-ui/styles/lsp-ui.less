@@ -2,6 +2,22 @@
   cursor: pointer;
 }
 
+// Quick-fix lightbulb on a line that has a diagnostic. Click runs code actions.
+.line-number.lsp-lightbulb {
+  cursor: pointer;
+
+  &::after {
+    content: '';
+    display: inline-block;
+    width: 0.55em;
+    height: 0.55em;
+    margin-left: 0.2em;
+    border-radius: 50%;
+    background: var(--text-color-warning, #d4a017);
+    vertical-align: middle;
+  }
+}
+
 .lsp-ui-hover {
   max-width: 40em;
   max-height: 20em;

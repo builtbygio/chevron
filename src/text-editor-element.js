@@ -52,6 +52,9 @@ class TextEditorElement extends HTMLElement {
     this.emitter = new Emitter();
     this.initialText = this.textContent;
     if (this.tabIndex == null) this.tabIndex = -1;
+    if (!this.hasAttribute('role')) this.setAttribute('role', 'textbox');
+    this.setAttribute('aria-multiline', 'true');
+    if (!this.getAttribute('aria-label')) this.setAttribute('aria-label', 'Text editor');
     this.addEventListener('focus', event =>
       this.getComponent().didFocus(event)
     );

@@ -460,6 +460,7 @@ jobs:
           node --test script/ci/language-server-scopes.test.js
           node --test script/ci/lsp-late-registration.test.js
           node --test script/ci/package-profiler.test.js
+          node --test script/ci/editor-gaps.test.js
           node --test script/ci/config-precedence.test.js
           node --test script/ci/root-config-trust.test.js
           node --test script/ci/lsp-workspace-symbols.test.js

@@ -582,6 +582,18 @@ module.exports = {
             if (listView) listView.hide();
             if (trustView) trustView.hide();
           },
+          'chevron-lsp:toggle-format-on-save': () => {
+            if (!e.config) return;
+            const next = !e.config.get('lsp.formatOnSave');
+            e.config.set('lsp.formatOnSave', next);
+            if (e.notifications) {
+              e.notifications.addInfo(
+                next
+                  ? 'Format on save is on. A language server formats the file before it is written.'
+                  : 'Format on save is off.'
+              );
+            }
+          },
           'chevron-lsp:toggle-diagnostics': () => {
             if (diagnosticsService && diagnosticsView) {
               diagnosticsView.renderList(

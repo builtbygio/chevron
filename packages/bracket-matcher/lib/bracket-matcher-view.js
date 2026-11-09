@@ -28,8 +28,14 @@ class BracketMatcherView {
     this.bracket2Range = null
 
     this.subscriptions.add(
-      this.editor.onDidTokenize(this.updateMatch),
-      this.editor.getBuffer().onDidChangeText(this.updateMatch),
+      this.editor.onDidTokenize(() => {
+        this.updateMatch()
+        this.colorBrackets()
+      }),
+      this.editor.getBuffer().onDidChangeText(() => {
+        this.updateMatch()
+        this.colorBrackets()
+      }),
       this.editor.onDidChangeGrammar(this.updateMatch),
       this.editor.onDidChangeSelectionRange(this.updateMatch),
       this.editor.onDidAddCursor(this.updateMatch),
@@ -63,10 +69,67 @@ class BracketMatcherView {
     )
 
     this.updateMatch()
+    this.colorBrackets()
   }
 
   destroy () {
+    this.clearBracketColors()
     this.subscriptions.dispose()
+  }
+
+  clearBracketColors () {
+    for (const marker of this.colorMarkers || []) {
+      try { marker.destroy() } catch (error) {}
+    }
+    this.colorMarkers = []
+  }
+
+  // Colour nested () [] {} by depth. Quotes stay with the match highlighter.
+  colorBrackets () {
+    this.clearBracketColors()
+    try {
+      if (!chevron.config.get('bracket-matcher.colorBrackets')) return
+    } catch (error) {
+      return
+    }
+    if (!this.editor.getText) return
+    const lineCount = this.editor.getLineCount ? this.editor.getLineCount() : 0
+    if (!lineCount || lineCount > 8000) return
+    const opens = {'(': ')', '[': ']', '{': '}'}
+    const closes = {')': '(', ']': '[', '}': '{'}
+    let depth = 0
+    const text = this.editor.getText()
+    let row = 0
+    let col = 0
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i]
+      if (ch === '\n') {
+        row++
+        col = 0
+        continue
+      }
+      if (opens[ch] || closes[ch]) {
+        const range = new Range(new Point(row, col), new Point(row, col + 1))
+        let skip = false
+        try {
+          skip = this.isRangeCommentedOrString(range)
+        } catch (error) {
+          skip = false
+        }
+        if (!skip) {
+          const level = closes[ch] ? Math.max(depth - 1, 0) : depth
+          const marker = this.editor.markBufferRange(range)
+          this.editor.decorateMarker(marker, {
+            type: 'highlight',
+            class: `bracket-color bracket-color-${level % 6}`
+          })
+          this.colorMarkers.push(marker)
+          if (opens[ch]) depth++
+          else depth = Math.max(depth - 1, 0)
+        }
+      }
+      col++
+    }
   }
 
   updateMatch () {

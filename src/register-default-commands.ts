@@ -13,6 +13,25 @@ const {formatProfilerReport} = require('./package-profiler-report');
 const {collectSettingsSources, formatSettingsSources} = require('./settings-source-report');
 
 module.exports = function({commandRegistry, commandInstaller, config, notificationManager, project, clipboard, workspace}) {
+  const localHistory = require('./local-history');
+  const seenBuffers = new WeakSet();
+  if (workspace && workspace.observeTextEditors) {
+    workspace.observeTextEditors(editor => {
+      const buffer = editor.getBuffer && editor.getBuffer();
+      if (!buffer || !buffer.onWillSave || seenBuffers.has(buffer)) return;
+      seenBuffers.add(buffer);
+      buffer.onWillSave(() => {
+        const filePath = buffer.getPath && buffer.getPath();
+        const home = process.env.CHEVRON_HOME || process.env.ATOM_HOME;
+        if (!filePath || !home) return;
+        try {
+          localHistory.snapshot(home, filePath, buffer.getText());
+        } catch (error) {
+          /* a history miss must not block the save */
+        }
+      });
+    });
+  }
   commandRegistry.add(
     'chevron-workspace',
     {
@@ -63,6 +82,64 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
       'application:open-dev'() { return ipcRenderer.send('chevron:command', 'application:open-dev'); },
       'application:open-safe'() { return ipcRenderer.send('chevron:command', 'application:open-safe'); },
       'application:add-project-folder'() { return chevron.addProjectFolder(); },
+      'application:save-workspace'() {
+        const fs = require('fs');
+        const {serializeWorkspace} = require('./workspace-file');
+        const paths = chevron.project.getPaths();
+        if (!paths.length) {
+          chevron.notifications.addWarning('Open a folder before saving a workspace');
+          return;
+        }
+        return chevron.applicationDelegate.showSaveDialog({
+          title: 'Save Workspace',
+          defaultPath: require('path').join(paths[0], 'workspace.chevron-workspace')
+        }).then(result => {
+          const filePath = result && result.filePath;
+          if (!filePath || result.canceled) return;
+          fs.writeFileSync(filePath, serializeWorkspace(paths));
+          chevron.notifications.addInfo('Saved workspace');
+        });
+      },
+      'application:open-workspace'() {
+        const fs = require('fs');
+        const {parseWorkspace} = require('./workspace-file');
+        return ipcRenderer.invoke('chevron:show-open-dialog', {
+          title: 'Open Workspace',
+          properties: ['openFile'],
+          filters: [{name: 'Chevron workspace', extensions: ['chevron-workspace']}]
+        }).then(result => {
+          const filePath = result && result.filePaths && result.filePaths[0];
+          if (!filePath) return;
+          let data;
+          try {
+            data = parseWorkspace(fs.readFileSync(filePath, 'utf8'));
+          } catch (error) {
+            chevron.notifications.addWarning(error.message);
+            return;
+          }
+          chevron.project.setPaths(data.folders);
+        });
+      },
+      'local-history:restore-previous'() {
+        const {listSnapshots, readSnapshot} = require('./local-history');
+        const editor = chevron.workspace.getActiveTextEditor();
+        const filePath = editor && editor.getPath();
+        if (!filePath) {
+          chevron.notifications.addWarning('Local history is kept for saved files');
+          return;
+        }
+        const home = process.env.CHEVRON_HOME || process.env.ATOM_HOME;
+        if (!home) return;
+        const current = editor.getText();
+        const previous = listSnapshots(home, filePath)
+          .map(readSnapshot)
+          .find(text => text !== current);
+        if (previous == null) {
+          chevron.notifications.addInfo('No earlier version of this file');
+          return;
+        }
+        editor.setText(previous);
+      },
       'application:minimize'() { return ipcRenderer.send('chevron:command', 'application:minimize'); },
       'application:zoom'() { return ipcRenderer.send('chevron:command', 'application:zoom'); },
       'application:bring-all-windows-to-front'() { return ipcRenderer.send('chevron:command', 'application:bring-all-windows-to-front'); },

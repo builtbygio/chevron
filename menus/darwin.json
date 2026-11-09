@@ -124,6 +124,18 @@
           "command": "application:add-project-folder"
         },
         {
+          "label": "Save Workspace\u2026",
+          "command": "application:save-workspace"
+        },
+        {
+          "label": "Open Workspace\u2026",
+          "command": "application:open-workspace"
+        },
+        {
+          "label": "Restore Previous Version",
+          "command": "local-history:restore-previous"
+        },
+        {
           "label": "Reopen Project",
           "submenu": [
             {
