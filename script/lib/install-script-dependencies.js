@@ -14,8 +14,8 @@ module.exports = function(ci) {
   console.log('Installing script dependencies');
   const npmBin = CONFIG.getNpmBinPath(ci);
   // Default npm loglevel: keep deprecation/peer warnings visible.
-  // eslint-config-standard 17 still peers eslint 8 and eslint-plugin-n 16.
-  // ESLint 9 is the engine, and n 18 / promise 7 are installed past those peers.
+  // Some script packages still declare peers the lock does not satisfy.
+  // neostandard itself peers ESLint 9 or 10.
   // cwd is script/, so the repo-root .npmrc is not applied.
   // Always skip lifecycle scripts. minidump 0.26's preinstall runs
   // `yarn submodule`, which fails under the Yarn 1 on CI. The packages that
