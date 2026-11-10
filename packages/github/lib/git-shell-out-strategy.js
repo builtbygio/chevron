@@ -900,7 +900,7 @@ class GitShellOutStrategy {
     // %b - body
 
 
-    const args = ['log', '--pretty=format:%H%x00%ae%x00%an%x00%at%x00%s%x00%b%x00', '--no-abbrev-commit', '--no-prefix', '--no-ext-diff', '--no-renames', '-z', '-n', max, ref];
+    const args = ['log', '--pretty=format:%H%x00%ae%x00%an%x00%at%x00%s%x00%b%x00', '--no-abbrev-commit', '--no-prefix', '--no-ext-diff', '--no-renames', '-z', '-n', String(max), ref];
 
     if (includePatch) {
       args.push('--patch', '-m', '--first-parent');
@@ -926,12 +926,24 @@ class GitShellOutStrategy {
     const commits = [];
 
     for (let i = 0; i < fields.length; i += 7) {
+      // A short trailing record (the -z separator) must not throw. A throw
+      // here rejects the commit fetch, and the view stays on the spinner.
+      if (fields[i + 5] == null) break;
+
       const body = fields[i + 5].trim();
       let patch = [];
 
       if (includePatch) {
-        const diffs = fields[i + 6];
-        patch = (0, _whatTheDiff.parse)(diffs.trim());
+        const diffs = fields[i + 6] || '';
+        const trimmed = diffs.trim();
+
+        if (trimmed) {
+          try {
+            patch = (0, _whatTheDiff.parse)(trimmed);
+          } catch (error) {
+            patch = [];
+          }
+        }
       }
 
       const {

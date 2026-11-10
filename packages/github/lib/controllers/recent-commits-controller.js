@@ -31,7 +31,10 @@ class RecentCommitsController extends _react.default.Component {
 
     _defineProperty(this, "updateSelectedCommit", () => {
       const activeItem = this.props.workspace.getActivePaneItem();
-      const pattern = new _uriPattern.default(decodeURIComponent(_commitDetailItem.default.buildURI(this.props.repository.getWorkingDirectoryPath(), '{sha}')));
+      // buildURI leaves "{sha}" literal and percent-encodes "+". Decoding the
+      // whole URI first would turn "%2B" back into "+", which the query parser
+      // then reads as a space, so this commit would no longer match.
+      const pattern = new _uriPattern.default(_commitDetailItem.default.buildURI(this.props.repository.getWorkingDirectoryPath(), '{sha}'));
 
       if (activeItem && activeItem.getURI) {
         const match = pattern.matches(activeItem.getURI());

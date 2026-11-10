@@ -129,6 +129,11 @@ const Keys = {
   blob: {
     oneWith: sha => new CacheKey(`blob:${sha}`, ['blob'])
   },
+  // Separate from blob. A commit and the blob with the same sha are different
+  // objects; sharing one cache entry made the commit view read a file body.
+  commit: {
+    oneWith: sha => new CacheKey(`commit:${sha}`, ['commit'])
+  },
   blame: {
     oneWith: fileName => new CacheKey(`blame:${fileName}`, ['blame']),
     all: new GroupKey('blame')

@@ -211,10 +211,14 @@ class Worker {
     results
   }) {
     const operation = this.operationsById.get(id);
+
+    if (!operation) return;
+
     operation.complete(results, data => {
-      const {
-        timing
-      } = data;
+      const timing = data && data.timing;
+
+      if (!timing) return data;
+
       const totalInternalTime = timing.execTime + timing.spawnTime;
       const ipcTime = operation.getExecutionTime() - totalInternalTime;
       data.timing.ipcTime = ipcTime;
@@ -504,7 +508,22 @@ class Operation {
   complete(results, mutate = data => data) {
     this.endTime = performance.now();
     this.results = results;
-    this.resolve(mutate(results));
+    let value = results;
+
+    try {
+      value = mutate(results);
+    } catch (err) {
+      // A throw here used to skip resolve() and reject(), so the git
+      // operation never settled and the panel spun forever.
+      this.reject(err instanceof Error ? err : new Error(String(err)));
+      this.cancellationResolve();
+      this.status = Operation.status.COMPLETE;
+      this.emitter.emit('complete', this);
+      this.emitter.dispose();
+      return;
+    }
+
+    this.resolve(value);
     this.cancellationResolve();
     this.status = Operation.status.COMPLETE;
     this.emitter.emit('complete', this);
