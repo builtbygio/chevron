@@ -19,6 +19,23 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 let instance = null;
 
+// Cache key for a token. The renderer build of crypto has pbkdf2 and
+// createHash, but not crypto.promises.scrypt — calling that threw and the
+// model observer dropped the rejection, so the GitHub tab spun forever.
+function tokenFingerprint(password) {
+  const crypto = _crypto.default;
+  const salt = 'chevron-github-token-cache';
+  if (typeof crypto.pbkdf2 === 'function') {
+    return new Promise((resolve, reject) => {
+      crypto.pbkdf2(password, salt, 10000, 32, 'sha256', (err, out) => {
+        if (err) reject(err);
+        else resolve(out.toString('base64'));
+      });
+    });
+  }
+  return Promise.resolve(crypto.createHash('sha256').update(salt).update(String(password)).digest('base64'));
+}
+
 class GithubLoginModel {
   // Classic PAT must have these OAuth scopes. GitHub App user tokens (ghu_)
   // do not use scopes; getScopes treats them as sufficient.
@@ -52,6 +69,15 @@ class GithubLoginModel {
   }
 
   async getToken(account) {
+    try {
+      return await this.readToken(account);
+    } catch (error) {
+      // A throw here used to leave the tab on the loading spinner.
+      return error;
+    }
+  }
+
+  async readToken(account) {
     const strategy = await this.getStrategy();
     let password = await strategy.getPassword('atom-github', account);
 
@@ -70,12 +96,7 @@ class GithubLoginModel {
     if (/^https?:\/\//.test(account)) {
       // Avoid storing tokens in memory longer than necessary. Let's cache token scope checks by storing a set of
       // checksums instead.
-      // Cache key for a token. scrypt, not md5: this value is a secret.
-      const fingerprint = (await _crypto.default.promises.scrypt(
-        password,
-        'chevron-github-token-cache',
-        32
-      )).toString('base64');
+      const fingerprint = await tokenFingerprint(password);
       const outcome = this.checked.get(fingerprint);
 
       if (outcome === _keytarStrategy.UNAUTHENTICATED || outcome === _keytarStrategy.INSUFFICIENT) {
