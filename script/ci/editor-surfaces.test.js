@@ -4,8 +4,8 @@ const { describe, it } = require('node:test');
 const assert = require('assert');
 const { fork } = require('child_process');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
+const { makeTempDir } = require('../lib/temp-dir');
 
 const { rowForY, viewportBox, sampleStep } = require('../../packages/minimap/lib/layout');
 const { scrub, buildBundle, serializeBundle, parseBundle } = require('../../packages/settings-sync/lib/bundle');
@@ -88,7 +88,7 @@ describe('remote paths', () => {
 
 describe('debug program policy', () => {
   it('accepts a JavaScript file inside a root and refuses the rest', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-debug-policy-'));
+    const root = makeTempDir('chevron-debug-policy-');
     const program = path.join(root, 'app.js');
     fs.writeFileSync(program, 'console.log(1)\n');
     assert.strictEqual(validateProgram(program, [root]).ok, true);
@@ -103,7 +103,7 @@ describe('debug program policy', () => {
 
 describe('node debug adapter', () => {
   it('stops on a breakpoint and can read a local', async () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-dbg-'));
+    const dir = makeTempDir('chevron-dbg-');
     const program = path.join(dir, 'add.js');
     fs.writeFileSync(
       program,

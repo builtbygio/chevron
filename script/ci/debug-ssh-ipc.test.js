@@ -10,13 +10,13 @@
 const { describe, it } = require('node:test');
 const assert = require('assert');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
+const { makeTempDir } = require('../lib/temp-dir');
 
 const { createDebugManager } = require('../../src/main-process/register-debug-ipc');
 const { createSshApi } = require('../../src/main-process/register-ssh-ipc');
 
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'chevron-debug-ssh-'));
+const root = makeTempDir('chevron-debug-ssh-');
 const program = path.join(root, 'app.js');
 fs.writeFileSync(program, 'console.log(1)\n');
 
