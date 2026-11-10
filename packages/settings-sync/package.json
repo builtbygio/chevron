@@ -1,0 +1,18 @@
+{
+  "name": "@builtbygio/settings-sync",
+  "version": "0.1.0",
+  "main": "./lib/main",
+  "description": "Export and import settings, keymaps, snippets, and your stylesheet.",
+  "license": "MIT",
+  "repository": "https://github.com/builtbygio/chevron",
+  "engines": {
+    "atom": "*",
+    "chevron": "*"
+  },
+  "activationCommands": {
+    "chevron-workspace": [
+      "settings-sync:export",
+      "settings-sync:import"
+    ]
+  }
+}

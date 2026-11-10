@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Minimap, JavaScript debugger, SSH editing, and settings export.** The minimap sits on the right of an editor; click it to jump. **Debug: Start / Continue** runs the current JavaScript file, stops on breakpoints (`F9`), and steps with **Step Over**. **File: Open Remote File** reads and saves `user@host:/absolute/path` over SSH. **Packages: Export Settings** writes config, keymap, snippets, stylesheet, and init to a JSON file, leaving tokens and passwords out.
 - **Quick-fix lightbulb, format on save toggle, coloured brackets, saved workspaces, and local file history.** A diagnostic line shows a lightbulb in the gutter; clicking it runs code actions (`Ctrl-.` still does). **Language Server: Toggle Format on Save** flips `lsp.formatOnSave`. Nested `()[]{}` are coloured by depth. **File: Save Workspace** writes a `.chevron-workspace` file of the open folders, and **Open Workspace** restores them. Each save keeps the previous text under `$CHEVRON_HOME/local-history`, and **Restore Previous Version** puts it back. The text editor is exposed to assistive technology as a multiline text box.
 
 ### Fixed

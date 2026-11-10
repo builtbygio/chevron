@@ -1,0 +1,19 @@
+{
+  "name": "@builtbygio/minimap",
+  "version": "0.1.0",
+  "main": "./lib/main",
+  "description": "A scaled map of the open file, beside the scrollbar.",
+  "license": "MIT",
+  "repository": "https://github.com/builtbygio/chevron",
+  "engines": {
+    "atom": "*",
+    "chevron": "*"
+  },
+  "configSchema": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "title": "Show the minimap"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "menu": [
+    {
+      "label": "File",
+      "submenu": [
+        { "label": "Open Remote File\u2026", "command": "remote-edit:open-file" },
+        { "label": "Open Remote Folder\u2026", "command": "remote-edit:open-folder" }
+      ]
+    }
+  ]
+}

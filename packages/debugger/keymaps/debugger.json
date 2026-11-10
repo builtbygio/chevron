@@ -1,0 +1,8 @@
+{
+  "chevron-workspace": {
+    "f5": "debug:continue",
+    "f9": "debug:toggle-breakpoint",
+    "f10": "debug:step-over",
+    "ctrl-f5": "debug:stop"
+  }
+}

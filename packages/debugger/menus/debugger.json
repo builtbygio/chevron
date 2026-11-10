@@ -1,0 +1,15 @@
+{
+  "menu": [
+    {
+      "label": "Debug",
+      "submenu": [
+        { "label": "Start / Continue", "command": "debug:continue" },
+        { "label": "Toggle Breakpoint", "command": "debug:toggle-breakpoint" },
+        { "label": "Step Over", "command": "debug:step-over" },
+        { "label": "Step In", "command": "debug:step-in" },
+        { "label": "Step Out", "command": "debug:step-out" },
+        { "label": "Stop", "command": "debug:stop" }
+      ]
+    }
+  ]
+}

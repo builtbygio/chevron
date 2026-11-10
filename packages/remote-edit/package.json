@@ -1,0 +1,18 @@
+{
+  "name": "@builtbygio/remote-edit",
+  "version": "0.1.0",
+  "main": "./lib/main",
+  "description": "Open, edit, and save a file on another machine over SSH.",
+  "license": "MIT",
+  "repository": "https://github.com/builtbygio/chevron",
+  "engines": {
+    "atom": "*",
+    "chevron": "*"
+  },
+  "activationCommands": {
+    "chevron-workspace": [
+      "remote-edit:open-file",
+      "remote-edit:open-folder"
+    ]
+  }
+}
