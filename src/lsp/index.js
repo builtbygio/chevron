@@ -30,7 +30,8 @@ const { formatDocument, formatRange } = require('./providers/format');
 const {
   codeActionsAt,
   resolveCodeAction,
-  executeCommand
+  executeCommand,
+  planCodeActionApply
 } = require('./providers/code-action');
 const {
   documentSymbols,
@@ -470,18 +471,31 @@ async function codeActionsAtCursor(editor, range) {
 
 async function applyCodeAction(editor, action) {
   let resolved = action;
-  if (action && !action.edit) {
+  // A TypeScript quick fix already carries its WorkspaceEdit on the command.
+  // Resolving it hits a server that does not implement codeAction/resolve.
+  const ready = planCodeActionApply(action);
+  if (action && ready.kind !== 'edit' && ready.kind !== 'disabled') {
     resolved = await resolveCodeAction(clientApi, editor, action);
   }
-  if (resolved && resolved.edit) {
+  const plan = planCodeActionApply(resolved);
+  if (plan.kind === 'disabled') return { ok: false, error: plan.reason };
+  if (plan.kind === 'edit') {
     const serverId = getServerIdForEditor(editor);
-    const applied = await applyEdit(resolved.edit, serverId);
+    const applied = await applyEdit(plan.edit, serverId);
     if (!applied.ok) return applied;
+    if (plan.command) {
+      const executed = await executeCommand(clientApi, editor, plan.command);
+      if (!executed.ok) return executed;
+    }
+    if (!applied.edits) {
+      return { ok: false, error: 'Code action made no changes' };
+    }
+    return applied;
   }
-  if (resolved && resolved.command) {
-    return executeCommand(clientApi, editor, resolved.command);
+  if (plan.kind === 'command') {
+    return executeCommand(clientApi, editor, plan.command);
   }
-  return { ok: true };
+  return { ok: false, error: 'Code action made no changes' };
 }
 
 async function documentSymbolsAt(editor) {
@@ -959,12 +973,19 @@ function activate() {
           if (documentSync) documentSync.observeEditor(editor);
           await formatRangeAt(editor);
         },
-        'chevron-lsp:code-actions': async () => {
-          const editor = env.workspace.getActiveTextEditor();
+        'chevron-lsp:code-actions': async event => {
+          // The gutter click dispatches before the editor is focused, and it
+          // passes the diagnostic span. A column-0 caret is not that span:
+          // the TypeScript server looks for fixes inside the request range.
+          const detail = event && event.detail;
+          const editor =
+            (detail && detail.editor) ||
+            (env.workspace && env.workspace.getActiveTextEditor());
           if (!editor) return;
+          const range = detail && detail.range;
           await ensureServerForEditor(editor);
           if (documentSync) documentSync.observeEditor(editor);
-          const actions = await codeActionsAtCursor(editor);
+          const actions = await codeActionsAtCursor(editor, range);
           emitter.emit('did-request-code-actions', { editor, actions });
         },
         'chevron-lsp:document-symbols': async () => {

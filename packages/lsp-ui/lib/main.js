@@ -471,14 +471,26 @@ module.exports = {
               label: a.kind ? `${a.title}  ·  ${a.kind}` : a.title,
               value: a
             })),
-            e
+            e,
+            editor && editor.__chevronCodeActionAnchor
+              ? { box: editor.__chevronCodeActionAnchor }
+              : null
           );
+          if (editor) delete editor.__chevronCodeActionAnchor;
           if (!picked) return;
-          const result = await client.applyCodeAction(editor, picked);
-          if (!result.ok && e && e.notifications) {
-            e.notifications.addWarning(
-              `Code action failed: ${result.error || 'unknown'}`
-            );
+          try {
+            const result = await client.applyCodeAction(editor, picked);
+            if ((!result || !result.ok) && e && e.notifications) {
+              e.notifications.addWarning(
+                `Code action failed: ${(result && result.error) || 'unknown'}`
+              );
+            }
+          } catch (err) {
+            if (e && e.notifications) {
+              e.notifications.addWarning(
+                `Code action failed: ${err && err.message ? err.message : err}`
+              );
+            }
           }
         })
       );

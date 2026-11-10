@@ -2,19 +2,25 @@
   cursor: pointer;
 }
 
-// Quick-fix lightbulb on a line that has a diagnostic. Click runs code actions.
+// Quick-fix marker on a diagnostic line. A click in the trailing zone runs
+// code actions (see clickedLightbulb). The gutter is text-align: right, so an
+// in-flow dot is part of that row's line box and shoves the digits left of
+// the other line numbers. Keep the dot out of flow, inside the trailing
+// ~1.15em the click handler treats as the marker.
 .line-number.lsp-lightbulb {
   cursor: pointer;
 
   &::after {
     content: '';
-    display: inline-block;
+    position: absolute;
+    top: 50%;
+    right: 0.15em;
     width: 0.55em;
     height: 0.55em;
-    margin-left: 0.2em;
     border-radius: 50%;
     background: var(--text-color-warning, #d4a017);
-    vertical-align: middle;
+    transform: translateY(-50%);
+    pointer-events: none;
   }
 }
 
@@ -210,11 +216,16 @@ chevron-panel.modal .lsp-ui-trust,
 }
 
 .lsp-ui-list {
-  padding: 1em;
-  min-width: 24em;
-  max-width: 40em;
-  max-height: 60vh;
+  padding: 0.6em 0.75em;
+  min-width: 16em;
+  max-width: 36em;
+  max-height: 16em;
   overflow: auto;
+  background: var(--tool-panel-background-color);
+  color: var(--text-color);
+  border: 1px solid var(--base-border-color);
+  border-radius: var(--component-border-radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .lsp-ui-list-title {
@@ -228,11 +239,7 @@ chevron-panel.modal .lsp-ui-trust,
   padding: 0;
 
   li {
-    margin: 0.25em 0;
-  }
-
-  a {
-    cursor: pointer;
+    margin: 0;
   }
 }
 
@@ -254,11 +261,30 @@ chevron-panel.modal .lsp-ui-trust,
   padding: 0;
 
   li {
-    margin: 0.15em 0;
+    margin: 0;
   }
+}
 
-  a {
-    cursor: pointer;
+// The row itself is the control. An inline link left the padding dead, so a
+// click on the entry did not run the action.
+.lsp-ui-list-items button.lsp-ui-list-choice,
+.lsp-ui-diagnostics-list button.lsp-ui-list-choice {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0.2em 0.35em;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 2px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover,
+  &:focus {
+    background: var(--background-color-highlight);
+    outline: none;
   }
 }
 
