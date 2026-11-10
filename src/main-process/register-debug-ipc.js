@@ -86,15 +86,15 @@ function createDebugManager(deps = {}) {
   }
 
   async function request(sender, payload = {}) {
-    const session = sessions.get(sender.id);
-    if (!session) {
-      const error = new Error('no debug session');
-      error.code = 'DEBUG_REJECTED';
-      throw error;
-    }
     const command = payload.command;
     if (typeof command !== 'string' || !/^[a-zA-Z]+$/.test(command)) {
       const error = new Error('unknown debug command');
+      error.code = 'DEBUG_REJECTED';
+      throw error;
+    }
+    const session = sessions.get(sender.id);
+    if (!session) {
+      const error = new Error('no debug session');
       error.code = 'DEBUG_REJECTED';
       throw error;
     }
