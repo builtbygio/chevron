@@ -1,26 +1,22 @@
 # Chevron
 
+<div align="center">
+  
+  <p><img src="resources/app-icons/stable/png/256.png" alt="Chevron icon" width="128" height="128" /></p>
+  <p><b>Hackable. Fast. Yours.</b></p>
+
 [![CI](https://github.com/builtbygio/chevron/actions/workflows/ci.yml/badge.svg)](https://github.com/builtbygio/chevron/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/builtbygio/chevron)](https://github.com/builtbygio/chevron/releases/latest)
+[![License](https://img.shields.io/github/license/builtbygio/chevron)](LICENSE.md)
+[![Platform](https://img.shields.io/badge/platform-Linux%20x86__64-informational)](https://github.com/builtbygio/chevron/releases)
 
-<p align="center">
-  <img src="resources/app-icons/stable/png/256.png" alt="Chevron icon" width="128" height="128" />
-</p>
+</div>
 
-<p align="center"><strong>Hackable. Fast. Yours.</strong></p>
-
-A modernized fork of [Atom](https://github.com/atom/atom), the hackable text editor — resurrected and rebuilt on a current version of Electron.
-
-> Named after the Stargate dialing mechanism: each chevron locks in a step toward a working connection. Fitting for a project that's rebuilding Atom's internals one architectural piece at a time.
-
-## Why
-
-Atom was officially [sunset by GitHub in December 2022](https://github.blog/2022-06-08-sunsetting-atom/) and hasn't received updates since. It shipped on Electron 11, which is years out of date, unsupported, and increasingly incompatible with modern Node.js, V8, and OS-level APIs.
-
-Rather than a from-scratch rewrite, Chevron takes the harder — and more educational — path: bring Atom's existing codebase forward through modern Electron versions, one breaking change at a time.
+A modernised fork of [Atom](https://github.com/atom/atom), the hackable text editor, resurrected and rebuilt on a current version of Electron.
 
 ## Download
 
-**[1.6.0 unsigned preview](https://github.com/builtbygio/chevron/releases/tag/v1.6.0)** — Linux x64 packages are attached to that GitHub Release (unsigned preview).
+**[1.6.0 unsigned preview](https://github.com/builtbygio/chevron/releases/tag/v1.6.0)**: Linux x64 packages are attached to that GitHub Release.
 
 | Platform | File |
 |----------|------|
@@ -28,83 +24,26 @@ Rather than a from-scratch rewrite, Chevron takes the harder — and more educat
 
 All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtbygio/chevron/releases). Details: [docs/reference/releases.md](docs/reference/releases.md).
 
-## Status
-
-**1.6.0 unsigned preview** — pnpm 11 workspace, owned catalog on npmjs, One Dark default. **Owned catalog only**, Phase S **Option C** (editor `sandbox: false` on purpose). This is a dogfoodable preview, not a signed store app.
-
-| Track | Notes |
-|-------|--------|
-| Electron | **45.2.2** |
-| Bundle ID | `dev.builtbygio.chevron` |
-| Package API | **Chevron only** (`require('chevron')`, `global.chevron`, `engines.chevron`) |
-| URI scheme | **`chevron://`** only — the `atom://` alias and the `.atom` host were removed in Wave 4 |
-| Package catalog | **Owned core only, vendored in `packages/`**. Community packages are **cancelled**, not deferred — [docs/decisions/package-ecosystem-strategy.md](docs/decisions/package-ecosystem-strategy.md) |
-| Package manager | **cpm** (Electron-as-Node). The `apm` shim is retired. |
-| Updates | **https://github.com/builtbygio/chevron/releases** (unsigned; Check for Update opens this page) |
-| Config home | **`~/.chevron`** (`CHEVRON_HOME`; `ATOM_HOME` only if set) |
-| Security | Phase S Option C — [docs/decisions/security-phase-s-decision.md](docs/decisions/security-phase-s-decision.md), [docs/reference/security-threat-model.md](docs/reference/security-threat-model.md) |
-
-See [CHANGELOG.md](CHANGELOG.md) and [docs/decisions/REBRANDING.md](docs/decisions/REBRANDING.md).
-
-## Goals
-
-- [x] Migrate off deprecated `remote` module usage (IPC path)
-- [x] Rearchitect IPC to work under `contextIsolation: true`
-- [x] Clean multi-platform builds on current Electron
-- [x] Chevron branding (icons, shell, package identity)
-- [x] Further first-run / onboarding polish — see [docs/process/onboarding-polish.md](docs/process/onboarding-polish.md)
-- [x] Modern package manager path — Phase 0–4 complete (`cpm`; see [docs/reference/cpm-design.md](docs/reference/cpm-design.md), [docs/orientation/cpm-cutover.md](docs/orientation/cpm-cutover.md)); the `apm` name is retired
-- [x] Security Phase N + Electron best-practices shippable scope ([docs/process/security-phase-n.md](docs/process/security-phase-n.md), [docs/process/electron-best-practices-plan.md](docs/process/electron-best-practices-plan.md))
-- [x] Phase S complete under **Option C** (editor `sandbox: false` intentional; utilityProcess git workers; T2 restrict) — [docs/decisions/security-phase-s-decision.md](docs/decisions/security-phase-s-decision.md)
-- [x] Post-1.1.0 modernization Waves 1–4 — shed the Atom-era shims that had no callers left: `Task` deleted, the `atom://` URI alias and `.atom` host removed (`chevron://` is now the only product scheme), dead Relay/`graphql@14` out of `github`, and the `natural` log4js patch retired. See [docs/reference/chevron-architecture-modernization.md](docs/reference/chevron-architecture-modernization.md)
-- [ ] `season` and the custom elements polyfill — both still have live callers; see `script/ci/wave3-gates.test.js` for the evidence
-
-## Non-goals (for now)
-
-- A ground-up rewrite — this is a modernization effort, not a new editor
-- Feature parity with VS Code or other modern editors
-- Supporting Atom as a second product identity (Chevron only)
-
-## Approach
-
-Chevron is a modernized fork of Atom, maintained in the open. The goal is not a
-from-scratch editor, but a careful forward-port: current Electron, multi-platform
-builds, **owned packages under Chevron APIs**, and a security-minded IPC model
-(`contextIsolation`, no `remote`).
-
-That path is deliberate. Treating process boundaries, packaging, and native
-modules as first-class problems keeps the codebase honest about what still works
-and what is still early — without pretending a dependency bump is the whole job.
-
 ## Development
 
 Built using a branch → PR → merge workflow, even solo.
 
-**Host toolchain:** Node **24** + Python **3.12** (+ `setuptools`), and pnpm at the version pinned in `package.json` `packageManager`. Always use `./script/bootstrap-modern` (not stock `./script/bootstrap`). If `pnpm` is not on your PATH, it runs `corepack enable pnpm` under the Node it selected; to do it yourself, run that under the same Node (`./script/with-modern-env corepack enable pnpm`), since the shim is installed beside that Node.
+**Host toolchain:** Node **24** + Python **3.12** (+ `setuptools`), and pnpm at the version pinned in `package.json` `packageManager`. Always use `./script/bootstrap-modern` (not stock `./script/bootstrap`).
 
 ```bash
 git clone https://github.com/builtbygio/chevron.git
 cd chevron
 
 ./script/bootstrap-modern
-./script/with-modern-env ./script/build --no-bootstrap
+./script/with-modern-env ./script/build --no-bootstrap --create-appimage
 
-# macOS: out/Chevron.app (native Intel or Apple Silicon)
-# Linux:  --create-appimage
-#         smoke: xvfb-run -a node script/ci/smoke-test.js
-# Windows (Git Bash): same bootstrap/build; smoke: node script/ci/smoke-test.js
+# smoke: xvfb-run -a node script/ci/smoke-test.js
 ```
-
-Platform guides:
-
-- [Linux](docs/orientation/build-instructions/linux.md) — AppImage; **CI and releases**
-- [macOS](docs/orientation/build-instructions/macOS.md) — local builds only (no CI)
-- [Windows](docs/orientation/build-instructions/windows.md) — local builds only (no CI)
 
 ## License
 
-Atom was released under the MIT License. This fork retains that license — see [LICENSE.md](LICENSE.md).
+Atom was released under the MIT License. This fork keeps that licence, see [LICENSE.md](LICENSE.md).
 
-## Acknowledgments
+## Acknowledgements
 
-Built on the work of the original [Atom](https://github.com/atom/atom) team and community. [Pulsar](https://pulsar-edit.dev/) is the active community-maintained Atom fork focused on immediate usability — worth a look if you want a maintained daily driver today rather than a from-source modernization project.
+Built on the work of the original [Atom](https://github.com/atom/atom) team and community.
