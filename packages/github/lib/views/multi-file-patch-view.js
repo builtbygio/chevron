@@ -1232,10 +1232,12 @@ class MultiFilePatchView extends _react.default.Component {
   pad(num) {
     const maxDigits = this.props.multiFilePatch.getMaxLineNumberWidth();
 
-    if (num === null) {
+    if (num == null) {
       return _helpers.NBSP_CHARACTER.repeat(maxDigits);
     } else {
-      return _helpers.NBSP_CHARACTER.repeat(maxDigits - num.toString().length) + num.toString();
+      const text = num.toString();
+      const padWidth = Math.max(0, maxDigits - text.length);
+      return _helpers.NBSP_CHARACTER.repeat(padWidth) + text;
     }
   }
 

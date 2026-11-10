@@ -113,7 +113,10 @@ class Region {
   }
 
   when(callbacks) {
-    const callback = callbacks[this.constructor.name.toLowerCase()] || callbacks.default || (() => undefined);
+    // The package bundle renames these classes, so constructor.name is not
+    // addition / deletion / unchanged / nonewline. layerName is an explicit string.
+    const kind = this.constructor.layerName;
+    const callback = (kind && callbacks[kind]) || callbacks.default || (() => undefined);
 
     return callback();
   }
