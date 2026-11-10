@@ -11,6 +11,7 @@
  */
 
 const MAIN_TO_RENDERER_CHANNELS = new Set([
+  'chevron:debug-event',
   'chevron:did-change-native-theme',
   'chevron:did-change-project-trust',
   'chevron:popup-menu-click',
