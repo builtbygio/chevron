@@ -25,10 +25,9 @@
 | `@atom/nsfw` | [nsfw](https://github.com/builtbygio/nsfw) | Callable + `actions` 0–3 (`path-watcher.js`). CONTEXT_AWARE |
 | `ctags` | [node-ctags](https://github.com/builtbygio/node-ctags) | `findTags` 3-arg + `createReadStream` (symbols-view). No Coffee |
 | `git-utils` | [git-utils](https://github.com/builtbygio/git-utils) | `open(path)` Repository (`git-repository.js`). Vendored libgit2 |
-| `keyboard-layout` | [keyboard-layout](https://github.com/builtbygio/keyboard-layout) | Keymap observers (atom-keymap). CONTEXT_AWARE |
+| `keyboard-layout` | [keyboard-layout](https://github.com/builtbygio/keyboard-layout) | Keymap observers (`src/keymap`). CONTEXT_AWARE |
 | `keytar` | [node-keytar](https://github.com/builtbygio/node-keytar) | Promise get/set/delete/find (github). No prebuild-install |
 | `nslog` | [node-nslog](https://github.com/builtbygio/node-nslog) | Function export (`console.log = nslog`). No Coffee |
-| `oniguruma` | [node-oniguruma](https://github.com/builtbygio/node-oniguruma) | `OnigRegExp` + `OnigScanner` (TextMate + first-mate) |
 | `pathwatcher` | [node-pathwatcher](https://github.com/builtbygio/node-pathwatcher) | `{ File, Directory }` + `watch`. CONTEXT_AWARE |
 | `spellchecker` | [node-spellchecker](https://github.com/builtbygio/node-spellchecker) | Hunspell/system API (spell-check). CONTEXT_AWARE |
 | `fs-admin` | [fs-admin](https://github.com/builtbygio/fs-admin) | 0.15.0 `symlink` / `makeTree` / `recursiveCopy` / `createWriteStream`. Override replaces text-buffer’s nested 0.19 |
@@ -38,15 +37,12 @@
 
 | Package | Repo | Notes |
 |---------|------|--------|
-| `first-mate` | [first-mate](https://github.com/builtbygio/first-mate) | 7.4.3 `GrammarRegistry` / `ScopeSelector`. Compiled `lib/` from npm (no v7.4.3 git tag) |
-| `atom-keymap` | [atom-keymap](https://github.com/builtbygio/atom-keymap) | 8.2.15 `KeymapManager`. Compiled `lib/` (git tag is Coffee) |
-| `atom-select-list` | [atom-select-list](https://github.com/builtbygio/atom-select-list) | 0.8.1 `SelectListView`. Override unifies nested 0.7.2 |
-| `season` | [season](https://github.com/builtbygio/season) | 6.0.2 CSON `readFile(Sync)` / `writeFile(Sync)` / `setCacheDir` |
+| `atom-select-list` | [atom-select-list](https://github.com/builtbygio/atom-select-list) | 0.8.2 `SelectListView`. Override unifies nested copies |
 | `text-buffer` | [text-buffer](https://github.com/builtbygio/text-buffer) | 13.18.6. Nested superstring is `file:packages/superstring` |
 
-`scandal` (and its `isbinaryfile@2` override) dropped after search and replace left it (architecture H1 PR 4).
+`scandal` (and its `isbinaryfile@2` override) dropped after search and replace left it (architecture H1 PR 4). `first-mate`, `oniguruma`, `season`, and the `atom-keymap` package are not product dependencies. TextMate is gone ([language-stack.md](./language-stack.md)); keymap reading is vendored in `src/keymap`.
 
-Root `overrides` pin nested copies (first-mate → oniguruma, spell-check → spellchecker / atom-pathspec, symbols-view → ctags, text-buffer → `fs-admin` 0.15, atom-select-list 0.8.1, …) to the same SHAs.
+Root `overrides` pin nested copies (spell-check → spellchecker / atom-pathspec, symbols-view → ctags, text-buffer → `fs-admin`, atom-select-list, …) to the same versions.
 
 | Package | Repo | Notes |
 |---------|------|--------|

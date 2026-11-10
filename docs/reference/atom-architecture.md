@@ -2,10 +2,10 @@
 
 **Audience:** developers studying or modifying the editor  
 **Product:** Chevron — a modernized fork of Atom  
-**Runtime:** Electron 43.8.6 (Chromium + Node ~24 in-app)  
-**Current-state sketch.** The **target** (what to delete, wrap, or migrate next) is [chevron-architecture-modernization.md](./chevron-architecture-modernization.md). If this file disagrees with that one on intent, the modernization doc wins.
+**Runtime:** Electron 45.2.2 (Chromium 156, Node 24 in-app)  
+**Current-state sketch.** The **target** (what to delete, wrap, or migrate next) is [chevron-architecture-modernization.md](./chevron-architecture-modernization.md). If this file disagrees with that one on intent, the modernization doc wins. If it disagrees on the running version, this file and `package.json` `electronVersion` win.
 
-Chevron is a **hackable Electron 43 editor**. The package *model* (`activate` / services / keymaps / styles, `require('chevron')`, inspectable preload) stays. Atom-era *machinery* (CSON-as-config, `Task` fork workers, scandal search, TextMate as the default language engine, Jasmine-as-hero) does not. User config is JSON; packager is `@electron/packager`.
+Chevron is a **hackable Electron 45 editor**. The package *model* (`activate` / services / keymaps / styles, `require('chevron')`, inspectable preload) stays. Atom-era *machinery* (CSON-as-config, `Task` fork workers, scandal search, TextMate as the default language engine, Jasmine-as-hero) does not. User config is JSON; packager is `@electron/packager`.
 
 ---
 
@@ -14,7 +14,7 @@ Chevron is a **hackable Electron 43 editor**. The package *model* (`activate` / 
 **Main** owns OS, IPC, and supervised hosts.  
 **Editor preload** owns the hackable UI + hot-path natives (Phase S **Option C**: Chromium `sandbox: false`).  
 **Semantics** live in the LSP `utilityProcess`.  
-**Syntax** is tree-sitter in-process, with TextMate as a supported fallback.  
+**Syntax** is tree-sitter in-process. A language with no grammar opens uncoloured.  
 **Packages** are Chevron services in the preload world (owned catalog).  
 The **page world** is a thin shell without Node.
 
@@ -24,10 +24,10 @@ The **page world** is a thin shell without Node.
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│  Electron 43.8.6  (Chromium + Node ~24 in-app)              │
+│  Electron 45.2.2  (Chromium 156 + Node 24 in-app)           │
 ├─────────────────────────────────────────────────────────────┤
 │  Main process (T0)                                          │
-│  src/main-process/main.js → start.js → AtomApplication      │
+│  src/main-process/main.js → start.js → ChevronApplication   │
 │  • windows, menus, dialogs, shell                           │
 │  • register-renderer-ipc / register-fs-ipc (allowlisted)    │
 │  • package-utility-worker.js  → git utilityProcess          │
@@ -41,7 +41,6 @@ The **page world** is a thin shell without Node.
 │  │ global.chevron lives  │  │ empty shell / custom els     │  │
 │  │ packages activate     │  │                              │  │
 │  │ tree-sitter 0.25      │  │                              │  │
-│  │ first-mate fallback   │  │                              │  │
 │  └──────────────────────┘  └─────────────────────────────┘  │
 ├─────────────────────────────────────────────────────────────┤
 │  utilityProcess hosts (no DOM)                              │
@@ -61,7 +60,7 @@ Entry: `package.json` → `src/main-process/main.js` → `start.js`.
 Responsibilities:
 
 - Parse CLI, choose `resourcePath` (packaged asar vs dev repo)
-- Create `AtomApplication` / `AtomWindow` (BrowserWindows)
+- Create `ChevronApplication` / `ChevronWindow` (BrowserWindows)
 - App menus, dialogs, `shell.openExternal`, protocol handlers (`chevron://`; `atom://` is a shim)
 - **IPC hub** (`register-renderer-ipc.js`, `register-fs-ipc.js`) — allowlisted only
 - Supervise **git** and **LSP** `utilityProcess` hosts
@@ -70,16 +69,16 @@ This is the only place that should talk freely to the OS for sensitive work. Fin
 
 ### 2. Editor window (renderer)
 
-Created in `atom-window.js` with roughly:
+Created in `chevron-window.js` with roughly:
 
 | Preference | Value | Meaning |
 |------------|--------|---------|
 | `nodeIntegration` | `false` | Page JS cannot use Node |
 | `contextIsolation` | `true` | Preload and page are separate JS worlds |
 | `preload` | `static/preload.js` | Boots the editor |
-| `sandbox` | `false` | **Intentional** (Option C). Preload loads superstring / tree-sitter / oniguruma. Do not flip this as “modernization.” |
+| `sandbox` | `false` | **Intentional** (Option C). Preload loads superstring / tree-sitter / pathwatcher. Do not flip this as “modernization.” |
 
-`global.chevron` (and the `AtomEnvironment` object behind it) lives in the **Electron Isolated Context** (preload), not the page. CDP debugging must target that context. `global.atom` is an unsupported shim.
+`global.chevron` (`ChevronEnvironment`) lives in the **Electron Isolated Context** (preload), not the page. CDP debugging must target that context. There is no `global.atom`. `require('atom')` fails with `MODULE_NOT_FOUND`.
 
 ### 3. Guests and workers
 
@@ -98,20 +97,20 @@ See [security-phase-s-decision.md](../decisions/security-phase-s-decision.md).
 1. Main creates BrowserWindow + loads static HTML
 2. static/preload.js runs in isolated world with Node
 3. static/index.js sets up remote-compat (no electron.remote)
-4. initialize-application-window.js builds AtomEnvironment
-   (installs global.chevron; global.atom is a shim)
+4. initialize-application-window.js builds ChevronEnvironment
+   (installs global.chevron; there is no global.atom)
 5. chevron.packages loads themes + owned packages
 6. Workspace UI mounts: panes, docks, editors, status bar
 7. Optional: welcome tabs, project paths from CLI, restore state
 ```
 
-Packaged **Linux/Windows** builds may use a custom V8 snapshot (`snapshotResult`) so the CJS graph is evaluated into the isolate cache. **Darwin stays on Electron’s stock snapshots** (`packaging-policy.js` `darwin-boot-crash` — CI generated a valid pair then died at boot). Construction of `AtomEnvironment` is always runtime. See [packaging.md](./packaging.md).
+Linux and macOS ship Electron’s stock V8 snapshots. Linux skips a custom one because spell-check fails in about half of smoke runs; macOS skips because a valid pair still leaves the renderer empty. Windows still attempts one. `CHEVRON_FORCE_MKSNAPSHOT=1` retries a skip. Construction of `ChevronEnvironment` is always runtime. See [packaging.md](./packaging.md).
 
 ---
 
 ## Core runtime objects (`require('chevron')`)
 
-Packages and core talk through **`global.chevron`** (`AtomEnvironment` in `src/atom-environment.js`):
+Packages and core talk through **`global.chevron`** (`ChevronEnvironment` in `src/chevron-environment.js`):
 
 | Object | Role |
 |--------|------|
@@ -119,17 +118,17 @@ Packages and core talk through **`global.chevron`** (`AtomEnvironment` in `src/a
 | `chevron.project` | Roots, buffers, path watching |
 | `chevron.packages` | Activate/deactivate packages |
 | `chevron.commands` | Keymap-bound commands |
-| `chevron.config` | Settings (JSON preferred; CSON still dual-read) |
-| `chevron.grammars` | tree-sitter whenever the language has one; TextMate for the rest, and as the include library they are built from |
+| `chevron.config` | Settings. JSON only (`config.json`, `keymap.json`, `snippets.json`). A leftover `.cson` is reported and not read |
+| `chevron.grammars` | tree-sitter 0.25 only. A language with no grammar is plain uncoloured text |
 | `chevron.styles` / `chevron.themes` | LESS/CSS UI & syntax themes |
 | `chevron.notifications` | Toasts / errors |
 
-`require('atom')` re-exports `require('chevron')` and warns once. That is **not** a community-compat product. Hard-delete is a dedicated later PR.
+`require('atom')` is `MODULE_NOT_FOUND`. The `exports/atom.js` alias is gone.
 
 ### Workspace layout
 
 ```text
-atom-workspace          (tag names are still atom-*; factory conversion is H1)
+chevron-workspace
 ├── center (WorkspaceCenter) — editors, welcome, settings, etc.
 │   └── panes (split tabs)
 ├── left dock  — e.g. tree-view “Project”
@@ -138,7 +137,7 @@ atom-workspace          (tag names are still atom-*; factory conversion is H1)
 ```
 
 **Items** are model objects (TextEditor, GuideView, …) with optional `getTitle` / `getURI` / `destroy`.  
-**Views** are DOM elements registered via `ViewRegistry`. `document-register-element` is still required for package-constructed `atom-*` tags under isolation. Do not delete it after a `src/` grep.
+**Views** are DOM elements registered via `ViewRegistry`. Core tags are `chevron-*` (`chevron-text-editor`, `chevron-pane`, `chevron-pane-resize-handle`, and the panel, overlay, and styles tags). `atom-select-list` is still that package. The keymap engine lives in `src/keymap`; the `atom-keymap` package is gone. The custom elements polyfill is `@webcomponents/custom-elements` (`static/index.js`): `window.customElements` is null in the preload world. A constructor must not set attributes. See [custom-elements.md](./custom-elements.md).
 
 ### Text editing stack
 
@@ -149,11 +148,11 @@ TextBuffer (text-buffer package)
                     └── markers + decorations (git-diff gutters, etc.)
 ```
 
-Language: official **tree-sitter 0.25** where a grammar exists; **TextMate / first-mate / oniguruma** for the exception list (yaml, xml, php, sql, toml, …). first-mate is a supported fallback, not the default engine.
+Language: official **tree-sitter 0.25**. Every shipped grammar is `type: tree-sitter`. A language with no tree-sitter grammar opens uncoloured. TextMate, first-mate, and oniguruma are gone. See [language-stack.md](./language-stack.md).
 
 Find-in-project: `Workspace.scan` is **ripgrep only**, spawned from main (`chevron:rg-search-start`). Packages may still provide `atom.directory-searcher` for a given directory. `CHEVRON_SEARCH_ENGINE=scandal` is ignored. The product UI is `find-and-replace`, which no longer carries a `useRipgrep` setting: there is one engine, so there was nothing to choose.
 
-User config/keymaps/snippets: **JSON default** (`config.json`). Existing `*.cson` still load; first boot copies to JSON and leaves CSON. `CHEVRON_CONFIG_CSON=1` writes CSON. `season` has been dropped; readers are JSON-only.
+User config, keymaps, and snippets are **JSON** (`config.json`, `keymap.json`, `snippets.json`). A leftover `.cson` is reported and left on disk; it is not read and not deleted. `CHEVRON_CONFIG_CSON` is gone. `season` is gone; readers are JSON-only.
 
 ---
 
@@ -198,10 +197,10 @@ See [remote-ipc-inventory.md](./remote-ipc-inventory.md), [security-threat-model
 |---------|------|
 | **Host toolchain** | Node 20–24 + Python 3.12 for bootstrap/build |
 | **Package manager** | **cpm** (product Electron as Node). The `apm` name is retired |
-| **App runtime** | Electron **43.8.6** (in-process Node ~24) |
+| **App runtime** | Electron **45.2.2** (in-process Node 24) |
 | **Package** | `script/build` → `out/Chevron.app` / `Chevron-linux-<arch>/chevron` / `chevron.exe` + `app.asar` |
 | **Natives** | Rebuilt for Electron ABI; unpacked from asar |
-| **Snapshot** | Custom on Linux/Windows; **stock on Darwin** |
+| **Snapshot** | Stock on Linux and macOS; Windows still generates one |
 
 ```bash
 nvm use
@@ -234,7 +233,7 @@ Locked (do not re-litigate here):
 - Keep **Electron** and **Option C** (`sandbox: false`)
 - **Chevron-only** — Atom surfaces are shims to delete, not a platform
 - **Owned catalog** until package host v2
-- **LSP + tree-sitter** where a grammar exists
+- **LSP + tree-sitter** (one highlighter)
 
 What to change next is sequenced in [chevron-architecture-modernization.md](./chevron-architecture-modernization.md) (H1–H3). Do not treat this file as the modernization plan.
 
@@ -244,9 +243,9 @@ What to change next is sequenced in [chevron-architecture-modernization.md](./ch
 
 | Area | Paths |
 |------|--------|
-| Main entry | `src/main-process/main.js`, `start.js`, `atom-application.js`, `atom-window.js` |
+| Main entry | `src/main-process/main.js`, `start.js`, `chevron-application.js`, `chevron-window.js` |
 | Preload boot | `static/preload.js`, `static/index.js` |
-| Editor core | `src/atom-environment.js`, `src/workspace.js`, `src/project.js` |
+| Editor core | `src/chevron-environment.js`, `src/workspace.js`, `src/project.js` |
 | Editors | `src/text-editor.js`, `src/text-editor-component.js` |
 | Packages | `src/package-manager.js`, `src/package.js`, `packages/*`, root `package.json` |
 | IPC | `src/remote-compat.js`, `src/renderer-ipc.js`, `src/main-process/register-renderer-ipc.js` |

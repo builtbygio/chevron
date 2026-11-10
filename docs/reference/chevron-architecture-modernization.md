@@ -4,9 +4,9 @@
 |-------|-------|
 | **Author** | Grok (architecture audit) |
 | **Date** | 2026-08-15 (rev 4 contract 2026-08-27) |
-| **Status** | Draft (rev 3 — owner Q1–Q10 resolved 2026-08-15; **rev 4** = 1.1.0 leftover table) |
-| **Product** | Chevron **1.1.0** unsigned preview (`builtbygio/chevron`) |
-| **Baseline** | Electron **43.8.6**, Node 24, Phase S Option C, pnpm workspace, owned catalog on npmjs |
+| **Status** | Draft plan from 2026-08-15, written against product 1.1.0. The running app is **1.6.0** / Electron **45.2.2**. Sections after the overview are that audit. |
+| **Product** | Running: Chevron **1.6.0**. Plan baseline: **1.1.0** |
+| **Baseline** | Running: Electron **45.2.2**, Node 24. Plan baseline: Electron **43.8.6**, Phase S Option C, pnpm workspace, owned catalog on npmjs |
 | **Audience** | Senior engineers who know this tree |
 | **Type** | Strategy + target architecture + incremental PR plan — not a rewrite charter |
 
@@ -14,7 +14,9 @@
 
 ## Overview
 
-Chevron already survived the hard Electron ladder. It is not Atom 1.60 on Electron 11. It is a **hackable Electron 43 editor** with `contextIsolation`, no `@electron/remote`, cpm instead of Node-12 apm, official tree-sitter 0.25, a utilityProcess LSP host, and an owned package catalog on npmjs. The remaining problem is not “we are behind Electron.” It is that **several load-bearing subsystems still implement 2015 Atom’s *way of building an editor***: CSON dual-read via `season`, `Task` on `Workspace.replace`, TextMate as a supported fallback, custom `mksnapshot` (stock fallback), Jasmine-in-Electron as a nightly harness, and github still on `graphql@14` / Relay compiler (React is 18.3).
+Chevron is a hackable Electron 45 editor with `contextIsolation`, cpm instead of Node-12 apm, official tree-sitter 0.25, a utilityProcess LSP host, and an owned package catalog on npmjs. `season` and `Task` are gone. User config is JSON. TextMate, first-mate, and oniguruma are gone. The github package is `@builtbygio/github` 0.37.13 (React 19.3.1). Linux and macOS ship stock V8 snapshots; Windows still generates one. Jasmine-in-Electron remains a nightly harness.
+
+This plan was written on 2026-08-15 against product 1.1.0 and Electron 43.8.6. Version pins, file paths, and leftover rows after this overview are that audit. Where they disagree with the running app, `package.json` `electronVersion` and [atom-architecture.md](./atom-architecture.md) win.
 
 This document proposes a **target architecture** that keeps the product thesis — packages, `require('chevron')`, inspectable runtime, editor Chromium `sandbox: false` (Phase S Option C) — and replaces the dead patterns with 2026-effective ones. The method is Chevron-shaped increments: delete what has a modern replacement, wrap what still earns its keep, migrate the rest over years. It is **not** a Pulsar rebase, **not** a Rust/Avalonia rewrite, and **not** flipping `sandbox: true` as modernization.
 
@@ -30,8 +32,8 @@ The 2025–2026 work already purged the worst Atom-era *runtime* debts. Treat th
 
 | Locked | Evidence |
 |--------|----------|
-| Electron 43.8.6 + in-app Node ~24 | Root `package.json` `electronVersion`; `GROK.md` |
-| Page world: `nodeIntegration: false`, `contextIsolation: true` | `src/main-process/atom-window.js` ~184–210 |
+| Electron 45.2.2 + in-app Node 24 | Root `package.json` `electronVersion`. The plan body still cites 43.8.6 because that was the audit baseline |
+| Page world: `nodeIntegration: false`, `contextIsolation: true` | `src/main-process/chevron-window.js` ~197–208 |
 | Editor `sandbox: false` **intentional** (Option C) | `docs/decisions/security-phase-s-decision.md`; `src/preload-natives.js` `phaseSDecision` |
 | No `@electron/remote`; `src/remote-compat.js` + `register-renderer-ipc.js` | `static/preload.js` 32–35; `docs/reference/remote-ipc-inventory.md` |
 | Guest `<webview>` sandboxed; git workers in `utilityProcess` | Phase S3; `src/main-process/package-utility-worker.js` |
@@ -43,10 +45,10 @@ The 2025–2026 work already purged the worst Atom-era *runtime* debts. Treat th
 | First-party Coffee/CSON **gone from the monorepo tree** | `find` over `src/`, in-repo `packages/`, `keymaps/`, `menus/` (excluding `node_modules`) is empty. **Owned git pins still ship ~70 `.cson` files** (mostly `language-*` grammars/settings/snippets) — see Pillar 3 |
 | Runtime Coffee/Babel compilers **gone** | stubs deleted (PR 11); TypeScript + CSON remain |
 | LSP phases 0–5 shipped (utilityProcess host + workspace trust) | `docs/reference/lsp-design.md`; `src/lsp/`; `src/main-process/workers/lsp-host.js` |
-| Custom V8 snapshot on Linux/Windows; Darwin stock | `script/lib/packaging-policy.js` `darwin-boot-crash`; #121/#125 |
+| Linux and macOS ship stock V8 snapshots; Windows still generates one | `script/lib/packaging-policy.js` `linux-spell-check-flake`, `darwin-boot-crash` |
 | 0 `atom/*` app git pins | #79; `docs/reference/package-ownership-inventory.md` |
 
-`docs/reference/atom-architecture.md` is **stale** on several of these (still describes apm Node 12, `out/Atom.app`, community packages under `~/.atom`). Do not treat it as the current model. This document supersedes it as the architecture target.
+[atom-architecture.md](./atom-architecture.md) is the current-state sketch (Electron 45.2.2, `ChevronEnvironment`, JSON config, tree-sitter only). This document is the architecture target. It does not override the running version.
 
 ### Why a plan, not a patch list
 
@@ -74,7 +76,7 @@ That shape was brilliant in 2015. In 2026 the effective editors (VS Code, Zed, m
 | `Task` still runs product features | Public export remains. Product callers (fuzzy-finder, symbols-view, `Workspace.replace`) no longer `Task.once`. |
 | Packager is Atom-era | `electron-packager@^15.1.0` in `script/package.json`; `@electron/packager` explicitly deferred |
 | Test split is inverted | Fast `node --test script/ci/*` is the PR gate; `script/test` Jasmine+Mocha is nightly, not a merge gate, and first nightlies are measurement (`docs/reference/jasmine-ci.md`) |
-| Docs still teach Atom | `cpm-design.md` still says “dual-support forever”; `package-node-policy.md` still tells authors to use `Task`; `atom-architecture.md` still lists apm Node 12; `exports/chevron.js` header still says `require('atom')` exists “so community packages keep working” |
+| Docs still teach Atom | **Audit row (2026-08).** The current sketch is [atom-architecture.md](./atom-architecture.md). Do not reopen this from the examples that used to be here |
 
 ### Named leftovers (G1 inventory)
 

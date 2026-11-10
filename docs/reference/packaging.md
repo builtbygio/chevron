@@ -34,11 +34,11 @@ The release ships one `Chevron.app` for Intel and Apple Silicon. The two builds 
 | Per-arch prebuilds | Packaging drops the foreign arch's `prebuilds/darwin-*` (`packaging-policy.js`), so the unpacked trees differ in which files exist. The missing ones are copied across first; the asar listings may differ there (`singleArchFiles`), and a Mach-O identical on both sides is accepted only there and for the x86_64-only `ctags-darwin` (`x64ArchFiles`) |
 | Signature | `lipo` leaves the slices' signatures behind, so the bundle is re-signed: ad-hoc for the unsigned preview (Apple Silicon refuses to start unsigned code), or `--code-sign` for `code-sign-on-mac.js` + notarization |
 
-CI: the `macos-universal` job runs after the two macOS build jobs, smoke-tests the arm64 slice, launches the x86_64 slice under Rosetta where the runner has it, and uploads `chevron-macos-universal`. The release job drops the per-arch zips from the assets.
+CI no longer runs macOS jobs. Releases are Linux x64 only. The merge command above is how a universal bundle is built when both arch builds exist.
 
 ## Startup snapshot
 
-Custom V8 snapshot is attempted on Linux and Windows whenever the host can run `electron-mksnapshot`. **macOS stays on Electron's stock snapshots** (frozen — architecture Q2; do not staff constructor bisection). CI #125 still dies at process start after installing a valid custom pair. Electron 43 works when `AtomEnvironment` is **not** constructed during snapshot generation (modules are evaluated into the cache; construction happens at runtime in `installEnvironment()`). `electron-mksnapshot`'s stock `mksnapshot.js` serializes the stock isolate blob for the context generator — Chevron drives both tools from a temp copy that contains the custom `snapshot_blob.bin` (`script/lib/run-mksnapshot.js`).
+Linux and macOS ship Electron's stock V8 snapshots. Linux skips a custom snapshot because spell-check fails to activate in about half of smoke runs (`linux-spell-check-flake`). macOS skips because a valid pair still leaves the renderer empty (`darwin-boot-crash`; frozen — do not staff constructor bisection). Windows still attempts one whenever the host can run `electron-mksnapshot`. `ChevronEnvironment` is constructed at runtime, not while the snapshot is generated. `electron-mksnapshot`'s stock `mksnapshot.js` serializes the stock isolate blob for the context generator — Chevron drives both tools from a temp copy that contains the custom `snapshot_blob.bin` (`script/lib/run-mksnapshot.js`).
 
 Skip a custom-snapshot attempt:
 

@@ -2,7 +2,7 @@
 
 **Status:** x64 CI (bootstrap, smoke, AppImage). Linux arm64 is not built.  
 **Host toolchain:** Node **24** + **pnpm 11** + Python **3.12** (+ `setuptools`) via `script/bootstrap-modern`  
-**Runtime:** Electron 43
+**Runtime:** Electron 45.2.2
 
 ---
 
@@ -109,8 +109,8 @@ xvfb-run -a node script/ci/smoke-test.js
 | Layer | Role |
 |-------|------|
 | Host Node 24 | Bootstrap / build scripts / modern node-gyp |
-| apm Node 12 | Package install (bundled binary) |
-| Electron 43 | Running app |
+| cpm | Package install (the product Electron is the Node) |
+| Electron 45.2.2 | Running app |
 
 See `docs/process/toolchain-node-python-upgrade-plan.md` and `docs/reference/bootstrap-report.md`.
 
@@ -164,7 +164,7 @@ root-owned mode `4755`.
 | keytar build fails | Install `libsecret-1-dev` |
 | Smoke fails with display errors | Use `xvfb-run -a` |
 | `ENOSPC` watchers | Raise `fs.inotify.max_user_watches` |
-| apm MODULE_VERSION mismatch | Re-run full `bootstrap-modern` (apm natives rebuild under Node 12) |
+| Native `MODULE_VERSION` mismatch | Re-run `bootstrap-modern` so natives rebuild for the product Electron |
 
 ---
 

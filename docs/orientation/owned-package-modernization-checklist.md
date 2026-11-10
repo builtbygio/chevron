@@ -28,13 +28,13 @@ git checkout -b modern/chevron-baseline <pin-sha>
 ### A. Ownership baseline (do first — small PR)
 
 - [ ] Default branch is clear (`master` or `main`); document if renamed.
-- [ ] `package.json` → `"repository": "https://github.com/builtbygio/<pkg>"` (or full git URL object).
+- [ ] `package.json` → `"repository": "https://github.com/builtbygio/<pkg>"` (or full git URL object). That field stays the package's own repo. A fatal error from a **bundled** package opens the issue on `builtbygio/chevron`, not on this URL.
 - [ ] `"engines": { "chevron": ">=0.6.0" }` (optional `atom` only if still useful for Pulsar; not required).
 - [ ] Remove dead Atom installer CI (`UziTech/action-setup-atom`, `atom --test` against dead channels).
 - [ ] Optional lightweight CI: `package.json` / `engines` / lint only — **no** full Atom product install.
 - [ ] README: one line that this is maintained for **Chevron** (and still Atom-compatible where practical).
 
-### B. Security / Electron 43 hygiene (when touching runtime code)
+### B. Security / Electron hygiene (when touching runtime code)
 
 - [ ] No `electron.remote` / `@electron/remote` — use Chevron IPC / `applicationDelegate` / `atom.*` APIs.
 - [ ] No direct `shell.openExternal` with arbitrary schemes — go through `atom.applicationDelegate.openExternal`.

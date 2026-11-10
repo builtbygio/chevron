@@ -10,8 +10,8 @@ This doc is **privilege and Node policy**, not a dual-product promise. Names and
 
 | Surface | Supported | Legacy (unsupported; may warn) |
 |---------|-----------|--------------------------------|
-| Editor env | `global.chevron` | `global.atom` |
-| Package module | `require('chevron')` | `require('atom')` (one-shot warning) |
+| Editor env | `global.chevron` | none — `global.atom` was removed |
+| Package module | `require('chevron')` | none — `require('atom')` is `MODULE_NOT_FOUND` |
 | Engines | `engines.chevron` | `engines.atom` alone → cpm warning |
 | Protocol | `chevron://` | `atom://` **removed** (Wave 4) — it no longer resolves |
 | Config home | **`~/.chevron`** | `ATOM_HOME` only if **explicitly** set — **no default to `~/.atom`** |
@@ -28,7 +28,7 @@ That is **not** a promise that packages get unrestricted Node forever.
 | **T1 Bundled** | Ship-in packages (github, tree-view, …) | Prefer `chevron.*` / applicationDelegate IPC; no new `electron.remote` |
 | **T2 Community** | User-installed packages | **No guaranteed Node** long-term; published editor APIs only. Catalog is **owned-only** until package host v2. The host is where T2 runs — not a store ([package host design](./security-phase-s-package-host.md)) |
 
-Today (0.6.x): T1/T2 still share the **preload Node world** for compatibility. Community (T2) privileged requires and **native addon** loads are **blocked by default**. Phase S Option C keeps editor Chromium `sandbox` false; isolation is utilityProcess + restrict, not a full guest sandbox.
+Today: T1/T2 still share the **preload Node world** for compatibility. Community (T2) privileged requires and **native addon** loads are **blocked by default**. Phase S Option C keeps editor Chromium `sandbox` false; isolation is utilityProcess + restrict, not a full guest sandbox.
 
 ## Do / don’t
 

@@ -1,8 +1,8 @@
 # Building and installing Chevron on Windows
 
-**Status:** CI bootstrap + build + smoke + zip (x64)  
+**Status:** Local builds. CI is Linux x64 only.  
 **Host toolchain:** Node **24** + **pnpm 11** + Python **3.12** (+ `setuptools`) via `script/bootstrap-modern`  
-**Runtime:** Electron 43  
+**Runtime:** Electron 45.2.2  
 **Shell:** Git Bash (or WSL for the bash scripts; CI uses Git Bash)
 
 ---
@@ -12,7 +12,7 @@
 | Tool | Notes |
 |------|--------|
 | **Git for Windows** | Provides Git Bash used by `bootstrap-modern` / `with-modern-env` |
-| **Node 24** | Host only; apm still uses bundled Node 12 |
+| **Node 24** | Host toolchain. cpm runs on the product Electron, not a bundled Node 12 |
 | **pnpm 11** | App deps via `corepack enable` (`packageManager` is `pnpm@11.22.0`) |
 | **Python 3.12** | + `pip install setuptools` (distutils for node-gyp) |
 | **Visual Studio 2022** | “Desktop development with C++” / Build Tools (node-gyp natives) |
@@ -84,8 +84,8 @@ GitHub Actions no longer runs Windows jobs. Releases are Linux x64 only. Local b
 | Layer | Role |
 |-------|------|
 | Host Node 24 | Bootstrap / build scripts / modern node-gyp |
-| apm Node 12 | Package install (bundled binary) |
-| Electron 43 | Running app |
+| cpm | Package install (the product Electron is the Node) |
+| Electron 45.2.2 | Running app |
 
 ---
 
@@ -114,8 +114,8 @@ GitHub Actions no longer runs Windows jobs. Releases are Linux x64 only. Local b
 | `MSBuild` / `node-gyp` failures | Install VS 2022 C++ workload; set `npm_config_msvs_version=2022` |
 | Python not found in bash | `actions/setup-python` or add Python to PATH; `export CHEVRON_PYTHON=/c/Python312/python.exe` |
 | Smoke cannot find `.exe` | Ensure build finished; look under `out/Chevron*` for `chevron.exe` |
-| apm MODULE_VERSION mismatch | Re-run full `bootstrap-modern` |
+| Native `MODULE_VERSION` mismatch | Re-run `bootstrap-modern` so natives rebuild for the product Electron |
 
 ---
 
-*Windows CI targets x64 package-boot smoke; full editor CDP probe is preferred when available.*
+*Local Windows builds are x64. GitHub Actions does not run them.*

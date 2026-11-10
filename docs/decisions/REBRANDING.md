@@ -29,12 +29,12 @@ This document is the rebrand record. The old root `MIGRATION-CHECKLIST.md` (Atom
 
 | Surface | Product rule |
 |---------|----------------|
-| Global editor env | **`global.chevron` only** (supported). `global.atom` is an unsupported legacy alias. |
-| Main process app | **`global.chevronApplication`**. `global.atomApplication` is unsupported legacy. |
-| Package module API | **`require('chevron')`**. `require('atom')` logs a one-shot warning. |
+| Global editor env | **`global.chevron` only**. There is no `global.atom`. |
+| Main process app | **`global.chevronApplication`**. There is no `global.atomApplication`. |
+| Package module API | **`require('chevron')`**. `require('atom')` is `MODULE_NOT_FOUND`. |
 | Engines | Prefer **`engines.chevron`**. `engines.atom` alone → cpm warning. |
 | Protocol | **`chevron://`** only. The `atom://` alias was removed in Wave 4 once no owned pin emitted it; `atom://` no longer resolves. |
-| CLI | **`chevron`**, **`cpm`**. `atom` / `apm` remain shims, not a dual-product promise. |
+| CLI | **`chevron`**, **`cpm`**. The `apm` launcher is not shipped. `atom.sh` still starts the app when invoked under an `atom*` name. |
 | Config home | **`~/.chevron`** default. `CHEVRON_HOME` first. `ATOM_HOME` only if explicitly set. **No default to `~/.atom`.** |
 | Themes | **`chevron-*-ui/syntax`**; old `atom-*` theme ids still map at load. |
 
@@ -49,9 +49,9 @@ Users with an existing Atom config under `~/.atom` must set `ATOM_HOME` or copy/
 
 ## Still deferred (high cost)
 
-- Rename `atom-keymap`, `atom-select-list`, `@atom/*` natives  
-- Class renames (`AtomEnvironment` → …)  
-- Hard **delete** of legacy aliases (after owned packages and docs no longer need them)
+- Rename `atom-select-list` and the remaining `@atom/*` natives. The keymap engine is already vendored in `src/keymap`; the `atom-keymap` package is gone.
+- Class renames are done: `ChevronEnvironment`, `ChevronApplication`, `ChevronWindow`.
+- `global.atom` and `require('atom')` are already gone.
 
 ## Verification
 
