@@ -480,6 +480,8 @@ jobs:
           node --test script/ci/tree-sitter-chunk-reader.test.js
           node --test script/ci/tree-view-fs-shim.test.js
           node --test script/ci/inline-blame.test.js
+          node --test script/ci/patch-line-numbers.test.js
+          node --test script/ci/bundled-issue-repo.test.js
           node --test script/ci/commit-detail-open.test.js
           node --test script/ci/jasmine-node-coffee.test.js
           node --test script/ci/patch-inventory.test.js
