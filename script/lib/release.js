@@ -149,12 +149,12 @@ function updateReadme(markdown, version, previous) {
     `**[${version} unsigned preview](https://github.com/builtbygio/chevron/releases/tag/v${version})**`,
     'README preview link'
   );
-  out = must(
-    out,
-    new RegExp(`\\*\\*${esc} unsigned preview\\*\\*`),
-    `**${version} unsigned preview**`,
-    'README status'
-  );
+  // The download link above is the copy the revised README keeps. Older
+  // READMEs also had a bare status sentence; update that when it is there.
+  const status = new RegExp(`\\*\\*${esc} unsigned preview\\*\\*`);
+  if (status.test(out)) {
+    out = must(out, status, `**${version} unsigned preview**`, 'README status');
+  }
   return replaceDownloadTables(out, version);
 }
 

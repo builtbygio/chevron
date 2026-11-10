@@ -132,6 +132,14 @@ describe('prepareFiles', () => {
     assert.doesNotMatch(out.grok, /1\.4\.17/);
     assert.doesNotMatch(out.grok, /next release/);
   });
+
+  it('prepares a README that only has the download link', () => {
+    const readme = README.replace('\n**1.2.0 unsigned preview** is the current build.\n', '\n');
+    const out = prepareFiles({ ...files, readme }, { date: '2026-10-18' });
+    assert.match(out.readme, /\[1\.5\.0 unsigned preview\]/);
+    assert.doesNotMatch(out.readme, /1\.2\.0 unsigned preview/);
+    assert.match(out.readme, /chevron-1\.5\.0-x64\.AppImage/);
+  });
 });
 
 describe('the tree this release leaves behind', () => {

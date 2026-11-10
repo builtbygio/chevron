@@ -1,7 +1,7 @@
 # Chevron unsigned preview releases
 
-**Status:** 1.6.0 product contract  
-**Current tag:** [v1.6.0](https://github.com/builtbygio/chevron/releases/tag/v1.6.0)  
+**Status:** 1.7.0 product contract  
+**Current tag:** [v1.7.0](https://github.com/builtbygio/chevron/releases/tag/v1.7.0)  
 **Update URL:** https://github.com/builtbygio/chevron/releases
 
 This is a **modernization 1.0**, published as an **unsigned preview**. It is not a signed, notarized daily-driver store build.
@@ -35,12 +35,12 @@ In-app updates come from these releases through electron-updater once a build is
 
 CI on tag `v*` builds **Linux x64** and attaches artifacts to a full GitHub Release (not a pre-release: stable builds' updater reads `releases/latest`).
 
-**1.6.0:** https://github.com/builtbygio/chevron/releases/tag/v1.6.0  
-Previous: [v1.5.0](https://github.com/builtbygio/chevron/releases/tag/v1.5.0)
+**1.7.0:** https://github.com/builtbygio/chevron/releases/tag/v1.7.0  
+Previous: [v1.6.0](https://github.com/builtbygio/chevron/releases/tag/v1.6.0)
 
 | Platform | File |
 |----------|------|
-| Linux x64 | `chevron-1.6.0-x64.AppImage` |
+| Linux x64 | `chevron-1.7.0-x64.AppImage` |
 
 Update URL to give users: **https://github.com/builtbygio/chevron/releases**
 
