@@ -1,10 +1,13 @@
 'use strict';
 
 /**
- * The minimap draws the whole buffer into the editor's height. A click is a
- * row, and the viewport rectangle is the same fraction of the file the
- * editor is showing.
+ * A short file keeps a fixed line size, so the thumbnail sits at the top of
+ * the gutter instead of stretching each line into a bar. A long file shrinks
+ * until it fits. A click is still a row.
  */
+
+const LINE_PX = 3;
+const CHAR_PX = 2;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -41,4 +44,34 @@ function sampleStep(lineCount, maxMarks) {
   return Math.ceil(lineCount / maxMarks);
 }
 
-module.exports = { rowForY, yForRow, viewportBox, sampleStep };
+function minimapScale(lineCount, minimapHeight) {
+  const lines = Math.max(lineCount, 1);
+  const natural = lines * LINE_PX;
+  const scale = minimapHeight > 0 && natural > minimapHeight ? minimapHeight / natural : 1;
+  return {
+    lineHeight: LINE_PX * scale,
+    charWidth: CHAR_PX * scale,
+    contentHeight: natural * scale
+  };
+}
+
+function scopeColor(scopes) {
+  const text = Array.isArray(scopes) ? scopes.join(' ') : String(scopes || '');
+  if (text.includes('comment')) return '#5c6370';
+  if (text.includes('string')) return '#98c379';
+  if (text.includes('constant') || text.includes('numeric')) return '#d19a6a';
+  if (text.includes('entity')) return '#61afef';
+  if (text.includes('storage') || text.includes('keyword')) return '#c678dd';
+  return '#abb2bf';
+}
+
+module.exports = {
+  rowForY,
+  yForRow,
+  viewportBox,
+  sampleStep,
+  minimapScale,
+  scopeColor,
+  LINE_PX,
+  CHAR_PX
+};

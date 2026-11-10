@@ -1,3 +1,10 @@
+// The editor's client container is an unclassed div. Pull it in by the
+// minimap width so the text and the scrollbar sit beside the map instead of
+// underneath it. The component measures that div's offsetWidth.
+chevron-text-editor.minimap-open > div:not(.minimap):not(.sticky-scroll) {
+  width: calc(100% - 72px) !important;
+}
+
 chevron-text-editor > .minimap {
   position: absolute;
   top: 0;
@@ -5,16 +12,24 @@ chevron-text-editor > .minimap {
   bottom: 0;
   width: 72px;
   z-index: 3;
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.2);
+  border-left: 1px solid rgba(128, 128, 128, 0.35);
   cursor: pointer;
   overflow: hidden;
+}
+
+chevron-text-editor > .minimap canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .minimap-viewport {
   position: absolute;
   left: 0;
   right: 0;
-  background: rgba(128, 128, 128, 0.28);
-  border: 1px solid rgba(128, 128, 128, 0.6);
+  background: rgba(128, 128, 128, 0.16);
+  border-top: 1px solid rgba(200, 200, 200, 0.45);
+  border-bottom: 1px solid rgba(200, 200, 200, 0.45);
   pointer-events: none;
 }
