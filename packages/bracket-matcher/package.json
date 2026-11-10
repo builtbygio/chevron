@@ -56,8 +56,8 @@
     },
     "colorBrackets": {
       "type": "boolean",
-      "default": true,
-      "description": "Colour nested brackets by depth. Quotes are not coloured."
+      "default": false,
+      "description": "Underline every nested bracket by depth. Off by default: the pair around the cursor is highlighted on its own."
     },
     "highlightMatchingLineNumber": {
       "type": "boolean",
