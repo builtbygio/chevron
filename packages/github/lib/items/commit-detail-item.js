@@ -7,6 +7,8 @@ exports.default = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
+var _path = _interopRequireDefault(require("path"));
+
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _eventKit = require("event-kit");
@@ -25,7 +27,42 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 class CommitDetailItem extends _react.default.Component {
   static buildURI(workingDirectory, sha) {
-    return `atom-github://commit-detail?workdir=${encodeURIComponent(workingDirectory)}&sha=${encodeURIComponent(sha)}`;
+    // encodeURIComponent leaves "+" alone, and the query parser then turns
+    // that "+" into a space. The workdir no longer matches the repository
+    // pool, the absent repository answers "no commit", and the view spins.
+    const encode = value => encodeURIComponent(String(value)).replace(/\+/g, '%2B');
+
+    const encodedSha = sha === '{sha}' ? '{sha}' : encode(sha);
+
+    return `atom-github://commit-detail?workdir=${encode(workingDirectory)}&sha=${encodedSha}`;
+  }
+
+  repositoryFor(workingDirectory) {
+    const pool = this.props.workdirContextPool;
+    const direct = pool.getContext(workingDirectory);
+    const directRepo = direct && direct.getRepository();
+
+    if (directRepo && directRepo.isPresent()) return directRepo;
+
+    let best = null;
+    let bestLength = -1;
+
+    if (typeof pool.withResidentContexts === 'function') {
+      pool.withResidentContexts((directory, context) => {
+        const repo = context.getRepository();
+        if (!repo || !repo.isPresent()) return;
+        const dir = directory || context.getWorkingDirectory();
+        if (!dir || !workingDirectory) return;
+        const matches = workingDirectory === dir || workingDirectory.startsWith(dir + _path.default.sep);
+
+        if (matches && dir.length > bestLength) {
+          best = repo;
+          bestLength = dir.length;
+        }
+      });
+    }
+
+    return best || directRepo;
   }
 
   constructor(props) {
@@ -68,7 +105,7 @@ class CommitDetailItem extends _react.default.Component {
   }
 
   render() {
-    const repository = this.props.workdirContextPool.getContext(this.props.workingDirectory).getRepository();
+    const repository = this.repositoryFor(this.props.workingDirectory);
     return _react.default.createElement(_commitDetailContainer.default, _extends({
       itemType: this.constructor,
       repository: repository

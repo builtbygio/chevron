@@ -16,7 +16,33 @@
   }
 }
 
-.github-InlineBlame-tooltip .tooltip-inner {
-  text-align: left;
-  max-width: 40em;
+// A quiet one-line tip. The default tooltip is an info-blue card, and a 40em
+// inner made this one cover the lines under the cursor.
+.tooltip.github-InlineBlame-tooltip {
+  .tooltip-inner {
+    max-width: 14em;
+    padding: 1px 6px;
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: center;
+    background-color: var(--tool-panel-background-color);
+    color: var(--text-color-subtle);
+    border: 1px solid var(--base-border-color);
+  }
+
+  &.top .tooltip-arrow {
+    border-top-color: var(--tool-panel-background-color);
+  }
+
+  &.bottom .tooltip-arrow {
+    border-bottom-color: var(--tool-panel-background-color);
+  }
+
+  &.left .tooltip-arrow {
+    border-left-color: var(--tool-panel-background-color);
+  }
+
+  &.right .tooltip-arrow {
+    border-right-color: var(--tool-panel-background-color);
+  }
 }

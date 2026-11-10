@@ -753,14 +753,31 @@ class Present extends _state.default {
   }
 
   getCommit(sha) {
-    return this.cache.getOrSet(_keys.Keys.blob.oneWith(sha), async () => {
+    return this.cache.getOrSet(_keys.Keys.commit.oneWith(sha), async () => {
       const [rawCommit] = await this.git().getCommits({
         max: 1,
         ref: sha,
         includePatch: true
       });
-      const commit = new _commit.default(rawCommit);
-      return commit;
+
+      // A missing commit used to throw inside `new Commit(undefined)`. The
+      // rejection stayed in this cache, and the commit view treated that as
+      // "still loading", so the spinner never stopped.
+      if (!rawCommit || rawCommit.unbornRef || !rawCommit.sha) {
+        return _commit.nullCommit;
+      }
+
+      try {
+        return new _commit.default(rawCommit);
+      } catch (error) {
+        try {
+          return new _commit.default(Object.assign({}, rawCommit, {
+            patch: []
+          }));
+        } catch (again) {
+          return _commit.nullCommit;
+        }
+      }
     });
   }
 

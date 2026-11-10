@@ -21,6 +21,7 @@ const GITHUB = path.join(ROOT, 'packages', 'github', 'lib');
 const {
   parseBlamePorcelain,
   formatInlineBlame,
+  formatBlameTooltip,
   UNCOMMITTED_SHA
 } = require(path.join(GITHUB, 'models', 'blame.js'));
 const { Keys } = require(path.join(GITHUB, 'models', 'repository-states', 'cache', 'keys.js'));
@@ -109,6 +110,19 @@ describe('formatInlineBlame', () => {
 
   it('says so for a line in no commit', () => {
     assert.strictEqual(formatInlineBlame({ uncommitted: true }), 'Not committed yet');
+  });
+});
+
+describe('formatBlameTooltip', () => {
+  it('is the date and a short sha', () => {
+    assert.strictEqual(
+      formatBlameTooltip(commitFor('Fix soft wrap at EOL')),
+      '14 Nov 2023 · bbbbbbb'
+    );
+  });
+
+  it('is empty when the line is not in a commit', () => {
+    assert.strictEqual(formatBlameTooltip({ uncommitted: true, sha: '0'.repeat(40) }), '');
   });
 });
 
