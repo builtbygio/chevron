@@ -139,18 +139,26 @@ describe('pty host', () => {
     const id = 'session-resize';
     const spawned = waitFor(
       child,
-      m => m && m.type === 'spawned' && m.id === id
+      m => m && (m.type === 'spawned' || m.type === 'error') && m.id === id
     );
     child.send({
       type: 'spawn',
       id,
       shell: SHELL,
-      args: WINDOWS ? [] : ['-i'],
+      // No -i and no rc files. An interactive bash on the CI image does not
+      // deliver an exit after SIGHUP, and the test then waits out the timeout
+      // even though the resize already landed.
+      args: WINDOWS ? [] : ['--noprofile', '--norc'],
       cwd: os.tmpdir(),
       cols: 80,
       rows: 24
     });
-    await spawned;
+    const started = await spawned;
+    assert.notStrictEqual(
+      started.type,
+      'error',
+      started.message || 'spawn failed'
+    );
 
     child.send({ type: 'resize', id, cols: 120, rows: 40 });
 
@@ -162,6 +170,9 @@ describe('pty host', () => {
         child,
         m => {
           if (m && m.type === 'data' && m.id === id) output += m.data;
+          if (m && m.type === 'exit' && m.id === id) {
+            throw new Error(`session exited before reporting its size: ${output}`);
+          }
           return /40 120/.test(output);
         },
         20000
@@ -170,8 +181,11 @@ describe('pty host', () => {
       await sawSize;
     }
 
-    child.send({ type: 'kill', id });
-    await waitFor(child, m => m && m.type === 'exit' && m.id === id);
+    // The shell exiting itself is the signal the passing spawn test uses.
+    // pty.kill() is a SIGHUP, which this shell can ignore.
+    const exited = waitFor(child, m => m && m.type === 'exit' && m.id === id);
+    child.send({ type: 'write', id, data: WINDOWS ? 'exit\r\n' : 'exit\n' });
+    await exited;
 
     child.kill();
     host = null;
