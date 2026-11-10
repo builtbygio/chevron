@@ -4,16 +4,7 @@ Chevron is a modernised fork of [Atom](https://github.com/atom/atom), rebuilt on
 
 This page shows what is in progress and roughly in what order. Plans may change as the editor is used. Nothing here is a promise or a date, only what is planned.
 
-The latest release is [v1.6.0](https://github.com/builtbygio/chevron/releases/tag/v1.6.0) (29 October 2026). Work already on `master` since then is listed first, then what comes next. Longer design notes live in [docs/](docs/README.md).
-
-## On master, not yet released
-
-These have landed since 1.6.0 and will ship in the next unsigned preview.
-
-- **Everyday editor features** ([#532](https://github.com/builtbygio/chevron/pull/532)). LSP code actions with a gutter lightbulb, format on save (`lsp.formatOnSave`), bracket-pair colouring, saved workspaces (`.chevron-workspace`), local file history, and a first accessibility step (the editor is a multiline text box for assistive technology).
-- **Security fixes** in the editor, the build, and the package manager ([#533](https://github.com/builtbygio/chevron/pull/533)).
-- **Minimap, a Node.js debugger, SSH editing, and settings export** ([#534](https://github.com/builtbygio/chevron/pull/534)). The debugger runs the current JavaScript file only; it is not a Debug Adapter Protocol client. SSH editing reads and saves a single path of the form `user@host:/absolute/path`, and can list a folder. Paths that contain spaces or shell characters are refused. Settings export writes a JSON bundle and leaves tokens and passwords out. It is not automatic sync.
-- **Electron 45.2.2** and **React 19** in the GitHub package, plus other dependency updates (see [CHANGELOG.md](CHANGELOG.md)).
+The latest release is [v1.7.0](https://github.com/builtbygio/chevron/releases/tag/v1.7.0) (10 November 2026). What it contains is in [CHANGELOG.md](CHANGELOG.md). What comes next is listed below. Longer design notes live in [docs/](docs/README.md).
 
 ## Now
 

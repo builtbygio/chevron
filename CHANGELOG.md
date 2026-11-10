@@ -9,18 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] — 2026-11-10
+
 ### Added
 
-- **Minimap, JavaScript debugger, SSH editing, and settings export.** The minimap sits on the right of an editor; click it to jump. **Debug: Start / Continue** runs the current JavaScript file, stops on breakpoints (`F9`), and steps with **Step Over**. **File: Open Remote File** reads and saves `user@host:/absolute/path` over SSH. **Packages: Export Settings** writes config, keymap, snippets, stylesheet, and init to a JSON file, leaving tokens and passwords out.
-- **Quick-fix lightbulb, format on save toggle, coloured brackets, saved workspaces, and local file history.** A diagnostic line shows a lightbulb in the gutter; clicking it runs code actions (`Ctrl-.` still does). **Language Server: Toggle Format on Save** flips `lsp.formatOnSave`. Nested `()[]{}` are coloured by depth. **File: Save Workspace** writes a `.chevron-workspace` file of the open folders, and **Open Workspace** restores them. Each save keeps the previous text under `$CHEVRON_HOME/local-history`, and **Restore Previous Version** puts it back. The text editor is exposed to assistive technology as a multiline text box.
+- **An agent tool call asks before it runs.** `chevron.agent.requestTool` opens a modal in the same shape as the workspace-trust prompt. **Don't allow** is focused, so Enter denies, and Cancel denies. The choice lasts for this session only. A granted read is recorded with the reason, and **Agent: Show Context** opens that list. There is no agent client yet. `docs/reference/agent-session.md`.
+- **Minimap, JavaScript debugger, SSH editing, and settings export.** The minimap sits on the right of an editor; click it to scroll. **Debug: Start / Continue** runs the current JavaScript file, stops on breakpoints (`F9`), and steps with **Step Over**. **File: Open Remote File** reads and saves `user@host:/absolute/path` over SSH. **Packages: Export Settings** writes config, keymap, snippets, stylesheet, and init to a JSON file, leaving tokens and passwords out.
+- **Quick-fix lightbulb, format on save toggle, coloured brackets, saved workspaces, and local file history.** A diagnostic line shows a lightbulb in the gutter; clicking it runs code actions (`Ctrl-.` still does). **Language Server: Toggle Format on Save** flips `lsp.formatOnSave`. Nested `()[]{}` are coloured by depth when `bracket-matcher.colorBrackets` is on. **File: Save Workspace** writes a `.chevron-workspace` file of the open folders, and **Open Workspace** restores them. Each save keeps the previous text under `$CHEVRON_HOME/local-history`, and **Restore Previous Version** puts it back. The text editor is exposed to assistive technology as a multiline text box.
 
 ### Fixed
 
+- **Clicking a diagnostic marker applies the quick fix.** The orange dot stays out of the line-number box, so those digits stay aligned. The click asks for code actions on that diagnostic, and a TypeScript quick fix is applied from the edit on its command.
+- **The GitHub tab stops spinning when the keychain never answers.** A secret lookup that hangs used to leave the tab loading. The lookup gives up, and a repository fetch that throws is shown instead of spinning.
+- **The minimap keeps a fixed line size and does not move the caret.** A short file is no longer stretched to the editor height. The thumbnail uses a 3px line until the file is long enough to shrink, paints tokens by scope, and a click only scrolls.
+- **Opening an editor no longer fails because the constructor set attributes.** The custom-element polyfill rejects a constructed element that already has attributes, which left the editor blank. The role and tabindex are set after construction.
+- **A commit diff shows its line numbers, and Create Issue from a bundled package opens Chevron.** The gutter picks each region by its layer name, so a packaged build can paint the numbers. A missing number is left blank. **Create Issue** on a bundled package files against `builtbygio/chevron`.
+- **Inline blame is quieter, and a commit that cannot be opened stops spinning.** Hovering the annotation waits, then shows one short line: the date and a short commit id. The line itself still shows the author and the summary. A missing commit, a worker error, or a load that runs long says it could not be opened, with a retry.
 - **Security findings in the editor, the build scripts, and the package manager.** Hover text is stripped by scanning for tags instead of a tag regular expression. Snippet copy and settings lists escape backslashes before the character they quote. A GitHub token is cached under scrypt instead of md5. Shell commands in the build take an argument list. The Debian staging directory is a private temp directory. Transitive `minimatch` 9 and 10 and `glob` 13 are pinned to the patched releases.
 - **Package bundles keep `glob` as a real require.** The CJS shim finds `glob-core` from its own directory. Inlining that lookup into a package bundle pointed it at the bundle instead.
 - **A packaged build can copy scoped packages, and the TypeScript server can start.** `@atom/watcher` and the other scoped installs are symlinks. Copying the relative link into `out/` left it dangling, and the build died while creating nested modules through it. The language server was then pointed at `tsserver.js` inside `app.asar`. It is a separate Node process, so that path is not a directory and the server exited on initialize. Paths inside the archive are no longer passed to it. The optional package's own TypeScript is used instead.
 
 ### Changed
+
+- **Nested bracket colours stay off unless the setting is on.** `bracket-matcher.colorBrackets` defaults to false. The pair around the cursor is still highlighted.
 
 - **The optional TypeScript language server is 6.0.3.** `chevron-lsp-typescript` still depends on TypeScript 6, because the server launches `typescript/lib/tsserver.js`. It needs Node `>=22.22.2`. The app's TypeScript pin is unchanged.
 
