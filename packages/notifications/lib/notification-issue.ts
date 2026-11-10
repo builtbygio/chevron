@@ -211,7 +211,13 @@ ${copyText}\
   getRepoUrl() {
     const packageName = this.getPackageName();
     if (packageName == null) { return; }
-    let repo = __guard__(__guard__(chevron.packages.getLoadedPackage(packageName), x1 => x1.metadata), x => x.repository);
+    const pack = chevron.packages.getLoadedPackage(packageName);
+    // Shipped packages still name their old repositories. The report template
+    // files the issue on Chevron, so the button must open that tracker.
+    if (pack != null && pack.bundledPackage) {
+      return 'https://github.com/builtbygio/chevron';
+    }
+    let repo = __guard__(__guard__(pack, x1 => x1.metadata), x => x.repository);
     let repoUrl = (repo != null ? repo.url : undefined) != null ? (repo != null ? repo.url : undefined) : repo;
     if (!repoUrl) {
       let packagePath;

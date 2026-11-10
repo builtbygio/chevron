@@ -178,6 +178,8 @@ module.exports =
     renderFatalError() {
       const repoUrl = this.issue.getRepoUrl();
       const packageName = this.issue.getPackageName();
+      const loadedPackage = (packageName != null) ? chevron.packages.getLoadedPackage(packageName) : null;
+      const bundled = (loadedPackage != null) && loadedPackage.bundledPackage;
 
       const fatalContainer = this.element.querySelector('.meta');
       fatalContainer.appendChild(TemplateHelper.render(this.fatalTemplate));
@@ -203,7 +205,7 @@ module.exports =
 
       // We only show the create issue button if it's clearly in atom core or in a package with a repo url
       if (issueButton.parentNode != null) {
-        if ((packageName != null) && (repoUrl != null)) {
+        if ((packageName != null) && (repoUrl != null) && !bundled) {
           issueButton.textContent = `Create issue on the ${packageName} package`;
         } else {
           issueButton.textContent = "Create issue on builtbygio/chevron";
