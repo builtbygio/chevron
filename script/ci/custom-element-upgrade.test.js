@@ -104,3 +104,23 @@ describe('elements set up what they need in initialize()', () => {
     assert.match(bodyOf(read('pane-axis-element.js'), 'initialize('), /classList\.add\(/);
   });
 });
+
+describe('a text editor constructor leaves the element attribute-free', () => {
+  const source = read('text-editor-element.js');
+
+  it('does not set attributes while the constructor is still running', () => {
+    // The polyfill and the native algorithm both throw if the constructed
+    // element already has attributes. That throw is what blanked editors.
+    const setup = bodyOf(source, 'ensureInitialized(');
+    assert.doesNotMatch(setup, /setAttribute\(/);
+    assert.doesNotMatch(setup, /tabIndex\s*=/);
+  });
+
+  it('still marks the editor as a textbox once construction has returned', () => {
+    const access = bodyOf(source, 'ensureAccessible(');
+    assert.match(access, /setAttribute\('role', 'textbox'\)/);
+    assert.match(access, /setAttribute\('aria-multiline', 'true'\)/);
+    assert.match(source, /createTextEditorElement\(\) \{[\s\S]*?ensureAccessible\(\)/);
+    assert.match(bodyOf(source, 'connectedCallback('), /ensureAccessible\(\)/);
+  });
+});

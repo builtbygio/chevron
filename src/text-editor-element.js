@@ -51,18 +51,30 @@ class TextEditorElement extends HTMLElement {
     if (this.emitter) return;
     this.emitter = new Emitter();
     this.initialText = this.textContent;
-    if (this.tabIndex == null) this.tabIndex = -1;
-    if (!this.hasAttribute('role')) this.setAttribute('role', 'textbox');
-    this.setAttribute('aria-multiline', 'true');
-    if (!this.getAttribute('aria-label')) this.setAttribute('aria-label', 'Text editor');
     this.addEventListener('focus', event =>
       this.getComponent().didFocus(event)
     );
     this.addEventListener('blur', event => this.getComponent().didBlur(event));
   }
 
+  // The custom element constructor must not set attributes. Native custom
+  // elements and @webcomponents/custom-elements both reject the result with
+  // "The constructed element must not have any attributes", which aborted
+  // every editor (including the off-DOM virtual node) before it could render.
+  // Call this after construction returns, and again from connectedCallback for
+  // parser-created elements whose constructor never runs.
+  ensureAccessible() {
+    if (this._accessible) return;
+    this._accessible = true;
+    if (this.tabIndex == null) this.tabIndex = -1;
+    if (!this.hasAttribute('role')) this.setAttribute('role', 'textbox');
+    this.setAttribute('aria-multiline', 'true');
+    if (!this.getAttribute('aria-label')) this.setAttribute('aria-label', 'Text editor');
+  }
+
   connectedCallback() {
     this.ensureInitialized();
+    this.ensureAccessible();
     this.getComponent().didAttach();
     this.emitter.emit('did-attach');
   }
@@ -384,7 +396,9 @@ class TextEditorElement extends HTMLElement {
 
   static createTextEditorElement() {
     const createCustomElement = require('./create-custom-element');
-    return createCustomElement('chevron-text-editor', TextEditorElement);
+    const element = createCustomElement('chevron-text-editor', TextEditorElement);
+    element.ensureAccessible();
+    return element;
   }
 }
 
