@@ -238,6 +238,8 @@ jobs:
           node --test script/ci/lsp-position.test.js
           node --test script/ci/lsp-inbound-position.test.js
           node --test script/ci/lsp-trust.test.js
+          node --test script/ci/agent-session.test.js
+          node --test script/ci/agent-permission-prompt.test.js
           node --test script/ci/lsp-command-policy.test.js
           node --test script/ci/lsp-host-integration.test.js
           node --test script/ci/lsp-providers.test.js

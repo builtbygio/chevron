@@ -17,7 +17,7 @@ These have landed since 1.6.0 and will ship in the next unsigned preview.
 
 ## Now
 
-- **Finish the agent host.** The profiler and per-root config are done. Diff review, a terminal, tasks, and project-wide symbols have started the agent-host track. Still to build: permission prompts for tool calls, in the shape the trust modal already has, and per-session context that shows what an agent has read and why. See [next-tracks-plan.md](docs/process/next-tracks-plan.md) track 3.
+- **Finish the agent host.** The profiler, per-root config, diff review, a terminal, tasks, and project-wide symbols are in. A tool call now asks in the same modal shape as workspace trust, and the safe answer is deny. The session records what was read and why; **Agent: Show Context** opens that list ([agent-session.md](docs/reference/agent-session.md)). Still to build: an agent client that drives those prompts, and a per-command prompt on the agent-facing terminal. See [next-tracks-plan.md](docs/process/next-tracks-plan.md) track 3.
 
 ## Next
 

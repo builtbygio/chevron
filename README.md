@@ -22,7 +22,7 @@ A modernised fork of [Atom](https://github.com/atom/atom), the hackable text edi
 |----------|------|
 | Linux x64 | `chevron-1.6.0-x64.AppImage` |
 
-All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtbygio/chevron/releases). Details: [docs/reference/releases.md](docs/reference/releases.md).
+All releases: [github.com/builtbygio/chevron/releases](https://github.com/builtbygio/chevron/releases). Details: [docs/reference/releases.md](docs/reference/releases.md). What is planned: [ROADMAP.md](ROADMAP.md).
 
 ## Development
 

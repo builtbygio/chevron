@@ -171,8 +171,13 @@ packages and language servers.
   ([tasks.md](../reference/tasks.md))
 - a **terminal**. There is no terminal package in the tree at all — decided
   below
-- **permission prompts** for tool calls, in the shape the trust modal already has
-- **per-session context**: what the agent has read, and why
+- **permission prompts** for tool calls, in the shape the trust modal already
+  has — **started** ([agent-session.md](../reference/agent-session.md)).
+  `chevron.agent.requestTool` denies unless the person allows that call.
+  Enter on the default focus denies. There is no agent client yet.
+- **per-session context**: what the agent has read, and why — **started**.
+  A granted `read` is recorded with its reason. **Agent: Show Context**
+  opens the list. The list is the session, and a reload starts a new one.
 
 ### Do not fork the agent
 

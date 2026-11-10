@@ -11,6 +11,7 @@ const Grim = require('grim');
 const {profiler} = require('./package-profiler');
 const {formatProfilerReport} = require('./package-profiler-report');
 const {collectSettingsSources, formatSettingsSources} = require('./settings-source-report');
+const {formatSession, session: agentSession} = require('./agent-session');
 
 module.exports = function({commandRegistry, commandInstaller, config, notificationManager, project, clipboard, workspace}) {
   const localHistory = require('./local-history');
@@ -219,6 +220,21 @@ module.exports = function({commandRegistry, commandInstaller, config, notificati
           return editor;
         });
       }
+    },
+    false
+  );
+
+  // What the current agent session has read, and which tool calls were allowed.
+  commandRegistry.add(
+    'chevron-workspace',
+    'agent:show-context',
+    () => {
+      return workspace.open().then(editor => {
+        editor.setText(formatSession(agentSession()));
+        const markdown = chevron.grammars.grammarForScopeName('source.gfm');
+        if (markdown) chevron.grammars.assignLanguageMode(editor.getBuffer(), 'source.gfm');
+        return editor;
+      });
     },
     false
   );
