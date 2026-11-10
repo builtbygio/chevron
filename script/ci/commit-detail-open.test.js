@@ -12,8 +12,10 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { execFileSync } = require('node:child_process');
+const fs = require('fs');
 const Module = require('module');
 const path = require('path');
+const { makeTempDir } = require('../lib/temp-dir');
 
 const electronStub = {
   ipcRenderer: {
@@ -210,7 +212,20 @@ describe('commit detail open', () => {
     assert.deepEqual(truncated, []);
   });
 
-  it('parses the git log that the commit view runs for HEAD', async () => {
+  it('parses the git log of one small commit', async () => {
+    // The checkout's HEAD on a pull request is a merge commit. A shallow
+    // clone then makes `git log --patch` emit the whole tree, and the
+    // command buffer overflows. A one-file repository stays small.
+    const dir = makeTempDir('commit-detail-');
+    execFileSync('git', ['init', '-b', 'master'], { cwd: dir });
+    fs.writeFileSync(path.join(dir, 'a.txt'), 'hello\n');
+    execFileSync('git', ['add', 'a.txt'], { cwd: dir });
+    execFileSync('git', [
+      '-c', 'user.email=gio@example.com',
+      '-c', 'user.name=Gio',
+      '-c', 'commit.gpgsign=false',
+      'commit', '-m', 'Add a'
+    ], { cwd: dir });
     const output = execFileSync('git', [
       'log',
       '--pretty=format:%H%x00%ae%x00%an%x00%at%x00%s%x00%b%x00',
@@ -226,13 +241,14 @@ describe('commit detail open', () => {
       '-m',
       '--first-parent',
       '--'
-    ], { cwd: ROOT, encoding: 'utf8' });
-    const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+    ], { cwd: dir, encoding: 'utf8' });
+    const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: dir, encoding: 'utf8' }).trim();
     const strategy = Object.create(GitShellOutStrategy.prototype);
     strategy.exec = async () => output;
     const commits = await strategy.getCommits({ max: 1, ref: 'HEAD', includePatch: true });
     assert.equal(commits.length, 1);
     assert.equal(commits[0].sha, head);
+    assert.equal(commits[0].messageSubject, 'Add a');
     assert.ok(commits[0].patch.length > 0);
   });
 
