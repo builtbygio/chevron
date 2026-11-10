@@ -13,11 +13,24 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const {
-  createSession,
-  formatSession,
-  MAX_ENTRIES
-} = require('../../src/agent-session');
+
+const ROOT = path.resolve(__dirname, '..', '..');
+const typescript = require(path.join(ROOT, 'src', 'typescript'));
+
+function loadTs(file) {
+  const compiled = typescript.compile(fs.readFileSync(file, 'utf8'), file);
+  const module = { exports: {} };
+  new Function('module', 'exports', 'require', compiled)(
+    module,
+    module.exports,
+    require
+  );
+  return module.exports;
+}
+
+const { createSession, formatSession, MAX_ENTRIES } = loadTs(
+  path.join(ROOT, 'src', 'agent-session.ts')
+);
 
 describe('agent session', () => {
   it('refuses a read that has no path or no reason', () => {
@@ -73,13 +86,12 @@ describe('agent session', () => {
   });
 
   it('is wired to the command and to chevron.agent', () => {
-    const root = path.resolve(__dirname, '..', '..');
     const commands = fs.readFileSync(
-      path.join(root, 'src/register-default-commands.ts'),
+      path.join(ROOT, 'src/register-default-commands.ts'),
       'utf8'
     );
     const init = fs.readFileSync(
-      path.join(root, 'src/initialize-application-window.js'),
+      path.join(ROOT, 'src/initialize-application-window.js'),
       'utf8'
     );
     assert.match(commands, /'agent:show-context'/);

@@ -12,7 +12,39 @@
  * white field under pale text.
  */
 
-function parseRgb(color) {
+interface Rgb {
+  r: number;
+  g: number;
+  b: number;
+}
+
+interface ToolPromptRequest {
+  kind?: string;
+  summary?: string;
+  detail?: string;
+}
+
+interface ModalPanel {
+  destroy(): void;
+}
+
+interface PromptEnv {
+  workspace?: {
+    addModalPanel(options: {
+      item: HTMLElement;
+      visible: boolean;
+      autoFocus: boolean;
+    }): ModalPanel;
+  };
+  commands?: {
+    add(
+      element: HTMLElement,
+      map: { [command: string]: () => void }
+    ): { dispose(): void };
+  };
+}
+
+function parseRgb(color: string | null | undefined): Rgb | null {
   if (!color || color === 'transparent') return null;
   const text = String(color);
   const rgba = text.match(
@@ -38,8 +70,8 @@ function parseRgb(color) {
   return null;
 }
 
-function effectiveBackground(start) {
-  let node = start;
+function effectiveBackground(start: Element | null): Rgb | null {
+  let node: Element | null = start;
   while (node && node.nodeType === 1) {
     const parsed = parseRgb(window.getComputedStyle(node).backgroundColor);
     if (parsed) return parsed;
@@ -53,15 +85,29 @@ function effectiveBackground(start) {
   return null;
 }
 
-function luminance({ r, g, b }) {
+function luminance({ r, g, b }: Rgb): number {
   return (r * 299 + g * 587 + b * 114) / 1000;
 }
 
-function rgba({ r, g, b }, a) {
+function rgba({ r, g, b }: Rgb, a: number): string {
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
-class AgentPermissionView {
+export class AgentPermissionView {
+  element: HTMLElement;
+  titleEl: HTMLElement;
+  leadEl: HTMLElement;
+  pathWrap: HTMLElement;
+  pathLabel: HTMLElement;
+  pathEl: HTMLElement;
+  bodyEl: HTMLElement;
+  actions: HTMLElement;
+  denyBtn: HTMLButtonElement;
+  allowBtn: HTMLButtonElement;
+  _panel: ModalPanel | null;
+  _commands: { dispose(): void } | null;
+  _resolve: ((allowed: boolean) => void) | null;
+
   constructor() {
     this.element = document.createElement('div');
     this.element.classList.add('lsp-ui-trust', 'native-key-bindings');
@@ -121,7 +167,7 @@ class AgentPermissionView {
     this.denyBtn.addEventListener('click', () => this._finish(false));
   }
 
-  applyContrast() {
+  applyContrast(): void {
     const host =
       (this.element.closest && this.element.closest('chevron-panel.modal')) ||
       this.element;
@@ -146,12 +192,7 @@ class AgentPermissionView {
     this.pathWrap.style.borderColor = edge;
   }
 
-  /**
-   * @param {{ kind: string, summary: string, detail?: string }} request
-   * @param {{ workspace?: object, commands?: object }} env
-   * @returns {Promise<boolean>}
-   */
-  prompt(request, env) {
+  prompt(request: ToolPromptRequest, env: PromptEnv): Promise<boolean> {
     if (this._resolve) this._finish(false);
     else this.hide();
     return new Promise(resolve => {
@@ -194,7 +235,7 @@ class AgentPermissionView {
     });
   }
 
-  _allowIsFocused() {
+  _allowIsFocused(): boolean {
     try {
       return document.activeElement === this.allowBtn;
     } catch (_) {
@@ -202,14 +243,14 @@ class AgentPermissionView {
     }
   }
 
-  _finish(allowed) {
+  _finish(allowed: boolean): void {
     const resolve = this._resolve;
     this._resolve = null;
     this.hide();
     if (resolve) resolve(Boolean(allowed));
   }
 
-  hide() {
+  hide(): void {
     if (this._commands) {
       try {
         this._commands.dispose();
@@ -228,14 +269,12 @@ class AgentPermissionView {
     }
   }
 
-  destroy() {
+  destroy(): void {
     if (this._resolve) this._finish(false);
     else this.hide();
   }
 
-  isVisible() {
+  isVisible(): boolean {
     return Boolean(this._panel);
   }
 }
-
-module.exports = { AgentPermissionView };

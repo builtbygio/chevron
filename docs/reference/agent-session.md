@@ -41,6 +41,6 @@ not restored after a reload: a new window is a new session.
 
 | | |
 |--|--|
-| Session | `src/agent-session.js` |
-| Modal | `src/agent-permission-view.js` |
+| Session | `src/agent-session.ts` |
+| Modal | `src/agent-permission-view.ts` |
 | Published on | `chevron.agent` in `src/initialize-application-window.js` |

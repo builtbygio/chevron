@@ -10,21 +10,56 @@
  * docs/reference/agent-session.md
  */
 
-const MAX_ENTRIES = 200;
+export const MAX_ENTRIES = 200;
 
-function requiredText(value, label) {
+export interface AgentRead {
+  path: string;
+  why: string;
+  at: number;
+}
+
+export interface ToolCall {
+  kind?: string;
+  summary?: string;
+  detail?: string;
+}
+
+export interface ToolRequest {
+  id: number;
+  kind: string;
+  summary: string;
+  detail: string;
+}
+
+export interface ToolDecision extends ToolRequest {
+  allowed: boolean;
+  at: number;
+}
+
+export type ToolPrompt = (
+  request: ToolRequest
+) => boolean | Promise<boolean>;
+
+export interface AgentSession {
+  recordRead(entry: { path?: string; why?: string }): AgentRead;
+  reads(): AgentRead[];
+  decisions(): ToolDecision[];
+  requestTool(call: ToolCall, prompt?: ToolPrompt): Promise<ToolDecision>;
+}
+
+function requiredText(value: unknown, label: string): string {
   const text = value == null ? '' : String(value).trim();
   if (!text) throw new Error(`A tool record needs a ${label}`);
   return text;
 }
 
-function trim(list) {
+function trim<T>(list: T[]): void {
   while (list.length > MAX_ENTRIES) list.shift();
 }
 
-function createSession() {
-  const reads = [];
-  const decisions = [];
+export function createSession(): AgentSession {
+  const reads: AgentRead[] = [];
+  const decisions: ToolDecision[] = [];
   let nextId = 1;
 
   return {
@@ -48,7 +83,7 @@ function createSession() {
     },
 
     async requestTool(call, prompt) {
-      const request = {
+      const request: ToolRequest = {
         id: nextId++,
         kind: requiredText(call && call.kind, 'kind'),
         summary: requiredText(call && call.summary, 'summary'),
@@ -58,7 +93,10 @@ function createSession() {
       if (typeof prompt === 'function') {
         allowed = Boolean(await prompt(request));
       }
-      const decision = Object.assign({ allowed, at: Date.now() }, request);
+      const decision: ToolDecision = Object.assign(
+        { allowed, at: Date.now() },
+        request
+      );
       decisions.push(decision);
       trim(decisions);
       if (allowed && decision.kind === 'read' && decision.detail.trim()) {
@@ -74,19 +112,19 @@ function createSession() {
   };
 }
 
-let current = null;
+let current: AgentSession | null = null;
 
-function session() {
+export function session(): AgentSession {
   if (!current) current = createSession();
   return current;
 }
 
-function resetSession() {
+export function resetSession(): AgentSession {
   current = createSession();
   return current;
 }
 
-function formatSession(target) {
+export function formatSession(target: AgentSession): string {
   const lines = ['# Agent session', ''];
   const readRows = target.reads();
   lines.push('## Read', '');
@@ -110,11 +148,3 @@ function formatSession(target) {
   lines.push('');
   return lines.join('\n');
 }
-
-module.exports = {
-  createSession,
-  session,
-  resetSession,
-  formatSession,
-  MAX_ENTRIES
-};

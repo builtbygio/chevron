@@ -13,13 +13,23 @@
 
 const { describe, it } = require('node:test');
 const assert = require('assert');
+const fs = require('fs');
 const path = require('path');
-const Module = require('module');
 
-const TARGET = path.join(
-  path.resolve(__dirname, '..', '..'),
-  'src/agent-permission-view.js'
-);
+const ROOT = path.resolve(__dirname, '..', '..');
+const TARGET = path.join(ROOT, 'src/agent-permission-view.ts');
+const typescript = require(path.join(ROOT, 'src', 'typescript'));
+
+function loadView() {
+  const compiled = typescript.compile(fs.readFileSync(TARGET, 'utf8'), TARGET);
+  const module = { exports: {} };
+  new Function('module', 'exports', 'require', compiled)(
+    module,
+    module.exports,
+    require
+  );
+  return module.exports;
+}
 
 class StubEl {
   constructor(tag) {
@@ -73,10 +83,8 @@ function withStubDom(fn) {
   };
   global.requestAnimationFrame = cb => cb();
   try {
-    delete require.cache[Module._resolveFilename(TARGET)];
-    return fn(require(TARGET));
+    return fn(loadView());
   } finally {
-    delete require.cache[Module._resolveFilename(TARGET)];
     global.document = saved.document;
     global.window = saved.window;
     global.requestAnimationFrame = saved.raf;
