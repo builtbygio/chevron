@@ -50,9 +50,9 @@ Bootstrap no longer rewrites `node_modules` for compile or remote/IPC. The only 
 
 After rebuild (or warm cache skip), these must expose a `.node` under `build/Release/` (see `script/lib/critical-natives.js`):
 
-`superstring`, `@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`, `keytar`, `spellchecker`, `pathwatcher`, `git-utils`, `scrollbar-style`, `nslog`, `keyboard-layout`, `ctags`, `fs-admin`, `oniguruma`.
+`superstring`, `@atom/watcher`, `@atom/nsfw`, `@atom/fuzzy-native`, `keytar`, `spellchecker`, `pathwatcher`, `git-utils`, `scrollbar-style`, `nslog`, `keyboard-layout`, `ctags`, `fs-admin`, `@derekstride/tree-sitter-sql`, `tree-sitter-less`, `tree-sitter-perl`, `tree-sitter-clojure-orchard`.
 
-`tree-sitter` / `tree-sitter-*` are official N-API prebuilds and are **not** rebuilt.
+`oniguruma` is not in that list. The `tree-sitter` package itself is an official N-API prebuild and is not rebuilt; the four grammar bindings above are.
 
 ## CI checks
 

@@ -1,17 +1,19 @@
 # V8 startup snapshot — investigation and recovery plan
 
-**Status:** restored on Linux/Windows x64 (2026-08-13, #121). Darwin stock is **frozen** (architecture Q2 / H1 PR 12) — do not staff constructor bisection. Windows custom snapshot stays until measured worse (Q3). See §4.8–§4.10.
+**Status:** Shipping policy is in `script/lib/packaging-policy.js`. Linux uses Electron's stock snapshots (`linux-spell-check-flake`). macOS uses stock (`darwin-boot-crash`). Windows still generates a custom snapshot. `CHEVRON_FORCE_MKSNAPSHOT=1` retries a skip. The investigation below is the 2026-08 record (#121), not the shipping policy.
 **Date:** 2026-08-07 (measured 2026-08-08 / 2026-08-13 / 2026-08-16)
-**Subject:** `script/lib/generate-startup-snapshot.js` — custom snapshot **on** for Linux/Windows (eval-only; `AtomEnvironment` constructed at runtime)
+**Subject:** `script/lib/generate-startup-snapshot.js` — custom snapshot off by default on Linux and macOS; Windows still generates one. `ChevronEnvironment` is constructed at runtime.
 **Related:** [cpm-design.md](./cpm-design.md), [lsp-design.md](./lsp-design.md)
 
 ---
 
 ## 1. Purpose
 
-Chevron's tagline says **Fast**. The custom V8 startup snapshot is **restored**
-on Linux/Windows (#121): modules evaluate at snapshot time; `AtomEnvironment`
-is constructed at runtime. macOS still uses Electron's stock blobs.
+The paragraphs below are the 2026-08 investigation. Shipping policy is the status line at the top: Linux and macOS use stock snapshots; Windows still generates one.
+
+Chevron's tagline says **Fast**. In August 2026 a custom V8 startup snapshot was restored
+on Linux/Windows (#121): modules evaluate at snapshot time; the environment
+is constructed at runtime. macOS already used Electron's stock blobs. Linux has since gone back to stock (`linux-spell-check-flake`).
 
 This plan does three things, in order:
 

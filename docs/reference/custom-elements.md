@@ -54,6 +54,17 @@ ordering is easier to reason about either way;
 `new ElementClass()` rather than `document.createElement`, which is correct
 regardless of the polyfill.
 
+## Constructors must not set attributes
+
+Both native custom elements and `@webcomponents/custom-elements` throw
+`The constructed element must not have any attributes` if the constructor
+assigns `tabIndex` or calls `setAttribute`. Set those after the constructor
+returns. `chevron-text-editor` does this in `ensureAccessible()`, called from
+`createTextEditorElement()` and from `connectedCallback()`. React in the
+github package creates that editor with
+`document.createElement('chevron-text-editor')`, so the constructor itself
+cannot set them.
+
 ## Measured effect
 
 Spec failures before and after the swap, same build:

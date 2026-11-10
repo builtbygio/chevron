@@ -64,7 +64,7 @@ cpm is **not** a rewrite of the editor’s package loader (`PackageManager`, `gl
 Locked product policy ([REBRANDING.md](../decisions/REBRANDING.md), [chevron-architecture-modernization.md](./chevron-architecture-modernization.md)):
 
 - Supported: **`engines.chevron`**, **`chevron://`**, **`global.chevron`**, **`require('chevron')`**, **`~/.chevron`**, **`cpm`**.
-- **`engines.atom`**, **`global.atom`** are **unsupported shims** slated for removal. They are not a platform. `require('atom')`, `apm` and `atom://` are already **gone**.
+- **`engines.atom`** alone can still draw a cpm warning. It is not a platform. `global.atom`, `require('atom')`, `apm`, and `atom://` are **gone**.
 - Default config / package home is **`~/.chevron`**. `ATOM_HOME` is honoured only if **explicitly** set — no default to `~/.atom`.
 - Catalog is **owned-only** until package host v2. cpm may still talk to Pulsar as a **client implementation**; product UX must not promise a community store.
 

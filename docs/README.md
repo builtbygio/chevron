@@ -45,18 +45,18 @@ Always use `./script/bootstrap-modern` (host Node 24 + Python 3.12). See root [R
 | [cpm-design.md](./reference/cpm-design.md) | cpm design, implemented |
 | [lsp-design.md](./reference/lsp-design.md) | LSP host, implemented (phases 0–5) |
 | [lsp-server-distribution.md](./reference/lsp-server-distribution.md) | Optional `chevron-lsp-*` server install |
-| [language-stack.md](./reference/language-stack.md) | Tree-sitter coverage, TextMate exception list, **pin CSON inventory** (gates `season`) |
+| [language-stack.md](./reference/language-stack.md) | One highlighter (tree-sitter). TextMate is gone. Pin CSON inventory is zero |
 | [security-threat-model.md](./reference/security-threat-model.md) | Trust tiers + residual risk |
 | [security-phase-s-package-host.md](./reference/security-phase-s-package-host.md) | Package host v2 spine (routing default off) |
 | [package-node-policy.md](./reference/package-node-policy.md) | What package authors may use |
 | [package-ownership-inventory.md](./reference/package-ownership-inventory.md) | Owned catalog |
 | [sca-runtime-inventory.md](./reference/sca-runtime-inventory.md) | npm audit prioritisation (runtime vs test) |
 | [remote-ipc-inventory.md](./reference/remote-ipc-inventory.md) | remote/IPC map; **§11 is the live `sendSync` inventory** |
-| [releases.md](./reference/releases.md) | 1.2.0 product contract, update URL, signing later |
+| [releases.md](./reference/releases.md) | 1.6.0 product contract, update URL, signing later |
 | [packaging.md](./reference/packaging.md) | Packaging + startup snapshot + macOS universal bundle |
 | [os-integration.md](./reference/os-integration.md) | Wayland default, follow-system theme, universal macOS bundle |
 | [auto-update.md](./reference/auto-update.md) | electron-updater against GitHub Releases; signing and notarization secrets |
-| [startup-snapshot-plan.md](./reference/startup-snapshot-plan.md) | Snapshot: Linux/Windows on, Darwin stock frozen |
+| [startup-snapshot-plan.md](./reference/startup-snapshot-plan.md) | Snapshot: Linux and macOS stock; Windows still generates. Body is the 2026-08 investigation |
 | [build-modernization.md](./reference/build-modernization.md) | Bootstrap/build streams |
 | [bootstrap-report.md](./reference/bootstrap-report.md) | Bootstrap current state |
 | [bootstrap-patch-matrix.md](./reference/bootstrap-patch-matrix.md) | Patch matrix for Electron/Node/native pin changes |
@@ -110,6 +110,6 @@ Waves 1–4 are complete. Plan and leftover table:
 outcome in root `GROK.md`. The waves removed `Task`, the `atom://` scheme and `.atom` host, dead
 Relay + `graphql@14` in `github`, and the `natural` log4js patch.
 
-`season` and a custom elements polyfill (`@webcomponents/custom-elements`) **stay** — see
+`season` has been dropped (user config is JSON; no product dependency). A custom elements polyfill (`@webcomponents/custom-elements`) **stays** — see
 `script/ci/wave3-gates.test.js` and `docs/reference/custom-elements.md`.
 

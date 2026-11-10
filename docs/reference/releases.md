@@ -25,8 +25,8 @@ Deferred on purpose (not blockers for this tag):
 
 - Package host v2 / sandboxed community packages
 - ~~Mass-fork of `language-*` off `atom/*`~~ **done** ([#79](https://github.com/builtbygio/chevron/issues/79))
-- `@electron/packager` migration
-- Custom Electron 43 V8 snapshot on Linux/Windows (#121); Darwin stock
+- ~~`@electron/packager` migration~~ **done** (`@electron/packager` 20.3.0; see [packaging.md](./packaging.md))
+- Custom V8 snapshot: Linux and macOS ship stock; Windows may generate one (`CHEVRON_FORCE_MKSNAPSHOT=1` retries a skip). See [packaging.md](./packaging.md)
 - Codesign / notarization / Squirrel install feed
 
 In-app updates come from these releases through electron-updater once a build is signed: [auto-update.md](./auto-update.md).
@@ -84,7 +84,7 @@ the GitHub Release. Its notes are the version's CHANGELOG section
 
 ## From source
 
-A fresh clone must use **`./script/bootstrap-modern`**, not a bare `pnpm install`. Bootstrap installs with `--ignore-scripts` (no random registry postinstalls) and then rebuilds Electron 43 natives with modern `node-gyp`. `pnpm install` alone leaves `.node` addons unbuilt.
+A fresh clone must use **`./script/bootstrap-modern`**, not a bare `pnpm install`. Bootstrap installs with `--ignore-scripts` (no random registry postinstalls) and then rebuilds the product Electron natives (45.2.2) with modern `node-gyp`. `pnpm install` alone leaves `.node` addons unbuilt.
 
 ```bash
 git clone https://github.com/builtbygio/chevron.git

@@ -7,7 +7,7 @@ Imagine Chevron is a **workshop**.
 The editor is the **workbench** where you actually build things.  
 **cpm** is the **tool shop next door** that fetches new tools (packages), puts them on the shelf, and sometimes **rebuilds** a tool so it fits *this* workshop’s machines.
 
-cpm is **not** a new workbench. Packages still run inside Chevron the Atom way (`global.atom`, etc.). cpm is about **installing and fixing** packages, not rewriting how they load.
+cpm is the tool shop, not a new workbench. Packages still run inside Chevron through `global.chevron`. cpm is about **installing and fixing** packages, not rewriting how they load.
 
 ---
 
@@ -23,7 +23,7 @@ The shop **used to** have a very old helper called **apm** (Atom Package Manager
 |---------|-------------|--------|
 | **Modern tools** | Building Chevron itself | Host npm + modern rebuild |
 | **cpm** | Installing community packages | **Ships now** (Electron-as-Node) |
-| **`apm` name** | Old scripts / muscle memory | **Shim that calls cpm** |
+| **`apm` name** | Old scripts / muscle memory | **Retired.** Not shipped. The installer is `cpm` |
 
 **cpm’s job (done):** fire the old apprentice for day-to-day installs, and use the **same machine the editor already runs on**.
 
@@ -67,7 +67,7 @@ That is **not** “cpm for everything.” Bootstrap stays boring and host-side.
 
 ### Job B — User / community packages (what settings “Install” does)
 
-When **you** install something into `~/.atom/packages` or `~/.chevron/packages`:
+When **you** install something into `~/.chevron/packages` (or `ATOM_HOME/packages` if that variable is set):
 
 - Download a package  
 - Install its dependencies  
@@ -85,24 +85,25 @@ If someone says “bootstrap prefers cpm,” that is the **wrong** reading of th
 
 ---
 
-## Where packages live (dual home)
+## Where packages live
 
-Chevron still respects Atom users. Package home roughly means:
+Config and package home (`src/chevron-paths.js`):
 
-1. `CHEVRON_HOME` if you set it  
-2. else `ATOM_HOME` if you set it  
-3. else portable folder next to the app  
-4. else `~/.chevron` if it exists  
-5. else **`~/.atom`** (default — don’t break existing people)
+1. `CHEVRON_HOME` if you set it
+2. else `ATOM_HOME` if you set it (explicit override only)
+3. else a portable `.chevron` next to the app, when that directory exists and is writable
+4. else **`~/.chevron`**
+
+There is no default of `~/.atom`. An old Atom home is used only when `ATOM_HOME` is set.
 
 Under that home:
 
 ```text
-packages/     ← the installed community packages (the shelf)
+packages/     ← the installed packages (the shelf)
 .cpm/         ← cpm’s notes (cache, logs, lock metadata)
 ```
 
-**Dual-support forever** also means: keep understanding `engines.atom`, `atom://`, `global.atom`, and the name **`apm` as a shim**.
+`require('atom')`, `global.atom`, `atom://`, and the `apm` launcher are gone. `engines.atom` alone can still draw a cpm warning. The product surface is `engines.chevron`.
 
 ---
 

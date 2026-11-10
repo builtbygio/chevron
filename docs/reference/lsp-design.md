@@ -16,11 +16,12 @@ go-to-definition, and later rename/format/code-actions — by speaking the
 [Language Server Protocol](https://microsoft.github.io/language-server-protocol/)
 to external language servers.
 
-Today Chevron ships **91 bundled packages and zero language servers**.
-Completion is `autocomplete-plus` doing word/snippet matching (2015-era);
-go-to-definition is `symbols-view` shelling out to **ctags**. That is the gap
-between "text editor" and "code editor," and it is the single biggest blocker
-to daily-driver use.
+The host is in the app (`src/lsp/`, `src/main-process/workers/lsp-host.js`).
+Diagnostics, hover, completion, and go-to-definition go through it.
+`packages/lsp-ui` draws the gutter markers and the problems list. Language-server
+binaries are not inside the installer; optional `chevron-lsp-*` packages install
+through cpm ([lsp-server-distribution.md](./lsp-server-distribution.md)).
+`symbols-view` remains the ctags path when no server is configured.
 
 LSP is also, deliberately, a **systems problem**: long-lived child processes,
 a framed JSON-RPC stream over stdio, request multiplexing and cancellation,
@@ -63,7 +64,7 @@ semantics on top), and rewriting the package API.
 
 - **Chevron-only API policy** ([REBRANDING.md](../decisions/REBRANDING.md), #83): new surfaces use
   `global.chevron`, `require('chevron')`, and prefer `engines.chevron`.
-  `global.atom` / `require('atom')` are unsupported legacy aliases — LSP code
+  There is no `global.atom`. `require('atom')` is `MODULE_NOT_FOUND`. LSP code
   must not introduce new `atom`-named APIs. Default config home is **`~/.chevron`**.
 - **Closed owned catalog** ([package-ecosystem-strategy.md](../decisions/package-ecosystem-strategy.md), #83):
   today's extension surface is owned packages (`builtbygio/*` + monorepo), **not**
@@ -131,15 +132,15 @@ packages consume after host v2) — the Phase S pattern applied to a second work
 
 | Constraint | Impact on design |
 |------------|------------------|
-| No diagnostics UI bundled (`linter`/`atom-ide-ui` absent) | Diagnostics surface must be **built**, not consumed — biggest UI cost in v1 |
+| Diagnostics UI is `packages/lsp-ui` (gutter markers and the problems list) | The rows below were written when that UI did not exist. The host still owns the data |
 | `symbols-view` declares **no** provided/consumed services and is ctags-only | Go-to-definition cannot "plug in"; needs a new command/UI or a patched fork (§12.4) |
 | `autocomplete-plus` exposes `autocomplete.provider` **v1.0–v4.0** | Completion **can** plug in with zero changes to autocomplete-plus — use v4.0 |
 | Phase S: workers must be utilityProcess, `BrowserWindow` refused | LSP host follows `package-utility-worker.js` precedent exactly |
 | 16 tree-sitter grammars, TextMate grammars elsewhere | Language identity for `languageId` must map from Atom scope names, not file extension alone |
-| Electron 43 / Node 24 in-app | Modern `child_process`, `AbortSignal`, streams available in the host |
-| Five-platform CI | Server discovery must handle Windows `.cmd`/`.exe` shims and PATH differences |
+| Electron 45.2.2 / Node 24 in-app | Modern `child_process`, `AbortSignal`, streams available in the host |
+| CI is Linux x64 only | Local Windows builds still need `.cmd` / `.exe` shims on PATH |
 | Closed owned catalog (#83) | Server registration/UI-replacement seams have **owned** consumers today; they are built for host v2, not for an open ecosystem now |
-| Unowned `atom/*` language packs are temporary SHA pins (#79) | Scope → `languageId` table must not hard-depend on those packages surviving |
+| Owned language packages are `builtbygio/language-*` (#79) | Scope → `languageId` must not assume an `atom/*` pin |
 
 ---
 

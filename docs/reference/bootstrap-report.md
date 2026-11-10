@@ -12,7 +12,7 @@
 | Python | **3.11–3.13** (prefer **3.12** + `setuptools`) |
 | App deps | host **npm** (`npm ci --ignore-scripts --legacy-peer-deps`) |
 | Product packages | **cpm** (not classic apm) |
-| Electron | `package.json` → `electronVersion` (currently 43.x) |
+| Electron | `package.json` → `electronVersion` (currently **45.2.2**) |
 | Headers | `ATOM_ELECTRON_URL=https://www.electronjs.org/headers` |
 | Patches | [bootstrap-patch-matrix.md](./bootstrap-patch-matrix.md) |
 | Natives | hard-gated critical list (`script/lib/critical-natives.js`) |
@@ -45,7 +45,7 @@ GitHub Actions (`.github/workflows/ci.yml`): Node 24, Python 3.12, Linux x64 boo
 |-----|--------|
 | `CHEVRON_FORCE_NATIVE_REBUILD=1` | Always rebuild natives |
 | `CHEVRON_ALLOW_NATIVE_REBUILD_FAILURES=1` | Soft-fail critical natives (local debug only) |
-| `CHEVRON_FORCE_MKSNAPSHOT=1` | Attempt custom startup snapshot on Electron 43+ |
+| `CHEVRON_FORCE_MKSNAPSHOT=1` | Retry a custom startup snapshot. Linux and macOS skip one by default ([packaging.md](./packaging.md)) |
 
 ---
 
