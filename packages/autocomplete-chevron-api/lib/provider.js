@@ -12,7 +12,7 @@ const path = require('path');
 
 const CLASSES = require('../completions.json');
 
-const propertyPrefixPattern = /(?:^|\[|\(|,|=|:|\s)\s*(chevron\.(?:[a-zA-Z]+\.?){0,2})$/;
+const propertyPrefixPattern = /(?:^|\[|\(|,|=|:|\s)\s{0,80}(chevron\.(?:[a-zA-Z]+\.?){0,2})$/;
 
 module.exports = {
   selector: '.source.coffee, .source.js',

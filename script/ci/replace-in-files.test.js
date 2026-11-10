@@ -87,7 +87,13 @@ describe('replaceInFile / replaceInFiles', () => {
   it('does not write when there are no matches', () => {
     const filePath = path.join(dir, 'none.txt');
     fs.writeFileSync(filePath, 'zzz');
-    const before = fs.statSync(filePath).mtimeMs;
+    const fd = fs.openSync(filePath, 'r');
+    let before;
+    try {
+      before = fs.fstatSync(fd).mtimeMs;
+    } finally {
+      fs.closeSync(fd);
+    }
     const result = replaceInFile(filePath, /aaa/g, 'bbb');
     assert.strictEqual(result.replacements, 0);
     assert.strictEqual(fs.readFileSync(filePath, 'utf8'), 'zzz');

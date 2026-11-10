@@ -40,6 +40,12 @@ describe('markup', () => {
   it('strips script tags inertly', () => {
     const cleaned = stripHtml('hi<script>alert(1)</script>there');
     assert.strictEqual(cleaned, 'hithere');
+    assert.strictEqual(stripHtml('a</script >b'), 'ab');
+    assert.strictEqual(
+      stripHtml('a<scr<script>ipt>alert(1)</script>b'),
+      'a<scrb'
+    );
+    assert.strictEqual(stripHtml('a<style>x</style>b'), 'ab');
   });
 
   it('escapeHtml escapes angle brackets', () => {

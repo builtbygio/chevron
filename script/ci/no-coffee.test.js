@@ -27,9 +27,10 @@ const ALLOWED = /\/spec\/fixtures\//;
 function findCoffee(dir) {
   try {
     const out = cp
-      .execSync(
-        `find ${dir} -name '*.coffee' -not -path '*/node_modules/*' 2>/dev/null`,
-        { encoding: 'utf8' }
+      .execFileSync(
+        'find',
+        [dir, '-name', '*.coffee', '-not', '-path', '*/node_modules/*'],
+        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
       )
       .trim();
     return out ? out.split('\n') : [];

@@ -648,6 +648,12 @@ class RootController extends _react.default.Component {
   }
 
   async installExtension(id) {
+    // Chrome Web Store ids are 32 characters from a-p. Anything else would
+    // be interpolated into a path and a download URL.
+    if (!/^[a-p]{32}$/.test(id)) {
+      throw new Error('Refusing an extension id that is not a Web Store id');
+    }
+
     const devToolsName = 'electron-devtools-installer';
 
     const devTools = require(devToolsName);

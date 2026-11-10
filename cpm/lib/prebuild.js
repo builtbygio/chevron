@@ -72,6 +72,14 @@ function depDeclares(meta, name) {
  * {name} {version} {platform} {arch} {electron} {abi}
  * abi is approximate NODE_MODULE_VERSION when available.
  */
+function httpsDownloadUrl(value) {
+  const parsed = new URL(String(value));
+  if (parsed.protocol !== 'https:' || parsed.username || parsed.password) {
+    throw new Error('prebuild URL must be https and must not include credentials');
+  }
+  return parsed.href;
+}
+
 function expandPrebuildTemplate(template, ctx) {
   return String(template)
     .replace(/\{name\}/g, ctx.name || '')
@@ -124,8 +132,9 @@ async function tryChevronPrebuildUrl(packagePath, electronVersion) {
   for (const tmpl of urls) {
     const url = expandPrebuildTemplate(tmpl, ctx);
     try {
-      process.stdout.write(`cpm prebuild: fetching ${url}\n`);
-      const res = await fetch(url, {
+      const downloadUrl = httpsDownloadUrl(url);
+      process.stdout.write(`cpm prebuild: fetching ${downloadUrl}\n`);
+      const res = await fetch(downloadUrl, {
         headers: { 'User-Agent': 'chevron-cpm' },
         redirect: 'follow'
       });

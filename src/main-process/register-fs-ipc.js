@@ -455,18 +455,26 @@ module.exports = function registerFsIpc(atomApplication) {
   ipcMain.on('chevron:fs-read-file-sync', (event, fullPath, encoding) => {
     if (!isAllowedFsPath(fullPath))
       return deny(event, 'chevron:fs-read-file-sync', fullPath);
+    let fd;
     try {
-      const st = fs.statSync(fullPath);
+      fd = fs.openSync(fullPath, 'r');
+      const st = fs.fstatSync(fd);
       if (st.size > READ_FILE_MAX_BYTES) {
         fail(event, Object.assign(new Error('file too large'), { code: 'EFBIG' }));
         return;
       }
       const buf = encoding
-        ? fs.readFileSync(fullPath, encoding)
-        : fs.readFileSync(fullPath);
+        ? fs.readFileSync(fd, encoding)
+        : fs.readFileSync(fd);
       ok(event, buf);
     } catch (error) {
       fail(event, error);
+    } finally {
+      if (fd !== undefined) {
+        try {
+          fs.closeSync(fd);
+        } catch (_) {}
+      }
     }
   });
 

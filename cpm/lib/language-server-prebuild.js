@@ -38,6 +38,28 @@ const zlib = require('zlib');
 const { pipeline } = require('stream/promises');
 const { createWriteStream, createReadStream } = require('fs');
 
+function httpsDownloadUrl(value) {
+  const parsed = new URL(String(value));
+  if (parsed.protocol !== 'https:' || parsed.username || parsed.password) {
+    throw new Error(
+      'language server URL must be https and must not include credentials'
+    );
+  }
+  return parsed.href;
+}
+
+function pathInsidePackage(packagePath, rel) {
+  if (path.isAbsolute(rel) || String(rel).split(/[/\\]/).includes('..')) {
+    throw new Error('language server command must stay inside the package');
+  }
+  const root = path.resolve(packagePath);
+  const dest = path.resolve(root, rel);
+  if (dest !== root && !dest.startsWith(root + path.sep)) {
+    throw new Error('language server command must stay inside the package');
+  }
+  return dest;
+}
+
 function readPackageJson(packagePath) {
   try {
     return JSON.parse(
@@ -188,14 +210,13 @@ async function ensureLanguageServerBinary(packagePath, opts = {}) {
   }
 
   const commandRel = ls.command || path.join('bin', ls.id || 'server');
-  const destAbs = path.isAbsolute(commandRel)
-    ? commandRel
-    : path.join(packagePath, commandRel);
+  const destAbs = pathInsidePackage(packagePath, commandRel);
   await fse.ensureDir(path.dirname(destAbs));
 
   try {
-    process.stdout.write(`cpm language-server: fetching ${url}\n`);
-    const res = await fetchImpl(url, {
+    const downloadUrl = httpsDownloadUrl(url);
+    process.stdout.write(`cpm language-server: fetching ${downloadUrl}\n`);
+    const res = await fetchImpl(downloadUrl, {
       headers: { 'User-Agent': 'chevron-cpm' },
       redirect: 'follow'
     });

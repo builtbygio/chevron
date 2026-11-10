@@ -24,12 +24,18 @@ const repoRoot = path.resolve(
   process.argv[2] || path.join(__dirname, '..', '..')
 );
 const lockPath = path.join(repoRoot, 'package-lock.json');
-if (!fs.existsSync(lockPath)) {
-  console.log('fix-package-lock: no package-lock.json, skipping');
-  process.exit(0);
+let lockText;
+try {
+  lockText = fs.readFileSync(lockPath, 'utf8');
+} catch (error) {
+  if (error.code === 'ENOENT') {
+    console.log('fix-package-lock: no package-lock.json, skipping');
+    process.exit(0);
+  }
+  throw error;
 }
 
-const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+const lock = JSON.parse(lockText);
 let namePrefixed = 0;
 let gitProtocol = 0;
 let integrity = 0;

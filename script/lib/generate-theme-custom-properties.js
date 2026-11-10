@@ -142,13 +142,21 @@ function main() {
 
   for (const theme of themeDirs()) {
     const dir = path.join(PACKAGES, theme, 'styles');
-    if (!fs.existsSync(dir)) continue;
     const kind = themeKind(theme);
     const target = path.join(dir, 'custom-properties.less');
     const next = render(kind, names[kind]);
-    const current = fs.existsSync(target)
-      ? fs.readFileSync(target, 'utf8')
-      : null;
+    let current = null;
+    try {
+      current = fs.readFileSync(target, 'utf8');
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+      try {
+        fs.readdirSync(dir);
+      } catch (dirError) {
+        if (dirError.code === 'ENOENT') continue;
+        throw dirError;
+      }
+    }
     if (current === next) continue;
     if (check) {
       stale.push(path.relative(ROOT, target));

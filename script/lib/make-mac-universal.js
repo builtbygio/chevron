@@ -121,6 +121,18 @@ function sameBytes(a, b) {
   return a.length === b.length && a.equals(b);
 }
 
+// Read a regular file. A symlink is an error instead of a followed target,
+// so the bytes compared are the file that was listed.
+function readNoFollow(file) {
+  let fd;
+  try {
+    fd = fs.openSync(file, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
+    return fs.readFileSync(fd);
+  } finally {
+    if (fd !== undefined) fs.closeSync(fd);
+  }
+}
+
 // Files present in both trees whose bytes differ and are not Mach-O.
 // @electron/universal stops at the first such file; this finds all of them
 // so a fix needs one CI round, not one per file.
@@ -131,12 +143,18 @@ function nonMachODifferences(x64Root, arm64Root) {
     if (!arm64.has(file)) continue;
     const a = path.join(x64Root, file);
     const b = path.join(arm64Root, file);
-    if (fs.lstatSync(a).isSymbolicLink() || fs.lstatSync(b).isSymbolicLink()) {
-      continue;
+    let x;
+    let y;
+    try {
+      x = readNoFollow(a);
+      y = readNoFollow(b);
+    } catch (error) {
+      // O_NOFOLLOW fails with ELOOP when the last component is a symlink.
+      if (error && (error.code === 'ELOOP' || error.code === 'EPERM')) continue;
+      throw error;
     }
-    const x = fs.readFileSync(a);
     if (isMachO(x)) continue;
-    if (!sameBytes(x, fs.readFileSync(b))) found.push(file);
+    if (!sameBytes(x, y)) found.push(file);
   }
   return found;
 }

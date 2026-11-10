@@ -19,7 +19,7 @@ const UserUtilities = require('./user-utilities');
 
 const TITLE_CHAR_LIMIT = 100; // Truncate issue title to 100 characters (including ellipsis)
 
-const FileURLRegExp = new RegExp('file://\w*/(.*)');
+const FileURLRegExp = /file:\/\/\w*\/(.*)/;
 
 module.exports =
 (NotificationIssue = class NotificationIssue {

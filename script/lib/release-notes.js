@@ -3,10 +3,18 @@
 const fs = require('fs');
 const path = require('path');
 
+// Every metacharacter, including backslash, so a version can be dropped
+// into a RegExp without becoming part of the pattern.
+function escapeRegExp(value) {
+  return String(value).replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
+}
+
 // The body of `## [X.Y.Z]` in CHANGELOG.md, without its heading.
 function changelogSection(changelog, version) {
   const lines = changelog.split('\n');
-  const heading = new RegExp(`^## \\[${version.replace(/\./g, '\\.')}\\](\\s|$)`);
+  const heading = new RegExp(
+    '^## \\[' + escapeRegExp(version) + '\\](\\s|$)'
+  );
   const start = lines.findIndex(line => heading.test(line));
   if (start === -1) return null;
   let end = lines.findIndex((line, i) => i > start && /^## \[/.test(line));
@@ -29,7 +37,7 @@ function releaseNotes(root, tag) {
   return section;
 }
 
-module.exports = { changelogSection, releaseNotes };
+module.exports = { changelogSection, releaseNotes, escapeRegExp };
 
 if (require.main === module) {
   process.stdout.write(releaseNotes(path.resolve(__dirname, '..', '..'), process.argv[2]) + '\n');

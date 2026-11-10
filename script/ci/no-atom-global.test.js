@@ -46,7 +46,7 @@ const ATOM_AS_VALUE = [
  */
 function maskStrings(line) {
   return line
-    .replace(/`(?:\\.|[^`])*`/g, tpl =>
+    .replace(/`(?:\\[\s\S]|[^`\\])*`/g, tpl =>
       tpl.replace(/\$\{[^}]*\}|[\s\S]/g, seg =>
         seg.startsWith('${') ? seg : '\0'.repeat(seg.length)
       )

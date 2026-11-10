@@ -55,7 +55,7 @@ async function isOnRegistry(publishName, { fetchImpl, timeoutMs }) {
     : null;
   try {
     const response = await fetchImpl(
-      `${REGISTRY}/${publishName.replace('/', '%2f')}`,
+      `${REGISTRY}/${publishName.replace(/\//g, '%2f')}`,
       { method: 'HEAD', signal: controller ? controller.signal : undefined }
     );
     return Boolean(response && response.ok);

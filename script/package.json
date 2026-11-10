@@ -104,6 +104,23 @@
     "js-yaml@4": "4.3.2",
     "source-map-js": "1.2.2",
     "@xmldom/xmldom": "0.9.12",
-    "ip-address": "10.7.5"
+    "ip-address": "10.7.5",
+    "minimatch@9": "11.0.3",
+    "minimatch@10": "11.0.3",
+    "@electron/asar@4": {
+      "glob": "14.0.3"
+    },
+    "@npmcli/map-workspaces": {
+      "glob": "14.0.3"
+    },
+    "@npmcli/package-json": {
+      "glob": "14.0.3"
+    },
+    "cacache": {
+      "glob": "14.0.3"
+    },
+    "@electron/universal@2": {
+      "minimatch": "11.0.3"
+    }
   }
 }

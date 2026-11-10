@@ -4,7 +4,7 @@ const fs = require('fs-extra');
 const handleTilde = require('./handle-tilde');
 const path = require('path');
 const template = require('lodash.template');
-const execSync = require('child_process').execSync;
+const { execFileSync } = require('child_process');
 
 const CONFIG = require('../config');
 
@@ -143,7 +143,9 @@ module.exports = function(packagedAppPath, installDir) {
 
       console.log(`Updating icon cache for "${baseIconThemeDirPath}"`);
       try {
-        execSync(`gtk-update-icon-cache ${baseIconThemeDirPath} --force`);
+        execFileSync('gtk-update-icon-cache', [baseIconThemeDirPath, '--force'], {
+          stdio: 'ignore'
+        });
       } catch (e) {}
     }
 
@@ -153,12 +155,6 @@ module.exports = function(packagedAppPath, installDir) {
         applicationsDirPath,
         `${atomExecutableName}.desktop`
       );
-      if (fs.existsSync(desktopEntryPath)) {
-        console.log(
-          `Removing existing desktop entry file at "${desktopEntryPath}"`
-        );
-        fs.removeSync(desktopEntryPath);
-      }
       console.log(`Writing desktop entry file at "${desktopEntryPath}"`);
       const desktopEntryTemplate = fs.readFileSync(
         path.join(
