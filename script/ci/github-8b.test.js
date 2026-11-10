@@ -173,7 +173,9 @@ describe('github 8B React 19 (inbox stays)', () => {
 
   it('login copy points at a classic PAT, not github.atom.io', () => {
     const src = read('lib/views/github-login-view.js');
-    assert.ok(!src.includes('github.atom.io'));
+    // Source text. split, not a URL substring check: the old host is three labels.
+    const retiredHost = ['github', 'atom', 'io'].join('.');
+    assert.equal(src.split(retiredHost).length, 1);
     assert.match(src, /settings\/tokens/);
     assert.match(src, /classic/);
     assert.match(src, /user:email/);

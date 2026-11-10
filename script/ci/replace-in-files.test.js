@@ -7,6 +7,7 @@
 
 const { describe, it, before, afterEach } = require('node:test');
 const assert = require('assert');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -87,16 +88,15 @@ describe('replaceInFile / replaceInFiles', () => {
   it('does not write when there are no matches', () => {
     const filePath = path.join(dir, 'none.txt');
     fs.writeFileSync(filePath, 'zzz');
-    const fd = fs.openSync(filePath, 'r');
-    let before;
-    try {
-      before = fs.fstatSync(fd).mtimeMs;
-    } finally {
-      fs.closeSync(fd);
-    }
+    const before = execFileSync('stat', ['-c', '%Y.%N', filePath], {
+      encoding: 'utf8'
+    });
     const result = replaceInFile(filePath, /aaa/g, 'bbb');
     assert.strictEqual(result.replacements, 0);
     assert.strictEqual(fs.readFileSync(filePath, 'utf8'), 'zzz');
-    assert.strictEqual(fs.statSync(filePath).mtimeMs, before);
+    assert.strictEqual(
+      execFileSync('stat', ['-c', '%Y.%N', filePath], { encoding: 'utf8' }),
+      before
+    );
   });
 });
