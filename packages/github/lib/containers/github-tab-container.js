@@ -45,25 +45,37 @@ class GitHubTabContainer extends _react.default.Component {
   constructor(props) {
     super(props);
 
-    _defineProperty(this, "fetchRepositoryData", repository => {
-      return (0, _yubikiri.default)({
-        workingDirectory: repository.getWorkingDirectoryPath(),
-        allRemotes: repository.getRemotes(),
-        branches: repository.getBranches(),
-        selectedRemoteName: repository.getConfig('atomGithub.currentRemote'),
-        aheadCount: async query => {
-          const branches = await query.branches;
-          const currentBranch = branches.getHeadBranch();
-          return repository.getAheadCount(currentBranch.getName());
-        },
-        pushInProgress: repository.getOperationStates().isPushInProgress()
-      });
+    _defineProperty(this, "fetchRepositoryData", async repository => {
+      try {
+        return await (0, _yubikiri.default)({
+          workingDirectory: repository.getWorkingDirectoryPath(),
+          allRemotes: repository.getRemotes(),
+          branches: repository.getBranches(),
+          selectedRemoteName: repository.getConfig('atomGithub.currentRemote'),
+          aheadCount: async query => {
+            const branches = await query.branches;
+            const currentBranch = branches && branches.getHeadBranch();
+            const name = currentBranch && currentBranch.getName();
+            if (!name) return 0;
+            return repository.getAheadCount(name);
+          },
+          pushInProgress: repository.getOperationStates().isPushInProgress()
+        });
+      } catch (error) {
+        // A rejected fetch used to leave the tab on the loading spinner,
+        // because the model observer never published the failure.
+        return { __error: error };
+      }
     });
 
     _defineProperty(this, "fetchToken", (loginModel, endpoint) => loginModel.getToken(endpoint.getLoginAccount()));
 
     _defineProperty(this, "renderRepositoryData", repoData => {
       let endpoint = _endpoint.DOTCOM;
+
+      if (repoData && repoData.__error) {
+        return this.renderToken(repoData.__error, null);
+      }
 
       if (repoData) {
         repoData.githubRemotes = repoData.allRemotes.filter(remote => remote.isGithubRepo());

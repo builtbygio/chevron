@@ -48,19 +48,27 @@ class KeytarStrategy {
 
     try {
       const rand = Math.floor(Math.random() * 10e20).toString(16);
-      await keytar.setPassword('atom-test-service', rand, rand);
-      const pass = await keytar.getPassword('atom-test-service', rand);
+      await withTimeout(keytar.setPassword('atom-test-service', rand, rand), KEYTAR_TIMEOUT_MS);
+      const pass = await withTimeout(keytar.getPassword('atom-test-service', rand), KEYTAR_TIMEOUT_MS);
       const success = pass === rand;
       keytar.deletePassword('atom-test-service', rand);
       return success;
     } catch (err) {
+      if (err && err.message === 'keytar timed out') {
+        // eslint-disable-next-line no-console
+        console.warn('The system keychain did not answer. GitHub sign-in will last for this window only.');
+      }
       return false;
     }
   }
 
   async getPassword(service, account) {
-    const password = await this.constructor.keytar.getPassword(service, account);
-    return password !== null ? password : UNAUTHENTICATED;
+    try {
+      const password = await withTimeout(this.constructor.keytar.getPassword(service, account), KEYTAR_TIMEOUT_MS);
+      return password !== null ? password : UNAUTHENTICATED;
+    } catch (_err) {
+      return UNAUTHENTICATED;
+    }
   }
 
   replacePassword(service, account, password) {
@@ -247,6 +255,25 @@ class FileStrategy {
     await this.save(payload);
   }
 
+}
+
+// libsecret can wait forever for a keyring prompt that never arrives (the
+// session bus cancelled it, or no secret service is running). The GitHub tab
+// treats a pending token as "still loading" and shows the spinner until this
+// returns, so a hung lookup has to give up and fall through.
+const KEYTAR_TIMEOUT_MS = 4000;
+
+function withTimeout(promise, ms) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('keytar timed out')), ms);
+    Promise.resolve(promise).then(value => {
+      clearTimeout(timer);
+      resolve(value);
+    }, error => {
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
 }
 
 const strategies = [FileStrategy, KeytarStrategy, SecurityBinaryStrategy, InMemoryStrategy];

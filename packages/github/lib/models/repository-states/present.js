@@ -880,12 +880,14 @@ class Present extends _state.default {
 
   async getAheadCount(branchName) {
     const bundle = await this.getStatusBundle();
-    return bundle.branch.aheadBehind.ahead;
+    const aheadBehind = bundle && bundle.branch && bundle.branch.aheadBehind;
+    return aheadBehind ? aheadBehind.ahead : 0;
   }
 
   async getBehindCount(branchName) {
     const bundle = await this.getStatusBundle();
-    return bundle.branch.aheadBehind.behind;
+    const aheadBehind = bundle && bundle.branch && bundle.branch.aheadBehind;
+    return aheadBehind ? aheadBehind.behind : 0;
   }
 
   getConfig(option, {
