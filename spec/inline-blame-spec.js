@@ -60,12 +60,18 @@ describe('inline blame', () => {
     expect(editor.getCursorBufferPosition().toArray()).toEqual([1, 0]);
   });
 
-  it('shows the full commit on hover', () => {
+  it('shows a short tip after a pause, not while the pointer is only passing', async () => {
     annotation().dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    expect(document.querySelector('.github-InlineBlame-tooltip')).toBeNull();
+    await conditionPromise(
+      () => document.querySelector('.github-InlineBlame-tooltip'),
+      'the blame tooltip',
+      2000
+    );
     const tooltip = document.querySelector('.github-InlineBlame-tooltip');
-    expect(tooltip).toBeTruthy();
-    expect(tooltip.textContent).toContain('First lines');
-    expect(tooltip.textContent).toContain('gio@example.com');
+    expect(tooltip.textContent).not.toContain('gio@example.com');
+    expect(tooltip.textContent).not.toContain('First lines');
+    expect(tooltip.textContent).toMatch(/[0-9a-f]{7}/);
   });
 
   it('says "Not committed yet" for an unsaved line', async () => {

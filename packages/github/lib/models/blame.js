@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.parseBlamePorcelain = parseBlamePorcelain;
 exports.formatInlineBlame = formatInlineBlame;
+exports.formatBlameTooltip = formatBlameTooltip;
 exports.UNCOMMITTED_SHA = void 0;
 
 var _moment = _interopRequireDefault(require("moment"));
@@ -91,4 +92,20 @@ function formatInlineBlame(commit, now = Date.now()) {
   if (commit.uncommitted) return 'Not committed yet';
   const when = (0, _moment.default)(commit.authorTime * 1000).from(now);
   return `${commit.author}, ${when} · ${commit.summary}`;
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// One short line. The annotation already shows the author and the summary,
+// so the tip only adds the calendar date and a short sha.
+function formatBlameTooltip(commit) {
+  if (!commit || commit.uncommitted) return '';
+  const sha = String(commit.sha || '');
+  if (!sha || /^0+$/.test(sha)) return '';
+  const short = sha.slice(0, 7);
+  const time = Number(commit.authorTime);
+  if (!time) return short;
+  const date = new Date(time * 1000);
+  if (Number.isNaN(date.getTime())) return short;
+  return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()} · ${short}`;
 }

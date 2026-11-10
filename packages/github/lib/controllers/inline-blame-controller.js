@@ -19,18 +19,8 @@ exports.REQUEST_DEBOUNCE_MS = REQUEST_DEBOUNCE_MS;
 const MAX_BLAME_LINES = 20000;
 exports.MAX_BLAME_LINES = MAX_BLAME_LINES;
 
-function escapeHTML(text) {
-  return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function tooltipHTML(commit) {
-  if (commit.uncommitted) {
-    return 'Not committed yet<br><small>This line is not in any commit.</small>';
-  }
-
-  const date = new Date(commit.authorTime * 1000).toLocaleString();
-  return [`<strong>${escapeHTML(commit.summary)}</strong>`, `${escapeHTML(commit.author)} &lt;${escapeHTML(commit.authorMail)}&gt;`, escapeHTML(date), `<code>${escapeHTML(commit.sha)}</code>`, '<small>Click to open the commit</small>'].join('<br>');
-}
+// Long enough that moving the pointer across the annotation does not open the tip.
+const TOOLTIP_DELAY_MS = 600;
 
 // Who last changed the cursor's line, drawn faintly after it: one line, in
 // the active editor, never more. Blame runs through the repository, so it is
@@ -56,6 +46,7 @@ class InlineBlameController {
     this.current = null;
     this.tooltip = null;
     this.tooltipElement = null;
+    this.tooltipTimer = null;
     this.timer = null;
     this.token = 0;
     this.typing = false;
@@ -274,15 +265,21 @@ class InlineBlameController {
   didMouseOver(event) {
     const element = this.blameElementFor(event);
     if (!element || !this.current || this.tooltipElement === element) return;
+    const title = (0, _blame.formatBlameTooltip)(this.current.commit);
+    if (!title) return;
     this.disposeTooltip();
     this.tooltipElement = element;
-    this.tooltip = this.tooltips.add(element, {
-      title: tooltipHTML(this.current.commit),
-      html: true,
-      trigger: 'manual',
-      placement: 'bottom',
-      class: 'github-InlineBlame-tooltip'
-    });
+    this.tooltipTimer = setTimeout(() => {
+      this.tooltipTimer = null;
+      if (this.tooltipElement !== element) return;
+      this.tooltip = this.tooltips.add(element, {
+        title,
+        html: false,
+        trigger: 'manual',
+        placement: 'auto top',
+        class: 'github-InlineBlame-tooltip'
+      });
+    }, TOOLTIP_DELAY_MS);
   }
 
   didMouseOut(event) {
@@ -292,6 +289,10 @@ class InlineBlameController {
   }
 
   disposeTooltip() {
+    if (this.tooltipTimer) {
+      clearTimeout(this.tooltipTimer);
+      this.tooltipTimer = null;
+    }
     if (this.tooltip) this.tooltip.dispose();
     this.tooltip = null;
     this.tooltipElement = null;
