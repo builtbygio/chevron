@@ -154,6 +154,29 @@ module.exports = function({ blobStore }) {
     );
   }
 
+  // Tool-call permission and the session's read log. The prompt is the
+  // trust-modal shape: deny unless the focused button is Allow.
+  try {
+    const agentSession = require('./agent-session');
+    const { AgentPermissionView } = require('./agent-permission-view');
+    const permissionView = new AgentPermissionView();
+    global.chevron.agent = {
+      session: agentSession.session,
+      resetSession: agentSession.resetSession,
+      recordRead: entry => agentSession.session().recordRead(entry),
+      reads: () => agentSession.session().reads(),
+      decisions: () => agentSession.session().decisions(),
+      format: () => agentSession.formatSession(agentSession.session()),
+      requestTool(call) {
+        return agentSession.session().requestTool(call, request =>
+          permissionView.prompt(request, global.chevron)
+        );
+      }
+    };
+  } catch (err) {
+    console.error('[chevron-agent] could not publish chevron.agent', err);
+  }
+
   return global.chevron.startEditorWindow().then(function() {
     // Workaround for focus getting cleared upon window creation
     const windowFocused = function() {

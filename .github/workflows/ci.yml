@@ -471,6 +471,8 @@ jobs:
           node --test script/ci/pty-host-integration.test.js
           node --test script/ci/change-proposal.test.js
           node --test script/ci/tasks.test.js
+          node --test script/ci/agent-session.test.js
+          node --test script/ci/agent-permission-prompt.test.js
           node --test script/ci/task-transcript.test.js
           node --test script/ci/enclosing-scopes.test.js
           node --test script/ci/editorconfig.test.js
