@@ -12,10 +12,19 @@ const {
   sortEditsDescending,
   applyTextEditsToEditor
 } = require('../../src/lsp/workspace-edit');
-const { normalizeCodeActions } = require('../../src/lsp/providers/code-action');
+const {
+  normalizeCodeActions,
+  codeActionsAt,
+  diagnosticsForCodeActionContext,
+  planCodeActionApply
+} = require('../../src/lsp/providers/code-action');
 const { normalizeDocumentSymbols } = require('../../src/lsp/providers/document-symbols');
 const { prepareRename, renameAt } = require('../../src/lsp/providers/rename');
 const { formattingOptions } = require('../../src/lsp/providers/format');
+const {
+  clickedLightbulb,
+  lightbulbRange
+} = require('../../packages/lsp-ui/lib/diagnostics-view');
 
 describe('workspace edit normalize', () => {
   it('merges changes map', () => {
@@ -253,5 +262,166 @@ describe('formatting options', () => {
     );
     assert.strictEqual(opts.tabSize, 4);
     assert.strictEqual(opts.insertSpaces, true);
+  });
+});
+
+describe('code action apply plan', () => {
+  it('applies a TypeScript quick fix from the command payload', () => {
+    const edit = {
+      documentChanges: [
+        {
+          textDocument: { uri: 'file:///tmp/a.ts', version: 1 },
+          edits: [
+            {
+              range: {
+                start: { line: 83, character: 9 },
+                end: { line: 83, character: 16 }
+              },
+              newText: ''
+            }
+          ]
+        }
+      ]
+    };
+    const plan = planCodeActionApply({
+      title: 'Remove unused declaration',
+      kind: 'quickfix',
+      command: {
+        title: 'Remove unused declaration',
+        command: '_typescript.applyWorkspaceEdit',
+        arguments: [edit]
+      }
+    });
+    assert.strictEqual(plan.kind, 'edit');
+    assert.strictEqual(plan.edit, edit);
+    assert.strictEqual(plan.command, null);
+  });
+
+  it('keeps a refactor on workspace/executeCommand', () => {
+    const command = {
+      command: '_typescript.applyRefactoring',
+      arguments: [{ refactor: 'Extract Symbol', action: 'function_scope' }]
+    };
+    const plan = planCodeActionApply({ title: 'Extract to function', command });
+    assert.strictEqual(plan.kind, 'command');
+    assert.strictEqual(plan.command, command);
+  });
+
+  it('reports a disabled action instead of succeeding quietly', () => {
+    const plan = planCodeActionApply({
+      title: 'Extract to function',
+      disabled: { reason: 'Not applicable here' }
+    });
+    assert.strictEqual(plan.kind, 'disabled');
+    assert.strictEqual(plan.reason, 'Not applicable here');
+  });
+});
+
+describe('code action context', () => {
+  const onLine = {
+    code: 6133,
+    message: 'unused',
+    range: { start: { row: 83, column: 9 }, end: { row: 83, column: 16 } },
+    raw: {
+      code: 6133,
+      message: 'unused',
+      range: {
+        start: { line: 83, character: 9 },
+        end: { line: 83, character: 16 }
+      }
+    }
+  };
+  const otherLine = {
+    code: 2322,
+    message: 'type',
+    range: { start: { row: 10, column: 0 }, end: { row: 10, column: 4 } },
+    raw: {
+      code: 2322,
+      message: 'type',
+      range: {
+        start: { line: 10, character: 0 },
+        end: { line: 10, character: 4 }
+      }
+    }
+  };
+
+  it('sends the original diagnostic when the request covers it', () => {
+    const context = diagnosticsForCodeActionContext(
+      [onLine, otherLine],
+      { start: { row: 83, column: 9 }, end: { row: 83, column: 16 } }
+    );
+    assert.strictEqual(context.length, 1);
+    assert.strictEqual(context[0], onLine.raw);
+    assert.strictEqual(context[0].range.start.line, 83);
+  });
+
+  it('drops a diagnostic the column-0 caret does not touch', () => {
+    const context = diagnosticsForCodeActionContext(
+      [onLine],
+      { start: { row: 83, column: 0 }, end: { row: 83, column: 0 } }
+    );
+    assert.strictEqual(context.length, 0);
+  });
+
+  it('requests code actions over the diagnostic span', async () => {
+    let params;
+    const client = {
+      getServerIdForEditor: () => 's',
+      getPositionEncoding: () => 'utf-16',
+      request: async (_id, method, body) => {
+        assert.strictEqual(method, 'textDocument/codeAction');
+        params = body;
+        return { result: [] };
+      }
+    };
+    const actions = await codeActionsAt(
+      client,
+      { getPath: () => '/tmp/a.ts' },
+      { start: { row: 83, column: 9 }, end: { row: 83, column: 16 } },
+      [onLine, otherLine]
+    );
+    assert.deepStrictEqual(actions, []);
+    assert.strictEqual(params.range.start.line, 83);
+    assert.strictEqual(params.range.start.character, 9);
+    assert.strictEqual(params.range.end.character, 16);
+    assert.strictEqual(params.context.diagnostics.length, 1);
+    assert.strictEqual(params.context.diagnostics[0].code, 6133);
+    assert.strictEqual(params.context.diagnostics[0].range.start.line, 83);
+  });
+});
+
+describe('diagnostic gutter clicks', () => {
+  const node = {
+    getBoundingClientRect: () => ({ right: 100 }),
+    ownerDocument: null
+  };
+
+  it('treats a click on the orange dot as the lightbulb', () => {
+    assert.strictEqual(clickedLightbulb({ clientX: 92 }, node), true);
+  });
+
+  it('leaves a click on the line number alone', () => {
+    assert.strictEqual(clickedLightbulb({ clientX: 40 }, node), false);
+  });
+
+  it('selects the diagnostic on that line, not column 0', () => {
+    const byRow = new Map([
+      [
+        83,
+        [
+          { start: { row: 83, column: 9 }, end: { row: 83, column: 16 } },
+          { start: { row: 83, column: 20 }, end: { row: 83, column: 28 } }
+        ]
+      ]
+    ]);
+    const range = lightbulbRange(
+      { lineTextForBufferRow: () => 'function compile() {}' },
+      83,
+      byRow
+    );
+    assert.deepStrictEqual(range, {
+      start: { row: 83, column: 9 },
+      end: { row: 83, column: 28 }
+    });
   });
 });

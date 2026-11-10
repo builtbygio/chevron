@@ -5,6 +5,61 @@
  * Consumes normalized diagnostics from the lsp.diagnostics service shape.
  */
 
+// The orange dot is an absolutely positioned ::after on the right of the
+// line-number box (out of flow, so it does not shift the digits). A click
+// on the digits selects the line; only a click in that trailing zone asks
+// for code actions.
+function clickedLightbulb(event, node) {
+  if (!event || !node || typeof node.getBoundingClientRect !== 'function') {
+    return false;
+  }
+  const rect = node.getBoundingClientRect();
+  let fontSize = 14;
+  try {
+    const view = node.ownerDocument && node.ownerDocument.defaultView;
+    const parsed = view ? parseFloat(view.getComputedStyle(node).fontSize) : NaN;
+    if (Number.isFinite(parsed)) fontSize = parsed;
+  } catch (_) {
+    /* keep the fallback */
+  }
+  return event.clientX >= rect.right - fontSize * 1.15;
+}
+
+function compareBufferPoint(a, b) {
+  if (a.row !== b.row) return a.row - b.row;
+  return (a.column || 0) - (b.column || 0);
+}
+
+// One span that contains every diagnostic on the clicked line. The code-action
+// request uses this span. A caret at column 0 does not cover a diagnostic
+// later on the line, and the TypeScript server then returns no quick fix.
+function rangeCoveringDiagnostics(ranges) {
+  let start = null;
+  let end = null;
+  for (const range of ranges || []) {
+    if (!range || !range.start || !range.end) continue;
+    if (!start || compareBufferPoint(range.start, start) < 0) start = range.start;
+    if (!end || compareBufferPoint(range.end, end) > 0) end = range.end;
+  }
+  if (!start || !end) return null;
+  return {
+    start: { row: start.row, column: start.column || 0 },
+    end: { row: end.row, column: end.column || 0 }
+  };
+}
+
+function lightbulbRange(editor, row, rangesByRow) {
+  const covering = rangeCoveringDiagnostics(
+    rangesByRow && rangesByRow.get(row)
+  );
+  if (covering) return covering;
+  let column = 0;
+  if (editor && typeof editor.lineTextForBufferRow === 'function') {
+    column = (editor.lineTextForBufferRow(row) || '').length;
+  }
+  return { start: { row, column: 0 }, end: { row, column } };
+}
+
 const SEVERITY_CLASS = {
   1: 'lsp-ui-diag-error',
   2: 'lsp-ui-diag-warning',
@@ -20,6 +75,7 @@ class DiagnosticsView {
     this._panel = null;
     this._markersByEditor = new WeakMap();
     this._bulbsByEditor = new WeakMap();
+    this._rangesByEditor = new WeakMap();
     this._bulbClickBound = new WeakSet();
   }
 
@@ -47,35 +103,51 @@ class DiagnosticsView {
     for (const d of diagnostics) {
       const li = document.createElement('li');
       li.classList.add(SEVERITY_CLASS[d.severity] || 'lsp-ui-diag-info');
-      const a = document.createElement('a');
-      a.href = '#';
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.classList.add('lsp-ui-list-choice');
       const loc = d.range
         ? `${d.range.start.row + 1}:${d.range.start.column + 1}`
         : '';
       const src = d.source ? ` [${d.source}]` : '';
-      a.textContent = `${loc} ${d.message}${src}`;
-      a.title = d.uri || '';
-      a.addEventListener('click', e => {
+      button.textContent = `${loc} ${d.message}${src}`;
+      button.title = d.uri || '';
+      button.addEventListener('click', e => {
         e.preventDefault();
         this._openDiagnostic(d, env);
       });
-      li.appendChild(a);
+      li.appendChild(button);
       list.appendChild(li);
     }
     this.element.appendChild(list);
   }
 
   async _openDiagnostic(d, env) {
-    if (!env || !env.workspace || !d.uri) return;
-    const filePath = chevron.lsp.uriToPath(d.uri);
-    if (!filePath) return;
-    const editor = await env.workspace.open(filePath, {
-      initialLine: d.range.start.row,
-      initialColumn: d.range.start.column,
-      searchAllPanes: true
-    });
-    if (editor && editor.setCursorBufferPosition) {
-      editor.setCursorBufferPosition(d.range.start);
+    try {
+      const root = global.chevron || global.atom;
+      if (!env || !env.workspace || !d || !d.uri || !root || !root.lsp) return;
+      const filePath = root.lsp.uriToPath(d.uri);
+      if (!filePath) {
+        if (env.notifications) {
+          env.notifications.addWarning('Could not open that diagnostic');
+        }
+        return;
+      }
+      const start = d.range && d.range.start;
+      const editor = await env.workspace.open(filePath, {
+        initialLine: start ? start.row : 0,
+        initialColumn: start ? start.column : 0,
+        searchAllPanes: true
+      });
+      if (editor && editor.setCursorBufferPosition && start) {
+        editor.setCursorBufferPosition(start);
+      }
+    } catch (err) {
+      if (env && env.notifications) {
+        env.notifications.addWarning(
+          `Could not open diagnostic: ${err && err.message ? err.message : err}`
+        );
+      }
     }
   }
 
@@ -148,13 +220,23 @@ class DiagnosticsView {
 
   updateLightbulbs(editor, diagnostics) {
     this.clearLightbulbs(editor);
-    if (!editor.decorateMarker) return;
-    const rows = new Set();
-    for (const d of diagnostics) {
-      if (d.range && d.range.start) rows.add(d.range.start.row);
+    if (!editor || !editor.decorateMarker) return;
+    const byRow = new Map();
+    for (const d of diagnostics || []) {
+      if (!d.range || !d.range.start || !Number.isInteger(d.range.start.row)) {
+        continue;
+      }
+      const row = d.range.start.row;
+      let list = byRow.get(row);
+      if (!list) {
+        list = [];
+        byRow.set(row, list);
+      }
+      list.push(d.range);
     }
+    this._rangesByEditor.set(editor, byRow);
     const markers = [];
-    for (const row of rows) {
+    for (const row of byRow.keys()) {
       try {
         const marker = editor.markBufferRange(
           [[row, 0], [row, 0]],
@@ -178,22 +260,48 @@ class DiagnosticsView {
     const element = editor.getElement && editor.getElement();
     if (!element || !element.addEventListener) return;
     this._bulbClickBound.add(editor);
-    element.addEventListener('mousedown', event => {
-      const node =
-        event.target && event.target.closest
-          ? event.target.closest('.line-number.lsp-lightbulb')
-          : null;
-      if (!node) return;
-      const row = Number(node.dataset.bufferRow);
-      if (!Number.isInteger(row)) return;
-      if (editor.setCursorBufferPosition) {
-        editor.setCursorBufferPosition([row, 0]);
-      }
-      const e = global.chevron || global.atom;
-      if (e && e.commands && editor.getElement) {
-        e.commands.dispatch(editor.getElement(), 'chevron-lsp:code-actions');
-      }
-    });
+    element.addEventListener(
+      'mousedown',
+      event => {
+        if (event.button !== 0) return;
+        const node =
+          event.target && event.target.closest
+            ? event.target.closest('.line-number.lsp-lightbulb')
+            : null;
+        if (!node || !clickedLightbulb(event, node)) return;
+        // Capture phase, before the gutter turns the click into a line selection.
+        event.preventDefault();
+        event.stopPropagation();
+        const row = Number(node.dataset.bufferRow);
+        if (!Number.isInteger(row)) return;
+        const range = lightbulbRange(
+          editor,
+          row,
+          this._rangesByEditor.get(editor)
+        );
+        if (editor.setSelectedBufferRange) {
+          editor.setSelectedBufferRange([range.start, range.end], {
+            autoscroll: false
+          });
+        } else if (editor.setCursorBufferPosition) {
+          editor.setCursorBufferPosition(range.start);
+        }
+        if (typeof element.focus === 'function') element.focus();
+        const rect = node.getBoundingClientRect();
+        editor.__chevronCodeActionAnchor = {
+          top: rect.bottom + 4,
+          left: Math.max(8, rect.left)
+        };
+        const e = global.chevron || global.atom;
+        if (e && e.commands) {
+          e.commands.dispatch(element, 'chevron-lsp:code-actions', {
+            editor,
+            range
+          });
+        }
+      },
+      true
+    );
   }
 
   clearLightbulbs(editor) {
@@ -207,6 +315,7 @@ class DiagnosticsView {
       }
     }
     this._bulbsByEditor.set(editor, []);
+    this._rangesByEditor.delete(editor);
   }
 
   clearGutter(editor) {
@@ -236,4 +345,10 @@ class DiagnosticsView {
   }
 }
 
-module.exports = { DiagnosticsView, SEVERITY_CLASS };
+module.exports = {
+  DiagnosticsView,
+  SEVERITY_CLASS,
+  clickedLightbulb,
+  rangeCoveringDiagnostics,
+  lightbulbRange
+};
