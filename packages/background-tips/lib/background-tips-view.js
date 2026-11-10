@@ -118,7 +118,7 @@ class BackgroundTipsElement {
   }
 
   renderTip (str) {
-    str = str.replace(/\{(.+)\}/g, (match, command) => {
+    str = str.replace(/\{([^{}\r\n]+)\}/g, (match, command) => {
       let binding, scope
       const scopeAndCommand = command.split('>')
       if (scopeAndCommand.length > 1) {

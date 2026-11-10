@@ -296,7 +296,7 @@ class SettingsPanel extends import_collapsible_section_panel.default {
       if (value.length === 0) {
         return null;
       }
-      return value.map((val) => val.toString().replace(/,/g, "\\,")).join(", ");
+      return value.map((val) => val.toString().replace(/\\/g, "\\\\").replace(/,/g, "\\,")).join(", ");
     } else if (value != null) {
       return value.toString();
     } else {

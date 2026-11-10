@@ -70,10 +70,12 @@ class GithubLoginModel {
     if (/^https?:\/\//.test(account)) {
       // Avoid storing tokens in memory longer than necessary. Let's cache token scope checks by storing a set of
       // checksums instead.
-      const hash = _crypto.default.createHash('md5');
-
-      hash.update(password);
-      const fingerprint = hash.digest('base64');
+      // Cache key for a token. scrypt, not md5: this value is a secret.
+      const fingerprint = (await _crypto.default.promises.scrypt(
+        password,
+        'chevron-github-token-cache',
+        32
+      )).toString('base64');
       const outcome = this.checked.get(fingerprint);
 
       if (outcome === _keytarStrategy.UNAUTHENTICATED || outcome === _keytarStrategy.INSUFFICIENT) {

@@ -1,9 +1,9 @@
 'use strict';
 
 const fs = require('fs-extra');
-const os = require('os');
 const path = require('path');
 const spawnSync = require('./spawn-sync');
+const { makeTempDir } = require('./temp-dir');
 const template = require('lodash.template');
 
 const CONFIG = require('../config');
@@ -30,10 +30,7 @@ module.exports = function(packagedAppPath) {
     CONFIG.buildOutputPath,
     `${atomExecutableName}_${appVersion}_${arch}.deb`
   );
-  const debianPackageDirPath = path.join(
-    os.tmpdir(),
-    path.basename(packagedAppPath)
-  );
+  const debianPackageDirPath = makeTempDir('chevron-deb-');
   const debianPackageConfigPath = path.join(debianPackageDirPath, 'DEBIAN');
   const debianPackageInstallDirPath = path.join(debianPackageDirPath, 'usr');
   const debianPackageBinDirPath = path.join(debianPackageInstallDirPath, 'bin');
@@ -58,25 +55,6 @@ module.exports = function(packagedAppPath) {
     'doc',
     atomExecutableName
   );
-
-  if (fs.existsSync(debianPackageDirPath)) {
-    console.log(
-      `Deleting existing build dir for Debian package at "${debianPackageDirPath}"`
-    );
-    fs.removeSync(debianPackageDirPath);
-  }
-  if (fs.existsSync(`${debianPackageDirPath}.deb`)) {
-    console.log(
-      `Deleting existing Debian package at "${debianPackageDirPath}.deb"`
-    );
-    fs.removeSync(`${debianPackageDirPath}.deb`);
-  }
-  if (fs.existsSync(debianPackageDirPath)) {
-    console.log(
-      `Deleting existing Debian package at "${outputDebianPackageFilePath}"`
-    );
-    fs.removeSync(debianPackageDirPath);
-  }
 
   console.log(
     `Creating Debian package directory structure at "${debianPackageDirPath}"`
@@ -213,13 +191,10 @@ module.exports = function(packagedAppPath) {
     path.join(polkitActionsDir, `${atomExecutableName}.policy`)
   );
 
-  console.log(`Generating .deb file from ${debianPackageDirPath}`);
-  spawnSync('fakeroot', ['dpkg-deb', '-b', debianPackageDirPath], {
-    stdio: 'inherit'
-  });
-
-  console.log(
-    `Copying generated package into "${outputDebianPackageFilePath}"`
+  console.log(`Generating .deb file at "${outputDebianPackageFilePath}"`);
+  spawnSync(
+    'fakeroot',
+    ['dpkg-deb', '-b', debianPackageDirPath, outputDebianPackageFilePath],
+    { stdio: 'inherit' }
   );
-  fs.copySync(`${debianPackageDirPath}.deb`, outputDebianPackageFilePath);
 };

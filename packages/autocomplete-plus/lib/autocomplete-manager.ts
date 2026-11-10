@@ -573,7 +573,7 @@ See https://github.com/atom/autocomplete-plus/wiki/Provider-API`
     let regex = wordCharacterRegexCache.get(additionalWordChars)
 
     if (!regex) {
-      regex = new RegExp(`[${UnicodeLetters}${additionalWordChars.replace(']', '\\]')}\\d]`)
+      regex = new RegExp(`[${UnicodeLetters}${additionalWordChars.replace(/[\\\]^-]/g, '\\$&')}\\d]`)
       wordCharacterRegexCache.set(additionalWordChars, regex)
     }
     return regex

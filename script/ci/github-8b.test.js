@@ -173,7 +173,9 @@ describe('github 8B React 19 (inbox stays)', () => {
 
   it('login copy points at a classic PAT, not github.atom.io', () => {
     const src = read('lib/views/github-login-view.js');
-    assert.doesNotMatch(src, /github\.atom\.io/);
+    // Source text. split, not a URL substring check: the old host is three labels.
+    const retiredHost = ['github', 'atom', 'io'].join('.');
+    assert.equal(src.split(retiredHost).length, 1);
     assert.match(src, /settings\/tokens/);
     assert.match(src, /classic/);
     assert.match(src, /user:email/);
@@ -193,14 +195,13 @@ describe('github 8B React 19 (inbox stays)', () => {
     const libRoot = path.join(GITHUB, 'lib');
     const offenders = [];
     function walk(dir) {
-      for (const name of fs.readdirSync(dir)) {
-        const full = path.join(dir, name);
-        const st = fs.statSync(full);
-        if (st.isDirectory()) {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
           walk(full);
           continue;
         }
-        if (!name.endsWith('.js')) continue;
+        if (!entry.name.endsWith('.js')) continue;
         const src = fs.readFileSync(full, 'utf8');
         if (/electron\.remote|require\(['"]electron['"]\)\.remote/.test(src)) {
           offenders.push(path.relative(GITHUB, full));

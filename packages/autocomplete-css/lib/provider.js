@@ -9,8 +9,15 @@
 const COMPLETIONS = require('../completions.json');
 
 const firstInlinePropertyNameWithColonPattern = /{\s*(\S+)\s*:/; // .example { display: }
-const inlinePropertyNameWithColonPattern = /(?:;.+?)*;\s*(\S+)\s*:/; // .example { display: block; float: left; color: } (match the last one)
 const propertyNameWithColonPattern = /^\s*(\S+)\s*:/; // display:
+
+// The property name after the last `;`. Linear in the line length.
+function lastInlinePropertyName(line) {
+  const semi = line.lastIndexOf(';');
+  if (semi === -1) return null;
+  const match = /^\s*(\S+)\s*:/.exec(line.slice(semi + 1));
+  return match ? match[1] : null;
+}
 const propertyNamePrefixPattern = /[a-zA-Z]+[-a-zA-Z]*$/;
 const pseudoSelectorPrefixPattern = /:(:)?([a-z]+[a-z-]*)?$/;
 const tagSelectorPrefixPattern = /(^|\s|,)([a-z]+)?$/;
@@ -214,7 +221,7 @@ module.exports = {
     while (row >= 0) {
       var line = editor.lineTextForBufferRow(row);
       if (row === bufferPosition.row) { line = line.substr(0, column); }
-      var propertyName = __guard__(inlinePropertyNameWithColonPattern.exec(line), x => x[1]);
+      var propertyName = lastInlinePropertyName(line);
       if (propertyName == null) { propertyName = __guard__(firstInlinePropertyNameWithColonPattern.exec(line), x1 => x1[1]); }
       if (propertyName == null) { propertyName = __guard__(propertyNameWithColonPattern.exec(line), x2 => x2[1]); }
       if (propertyName) { return propertyName; }

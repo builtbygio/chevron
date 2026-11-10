@@ -3097,7 +3097,9 @@ async function main() {
     console.error('smoke-test: best boot', JSON.stringify(bestBoot, null, 2));
     if (rendererLogs.length > 0) {
       console.error('smoke-test: renderer console/exceptions:');
-      for (const line of rendererLogs) console.error('  ', line);
+      for (const line of rendererLogs) {
+        console.error('  ', String(line).replace(/\n/g, '').replace(/\r/g, ''));
+      }
     } else {
       console.error('smoke-test: (no renderer console lines captured)');
     }

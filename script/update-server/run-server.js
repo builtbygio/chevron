@@ -48,6 +48,12 @@ const releaseChannel = versionMatch ? versionMatch[1] : 'stable';
  * Basename-only asset under out/. Express sendFile({ root }) is the
  * CodeQL-safe path pattern (no user string in the absolute path).
  */
+function oneLine(value) {
+  return String(value == null ? '' : value)
+    .replace(/\n/g, '')
+    .replace(/\r/g, '');
+}
+
 function safeAssetName(fileName) {
   const base = path.basename(String(fileName || ''));
   if (!/^[\w.+-]+$/.test(base)) return null;
@@ -87,14 +93,14 @@ function getMacUpdates(req, res) {
 
     console.log(
       'Received request for macOS updates (version = %s), sending',
-      requested,
+      oneLine(requested),
       updateInfo
     );
     res.json(updateInfo);
   } else {
     console.log(
       'Received request for macOS updates, sending 204 as Atom is up to date (version = %s)',
-      requested
+      oneLine(requested)
     );
     res.sendStatus(204);
   }
@@ -103,14 +109,18 @@ function getMacUpdates(req, res) {
 function getReleasesFile(fileName) {
   return function(req, res) {
     const requested = String(req.query.version || '');
-    console.log('Received request for %s, version: %s', fileName, requested);
+    console.log(
+      'Received request for %s, version: %s',
+      oneLine(fileName),
+      oneLine(requested)
+    );
     if (requested) {
       const versionMatch = requested.match(/-(beta|nightly)\d+$/);
       const versionChannel = (versionMatch && versionMatch[1]) || 'stable';
       if (releaseChannel !== versionChannel) {
         console.log(
           'Atom requested an update for version %s but the current release channel is %s',
-          requested,
+          oneLine(requested),
           releaseChannel
         );
         res.sendStatus(404);
@@ -137,8 +147,8 @@ function getNupkgFile(is64bit) {
 
     console.log(
       'Received request for %s, sending %s',
-      String(req.params.nupkg || ''),
-      nupkgFile
+      oneLine(req.params.nupkg || ''),
+      oneLine(nupkgFile)
     );
     sendAsset(res, nupkgFile);
   };

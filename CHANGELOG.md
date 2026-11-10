@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Security findings in the editor, the build scripts, and the package manager.** Hover text is stripped by scanning for tags instead of a tag regular expression. Snippet copy and settings lists escape backslashes before the character they quote. A GitHub token is cached under scrypt instead of md5. Shell commands in the build take an argument list. The Debian staging directory is a private temp directory. Transitive `minimatch` 9 and 10 and `glob` 13 are pinned to the patched releases.
 - **Package bundles keep `glob` as a real require.** The CJS shim finds `glob-core` from its own directory. Inlining that lookup into a package bundle pointed it at the bundle instead.
 - **A packaged build can copy scoped packages, and the TypeScript server can start.** `@atom/watcher` and the other scoped installs are symlinks. Copying the relative link into `out/` left it dangling, and the build died while creating nested modules through it. The language server was then pointed at `tsserver.js` inside `app.asar`. It is a separate Node process, so that path is not a directory and the server exited on initialize. Paths inside the archive are no longer passed to it. The optional package's own TypeScript is used instead.
 

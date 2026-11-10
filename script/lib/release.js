@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { changelogSection } = require('./release-notes');
+const { changelogSection, escapeRegExp } = require('./release-notes');
 
 // The changelog side of a release, plus the download pages that name it.
 //
@@ -122,7 +122,10 @@ function updateReleases(markdown, version) {
   out = must(
     out,
     new RegExp(
-      `\\*\\*${previous.replace(/\./g, '\\.')}:\\*\\* https://github.com/builtbygio/chevron/releases/tag/v${previous.replace(/\./g, '\\.')}`
+      '\\*\\*' +
+      escapeRegExp(previous) +
+      ':\\*\\* https://github.com/builtbygio/chevron/releases/tag/v' +
+      escapeRegExp(previous)
     ),
     `**${version}:** https://github.com/builtbygio/chevron/releases/tag/v${version}`,
     'release link'
@@ -137,7 +140,7 @@ function updateReleases(markdown, version) {
 }
 
 function updateReadme(markdown, version, previous) {
-  const esc = previous.replace(/\./g, '\\.');
+  const esc = escapeRegExp(previous);
   let out = must(
     markdown,
     new RegExp(
@@ -171,7 +174,7 @@ function updateGrok(markdown, version, packageFrom, date) {
   out = must(
     out,
     new RegExp(
-      '`package.json` reads ' + packageFrom.replace(/\./g, '\\.') +
+      '`package.json` reads ' + escapeRegExp(packageFrom) +
       '(?:, left over from an old patch-bump-per-PR rule whose versions were never released \\(#437\\))?\\. ' +
       'Last published: \\*\\*v\\d+\\.\\d+\\.\\d+\\*\\* unsigned preview' +
       '(?:; next release \\*\\*\\d+\\.\\d+\\.\\d+\\*\\*)?'

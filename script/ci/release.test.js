@@ -12,6 +12,7 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const { suggest, bumped, prepared, prepareFiles } = require('../lib/release');
+const { escapeRegExp } = require('../lib/release-notes');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 
@@ -149,6 +150,6 @@ describe('the tree this release leaves behind', () => {
     assert.doesNotMatch(readme, /chevron-mac-/);
     assert.doesNotMatch(readme, /windows-x64-setup/);
     assert.match(grok, new RegExp(`last tag \\*\\*v${version}\\*\\*`));
-    assert.match(grok, new RegExp('`package.json` reads ' + version.replace(/\./g, '\\.')));
+    assert.match(grok, new RegExp('`package.json` reads ' + escapeRegExp(version)));
   });
 });

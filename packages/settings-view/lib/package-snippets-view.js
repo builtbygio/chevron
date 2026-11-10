@@ -182,9 +182,9 @@ class PackageSnippetsView {
   writeSnippetToClipboard({ scope, body, name, prefix }) {
     let content;
     const extension = import_path.default.extname(this.snippetsProvider.getUserSnippetsPath());
-    body = body.replace(/\n/g, "\\n").replace(/\t/g, "\\t");
+    body = body.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/\t/g, "\\t");
     if (extension === ".json") {
-      body = body.replace(/'/g, `\\'`);
+      body = body.replace(/'/g, "\\'");
       content = `
 '${scope}':
   '${name}':
