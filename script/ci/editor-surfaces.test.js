@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { makeTempDir } = require('../lib/temp-dir');
 
-const { rowForY, viewportBox, sampleStep } = require('../../packages/minimap/lib/layout');
+const { rowForY, viewportBox, sampleStep, minimapScale, scopeColor } = require('../../packages/minimap/lib/layout');
 const { scrub, buildBundle, serializeBundle, parseBundle } = require('../../packages/settings-sync/lib/bundle');
 const { parseRemote } = require('../../packages/remote-edit/lib/remote-spec');
 const { validateRemote, scpSpec } = require('../../src/main-process/ssh-policy');
@@ -39,6 +39,25 @@ describe('minimap layout', () => {
   it('samples long files', () => {
     assert.strictEqual(sampleStep(100, 4000), 1);
     assert.strictEqual(sampleStep(8000, 4000), 2);
+  });
+
+  it('keeps a short file at a fixed line size', () => {
+    const scale = minimapScale(10, 400);
+    assert.strictEqual(scale.lineHeight, 3);
+    assert.strictEqual(scale.contentHeight, 30);
+  });
+
+  it('shrinks a long file so the thumbnail fits', () => {
+    const scale = minimapScale(1000, 300);
+    assert.ok(scale.contentHeight <= 300);
+    assert.ok(scale.lineHeight < 3);
+  });
+
+  it('paints comments and keywords in different colours', () => {
+    assert.notStrictEqual(
+      scopeColor(['syntax--comment']),
+      scopeColor(['syntax--keyword', 'syntax--control'])
+    );
   });
 });
 

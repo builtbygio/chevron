@@ -1,10 +1,9 @@
 'use strict';
 
 const { CompositeDisposable } = require('chevron');
-const { rowForY, viewportBox, sampleStep } = require('./layout');
+const { rowForY, viewportBox, minimapScale, scopeColor } = require('./layout');
 
 const WIDTH = 72;
-const MAX_MARKS = 4000;
 
 module.exports = {
   activate() {
@@ -20,15 +19,36 @@ module.exports = {
     );
     this.disposables.add(
       chevron.config.onDidChange('minimap.enabled', () => {
-        chevron.workspace.getTextEditors().forEach(editor => {
-          const map = editor.element && editor.element.querySelector(':scope > .minimap');
-          if (map) map.style.display = chevron.config.get('minimap.enabled') ? '' : 'none';
-        });
+        const open = chevron.config.get('minimap.enabled') !== false;
+        chevron.workspace.getTextEditors().forEach(editor => this.setOpen(editor, open));
       })
     );
   },
 
+  syncEditorWidth(editor) {
+    const component = editor.element && editor.element.getComponent && editor.element.getComponent();
+    if (!component || !component.measureClientContainerWidth) return;
+    // The gutter class changes the client container's used width without
+    // resizing the editor element, so the component will not notice on its own.
+    const measure = () => {
+      if (component.measureClientContainerWidth()) component.scheduleUpdate();
+    };
+    requestAnimationFrame(() => {
+      measure();
+      requestAnimationFrame(measure);
+    });
+  },
+
+  setOpen(editor, open) {
+    if (!editor.element) return;
+    editor.element.classList.toggle('minimap-open', open);
+    const map = editor.element.querySelector(':scope > .minimap');
+    if (map) map.style.display = open ? '' : 'none';
+    this.syncEditorWidth(editor);
+  },
+
   watch(editor) {
+    if (editor.isMini && editor.isMini()) return;
     if (!editor.element || editor.element.querySelector(':scope > .minimap')) return;
     const host = document.createElement('div');
     host.className = 'minimap';
@@ -37,66 +57,92 @@ module.exports = {
     viewport.className = 'minimap-viewport';
     host.appendChild(canvas);
     host.appendChild(viewport);
-    editor.element.appendChild(host);
-    if (getComputedStyle(editor.element).position === 'static') {
-      editor.element.style.position = 'relative';
+    const view = editor.element;
+    view.appendChild(host);
+    if (getComputedStyle(view).position === 'static') {
+      view.style.position = 'relative';
     }
+    const open = chevron.config.get('minimap.enabled') !== false;
+    if (!open) host.style.display = 'none';
+    view.classList.toggle('minimap-open', open);
+    this.syncEditorWidth(editor);
 
-    let lengths = [];
-    const measure = () => {
-      const count = editor.getLineCount();
-      const step = sampleStep(count, MAX_MARKS);
-      lengths = [];
-      for (let row = 0; row < count; row += step) {
-        lengths.push((editor.lineTextForBufferRow(row) || '').length);
-      }
-    };
     const paint = () => {
-      if (!chevron.config.get('minimap.enabled')) return;
-      const height = editor.element.clientHeight || editor.getHeight() || 0;
+      if (chevron.config.get('minimap.enabled') === false) return;
+      const height = host.clientHeight || 0;
+      if (!height) return;
+      const count = Math.max(editor.getLineCount(), 1);
+      const scale = minimapScale(count, height);
       const width = WIDTH;
       const dpr = window.devicePixelRatio || 1;
-      canvas.style.width = width + 'px';
-      canvas.style.height = height + 'px';
       canvas.width = Math.max(1, Math.floor(width * dpr));
       canvas.height = Math.max(1, Math.floor(height * dpr));
       const ctx = canvas.getContext('2d');
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
-      const color = getComputedStyle(editor.element).color || '#ddd';
-      ctx.fillStyle = color;
-      ctx.globalAlpha = 0.45;
-      const count = Math.max(editor.getLineCount(), 1);
-      const step = sampleStep(count, MAX_MARKS);
-      const bar = Math.max(height / count, 1);
-      lengths.forEach((length, index) => {
-        if (!length) return;
-        const w = Math.max(1, Math.min(width - 4, (length / 80) * (width - 4)));
-        ctx.fillRect(2, (index * step / count) * height, w, Math.max(bar - 0.5, 0.5));
-      });
+      const markHeight = Math.max(scale.lineHeight - 0.6, 1);
+      for (let row = 0; row < count; row++) {
+        const y = row * scale.lineHeight;
+        if (y >= height) break;
+        let tokens = null;
+        try {
+          tokens = editor.tokensForScreenRow(row);
+        } catch (error) {
+          tokens = null;
+        }
+        let x = 1;
+        if (tokens && tokens.length) {
+          for (const token of tokens) {
+            const text = token.text || '';
+            const advance = text.length * scale.charWidth;
+            if (x < width && /\S/.test(text)) {
+              ctx.globalAlpha = 0.95;
+              ctx.fillStyle = scopeColor(token.scopes);
+              ctx.fillRect(x, y, Math.min(advance, width - x), markHeight);
+            }
+            x += advance;
+            if (x >= width) break;
+          }
+        } else {
+          const line = editor.lineTextForBufferRow(row) || '';
+          const indent = line.length - line.trimStart().length;
+          const body = line.trim().length;
+          if (body) {
+            ctx.globalAlpha = 0.7;
+            ctx.fillStyle = scopeColor('');
+            ctx.fillRect(1 + indent * scale.charWidth, y, Math.min(body * scale.charWidth, width - 2), markHeight);
+          }
+        }
+      }
+      const linePx = editor.getLineHeightInPixels() || scale.lineHeight;
       const box = viewportBox({
-        scrollTop: editor.getScrollTop(),
-        viewHeight: editor.getHeight() || height,
-        contentHeight: editor.getLineCount() * (editor.getLineHeightInPixels() || bar),
-        minimapHeight: height
+        scrollTop: (view.getScrollTop() / linePx) * scale.lineHeight,
+        viewHeight: ((view.getHeight() || height) / linePx) * scale.lineHeight,
+        contentHeight: scale.contentHeight,
+        minimapHeight: scale.contentHeight
       });
       viewport.style.top = box.top + 'px';
-      viewport.style.height = box.height + 'px';
+      viewport.style.height = Math.min(box.height, height) + 'px';
     };
     const scrollTo = y => {
-      const row = rowForY(y, host.clientHeight, editor.getLineCount());
-      editor.setCursorBufferPosition([row, 0]);
-      editor.scrollToBufferPosition([row, 0], { center: true });
+      const count = Math.max(editor.getLineCount(), 1);
+      const scale = minimapScale(count, host.clientHeight || 1);
+      const row = rowForY(y, scale.contentHeight, count);
+      const linePx = editor.getLineHeightInPixels() || 1;
+      const viewHeight = view.getHeight() || host.clientHeight || linePx;
+      const top = row * linePx - (viewHeight - linePx) / 2;
+      // Scroll only. Moving the caret here makes it chase the minimap.
+      view.setScrollTop(Math.max(0, top));
     };
 
-    measure();
-    paint();
+    requestAnimationFrame(paint);
     const subs = new CompositeDisposable();
-    subs.add(editor.onDidChange(() => {
-      measure();
-      paint();
-    }));
-    subs.add(editor.onDidChangeScrollTop(() => paint()));
+    const resizeObserver = new ResizeObserver(() => paint());
+    resizeObserver.observe(view);
+    subs.add(editor.onDidChange(() => paint()));
+    subs.add(editor.onDidTokenize(() => paint()));
+    subs.add(view.onDidChangeScrollTop(() => paint()));
+    subs.add({ dispose: () => resizeObserver.disconnect() });
     let dragging = false;
     const onMove = event => {
       if (!dragging) return;
@@ -110,6 +156,7 @@ module.exports = {
       dragging = true;
       scrollTo(event.offsetY);
       event.preventDefault();
+      event.stopPropagation();
     });
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
