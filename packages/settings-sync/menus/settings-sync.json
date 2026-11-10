@@ -1,0 +1,11 @@
+{
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": [
+        { "label": "Export Settings\u2026", "command": "settings-sync:export" },
+        { "label": "Import Settings\u2026", "command": "settings-sync:import" }
+      ]
+    }
+  ]
+}

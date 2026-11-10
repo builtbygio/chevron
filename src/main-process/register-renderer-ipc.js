@@ -303,6 +303,10 @@ module.exports = function registerRendererIpc(atomApplication) {
   // Terminals. The pty host does the spawning; the renderer only asks.
   require('./register-pty-ipc')(atomApplication);
 
+  // Node debugger and one-file SSH editing. Both spawn from main.
+  require('./register-debug-ipc')(atomApplication);
+  require('./register-ssh-ipc')();
+
   // Phase S3 / PR 9 — github git workers via utilityProcess only.
   const packageUtilityWorker = require('./package-utility-worker');
 

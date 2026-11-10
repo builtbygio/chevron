@@ -162,6 +162,36 @@
     ]
   },
   {
+    "channel": "chevron:debug-request",
+    "kind": "handle",
+    "file": "src/main-process/register-debug-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "spawn"
+    ]
+  },
+  {
+    "channel": "chevron:debug-start",
+    "kind": "handle",
+    "file": "src/main-process/register-debug-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "spawn"
+    ]
+  },
+  {
+    "channel": "chevron:debug-stop",
+    "kind": "handle",
+    "file": "src/main-process/register-debug-ipc.js",
+    "scope": "owner-window",
+    "validation": "full",
+    "effect": [
+      "spawn"
+    ]
+  },
+  {
     "channel": "chevron:destroy-own-window-sync",
     "kind": "on",
     "file": "src/main-process/register-renderer-ipc.js",
@@ -801,6 +831,39 @@
     "validation": "full",
     "effect": [
       "ui"
+    ]
+  },
+  {
+    "channel": "chevron:ssh-list",
+    "kind": "handle",
+    "file": "src/main-process/register-ssh-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "network",
+      "read"
+    ]
+  },
+  {
+    "channel": "chevron:ssh-read",
+    "kind": "handle",
+    "file": "src/main-process/register-ssh-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "network",
+      "read"
+    ]
+  },
+  {
+    "channel": "chevron:ssh-write",
+    "kind": "handle",
+    "file": "src/main-process/register-ssh-ipc.js",
+    "scope": "any-window",
+    "validation": "full",
+    "effect": [
+      "network",
+      "write-fs"
     ]
   },
   {

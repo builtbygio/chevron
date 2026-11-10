@@ -214,6 +214,7 @@ jobs:
           node --test script/ci/jasmine-summary.test.js
           node --test script/ci/upstream-tag.test.js
           node --test script/ci/package-test-dir.test.js
+          node --test script/ci/editor-surfaces.test.js
           node --test script/ci/spec-helper-real-time.test.js
           node --test script/ci/release-notes.test.js
           node --test script/ci/release.test.js
@@ -269,6 +270,7 @@ jobs:
           node --test script/ci/fs-ipc-roots.test.js
           node --test script/ci/derived-constructor-super.test.js
           node --test script/ci/ipc-inventory.test.js
+          node --test script/ci/debug-ssh-ipc.test.js
           node --test script/ci/window-ipc-policy.test.js
           node --test script/ci/ipc-guard.test.js
           node --test script/ci/lsp-packages-no-privileged-require.test.js

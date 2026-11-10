@@ -1,0 +1,25 @@
+{
+  "name": "@builtbygio/debugger",
+  "version": "0.1.0",
+  "main": "./lib/main",
+  "description": "Debug the current JavaScript file: breakpoints, stack, and stepping.",
+  "license": "MIT",
+  "repository": "https://github.com/builtbygio/chevron",
+  "engines": {
+    "atom": "*",
+    "chevron": "*"
+  },
+  "activationCommands": {
+    "chevron-workspace": [
+      "debug:toggle-breakpoint",
+      "debug:continue",
+      "debug:step-over",
+      "debug:step-in",
+      "debug:step-out",
+      "debug:stop"
+    ],
+    "chevron-text-editor": [
+      "debug:toggle-breakpoint"
+    ]
+  }
+}
